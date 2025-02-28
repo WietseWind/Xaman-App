@@ -20,13 +20,14 @@ export default StyleService.create({
     buttonText: {
         fontFamily: AppFonts.base.familyExtraBold,
         fontSize: AppFonts.subtext.size,
-        color: '$textDark',
+        color: '$textPrimary',
         textAlign: 'left',
-        paddingHorizontal: 5,
+        paddingHorizontal: 8,
         paddingTop: 2,
     },
     pillFontSize: {
         fontSize: AppFonts.subtext.size * 0.9,
+        paddingHorizontal: 5,
     },
     exclamationMarkText: {
         fontFamily: AppFonts.base.familyExtraBold,

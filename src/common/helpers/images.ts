@@ -34,7 +34,6 @@ export const Images = {
     ImagePincode: buildImageSource('ImagePincode', 'image_pincode'),
     ImagePincodeLight: buildImageSource('ImagePincodeLight', 'image_pincode_light'),
     ImageBiometric: buildImageSource('ImageBiometric', 'image_biometric'),
-    ImageBiometricLight: buildImageSource('ImageBiometricLight', 'image_biometric_light'),
     ImageNotifications: buildImageSource('ImageNotifications', 'image_notifications'),
     ImageNotificationsLight: buildImageSource('ImageNotificationsLight', 'image_notifications_light'),
     ImageComplete: buildImageSource('ImageComplete', 'image_complete'),
@@ -166,4 +165,9 @@ export const Images = {
     IconV2Swap: buildImageSource('IconV2Swap', 'icon_swap'),
     IconV2Send: buildImageSource('IconV2Send', 'icon_send_v2'),
     IconV2Request: buildImageSource('IconV2Request', 'icon_request'),
+    // 4.0.0 Onboarding
+    Notification: buildImageSource('Notification', 'notification'),
+    Pincode: buildImageSource('Pincode', 'pincode'),
+    PhonesLight: buildImageSource('PhonesLight', 'phones_light'),
+    PhonesDark: buildImageSource('PhonesDark', 'phones_dark'),
 };

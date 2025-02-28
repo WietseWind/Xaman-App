@@ -25,6 +25,7 @@ import { Icon } from '@components/General/Icon';
 import { LoadingIndicator } from '@components/General/LoadingIndicator';
 
 import styles from './styles';
+import { AppStyles } from '@theme/index';
 
 /* Types ==================================================================== */
 interface Props {
@@ -182,15 +183,21 @@ class SecurePinInput extends Component<Props, State> {
                 return (
                     <TouchableHighlight
                         testID="x-key"
-                        underlayColor={StyleService.value('$tint')}
-                        style={styles.line}
+                        underlayColor={StyleService.value('$transparentContrast')}
+                        activeOpacity={0.7}
+                        style={[
+                            styles.line,
+                        ]}
                         key="x-key"
                         onPress={() => {
                             this.onInput('Backspace');
                         }}
                         onLongPress={this.clearInput}
                     >
-                        <Icon name="IconChevronLeft" style={styles.iconStyle} size={35} />
+                        <Icon name="IconChevronLeft" style={[
+                            styles.iconStyle,
+                            AppStyles.marginTopNegativeSml,
+                        ]} size={35} />
                     </TouchableHighlight>
                 );
             }
@@ -199,8 +206,10 @@ class SecurePinInput extends Component<Props, State> {
                     return (
                         <TouchableHighlight
                             testID="y-key"
-                            underlayColor={StyleService.value('$tint')}
-                            style={styles.line}
+                            underlayColor={StyleService.value('$transparentContrast')}
+                            style={[
+                                styles.line,
+                            ]}
                             key="y-key"
                             onPress={() => {
                                 if (onBiometryPress) {
@@ -236,8 +245,10 @@ class SecurePinInput extends Component<Props, State> {
             return (
                 <TouchableHighlight
                     testID={`${item}-key`}
-                    underlayColor={StyleService.value('$tint')}
-                    style={styles.line}
+                    underlayColor={StyleService.value('$transparentContrast')}
+                    style={[
+                        styles.line,
+                    ]}
                     activeOpacity={0.7}
                     key={`${item}-key`}
                     onPress={() => {

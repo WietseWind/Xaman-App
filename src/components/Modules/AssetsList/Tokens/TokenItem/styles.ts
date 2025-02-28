@@ -4,7 +4,7 @@ import { AppFonts, AppSizes } from '@theme';
 /* Styles ==================================================================== */
 export default StyleService.create({
     currencyItem: {
-        width: AppSizes.screen.width,
+        width: AppSizes.screen.uncorrectedWidth, // Fixes fold devices
         flexDirection: 'row',
         backgroundColor: '$background',
         paddingHorizontal: AppSizes.paddingList,
@@ -22,6 +22,15 @@ export default StyleService.create({
         fontSize: AppFonts.subtext.size * 0.9,
         fontFamily: AppFonts.base.family,
         color: '$grey',
+    },
+    lpBadgeContainer: {
+        height: AppFonts.subtext.size * 0.85,
+    },
+    lpBadge: {
+        paddingTop: 2,
+        paddingLeft: 4,
+        paddingRight: 3,
+        height: AppFonts.subtext.size * 0.95,
     },
     balanceContainer: {
         flex: 1,
