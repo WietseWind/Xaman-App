@@ -5,7 +5,7 @@ import { AppFonts, AppSizes } from '@theme';
 /* Styles ==================================================================== */
 const styles = StyleService.create({
     labelContainer: {
-        width: AppSizes.screen.width,
+        width: AppSizes.screen.uncorrectedWidth, // Fixes square fold devices
         justifyContent: 'center',
         alignItems: 'center',
         padding: 15,
@@ -19,7 +19,7 @@ const styles = StyleService.create({
         backgroundColor: '$red',
     },
     itemContainer: {
-        width: AppSizes.screen.width,
+        width: AppSizes.screen.uncorrectedWidth,
         justifyContent: 'center',
         alignItems: 'center',
         paddingTop: 10,
@@ -86,7 +86,7 @@ const styles = StyleService.create({
     dateText: {
         fontFamily: AppFonts.base.family,
         fontSize: AppFonts.small.size,
-        color: '$primary',
+        color: '$textPrimary',
         textAlign: 'center',
     },
     hashText: {

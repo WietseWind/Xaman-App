@@ -4,13 +4,14 @@
 
 import React, { Component } from 'react';
 
-import { SafeAreaView, View, Text, Image, LayoutAnimation, Alert } from 'react-native';
+import { SafeAreaView, View, Text, Image, LayoutAnimation, ImageBackground, Alert } from 'react-native';
 
 import { CoreRepository } from '@store/repositories';
 import { CoreModel } from '@store/models';
 import { BiometryType } from '@store/types';
 
 import { Biometric } from '@common/libs/biometric';
+import { Images } from '@common/helpers/images';
 
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
@@ -18,7 +19,8 @@ import { VibrateHapticFeedback, Toast, Prompt } from '@common/helpers/interface'
 
 import { PushNotificationsService, StyleService } from '@services';
 
-import { Button, Spacer, Footer, SecurePinInput, InfoMessage } from '@components/General';
+import { Button, Spacer, Footer, SecurePinInput } from '@components/General';
+import { isStrong } from '@components/General/PinInput/PinInput';
 
 import Localize from '@locale';
 
@@ -28,6 +30,7 @@ import { PushNotificationSetupViewProps } from '@screens/Setup/PushNotification'
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import onboardingStyles from '../../Onboarding/styles';
 
 /* types ==================================================================== */
 enum Steps {
@@ -53,11 +56,7 @@ class PasscodeSetupView extends Component<Props, State> {
     private pinInputRef: React.RefObject<SecurePinInput>;
 
     static options() {
-        return {
-            topBar: {
-                visible: false,
-            },
-        };
+        return { topBar: { visible: false } };
     }
 
     constructor(props: Props) {
@@ -181,12 +180,15 @@ class PasscodeSetupView extends Component<Props, State> {
     };
 
     isBiometricSupported = () => {
+        // console.log('isBiometricSupported')
         return new Promise((resolve) => {
             Biometric.isSensorAvailable()
                 .then(() => {
+                    // console.log('isBiometricSupported true')
                     resolve(true);
                 })
                 .catch(() => {
+                    // console.log('isBiometricSupported false')
                     resolve(false);
                 });
         });
@@ -203,8 +205,8 @@ class PasscodeSetupView extends Component<Props, State> {
         });
     };
 
-    checkPasscode = (passcode: string, isStrong: boolean) => {
-        if (isStrong) {
+    checkPasscode = (passcode: string) => {
+        if (isStrong(passcode)) {
             VibrateHapticFeedback('impactLight');
             this.setState({
                 passcode,
@@ -270,12 +272,12 @@ class PasscodeSetupView extends Component<Props, State> {
         });
     };
 
-    onPasscodeEnter = (code: string, isStrong?: boolean) => {
+    onPasscodeEnter = (code: string) => {
         const { currentStep } = this.state;
 
         switch (currentStep) {
             case Steps.ENTER_PASSCODE:
-                this.checkPasscode(code, isStrong!);
+                this.checkPasscode(code);
                 break;
             case Steps.CONFIRM_PASSCODE:
                 this.checkPasscodeConfirm(code);
@@ -285,22 +287,12 @@ class PasscodeSetupView extends Component<Props, State> {
         }
     };
 
-    renderHeader = () => {
-        return (
-            <View style={[AppStyles.flex2, AppStyles.centerContent]}>
-                <Image style={styles.logo} source={StyleService.getImage('XamanLogo')} />
-            </View>
-        );
-    };
-
     renderFooter = () => {
         const { currentStep, passcode, passcodeConfirm, isLoading } = this.state;
 
         if (currentStep === Steps.EXPLANATION) {
             return (
-                <Footer style={AppStyles.paddingBottom}>
-                    <Button testID="go-button" onPress={this.onNext} label={Localize.t('global.go')} />
-                </Footer>
+                <Button testID="go-button" onPress={this.onNext} label={Localize.t('global.okLetsGo')} />
             );
         }
 
@@ -339,57 +331,98 @@ class PasscodeSetupView extends Component<Props, State> {
         if (currentStep === Steps.EXPLANATION) {
             return (
                 <View testID="pin-code-explanation-view" style={[AppStyles.flex8, AppStyles.paddingSml]}>
-                    <View style={[AppStyles.flex3, AppStyles.centerAligned, AppStyles.centerContent]}>
-                        <Image style={[AppStyles.emptyIcon]} source={StyleService.getImage('ImagePincode')} />
-                    </View>
-
-                    <View style={[AppStyles.flex2, AppStyles.centerAligned]}>
+                    <View style={[AppStyles.centerAligned]}>
                         <Text style={[AppStyles.h5, AppStyles.strong]}>
                             {Localize.t('setupPasscode.setupAPasscode')}
                         </Text>
                         <Spacer size={20} />
-                        <Text style={[AppStyles.p, AppStyles.textCenterAligned]}>
+                        <Text style={[AppStyles.p, AppStyles.textCenterAligned, AppStyles.colorSilver]}>
                             {Localize.t('setupPasscode.passCodeDescription')}
                         </Text>
+                    </View>
+                    <View style={[AppStyles.centerAligned, AppStyles.centerContent]}>
+                        <Image style={[styles.instructionImage]} source={Images.Pincode} />
                     </View>
                 </View>
             );
         }
 
         return (
-            <View testID="pin-code-entry-view" style={[AppStyles.flex8, AppStyles.paddingSml, AppStyles.stretchSelf]}>
-                <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.centerAligned]}>
-                    <Text style={[AppStyles.p, AppStyles.textCenterAligned]}>
-                        {currentStep === Steps.ENTER_PASSCODE
-                            ? Localize.t('setupPasscode.setPasscode')
-                            : Localize.t('setupPasscode.repeatPasscode')}
+            <View testID="pin-code-entry-view" style={[
+                AppStyles.paddingTop,
+                AppStyles.marginTop,
+                AppStyles.paddingHorizontal,
+            ]}>
+                <Text style={[
+                    AppStyles.p,
+                    AppStyles.textCenterAligned,
+                    AppStyles.marginBottomSml,
+                ]}>
+                    {currentStep === Steps.ENTER_PASSCODE
+                        ? Localize.t('setupPasscode.setPasscode')
+                        : Localize.t('setupPasscode.repeatPasscode')}
+                </Text>
+                { currentStep === Steps.ENTER_PASSCODE &&
+                    <Text style={[
+                        AppStyles.smalltext,
+                        AppStyles.bold,
+                        AppStyles.textCenterAligned,
+                        AppStyles.marginTopNegativeSml,
+                        AppStyles.colorPrimary,
+                    ]}>
+                        {Localize.t('setupPasscode.warnNeedPasscode')}
                     </Text>
-                    <Spacer size={15} />
-                    <InfoMessage label={Localize.t('setupPasscode.warnNeedPasscode')} type="warning" />
-                    <Spacer size={10} />
-                    <SecurePinInput
-                        // autoFocus
-                        ref={this.pinInputRef}
-                        virtualKeyboard
-                        condensed
-                        // checkStrength={currentStep === Steps.ENTER_PASSCODE}
-                        length={6}
-                        supportBiometric={false}
-                        enableHapticFeedback={coreSettings.hapticFeedback}
-                        onInputFinish={this.onPasscodeEnter}
-                    />
-                </View>
+                }
+                {/* <Spacer size={11} /> */}
+                <SecurePinInput
+                    // autoFocus
+                    ref={this.pinInputRef}
+                    virtualKeyboard
+                    condensed
+                    // checkStrength={currentStep === Steps.ENTER_PASSCODE}
+                    length={6}
+                    pinPadStyle={[
+                    ]}
+                    supportBiometric={false}
+                    enableHapticFeedback={coreSettings.hapticFeedback}
+                    onInputFinish={this.onPasscodeEnter}
+                />
             </View>
         );
     }
 
     render() {
         return (
-            <SafeAreaView testID="setup-passcode-screen" style={AppStyles.container}>
-                {this.renderHeader()}
+            <ImageBackground
+                testID="setup-passcode-screen"
+                resizeMode="cover"
+                source={StyleService.getImageIfLightModeIfDarkMode('BackgroundPatternLight', 'BackgroundPattern')}
+                style={onboardingStyles.backgroundImageStyle}
+                imageStyle={onboardingStyles.backgroundImageStyle}
+            >
+                <SafeAreaView style={[AppStyles.flex2, AppStyles.centerAligned, AppStyles.padding]}>
+                    <Image
+                        style={onboardingStyles.logo}
+                        source={StyleService.getImageIfLightModeIfDarkMode('XamanLogo', 'XamanLogoLight')}
+                    />
+                </SafeAreaView>
                 {this.renderContent()}
-                {this.renderFooter()}
-            </SafeAreaView>
+                <SafeAreaView style={[
+                    AppStyles.flex2,
+                    AppStyles.marginTop,
+                ]}>
+                    <SafeAreaView style={[
+                        onboardingStyles.container,
+                    ]}>
+                        <Footer style={[
+                            AppStyles.paddingBottom,
+                            AppStyles.paddingTopNone,
+                        ]}>
+                            {this.renderFooter()}
+                        </Footer>
+                    </SafeAreaView>
+                </SafeAreaView>
+            </ImageBackground>
         );
     }
 }

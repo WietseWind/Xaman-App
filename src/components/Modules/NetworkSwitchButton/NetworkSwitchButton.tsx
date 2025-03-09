@@ -78,7 +78,7 @@ class NetworkSwitchButton extends PureComponent<Props, State> {
 
     componentWillUnmount() {
         NetworkService.off('stateChange', this.onNetworkStateChange);
-        NetworkService.off('networkChange', this.onNetworkChange);
+        NetworkService.off('networkChange', this.debouncedOnNetworkChange);
     }
 
     onNetworkStateChange = (state: NetworkStateStatus) => {
@@ -314,8 +314,10 @@ class NetworkSwitchButton extends PureComponent<Props, State> {
                         <Text style={[
                             styles.buttonText,
                             showChevronIcon && AppStyles.flex4,
-                            showAsSwitchPill && styles.pillFontSize,
-                            developerMode && AppStyles.colorPrimary,
+                            showAsSwitchPill && [
+                                styles.pillFontSize,
+                                AppStyles.colorBlack,
+                            ],
                         ]} numberOfLines={1}>
                             {networkName}
                         </Text>
