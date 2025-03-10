@@ -45,7 +45,7 @@ import {
 } from '@services';
 import { AppStateStatus } from '@services/AppService';
 
-import { Button, Header, SearchBar, SegmentButtons } from '@components/General';
+import { Spacer, Button, Header, SearchBar, SegmentButtons } from '@components/General';
 import { EventsFilterChip, EventsList } from '@components/Modules';
 
 import Localize from '@locale';
@@ -66,6 +66,7 @@ export interface Props {
 export interface State {
     isLoading: boolean;
     isLoadingMore: boolean;
+    isLoadingMoreDebounced: boolean;
     canLoadMore: boolean;
     searchText?: string;
     filters?: FilterProps;
@@ -78,6 +79,7 @@ export interface State {
     plannedTransactions: Array<LedgerObjects>;
     pendingRequests: Array<Payload | NFTokenOffer>;
     dataSource: Array<DataSourceItem>;
+    isFiltering: boolean;
 }
 
 enum EventSections {
@@ -99,6 +101,7 @@ class EventsView extends Component<Props, State> {
     private forceReload: boolean;
     private isScreenVisible: boolean;
     private navigationListener: EventSubscription | undefined;
+    private isLoadingMoreDebouncedTimer?: ReturnType<typeof setTimeout>;
 
     static options() {
         return {
@@ -117,8 +120,10 @@ class EventsView extends Component<Props, State> {
         } = CoreRepository.getSettings();
 
         this.state = {
+            isFiltering: false,
             isLoading: false,
             isLoadingMore: false,
+            isLoadingMoreDebounced: false,
             canLoadMore: true,
             searchText: undefined,
             filters: undefined,
@@ -138,13 +143,22 @@ class EventsView extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Props, nextState: State) {
-        const { dataSource, account, isLoading, canLoadMore, isLoadingMore, filters } = this.state;
+        const {
+            dataSource,
+            account,
+            isLoading,
+            canLoadMore,
+            isLoadingMore,
+            isLoadingMoreDebounced,
+            filters,
+        } = this.state;
         const { timestamp } = this.props;
 
         return (
             !isEqual(nextState.dataSource, dataSource) ||
             !isEqual(nextState.isLoading, isLoading) ||
             !isEqual(nextState.isLoadingMore, isLoadingMore) ||
+            !isEqual(nextState.isLoadingMoreDebounced, isLoadingMoreDebounced) ||
             !isEqual(nextState.canLoadMore, canLoadMore) ||
             !isEqual(nextState.account, account) ||
             !isEqual(nextState.filters, filters) ||
@@ -154,10 +168,13 @@ class EventsView extends Component<Props, State> {
 
     componentDidAppear() {
         // keep track of screen visibility
-        this.isScreenVisible = true;
 
+        // console.log('appeared')
+        this.isScreenVisible = true;
+        
         // check if we need to reload the screen
         if (this.forceReload) {
+            // console.log('reloading')
             // set the flag to false
             this.forceReload = false;
 
@@ -256,7 +273,9 @@ class EventsView extends Component<Props, State> {
 
         if (account?.isValid()) {
             if (effectedAccounts.includes(account.address)) {
-                this.updateDataSource([DataSourceType.TRANSACTIONS, DataSourceType.PLANNED_TRANSACTIONS]);
+                setTimeout(() => {
+                    this.updateDataSource([DataSourceType.TRANSACTIONS, DataSourceType.PLANNED_TRANSACTIONS]);
+                }, 500); // Wait for node to have it
             }
         }
     };
@@ -266,6 +285,8 @@ class EventsView extends Component<Props, State> {
             status === AppStateStatus.Active &&
             [AppStateStatus.Background, AppStateStatus.Inactive].includes(prevStatus)
         ) {
+            // console.log('appstate change', status)
+            this.updateDataSource();
             this.onSignRequestReceived();
         }
     };
@@ -423,8 +444,10 @@ class EventsView extends Component<Props, State> {
                 return;
             }
             
-            LedgerService.getTransactions(account.address, loadMore && lastMarker, 200)
-            .then(async (resp) => {
+            const fetchAmount = 15;
+
+            LedgerService.getTransactions(account.address, loadMore && lastMarker, fetchAmount)
+                .then(async (resp) => {
                     if ('error' in resp) {
                         resolve([]);
                         return;
@@ -435,7 +458,7 @@ class EventsView extends Component<Props, State> {
 
                     // if we got less than 50 transaction, means there is no transaction
                     // also only handle recent 1000 transactions
-                    if (txResp.length < 200 || transactions.length >= 1000) {
+                    if (txResp.length < fetchAmount || transactions.length >= 1000) {
                         canLoadMore = false;
                     }
 
@@ -482,13 +505,34 @@ class EventsView extends Component<Props, State> {
                         TransactionFactory.fromLedger(item, [MixingTypes.Mutation]),
                     );
 
+                    // console.log('x1')
+
                     if (loadMore) {
                         parsedList = uniqBy([...transactions, ...parsedList], 'hash');
                     }
 
+                    // console.log('x2')
+
                     this.setState({ transactions: parsedList, lastMarker: marker, canLoadMore }, () => {
                         resolve(parsedList);
+                        // console.log('x4')
                     });
+
+                    // console.log('x3')
+
+                    // console.log('txResp.length', txResp.length)
+                    // console.log('transactions.length', transactions.length)
+                    // console.log('parsedList.length', parsedList.length)
+                    if (parsedList.length < fetchAmount) {
+                        // Initial query didn't result in full lengt list
+                        if (canLoadMore && marker) {
+                            // Can load more, there's a marker
+                            // Immediately load one more
+                            this.loadMore(true);
+                        }
+                    }
+
+                    // console.log('x5')
                 })
                 .catch(() => {
                     // TODO: BETTER ERROR HANDLING AND ONLY SHOW WHEN SCREEN IS VISIBLE
@@ -498,22 +542,46 @@ class EventsView extends Component<Props, State> {
         });
     };
 
-    loadMore = async () => {
+    loadMore = async (forced = false) => {
+        //            ^^ danger: called elsewhere natively by RN adds {distanceFromEnd: float} so must be
+        //               not only truthy but also boolean
         const { canLoadMore, filters, searchText, isLoadingMore, isLoading, activeSection } = this.state;
 
-        if (isLoading || isLoadingMore || !canLoadMore || activeSection !== EventSections.ALL) return;
+        // console.log('-- load more',  new Date(), {
+        //     canLoadMore,
+        //     isLoadingMore,
+        //     forced,
+        // });
 
-        this.setState({ isLoadingMore: true });
+        if (!canLoadMore) {
+            this.setState({ isLoadingMoreDebounced: false });
+        }
+
+        // console.log('loadingmore', canLoadMore, isLoadingMore)
+        if (!forced || typeof forced !== 'boolean') {
+            // only force return if NOT forced (if forced continue)
+            // or if FORCED but forced isn't bool (see fn enter comment)
+            if (isLoading || isLoadingMore || !canLoadMore || activeSection !== EventSections.ALL) return;
+        }
+        // console.log('loadingmoremore', forced)
+        
+        this.setState({ isLoadingMore: true, isLoadingMoreDebounced: true });
+        clearTimeout(this.isLoadingMoreDebouncedTimer);
 
         await this.loadTransactions(true);
 
         this.setState({ isLoadingMore: false });
+        this.isLoadingMoreDebouncedTimer = setTimeout(() => {
+            this.setState({ isLoadingMoreDebounced: false });
+        }, 250);
 
         // apply any new search ad filter to the new sources
         if (searchText) {
             this.applySearch(searchText);
+            // console.log('applysearch')
         } else if (filters) {
-            this.applyFilters(filters);
+            this.applyFilters(true);
+            // console.log('applyfilters', canLoadMore, isLoadingMore)
         } else {
             this.applyDefaults();
         }
@@ -598,11 +666,14 @@ class EventsView extends Component<Props, State> {
 
         this.setState({ isLoading: true });
 
+        // console.log('updatedatasource')
+
         // Ping to update red pending icon count
         // in case push notifications are disabled
-        BackendService.ping();
 
         let sourceTypes = [] as DataSourceType[];
+
+        BackendService.ping();
 
         switch (activeSection) {
             case EventSections.ALL:
@@ -626,10 +697,13 @@ class EventsView extends Component<Props, State> {
         // update data sources
         for (const source of sourceTypes) {
             if (source === DataSourceType.PENDING_REQUESTS) {
+                // console.log('loadpending')
                 await this.loadPendingRequests();
             } else if (source === DataSourceType.TRANSACTIONS) {
+                // console.log('load--transactions---', this.isScreenVisible)
                 await this.loadTransactions();
             } else if (source === DataSourceType.PLANNED_TRANSACTIONS) {
+                // console.log('loadplan')
                 await this.loadPlannedTransactions();
             }
         }
@@ -654,8 +728,22 @@ class EventsView extends Component<Props, State> {
         });
     };
 
-    applyFilters = (filters: FilterProps) => {
-        const { activeSection, account, transactions, pendingRequests, plannedTransactions, canLoadMore } = this.state;
+    applyFilters = (paramFilters?: FilterProps | boolean) => {
+        const {
+            activeSection,
+            account,
+            filters: stateFilters,
+            transactions,
+            pendingRequests,
+            plannedTransactions,
+            canLoadMore,
+        } = this.state;
+
+        const filters = typeof paramFilters === 'boolean' && paramFilters
+            ? stateFilters
+            : paramFilters;
+
+        // console.log('ap1')
 
         if (activeSection === EventSections.REQUESTS) {
             this.setState({
@@ -663,6 +751,8 @@ class EventsView extends Component<Props, State> {
             });
             return;
         }
+
+        // console.log('ap2')
 
         // check if filters are empty
         let isEmptyFilters = true;
@@ -677,13 +767,22 @@ class EventsView extends Component<Props, State> {
             });
         }
 
-        if (isEmptyFilters) {
+        // console.log('ap3', {isEmptyFilters})
+
+        if (isEmptyFilters || !filters) {
             this.setState({
                 dataSource: this.buildDataSource(transactions, pendingRequests, plannedTransactions),
                 filters: undefined,
+                isFiltering: false,
             });
             return;
         }
+
+        // console.log('ap4')
+
+        this.setState({
+            isFiltering: true,
+        });
 
         let newDataSource: Array<Transactions | LedgerObjects>;
 
@@ -817,22 +916,43 @@ class EventsView extends Component<Props, State> {
         }
 
         if (activeSection === EventSections.ALL) {
+            // console.log('FILTERS READY', canLoadMore)
             if (isEmpty(newDataSource) && canLoadMore) {
+                // console.log('      FILTERS READY --- 1', newDataSource)
+                // console.log('------thisloadmore2')
                 this.setState(
                     {
                         filters,
+                        // isLoading: true,
+                        isFiltering: true,
                     },
                     this.loadMore,
                 );
+                requestAnimationFrame(() => {
+                    // Rerender async
+                    this.setState({
+                        dataSource: this.buildDataSource(newDataSource, [], plannedTransactions),
+                        // isLoading: false,
+                        // isFiltering: false,
+                        // filters,
+                    });  
+                });
             } else {
+                // console.log('      FILTERS READY --- 2')
+                // console.log('------thisloadmore3')
                 this.setState({
                     dataSource: this.buildDataSource(newDataSource, [], plannedTransactions),
+                    // isLoading: false,
+                    isFiltering: false,
                     filters,
-                });
+                }, canLoadMore ? this.loadMore : undefined);
             }
         } else {
+            // console.log('FILTERS READY --- 3')
             this.setState({
                 dataSource: this.buildDataSource(transactions, [], newDataSource),
+                // isLoadingMoreDebounced: false,
+                isFiltering: false,
                 filters,
             });
         }
@@ -929,6 +1049,9 @@ class EventsView extends Component<Props, State> {
         keys.forEach((k) => {
             newFilters[k] = undefined;
         });
+
+        // console.log('filterremove', filters, newFilters)
+
         this.applyFilters(newFilters);
     };
 
@@ -957,7 +1080,11 @@ class EventsView extends Component<Props, State> {
 
         Navigator.showModal<EventsFilterModalProps>(AppScreens.Modal.FilterEvents, {
             currentFilters: filters ?? {},
-            onApply: this.applyFilters,
+            onApply: filterProps => {
+                // First make sure everything becomes invisible
+                // console.log('apply filters', filterProps);
+                return this.applyFilters(filterProps);
+            },
         });
     };
 
@@ -974,18 +1101,27 @@ class EventsView extends Component<Props, State> {
                     }}
                 />
                 <ImageBackground
-                    source={StyleService.getImage('BackgroundShapes')}
-                    imageStyle={AppStyles.BackgroundShapes}
+                    resizeMode="cover"
+                    source={
+                        StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
+                    }
                     style={[AppStyles.contentContainer, AppStyles.padding]}
                 >
                     <Image style={AppStyles.emptyIcon} source={StyleService.getImage('ImageNoEvents')} />
-                    <Text style={AppStyles.emptyText}>{Localize.t('events.emptyEventsNoAccount')}</Text>
+                    <Spacer size={10} />
+                    <Text style={[
+                        AppStyles.emptyText,
+                        AppStyles.p,
+                    ]}>{Localize.t('events.emptyEventsNoAccount')}</Text>
                     <Button
                         testID="add-account-button"
                         label={Localize.t('home.addAccount')}
                         icon="IconPlus"
                         iconStyle={AppStyles.imgColorWhite}
-                        rounded
+                        nonBlock
+                        style={[
+                            AppStyles.marginBottom,
+                        ]}
                         onPress={this.onAddAccountPress}
                     />
                 </ImageBackground>
@@ -1005,7 +1141,17 @@ class EventsView extends Component<Props, State> {
     };
 
     render() {
-        const { dataSource, isLoading, isLoadingMore, account, activeSection } = this.state;
+        const {
+            dataSource,
+            isLoading,
+            isLoadingMore,
+            account,
+            activeSection,
+            isLoadingMoreDebounced,
+            canLoadMore,
+            isFiltering,
+            // filters,
+        } = this.state;
         const { timestamp } = this.props;
 
         if (!account) {
@@ -1037,6 +1183,7 @@ class EventsView extends Component<Props, State> {
                 />
                 <SegmentButtons
                     activeButton={activeSection}
+                    key={`eventsview-segmentbuttons-${timestamp}`}
                     containerStyle={[
                         AppStyles.paddingHorizontalSml,
                         AppStyles.marginTopNegativeSml,
@@ -1058,13 +1205,25 @@ class EventsView extends Component<Props, State> {
                     ]}
                     onItemPress={this.onSectionChange}
                 />
+                {/* <Text>{isLoadingMore && 'isloadingmore'}</Text> */}
+                {/* <Text>{isLoadingMoreDebounced && 'isloadingmoredebounced'}</Text> */}
+                {/* <Text>{JSON.stringify(filters)}</Text> */}
+                <View style={[
+                    AppStyles.leftSelf,
+                    AppStyles.paddingHorizontalSml,
+                ]}>
+                    {this.renderListHeader()}
+                </View>
                 <EventsList
                     account={account}
-                    headerComponent={this.renderListHeader}
+                    key={`eventsview-eventslist-${timestamp}`}
+                    // headerComponent={this.renderListHeader}
                     dataSource={dataSource}
                     isLoading={isLoading}
+                    isFiltering={isFiltering}
+                    // forceFullLoader={isFiltering && dataSource.length === 0}
                     isVisible={this.isScreenVisible}
-                    isLoadingMore={isLoadingMore}
+                    isLoadingMore={isLoadingMore || (isLoadingMoreDebounced && canLoadMore)}
                     onEndReached={this.loadMore}
                     onRefresh={this.updateDataSource}
                     timestamp={timestamp}
