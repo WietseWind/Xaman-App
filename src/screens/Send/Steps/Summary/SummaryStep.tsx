@@ -456,7 +456,7 @@ class SummaryStep extends Component<Props, State> {
                     </View>
 
                     {/* Credentials */}
-                    {credentials && (
+                    {credentials && credentials.length > 0 && (
                         <View style={styles.rowItem}>
                             <View style={[
                                 styles.rowTitle,
