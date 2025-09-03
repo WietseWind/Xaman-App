@@ -28,6 +28,8 @@ import styles from './styles';
 /* Types ==================================================================== */
 import { Props } from './types';
 import { AppStyles } from '@theme/index';
+import LedgerService from '@services/LedgerService';
+import BigNumber from 'bignumber.js';
 
 enum ActionTypes {
     NEW_PAYMENT = 'NEW_PAYMENT',
@@ -217,7 +219,7 @@ class ActionButtons extends PureComponent<Props, State> {
         });
     };
 
-    onActionButtonPress = (actionType: ActionTypes) => {
+    onActionButtonPress = async (actionType: ActionTypes) => {
         const { item, account } = this.props;
 
         // NEW PAYMENT
@@ -340,10 +342,31 @@ class ActionButtons extends PureComponent<Props, State> {
                 break;
             case ActionTypes.CASH_CHECK:
                 if (item.Type === LedgerEntryTypes.Check) {
-                    Object.assign(craftedTxJson, {
-                        TransactionType: TransactionTypes.CheckCash,
-                        CheckID: item.Index,
-                    });
+                    if (
+                        item?.SendMax &&
+                        item?.SendMax?.issuer &&
+                        typeof item?.SendMax?.issuer === 'string' &&
+                        item?.SendMax?.value
+                    ) {
+                        const transferRate = await LedgerService.getAccountTransferRate(item?.SendMax?.issuer);
+                        if (transferRate) {
+                            Object.assign(craftedTxJson, {
+                                TransactionType: TransactionTypes.CheckCash,
+                                CheckID: item.Index,
+                                DeliverMin: {
+                                    ...item.SendMax,
+                                    value: new BigNumber(item.SendMax.value).minus(
+                                        new BigNumber(item.SendMax.value).times(transferRate).dividedBy(100),
+                                    ).toString(),
+                                },
+                            });
+                        } else {
+                            Object.assign(craftedTxJson, {
+                                TransactionType: TransactionTypes.CheckCash,
+                                CheckID: item.Index,
+                            });
+                        }
+                    }
                 }
                 break;
             case ActionTypes.CANCEL_TICKET:

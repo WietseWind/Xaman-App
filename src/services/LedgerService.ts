@@ -462,7 +462,7 @@ class LedgerService extends EventEmitter {
         })
             .then((resp) => {
                 if ('error' in resp) {
-                    this.logger.error('Unable to get account ripple_state entry', resp.error);
+                    this.logger.debug('Unable to get account ripple_state entry', resp.error);
                     return undefined;
                 }
 

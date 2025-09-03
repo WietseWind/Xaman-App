@@ -375,9 +375,14 @@ class SendView extends Component<Props, State> {
                     source!.address !== token.currency.issuer &&
                     destination!.address !== token.currency.issuer
                 ) {
-                    _tx.Flags = {
-                        tfPartialPayment: true,
-                    };
+                    // But not if sending as non payment (check/remit)
+                    if (txType === 'check' || txType === 'remit') {
+                        // Nope, don't add partial payment flag
+                    } else {
+                        _tx.Flags = {
+                            tfPartialPayment: true,
+                        };
+                    }
                 }
 
                 // set the amount

@@ -659,10 +659,11 @@ class TokenSettingsOverlay extends Component<Props, State> {
         let fixMethod;
 
         if (token.no_ripple === false) {
-            explanation = Localize.t('asset.ripplingMisconfigurationWarning', {
+            explanation = Localize.t('asset.ripplingMisconfigurationWarning2', {
                 token: NormalizeCurrencyCode(token.currency.currencyCode),
             });
-            fixMethod = this.disableRippling;
+            // fixMethod = this.disableRippling;
+            fixMethod = this.updateLineLimit; // This both sets the limit and disables rippling
         } else if (Number(token.limit) === 0) {
             explanation = Localize.t('asset.lineLimitMisconfigurationWarning');
             fixMethod = this.updateLineLimit;
@@ -892,7 +893,8 @@ class TokenSettingsOverlay extends Component<Props, State> {
                                         labelStyle={styles.infoText}
                                         label={
                                             !token.no_ripple
-                                                ? Localize.t('asset.dangerousConfigurationDetected')
+                                                ? Localize.t('asset.suboptimalConfigurationDetected')
+                                                // ^^ dangerousConfigurationDetected
                                                 : Localize.t('asset.restrictingConfigurationDetected')
                                         }
                                         actionButtonLabel={Localize.t('asset.moreInfoAndFix')}
