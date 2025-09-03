@@ -140,7 +140,7 @@ class RecipientStep extends Component<Props, State> {
         const { destination, setDestination } = this.context;
 
         // if search result only have one result select it
-        if (searchResult && searchResult.length === 1) {
+        if (searchResult && searchResult?.length === 1) {
             const onlyResult = searchResult[0];
             // select as destination
             if (!destination || (onlyResult.address !== destination.address && onlyResult.tag !== destination.tag)) {
@@ -268,7 +268,7 @@ class RecipientStep extends Component<Props, State> {
             searchText,
         });
 
-        if (searchText && searchText.length > 0) {
+        if (searchText && searchText?.length > 0) {
             // check if it's a valid address
             // eslint-disable-next-line prefer-regex-literals
             const possibleAccountAddress = new RegExp(
@@ -292,7 +292,7 @@ class RecipientStep extends Component<Props, State> {
     getSearchResultSource = (searchResult: any) => {
         const dataSource = [];
 
-        if (searchResult && searchResult.length > 0) {
+        if (searchResult && searchResult?.length > 0) {
             dataSource.push({
                 title: Localize.t('send.searchResults'),
                 data: uniqBy(searchResult, 'address'),
@@ -313,7 +313,7 @@ class RecipientStep extends Component<Props, State> {
             return n.address !== source?.address;
         });
 
-        if (myAccountList && myAccountList.length !== 0) {
+        if (myAccountList && myAccountList?.length !== 0) {
             dataSource.push({
                 title: Localize.t('account.myAccounts'),
                 data: flatMap(myAccountList, (a) => {
@@ -322,7 +322,7 @@ class RecipientStep extends Component<Props, State> {
             });
         }
 
-        if (contacts && contacts.length === 0) {
+        if (contacts && contacts?.length === 0) {
             dataSource.push({
                 title: Localize.t('global.contacts'),
                 data: [{ empty: true, title: Localize.t('send.noContact') }],
@@ -731,7 +731,12 @@ class RecipientStep extends Component<Props, State> {
 
             let notAuthorized = false;
             
-            if (source?.address && destination?.address) {
+            if (
+                source?.address &&
+                destination?.address &&
+                passedChecks.indexOf(PassableChecks.AMOUNT_CREATE_ACCOUNT) === -1
+                // ^^ If creating account, don't check authorisation
+            ) {
                 const isAuthorized = await NetworkService.send<DepositAuthorizedRequest, DepositAuthorizedResponse>({
                     command: 'deposit_authorized',
                     source_account: source.address,
@@ -745,16 +750,16 @@ class RecipientStep extends Component<Props, State> {
                         command: 'account_objects',
                         type: 'credential',
                         account: source.address,
-                    }) as any)?.account_objects.filter((o: { Flags: number }) => o.Flags > 0); // Must be accepted
+                    }) as any)?.account_objects?.filter((o: { Flags: number }) => o.Flags > 0); // Must be accepted
 
-                    if (ownedCredentials.length < 1) {
+                    if (ownedCredentials?.length < 1) {
                         // We can't satisfy this anyway, so let's just inform the user
                         notAuthorized = true;
                     }
 
                     // So this account has credentials, let's see if there's one that would satisfy the
                     // destination's PreAuth
-                    const credentialMatch = (await Promise.all(ownedCredentials.map((credential: {
+                    const credentialMatch = (await Promise.all(ownedCredentials?.map((credential: {
                         Issuer: string;
                         CredentialType: string;
                     }) => {
@@ -769,12 +774,12 @@ class RecipientStep extends Component<Props, State> {
                             },
                         });
                     })) as any)
-                        .filter((authorisation: {
+                        ?.filter((authorisation: {
                             node: {
                                 AuthorizeCredentials: { Credential: { Issuer: string; CredentialType: string } }[];
                             };
                         }) => authorisation?.node?.AuthorizeCredentials?.length > 0)
-                        .map((authorisation: {
+                        ?.map((authorisation: {
                             node: {
                                 AuthorizeCredentials: { Credential: { Issuer: string; CredentialType: string } }[];
                             };
@@ -782,7 +787,7 @@ class RecipientStep extends Component<Props, State> {
                         ?.[0];
 
                     if (credentialMatch) {
-                        const useCredential = ownedCredentials.filter((credential: {
+                        const useCredential = ownedCredentials?.filter((credential: {
                             Issuer: string;
                             CredentialType: string;
                         }) => {
@@ -822,7 +827,7 @@ class RecipientStep extends Component<Props, State> {
             };
         } catch (e) {
             Toast(Localize.t('send.unableGetRecipientAccountInfoPleaseTryAgain'));
-            // console.log(e);
+            // console.log(e.message, e.stack);
             return;
         } finally {
             this.setState({ isLoading: false });
