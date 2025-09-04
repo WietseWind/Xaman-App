@@ -254,6 +254,7 @@ class ApiService {
         const obj = JSON.parse(text);
 
         if (!obj || typeof obj !== 'object') {
+            this.logger.error(obj);
             throw ErrorMessages.invalidJson;
         }
 
