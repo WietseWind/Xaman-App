@@ -304,8 +304,8 @@ class Application {
                 if (Platform.OS === 'android') {
                     const isRooted = await IsDeviceRooted();
                     if (isRooted) {
-                        reject(new Error(ErrorMessages.runningOnRootedDevice));
-                        return;
+                        // reject(new Error(ErrorMessages.runningOnRootedDevice));
+                        // return;
                     }
                 } else if (Platform.OS === 'ios') {
                     if (process?.env?.NODE_ENV === 'development') {
@@ -314,7 +314,8 @@ class Application {
                         const isJailBroken = await IsDeviceJailBroken();
 
                         if (isJailBroken) {
-                            reject(new Error(ErrorMessages.runningOnJailBrokenDevice));
+                            // console.log('isJailBroken', isJailBroken);
+                            // reject(new Error(ErrorMessages.runningOnJailBrokenDevice));
                             return;
                         }
                     }
