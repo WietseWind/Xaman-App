@@ -348,6 +348,17 @@ class NetworkService extends EventEmitter {
     }> => {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
+            const defaultFee = () => {
+                resolve(
+                    NormalizeFeeDataSet({
+                        drops: {
+                            base_fee: '20',
+                        },
+                        fee_hooks_feeunits: '20',
+                    }),
+                );
+            };
+
             try {
                 const request = {
                     command: 'fee',
@@ -358,18 +369,26 @@ class NetworkService extends EventEmitter {
                         tx_blob: PrepareTxForHookFee(txJson, this.getNetworkDefinitions(), this.getNetworkId()),
                     });
                 }
+
+                const t = setTimeout(defaultFee, 10_000);
                 const resp = await this.send<FeeRequest, FeeResponse>(request);
 
                 if ('error' in resp) {
+                    this.logger.error('getAvailableNetworkFee (pre)', resp.error);
+                    clearTimeout(t);
+                    defaultFee();
                     throw new Error(
                         `Could not reliably detect fees (${resp.error || 'unknown error type'}), message: ${resp.error_exception || 'unknown error message'}`,
                     );
                 }
 
+                clearTimeout(t);
+
                 resolve(NormalizeFeeDataSet(resp));
             } catch (error) {
                 this.logger.error('getAvailableNetworkFee', error);
-                reject(error);
+                defaultFee();
+                // reject(error);
             }
         });
     };
