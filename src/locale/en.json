@@ -149,6 +149,7 @@
     "chain": "Chain",
     "signing": "Signing",
     "paymentChannelAuthorize": "Payment Channel Authorize",
+    "txvalidationerr": "Transaction validation error (timeout): could not reliably reach the network to validate the transaction",
     "issuer": "Issuer",
     "inform": "Inform",
     "accept": "Accept",

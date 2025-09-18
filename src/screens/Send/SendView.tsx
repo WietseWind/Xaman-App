@@ -47,12 +47,16 @@ import { StepsContext } from './Context';
 // style
 import styles from './styles';
 
+import LoggerService, { LoggerInstance } from '@services/LoggerService';
+
 /* types ==================================================================== */
 import { Steps, Props, State, FeeItem } from './types';
 
 /* Component ==================================================================== */
 class SendView extends Component<Props, State> {
     static screenName = AppScreens.Transaction.Payment;
+
+    private logger: LoggerInstance;
 
     private closeTimeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -73,6 +77,8 @@ class SendView extends Component<Props, State> {
         const RemitWithSigMixin = SignMixin(Remit);
 
         // console.log('SendView constructor')
+
+        this.logger = LoggerService.createLogger('SendView');
 
         this.state = {
             currentStep: Steps.Details,
@@ -330,6 +336,8 @@ class SendView extends Component<Props, State> {
             credentials,
         } = this.state;
 
+        this.logger.debug('Sending...');
+
         this.setState({
             isLoading: true,
         });
@@ -339,6 +347,8 @@ class SendView extends Component<Props, State> {
                 .toLocaleLowerCase();
             const _tx = txType === 'remit' ? remit : txType === 'check' ? check : payment;
 
+            this.logger.debug(`Sending TXType: ${txType}`);
+
             // set values to the payment transaction
 
             // set source account
@@ -346,8 +356,10 @@ class SendView extends Component<Props, State> {
 
             // set the destination
             _tx.Destination = destination!.address;
+            this.logger.debug(`Setting destination account: ${destination?.address}`);
 
             if (typeof destination?.tag !== 'undefined') {
+                this.logger.debug(`Setting destination tag: ${destination.tag}`);
                 _tx.DestinationTag = Number(destination.tag);
             }
 
@@ -358,16 +370,20 @@ class SendView extends Component<Props, State> {
                     currency: NetworkService.getNativeAsset(),
                     value: amount,
                 };
-                if (_tx instanceof Payment) {
-                    _tx.Amount = am;
-                }
+                this.logger.debug(`Setting token: ${am.currency}`);
+
                 if (_tx instanceof CheckCreate) {
                     _tx.SendMax = am;
-                }
-                if (_tx instanceof Remit) {
+                    this.logger.debug('Check');
+                } else if (_tx instanceof Remit) {
                     _tx.Amounts = [ am ];
+                    this.logger.debug('Remit');
+                } else {
+                    _tx.Amount = am;
+                    this.logger.debug('Payment');
                 }
             } else {
+                this.logger.debug('IOU');
                 // IOU
                 // if issuer has transfer fee and sender/destination is not issuer, add partial payment flag
                 if (
@@ -392,22 +408,23 @@ class SendView extends Component<Props, State> {
                     value: amount,
                 };
 
-                if (_tx instanceof Payment) {
-                    _tx.Amount = am;
-                }
                 if (_tx instanceof CheckCreate) {
                     _tx.SendMax = am;
-                }
-                if (_tx instanceof Remit) {
+                } else if (_tx instanceof Remit) {
                     _tx.Amounts = [ am ];
+                } else {
+                    _tx.Amount = am;
                 }
             }
 
+            this.logger.debug('Calc fee');
             // set the calculated and selected fee
             _tx.Fee = {
                 currency: NetworkService.getNativeAsset(),
                 value: new AmountParser(selectedFee!.value).dropsToNative().toFixed(),
             };
+
+            this.logger.debug(`Fee ${_tx.Fee.value}`);
 
             // set memo if any
             if (memo) {
@@ -425,19 +442,49 @@ class SendView extends Component<Props, State> {
             // validate payment for all possible mistakes
             // console.log(txType, payment, check, remit)
 
-            if (txType === 'payment') {
-                await PaymentValidation(payment);
-            }
+            this.logger.debug('Pre validation');
+            let didTimeout = false;
+            const validationTimeout = setTimeout(() => {
+                this.logger.error(`Timeout: (${txType.toUpperCase()}) validation @ SendView`);
+                didTimeout = true;
+                Navigator.showAlertModal({
+                    type: 'error',
+                    text: Localize.t('global.txvalidationerr'),
+                    buttons: [
+                        {
+                            text: Localize.t('global.ok'),
+                            onPress: () => {},
+                            light: false,
+                        },
+                    ],
+                });
+            }, 15_000);
+
             if (txType === 'check') {
+                this.logger.debug('Validation Check');
                 await CheckCreateValidation(check);
-            }
-            if (txType === 'remit') {
+                clearTimeout(validationTimeout);
+            } else if (txType === 'remit') {
+                this.logger.debug('Validation Remit');
                 await RemitValidation(remit);
+                clearTimeout(validationTimeout);
+            } else {
+                this.logger.debug('Validation Payment');
+                await PaymentValidation(payment);
+                clearTimeout(validationTimeout);
+            }
+
+            this.logger.debug('Validation Done');
+
+            if (didTimeout) {
+                return;
             }
 
             // sign the transaction and then submit
             await _tx.sign(source!).then(this.submit);
         } catch (error: any) {
+            this.logger.debug('SendView payment error', error);
+
             if (error) {
                 Navigator.showAlertModal({
                     type: 'error',
