@@ -9,13 +9,19 @@ import Localize from '@locale';
 
 import Payment from './Payment.class';
 
+import LoggerService, { LoggerInstance } from '@services/LoggerService';
+
 /* Types ==================================================================== */
 import { ValidationType } from '@common/libs/ledger/factory/types';
+
+const log: LoggerInstance = LoggerService.createLogger('PayValLogger');
 
 /* Validation ==================================================================== */
 const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
+        log.debug('PaymentValidation');
+
         try {
             // ignore validation if transaction including Path
             if (tx.Paths) {
@@ -23,12 +29,15 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                 return;
             }
 
+            log.debug('PaymentValidation#1');
+
             // check if amount is present
             if (!tx.Amount || !tx.Amount?.value || tx.Amount?.value === '0') {
                 reject(new Error(Localize.t('send.pleaseEnterAmount')));
                 return;
             }
 
+            log.debug('PaymentValidation#2', tx.Amount);
             // ===== check if recipient have proper TrustLine when delivering IOU =====
             // Note: ignore if sending to the issuer
             if (tx.Amount.currency !== NetworkService.getNativeAsset() && tx.Amount.issuer !== tx.Destination) {
@@ -55,12 +64,15 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                 NativeAmount = tx.Amount;
             }
 
+            log.debug('PaymentValidation#4');
+
             if (NativeAmount) {
+                log.debug('PaymentValidation#5');
                 // ===== check balance =====
                 try {
                     // fetch fresh account balance from ledger
                     const availableBalance = await LedgerService.getAccountAvailableBalance(tx.Account);
-
+                    log.debug('PaymentValidation#6');
                     if (Number(NativeAmount.value) > Number(availableBalance)) {
                         reject(
                             new Error(
@@ -73,10 +85,13 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                         return;
                     }
                 } catch (e) {
+                    log.debug('PaymentValidation#7');
                     reject(new Error(Localize.t('account.unableGetAccountInfo')));
                     return;
                 }
             }
+
+            log.debug('PaymentValidation#8');
 
             let IOUAmount: AmountType | undefined;
 
@@ -88,6 +103,7 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
             }
 
             if (IOUAmount) {
+                log.debug('PaymentValidation#9');
                 // ===== check balances =====
                 // sender is not issuer
                 if (IOUAmount.issuer !== tx.Account) {
@@ -115,6 +131,8 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                         return;
                     }
 
+                    log.debug('PaymentValidation#10');
+
                     if (Number(IOUAmount.value) > Number(sourceLine.balance)) {
                         reject(
                             new Error(
@@ -129,6 +147,8 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                 } else {
                     // sender is the issuer
                     // check for exceed the TrustLine Limit on obligations
+                    log.debug('PaymentValidation#11');
+
                     const sourceLine = await LedgerService.getFilteredAccountLine(tx.Account, {
                         issuer: tx.Destination,
                         currency: IOUAmount.currency,
@@ -166,8 +186,11 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                 }
             }
 
+            log.debug('PaymentValidation#12');
+
             resolve();
         } catch (e) {
+            log.debug('PaymentValidation#13');
             reject(new Error(ErrorMessages.unexpectedValidationError));
         }
     });
