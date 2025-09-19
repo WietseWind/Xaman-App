@@ -347,7 +347,7 @@ class NetworkService extends EventEmitter {
         suggested: string;
     }> => {
         // eslint-disable-next-line no-async-promise-executor
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             const defaultFee = () => {
                 resolve(
                     NormalizeFeeDataSet({

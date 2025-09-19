@@ -203,7 +203,7 @@ class SendView extends Component<Props, State> {
             Sequence: 0,
         };
 
-        if (destination?.tag) {
+        if (destination && destination?.tag) {
             Object.assign(txJson, {
                 DestinationTag: Number(destination.tag),
             });
@@ -358,7 +358,7 @@ class SendView extends Component<Props, State> {
             _tx.Destination = destination!.address;
             this.logger.debug(`Setting destination account: ${destination?.address}`);
 
-            if (typeof destination?.tag !== 'undefined') {
+            if (destination && typeof destination?.tag !== 'undefined') {
                 this.logger.debug(`Setting destination tag: ${destination.tag}`);
                 _tx.DestinationTag = Number(destination.tag);
             }
