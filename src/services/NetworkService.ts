@@ -349,6 +349,11 @@ class NetworkService extends EventEmitter {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve) => {
             const defaultFee = () => {
+                this.logger.debug('Default fee fallback');
+
+                this.closeConnection();
+                this.reconnect();
+
                 resolve(
                     NormalizeFeeDataSet({
                         drops: {
@@ -370,7 +375,10 @@ class NetworkService extends EventEmitter {
                     });
                 }
 
-                const t = setTimeout(defaultFee, 10_000);
+                const t = setTimeout(defaultFee, 8_000);
+                // await new Promise((r) => {
+                //     setTimeout(r, 11_000);
+                // });
                 const resp = await this.send<FeeRequest, FeeResponse>(request);
 
                 if ('error' in resp) {
@@ -482,6 +490,7 @@ class NetworkService extends EventEmitter {
         try {
             if (this.connection) {
                 this.connection.close();
+                this.logger.debug('Closed connection to node');
             }
         } catch (error) {
             this.logger.error('Unable to close the connection', error);
@@ -495,6 +504,7 @@ class NetworkService extends EventEmitter {
         try {
             if (this.connection) {
                 this.connection.reinstate();
+                this.logger.debug('Reinstated connection to node');
             }
         } catch (error) {
             this.logger.error('Unable to reinstate the connection', error);
@@ -817,6 +827,11 @@ class NetworkService extends EventEmitter {
             assumeOfflineAfterSeconds: 9,
             connectAttemptTimeoutSeconds: 3,
         });
+
+        this.logger.debug('Connection created');
+        // setInterval(() => {
+        //     this.logger.debug('Connection status', this.connection?.getState().server.publicKey);
+        // }, 2000);
 
         this.connection.on('online', this.onConnect);
         this.connection.on('offline', this.onClose);
