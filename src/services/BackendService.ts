@@ -525,8 +525,33 @@ class BackendService {
             network: NetworkService.network?.key,
             payload: payloadUuid,
         };
-        const networkFees = await ApiService.fetch(Endpoints.ServiceFee, 'POST', null, body);
-        return networkFees;
+
+        try {
+            const pr = await Promise.race([
+                ApiService.fetch(Endpoints.ServiceFee, 'POST', null, body),
+                new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 6_000);
+                }),
+            ]);
+
+            if (pr && (pr as any)?.availableFees) {
+                return pr;
+            }
+        } catch (error) {
+            // No fee
+        }
+
+        // Default, so we know if we get a 6 drop Fee payment there has been a timeout on
+        // fetching the available fee.
+
+        return {
+            availableFees: [{ type: 'LOW', value: '6' }],
+            feeHooks: 0,
+            feePercentage: 0,
+            suggested: 'LOW',
+        };
     };
 
     /**
