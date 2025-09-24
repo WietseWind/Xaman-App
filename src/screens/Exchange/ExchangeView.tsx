@@ -29,6 +29,8 @@ import { IssuedCurrency } from '@common/libs/ledger/types/common';
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 import { CalculateAvailableBalance } from '@common/utils/balance';
 
+import { parseBalanceChanges } from 'ripple-lib-transactionparser';
+
 // components
 import {
     AmountInput,
@@ -52,6 +54,7 @@ import { ReviewTransactionModalProps } from '@screens/Modal/ReviewTransaction';
 // style
 import { AppColors, AppStyles } from '@theme';
 import styles from './styles';
+import LedgerService from '@services/LedgerService';
 
 /* types ==================================================================== */
 export interface Props {
@@ -134,6 +137,7 @@ class ExchangeView extends Component<Props, State> {
 
     updateOutcomes = (fadeEffect = true) => {
         const { direction, amount } = this.state;
+        const { account, token } = this.props;
 
         clearTimeout(this.timeout);
 
@@ -161,22 +165,123 @@ class ExchangeView extends Component<Props, State> {
             );
 
             try {
-                const liquidity = await this.ledgerExchange.getLiquidity(direction, Number(amount));
+                if (NetworkService.getNativeAsset() !== 'XRP') {
+                    // non XRP network, fallback to old liquidity calculation
+                    const liquidity = await this.ledgerExchange.getLiquidity(direction, Number(amount));
 
-                // this will make sure the latest call will apply
-                if (sequence === this.sequence && liquidity && this.mounted) {
-                    const { expected, minimum } = this.ledgerExchange.calculateOutcomes(amount, liquidity, direction);
-                    const exchangeRate = this.ledgerExchange.calculateExchangeRate(liquidity, direction);
+                    // this will make sure the latest call will apply
+                    if (sequence === this.sequence && liquidity && this.mounted) {
+                        const {
+                            expected,
+                            minimum,
+                        } = this.ledgerExchange.calculateOutcomes(amount, liquidity, direction);
+                        const exchangeRate = this.ledgerExchange.calculateExchangeRate(liquidity, direction);
+                        
+                        this.setState({
+                            liquidity,
+                            expectedOutcome: expected,
+                            minimumOutcome: minimum,
+                            exchangeRate,
+                        });
+                    }
+                } else {
+                    // XRP based network, use new liquidity simulation
 
-                    this.setState({
-                        liquidity,
-                        expectedOutcome: expected,
-                        minimumOutcome: minimum,
-                        exchangeRate,
-                    });
+                    const calcOutcome = async (seq = 0, amnt = 1) => {
+                        try {
+                            const r = {
+                                Flags: 262144 /* tfFillOrKill */ + 524288 /* tfSell */,
+                                TransactionType: TransactionTypes.OfferCreate,
+                                Fee: '50',
+                                [direction === 'SELL' ? 'TakerGets' : 'TakerPays']:
+                                    String(
+                                        direction === 'SELL'
+                                            ? Math.round(Number(amnt || 1) * 1000000)
+                                            : 1,
+                                    ),
+                                [direction !== 'SELL' ? 'TakerGets' : 'TakerPays']: {
+                                    issuer: token.currency.issuer,
+                                    currency: token.currency.currencyCode,
+                                    value: (direction === 'SELL'
+                                        ? '0.0000000000001'
+                                        : String(amnt || 1)).slice(0, 15),
+                                },
+                                Account: account.address,
+                            };
+                            // console.log(JSON.stringify(r, null, 2));
+                            const outcome = await LedgerService.simulateTransaction(r);
+
+                            const meta = (outcome as any)?.meta;
+                            const balanceChanges = parseBalanceChanges(meta);
+                            const myBalanceChanges = balanceChanges?.[account.address];
+                            if (myBalanceChanges) {
+                                const nonXrpChange = (Array.isArray(myBalanceChanges)
+                                    ? myBalanceChanges.filter(c => c.counterparty !== '')
+                                    : [])?.[0];
+
+                                const xrpChange = (Array.isArray(myBalanceChanges)
+                                    ? myBalanceChanges.filter(c => c.counterparty === '')
+                                    : [])?.[0];
+                                                            
+                                const xrpValue = Math.abs(Math.round(Number(xrpChange?.value || 0) * 1_000_000)) - 50;
+                                const nonXrpVal = Math.abs(Number(nonXrpChange.value));
+
+                                let rate = 0;
+                                if (nonXrpChange?.value && xrpValue) {
+                                    if (direction === 'SELL') {
+                                        rate = nonXrpVal / (xrpValue / 1_000_000) / 100;
+                                    } else {
+                                        rate = (xrpValue / 1_000_000) / nonXrpVal / 100;
+                                    }
+                                }
+                                if (nonXrpChange?.value) {
+                                    return `${seq}|${nonXrpVal}|${xrpValue}|${rate}`;
+                                }
+                            }
+                        } catch {
+                            //
+                        }
+                        
+                        return `${seq}|0|0|0`;
+                    };
+
+                    const [reqAmount, worstCaseAmount] = (await Promise.all([
+                        calcOutcome(sequence, Number(amount)),
+                        calcOutcome(sequence, Number(amount) * 0.95),
+                    ])).map(r => r.split('|'));
+
+                    if (
+                        Number(reqAmount[0]) === this.sequence &&
+                        Number(worstCaseAmount[0]) === this.sequence &&
+                        this.mounted &&
+                        Number(reqAmount[1]) > 0 &&
+                        Number(reqAmount[2]) > 0 &&
+                        Number(reqAmount[3]) > 0 &&
+                        Number(worstCaseAmount[1]) > 0 &&
+                        Number(worstCaseAmount[2]) > 0 &&
+                        Number(worstCaseAmount[3]) > 0
+                    ) {
+                        this.setState({
+                            expectedOutcome: (direction === 'SELL'
+                                ? reqAmount[1]
+                                : String(Number(reqAmount[2]) / 1_000_000)).slice(0, 12),
+                            minimumOutcome: (direction === 'SELL'
+                                ? worstCaseAmount[1]
+                                : String(Number(worstCaseAmount[2]) / 1_000_000)).slice(0, 12),
+                            exchangeRate: String(Math.round(Number(reqAmount[3]) * 100_000_000) / 1_000_000),
+                            liquidity: {
+                                rate: Number(reqAmount[3]),
+                                errors: [],
+                                safe: true,
+                            },
+                        });
+                    } else {
+                        // console.log('Error', reqAmount, worstCaseAmount, this.sequence, this.mounted)
+                    }
                 }
-            } catch {
+            } catch (e) {
                 // for consistently result if we cannot fetch the liquidity set it to undefined
+                // console.log(e)
                 this.setState({
                     expectedOutcome: '',
                     minimumOutcome: '',
@@ -290,25 +395,6 @@ class ExchangeView extends Component<Props, State> {
                 {
                     text: Localize.t('global.doIt'),
 
-                    onPress: this.showSlippageWarning,
-                    style: 'destructive',
-                },
-            ],
-            { type: 'default' },
-        );
-    };
-
-    showSlippageWarning = () => {
-        Prompt(
-            Localize.t('global.pleaseNote'),
-            Localize.t('exchange.slippageSpreadWarning', {
-                slippage: this.ledgerExchange.boundaryOptions.maxSlippagePercentage,
-            }),
-            [
-                { text: Localize.t('global.cancel') },
-                {
-                    text: Localize.t('exchange.iAcceptExchange'),
-
                     onPress: this.prepareAndSign,
                     style: 'destructive',
                 },
@@ -316,6 +402,25 @@ class ExchangeView extends Component<Props, State> {
             { type: 'default' },
         );
     };
+
+    // showSlippageWarning = () => {
+    //     Prompt(
+    //         Localize.t('global.pleaseNote'),
+    //         Localize.t('exchange.slippageSpreadWarning', {
+    //             slippage: this.ledgerExchange.boundaryOptions.maxSlippagePercentage,
+    //         }),
+    //         [
+    //             { text: Localize.t('global.cancel') },
+    //             {
+    //                 text: Localize.t('exchange.iAcceptExchange'),
+
+    //                 onPress: this.prepareAndSign,
+    //                 style: 'destructive',
+    //             },
+    //         ],
+    //         { type: 'default' },
+    //     );
+    // };
 
     prepareAndSign = async () => {
         const { account, token } = this.props;

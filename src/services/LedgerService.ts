@@ -48,6 +48,8 @@ import {
 import { LedgerEntry, RippleState, URIToken } from '@common/libs/ledger/types/ledger';
 import { IssuedCurrency } from '@common/libs/ledger/types/common';
 import { LedgerEntryTypes } from '@common/libs/ledger/types/enums';
+import { SimulateRequest } from '@common/libs/ledger/types/methods/submit';
+import { TransactionJson } from '@common/libs/ledger/types/transaction';
 
 /* Types  ==================================================================== */
 export type LedgerServiceEvent = {
@@ -135,6 +137,13 @@ class LedgerService extends EventEmitter {
             account,
             ledger_index: 'validated',
             signer_lists: false,
+        });
+    };
+
+    simulateTransaction = (tx: TransactionJson) => {
+        return NetworkService.send<SimulateRequest, SubmitResponse>({
+            command: 'simulate',
+            tx_json: tx,
         });
     };
 
