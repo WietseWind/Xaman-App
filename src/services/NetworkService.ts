@@ -206,7 +206,10 @@ class NetworkService extends EventEmitter {
      */
     onNetStateChange = (newState: NetStateStatus) => {
         // if new network state is connected, reconnect the socket
+        this.logger.debug('onNetStateChange', newState);
+
         if (newState === NetStateStatus.Connected) {
+            this.logger.debug('onNetStateChange - Reconnect');
             this.reconnect();
         } else {
             // no network connection, close the connection
@@ -222,8 +225,11 @@ class NetworkService extends EventEmitter {
      * on AppState change
      */
     onAppStateChange = (newState: AppStateStatus, prevState: AppStateStatus) => {
+        this.logger.debug('onAppStateChange', newState);
+
         // reconnect when app comes from idle state to active
         if (newState === AppStateStatus.Active && prevState === AppStateStatus.Inactive) {
+            this.logger.debug('onAppStateChange - Reconnect');
             this.reconnect();
         }
 
@@ -542,6 +548,20 @@ class NetworkService extends EventEmitter {
         // check if connection is initiated
         if (!this.connection) {
             throw new Error('connection instance is not initiated in NetworkService class.');
+        }
+
+        // TODO: reconnect stale connection
+        if (!this.connection) {
+            this.logger.debug('Sending to node - but no connection!?');
+        } else {
+            const latencyMax = Math.max(
+                this.connection?.getState()?.secLastContact || 0,
+                this.connection?.getState()?.latencyMs?.secAgo || 0,
+                this.connection?.getState()?.fee?.secAgo || 0,
+            );
+            if (latencyMax > 5) {
+                this.logger.debug('Sending to node, [high] latency max', latencyMax);
+            }
         }
 
         const payloadWithNetworkId = {
