@@ -341,9 +341,10 @@ const Navigator = {
                                 backgroundColor: 'transparent',
                                 drawBehind: true, // This is key
                             },
-                            navigationBar: {
-                                backgroundColor: 'transparent',
-                            },
+                            // THIS BELOW FUCKS UP ANDROID 9 AND LOWER - NO MODALS DISPLAYED
+                            // navigationBar: {
+                            //     backgroundColor: 'transparent',
+                            // },
                         },
                         options || {},
                     ),
