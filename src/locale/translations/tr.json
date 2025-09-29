@@ -149,6 +149,7 @@
     "chain": "Zincir",
     "signing": "İmzalanıyor",
     "paymentChannelAuthorize": "Payment Channel Authorize",
+    "txvalidationerr": "Transaction validation error (timeout): could not reliably reach the network to validate the transaction",
     "issuer": "Piyasaya Sunan",
     "inform": "Inform",
     "accept": "Kabul Et",
@@ -1345,6 +1346,21 @@
     "theCredentialTypeIs": "The credential type is %{type}. ",
     "theCredentialUriIs": "The credential URI is %{uri}.",
     "paymentBeingUsed": "This transaction automatically uses a valid Credential you own to authorize this transaction."
+  },
+  "mptokenIssuance": {
+    "event": "MPToken Issuance",
+    "explain": "This is an MPToken Issuance. Other accounts can now Authorize this MPToken to be sent to them, after which MPTokens can be issued by sending a payment.",
+    "delete": "Remove Issuance",
+    "issue": "Issue MPT",
+    "explainerTitle": "MPToken details"
+  },
+  "mptoken": {
+    "loading": "Loading MPT details...",
+    "event": "MPToken",
+    "eventAuthOnly": "MPToken Authorization",
+    "explain": "This is an MPToken, issued by %{issuer}.",
+    "explainAuthOnly": "This is an MPToken Authorization: you are not holding the MPToken yet, but did authorize this Token to be sent to you.",
+    "delete": "Remove Authorization"
   },
   "moment": {
     "calendar": {
