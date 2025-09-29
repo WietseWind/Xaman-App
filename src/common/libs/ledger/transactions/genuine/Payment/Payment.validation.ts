@@ -40,7 +40,12 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
             log.debug('PaymentValidation#2', tx.Amount);
             // ===== check if recipient have proper TrustLine when delivering IOU =====
             // Note: ignore if sending to the issuer
-            if (tx.Amount.currency !== NetworkService.getNativeAsset() && tx.Amount.issuer !== tx.Destination) {
+            if (
+                tx.Amount.currency !== NetworkService.getNativeAsset() &&
+                tx.Amount.issuer !== tx.Destination &&
+                !tx.Amount?.mpt_issuance_id
+            ) {
+                log.debug('PaymentValidation#3');
                 const destinationLine = await LedgerService.getFilteredAccountLine(tx.Destination, {
                     issuer: tx.Amount.issuer!,
                     currency: tx.Amount.currency,

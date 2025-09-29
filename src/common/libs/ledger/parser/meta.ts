@@ -17,6 +17,7 @@ import {
 /* Types ==================================================================== */
 import { BalanceChangeType, OfferStatus, OperationActions, OwnerCountChangeType } from './types';
 import { HookExecution } from '../types/common';
+import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 
 export type NodeWithDiffType =
     | (CreatedNode & {
@@ -43,8 +44,11 @@ export type QuantityType = {
 class Meta {
     nodes: NodeWithDiffType[];
     hookExecutions: HookExecution[];
+    meta: TransactionMetadata | Record<string, never>;
 
     constructor(meta: TransactionMetadata | Record<string, never>) {
+        this.meta = meta;
+
         this.nodes =
             meta?.AffectedNodes?.reduce((nodesWithDiffType, affectedNode) => {
                 if (typeof affectedNode === 'object' && Object.keys(affectedNode)[0]) {
@@ -124,6 +128,42 @@ class Meta {
 
         if (node.diffType === DiffType.DeletedNode && node.FinalFields?.Balance && node.PreviousFields?.Balance) {
             value = this.parseValue(node.FinalFields?.Balance).minus(this.parseValue(node.PreviousFields?.Balance));
+        }
+
+        if (node.diffType === DiffType.CreatedNode && node.NewFields?.MPTAmount) {
+            value = this.parseValue(node.NewFields.MPTAmount);
+        }
+
+        if (node.diffType === DiffType.ModifiedNode && node.FinalFields?.MPTAmount && node.PreviousFields?.MPTAmount) {
+            value = this.parseValue(node.FinalFields?.MPTAmount).minus(this.parseValue(node.PreviousFields?.MPTAmount));
+        }
+
+        if (node.diffType === DiffType.DeletedNode && node.FinalFields?.MPTAmount && node.PreviousFields?.MPTAmount) {
+            value = this.parseValue(node.FinalFields?.MPTAmount).minus(this.parseValue(node.PreviousFields?.MPTAmount));
+        }
+
+        if (node.diffType === DiffType.CreatedNode && node.NewFields?.OutstandingAmount) {
+            value = this.parseValue(node.NewFields.OutstandingAmount);
+        }
+
+        if (
+            node.diffType === DiffType.ModifiedNode &&
+            node.FinalFields?.OutstandingAmount &&
+            node.PreviousFields?.OutstandingAmount
+        ) {
+            value = this.parseValue(node.FinalFields?.OutstandingAmount).minus(
+                this.parseValue(node.PreviousFields?.OutstandingAmount),
+            );
+        }
+
+        if (
+            node.diffType === DiffType.DeletedNode &&
+            node.FinalFields?.OutstandingAmount &&
+            node.PreviousFields?.OutstandingAmount
+        ) {
+            value = this.parseValue(node.FinalFields?.OutstandingAmount).minus(
+                this.parseValue(node.PreviousFields?.OutstandingAmount),
+            );
         }
 
         return value === null ? null : value.isZero() ? null : value;
@@ -220,9 +260,9 @@ class Meta {
 
         // the balance is always from low node's perspective
         const result = {
-            address: fields.LowLimit.issuer,
+            address: fields.LowLimit.issuer || 'x',
             balance: {
-                issuer: fields.HighLimit.issuer,
+                issuer: fields.HighLimit.issuer || 'y',
                 currency: fields.Balance.currency,
                 value: value.absoluteValue().decimalPlaces(8).toString(10),
                 action: this.getOperationAction(value),
@@ -230,6 +270,59 @@ class Meta {
         };
 
         return [result, this.flipTrustlinePerspective(result, value)];
+    };
+
+    private parseMptQuantity = (
+        node: NodeWithDiffType,
+        valueCalculator: (node: NodeWithDiffType) => BigNumber | null,
+    ) => {
+        const value = valueCalculator(node);
+
+        if (value === null) {
+            return null;
+        }
+
+        const fields =
+            (node.diffType === DiffType.CreatedNode && node.NewFields) ||
+            ((node.diffType === DiffType.ModifiedNode || node.diffType === DiffType.DeletedNode) && node.FinalFields);
+
+        if (!fields) {
+            return null;
+        }
+
+        const decodedIssuer =
+            fields?.MPTokenIssuanceID && DecodeMPTokenIssuanceToIssuer(String(fields.MPTokenIssuanceID));
+
+        let tokenIssuance: any = this.nodes.filter((n) => n.LedgerEntryType === LedgerEntryTypes.MPTokenIssuance)?.[0];
+
+        if (this.meta?._attachments) {
+            if (this.meta._attachments?.MPTokenIssuance) {
+                tokenIssuance = { FinalFields: this.meta._attachments?.MPTokenIssuance };
+            }
+        }
+
+        let assetScale = 1;
+        if (tokenIssuance && (tokenIssuance as any)?.FinalFields && (tokenIssuance as any)?.FinalFields?.AssetScale) {
+            assetScale = (tokenIssuance as any)?.FinalFields?.AssetScale;
+        }
+
+        // the balance is always from low node's perspective
+        return {
+            address: fields?.Account || fields?.Issuer || '',
+            balance: {
+                issuer: fields?.Issuer || decodedIssuer || '',
+                currency: '',
+                value: value
+                    .absoluteValue()
+                    .dividedBy(assetScale > 1 ? 10 ** assetScale : 1)
+                    .decimalPlaces(8)
+                    .toString(10),
+                action:
+                    decodedIssuer === fields?.Account || fields?.Issuer || ''
+                        ? OperationActions.DEC
+                        : OperationActions.INC,
+            },
+        };
     };
 
     parseOfferStatus = (node: NodeWithDiffType): OfferStatus => {
@@ -297,6 +390,12 @@ class Meta {
         const values = this.nodes.map((node) => {
             if (node.LedgerEntryType === LedgerEntryTypes.AccountRoot) {
                 return [this.parseNativeQuantity(node, this.computeBalanceChange)];
+            }
+            if (node.LedgerEntryType === LedgerEntryTypes.MPToken) {
+                return [this.parseMptQuantity(node, this.computeBalanceChange)];
+            }
+            if (node.LedgerEntryType === LedgerEntryTypes.MPTokenIssuance) {
+                return [this.parseMptQuantity(node, this.computeBalanceChange)];
             }
             if (node.LedgerEntryType === LedgerEntryTypes.RippleState) {
                 return this.parseTrustlineQuantity(node, this.computeBalanceChange);

@@ -1,4 +1,5 @@
 export { default as ActionButtonsWidget } from './ActionButtons';
+export { default as MPTWidget } from './MPTWidget';
 export { default as ExplainWidget } from './Explain';
 export { default as FeeWidget } from './Fee';
 export { default as TransferRateWidget } from './TransferRate';

@@ -237,7 +237,7 @@ class TransactionItem extends Component<Props, State> {
                 .flat().filter(f => typeof f === 'object')
                 .map(f => Object.values(f))
                 .flat().filter(f => typeof f === 'object')
-                .map(f => Object.values(f) as any)
+                .map(f => Object.values(f || {}) as any)
                 .flat().filter(f => typeof f.AMMID === 'string' && typeof f.Account === 'string')
                 .map(f => f.Account)
                 .map(issuer => trustLine.findBy('currency.issuer', issuer)?.[0])

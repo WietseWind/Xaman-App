@@ -10,6 +10,8 @@ import Localize from '@locale';
 import styles from '../styles';
 
 import { TemplateProps } from '../types';
+import { AccountElement } from '@components/Modules';
+import { AppStyles } from '@theme/index';
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
     transaction: Clawback;
@@ -30,6 +32,20 @@ class ClawbackTemplate extends Component<Props, State> {
 
         return (
             <>
+                {transaction.Holder && (
+                    <>
+                        <View style={styles.label}>
+                            <Text style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorGrey]}>
+                                {Localize.t('global.holder')}
+                            </Text>
+                        </View>
+                        <AccountElement
+                            address={transaction.Holder}
+                            containerStyle={[styles.contentBox, styles.addressContainer]}
+                        />
+                    </>
+                )}
+
                 <Text style={styles.label}>{Localize.t('global.amount')}</Text>
                 <View style={styles.contentBox}>
                     <AmountText

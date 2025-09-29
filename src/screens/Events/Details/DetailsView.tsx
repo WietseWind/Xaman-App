@@ -185,6 +185,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             'WarningsWidget',
             'IdentifierWidget',
             'ExplainWidget',
+            'MPTWidget',
             'FlagsWidget',
             'InvoiceIdWidget',
             'HookDetailsWidget',

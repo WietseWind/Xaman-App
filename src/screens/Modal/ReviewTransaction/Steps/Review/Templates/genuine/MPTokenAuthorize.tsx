@@ -11,6 +11,7 @@ import Localize from '@locale';
 import styles from '../styles';
 
 import { TemplateProps } from '../types';
+import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -37,6 +38,16 @@ class MPTokenAuthorizeTemplate extends Component<Props, State> {
                         <Text style={styles.label}>{Localize.t('global.holder')}</Text>
                         <AccountElement
                             address={transaction.Holder}
+                            containerStyle={[styles.contentBox, styles.addressContainer]}
+                        />
+                    </>
+                )}
+
+                {!isUndefined(transaction.MPTokenIssuanceID) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.issuer')}</Text>
+                        <AccountElement
+                            address={DecodeMPTokenIssuanceToIssuer(transaction.MPTokenIssuanceID)}
                             containerStyle={[styles.contentBox, styles.addressContainer]}
                         />
                     </>

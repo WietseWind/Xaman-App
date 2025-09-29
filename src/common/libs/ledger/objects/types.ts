@@ -1,4 +1,16 @@
-import { Offer, Escrow, Check, Ticket, PayChannel, NFTokenOffer, URIToken, Delegate, Credential } from '.';
+import {
+    Offer,
+    Escrow,
+    Check,
+    Ticket,
+    PayChannel,
+    NFTokenOffer,
+    URIToken,
+    Delegate,
+    Credential,
+    MPToken,
+    MPTokenIssuance,
+} from '.';
 
 export type LedgerObjects =
     | Offer
@@ -9,4 +21,6 @@ export type LedgerObjects =
     | NFTokenOffer
     | URIToken
     | Delegate
-    | Credential;
+    | Credential
+    | MPToken
+    | MPTokenIssuance;

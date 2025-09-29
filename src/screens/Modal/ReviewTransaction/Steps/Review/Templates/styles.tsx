@@ -34,6 +34,9 @@ const styles = StyleService.create({
     memoType: {
         color: StyleService.select({ light: '$blue', dark: '$textSecondary' }),
     },
+    correctMptPadding: {
+        marginHorizontal: -20,
+    },
     memoFormat: {
         fontWeight: '200',
         color: '$grey',
@@ -62,6 +65,9 @@ const styles = StyleService.create({
         paddingLeft: 5,
         marginBottom: 10,
     },
+    labelSmall: {
+        fontSize: AppFonts.subtext.size * 0.9,
+    },
     destinationAddress: {
         marginTop: 10,
         paddingTop: 10,
@@ -86,6 +92,9 @@ const styles = StyleService.create({
         fontWeight: '600',
         fontSize: AppFonts.base.size,
         color: '$textPrimary',
+    },
+    valueSmall: {
+        fontSize: AppFonts.base.size * 0.9,
     },
     valueSubtext: {
         fontFamily: AppFonts.base.familyMonoBold,

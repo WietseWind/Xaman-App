@@ -9,3 +9,5 @@ export * from './Ticket';
 export * from './URIToken';
 export * from './Delegate';
 export * from './Credential';
+export * from './MPToken';
+export * from './MPTokenIssuance';

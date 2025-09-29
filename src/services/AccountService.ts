@@ -325,7 +325,7 @@ class AccountService extends EventEmitter {
                         // native currency
                         if (typeof pair === 'string') {
                             pairs.push(NetworkService.getNativeAsset());
-                        } else if (typeof pair === 'object') {
+                        } else if (typeof pair === 'object' && 'currency' in pair) {
                             // IOU
                             pairs.push(
                                 await CurrencyRepository.upsert({

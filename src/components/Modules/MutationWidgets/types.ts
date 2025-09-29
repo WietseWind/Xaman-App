@@ -9,10 +9,14 @@ import { ComponentTypes } from '@services/NavigationService';
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
 
 import { type cachedTokenDetailsState } from '@components/Modules/EventsList/EventListItems/Transaction';
+import { TextStyle, ViewStyle } from 'react-native';
 
 export interface Props {
     item: ((FallbackTransaction | Transactions) & MutationsMixinType) | LedgerObjects;
     account: AccountModel;
+    isPaymentScreen?: boolean;
+    labelStyle?: ViewStyle | ViewStyle[] | TextStyle | TextStyle[];
+    contentStyle?: ViewStyle | ViewStyle[] | TextStyle | TextStyle[];
     advisory?: string;
     explainer?: ExplainerAbstract<FallbackTransaction | Transactions | LedgerObjects>;
     componentType: ComponentTypes;

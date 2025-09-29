@@ -46,6 +46,8 @@ enum ActionTypes {
     CANCEL_TICKET = 'CANCEL_TICKET',
     DELETE_CREDENTIAL = 'DELETE_CREDENTIAL',
     ACCEPT_CREDENTIAL = 'ACCEPT_CREDENTIAL',
+    DELETE_MPT = 'DELETE_MPT',
+    REMOVE_MPT = 'REMOVE_MPT',
 }
 
 interface State {
@@ -87,6 +89,10 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('events.deleteCredential'), secondary: true };
             case ActionTypes.ACCEPT_CREDENTIAL:
                 return { label: Localize.t('events.acceptCredential'), secondary: false };
+            case ActionTypes.DELETE_MPT:
+                return { label: Localize.t('mptokenIssuance.delete'), secondary: true };
+            case ActionTypes.REMOVE_MPT:
+                return { label: Localize.t('mptoken.delete'), secondary: true };
             default:
                 return null;
         }
@@ -164,6 +170,14 @@ class ActionButtons extends PureComponent<Props, State> {
                     if (item.Subject === account.address && !item.Flags?.lsfAccepted) {
                         availableActions.push(ActionTypes.ACCEPT_CREDENTIAL);
                     }
+                }
+                break;
+            case LedgerEntryTypes.MPTokenIssuance:
+                availableActions.push(ActionTypes.DELETE_MPT);
+                break;
+            case LedgerEntryTypes.MPToken:
+                if (!item?.MPTAmount) {
+                    availableActions.push(ActionTypes.REMOVE_MPT);
                 }
                 break;
             case LedgerEntryTypes.Delegate:
@@ -320,6 +334,24 @@ class ActionButtons extends PureComponent<Props, State> {
                         Account: item.Account,
                         Authorize: item.Authorize,
                         Permissions: [],
+                    });
+                }
+                break;
+            case ActionTypes.DELETE_MPT:
+                if (item.Type === LedgerEntryTypes.MPTokenIssuance) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.MPTokenIssuanceDestroy,
+                        MPTokenIssuanceID: item.mpt_issuance_id,
+                    });
+                }
+                break;
+            case ActionTypes.REMOVE_MPT:
+                if (item.Type === LedgerEntryTypes.MPToken) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.MPTokenAuthorize,
+                        Account: item.Issuer,
+                        MPTokenIssuanceID: item.MPTokenIssuanceID,
+                        Flags: 0x0001,
                     });
                 }
                 break;

@@ -20,6 +20,8 @@ import Ticket from './Ticket';
 import URIToken from './URIToken';
 import Delegate from './Delegate';
 import Credential from './Credential';
+import MPToken, { MPTokenFlags } from './MPToken';
+import MPTokenIssuance, { MPTokenIssuanceFlags } from './MPTokenIssuance';
 
 export type {
     AccountRoot,
@@ -51,4 +53,8 @@ export type {
     URIToken,
     Delegate,
     Credential,
+    MPToken,
+    MPTokenFlags,
+    MPTokenIssuance,
+    MPTokenIssuanceFlags,
 };

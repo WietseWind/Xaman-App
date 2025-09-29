@@ -10,17 +10,26 @@ export interface IssuedCurrency {
     issuer: string;
 }
 
-export type Currency = IssuedCurrency | NativeCurrency;
+export interface MPTokenCurrency {
+    mpt_issuance_id: string;
+}
+
+export type Currency = IssuedCurrency | NativeCurrency | MPTokenCurrency;
 
 export interface IssuedCurrencyAmount extends IssuedCurrency {
     value: string;
 }
 
-export type LedgerAmount = IssuedCurrencyAmount | string;
+export interface IssuedMPTAmount extends MPTokenCurrency {
+    value: string;
+}
+
+export type LedgerAmount = IssuedMPTAmount | IssuedCurrencyAmount | string;
 
 export interface Balance {
     currency: string;
     issuer?: string;
+    mpt_issuance_id?: string;
     value: string;
 }
 

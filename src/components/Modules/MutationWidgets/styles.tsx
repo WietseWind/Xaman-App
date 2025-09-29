@@ -11,6 +11,9 @@ const styles = StyleService.create({
         padding: 15,
         gap: AppSizes.paddingExtraSml,
     },
+    marginBottom: {
+        marginBottom: AppSizes.padding / 3.5,  
+    },
     advisoryContainer: {
         alignSelf: 'stretch',
         alignItems: 'center',
@@ -33,6 +36,10 @@ const styles = StyleService.create({
         paddingBottom: AppSizes.padding,
         paddingHorizontal: 25,
     },
+    detailContainerPS: {
+        paddingBottom: 0,
+        paddingHorizontal: 0,
+    },
     warningsContainer: {
         paddingHorizontal: 25,
         paddingBottom: 25,
@@ -50,6 +57,12 @@ const styles = StyleService.create({
         fontFamily: AppFonts.base.familyBold,
         fontSize: AppFonts.base.size,
         marginBottom: 8,
+        color: '$textPrimary',
+    },
+    detailsLabelSubText: {
+        fontFamily: AppFonts.base.familyBold,
+        fontSize: AppFonts.base.size * 0.9,
+        marginBottom: 0,
         color: '$textPrimary',
     },
     detailsValueText: {

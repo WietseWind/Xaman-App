@@ -111,6 +111,9 @@ export enum LedgerEntryTypes {
     Delegate = 'Delegate',
     Credential = 'Credential',
     DID = 'DID',
+    MPTokenIssuance = 'MPTokenIssuance',
+    MPToken = 'MPToken',
+    Remark = 'Remark',
 }
 
 /**

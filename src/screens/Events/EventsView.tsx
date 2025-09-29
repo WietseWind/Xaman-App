@@ -22,7 +22,7 @@ import { Navigator } from '@common/helpers/navigator';
 import type { AccountTxTransaction } from '@common/libs/ledger/types/methods/accountTx';
 import { LedgerObjectFactory, TransactionFactory } from '@common/libs/ledger/factory';
 import { TransactionTypes, LedgerEntryTypes } from '@common/libs/ledger/types/enums';
-import { NFTokenOffer } from '@common/libs/ledger/objects';
+import { MPToken, NFTokenOffer } from '@common/libs/ledger/objects';
 import { Payload } from '@common/libs/payload';
 
 import { LedgerObjects } from '@common/libs/ledger/objects/types';
@@ -95,6 +95,11 @@ enum DataSourceType {
     PENDING_REQUESTS = 'PENDING_REQUESTS',
     OWNED_OBJECTS = 'OWNED_OBJECTS',
 }
+
+/* Cache ==================================================================== */
+
+// console.log('eventscache')
+const EventCache: Record<string, any> = {};
 
 /* Component ==================================================================== */
 class EventsView extends Component<Props, State> {
@@ -316,6 +321,75 @@ class EventsView extends Component<Props, State> {
         return 'N/A';
     };
 
+    enrichIncompleteObjects = async (r: LedgerEntry[] = []) => {
+        if (r?.[0]) {
+            await Promise.all(r.map(async (___na, ri) => {
+                if (r[ri]?.LedgerEntryType === 'Credential') {
+                    if (r[ri]?.PreviousTxnLgrSeq) {
+                        try {
+                            const o = EventCache?.[r[ri].PreviousTxnLgrSeq] ?? await LedgerService.getLedgerEntry({
+                                command: 'ledger',
+                                ledger_index: r[ri].PreviousTxnLgrSeq,
+                            });
+                            const { close_time_iso } = (o as any)?.ledger || {};
+                            Object.assign(EventCache, { [r[ri].PreviousTxnLgrSeq]: o });
+                            Object.assign(r[ri], {
+                                Date: close_time_iso,
+                            });
+                        } catch (e) {
+                            // console.log('Error fetching Credential data', e);
+                        }
+                    }
+                }
+
+                if (r[ri]?.LedgerEntryType === 'MPToken') {
+                    try {
+                        const [issuance, ledger] = await Promise.all([
+                            EventCache?.[(r[ri] as unknown as MPToken)?.MPTokenIssuanceID] ??
+                            LedgerService.getLedgerEntry({
+                                command: 'ledger_entry',
+                                ledger_index: 'validated',
+                                mpt_issuance: (r[ri] as unknown as MPToken)?.MPTokenIssuanceID,
+                            }),
+                            EventCache?.[r[ri].PreviousTxnLgrSeq] ??
+                            LedgerService.getLedgerEntry({
+                                command: 'ledger',
+                                ledger_index: r[ri].PreviousTxnLgrSeq,
+                            }),
+                        ]);
+
+                        Object.assign(EventCache, { [(r[ri] as unknown as MPToken)?.MPTokenIssuanceID]: issuance });
+                        Object.assign(EventCache, { [r[ri].PreviousTxnLgrSeq]: ledger });
+
+                        const { close_time_iso } = (ledger as any)?.ledger || {};
+                        if (close_time_iso) {
+                            // console.log('__ledger', ledger)
+                            Object.assign(r[ri], {
+                                Date: close_time_iso,
+                            });
+                        }
+
+                        if (issuance && (issuance as any)?.node) {
+                            // console.log('__issuance', issuance)
+                            const _MPTokenIssuanceID = (issuance as any)?.node || {};
+                            if (_MPTokenIssuanceID) {
+                                Object.assign(r[ri], {
+                                    _MPTokenIssuanceID,
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        // console.log('__Error fetching MPToken data', e);
+                    }
+                }
+
+                return r[ri];
+            }));
+        }
+
+        return r;
+    };
+
     fetchPlannedObjects = async (
         account: string,
         type: string,
@@ -335,24 +409,7 @@ class EventsView extends Component<Props, State> {
             }
 
             return account_objects.concat(combined);
-        }).then(async r => {
-            if (r?.[0]) {
-                if (r[0]?.LedgerEntryType === 'Credential') {
-                    if (r[0]?.PreviousTxnLgrSeq) {
-                        const o = await LedgerService.getLedgerEntry({
-                            command: 'ledger',
-                            ledger_index: r[0].PreviousTxnLgrSeq,
-                        });
-                        const { close_time_iso } = (o as any)?.ledger || {};
-                        Object.assign(r[0], {
-                            Date: close_time_iso,
-                        });
-                    }
-                }
-            }
-
-            return r;
-        });
+        }).then(this.enrichIncompleteObjects);
     };
 
     loadPlannedTransactions = () => {
@@ -406,7 +463,8 @@ class EventsView extends Component<Props, State> {
                 'ticket',
                 'payment_channel',
                 'delegate',
-                'credential',
+                'mptoken',
+                'mpt_issuance',
             ];
 
             // Create an array of promises, one for each object type
@@ -539,6 +597,34 @@ class EventsView extends Component<Props, State> {
                                 }
                             }
 
+                            const mptTokenAuth =
+                                transaction?.tx?.TransactionType === 'MPTokenAuthorize' &&
+                                    transaction.tx?.MPTokenIssuanceID
+                                    ? transaction.tx?.MPTokenIssuanceID
+                                    : null;
+
+                            const mptTokenPayment =
+                                transaction?.tx?.TransactionType === 'Payment' &&
+                                transaction.tx?.Amount &&
+                                typeof transaction.tx?.Amount !== 'string' &&
+                                (transaction.tx?.Amount as any)?.mpt_issuance_id
+                                    ? (transaction.tx?.Amount as any)?.mpt_issuance_id
+                                    : null;
+
+                            if (mptTokenAuth || mptTokenPayment) {                                
+                                const o = EventCache?.[mptTokenAuth || mptTokenPayment] ??
+                                    await LedgerService.getLedgerEntry({
+                                        command: 'ledger_entry',
+                                        ledger_index: 'validated',
+                                        mpt_issuance: mptTokenAuth || mptTokenPayment,
+                                    });
+                                Object.assign(EventCache, { [mptTokenAuth || mptTokenPayment]: o });
+                                if (!transaction.meta?._attachments) {
+                                    Object.assign(transaction.meta, { _attachments: {} });
+                                }
+                                Object.assign(transaction.meta._attachments, { MPTokenIssuance: o?.node });
+                            }
+
                             return typeof transaction.meta === 'object' &&
                                 (
                                     transaction?.meta.TransactionResult === 'tesSUCCESS' ||
@@ -552,9 +638,9 @@ class EventsView extends Component<Props, State> {
                     //     }) as AccountTxTransaction[],
                     // );
 
-                    let parsedList = flatMap(tesSuccessTransactions, (item) =>
-                        TransactionFactory.fromLedger(item, [MixingTypes.Mutation]),
-                    );
+                    let parsedList = flatMap(tesSuccessTransactions, (item) => {
+                        return TransactionFactory.fromLedger(item, [MixingTypes.Mutation]);
+                    });
 
                     // console.log('x1')
 
@@ -657,7 +743,6 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.Ticket,
                         LedgerEntryTypes.PayChannel,
                         LedgerEntryTypes.Delegate,
-                        // TODO: if not accepted yet
                         LedgerEntryTypes.Credential,
                         // LedgerEntryTypes.SignerList,
                         // LedgerEntryTypes.DepositPreauth,
@@ -786,6 +871,8 @@ class EventsView extends Component<Props, State> {
                 filter(plannedTransactions, (p) => {
                     const isValidType = [
                         LedgerEntryTypes.Credential,
+                        LedgerEntryTypes.MPTokenIssuance,
+                        LedgerEntryTypes.MPToken,
                         // ...TODO?
                         // LedgerEntryTypes.SignerList,
                         // LedgerEntryTypes.DepositPreauth,
