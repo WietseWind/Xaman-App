@@ -252,14 +252,15 @@ class AccountService extends EventEmitter {
      * Get normalized account lines
      */
     getNormalizedAccountLines = async (account: string): Promise<Partial<TrustLineModel>[]> => {
-        const [accountLines, accountObligations] = await Promise.all([
+        const [accountLines, accountObligations, mptokens] = await Promise.all([
             LedgerService.getFilteredAccountLines(account),
             LedgerService.getAccountObligations(account),
+            LedgerService.getAccountMPTFullDetails(account),
         ]);
 
         this.logger.debug('Getting Normalised Account Lines for ', account);
 
-        const combinedLines = [...accountLines, ...accountObligations];
+        const combinedLines = [...accountLines, ...accountObligations, ...mptokens];
 
         return Promise.all(
             combinedLines.map(async (line) => {

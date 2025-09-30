@@ -45,7 +45,7 @@ import {
     AMMInfoRequest,
     AMMInfoResponse,
 } from '@common/libs/ledger/types/methods';
-import { LedgerEntry, RippleState, URIToken } from '@common/libs/ledger/types/ledger';
+import { LedgerEntry, MPToken, MPTokenIssuance, RippleState, URIToken } from '@common/libs/ledger/types/ledger';
 import { IssuedCurrency } from '@common/libs/ledger/types/common';
 import { LedgerEntryTypes } from '@common/libs/ledger/types/enums';
 import { SimulateRequest } from '@common/libs/ledger/types/methods/submit';
@@ -332,6 +332,72 @@ class LedgerService extends EventEmitter {
                     this.logger.error('getAccountObligations', error);
                     return resolve([]);
                 });
+        });
+    };
+
+    /**
+     * Get account obligation lines
+     */
+    getAccountMPTFullDetails = async (
+        account: string,
+        marker?: string,
+        combined = [] as AccountLinesTrustline[],
+    ): Promise<AccountLinesTrustline[]> => {
+        return NetworkService.send({
+            command: 'account_objects',
+            account,
+            type: 'mptoken',
+        }).then(async (resp) => {
+            if ('error' in resp) {
+                this.logger.error('Unable to get mpt details state', resp.error);
+                return combined;
+            }
+
+            const { account_objects, marker: _marker } = resp as {
+                account_objects: MPToken[];
+                marker: string;
+            };
+
+            const accountLinesFormatted: AccountLinesTrustline[] = await Promise.all(
+                account_objects.map(async (mpt) => {
+                    const mpTokenIssuance: MPTokenIssuance = (
+                        (await NetworkService.send({
+                            command: 'ledger_entry',
+                            mpt_issuance: mpt.MPTokenIssuanceID,
+                        })) as any
+                    )?.node;
+
+                    let amount = Number(mpt?.MPTAmount || 0);
+                    let maxAmount = Number(mpTokenIssuance?.MaximumAmount || 0);
+
+                    if (mpTokenIssuance?.AssetScale && Number(mpTokenIssuance?.AssetScale) > 1) {
+                        amount /= 10 ** (mpTokenIssuance?.AssetScale || 1);
+                        maxAmount /= 10 ** (mpTokenIssuance?.AssetScale || 1);
+                    }
+
+                    return {
+                        account,
+                        currency: mpt.MPTokenIssuanceID,
+                        balance: String(amount),
+                        limit: String(maxAmount),
+                        limit_peer: `${maxAmount}|${JSON.stringify(mpTokenIssuance)}`,
+                        no_ripple: true,
+                        no_ripple_peer: false,
+                        freeze: false,
+                        obligation: false,
+                        quality_in: 0,
+                        quality_out: 0,
+                        authorized: true,
+                        peer_authorized: true,
+                    };
+                }),
+            );
+
+            if (_marker && _marker !== marker) {
+                return this.getAccountMPTFullDetails(account, _marker, accountLinesFormatted.concat(combined));
+            }
+
+            return accountLinesFormatted.concat(combined);
         });
     };
 

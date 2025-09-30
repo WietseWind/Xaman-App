@@ -165,23 +165,24 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
                         return;
                     }
 
-                    if (
-                        Number(IOUAmount.value) + Math.abs(Number(sourceLine.balance)) >
-                        Number(sourceLine.limit_peer)
-                    ) {
+                    /**
+                     * TODO: MPT: limit peer would be the amount max outstanding of the MPT
+                     */
+                    const limitPeer =
+                        String(sourceLine.limit_peer || '').split('|').length > 1
+                            ? Number(IOUAmount.value) + Math.abs(Number(sourceLine.balance)) // MPT
+                            : Number(sourceLine.limit_peer);
+
+                    if (Number(IOUAmount.value) + Math.abs(Number(sourceLine.balance)) > limitPeer) {
                         reject(
                             new Error(
                                 Localize.t('send.trustLineLimitExceeded', {
                                     balance: Localize.formatNumber(
                                         NormalizeAmount(Math.abs(Number(sourceLine.balance))),
                                     ),
-                                    peer_limit: Localize.formatNumber(NormalizeAmount(Number(sourceLine.limit_peer))),
+                                    peer_limit: Localize.formatNumber(NormalizeAmount(limitPeer)),
                                     available: Localize.formatNumber(
-                                        NormalizeAmount(
-                                            Number(
-                                                Number(sourceLine.limit_peer) - Math.abs(Number(sourceLine.balance)),
-                                            ),
-                                        ),
+                                        NormalizeAmount(Number(limitPeer - Math.abs(Number(sourceLine.balance)))),
                                     ),
                                 }),
                             ),

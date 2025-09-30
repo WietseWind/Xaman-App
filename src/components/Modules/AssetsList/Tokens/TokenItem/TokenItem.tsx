@@ -180,9 +180,20 @@ class TokenItem extends PureComponent<Props, State> {
                                     </View>
                                 )
                             }
+                            {
+                                token?.isMPToken() && (
+                                    <View style={styles.lpBadgeContainer}>
+                                        <Badge
+                                            label="MPT"
+                                            type={BadgeType.Planned}
+                                            containerStyle={styles.lpBadge}
+                                        />
+                                    </View>
+                                )
+                            }
                         </Text>
                         <Text numberOfLines={1} style={styles.issuerLabel}>
-                            {token.getFormattedIssuer()}
+                            {token.getFormattedIssuer(undefined, 16)}
                         </Text>
                     </View>
                 </View>

@@ -557,11 +557,25 @@ class RecipientStep extends Component<Props, State> {
                 token.currency.issuer !== destination.address &&
                 passedChecks.indexOf(PassableChecks.SEND_AS_ALT_TX) === -1
             ) {
-                const destinationLine = await LedgerService.getFilteredAccountLine(destination.address, {
-                    currency: token.currency.currencyCode,
-                    issuer: token.currency.issuer,
-                });
-
+                const mpTokenDetails = token.isMPToken()
+                    ? (await NetworkService.send({
+                        command: 'ledger_entry',
+                        mptoken: {
+                            mpt_issuance_id: token.currency.currencyCode,
+                            account: destination.address,
+                        },                        
+                    }) as any)?.node
+                    : null;
+                const destinationLine = token.isMPToken()
+                    ? {
+                        limit: 999999999,
+                        balance: mpTokenDetails?.MPTAmount || 1,
+                    }
+                    : await LedgerService.getFilteredAccountLine(destination.address, {
+                        currency: token.currency.currencyCode,
+                        issuer: token.currency.issuer,
+                    });
+                
                 // recipient does not have the proper trustline
                 const noTL = !destinationLine ||
                     (Number(destinationLine.limit) === 0 && Number(destinationLine.balance) === 0);

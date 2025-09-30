@@ -12,7 +12,7 @@ import { TrustLineRepository } from '@store/repositories';
 
 import { Payload, XAppOrigin } from '@common/libs/payload';
 
-import { Payment, TrustSet } from '@common/libs/ledger/transactions';
+import { MPTokenAuthorize, Payment, TrustSet } from '@common/libs/ledger/transactions';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
 import { MutationsMixinType, SignMixinType } from '@common/libs/ledger/mixin/types';
 
@@ -160,6 +160,14 @@ class TokenSettingsOverlay extends Component<Props, State> {
         // ignore obligation lines
         if (token.obligation) return Promise.resolve();
 
+        if (token?.isMPToken()) {
+            return new Promise(resolve => {
+                const balance = Number(token.balance);
+                this.setState({ latestLineBalance: balance, canRemove: balance === 0 });
+                resolve();
+            });
+        }
+
         return new Promise((resolve) => {
             LedgerService.getFilteredAccountLine(account.address, {
                 issuer: token.currency.issuer,
@@ -289,7 +297,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
 
         try {
             // there is dust balance in the account
-            if (latestLineBalance !== 0) {
+            if (latestLineBalance !== 0 && !token?.isMPToken()) {
                 Prompt(
                     Localize.t('global.warning'),
                     Localize.t('asset.trustLineDustRemoveWarning', {
@@ -324,16 +332,23 @@ class TokenSettingsOverlay extends Component<Props, State> {
                 transactionFlags |= 131072; // tfClearNoRipple
             }
 
-            const trustSet = new TrustSet({
-                TransactionType: TransactionTypes.TrustSet,
-                Account: account.address,
-                LimitAmount: {
-                    currency: token.currency.currencyCode,
-                    issuer: token.currency.issuer,
-                    value: 0,
-                },
-                Flags: transactionFlags,
-            });
+            const trustSet = token?.isMPToken()
+                ? new MPTokenAuthorize({
+                    TransactionType: TransactionTypes.MPTokenAuthorize,
+                    Account: account.address,
+                    Flags: 1,
+                    MPTokenIssuanceID: token.currency.currencyCode,
+                })
+                : new TrustSet({
+                    TransactionType: TransactionTypes.TrustSet,
+                    Account: account.address,
+                    LimitAmount: {
+                        currency: token.currency.currencyCode,
+                        issuer: token.currency.issuer,
+                        value: 0,
+                    },
+                    Flags: transactionFlags,
+                });
 
             const payload = Payload.build(trustSet.JsonForSigning);
 
@@ -695,7 +710,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
 
     canExchange = () => {
         const { token } = this.props;
-        return !token.obligation && !token.isLiquidityPoolToken();
+        return !token.obligation && !token.isLiquidityPoolToken() && !token?.isMPToken();
     };
 
     startTouch = (event: GestureResponderEvent) => {
@@ -907,27 +922,29 @@ class TokenSettingsOverlay extends Component<Props, State> {
 
                             <Spacer size={15} />
 
-                            <View style={[
-                                styles.buttonRow,
-                                styles.secondButtonRow,
-                            ]}>
-                                <RaisedButton
-                                    small
-                                    isDisabled={!this.canExchange()}
-                                    containerStyle={[
-                                        styles.exchangeButton,
-                                    ]}
-                                    icon="IconSwitchAccount"
-                                    iconSize={17}
-                                    iconPosition="left"
-                                    iconStyle={styles.exchangeButtonIcon}
-                                    label={Localize.t('global.exchange')}
-                                    textStyle={styles.exchangeButtonText}
-                                    onPress={this.onExchangePress}
-                                />
-                            </View>
+                            { !token?.isMPToken() && (
+                                <View style={[
+                                    styles.buttonRow,
+                                    styles.secondButtonRow,
+                                ]}>
+                                    <RaisedButton
+                                        small
+                                        isDisabled={!this.canExchange()}
+                                        containerStyle={[
+                                            styles.exchangeButton,
+                                        ]}
+                                        icon="IconSwitchAccount"
+                                        iconSize={17}
+                                        iconPosition="left"
+                                        iconStyle={styles.exchangeButtonIcon}
+                                        label={Localize.t('global.exchange')}
+                                        textStyle={styles.exchangeButtonText}
+                                        onPress={this.onExchangePress}
+                                    />
+                                </View>
+                            )}
                             {
-                                NetworkService.hasSwap() && (
+                                NetworkService.hasSwap() && !token?.isMPToken() && (
                                     <View style={[
                                         styles.buttonRow,
                                         styles.secondButtonRow,

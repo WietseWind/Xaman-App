@@ -28,7 +28,7 @@ import {
     Remit,
     RemitValidation,
 } from '@common/libs/ledger/transactions';
-import { Destination } from '@common/libs/ledger/parser/types';
+import { AmountType, Destination } from '@common/libs/ledger/parser/types';
 import { SignMixin } from '@common/libs/ledger/mixin';
 
 // components
@@ -216,11 +216,16 @@ class SendView extends Component<Props, State> {
             });
         } else {
             Object.assign(txJson, {
-                Amount: {
-                    currency: token.currency.currencyCode,
-                    issuer: token.currency.issuer,
-                    value: amount,
-                },
+                Amount: token?.isMPToken()
+                    ? {
+                        mpt_issuance_id: token.currency.currencyCode,
+                        value: amount,
+                    }
+                    : {
+                        currency: token.currency.currencyCode,
+                        issuer: token.currency.issuer,
+                        value: amount,
+                    },
             });
         }
 
@@ -401,19 +406,40 @@ class SendView extends Component<Props, State> {
                     }
                 }
 
-                // set the amount
-                const am = {
-                    currency: token.currency.currencyCode,
-                    issuer: token.currency.issuer,
-                    value: amount,
-                };
+                // set the amount, fix AssetScale for MPT
+                let mpTokenAmount = 0;
+                if (token?.isMPToken()) {
+                    try {
+                        const mptIssuanceDetails = JSON.parse(
+                            String(token?.limit_peer || '|{}').split('|')?.[1] || '{}',
+                        );
+                        if (mptIssuanceDetails && typeof mptIssuanceDetails === 'object') {
+                            if (mptIssuanceDetails?.AssetScale && Number(mptIssuanceDetails?.AssetScale || 0) > 1) {
+                                mpTokenAmount = Number(amount);
+                                mpTokenAmount *= 10 ** (mptIssuanceDetails?.AssetScale || 1);
+                            }
+                        }
+                    } catch {
+                        //
+                    }
+                }
+                const am = token?.isMPToken()
+                    ? {
+                        mpt_issuance_id: token.currency.currencyCode,
+                        value: String(mpTokenAmount || amount),
+                    }
+                    : {
+                        currency: token.currency.currencyCode,
+                        issuer: token.currency.issuer,
+                        value: amount,
+                    };
 
                 if (_tx instanceof CheckCreate) {
-                    _tx.SendMax = am;
+                    _tx.SendMax = am as AmountType;
                 } else if (_tx instanceof Remit) {
-                    _tx.Amounts = [ am ];
+                    _tx.Amounts = [ am as AmountType ];
                 } else {
-                    _tx.Amount = am;
+                    _tx.Amount = am as AmountType;
                 }
             }
 
