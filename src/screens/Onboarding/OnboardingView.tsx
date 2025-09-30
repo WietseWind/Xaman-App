@@ -53,7 +53,6 @@ class OnboardingView extends Component<Props, State> {
                             AppStyles.h4,
                             AppStyles.textCenterAligned,
                             AppStyles.strong,
-                            AppStyles.marginHorizontal,
                             AppStyles.marginBottomSml,
                         ]}>
                             {Localize.t('onboarding.v2main1')}
