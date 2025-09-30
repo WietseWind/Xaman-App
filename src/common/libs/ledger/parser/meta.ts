@@ -134,8 +134,10 @@ class Meta {
             value = this.parseValue(node.NewFields.MPTAmount);
         }
 
-        if (node.diffType === DiffType.ModifiedNode && node.FinalFields?.MPTAmount && node.PreviousFields?.MPTAmount) {
-            value = this.parseValue(node.FinalFields?.MPTAmount).minus(this.parseValue(node.PreviousFields?.MPTAmount));
+        if (node.diffType === DiffType.ModifiedNode && node.FinalFields?.MPTAmount) {
+            value = this.parseValue(node.FinalFields?.MPTAmount).minus(
+                this.parseValue(node.PreviousFields?.MPTAmount || 0),
+            );
         }
 
         if (node.diffType === DiffType.DeletedNode && node.FinalFields?.MPTAmount && node.PreviousFields?.MPTAmount) {
@@ -278,6 +280,8 @@ class Meta {
     ) => {
         const value = valueCalculator(node);
 
+        // console.log('node', node, 'value', value);
+
         if (value === null) {
             return null;
         }
@@ -307,22 +311,28 @@ class Meta {
         }
 
         // the balance is always from low node's perspective
-        return {
-            address: fields?.Account || fields?.Issuer || '',
-            balance: {
-                issuer: fields?.Issuer || decodedIssuer || '',
-                currency: '',
-                value: value
-                    .absoluteValue()
-                    .dividedBy(assetScale > 1 ? 10 ** assetScale : 1)
-                    .decimalPlaces(8)
-                    .toString(10),
-                action:
-                    decodedIssuer === fields?.Account || fields?.Issuer || ''
-                        ? OperationActions.DEC
-                        : OperationActions.INC,
+        // console.log(node);
+        // console.log(fields?.Account);
+        // console.log(fields?.Issuer);
+        // console.log(fields?.Account || fields?.Issuer);
+        return [
+            {
+                address: fields?.Account || fields?.Issuer || '',
+                balance: {
+                    issuer: fields?.Issuer || decodedIssuer || '',
+                    currency: '',
+                    value: value
+                        .absoluteValue()
+                        .dividedBy(assetScale > 1 ? 10 ** assetScale : 1)
+                        .decimalPlaces(8)
+                        .toString(10),
+                    action:
+                        decodedIssuer === fields?.Account || fields?.Issuer || ''
+                            ? OperationActions.DEC
+                            : OperationActions.INC,
+                },
             },
-        };
+        ];
     };
 
     parseOfferStatus = (node: NodeWithDiffType): OfferStatus => {
@@ -392,10 +402,10 @@ class Meta {
                 return [this.parseNativeQuantity(node, this.computeBalanceChange)];
             }
             if (node.LedgerEntryType === LedgerEntryTypes.MPToken) {
-                return [this.parseMptQuantity(node, this.computeBalanceChange)];
+                return this.parseMptQuantity(node, this.computeBalanceChange);
             }
             if (node.LedgerEntryType === LedgerEntryTypes.MPTokenIssuance) {
-                return [this.parseMptQuantity(node, this.computeBalanceChange)];
+                return this.parseMptQuantity(node, this.computeBalanceChange);
             }
             if (node.LedgerEntryType === LedgerEntryTypes.RippleState) {
                 return this.parseTrustlineQuantity(node, this.computeBalanceChange);

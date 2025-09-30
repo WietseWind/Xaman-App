@@ -71,14 +71,6 @@ class MPTWidget extends PureComponent<Props, State> {
             // return null;
         }
 
-        const assetScale = mpTokenIssuance?.AssetScale && mpTokenIssuance?.AssetScale > 1
-            ? mpTokenIssuance?.AssetScale
-            : 1;
-        
-        const scale = (amnt: number) => {
-            return amnt / (assetScale > 1 ? 10 ** (assetScale || 1) : 1);
-        };
-
         try {
             if (mpTokenIssuance?._object?._MPTokenIssuanceID) {
                 mpTokenIssuance = mpTokenIssuance?._object?._MPTokenIssuanceID;
@@ -86,6 +78,14 @@ class MPTWidget extends PureComponent<Props, State> {
         } catch {
             //
         }
+
+        const assetScale = mpTokenIssuance?.AssetScale && mpTokenIssuance?.AssetScale > 1
+            ? mpTokenIssuance?.AssetScale
+            : 1;
+        
+        const scale = (amnt: number) => {
+            return amnt / (assetScale > 1 ? 10 ** (assetScale || 1) : 1);
+        };
 
         return (
             <View style={isPaymentScreen ? styles.detailContainerPS : styles.detailContainer}>

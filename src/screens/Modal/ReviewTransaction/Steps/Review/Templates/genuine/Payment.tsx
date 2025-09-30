@@ -162,7 +162,7 @@ class PaymentTemplate extends Component<Props, State> {
 
     setIsReady = () => {
         const { payload, setReady } = this.props;
-        const { mptDetails, mptIssuanceDetails } = this.state;
+        const { mptIssuanceDetails } = this.state;
 
         // disable ready until user selects a payment option
         if (payload.isPathFinding()) {
@@ -170,7 +170,7 @@ class PaymentTemplate extends Component<Props, State> {
         }
 
         if (this.isMPTAmount()) {
-            if (mptDetails && mptIssuanceDetails) {                
+            if (mptIssuanceDetails) {                
                 setReady(true);
             } else {
                 setReady(false);
@@ -368,19 +368,25 @@ class PaymentTemplate extends Component<Props, State> {
         } = this.state;
 
         const mptAmount = {
-            holding: 10,
-            transaction: 20,
+            holding: 0,
+            transaction: 0,
+            availableForIssuance: 0,
         };
 
         if (this.isMPTAmount()) {
             mptAmount.holding = Number(mptDetails?.MPTAmount || 0);
             mptAmount.transaction = Number(transaction?.Amount?.value || 0);
+
+            mptAmount.availableForIssuance = Number(mptIssuanceDetails?.MaximumAmount || 0) -
+                Number(mptIssuanceDetails?.OutstandingAmount || 0);
+
             if ((mptIssuanceDetails?.AssetScale || 1) > 1) {
                 mptAmount.holding /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
                 mptAmount.transaction /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
+                mptAmount.availableForIssuance /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
             }
 
-            if (!mptDetails || !mptIssuanceDetails) {
+            if (!mptIssuanceDetails) {
                 return (
                     <>
                         <Text style={styles.label}>{Localize.t('mptoken.event')}</Text>
@@ -512,7 +518,15 @@ class PaymentTemplate extends Component<Props, State> {
                                             />    
                                             : this.isMPTAmount() ? (
                                                 <Text style={[AppStyles.monoBold]}>
-                                                    {mptAmount.holding}{' '}
+                                                    {
+                                                        source.address === mptIssuanceDetails?.Issuer
+                                                            ? (
+                                                                (mptIssuanceDetails?.MaximumAmount || 0) > 0
+                                                                    ? mptAmount.availableForIssuance
+                                                                    : 'N/A (issuer)'
+                                                            )
+                                                            : mptAmount.holding
+                                                    }{' '}
                                                 </Text>
                                             ) : (
                                                 <Text style={[AppStyles.monoBold]}>

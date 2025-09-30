@@ -363,8 +363,10 @@ class TransactionItem extends Component<Props, State> {
         let hasBalanceChanges = true;
         const mutations = item.BalanceChange(account.address);
         if (!mutations?.[OperationActions.INC]?.[0] && !mutations?.[OperationActions.DEC]?.[0]) {
-            if (item?.Account !== account.address && (item as any)?.Issuer !== account.address) {
-                                                            // ^^ Credential
+            if (
+                item?.Account !== account.address &&
+                (item as any)?.Issuer !== account.address // credential
+            ) {
                 hasBalanceChanges = false;
             }
         }
