@@ -1104,6 +1104,7 @@
     "txResultQueuedExplain": "Transaction added to the queue",
     "txResultQueuedLongExplain": "Your transaction has been submitted, however, it is currently queued for processing.\n\nPlease wait a few minutes and check your transaction history (Events) to see if it has made it through to a final ledger.\n\nQueueing transactions is normal behavior and does not indicate a problem with your transaction: individual nodes can queue transactions if the node or the network is busy.",
     "amountIsBiggerThanYourSpend": "राशि उससे भी बड़ी है जो आप खर्च कर सकते हैं (%{spendable})",
+    "theMaxDecimalsYouCanSendIs": "You can send an amount with a maximum of %{decimals} decimals",
     "theMaxAmountYouCanSendIs": "अधिकतम राशि जो आप भेज सकते हैं %{spendable} %{currency} ",
     "theMaxAmountYouCanSendWithFee": "%{currency} शुल्क का निर्गमकर्ता । अधिकतम. जो राशि आप को भेज सकती है (हस्तांतरण शुल्क का सम्मान) कर सकते हैं %{spendable} %{currency}",
     "insufficientBalanceSpendableBalance": "शेष अपर्याप्त, व्यय योग्य शेष: %{spendable} %{currency}\r\n",

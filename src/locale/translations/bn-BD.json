@@ -1104,6 +1104,7 @@
     "txResultQueuedExplain": "Transaction added to the queue",
     "txResultQueuedLongExplain": "Your transaction has been submitted, however, it is currently queued for processing.\n\nPlease wait a few minutes and check your transaction history (Events) to see if it has made it through to a final ledger.\n\nQueueing transactions is normal behavior and does not indicate a problem with your transaction: individual nodes can queue transactions if the node or the network is busy.",
     "amountIsBiggerThanYourSpend": "এই পরিমাণ আপনি ব্যয় করতে পারেন তুলনায় বড় (%{spendable})\r\n",
+    "theMaxDecimalsYouCanSendIs": "You can send an amount with a maximum of %{decimals} decimals",
     "theMaxAmountYouCanSendIs": " আপনি পাঠাতে পারেন সর্বোচ্চ পরিমাণ %{spendable} %{currency} ",
     "theMaxAmountYouCanSendWithFee": "ইস্যুকারী %{currency} একটি স্থানান্তর ফি চার্জ করে। সর্বাধিক আপনি যে পরিমাণ পরিমাণ টাকা পাঠাতে পারবেন (স্থানান্তর ফি আদায় করে) তা হ'ল %{spendable} %{currency}\r\n",
     "insufficientBalanceSpendableBalance": "ভারসাম্য অপর্যাপ্ত, ব্যয়যোগ্য ভারসাম্য: %{spendable} %{currency}\r\n",

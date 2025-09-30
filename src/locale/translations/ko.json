@@ -1104,6 +1104,7 @@
     "txResultQueuedExplain": "Transaction added to the queue",
     "txResultQueuedLongExplain": "Your transaction has been submitted, however, it is currently queued for processing.\n\nPlease wait a few minutes and check your transaction history (Events) to see if it has made it through to a final ledger.\n\nQueueing transactions is normal behavior and does not indicate a problem with your transaction: individual nodes can queue transactions if the node or the network is busy.",
     "amountIsBiggerThanYourSpend": "금액이 지출 가능한 금액 보다  큽니다 %{spendable}",
+    "theMaxDecimalsYouCanSendIs": "You can send an amount with a maximum of %{decimals} decimals",
     "theMaxAmountYouCanSendIs": "보낼 수 있는 최대 금액은 %{spendable} %{currency} 입니다",
     "theMaxAmountYouCanSendWithFee": "%{currency} 의 발행자가 전송 수수료를 부과합니다. 송금 가능한 최대 금액 (전송 수수료 적용할 때) 은 %{spendable} %{currency} 입니다. ",
     "insufficientBalanceSpendableBalance": "잔액 부족, 사용 가능한 잔액 :%{spendable}%{currency}",

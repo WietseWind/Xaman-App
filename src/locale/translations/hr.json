@@ -1104,6 +1104,7 @@
     "txResultQueuedExplain": "Transaction added to the queue",
     "txResultQueuedLongExplain": "Your transaction has been submitted, however, it is currently queued for processing.\n\nPlease wait a few minutes and check your transaction history (Events) to see if it has made it through to a final ledger.\n\nQueueing transactions is normal behavior and does not indicate a problem with your transaction: individual nodes can queue transactions if the node or the network is busy.",
     "amountIsBiggerThanYourSpend": "Iznos je veći od raspoloživog iznosa (%{spendable})",
+    "theMaxDecimalsYouCanSendIs": "You can send an amount with a maximum of %{decimals} decimals",
     "theMaxAmountYouCanSendIs": "Maksimalni iznos rasploživ za slanje je %{spendable} %{currency} ",
     "theMaxAmountYouCanSendWithFee": "Izdavatelj %{currency} naplaćuje troškove naknade za prijenos. Maksimalni iznos koji možete poslati (s troškovima prijenosa) je %{spendable} %{currency}",
     "insufficientBalanceSpendableBalance": "Saldo nedovoljan, rasploloživi iznos: %{spendable} %{currency}",
