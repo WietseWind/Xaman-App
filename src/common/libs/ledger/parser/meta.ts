@@ -314,7 +314,7 @@ class Meta {
         // console.log(node);
         // console.log(fields?.Account);
         // console.log(fields?.Issuer);
-        // console.log(fields?.Account || fields?.Issuer);
+        // console.log(fields?.Account, fields?.Issuer);
         return [
             {
                 address: fields?.Account || fields?.Issuer || '',
@@ -328,8 +328,8 @@ class Meta {
                         .toString(10),
                     action:
                         decodedIssuer === fields?.Account || fields?.Issuer || ''
-                            ? OperationActions.DEC
-                            : OperationActions.INC,
+                            ? OperationActions.DEC // If issuer tx, it's always dec
+                            : this.getOperationAction(value), // Else regular logic applies
                 },
             },
         ];
