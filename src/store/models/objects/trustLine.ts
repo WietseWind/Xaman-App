@@ -111,7 +111,7 @@ class TrustLine extends Realm.Object<TrustLine> {
         if (this.currency.currencyCode.length === 48) {
             // MPT
             // TODO:
-            return `${this.currency.currencyCode.slice(2, 10)}...${this.currency.currencyCode.slice(-4)}`;
+            return `${this.currency.currencyCode.slice(2, 8)}..${this.currency.currencyCode.slice(-2)}`;
         }
 
         // LP token
@@ -138,6 +138,10 @@ class TrustLine extends Realm.Object<TrustLine> {
 
         // issuer name + currency code
         if (this.currency.issuerName) {
+            if (this.currency.currencyCode.length === 48) {
+                // mpt
+                return Truncate(this.currency.issuerName, maxLength);
+            }
             return `${Truncate(this.currency.issuerName, maxLength)} ${Truncate(NormalizeCurrencyCode(this.currency.currencyCode), 11)}`;
         }
 
