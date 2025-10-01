@@ -50,6 +50,7 @@ import { IssuedCurrency } from '@common/libs/ledger/types/common';
 import { LedgerEntryTypes } from '@common/libs/ledger/types/enums';
 import { SimulateRequest } from '@common/libs/ledger/types/methods/submit';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
+import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 
 /* Types  ==================================================================== */
 export type LedgerServiceEvent = {
@@ -376,7 +377,7 @@ class LedgerService extends EventEmitter {
                     }
 
                     return {
-                        account,
+                        account: DecodeMPTokenIssuanceToIssuer(mpt.MPTokenIssuanceID),
                         currency: mpt.MPTokenIssuanceID,
                         balance: String(amount),
                         limit: String(maxAmount),
