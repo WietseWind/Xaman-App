@@ -15,6 +15,7 @@ export interface Props {
     item: ((FallbackTransaction | Transactions) & MutationsMixinType) | LedgerObjects;
     account: AccountModel;
     isPaymentScreen?: boolean;
+    noIssuanceId?: boolean;
     labelStyle?: ViewStyle | ViewStyle[] | TextStyle | TextStyle[];
     contentStyle?: ViewStyle | ViewStyle[] | TextStyle | TextStyle[];
     advisory?: string;

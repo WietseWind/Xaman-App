@@ -40,6 +40,7 @@ class MPTWidget extends PureComponent<Props, State> {
             isPaymentScreen,
             labelStyle,
             contentStyle,
+            noIssuanceId,
         } = this.props;
 
         const txType = (item as any)?.TransactionType || (item as any)?.LedgerEntryType || '';
@@ -93,7 +94,7 @@ class MPTWidget extends PureComponent<Props, State> {
                     <Text style={styles.detailsLabelText}>{Localize.t('mptokenIssuance.explainerTitle')}</Text>
                 )}
 
-                {mptIssuanceId && (
+                {mptIssuanceId && !noIssuanceId && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Issuance ID</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>

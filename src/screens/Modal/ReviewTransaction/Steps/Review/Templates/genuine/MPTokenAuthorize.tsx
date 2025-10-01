@@ -4,7 +4,7 @@ import { View, Text } from 'react-native';
 
 import { MPTokenAuthorize } from '@common/libs/ledger/transactions';
 
-import { AccountElement } from '@components/Modules';
+import { AccountElement, MPTWidget } from '@components/Modules';
 
 import Localize from '@locale';
 
@@ -12,13 +12,19 @@ import styles from '../styles';
 
 import { TemplateProps } from '../types';
 import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
+import { ComponentTypes } from '@services/NavigationService';
+import LedgerService from '@services/LedgerService';
+import { MPTokenIssuance } from '@common/libs/ledger/objects';
+import { AppStyles } from '@theme/index';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
     transaction: MPTokenAuthorize;
 }
 
-export interface State {}
+export interface State {
+    mptIssuanceDetails?: MPTokenIssuance;
+}
 
 /* Component ==================================================================== */
 class MPTokenAuthorizeTemplate extends Component<Props, State> {
@@ -28,8 +34,32 @@ class MPTokenAuthorizeTemplate extends Component<Props, State> {
         this.state = {};
     }
 
-    render() {
+    componentDidMount() {
         const { transaction } = this.props;
+
+        if (transaction.MPTokenIssuanceID) {
+            LedgerService.getLedgerEntry({
+                command: 'ledger_entry',
+                mpt_issuance: transaction.MPTokenIssuanceID,
+            }).then((resp) => {
+                if ('error' in resp) {
+                    return;
+                }
+
+                const { node } = resp;
+
+                if (node) {
+                    this.setState({
+                        mptIssuanceDetails: node as MPTokenIssuance,
+                    });
+                }
+            });
+        }
+    }
+
+    render() {
+        const { transaction, source } = this.props;
+        const { mptIssuanceDetails } = this.state;
 
         return (
             <>
@@ -62,6 +92,28 @@ class MPTokenAuthorizeTemplate extends Component<Props, State> {
                             </Text>
                         </View>
                     </>
+                )}
+
+                {!mptIssuanceDetails && (
+                    <View style={[styles.contentBox, AppStyles.centerAligned, styles.contentBoxSecondary]}>
+                        <Text style={[styles.value, styles.label]}>{Localize.t('mptoken.loading')}</Text>
+                    </View>
+                )}
+
+                {mptIssuanceDetails && (
+                    <MPTWidget
+                        isPaymentScreen
+                        noIssuanceId
+                        labelStyle={[styles.label, styles.labelSmall]}
+                        contentStyle={[
+                            styles.contentBox,
+                            styles.value,
+                            styles.valueSmall,
+                        ]}
+                        item={mptIssuanceDetails}
+                        account={source}
+                        componentType={ComponentTypes.Unknown}
+                    />
                 )}
             </>
         );
