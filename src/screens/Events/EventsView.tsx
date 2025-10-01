@@ -465,6 +465,7 @@ class EventsView extends Component<Props, State> {
                 'delegate',
                 'mptoken',
                 'mpt_issuance',
+                'credential',
             ];
 
             // Create an array of promises, one for each object type
@@ -483,7 +484,7 @@ class EventsView extends Component<Props, State> {
                         .map(LedgerObjectFactory.fromLedger)
                         .flat()
                         .filter((item): item is LedgerObjects => item !== undefined);
-            
+                                
                     this.setState({ plannedTransactions: parsedList }, () => {
                         resolve(parsedList);
                     });
