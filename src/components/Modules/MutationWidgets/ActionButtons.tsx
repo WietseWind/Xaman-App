@@ -173,7 +173,9 @@ class ActionButtons extends PureComponent<Props, State> {
                 }
                 break;
             case LedgerEntryTypes.MPTokenIssuance:
-                availableActions.push(ActionTypes.DELETE_MPT);
+                if (Number(item?.OutstandingAmount || 0) === 0) {
+                    availableActions.push(ActionTypes.DELETE_MPT);
+                }
                 break;
             case LedgerEntryTypes.MPToken:
                 if (!item?.MPTAmount) {
