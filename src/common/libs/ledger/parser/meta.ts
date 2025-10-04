@@ -310,6 +310,15 @@ class Meta {
             assetScale = (tokenIssuance as any)?.FinalFields?.AssetScale;
         }
 
+        // let Account;
+        // if (node.diffType === DiffType.CreatedNode) {
+        //     Account = node.NewFields.Account;
+        // } else if (node.FinalFields) {
+        //     Account = node.FinalFields.Account;
+        // }
+
+        // console.log(Account);
+
         // the balance is always from low node's perspective
         // console.log(node);
         // console.log(fields?.Account);
@@ -317,6 +326,7 @@ class Meta {
         // console.log(fields?.Account, fields?.Issuer);
         return [
             {
+                // address: Account,
                 address: fields?.Account || fields?.Issuer || '',
                 balance: {
                     issuer: fields?.Issuer || decodedIssuer || '',
@@ -328,7 +338,9 @@ class Meta {
                         .toString(10),
                     action:
                         decodedIssuer === fields?.Account || fields?.Issuer || ''
-                            ? OperationActions.DEC // If issuer tx, it's always dec
+                            ? this.getOperationAction(value) === OperationActions.DEC
+                                ? OperationActions.INC
+                                : OperationActions.DEC // If issuer tx, it's inverted
                             : this.getOperationAction(value), // Else regular logic applies
                 },
             },

@@ -365,7 +365,8 @@ class TransactionItem extends Component<Props, State> {
         if (!mutations?.[OperationActions.INC]?.[0] && !mutations?.[OperationActions.DEC]?.[0]) {
             if (
                 item?.Account !== account.address &&
-                (item as any)?.Issuer !== account.address // credential
+                (item as any)?.Issuer !== account.address && // credential
+                (item as any)?.Holder !== account.address // clawback
             ) {
                 hasBalanceChanges = false;
             }

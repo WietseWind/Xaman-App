@@ -161,7 +161,8 @@ class AssetsMutations extends PureComponent<Props, State> {
         const noMutation = hasNoMutations &&
             account.address !== ((item as any)?.Account || (item as any)?.Subject || (item as any)?.Issuer) &&
             !item.Type.match(/Credential/) &&
-            !item.Type.match(/Check/);
+            !item.Type.match(/Check/) &&
+            !(item.Type.match(/Clawback/) && (item as any)?.Holder === account.address);
 
         return (
             <View style={[styles.itemContainer, styles.itemContainerGap]}>

@@ -48,7 +48,7 @@ class MPTWidget extends PureComponent<Props, State> {
             ? (item as any).Amount
             : undefined;
 
-        if (!txType.match(/mpt/i) && !(amount && amount?.mpt_issuance_id)) {
+        if (!txType.match(/mpt|clawback/i) && !(amount && amount?.mpt_issuance_id)) {
             return null;
         }
 
@@ -61,7 +61,7 @@ class MPTWidget extends PureComponent<Props, State> {
                 : ((item as any)?.LedgerEntryType || '').match(/mpt/i)
                     ? (item as any)
                     : undefined;
-               
+
         if (!mpTokenIssuance) {
             return null;
         }

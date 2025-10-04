@@ -605,7 +605,10 @@ class EventsView extends Component<Props, State> {
                                     : null;
 
                             const mptTokenPayment =
-                                transaction?.tx?.TransactionType === 'Payment' &&
+                                (
+                                    transaction?.tx?.TransactionType === 'Payment' ||
+                                    transaction?.tx?.TransactionType === 'Clawback'
+                                ) &&
                                 transaction.tx?.Amount &&
                                 typeof transaction.tx?.Amount !== 'string' &&
                                 (transaction.tx?.Amount as any)?.mpt_issuance_id
