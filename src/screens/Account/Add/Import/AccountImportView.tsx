@@ -381,8 +381,11 @@ class AccountImportView extends Component<Props, State> {
             if (account.accessLevel === AccessLevels.Full) {
                 const persistPrivateAccountInfo = () => {
                     setTimeout(() => {
-                        BackendService.privateAccountInfo(account?.address, account?.label, true);
-                        // Push by default
+                        try {
+                            BackendService.privateAccountInfo(account?.address, account?.label, true);
+                        } catch (e) {
+                            //
+                        }
                     }, 2000);                
                 };
                 
@@ -489,7 +492,7 @@ class AccountImportView extends Component<Props, State> {
 
         } catch (error) {
             // this should never happen but in case just show error that something went wrong
-            Toast(Localize.t('global.unexpectedErrorOccurred'));
+            Toast(`${Localize.t('global.unexpectedErrorOccurred')} - ${(error as Error)?.message || 'Unknown error'}`);
         }
     };
 
