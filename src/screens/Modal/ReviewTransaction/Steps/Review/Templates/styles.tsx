@@ -25,7 +25,8 @@ const styles = StyleService.create({
     memoContainer: {
         marginHorizontal: -8,
         paddingHorizontal: 8,
-        paddingVertical: 6,
+        paddingTop: 6,
+        paddingBottom: 10,
         borderColor: '$lightGrey', 
         borderWidth: 2,
         borderRadius: 6, 

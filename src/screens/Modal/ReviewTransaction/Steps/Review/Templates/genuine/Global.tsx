@@ -262,19 +262,23 @@ class GlobalTemplate extends Component<Props, State> {
                                 <View
                                     style={styles.memoContainer}
                                 >
-                                    <Text style={[styles.value, styles.memoType]}>{m.MemoType}</Text>
+                                    {m.MemoType && (
+                                        <Text style={[styles.value, styles.memoType]}>{m.MemoType}</Text>
+                                    )}
                                     {m.MemoFormat && (
                                         <Text style={[styles.value, styles.memoFormat]}>{m.MemoFormat}</Text>
                                     )}
-                                    <Text
-                                        style={[styles.value, styles.memoData]}
-                                        onPress={() => {
-                                            if (String(m.MemoData) !== '') {
-                                                Clipboard.setString(String(m.MemoData));
-                                                Toast(Localize.t('payload.dataCopiedToClipboard'));
-                                            }
-                                        }}
-                                    >{m.MemoData}</Text>
+                                    {m.MemoData && (
+                                        <Text
+                                            style={[styles.value, styles.memoData]}
+                                            onPress={() => {
+                                                if (String(m.MemoData) !== '') {
+                                                    Clipboard.setString(String(m.MemoData));
+                                                    Toast(Localize.t('payload.dataCopiedToClipboard'));
+                                                }
+                                            }}
+                                        >{m.MemoData}</Text>
+                                    )}
                                 </View>
                             );
                         })
