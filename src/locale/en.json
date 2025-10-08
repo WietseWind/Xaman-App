@@ -1364,5 +1364,10 @@
     "explain": "This is an MPToken, issued by %{issuer}.",
     "explainAuthOnly": "This is an MPToken Authorization: you are not holding the MPToken yet, but did authorize this Token to be sent to you.",
     "delete": "Remove Authorization"
+  },
+  "depositPreauth": {
+    "title": "Deposit Preauth",
+    "eventThisIsA": "This is a Deposit Preauthorisation. A deposit preauthorisation allows only a specific set of accounts, or accounts holding a specific Credential to deposit (if this is enabled on the receiving account).",
+    "remove": "Remove Deposit Preauth"
   }
 }
