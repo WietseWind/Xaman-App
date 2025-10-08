@@ -509,6 +509,7 @@
     "smallerThan": "< smaller than",
     "biggerThan": "> bigger than",
     "transactionDetails": "Transaction details",
+    "objectDetails": "Object details",
     "shareTransactionId": "Share transaction ID",
     "thisTransactionWasSuccessful": "This transaction was successful",
     "transactionFailedWithCode": "This transaction failed with a status code of %{txCode}",

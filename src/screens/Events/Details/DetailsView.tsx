@@ -198,7 +198,11 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             <View key={`txdetailsview-${timestamp}`} style={AppStyles.container}>
                 <Header
                     leftComponent={{ icon: 'IconChevronLeft', onPress: this.close }}
-                    centerComponent={{ text: Localize.t('events.transactionDetails') }}
+                    centerComponent={{
+                        text: typeof (item as any)?._object === 'object'
+                            ? Localize.t('events.objectDetails')
+                            : Localize.t('events.transactionDetails'),
+                    }}
                     rightComponent={
                         this.getItemLink()
                             ? { icon: 'IconMoreHorizontal', onPress: this.showMenu }
