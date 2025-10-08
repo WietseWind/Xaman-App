@@ -681,8 +681,11 @@ class HomeView extends Component<Props, State> {
 
         const containerProps = account.balance === 0
             ? {
-                resizeMode: 'cover',
                 source: StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes'),
+                resizeMode: 'cover',
+                imageStyle: ['dark', 'light'].indexOf(StyleService.getCurrentTheme()) < 0
+                    ? styles.backgroundShapeOpacity // Needs 0.4 to make sense visually
+                    : {},
             }
             : {
                 // Nada for `View`

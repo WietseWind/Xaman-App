@@ -12,6 +12,11 @@ const styles = StyleService.create({
         height: AppSizes.moderateScale(60),
         paddingRight: AppSizes.paddingSml,
         paddingLeft: AppSizes.paddingSml,
+        marginTop: -7,
+        marginBottom: -7,
+    },
+    backgroundShapeOpacity: {
+        opacity: 0.4,
     },
     degenWarning: {
         paddingVertical: 7,
@@ -19,7 +24,6 @@ const styles = StyleService.create({
         paddingLeft: 13,
         marginBottom: 6,
         borderRadius: 11,
-        marginTop: -8,
         backgroundColor: '$lightRed',
         borderColor: '$red',
         // borderWidth: 2,

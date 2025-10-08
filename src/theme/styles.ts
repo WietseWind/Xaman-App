@@ -48,6 +48,7 @@ export default StyleService.create({
         flex: 8,
         justifyContent: 'center',
         alignSelf: 'stretch',
+        paddingTop: 7,
     },
     windowSize: {
         height: Sizes.screen.height,
