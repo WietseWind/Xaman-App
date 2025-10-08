@@ -48,6 +48,7 @@ enum ActionTypes {
     ACCEPT_CREDENTIAL = 'ACCEPT_CREDENTIAL',
     DELETE_MPT = 'DELETE_MPT',
     REMOVE_MPT = 'REMOVE_MPT',
+    REMOVE_PERMISSIONED_DOMAIN = 'REMOVE_PERMISSIONED_DOMAIN',
 }
 
 interface State {
@@ -93,6 +94,8 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('mptokenIssuance.delete'), secondary: true };
             case ActionTypes.REMOVE_MPT:
                 return { label: Localize.t('mptoken.delete'), secondary: true };
+            case ActionTypes.DELETE_DEPOSIT_PREAUTH:
+                return { label: Localize.t('depositPreauth.remove'), secondary: true };
             default:
                 return null;
         }
@@ -344,6 +347,20 @@ class ActionButtons extends PureComponent<Props, State> {
                     Object.assign(craftedTxJson, {
                         TransactionType: TransactionTypes.MPTokenIssuanceDestroy,
                         MPTokenIssuanceID: item.mpt_issuance_id,
+                    });
+                }
+                break;
+            case ActionTypes.DELETE_DEPOSIT_PREAUTH:
+                if (
+                    item.Type === LedgerEntryTypes.DepositPreauth &&
+                    typeof (item as any)?._object === 'object'
+                ) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.DepositPreauth,
+                        Account: item.Account,
+                        Unauthorize: item.Authorize,
+                        UnauthorizeCredentials: item.AuthorizeCredentials &&
+                            item.AuthorizeCredentials.map(Credential => ({ Credential })),
                     });
                 }
                 break;

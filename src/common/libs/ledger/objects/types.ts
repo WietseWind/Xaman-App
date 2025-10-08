@@ -10,6 +10,7 @@ import {
     Credential,
     MPToken,
     MPTokenIssuance,
+    DepositPreauth,
 } from '.';
 
 export type LedgerObjects =
@@ -23,4 +24,5 @@ export type LedgerObjects =
     | Delegate
     | Credential
     | MPToken
+    | DepositPreauth
     | MPTokenIssuance;

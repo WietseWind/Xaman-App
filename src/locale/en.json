@@ -252,6 +252,7 @@
     "notNow": "Not now",
     "credentials": "Credentials",
     "credential": "Credential",
+    "includedCredentials": "Included Credential(s)",
     "newVersion": "New Version",
     "versionNumberIsAvailableOnTheAppStore": "Version %{versionCode} is available in the AppStore.",
     "danger": "Danger",

@@ -14,6 +14,18 @@ const styles = StyleService.create({
     marginBottom: {
         marginBottom: AppSizes.padding / 3.5,  
     },
+    credentialTypeLineHeight: {
+        paddingTop: 5,
+        paddingBottom: 4,
+    },
+    noOffsetBottom: {
+        paddingBottom: 0,
+        marginBottom: 0,
+    },
+    credentialRadius: {
+        borderBottomLeftRadius: 7,
+        borderBottomRightRadius: 7,
+    },
     advisoryContainer: {
         alignSelf: 'stretch',
         alignItems: 'center',
@@ -49,6 +61,13 @@ const styles = StyleService.create({
         paddingTop: 5,
         // borderTopColor: '$tint',
         // borderTopWidth: 1,
+    },
+    credentialContainer: {
+        // padding: 25,
+        // paddingTop: 5,
+        borderColor: '$tint',
+        borderWidth: 1,
+        borderRadius: 7,
     },
     noBold: {
         fontFamily: AppFonts.base.family,

@@ -8,6 +8,7 @@ export { default as HookDetailsWidget } from './HookDetails';
 export { default as IdentifierWidget } from './Identifier';
 export { default as InvoiceIdWidget } from './InvoiceId';
 export { default as ParticipantsWidget } from './Participants';
+export { default as ActorArrayWidget } from './ActorArrayWidget';
 export { default as LabelWidget } from './Label';
 export { default as MemoWidget } from './Memo';
 export { default as ReserveChangeWidget } from './ReserveChange';

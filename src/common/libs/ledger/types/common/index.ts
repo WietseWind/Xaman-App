@@ -91,6 +91,16 @@ export interface SignerEntry {
      */
     WalletLocator?: string;
 }
+export interface AcceptedCredentialEntry {
+    /**
+     * Credential issuer
+     */
+    Issuer: string;
+    /**
+     * Credential type hash256
+     */
+    CredentialType: string;
+}
 
 /**
  * The object that describes the permission in Permissions in DelegateSet.

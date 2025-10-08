@@ -162,6 +162,7 @@ class AssetsMutations extends PureComponent<Props, State> {
             account.address !== ((item as any)?.Account || (item as any)?.Subject || (item as any)?.Issuer) &&
             !item.Type.match(/Credential/) &&
             !item.Type.match(/Check/) &&
+            !item.Type.match(/Preauth/) &&
             !(item.Type.match(/Clawback/) && (item as any)?.Holder === account.address);
 
         return (

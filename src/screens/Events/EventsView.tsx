@@ -464,6 +464,7 @@ class EventsView extends Component<Props, State> {
                 'payment_channel',
                 'delegate',
                 'mptoken',
+                'deposit_preauth',
                 'mpt_issuance',
                 'credential',
             ];
@@ -877,6 +878,7 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.Credential,
                         LedgerEntryTypes.MPTokenIssuance,
                         LedgerEntryTypes.MPToken,
+                        LedgerEntryTypes.DepositPreauth,
                         // ...TODO?
                         // LedgerEntryTypes.SignerList,
                         // LedgerEntryTypes.DepositPreauth,
