@@ -69,10 +69,10 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
     //region VaultManager
 
     /*
-   Create a new encrypted vault with given name/data and encrypt with provided key
-   NOTE: existing vault cannot be overwritten
-  */
-    public boolean createVault(final String vaultName, final String data, final String key)
+        Create a new encrypted vault with given name/data and encrypt with provided key
+        NOTE: existing vault cannot be overwritten
+    */
+    public synchronized boolean createVault(final String vaultName, final String data, final String key)
             throws Exception {
 
         // check if the vault already exist, we don't want to overwrite the existing vault
@@ -80,8 +80,9 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
         boolean exist = keychain.itemExist(vaultName);
 
         // vault already exist, just reject
+        // ^^ update: just overwrite?...
         if (exist) {
-            throw new Exception("VAULT_ALREADY_EXIST");
+            // throw new Exception("VAULT_ALREADY_EXIST");
         }
 
         // try to encrypt the data with provided key
@@ -161,6 +162,7 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
                 purgeVault(recoveryVaultName);
             } catch (Exception e) {
                 // ignore in case of any exception
+                throw new Exception("Failed to restore vault from recovery: " + e.getMessage());
             }
         }
 
