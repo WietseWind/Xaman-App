@@ -1158,6 +1158,10 @@ class EventsView extends Component<Props, State> {
                         TransactionTypes.NFTokenMint,
                         TransactionTypes.NFTokenModify,
                         LedgerEntryTypes.Ticket,
+                        LedgerEntryTypes.PermissionedDomain,
+                        LedgerEntryTypes.Credential,
+                        LedgerEntryTypes.MPTokenIssuance,
+                        LedgerEntryTypes.MPToken,
                     ];
                     break;
                 default:
