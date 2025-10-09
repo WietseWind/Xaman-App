@@ -533,6 +533,10 @@ class LedgerService extends EventEmitter {
         account: string,
         peer: IssuedCurrency,
     ): Promise<AccountLinesTrustline | undefined> => {
+        if (peer.currency.length === 48) {
+            // MPT
+            return undefined;
+        }
         return this.getLedgerEntry<RippleState>({
             ripple_state: { accounts: [account, peer.issuer], currency: peer.currency },
         })

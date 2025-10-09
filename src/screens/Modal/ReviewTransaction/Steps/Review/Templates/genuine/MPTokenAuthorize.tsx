@@ -23,7 +23,7 @@ export interface Props extends Omit<TemplateProps, 'transaction'> {
 }
 
 export interface State {
-    mptIssuanceDetails?: MPTokenIssuance;
+    mptIssuanceDetails?: MPTokenIssuance | boolean;
 }
 
 /* Component ==================================================================== */
@@ -43,6 +43,9 @@ class MPTokenAuthorizeTemplate extends Component<Props, State> {
                 mpt_issuance: transaction.MPTokenIssuanceID,
             }).then((resp) => {
                 if ('error' in resp) {
+                    this.setState({
+                        mptIssuanceDetails: false,
+                    });
                     return;
                 }
 
@@ -94,13 +97,28 @@ class MPTokenAuthorizeTemplate extends Component<Props, State> {
                     </>
                 )}
 
-                {!mptIssuanceDetails && (
+                {!mptIssuanceDetails && typeof mptIssuanceDetails !== 'boolean' && (
                     <View style={[styles.contentBox, AppStyles.centerAligned, styles.contentBoxSecondary]}>
                         <Text style={[styles.value, styles.label]}>{Localize.t('mptoken.loading')}</Text>
                     </View>
                 )}
 
-                {mptIssuanceDetails && (
+                {!mptIssuanceDetails && typeof mptIssuanceDetails === 'boolean' && (
+                    <View style={[
+                        styles.contentBox,
+                        AppStyles.centerAligned,
+                        styles.contentBoxSecondary,
+                        AppStyles.buttonRed,
+                    ]}>
+                        <Text style={[
+                            styles.value,
+                            styles.label,
+                            AppStyles.colorWhite,
+                        ]}>{Localize.t('mptoken.issuanceNotFound')}</Text>
+                    </View>
+                )}
+
+                {mptIssuanceDetails && typeof mptIssuanceDetails !== 'boolean' && (
                     <MPTWidget
                         isPaymentScreen
                         noIssuanceId

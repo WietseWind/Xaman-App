@@ -84,7 +84,12 @@ class TokenItem extends PureComponent<Props, State> {
         const { favorite, no_ripple, limit } = this.state;
 
         // show alert on top of avatar if rippling set
-        if ((!no_ripple || Number(limit) === 0) && !token.obligation && !token.isLiquidityPoolToken()) {
+        if (
+            (!no_ripple || Number(limit) === 0) &&
+            !token.obligation &&
+            !token.isLiquidityPoolToken() &&
+            !token?.isMPToken()
+        ) {
             return <Icon name="ImageTriangle" size={15} />;
         }
 

@@ -66,7 +66,7 @@ class TrustLine extends Realm.Object<TrustLine> {
 
     isMPToken(): boolean {
         // TODO: improve this check for LP token
-        return this.currency.currencyCode.startsWith('00') && this.currency.currencyCode.length === 48;
+        return this.currency.currencyCode.length === 48;
     }
 
     getLpAssetPair(): string[] {

@@ -770,6 +770,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
 
         const needsTlFix = (!token.no_ripple || Number(token.limit) === 0) &&
             !token.obligation &&
+            !token?.isMPToken() &&
             !token.isLiquidityPoolToken();
 
         return (
