@@ -252,6 +252,7 @@
     "notNow": "ఇప్పుడు కాదు\r\n",
     "credentials": "Credentials",
     "credential": "Credential",
+    "includedCredentials": "Included Credential(s)",
     "newVersion": "కొత్త వెర్షన్",
     "versionNumberIsAvailableOnTheAppStore": "వెర్షన్ %{versionCode} ఆప్ స్టోర్ లో లభ్యమవుతుంది.",
     "danger": "ప్రమాదకరమైన",
@@ -509,6 +510,7 @@
     "smallerThan": "< కంటే చిన్నది\r\n",
     "biggerThan": "> కంటే పెద్దది\r\n",
     "transactionDetails": "లావాదేవీ వివరాలు\r\n",
+    "objectDetails": "Object details",
     "shareTransactionId": "లావాదేవీ ID ని భాగస్వామ్యం చేయండి\r\n",
     "thisTransactionWasSuccessful": "ఈ లావాదేవీ విజయవంతమైంది\r\n",
     "transactionFailedWithCode": "%{txCode} యొక్క స్థితి కోడ్‌తో ఈ లావాదేవీ విఫలమైంది",
@@ -1362,6 +1364,24 @@
     "explain": "This is an MPToken, issued by %{issuer}.",
     "explainAuthOnly": "This is an MPToken Authorization: you are not holding the MPToken yet, but did authorize this Token to be sent to you.",
     "delete": "Remove Authorization"
+  },
+  "permissionedDomain": {
+    "acceptedCredentials": "Credential(s) to accept",
+    "eventThisIsA": "This is a Permissioned Domain. A permissioned domain is like an on chain members-only area, so only credential-verified accounts can participate in certain transactions. This can, for example, allow for regulated spaces within decentralized systems.",
+    "domainId": "Domain ID",
+    "title": "Permissioned Domain",
+    "remove": "Remove Permissioned Domain",
+    "setTitleCreate": "Create Permissioned Domain",
+    "setTitleUpdate": "Update Permissioned Domain",
+    "txThisCreates": "This transaction creates a new Permissioned Domain.\n\nA permissioned domain is like an on chain members-only area, so only credential-verified accounts can participate in certain transactions. This can, for example, allow for regulated spaces within decentralized systems.",
+    "txThisUpdates": "This transaction updates an existing Permissioned Domain.",
+    "theDomainIdIs": "\nThe updated Domain ID is: %{domainId}.",
+    "thisTxRemovesDomainId": "This transaction removes a Permissioned Domain with the Domain ID: %{domainId}."
+  },
+  "depositPreauth": {
+    "title": "Deposit Preauth",
+    "eventThisIsA": "This is a Deposit Preauthorisation. A deposit preauthorisation allows only a specific set of accounts, or accounts holding a specific Credential to deposit (if this is enabled on the receiving account).",
+    "remove": "Remove Deposit Preauth"
   },
   "moment": {
     "calendar": {
