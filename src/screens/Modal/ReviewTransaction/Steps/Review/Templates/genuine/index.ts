@@ -54,6 +54,8 @@ import CredentialCreate from './CredentialCreate';
 import CredentialAccept from './CredentialAccept';
 import CredentialDelete from './CredentialDelete';
 import SetRemarks from './SetRemarks';
+import PermissionedDomainSet from './PermissionedDomainSet';
+import PermissionedDomainDelete from './PermissionedDomainDelete';
 
 export {
     Global,
@@ -112,4 +114,6 @@ export {
     CredentialAccept,
     CredentialDelete,
     SetRemarks,
+    PermissionedDomainSet,
+    PermissionedDomainDelete,
 };

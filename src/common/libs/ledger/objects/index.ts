@@ -11,4 +11,5 @@ export * from './Delegate';
 export * from './Credential';
 export * from './MPToken';
 export * from './MPTokenIssuance';
+export * from './PermissionedDomain';
 export * from './DepositPreauth';

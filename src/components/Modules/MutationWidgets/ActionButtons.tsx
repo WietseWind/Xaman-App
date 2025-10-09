@@ -94,6 +94,8 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('mptokenIssuance.delete'), secondary: true };
             case ActionTypes.REMOVE_MPT:
                 return { label: Localize.t('mptoken.delete'), secondary: true };
+            case ActionTypes.REMOVE_PERMISSIONED_DOMAIN:
+                return { label: Localize.t('permissionedDomain.remove'), secondary: true };
             case ActionTypes.DELETE_DEPOSIT_PREAUTH:
                 return { label: Localize.t('depositPreauth.remove'), secondary: true };
             default:
@@ -183,6 +185,20 @@ class ActionButtons extends PureComponent<Props, State> {
             case LedgerEntryTypes.MPToken:
                 if (!item?.MPTAmount) {
                     availableActions.push(ActionTypes.REMOVE_MPT);
+                }
+                break;
+            case LedgerEntryTypes.PermissionedDomain:
+                if (item.Owner === account.address) {
+                    availableActions.push(ActionTypes.REMOVE_PERMISSIONED_DOMAIN);
+                }
+                break;
+            case LedgerEntryTypes.DepositPreauth:
+                if (
+                    item.Type === LedgerEntryTypes.DepositPreauth &&
+                    item.Account === account.address &&
+                    typeof (item as any)?._object === 'object'
+                ) {
+                    availableActions.push(ActionTypes.DELETE_DEPOSIT_PREAUTH);
                 }
                 break;
             case LedgerEntryTypes.Delegate:
@@ -347,6 +363,15 @@ class ActionButtons extends PureComponent<Props, State> {
                     Object.assign(craftedTxJson, {
                         TransactionType: TransactionTypes.MPTokenIssuanceDestroy,
                         MPTokenIssuanceID: item.mpt_issuance_id,
+                    });
+                }
+                break;
+            case ActionTypes.REMOVE_PERMISSIONED_DOMAIN:
+                if (item.Type === LedgerEntryTypes.PermissionedDomain && item.Owner === account.address) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.PermissionedDomainDelete,
+                        Account: item.Owner,
+                        DomainID: item.Index,
                     });
                 }
                 break;

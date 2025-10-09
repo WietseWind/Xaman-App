@@ -56,3 +56,5 @@ export * from './CredentialCreate';
 export * from './CredentialAccept';
 export * from './CredentialDelete';
 export * from './SetRemarks';
+export * from './PermissionedDomainSet';
+export * from './PermissionedDomainDelete';

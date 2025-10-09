@@ -19,6 +19,7 @@ import Delegate from './Delegate';
 import Credential from './Credential';
 import MPToken from './MPToken';
 import MPTokenIssuance from './MPTokenIssuance';
+import PermissionedDomain from './PermissionedDomain';
 
 type LedgerEntry =
     | AccountRoot
@@ -41,6 +42,7 @@ type LedgerEntry =
     | Delegate
     | Credential
     | MPTokenIssuance
+    | PermissionedDomain
     | MPToken;
 
 type LedgerEntryFilter =
@@ -65,6 +67,7 @@ type LedgerEntryFilter =
     | 'delegate'
     | 'mptoken'
     | 'mptoken_issuance'
+    | 'permissioned_domain'
     | 'credential';
 
 export type { LedgerEntry, LedgerEntryFilter };

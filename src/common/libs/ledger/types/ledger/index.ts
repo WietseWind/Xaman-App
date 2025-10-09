@@ -20,6 +20,7 @@ import Ticket from './Ticket';
 import URIToken from './URIToken';
 import Delegate from './Delegate';
 import Credential from './Credential';
+import PermissionedDomain from './PermissionedDomain';
 import MPToken, { MPTokenFlags } from './MPToken';
 import MPTokenIssuance, { MPTokenIssuanceFlags } from './MPTokenIssuance';
 
@@ -56,5 +57,6 @@ export type {
     MPToken,
     MPTokenFlags,
     MPTokenIssuance,
+    PermissionedDomain,
     MPTokenIssuanceFlags,
 };

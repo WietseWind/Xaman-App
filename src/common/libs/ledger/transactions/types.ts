@@ -46,6 +46,8 @@ import {
     DIDDelete,
     GenesisMint,
     EnableAmendment,
+    PermissionedDomainDelete,
+    PermissionedDomainSet,
 } from '.';
 
 // Pseudo transactions
@@ -107,6 +109,8 @@ export type Transactions =
     | DIDSet
     | DIDDelete
     | GenesisMint
+    | PermissionedDomainDelete
+    | PermissionedDomainSet
     | EnableAmendment;
 
 /**

@@ -63,6 +63,8 @@ export enum TransactionTypes {
     CredentialCreate = 'CredentialCreate',
     CredentialAccept = 'CredentialAccept',
     CredentialDelete = 'CredentialDelete',
+    PermissionedDomainDelete = 'PermissionedDomainDelete',
+    PermissionedDomainSet = 'PermissionedDomainSet',
     SetRemarks = 'SetRemarks',
 }
 
@@ -114,6 +116,7 @@ export enum LedgerEntryTypes {
     MPTokenIssuance = 'MPTokenIssuance',
     MPToken = 'MPToken',
     Remark = 'Remark',
+    PermissionedDomain = 'PermissionedDomain',
 }
 
 /**
