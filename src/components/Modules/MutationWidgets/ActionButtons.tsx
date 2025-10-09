@@ -46,7 +46,8 @@ enum ActionTypes {
     CANCEL_TICKET = 'CANCEL_TICKET',
     DELETE_CREDENTIAL = 'DELETE_CREDENTIAL',
     ACCEPT_CREDENTIAL = 'ACCEPT_CREDENTIAL',
-    DELETE_MPT = 'DELETE_MPT',
+    DELETE_MPT_ISSUANCE = 'DELETE_MPT_ISSUANCE',
+    DELETE_DEPOSIT_PREAUTH = 'DELETE_DEPOSIT_PREAUTH',
     REMOVE_MPT = 'REMOVE_MPT',
     REMOVE_PERMISSIONED_DOMAIN = 'REMOVE_PERMISSIONED_DOMAIN',
 }
@@ -90,7 +91,7 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('events.deleteCredential'), secondary: true };
             case ActionTypes.ACCEPT_CREDENTIAL:
                 return { label: Localize.t('events.acceptCredential'), secondary: false };
-            case ActionTypes.DELETE_MPT:
+            case ActionTypes.DELETE_MPT_ISSUANCE:
                 return { label: Localize.t('mptokenIssuance.delete'), secondary: true };
             case ActionTypes.REMOVE_MPT:
                 return { label: Localize.t('mptoken.delete'), secondary: true };
@@ -178,8 +179,11 @@ class ActionButtons extends PureComponent<Props, State> {
                 }
                 break;
             case LedgerEntryTypes.MPTokenIssuance:
-                if (Number(item?.OutstandingAmount || 0) === 0) {
-                    availableActions.push(ActionTypes.DELETE_MPT);
+                if (
+                    Number(item?.OutstandingAmount || 0) === 0 &&
+                    item.Issuer === account.address
+                ) {
+                    availableActions.push(ActionTypes.DELETE_MPT_ISSUANCE);
                 }
                 break;
             case LedgerEntryTypes.MPToken:
@@ -358,8 +362,8 @@ class ActionButtons extends PureComponent<Props, State> {
                     });
                 }
                 break;
-            case ActionTypes.DELETE_MPT:
-                if (item.Type === LedgerEntryTypes.MPTokenIssuance) {
+            case ActionTypes.DELETE_MPT_ISSUANCE:
+                if (item.Type === LedgerEntryTypes.MPTokenIssuance && item.Issuer === account.address) {
                     Object.assign(craftedTxJson, {
                         TransactionType: TransactionTypes.MPTokenIssuanceDestroy,
                         MPTokenIssuanceID: item.mpt_issuance_id,
