@@ -1363,7 +1363,8 @@
     "eventAuthOnly": "MPToken Authorization",
     "explain": "This is an MPToken, issued by %{issuer}.",
     "explainAuthOnly": "This is an MPToken Authorization: you are not holding the MPToken yet, but did authorize this Token to be sent to you.",
-    "delete": "Remove Authorization"
+    "delete": "Remove Authorization",
+    "issuanceNotFound": "Could not fetch MPT issuance details"
   },
   "permissionedDomain": {
     "acceptedCredentials": "Credential(s) to accept",
