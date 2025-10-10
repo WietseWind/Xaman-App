@@ -24,17 +24,19 @@ export default StyleService.create({
         paddingBottom: 5,
     },
     currencyItemLabel: {
-        fontSize: AppFonts.h5.size,
-        fontFamily: AppFonts.base.familyMonoBold,
-        color: StyleService.select({ light: '$blue', dark: '$white' }),
+        // fontSize: AppFonts.h5.size,
+        // fontFamily: AppFonts.base.familyMonoBold,
+        fontSize: AppFonts.subtext.size * 1.1,
+        fontFamily: AppFonts.base.familyBold,
+        color: StyleService.select({ light: '$dark', dark: '$white' }),
         alignItems: 'flex-start',
         justifyContent: 'center',
         marginRight: 10,
     },
     balanceText: {
-        fontSize: AppFonts.h5.size,
+        fontSize: AppFonts.subtext.size * 1.25,
         fontFamily: AppFonts.base.familyMonoBold,
-        color: StyleService.select({ light: '$blue', dark: '$white' }),
+        color: StyleService.select({ light: '$dark', dark: '$white' }),
         alignItems: 'flex-start',
         justifyContent: 'center',
         marginRight: 0,
@@ -43,7 +45,7 @@ export default StyleService.create({
         marginRight: 10,
     },
     tokenIcon: {
-        tintColor: StyleService.select({ light: '$blue', dark: '$white' }),
+        tintColor: StyleService.select({ light: '$dark', dark: '$white' }),
     },
     tokenIconContainer: {
         justifyContent: 'center',
