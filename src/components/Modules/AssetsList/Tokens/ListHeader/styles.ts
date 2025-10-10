@@ -5,7 +5,9 @@ import { AppSizes, AppFonts } from '@theme';
 export default StyleService.create({
     container: {
         flexDirection: 'row',
-        justifyContent: 'center',
+        // justifyContent: 'center',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: 10,
         paddingHorizontal: AppSizes.paddingSml,
         backgroundColor: '$background',

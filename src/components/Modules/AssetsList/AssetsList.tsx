@@ -60,13 +60,17 @@ class AssetsList extends Component<Props, State> {
         }
     };
 
-    onChangeCategoryPress = () => {
+    onChangeCategoryPress = (selectedCategory?: ASSETS_CATEGORY) => {
         const { category } = this.state;
 
-        Navigator.showOverlay<SwitchAssetCategoryOverlayProps>(AppScreens.Overlay.SwitchAssetCategory, {
-            selected: category,
-            onSelect: this.onAssetCategoryChange,
-        });
+        if (!selectedCategory) {
+            return Navigator.showOverlay<SwitchAssetCategoryOverlayProps>(AppScreens.Overlay.SwitchAssetCategory, {
+                selected: category,
+                onSelect: this.onAssetCategoryChange,
+            });
+        }
+
+        return this.onAssetCategoryChange(selectedCategory);
     };
 
     render() {

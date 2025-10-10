@@ -50,6 +50,10 @@ export default StyleService.create({
         alignSelf: 'stretch',
         paddingTop: 7,
     },
+    alignSelfStretch: {
+        alignSelf: 'stretch',
+        justifyContent: 'center',
+    },
     windowSize: {
         height: Sizes.screen.height,
         width: Sizes.screen.width,

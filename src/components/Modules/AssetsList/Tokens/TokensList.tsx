@@ -27,6 +27,7 @@ import {
     // AppStyles,
 } from '@theme/index';
 import NetworkService from '@services/NetworkService';
+import { ASSETS_CATEGORY } from '@screens/Overlay/SwitchAssetCategory/types';
 
 /* Types ==================================================================== */
 interface Props {
@@ -35,7 +36,7 @@ interface Props {
     discreetMode: boolean;
     spendable: boolean;
     experimentalUI?: boolean;
-    onChangeCategoryPress: () => void;
+    onChangeCategoryPress: (selectedCategory?: ASSETS_CATEGORY) => void;
     network?: NetworkModel;
     addTokenPress?: () => void;
 }
@@ -238,11 +239,11 @@ class TokensList extends Component<Props, State> {
         Navigator.showOverlay<ExplainBalanceOverlayProps>(AppScreens.Overlay.ExplainBalance, { account });
     };
 
-    onCategoryChangePress = () => {
+    onCategoryChangePress = (selectedCategory?: ASSETS_CATEGORY) => {
         const { onChangeCategoryPress } = this.props;
 
         if (typeof onChangeCategoryPress === 'function') {
-            onChangeCategoryPress();
+            onChangeCategoryPress(selectedCategory);
         }
     };
 

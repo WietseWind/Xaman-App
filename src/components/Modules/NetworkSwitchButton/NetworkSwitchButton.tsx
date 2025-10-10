@@ -212,11 +212,15 @@ class NetworkSwitchButton extends PureComponent<Props, State> {
             : network.name;
 
         return (
-            <View style={[
-                styles.buttonContainer,
-                containerStyle,
-                showAsSwitchPill ? styles.switchPillContainer : {},
-            ]}>
+            <View
+                style={[
+                    styles.buttonContainer,
+                    containerStyle,
+                    showAsSwitchPill ? styles.switchPillContainer : {},
+                ]}
+                needsOffscreenAlphaCompositing
+                renderToHardwareTextureAndroid
+            >
                 <TouchableDebounce
                     testID="network-switch-button"
                     accessibilityRole="button"
@@ -257,17 +261,25 @@ class NetworkSwitchButton extends PureComponent<Props, State> {
                         </View>
                     }
 
-                    <View style={[
-                        styles.buttonContainer,
-                        showAsSwitchPill ? {
-                            ...styles.borderW0,
-                            ...styles.theSelectedNetwork,
-                         } : {
-                            ...styles.borderW1,
-                         },
-                    ]}>
-                        <View style={styles.pulseWrapper}>
+                    <View
+                        needsOffscreenAlphaCompositing
+                        renderToHardwareTextureAndroid
+                        style={[
+                            styles.buttonContainer,
+                            showAsSwitchPill ? {
+                                ...styles.borderW0,
+                                ...styles.theSelectedNetwork,
+                            } : {
+                                ...styles.borderW1,
+                            },
+                        ]}
+                    >
+                        <View
+                            style={styles.pulseWrapper}
+                        >
                             <Animated.View
+                                needsOffscreenAlphaCompositing
+                                renderToHardwareTextureAndroid
                                 style={[
                                     styles.pulseCircle,
                                     {

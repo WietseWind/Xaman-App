@@ -8,6 +8,7 @@ export * from './TextPlaceholder';
 export * from './SearchBar';
 export * from './Switch';
 export * from './InfoMessage';
+export * from './PillButton';
 export * from './Swiper';
 export * from './AccordionPicker';
 export * from './Footer';
