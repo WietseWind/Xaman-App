@@ -10,6 +10,8 @@ export default StyleService.create({
         // paddingHorizontal: 5,
         // paddingVertical: 5,
         marginHorizontal: AppSizes.paddingSml,
+        // borderColor: '$red',
+        // borderWidth: 2,
     },
     balanceRow: {
         justifyContent: 'space-between',
@@ -18,7 +20,7 @@ export default StyleService.create({
     reserveRow: {
         justifyContent: 'space-between',
         flexDirection: 'row',
-        paddingTop: 10,
+        paddingTop: 2,
         paddingBottom: 5,
     },
     currencyItemLabel: {
@@ -35,7 +37,7 @@ export default StyleService.create({
         color: StyleService.select({ light: '$blue', dark: '$white' }),
         alignItems: 'flex-start',
         justifyContent: 'center',
-        marginRight: 5,
+        marginRight: 0,
     },
     tokenAvatarContainer: {
         marginRight: 10,
@@ -67,7 +69,7 @@ export default StyleService.create({
         fontSize: AppFonts.small.size,
         fontFamily: AppFonts.base.familyMonoBold,
         color: '$grey',
-        marginRight: 5,
+        // marginRight: 5,
     },
     reserveInfoIconContainer: {
         paddingLeft: AppSizes.scale(11),
@@ -77,7 +79,7 @@ export default StyleService.create({
         fontSize: AppFonts.subtext.size,
         fontFamily: AppFonts.base.familyMonoBold,
         color: StyleService.select({ light: '$blue', dark: '$white' }),
-        marginRight: 5,
+        // marginRight: 5,
     },
     rightContainer: {
         flex: 1,

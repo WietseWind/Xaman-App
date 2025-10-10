@@ -22,7 +22,10 @@ import { NativeItem } from '@components/Modules/AssetsList/Tokens/NativeItem';
 import { ListHeader } from '@components/Modules/AssetsList/Tokens/ListHeader';
 import { ListEmpty } from '@components/Modules/AssetsList/Tokens/ListEmpty';
 import { ListFilter, FiltersType } from '@components/Modules/AssetsList/Tokens/ListFilter';
-import { AppSizes } from '@theme/index';
+import {
+    AppSizes,
+    // AppStyles,
+} from '@theme/index';
 import NetworkService from '@services/NetworkService';
 
 /* Types ==================================================================== */
@@ -320,8 +323,20 @@ class TokensList extends Component<Props, State> {
     };
 
     renderItem = ({ item, index }: { item: TrustLineModel; index: number }) => {
-        const { discreetMode, experimentalUI } = this.props;
+        const { discreetMode, experimentalUI, network } = this.props;
         const { account, reorderEnabled } = this.state;
+        
+        if (item?.id === 'native') {
+            return (
+                <NativeItem
+                    key={`nativeasset-${network?.key}`}
+                    account={account}
+                    discreetMode={discreetMode}
+                    reorderEnabled={reorderEnabled}
+                    onPress={this.onNativeItemPress}
+                />
+            );
+        }
 
         return (
             <TokenItem
@@ -375,18 +390,34 @@ class TokensList extends Component<Props, State> {
                         />
                     </View>
                 )}
-                <NativeItem
-                    key={`nativeasset-${network?.key}`}
-                    account={account}
-                    network={network}
-                    discreetMode={discreetMode}
-                    reorderEnabled={reorderEnabled}
-                    onPress={this.onNativeItemPress}
-                />
+                { reorderEnabled && (
+                    <NativeItem
+                        key={`nativeasset-${network?.key}`}
+                        account={account}
+                        network={network}
+                        discreetMode={discreetMode}
+                        reorderEnabled={reorderEnabled}
+                        onPress={this.onNativeItemPress}
+                    />
+                )}
                 <SortableFlatList
                     ref={this.dragSortableRef}
                     itemHeight={TokenItem.Height}
-                    dataSource={dataSource}
+                    separatorHeight={0}
+                    dataSource={[
+                        ...(reorderEnabled ? [] : [{
+                            id: 'native',
+                            currency: {
+                                issuer: '',
+                            },
+                            getFormattedCurrency: () => NetworkService.getNativeAsset(),
+                            isLiquidityPoolToken: () => false,
+                            isMPToken: () => false,
+                            getFormattedIssuer: () => '',
+                            getLpAssetPair: () => undefined,
+                        }]),
+                        ...dataSource,
+                    ]}
                     renderItem={this.renderItem}
                     renderEmptyList={this.renderEmptyList}
                     onItemPress={this.onTokenItemPress}

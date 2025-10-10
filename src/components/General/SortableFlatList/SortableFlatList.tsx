@@ -544,6 +544,7 @@ export default class SortableFlatList extends Component<Props, State> {
                 onLayout={this.onLayout}
                 getItemLayout={(data, index) => ({
                     length: itemHeight + separatorHeight,
+                    width: 100,
                     offset: (itemHeight + separatorHeight) * index,
                     index,
                 })}

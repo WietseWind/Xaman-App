@@ -11,6 +11,7 @@ const styles = StyleSheet.create({
     item: {
         position: 'absolute',
         zIndex: 9,
+        width: '100%',
     },
 });
 
