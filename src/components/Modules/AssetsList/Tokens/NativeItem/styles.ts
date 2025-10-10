@@ -72,8 +72,12 @@ export default StyleService.create({
         // marginRight: 5,
     },
     reserveInfoIconContainer: {
-        paddingLeft: AppSizes.scale(11),
-        paddingRight: AppSizes.scale(10),
+        paddingLeft: AppSizes.scale(14),
+        paddingRight: AppSizes.scale(13),
+        backgroundColor: '$light',
+        borderRadius: 10,
+        paddingVertical: 5,
+        marginTop: 2,
     },
     fiatAmountText: {
         fontSize: AppFonts.subtext.size,

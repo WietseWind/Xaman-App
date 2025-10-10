@@ -249,7 +249,7 @@ class NativeItem extends Component<Props, State> {
             <View style={styles.reserveRow}>
                 <View style={[AppStyles.flex1, AppStyles.row, AppStyles.centerAligned]}>
                     <View style={styles.reserveInfoIconContainer}>
-                        <Icon name="IconInfo" size={15} style={AppStyles.imgColorGrey} />
+                        <Icon name="IconLock" size={9} style={AppStyles.imgColorGrey} />
                     </View>
                     <View style={styles.reserveTextContainer}>
                         <Text numberOfLines={1} style={styles.reserveTextLabel}>
