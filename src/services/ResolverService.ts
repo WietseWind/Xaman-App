@@ -109,7 +109,7 @@ class ResolverService {
 
     private onCurrencyUpsert = async (currency: CurrencyModel) => {
         // 24 hours considered outdated
-        const isCurrencyOutdated = moment(currency.updatedAt).isBefore(moment().subtract(24, 'hours'));
+        const isCurrencyOutdated = moment(currency.updatedAt).isBefore(moment().subtract(6, 'hours'));
 
         // if currency is outdated then start syncing
         if (isCurrencyOutdated) {
