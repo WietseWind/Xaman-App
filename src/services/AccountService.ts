@@ -217,7 +217,6 @@ class AccountService extends EventEmitter {
             this.logger.warn(`updateAccountInfo [${account}]:`, accountInfo?.error);
             return;
         }
-
         const { account_data, account_flags } = accountInfo;
         // Now fetch the Account Lines (TrustLines), but only for the currently selected accounts
         const updateAccountLinesIf = CoreRepository?.getDefaultAccount()?.address === account;
@@ -255,7 +254,10 @@ class AccountService extends EventEmitter {
         const [accountLines, accountObligations, mptokens] = await Promise.all([
             LedgerService.getFilteredAccountLines(account),
             LedgerService.getAccountObligations(account),
-            LedgerService.getAccountMPTFullDetails(account),
+            // No MPT on non-XRPL
+            ...(NetworkService.getNetwork().name.toLowerCase().match(/xahau/)
+                ? [Promise.resolve([])]
+                : [LedgerService.getAccountMPTFullDetails(account)]),
         ]);
 
         this.logger.debug('Getting Normalised Account Lines for ', account);
