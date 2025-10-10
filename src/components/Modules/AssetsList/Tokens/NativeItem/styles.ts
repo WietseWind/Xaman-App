@@ -17,6 +17,22 @@ export default StyleService.create({
         justifyContent: 'space-between',
         flexDirection: 'row',
     },
+    buyButton: {
+        paddingLeft: 5,
+        paddingRight: 2,
+        height: AppSizes.scale(20),
+        borderRadius: 7,
+        marginTop: AppSizes.scale(-1),
+    },
+    buyIcon: {
+        tintColor: StyleService.select({ light: '$black', dark: '$white' }),
+    },
+    buyButtonText: {
+        fontFamily: AppFonts.base.familyMonoBold,
+        fontSize: AppSizes.scale(12),
+        paddingLeft: 2,
+        color: StyleService.select({ light: '$black', dark: '$white' }),
+    },
     reserveRow: {
         justifyContent: 'space-between',
         flexDirection: 'row',
@@ -76,10 +92,10 @@ export default StyleService.create({
     reserveInfoIconContainer: {
         paddingLeft: AppSizes.scale(14),
         paddingRight: AppSizes.scale(13),
-        backgroundColor: '$light',
-        borderRadius: 10,
-        paddingVertical: 5,
-        marginTop: 2,
+        backgroundColor: '$tint',
+        borderRadius: AppSizes.scale(8),
+        paddingVertical: AppSizes.scale(4),
+        marginTop: AppSizes.scale(1),
     },
     fiatAmountText: {
         fontSize: AppFonts.subtext.size,

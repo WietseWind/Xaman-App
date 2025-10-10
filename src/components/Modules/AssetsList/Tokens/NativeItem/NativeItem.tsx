@@ -11,7 +11,13 @@ import { Toast } from '@common/helpers/interface';
 import { CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
 
-import { AmountText, Button, Icon, RaisedButton, TouchableDebounce } from '@components/General';
+import {
+    AmountText,
+    Button,
+    Icon,
+    // RaisedButton,
+    TouchableDebounce,
+} from '@components/General';
 
 import { TokenAvatar, TokenIcon } from '@components/Modules/TokenElement';
 
@@ -20,10 +26,10 @@ import Localize from '@locale';
 import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
 import BigNumber from 'bignumber.js';
-import { ButtonItem } from '@components/General/SegmentButtons/ButtonItem';
+// import { ButtonItem } from '@components/General/SegmentButtons/ButtonItem';
 import { Navigator } from '@common/helpers/navigator';
 import { AppConfig, AppScreens } from '@common/constants';
-import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
+// import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 import { XAppOrigin } from '@common/libs/payload';
 import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 
@@ -216,15 +222,13 @@ class NativeItem extends Component<Props, State> {
                                 roundedMini
                                 light
                                 textStyle={[
-                                    AppStyles.colorBlack,
-                                    // eslint-disable-next-line react-native/no-inline-styles
-                                    { fontSize: 13, paddingLeft: 2 },
+                                    styles.buyButtonText,
                                 ]}
                                 numberOfLines={1}
                                 testID="buy-btn"
                                 label={Localize.t('global.buy')}
                                 onPress={() => {
-                                    Navigator.showModal<XAppBrowserModalProps>(
+                                    Navigator.showModal(
                                         AppScreens.Modal.XAppBrowser,
                                         {
                                             identifier: AppConfig.xappIdentifiers.buysell,
@@ -238,11 +242,9 @@ class NativeItem extends Component<Props, State> {
                                 }}
                                 icon="IconWallet"
                                 iconSize={14}
-                                iconStyle={AppStyles.imgColorBlack}
+                                iconStyle={styles.buyIcon}
                                 style={[
-                                    AppStyles.buttonBlueLight,
-                                    // eslint-disable-next-line react-native/no-inline-styles
-                                    { paddingLeft: 5, paddingRight: 2, height: 24, borderRadius: 7, marginTop: -1 },
+                                    styles.buyButton,
                                 ]}
                             />
                         )}
@@ -290,7 +292,7 @@ class NativeItem extends Component<Props, State> {
             <View style={styles.reserveRow}>
                 <View style={[AppStyles.flex1, AppStyles.row, AppStyles.centerAligned]}>
                     <View style={styles.reserveInfoIconContainer}>
-                        <Icon name="IconLock" size={9} style={AppStyles.imgColorGrey} />
+                        <Icon name="IconLock" size={8.5} style={AppStyles.imgColorGrey} />
                     </View>
                     <View style={styles.reserveTextContainer}>
                         <Text numberOfLines={1} style={styles.reserveTextLabel}>
