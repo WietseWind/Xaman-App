@@ -278,9 +278,18 @@ class NetworkService extends EventEmitter {
      * @returns {string}
      */
     getNativeAssetIcons = (): { currency: string; asset: string } => {
+        let asset = this.getNetwork().nativeAsset.iconSquare;
+        // ^^ Regular for all networks
+        if (this.getNetwork().key === 'MAINNET') {
+            // Overrule network icon for Mainnet
+            const mainnetIcon = NetworkConfig.networks.find((n) => n.key === 'MAINNET')?.nativeAsset?.iconSquare;
+            if (mainnetIcon) {
+                asset = mainnetIcon;
+            }
+        }
         return {
             currency: this.getNetwork().nativeAsset.icon,
-            asset: this.getNetwork().nativeAsset.iconSquare,
+            asset,
         };
     };
 
