@@ -5,7 +5,10 @@ import { View, Text } from 'react-native';
 
 import { Button, AmountText, Icon, Badge, BadgeType } from '@components/General';
 
-import { TokenAvatar, TokenIcon } from '@components/Modules/TokenElement';
+import {
+    TokenAvatar,
+    // TokenIcon,
+} from '@components/Modules/TokenElement';
 
 import { TrustLineModel } from '@store/models';
 
@@ -135,19 +138,23 @@ class TokenItem extends PureComponent<Props, State> {
     };
 
     renderBalance = () => {
-        const { token, discreetMode, saturate } = this.props;
+        const {
+            // token,
+            discreetMode,
+            // saturate,
+        } = this.props;
         const { balance } = this.state;
 
         return (
             <AmountText
-                prefix={
-                    <TokenIcon
-                        token={token}
-                        containerStyle={styles.tokenIconContainer}
-                        style={discreetMode ? AppStyles.imgColorGrey : {}}
-                        saturate={saturate}
-                    />
-                }
+                // prefix={
+                //     <TokenIcon
+                //         token={token}
+                //         containerStyle={styles.tokenIconContainer}
+                //         style={discreetMode ? AppStyles.imgColorGrey : {}}
+                //         saturate={saturate}
+                //     />
+                // }
                 value={balance}
                 style={[AppStyles.pbold, AppStyles.monoBold]}
                 discreet={discreetMode}

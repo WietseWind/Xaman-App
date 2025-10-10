@@ -28,7 +28,7 @@ interface State {
 }
 
 /* Component ==================================================================== */
-class TokenAvatar extends PureComponent<Props, State> {
+class TokenAvatar extends PureComponent<Props, State> { 
     constructor(props: Props) {
         super(props);
     }
@@ -41,8 +41,8 @@ class TokenAvatar extends PureComponent<Props, State> {
         }
 
         // issuer avatar
-        if (typeof token === 'object' && token && token?.currency?.issuerAvatarUrl) {
-            return token.currency.issuerAvatarUrl;
+        if (typeof token === 'object' && token && token?.currency?.avatarUrl) {
+            return token.currency.avatarUrl;
         }
 
         if (typeof token === 'object' && token && token?.isLiquidityPoolToken()) {
@@ -85,8 +85,8 @@ class TokenAvatar extends PureComponent<Props, State> {
         const TokenPair = token
             ? typeof token !== 'string' && token.getLpAssetPair() || undefined
             : tokenPair && typeof tokenPair === 'object' && tokenPair.length === 2 ? tokenPair.map(_token => {
-                return typeof _token === 'object' && _token?.currency?.issuerAvatarUrl
-                    ? _token.currency.issuerAvatarUrl
+                return typeof _token === 'object' && _token?.currency?.avatarUrl
+                    ? _token.currency.avatarUrl
                     : typeof _token === 'string' && _token === nativeAsset
                     ? _token
                     : StyleService.getImage('ImageUnknownTrustLine').uri;

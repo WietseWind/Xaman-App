@@ -31,7 +31,10 @@ import NetworkService from '@services/NetworkService';
 
 // components
 import { AmountText, Button, Icon, InfoMessage, RaisedButton, Spacer, TouchableDebounce } from '@components/General';
-import { TokenAvatar, TokenIcon } from '@components/Modules/TokenElement';
+import {
+    TokenAvatar,
+    // TokenIcon,
+} from '@components/Modules/TokenElement';
 
 import Localize from '@locale';
 
@@ -841,7 +844,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                                                 AppStyles.textCenterAligned,
                                                 AppStyles.monoBold,
                                             ]}
-                                            prefix={<TokenIcon token={token} style={styles.tokenIconContainer} />}
+                                            // prefix={<TokenIcon token={token} style={styles.tokenIconContainer} />}
                                         />
                                     </View>
                                     <View style={[
