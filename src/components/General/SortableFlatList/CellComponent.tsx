@@ -4,6 +4,7 @@ import { Animated, Easing, Pressable } from 'react-native';
 import { VibrateHapticFeedback } from '@common/helpers/interface';
 
 import styles from './styles';
+// import { AppStyles } from '@theme/index';
 
 /* Constants ==================================================================== */
 const LONG_PRESS_DELAY = 400;
@@ -15,6 +16,7 @@ export interface Props {
     cellHeight: number;
     separatorHeight: number;
     index: number;
+    firstItemExtraHeight?: number;
     onPress: (index: number) => void;
     onLongPress: (index: number) => void;
     onPressOut: (index: number) => void;
@@ -40,7 +42,9 @@ class CellComponent extends PureComponent<Props> {
         this.originIndex = props.index;
 
         // track origin position
-        this.originTop = (props.cellHeight + props.separatorHeight) * props.index;
+        this.originTop = (props.cellHeight + props.separatorHeight) * props.index + (
+            props.index > 0 ? (props.firstItemExtraHeight || 0) : 0
+        );
 
         // animation values
         this.scaleAnimation = new Animated.Value(1);
@@ -71,13 +75,15 @@ class CellComponent extends PureComponent<Props> {
     };
 
     resetState = () => {
-        const { index, cellHeight, separatorHeight } = this.props;
+        const { index, cellHeight, separatorHeight, firstItemExtraHeight } = this.props;
 
         this.currentIndex = index;
         this.originIndex = index;
 
         // track origin position
-        this.originTop = (cellHeight + separatorHeight) * index;
+        this.originTop = (cellHeight + separatorHeight) * index + (
+            index > 0 ? (firstItemExtraHeight || 0) : 0
+        );
 
         // animation values
         this.scaleAnimation.setValue(1);
@@ -143,14 +149,16 @@ class CellComponent extends PureComponent<Props> {
     };
 
     moveToIndex = (index: number) => {
-        const { cellHeight, separatorHeight } = this.props;
+        const { cellHeight, separatorHeight, firstItemExtraHeight } = this.props;
 
         // store new current index
         this.currentIndex = index;
         this.originIndex = index;
 
         // calculate new origin top
-        const newOriginTop = (cellHeight + separatorHeight) * index;
+        const newOriginTop = (cellHeight + separatorHeight) * index + (
+            index > 0 ? (firstItemExtraHeight || 0) : 0
+        );
 
         Animated.timing(this.positionAnimation, {
             toValue: {
@@ -196,6 +204,7 @@ class CellComponent extends PureComponent<Props> {
             <Animated.View
                 ref={this.itemRef}
                 style={[
+                    // AppStyles.borderRed,
                     styles.item,
                     {
                         left: this.positionAnimation.x,

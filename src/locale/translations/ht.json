@@ -12,6 +12,7 @@
     "ready": "Pare",
     "maybeLater": "Petet pita",
     "yes": "Wi",
+    "filterTokens": "Filter tokens",
     "cancel": "Anile",
     "discard": "Jete",
     "remove": "Retire",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "Peman ak\r\ndemann peman\r\nsou Ledger XRP la",

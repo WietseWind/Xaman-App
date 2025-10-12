@@ -18,6 +18,8 @@ const styles = StyleService.create({
     backgroundShapeOpacity: {
         opacity: 0.4,
     },
+    hideTopElements: {
+    },
     degenWarning: {
         paddingVertical: 7,
         paddingHorizontal: 10, 
@@ -48,6 +50,9 @@ const styles = StyleService.create({
     },
     tokenListContainer: {
         flex: 6,
+        marginTop: -4,
+        // borderWidth: 1,
+        // borderColor: '$red',
     },
     iconRotateX: {
         transform: [{ rotateX: '180deg' }],

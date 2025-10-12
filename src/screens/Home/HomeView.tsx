@@ -77,6 +77,8 @@ export interface State {
     experimentalUI?: boolean;
     NFCSupported: boolean;
     NFCEnabled: boolean;
+    hapticFeedback: boolean;
+    hideTopElements: boolean;
 }
 
 /* Component ==================================================================== */
@@ -105,6 +107,8 @@ class HomeView extends Component<Props, State> {
             developerMode: coreSettings.developerMode,
             discreetMode: coreSettings.discreetMode,
             experimentalUI: undefined,
+            hapticFeedback: coreSettings.hapticFeedback,
+            hideTopElements: false,
         };
     }
 
@@ -396,7 +400,14 @@ class HomeView extends Component<Props, State> {
 
     renderAssets = () => {
         const { timestamp } = this.props;
-        const { account, discreetMode, isSpendable, experimentalUI, selectedNetwork } = this.state;
+        const {
+            account,
+            discreetMode,
+            isSpendable,
+            experimentalUI,
+            selectedNetwork,
+            hapticFeedback,
+        } = this.state;
 
         if ((account?.details || []).length === 0 || account.getStateVersion() === 0) {
             // No account information loaded/cached yet, so not saying "not activated"
@@ -414,8 +425,10 @@ class HomeView extends Component<Props, State> {
 
         return (
             <AssetsList
+                hapticFeedback={hapticFeedback}
                 experimentalUI={experimentalUI}
                 account={account}
+                hideTopElements={this.hideTopElements}
                 network={selectedNetwork}
                 discreetMode={discreetMode}
                 spendable={isSpendable}
@@ -424,6 +437,12 @@ class HomeView extends Component<Props, State> {
                 style={styles.tokenListContainer}
             />
         );
+    };
+
+    hideTopElements = (toggle: boolean) => {
+        this.setState({
+            hideTopElements: toggle,
+        });
     };
 
     renderButtons = () => {
@@ -669,7 +688,7 @@ class HomeView extends Component<Props, State> {
     };
 
     render() {
-        const { account } = this.state;
+        const { account, hideTopElements } = this.state;
 
         if (!account?.isValid()) {
             return this.renderEmpty();
@@ -704,10 +723,14 @@ class HomeView extends Component<Props, State> {
                 {/* Content */}
                 {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                 <Container style={AppStyles.contentContainer} {...containerProps}>
-                    {this.renderNetworkDetails()}
-                    {this.renderDegenWarning()}
-                    {this.renderAccountAddress()}
-                    {this.renderButtons()}
+                    {!hideTopElements && (
+                        <>
+                            {this.renderNetworkDetails()}
+                            {this.renderDegenWarning()}
+                            {this.renderAccountAddress()}
+                            {this.renderButtons()}
+                        </>
+                    )}
                     {this.renderAssets()}
                 </Container>
             </View>

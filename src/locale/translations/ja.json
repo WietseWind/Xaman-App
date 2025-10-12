@@ -12,6 +12,7 @@
     "ready": "準備完了",
     "maybeLater": "またあとで",
     "yes": "はい",
+    "filterTokens": "Filter tokens",
     "cancel": "キャンセル",
     "discard": "破棄する",
     "remove": "削除する",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "XRPレジャーでの\r\n支払いと\r\n支払いリクエスト",

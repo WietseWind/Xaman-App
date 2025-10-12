@@ -12,6 +12,7 @@
     "ready": "సిద్ధముగా",
     "maybeLater": "బహుశా తరువాత",
     "yes": "అవును",
+    "filterTokens": "Filter tokens",
     "cancel": "రద్దు",
     "discard": "వదిలించుకో",
     "remove": "తొలగించు",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "చెల్లింపులు మరియు చెల్లింపు అభ్యర్థనలు XRP లెడ్జర్‌లో",

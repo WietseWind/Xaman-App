@@ -12,6 +12,7 @@
     "ready": "தயார்",
     "maybeLater": "ஒருவேளை பின்னர்",
     "yes": "ஆமாம்",
+    "filterTokens": "Filter tokens",
     "cancel": "ரத்து செய்",
     "discard": "நிராகரி",
     "remove": "நீக்கு",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "கொடுப்பனவுகள் மற்றும்\r\nகட்டண கோரிக்கைகள்\r\nXRP லெட்ஜரில்",

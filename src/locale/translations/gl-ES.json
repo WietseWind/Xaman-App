@@ -12,6 +12,7 @@
     "ready": "Listo",
     "maybeLater": "Quizais máis tarde",
     "yes": "Sí",
+    "filterTokens": "Filter tokens",
     "cancel": "Cancelar",
     "discard": "Descartar",
     "remove": "Quitar",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "Pagos e solicitudes de pago no XRP ledger",

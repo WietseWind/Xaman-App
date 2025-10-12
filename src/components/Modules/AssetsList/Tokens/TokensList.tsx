@@ -21,7 +21,7 @@ import { TokenItem } from '@components/Modules/AssetsList/Tokens/TokenItem';
 import { NativeItem } from '@components/Modules/AssetsList/Tokens/NativeItem';
 import { ListHeader } from '@components/Modules/AssetsList/Tokens/ListHeader';
 import { ListEmpty } from '@components/Modules/AssetsList/Tokens/ListEmpty';
-import { ListFilter, FiltersType } from '@components/Modules/AssetsList/Tokens/ListFilter';
+import { FiltersType } from '@components/Modules/AssetsList/Tokens/ListFilter';
 import {
     AppSizes,
     // AppStyles,
@@ -39,6 +39,7 @@ interface Props {
     onChangeCategoryPress: (selectedCategory?: ASSETS_CATEGORY) => void;
     network?: NetworkModel;
     addTokenPress?: () => void;
+    hideTopElements: (toggle: boolean) => void;
 }
 
 interface State {
@@ -48,6 +49,7 @@ interface State {
     dataSource: TrustLineModel[];
     filters?: FiltersType;
     reorderEnabled: boolean;
+    showHeader: boolean;
 }
 
 /* Component ==================================================================== */
@@ -67,6 +69,7 @@ class TokensList extends Component<Props, State> {
             dataSource: tokens,
             filters: undefined,
             reorderEnabled: false,
+            showHeader: true,
         };
 
         this.dragSortableRef = React.createRef();
@@ -89,9 +92,10 @@ class TokensList extends Component<Props, State> {
 
     shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
         const { discreetMode, spendable, experimentalUI } = this.props;
-        const { dataSource, accountStateVersion, reorderEnabled, filters } = this.state;
+        const { dataSource, accountStateVersion, reorderEnabled, filters, showHeader } = this.state;
 
         return (
+            !isEqual(nextState.showHeader, showHeader) ||
             !isEqual(nextProps.spendable, spendable) ||
             !isEqual(nextProps.discreetMode, discreetMode) ||
             !isEqual(nextProps.experimentalUI, experimentalUI) ||
@@ -216,7 +220,7 @@ class TokensList extends Component<Props, State> {
         const { account, reorderEnabled } = this.state;
 
         // ignore if reordering is enabled
-        if (!token || reorderEnabled) {
+        if (!token || reorderEnabled || token?.id === 'native') {
             return;
         }
 
@@ -368,20 +372,51 @@ class TokensList extends Component<Props, State> {
         return `token-${item.id}`;
     };
 
+    hideTopElements = (state: boolean) => {
+        const { hideTopElements } = this.props;
+
+        this.setState({
+            showHeader: !state,
+        }, () => {
+            if (hideTopElements) {
+                hideTopElements(state);
+            }
+        });
+    };
+
     render() {
-        const { account, style, spendable, discreetMode, experimentalUI, network } = this.props;
-        const { dataSource, reorderEnabled, filters } = this.state;
+        const {
+            account,
+            style,
+            spendable,
+            discreetMode,
+            experimentalUI,
+            network,
+        } = this.props;
+        const {
+            dataSource,
+            reorderEnabled,
+            filters,
+            showHeader,
+        } = this.state;
 
         return (
             <View testID="token-list-container" style={style}>
-                <ListHeader
-                    reorderEnabled={reorderEnabled}
-                    showTokenAddButton={spendable}
-                    onReorderSavePress={this.saveTokensOrder}
-                    onTokenAddPress={this.onTokenAddButtonPress}
-                    onTitlePress={this.onCategoryChangePress}
-                />
-                { !reorderEnabled && (
+                {showHeader && (
+                    <ListHeader
+                        reorderEnabled={reorderEnabled}
+                        showTokenAddButton={spendable}
+                        onReorderSavePress={this.saveTokensOrder}
+                        onTokenAddPress={this.onTokenAddButtonPress}
+                        onTitlePress={this.onCategoryChangePress}
+                        hideTopElements={this.hideTopElements}
+                        visible={!(typeof experimentalUI !== 'undefined' && !experimentalUI && AppSizes.scale(41))}
+                        filters={filters}
+                        onFilterChange={this.onFilterChange}
+                        onReorderPress={this.toggleReordering}
+                    />
+                )}
+                {/* { !reorderEnabled && (
                     <View style={{height: AppSizes.scale(41)}}>
                         <ListFilter
                             filters={filters}
@@ -390,7 +425,7 @@ class TokensList extends Component<Props, State> {
                             onReorderPress={this.toggleReordering}
                         />
                     </View>
-                )}
+                )} */}
                 { reorderEnabled && (
                     <NativeItem
                         key={`nativeasset-${network?.key}`}
@@ -405,6 +440,7 @@ class TokensList extends Component<Props, State> {
                     ref={this.dragSortableRef}
                     itemHeight={TokenItem.Height}
                     separatorHeight={0}
+                    firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12)}
                     dataSource={[
                         ...(reorderEnabled ? [] : [{
                             id: 'native',

@@ -12,6 +12,7 @@
     "ready": "প্রস্তুত",
     "maybeLater": "পারলে পরে",
     "yes": "হ্যাঁ",
+    "filterTokens": "Filter tokens",
     "cancel": "বাতিল",
     "discard": "বাতিল করা",
     "remove": "অপসারণ",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "অর্থ প্রদান এবং\r\nপেমেন্ট অনুরোধ\r\nএক্সআরপি লেজারে",

@@ -12,6 +12,7 @@
     "ready": "تيار",
     "maybeLater": "شايد پوء",
     "yes": "ها",
+    "filterTokens": "Filter tokens",
     "cancel": "رد ڪرڻ",
     "discard": "خارج ڪريو",
     "remove": "هٽايو",
@@ -409,7 +410,12 @@
     "curve": "Curve",
     "selectCurve": "Please select the curve to use for your keypair (if you select the wrong one, you will get the wrong r-address & may be unable to sign)",
     "objectID": "Object ID",
-    "remarks": "Remarks"
+    "remarks": "Remarks",
+    "reorder": "Re-order token list",
+    "hideZeroValue": "Hiding no-value assets",
+    "showZeroValue": "Showing no-value assets",
+    "showFavsOnly": "Showing favorites only",
+    "showAll": "Showing all assets"
   },
   "onboarding": {
     "slideOne_title": "ادائگي ۽\r\nادائيگي جون درخواستون\r\nايڪس آر پي ليجر تي",

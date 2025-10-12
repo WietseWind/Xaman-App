@@ -1,7 +1,8 @@
-import { StyleSheet } from 'react-native';
+import StyleService from '@services/StyleService';
+// import { StyleSheet } from 'react-native';
 // import { AppSizes } from '@theme';
 
-const styles = StyleSheet.create({
+const styles = StyleService.create({
     container: {
         // width: AppSizes.screen.width, // Will auto width - this fixes Fold devices
     },

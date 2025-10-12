@@ -9,6 +9,7 @@ import {
     PanResponderInstance,
     PanResponderGestureState,
     LayoutChangeEvent,
+    View,
 } from 'react-native';
 
 import CellComponent from '@components/General/SortableFlatList/CellComponent';
@@ -22,6 +23,7 @@ interface Props {
     separatorHeight?: number;
     dataSource: Array<any>;
     sortable?: boolean;
+    firstItemExtraHeight?: number;
     renderItem: ListRenderItem<any> | null | undefined;
     renderEmptyList?: React.ComponentType<any> | React.ReactElement | null | undefined;
     onItemPress?: (item: any, index: number) => void;
@@ -72,7 +74,8 @@ export default class SortableFlatList extends Component<Props, State> {
         super(props);
 
         this.state = {
-            containerHeight: (props.itemHeight + props.separatorHeight!) * props.dataSource.length,
+            containerHeight: (props.itemHeight + props.separatorHeight!) * props.dataSource.length +
+                (props.firstItemExtraHeight || 0) + 10,
             isItemActive: false,
         };
 
@@ -128,7 +131,8 @@ export default class SortableFlatList extends Component<Props, State> {
         const { containerHeight } = prevState;
 
         // if dataSource size or item height or separator size changed then apply new container height
-        const newContainerHeight = (nextProps.itemHeight + nextProps.separatorHeight!) * nextProps.dataSource.length;
+        const newContainerHeight = (nextProps.itemHeight + nextProps.separatorHeight!) * nextProps.dataSource.length +
+            (nextProps.firstItemExtraHeight || 0) + 10;
 
         if (newContainerHeight !== containerHeight) {
             return {
@@ -495,7 +499,7 @@ export default class SortableFlatList extends Component<Props, State> {
     };
 
     renderCellComponent = ({ index, children, cellKey }: { index: number; children: any; cellKey: string }) => {
-        const { itemHeight, separatorHeight } = this.props;
+        const { itemHeight, separatorHeight, firstItemExtraHeight } = this.props;
 
         return (
             <CellComponent
@@ -511,12 +515,20 @@ export default class SortableFlatList extends Component<Props, State> {
                 }}
                 index={index}
                 cellHeight={itemHeight}
+                firstItemExtraHeight={firstItemExtraHeight}
                 separatorHeight={separatorHeight}
                 onPress={this.onItemPress}
                 onLongPress={this.onItemLongPress}
                 onPressOut={this.onItemPressOut}
             >
-                {children}
+                <View style={[
+                    index === 0 && {
+                        paddingTop: (firstItemExtraHeight || 0) / 2,
+                        paddingBottom: (firstItemExtraHeight || 0) / 2,
+                    },
+                ]}>
+                    {children}
+                </View>
             </CellComponent>
         );
     };
