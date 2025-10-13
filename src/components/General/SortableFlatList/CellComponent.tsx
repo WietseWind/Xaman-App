@@ -101,8 +101,8 @@ class CellComponent extends PureComponent<Props> {
         });
 
         Animated.timing(this.scaleAnimation, {
-            toValue: 1.1,
-            duration: 100,
+            toValue: 1.05,
+            duration: 50,
             useNativeDriver: false,
         }).start(() => {
             // vibrate
