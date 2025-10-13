@@ -49,7 +49,7 @@ class MPTWidget extends PureComponent<Props, State> {
             : undefined;
 
         if (!txType.match(/mpt|clawback/i) && !(amount && amount?.mpt_issuance_id)) {
-            return null;
+            return undefined;
         }
 
         let mpTokenIssuance = txType === 'MPTokenIssuanceCreate'
@@ -63,13 +63,13 @@ class MPTWidget extends PureComponent<Props, State> {
                     : undefined;
 
         if (!mpTokenIssuance) {
-            return null;
+            return undefined;
         }
 
         const mptIssuanceId = mpTokenIssuance?.mpt_issuance_id || mpTokenIssuance?.MPTokenIssuanceID;
 
         if (!mptIssuanceId) {
-            // return null;
+            return undefined;
         }
 
         try {
@@ -112,11 +112,11 @@ class MPTWidget extends PureComponent<Props, State> {
                     </>
                 )}
 
-                {mpTokenIssuance?.AssetScale && mpTokenIssuance.AssetScale > 1 && (
+                {assetScale > 1 && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Asset Scale</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>
-                            {mpTokenIssuance.AssetScale} {assetScale > 1 && `(/ ${10 ** mpTokenIssuance.AssetScale})`}
+                            {assetScale} {assetScale > 1 && `(/ ${10 ** assetScale})`}
                         </Text>
                     </>
                 )}
