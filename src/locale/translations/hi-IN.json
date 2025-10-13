@@ -207,6 +207,7 @@
     "fee": "लेनदेन शुल्क",
     "issuerFee": "जारीकर्ता शुल्क",
     "invoiceID": "चालान आईडी",
+    "domainID": "Domain ID",
     "sendMax": "सब भेजें",
     "deliverMin": "न्यूनतम उद्धार",
     "checkID": "आईडी की जाँच करें",

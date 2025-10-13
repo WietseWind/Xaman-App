@@ -207,6 +207,7 @@
     "fee": "거래 수수료",
     "issuerFee": "발행인 요금",
     "invoiceID": "인보이스 ID",
+    "domainID": "Domain ID",
     "sendMax": "모두 보내기",
     "deliverMin": "최소 금액 전송",
     "checkID": "아이디 확인",

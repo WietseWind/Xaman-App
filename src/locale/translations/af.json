@@ -207,6 +207,7 @@
     "fee": "Transaksie fooi",
     "issuerFee": "Uitreikers fooi",
     "invoiceID": "Faktuur ID",
+    "domainID": "Domain ID",
     "sendMax": "Stuur maksimum bedrag",
     "deliverMin": "Lewer Minimum",
     "checkID": "Kontroleer ID",

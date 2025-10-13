@@ -207,6 +207,7 @@
     "fee": "Bayad sa transaksyon",
     "issuerFee": "Bayad ng tagapag-isyu",
     "invoiceID": "ID ng invoice",
+    "domainID": "Domain ID",
     "sendMax": "Ipadala ang Lahat",
     "deliverMin": "Ihatid Minimum",
     "checkID": "Suriin ID",

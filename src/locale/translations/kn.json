@@ -207,6 +207,7 @@
     "fee": "ವಹಿವಾಟು ಶುಲ್ಕ",
     "issuerFee": "ನೀಡುವವರ ಶುಲ್ಕ",
     "invoiceID": "ಸರಕುಪಟ್ಟಿ ಐಡಿ",
+    "domainID": "Domain ID",
     "sendMax": "ಎಲ್ಲಾ ಕಳಿಸಿ",
     "deliverMin": "ತಲುಪಿಸಿ ಕನಿಷ್ಠ",
     "checkID": "ಐಡಿ ಪರಿಶೀಲಿಸಿ",

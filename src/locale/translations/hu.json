@@ -207,6 +207,7 @@
     "fee": "Transaction fee",
     "issuerFee": "Issuer fee",
     "invoiceID": "Invoice ID",
+    "domainID": "Domain ID",
     "sendMax": "Send Maximum amount",
     "deliverMin": "Deliver Minimum amount",
     "checkID": "Check ID",

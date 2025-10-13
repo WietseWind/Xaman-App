@@ -207,6 +207,7 @@
     "fee": "İşlem ücreti",
     "issuerFee": "İhraçcı Ücreti",
     "invoiceID": "Fatura Kimliği",
+    "domainID": "Domain ID",
     "sendMax": "Tamamını gönder",
     "deliverMin": "Minimum teslim",
     "checkID": "ID Numarasını Denetle",

@@ -207,6 +207,7 @@
     "fee": "व्यवहार शुल्क",
     "issuerFee": "जारीकर्ता फी",
     "invoiceID": "बीजक आयडी",
+    "domainID": "Domain ID",
     "sendMax": "कमाल पाठवा",
     "deliverMin": "वितरित करा किमान",
     "checkID": "तपासा ID",

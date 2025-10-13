@@ -207,6 +207,7 @@
     "fee": "ഇടപാട് ഫീസ്",
     "issuerFee": "ഇഷ്യു ഫീസ്",
     "invoiceID": "ഇൻവോയ്സ് ഐഡി",
+    "domainID": "Domain ID",
     "sendMax": "എല്ലാം അയയ്‌ക്കുക",
     "deliverMin": "മിനിമം വിടുവിക്കേണമേ",
     "checkID": "ഐഡി പരിശോധിക്കുക",

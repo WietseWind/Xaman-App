@@ -207,6 +207,7 @@
     "fee": "رسوم التحويل",
     "issuerFee": "رسوم المصدر",
     "invoiceID": "رمز الفاتورة",
+    "domainID": "Domain ID",
     "sendMax": "أرسل الكل",
     "deliverMin": "تسليم الحد الأدنى",
     "checkID": "تحقق من الهوية",

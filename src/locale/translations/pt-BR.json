@@ -207,6 +207,7 @@
     "fee": "Taxa de transação",
     "issuerFee": "Taxa do emissor",
     "invoiceID": "ID da Fatura",
+    "domainID": "Domain ID",
     "sendMax": "Enviar tudo",
     "deliverMin": "Entregar mínimo",
     "checkID": "Verificar ID",

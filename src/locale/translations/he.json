@@ -207,6 +207,7 @@
     "fee": "עמלת טרנזקציה",
     "issuerFee": "עמלת מנפיק",
     "invoiceID": "מספר זיהוי לחשבונית",
+    "domainID": "Domain ID",
     "sendMax": "שלח הכל",
     "deliverMin": "לספק מינימום",
     "checkID": "בדיקת זיהוי",

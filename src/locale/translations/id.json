@@ -207,6 +207,7 @@
     "fee": "Biaya transaksi",
     "issuerFee": "Biaya penerbit",
     "invoiceID": "Invois ID",
+    "domainID": "Domain ID",
     "sendMax": "Kirim semua",
     "deliverMin": "Kirim Minimum",
     "checkID": "Periksa ID",

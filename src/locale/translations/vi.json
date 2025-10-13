@@ -207,6 +207,7 @@
     "fee": "Phí giao dịch",
     "issuerFee": "phí tổ chức phát hành",
     "invoiceID": "Số hóa đơn",
+    "domainID": "Domain ID",
     "sendMax": "Gửi tất cả",
     "deliverMin": "Cung cấp tối thiểu",
     "checkID": "Kiểm tra ID",

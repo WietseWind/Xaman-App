@@ -207,6 +207,7 @@
     "fee": "Siirtomaksu",
     "issuerFee": "Liikkeeseenlaskijan maksu",
     "invoiceID": "Laskutunnus",
+    "domainID": "Domain ID",
     "sendMax": "Lähetä Enimmäismäärä",
     "deliverMin": "Toimita vähimmäismäärä",
     "checkID": "Tarkista henkilöllisyys",

@@ -207,6 +207,7 @@
     "fee": "Taxă tranzacţie",
     "issuerFee": "Taxă emitent",
     "invoiceID": "ID factură",
+    "domainID": "Domain ID",
     "sendMax": "Trimite suma maximă",
     "deliverMin": "Livrează suma minimă",
     "checkID": "ID Cec",

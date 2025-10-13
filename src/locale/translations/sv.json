@@ -207,6 +207,7 @@
     "fee": "Transaktionsavgift",
     "issuerFee": "Utfärdares febern",
     "invoiceID": "Faktura ID",
+    "domainID": "Domain ID",
     "sendMax": "Skicka max",
     "deliverMin": "Levermin",
     "checkID": "Check ID",

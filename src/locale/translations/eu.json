@@ -207,6 +207,7 @@
     "fee": "Transakzio kuota",
     "issuerFee": "Igorlearen kuota",
     "invoiceID": "Faktura ID",
+    "domainID": "Domain ID",
     "sendMax": "Bidali gehieneko zenbatekoa",
     "deliverMin": "entregatu Gutxieneko",
     "checkID": "Egiaztatu ID",

@@ -207,6 +207,7 @@
     "fee": "Такса за транзакция",
     "issuerFee": "Issuer fee",
     "invoiceID": "ID на фактура",
+    "domainID": "Domain ID",
     "sendMax": "Изпрати Макс",
     "deliverMin": "Избави Мин",
     "checkID": "Провери ID",

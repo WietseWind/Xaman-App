@@ -207,6 +207,7 @@
     "fee": "Poplatok za transakciu",
     "issuerFee": "Poplatok za emitenta",
     "invoiceID": "faktúry ID",
+    "domainID": "Domain ID",
     "sendMax": "Odoslať všetko",
     "deliverMin": "Doručiť minimum",
     "checkID": "ID šeku",

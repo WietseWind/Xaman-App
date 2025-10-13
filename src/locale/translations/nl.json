@@ -207,6 +207,7 @@
     "fee": "Transactiekosten",
     "issuerFee": "Uitgever kosten",
     "invoiceID": "Factuur ID",
+    "domainID": "Domain ID",
     "sendMax": "Maximum verzenden",
     "deliverMin": "Minimum ontvangen",
     "checkID": "Check ID",

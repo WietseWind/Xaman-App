@@ -207,6 +207,7 @@
     "fee": "Opłata transakcyjna",
     "issuerFee": "Opłata emitenta",
     "invoiceID": "Identyfikator Faktury",
+    "domainID": "Domain ID",
     "sendMax": "Wyślij wszystkie",
     "deliverMin": "Dostarcz minimum",
     "checkID": "Identyfikator Czeku",

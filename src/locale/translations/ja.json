@@ -207,6 +207,7 @@
     "fee": "取引手数料",
     "issuerFee": "発行者手数料",
     "invoiceID": "請求ID",
+    "domainID": "Domain ID",
     "sendMax": "送信最大量",
     "deliverMin": "デリバリー 最低額",
     "checkID": "IDを確認してください",

@@ -207,6 +207,7 @@
     "fee": "Frais de transaction",
     "issuerFee": "Frais d'émetteur",
     "invoiceID": "Indentifiant de facture",
+    "domainID": "Domain ID",
     "sendMax": "Envoyer tout",
     "deliverMin": "Livrer le minimum",
     "checkID": "Vérification d'identité",

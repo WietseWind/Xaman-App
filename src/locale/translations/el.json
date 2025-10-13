@@ -207,6 +207,7 @@
     "fee": "Κόστος συναλλαγής",
     "issuerFee": "Χρέωση εκδότη",
     "invoiceID": "ID τιμολογίου",
+    "domainID": "Domain ID",
     "sendMax": "Αποστολή Max",
     "deliverMin": "Deliver Min",
     "checkID": "Έλεγχος ID",

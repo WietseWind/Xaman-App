@@ -207,6 +207,7 @@
     "fee": "Провизија",
     "issuerFee": "Накнада издаваоца",
     "invoiceID": "Извод",
+    "domainID": "Domain ID",
     "sendMax": "Послати све",
     "deliverMin": "Испоручи мин",
     "checkID": "Чек ИД",

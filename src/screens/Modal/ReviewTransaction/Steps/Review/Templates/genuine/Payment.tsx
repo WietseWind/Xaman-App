@@ -623,6 +623,15 @@ class PaymentTemplate extends Component<Props, State> {
                     </>
                 )}
 
+                {transaction.DomainID && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.domainID')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>{transaction.DomainID}</Text>
+                        </View>
+                    </>
+                )}
+
                 {transaction.CredentialIDs && (
                     <>
                         <Text style={styles.label}>{Localize.t('global.credentialIDs')}</Text>

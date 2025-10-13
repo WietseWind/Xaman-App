@@ -207,6 +207,7 @@
     "fee": "Gharama ya muhamala",
     "issuerFee": "Issuer fee",
     "invoiceID": "Kitambulisho cha ankara",
+    "domainID": "Domain ID",
     "sendMax": "Send Maximum amount",
     "deliverMin": "Deliver Minimum amount",
     "checkID": "Kitambulisho cha kuangalia",

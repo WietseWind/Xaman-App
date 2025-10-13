@@ -207,6 +207,7 @@
     "fee": "ਲੈਣ-ਦੇਣ ਦੀ ਫੀਸ",
     "issuerFee": "ਜਾਰੀ ਕਰਤਾ ਫੀਸ",
     "invoiceID": "ਇਨਵੌਇਸ ਆਈਡੀ",
+    "domainID": "Domain ID",
     "sendMax": "ਸਾਰੇ ਭੇਜੋ",
     "deliverMin": "ਪ੍ਰਦਾਨ ਕਰੋ ਘੱਟੋ ਘੱਟ",
     "checkID": "ਚੈੱਕ ਆਈਡੀ",

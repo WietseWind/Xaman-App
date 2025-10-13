@@ -207,6 +207,7 @@
     "fee": "Pavedimo mokestis",
     "issuerFee": "Emitento mokestis",
     "invoiceID": "Sąskaitos faktūros ID",
+    "domainID": "Domain ID",
     "sendMax": "Siųsti viską",
     "deliverMin": "pristatyti Minimalus",
     "checkID": "Patikrinkite ID",

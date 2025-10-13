@@ -207,6 +207,7 @@
     "fee": "交易手续费",
     "issuerFee": "Issuer fee",
     "invoiceID": "发票编号",
+    "domainID": "Domain ID",
     "sendMax": "Send Maximum amount",
     "deliverMin": "Deliver Minimum amount",
     "checkID": "支票ID",

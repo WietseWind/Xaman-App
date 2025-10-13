@@ -207,6 +207,7 @@
     "fee": "Tranzaksiya uchun to'lov",
     "issuerFee": "Emitent uchun to'lov",
     "invoiceID": "Hisob-faktura raqami",
+    "domainID": "Domain ID",
     "sendMax": "Maksimal miqdorni yuboring",
     "deliverMin": "Minimal miqdorni etkazib bering",
     "checkID": "Schot raqami",

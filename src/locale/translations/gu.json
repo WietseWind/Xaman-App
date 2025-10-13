@@ -207,6 +207,7 @@
     "fee": "ટ્રાન્ઝેક્શન ફી",
     "issuerFee": "રજૂકર્તા ફી",
     "invoiceID": "ભરતિયું ID",
+    "domainID": "Domain ID",
     "sendMax": "બધા મોકલો",
     "deliverMin": "ન્યુનતમ પહોંચાડો",
     "checkID": "ચેક આઈડી",

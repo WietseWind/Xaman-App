@@ -207,6 +207,7 @@
     "fee": "Tehingutasu",
     "issuerFee": "Väljaandja tasu",
     "invoiceID": "Arve ID",
+    "domainID": "Domain ID",
     "sendMax": "Saada kõik",
     "deliverMin": "Anna minimaalne",
     "checkID": "Kontrolli ID",

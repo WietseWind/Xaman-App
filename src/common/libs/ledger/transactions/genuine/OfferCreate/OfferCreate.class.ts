@@ -26,12 +26,14 @@ class OfferCreate extends BaseGenuineTransaction {
         TakerGets: { required: true, type: Amount },
         Expiration: { type: UInt32, codec: RippleTime },
         OfferID: { type: Hash256 },
+        DomainID: { type: Hash256 },
     };
 
     declare TakerPays: FieldReturnType<typeof Amount>;
     declare TakerGets: FieldReturnType<typeof Amount>;
     declare Expiration: FieldReturnType<typeof UInt32, typeof RippleTime>;
     declare OfferID: FieldReturnType<typeof Hash256>;
+    declare DomainID: FieldReturnType<typeof Hash256>;
 
     private _offerStatus?: OfferStatus;
 
@@ -78,29 +80,29 @@ class OfferCreate extends BaseGenuineTransaction {
         //     console.log('x2')
         //     return this._offerStatus;
         // }
-        
+
         // transaction has not been executed
         if (typeof this._meta === 'undefined' || typeof this.Sequence === 'undefined') {
             return OfferStatus.UNKNOWN;
         }
-        
+
         // offer effected by another offer we assume it's partially filledGetOfferStatus
         if (owner !== this.Account) {
             this._offerStatus = OfferStatus.PARTIALLY_FILLED;
             return this._offerStatus;
         }
-        
+
         const offerLedgerIndex = EncodeLedgerIndex(owner, this.Sequence);
-        
+
         // unable to calculate offer ledger index
         // NOTE: this should not happen
         if (!offerLedgerIndex) {
             this._offerStatus = OfferStatus.UNKNOWN;
             return this._offerStatus;
         }
-        
+
         this._offerStatus = new Meta(this._meta).parseOfferStatusChange(owner, offerLedgerIndex);
-        
+
         return this._offerStatus;
     }
 }

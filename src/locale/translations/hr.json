@@ -207,6 +207,7 @@
     "fee": "Naknada za transakciju",
     "issuerFee": "Naknada izdavatelja",
     "invoiceID": "ID računa",
+    "domainID": "Domain ID",
     "sendMax": "Pošalji sve",
     "deliverMin": "Isporuči minimalno",
     "checkID": "ID provjere",

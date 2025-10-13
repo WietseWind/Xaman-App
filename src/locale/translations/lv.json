@@ -207,6 +207,7 @@
     "fee": "Darījuma komisijas maksa",
     "issuerFee": "Issuer fee",
     "invoiceID": "Rēķina ID",
+    "domainID": "Domain ID",
     "sendMax": "Send Maximum amount",
     "deliverMin": "Deliver Minimum amount",
     "checkID": "Čeka ID",

@@ -207,6 +207,7 @@
     "fee": "Comissió de transacció",
     "issuerFee": "Comissió de l'emissor",
     "invoiceID": "Identificador de factura",
+    "domainID": "Domain ID",
     "sendMax": "Envia-ho tot",
     "deliverMin": "Mínim del lliurament",
     "checkID": "Identificador del xec",

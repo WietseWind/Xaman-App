@@ -207,6 +207,7 @@
     "fee": "Transaktionsgebühr",
     "issuerFee": "Ausstellergebühr",
     "invoiceID": "Rechnungs-ID",
+    "domainID": "Domain ID",
     "sendMax": "Max. senden",
     "deliverMin": "Min. Übergabe",
     "checkID": "Scheck ID",

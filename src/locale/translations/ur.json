@@ -207,6 +207,7 @@
     "fee": "ٹرانزیکشن فیس",
     "issuerFee": "اجراء کنندہ فیس",
     "invoiceID": "انوائس ID",
+    "domainID": "Domain ID",
     "sendMax": "سبھی بھیجیں",
     "deliverMin": "کم سے کم فراہمی",
     "checkID": "چیک ID",

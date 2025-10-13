@@ -207,6 +207,7 @@
     "fee": "frè tranzaksyon",
     "issuerFee": "Frè emeteur",
     "invoiceID": "facture ID",
+    "domainID": "Domain ID",
     "sendMax": "Voye kantite maksimòm",
     "deliverMin": "Delivre kantite minimòm",
     "checkID": "chèk ID",

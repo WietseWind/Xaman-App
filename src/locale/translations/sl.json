@@ -207,6 +207,7 @@
     "fee": "Provizija plačila",
     "issuerFee": "Provizija za izdajatelja",
     "invoiceID": "ID fakture",
+    "domainID": "Domain ID",
     "sendMax": "Pošlji vse",
     "deliverMin": "Dostavi najmanj",
     "checkID": "ID čeka",

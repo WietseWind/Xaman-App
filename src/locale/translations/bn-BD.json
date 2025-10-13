@@ -207,6 +207,7 @@
     "fee": "লেনদেন ফি",
     "issuerFee": "ইস্যুকারী ফি",
     "invoiceID": "চালান আইডি",
+    "domainID": "Domain ID",
     "sendMax": "সব পাঠাও",
     "deliverMin": "ন্যূনতম বিতরণ করুন",
     "checkID": "আইডি চেক করুন",
