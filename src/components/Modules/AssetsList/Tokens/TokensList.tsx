@@ -440,6 +440,7 @@ class TokensList extends Component<Props, State> {
                     ref={this.dragSortableRef}
                     itemHeight={TokenItem.Height}
                     separatorHeight={0}
+                    topFade
                     firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12)}
                     dataSource={[
                         ...(reorderEnabled ? [] : [{

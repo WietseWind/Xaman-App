@@ -15,9 +15,11 @@ import {
 import CellComponent from '@components/General/SortableFlatList/CellComponent';
 
 import styles from './styles';
+// import { AppStyles } from '@theme/index';
 
 /* Types ==================================================================== */
 interface Props {
+    topFade: boolean;
     testID?: string;
     itemHeight: number;
     separatorHeight?: number;
@@ -534,42 +536,57 @@ export default class SortableFlatList extends Component<Props, State> {
     };
 
     render() {
-        const { testID, dataSource, keyExtractor, renderItem, renderEmptyList, itemHeight, separatorHeight } =
+        const {
+            testID,
+            dataSource,
+            keyExtractor,
+            renderItem,
+            renderEmptyList,
+            itemHeight,
+            separatorHeight,
+            topFade,
+        } =
             this.props;
         const { isItemActive, containerHeight } = this.state;
 
         return (
-            <FlatList
-                testID={testID}
-                ref={this.listRef}
-                style={styles.container}
-                contentContainerStyle={[
-                    styles.contentContainerStyle,
-                    { height: containerHeight !== 0 ? containerHeight : undefined },
-                ]}
-                data={dataSource}
-                renderItem={renderItem}
-                ListEmptyComponent={renderEmptyList}
-                CellRendererComponent={this.renderCellComponent}
-                keyExtractor={keyExtractor}
-                onScroll={this.onScroll}
-                onLayout={this.onLayout}
-                getItemLayout={(data, index) => ({
-                    length: itemHeight + separatorHeight,
-                    offset: (itemHeight + separatorHeight) * index,
-                    index,
-                })}
-                scrollEnabled={!isItemActive}
-                scrollEventThrottle={1}
-                horizontal={false}
-                removeClippedSubviews={false}
-                alwaysBounceVertical={false}
-                bounces={false}
-                maxToRenderPerBatch={60}
-                initialNumToRender={30}
-                /* eslint-disable-next-line react/jsx-props-no-spreading */
-                {...this.panResponder.panHandlers}
-            />
+            <View style={[ topFade && styles.topShadowContainer ]}>
+                <View style={[ topFade && styles.topShadow ]} />
+                <FlatList
+                    testID={testID}
+                    ref={this.listRef}
+                    style={[
+                        styles.container,
+                        // AppStyles.borderRed,
+                    ]}
+                    contentContainerStyle={[
+                        styles.contentContainerStyle,
+                        { height: containerHeight !== 0 ? containerHeight : undefined },
+                    ]}
+                    data={dataSource}
+                    renderItem={renderItem}
+                    ListEmptyComponent={renderEmptyList}
+                    CellRendererComponent={this.renderCellComponent}
+                    keyExtractor={keyExtractor}
+                    onScroll={this.onScroll}
+                    onLayout={this.onLayout}
+                    getItemLayout={(data, index) => ({
+                        length: itemHeight + separatorHeight,
+                        offset: (itemHeight + separatorHeight) * index,
+                        index,
+                    })}
+                    scrollEnabled={!isItemActive}
+                    scrollEventThrottle={1}
+                    horizontal={false}
+                    removeClippedSubviews={false}
+                    alwaysBounceVertical={false}
+                    bounces={false}
+                    maxToRenderPerBatch={60}
+                    initialNumToRender={30}
+                    /* eslint-disable-next-line react/jsx-props-no-spreading */
+                    {...this.panResponder.panHandlers}
+                />
+            </View>
         );
     }
 }
