@@ -10,7 +10,7 @@ import * as AccountLib from 'xrpl-accountlib';
 import RNTangemSdk from 'tangem-sdk-react-native';
 
 import NetworkService from '@services/NetworkService';
-import LoggerService from '@services/LoggerService';
+import LoggerService, { LogEvents } from '@services/LoggerService';
 
 import { AccountModel } from '@store/models';
 import { AccountRepository, CoreRepository } from '@store/repositories';
@@ -45,6 +45,7 @@ import { SelectSigner } from './SelectSinger';
 
 /* types ==================================================================== */
 import { AuthMethods, Props, SignOptions, State, Steps } from './types';
+import { computeBinaryTransactionHash } from 'xrpl-accountlib/dist/utils';
 
 /* Component ==================================================================== */
 class VaultOverlay extends Component<Props, State> {
@@ -331,11 +332,38 @@ class VaultOverlay extends Component<Props, State> {
                 transaction.populateFields();
             }
 
+            LoggerService.logEvent(LogEvents.SigningRoutingInformation, {
+                transactionType: transaction.Type,
+                preferredSigner: preferredSigner.address,
+                inNeedOfMultipleSigners: transaction.isBatchInNeedOfMultipleSigners() &&
+                    transaction.innerBatchSigners().length > 1 ? 'true' : 'false',
+            });
+
             let signedObject = AccountLib.sign(
-                transaction.JsonForSigning,
+                {
+                    ...transaction.JsonForSigning,
+                    ...(transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1 ? {
+                        BatchSigners: [
+                            AccountLib.signInnerBatch(transaction.JsonForSigning, signerInstance, definitions),
+                        ],
+                    } : {}),
+                },
                 signerInstance,
                 definitions,
             ) as SignedObjectType;
+
+            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
+                if (signedObject?.txJson && (signedObject?.txJson as any)?.BatchSigners) {
+                    delete (signedObject?.txJson as any).SigningPubKey;
+                    delete (signedObject?.txJson as any).TxnSignature;
+                    const decoded = AccountLib.binary.decode(signedObject.signedTransaction, definitions);
+                    delete decoded.SigningPubKey;
+                    delete decoded.TxnSignature;
+                    signedObject.signedTransaction = AccountLib.binary.encode(decoded, definitions);
+                    signedObject.id = computeBinaryTransactionHash(signedObject.signedTransaction);
+                }
+            }
+
             signedObject = {
                 ...signedObject,
                 signerPubKey: signerInstance.keypair.publicKey ?? undefined,
@@ -392,6 +420,8 @@ class VaultOverlay extends Component<Props, State> {
 
             // get current network definitions
             const definitions = NetworkService.getNetworkDefinitions();
+
+            // TODO: BATCH support
 
             // prepare the transaction for signing
             const preparedTx = AccountLib.rawSigning.prepare(

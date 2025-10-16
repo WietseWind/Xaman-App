@@ -9,7 +9,7 @@ import { Images } from '@common/helpers/images';
 import { Toast } from '@common/helpers/interface';
 import { Clipboard } from '@common/helpers/clipboard';
 
-import { InstanceTypes } from '@common/libs/ledger/types/enums';
+import { InstanceTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 
 // components
 import { Avatar, Button, Footer, Spacer } from '@components/General';
@@ -222,7 +222,14 @@ class ResultStep extends Component<Props, State> {
 
                 <View style={AppStyles.flex3}>
                     <View style={styles.detailsCard}>
-                        {transaction?.InstanceType === InstanceTypes.PseudoTransaction ? (
+                        {(
+                            transaction?.InstanceType === InstanceTypes.PseudoTransaction ||
+                            (
+                                transaction?.Type === TransactionTypes.Batch &&
+                                !transaction.SubmitResult &&
+                                !transaction.TxnSignature
+                            )
+                        ) ? (
                             <View key="applicationDetails" style={[AppStyles.centerAligned, AppStyles.paddingVertical]}>
                                 <Avatar size={70} border source={{ uri: payload.getApplicationIcon() }} />
                                 {/* eslint-disable-next-line react-native/no-inline-styles */}

@@ -66,6 +66,7 @@ export enum TransactionTypes {
     PermissionedDomainDelete = 'PermissionedDomainDelete',
     PermissionedDomainSet = 'PermissionedDomainSet',
     SetRemarks = 'SetRemarks',
+    Batch = 'Batch',
 }
 
 /**

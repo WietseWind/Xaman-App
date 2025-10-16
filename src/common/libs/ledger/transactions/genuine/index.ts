@@ -58,3 +58,4 @@ export * from './CredentialDelete';
 export * from './SetRemarks';
 export * from './PermissionedDomainSet';
 export * from './PermissionedDomainDelete';
+export * from './Batch';

@@ -222,6 +222,7 @@ class ResolverService {
         const key = `${address}${tag ?? ''}`;
 
         const cachedValue = this.accountNameCache.get(key);
+
         if (cachedValue) {
             return cachedValue;
         }

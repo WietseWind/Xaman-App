@@ -48,6 +48,7 @@ import {
     EnableAmendment,
     PermissionedDomainDelete,
     PermissionedDomainSet,
+    Batch,
 } from '.';
 
 // Pseudo transactions
@@ -109,6 +110,7 @@ export type Transactions =
     | DIDSet
     | DIDDelete
     | GenesisMint
+    | Batch
     | PermissionedDomainDelete
     | PermissionedDomainSet
     | EnableAmendment;

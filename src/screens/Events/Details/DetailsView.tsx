@@ -21,6 +21,7 @@ import { GetTransactionLink } from '@common/utils/explorer';
 
 import { Header } from '@components/General';
 
+// eslint-disable-next-line import/no-cycle
 import * as MutationWidgets from '@components/Modules/MutationWidgets';
 
 import Localize from '@locale';
@@ -113,8 +114,10 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
         // only validated transactions have CTID
         // Regular transactions
         if (
-            item.InstanceType === InstanceTypes.GenuineTransaction ||
-            item.InstanceType === InstanceTypes.FallbackTransaction
+            (
+                item.InstanceType === InstanceTypes.GenuineTransaction ||
+                item.InstanceType === InstanceTypes.FallbackTransaction
+            ) && item?.CTID
         ) {
             return GetTransactionLink(item.CTID);
         }
@@ -185,6 +188,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             'WarningsWidget',
             'IdentifierWidget',
             'ExplainWidget',
+            'BatchTransactions',
             'MPTWidget',
             'ActorArrayWidget',
             'FlagsWidget',
