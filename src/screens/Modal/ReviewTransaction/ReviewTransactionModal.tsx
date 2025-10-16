@@ -33,6 +33,7 @@ import { StepsContext } from './Context';
 import { Props, State, Steps } from './types';
 import LedgerService from '@services/LedgerService';
 import BackendService from '@services/BackendService';
+import { VerifyResultType } from '@common/libs/ledger/types';
 
 /* Component ==================================================================== */
 class ReviewTransactionModal extends Component<Props, State> {
@@ -689,7 +690,11 @@ class ReviewTransactionModal extends Component<Props, State> {
                     this.setState({ currentStep: Steps.Verifying });
 
                     // verify transaction
-                    const verifyResult = await transaction.verify();
+                    const pastSeq = submitResult?.engineResult === 'tefPAST_SEQ';
+
+                    const verifyResult = pastSeq
+                        ? Promise.resolve({ success: false }) as unknown as VerifyResultType
+                        : await transaction.verify();
 
                     // update submit result base on verify result
                     if (verifyResult.success) {
