@@ -1340,6 +1340,7 @@
     "qualityOut": "Quality out"
   },
   "txBatch": {
+    "title": "Batch",
     "parentTransaction": "Part of Batch transaction",
     "thisTxIsPartOfBatchTransaction": "This transaction is part of a Batch transaction.\n\n",
     "batch": "Batch of %{txCount}",
@@ -1350,7 +1351,10 @@
     "batchExecution_tfAllOrNothing": "atomically, so either they all succeed or they all fail",
     "batchExecution_tfOnlyOne": "to process only the first successful transaction, all others are either failed or not tried (because one already succeeded)",
     "batchExecution_tfUntilFailure": "until one fails, all others are either failed or not tried (because others already succeeded)",
-    "batchExecution_tfIndependent": "independently, so they every inner transaction can individually succeed or fail"
+    "batchExecution_tfIndependent": "independently, so they every inner transaction can individually succeed or fail",
+    "txMineAndSelected": "Own account (signing)",
+    "txMineButOther": "Own (other) account",
+    "txThirdParty": "Third party account"
   },
   "txDelegateSet": {
     "delegateSet": "DelegateSet",
