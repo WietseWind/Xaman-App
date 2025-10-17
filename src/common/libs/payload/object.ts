@@ -349,8 +349,7 @@ export class Payload {
                         )
                             .map((pseudoSigner) => {
                                 // console.log('pseudoSigner', pseudoSigner);
-                                const batchSigners = binary.decode(pseudoSigner)?.BatchSigners;
-                                // console.log(binary.decode(pseudoSigner));
+                                const batchSigners = binary.decode(pseudoSigner as unknown as string)?.BatchSigners;
                                 return batchSigners;
                             })
                             .filter((batchSigners) => !!batchSigners)
