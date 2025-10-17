@@ -56,6 +56,7 @@ import CredentialDelete from './CredentialDelete';
 import SetRemarks from './SetRemarks';
 import PermissionedDomainSet from './PermissionedDomainSet';
 import PermissionedDomainDelete from './PermissionedDomainDelete';
+import Batch from './Batch';
 
 export {
     Global,
@@ -116,4 +117,5 @@ export {
     SetRemarks,
     PermissionedDomainSet,
     PermissionedDomainDelete,
+    Batch,
 };

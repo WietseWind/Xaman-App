@@ -3,6 +3,7 @@ import { get, isObject, isString, isUndefined } from 'lodash';
 
 import { AppConfig } from '@common/constants';
 import { Endpoints } from '@common/constants/endpoints';
+import { binary } from 'xrpl-accountlib';
 
 import ApiService, { ApiError } from '@services/ApiService';
 import LoggerService from '@services/LoggerService';
@@ -31,6 +32,7 @@ import { DigestSerializeWithSHA1 } from './digest';
 
 // errors
 import { PayloadErrors } from './errors';
+import { BatchSigner } from '../ledger/types/common';
 
 // create logger
 const logger = LoggerService.createLogger('Payload');
@@ -334,6 +336,30 @@ export class Payload {
             logger.warn(
                 `Requested transaction type "${request_json.TransactionType}" not found, revert to fallback transaction.`,
             );
+        }
+
+        // console.log('Building payload tx', request_json);
+        if (tx_type === 'Batch') {
+            try {
+                if (request_json?.BatchSigners && request_json.BatchSigners.length > 0) {
+                    if (typeof request_json.BatchSigners[0] === 'string') {
+                        // This is a batch with mock signers, to be merged
+                        request_json.BatchSigners = request_json.BatchSigners.filter(
+                            (pseudoSigner) => typeof pseudoSigner === 'string',
+                        )
+                            .map((pseudoSigner) => {
+                                // console.log('pseudoSigner', pseudoSigner);
+                                const batchSigners = binary.decode(pseudoSigner as unknown as string)?.BatchSigners;
+                                return batchSigners;
+                            })
+                            .filter((batchSigners) => !!batchSigners)
+                            .flat() as unknown as BatchSigner[];
+                    }
+                }
+            } catch (e: any) {
+                logger.error(`Could not merge batch signers, revert to fallback transaction: ${e?.message}`);
+                delete request_json.BatchSigners;
+            }
         }
 
         let craftedTransaction;

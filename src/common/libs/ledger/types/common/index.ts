@@ -16,6 +16,14 @@ export interface MPTokenCurrency {
 
 export type Currency = IssuedCurrency | NativeCurrency | MPTokenCurrency;
 
+export interface BatchSigner {
+    BatchSigner: {
+        Account: string;
+        SigningPubKey: string;
+        Signature: string;
+    };
+}
+
 export interface IssuedCurrencyAmount extends IssuedCurrency {
     value: string;
 }

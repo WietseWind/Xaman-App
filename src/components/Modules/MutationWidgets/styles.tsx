@@ -14,6 +14,10 @@ const styles = StyleService.create({
     marginBottom: {
         marginBottom: AppSizes.padding / 3.5,  
     },
+    parentBatchContainer: {
+        paddingHorizontal: 10,
+        paddingTop: 5,
+    },
     credentialTypeLineHeight: {
         paddingTop: 5,
         paddingBottom: 4,

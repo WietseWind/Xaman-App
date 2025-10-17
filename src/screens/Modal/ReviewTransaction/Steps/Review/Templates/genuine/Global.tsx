@@ -378,6 +378,8 @@ class GlobalTemplate extends Component<Props, State> {
     };
 
     render() {
+        const { innerBatch } = this.props;
+
         return (
             <>
                 {this.renderHookParameters()}
@@ -385,12 +387,12 @@ class GlobalTemplate extends Component<Props, State> {
                 {this.renderOperationLimit()}
                 {this.renderTicketSequence()}
                 {this.renderSequence()}
-                {this.renderSigners()}
+                {!innerBatch && this.renderSigners()}
                 {this.renderMemos()}
                 {this.renderFlags()}
-                {this.renderFee()}
+                {!innerBatch && this.renderFee()}
                 {this.renderWarnings()}
-                {this.renderHookExplainer()}
+                {!innerBatch && this.renderHookExplainer()}
             </>
         );
     }

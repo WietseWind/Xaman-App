@@ -27,6 +27,7 @@ import { Navigator } from '@common/helpers/navigator';
 
 import { TouchableDebounce, Badge, BadgeType, Icon } from '@components/General';
 
+// eslint-disable-next-line import/no-cycle
 import { TransactionDetailsViewProps } from '@screens/Events/Details';
 
 import * as Blocks from './Blocks';
@@ -50,6 +51,10 @@ export interface Props {
     account: AccountModel;
     item: Transactions & MutationsMixinType;
     timestamp?: number;
+    showDespiteThirdParty?: boolean;
+    onPress?: () => void;
+    notFound?: boolean;
+    isReplayed?: boolean;
     rates?: {
         fiatCurrency: string;
         fiatRate: RatesType | undefined;
@@ -212,11 +217,20 @@ class TransactionItem extends Component<Props, State> {
         const { item, account } = this.props;
         const { cachedTokenDetails } = this.state;
 
-        Navigator.push<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
-            item,
-            account,
-            cachedTokenDetails,
-        });
+        Navigator.pop();
+        setTimeout(() => {
+            Navigator.push<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
+                item,
+                account,
+                cachedTokenDetails,
+            });
+        }, 500);
+
+        // Navigator.push<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
+        //     item,
+        //     account,
+        //     cachedTokenDetails,
+        // });
     };
 
     getTokenDetails() {
@@ -351,7 +365,14 @@ class TransactionItem extends Component<Props, State> {
     }
 
     render() {
-        const { item, account } = this.props; // , rates
+        const {
+            item,
+            account,
+            showDespiteThirdParty,
+            onPress,
+            notFound,
+            isReplayed,
+        } = this.props; // , rates
         const { participant, explainer, isFeeTransaction, feeText, cachedTokenDetails } = this.state;
 
         // if participant is block the show an overlay to reduce the visibility
@@ -363,7 +384,13 @@ class TransactionItem extends Component<Props, State> {
         let hasBalanceChanges = true;
         const mutations = item.BalanceChange(account.address);
         if (!mutations?.[OperationActions.INC]?.[0] && !mutations?.[OperationActions.DEC]?.[0]) {
+            // if (item.Account !== account.address) {
+            //     if (!showDespiteThirdParty) {
+            //         hasBalanceChanges = false;
+            //     }
+            // }
             if (
+                !showDespiteThirdParty &&
                 item?.Account !== account.address &&
                 (item as any)?.Issuer !== account.address && // credential
                 (item as any)?.Holder !== account.address // clawback
@@ -372,12 +399,27 @@ class TransactionItem extends Component<Props, State> {
             }
         }
 
+        const batchInfo = {
+            txCount: 0,
+            signerCount: 0,
+        };
+
+        if (item.Type === 'Batch') {
+            batchInfo.txCount = item.RawTransactions?.length || 0;
+            batchInfo.signerCount = item.BatchSigners?.length || 0;
+        }
+
+        const press = typeof onPress === 'undefined' ? this.onPress : onPress;
+
         return (
             <TouchableDebounce
-                onPress={this.onPress}
+                onPress={press}
                 activeOpacity={Math.min(0.6, 0.6 * opacity.opacity)}
                 style={[
                     styles.container,
+                    batchInfo.txCount > 0 && styles.batchContainer,
+                    notFound && styles.notFound,
+                    isReplayed && styles.isReplayed,
                     {
                         height: isFeeTransaction
                             ? TransactionItem.FeeHeight
@@ -393,6 +435,15 @@ class TransactionItem extends Component<Props, State> {
                     )}
                     { !isFeeTransaction && (
                         cachedTokenDetails?.icon
+                    )}
+                    {!isFeeTransaction && (item?.MetaData as any)?.ParentBatchID && (
+                        <View style={[
+                            styles.batchIconContainer,
+                        ]}>
+                            <Text style={[
+                                styles.batchIconText,
+                            ]}>Batch Tx</Text>
+                        </View>
                     )}
                 </View>
                 <View style={[AppStyles.flex3, AppStyles.centerContent, opacity]}>
@@ -432,11 +483,47 @@ class TransactionItem extends Component<Props, State> {
                             { feeText }
                         </Text>
                     )}
-                    { !isFeeTransaction && !isRejected && hasBalanceChanges && (
-                        <Blocks.MonetaryBlock explainer={explainer} />
+                    {!isFeeTransaction && !isRejected && hasBalanceChanges && batchInfo.txCount === 0 && (
+                        notFound || isReplayed ? (
+                            <>
+                                <Text style={[
+                                    AppStyles.pbold,
+                                    isReplayed
+                                        ? AppStyles.colorOrange
+                                        : AppStyles.colorRed,
+                                ]}>{
+                                    isReplayed
+                                        ? Localize.t('global.failed')
+                                        : Localize.t('global.failed')
+                                    }</Text>
+                                {!isReplayed && (
+                                    <Text style={[
+                                        AppStyles.smalltext,
+                                        AppStyles.colorRed,
+                                    ]}>{Localize.t('global.notFound')}</Text>
+                                )}
+                                {isReplayed && (
+                                    <Text style={[
+                                        AppStyles.smalltext,
+                                        AppStyles.colorOrange,
+                                    ]}>{Localize.t('global.foreign')}</Text>
+                                )}
+                            </>
+                        ) : (
+                            <Blocks.MonetaryBlock explainer={explainer} />
+                        )
                     )}
-                    { !isFeeTransaction && isRejected && (
+                    { !isFeeTransaction && isRejected && batchInfo.txCount === 0 && (
                         <Icon name="IconAlertTriangle" size={20} style={styles.iconHookRejcted} />
+                    )}
+                    {!isFeeTransaction && !isRejected && batchInfo.txCount > 0 && (
+                        <View style={[
+                            styles.batchCountCircle,
+                        ]}>
+                            <Text style={[
+                                styles.batchCountText,
+                            ]}>{batchInfo.txCount}</Text>
+                        </View>
                     )}
                 </View>
             </TouchableDebounce>

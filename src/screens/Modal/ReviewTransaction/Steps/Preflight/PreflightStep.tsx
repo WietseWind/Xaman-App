@@ -29,6 +29,7 @@ import { AppStyles } from '@theme';
 import styles from './styles';
 
 import { StepsContext } from '../../Context';
+import { TransactionTypes } from '@common/libs/ledger/types/enums';
 /* types ==================================================================== */
 enum RequiredActionsType {
     SWITCH_NETWORK = 'SWITCH_NETWORK',
@@ -221,6 +222,15 @@ class PreflightStep extends Component<Props, State> {
                 // if any account set from payload, set as preferred account
                 if (transaction && transaction.Account) {
                     preferredAccount = find(availableAccounts, { address: transaction.Account });
+                }
+
+                if (
+                    transaction &&
+                    transaction.TransactionType === TransactionTypes.Batch &&
+                    transaction.innerBatchSigners().length === 1
+                ) {
+                    // Batch in need of one signer, set as preferred account
+                    preferredAccount = find(availableAccounts, { address: transaction.innerBatchSigners()[0] });
                 }
 
                 // remove hidden accounts but keep preferred account even if hidden
