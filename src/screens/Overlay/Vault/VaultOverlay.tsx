@@ -339,6 +339,27 @@ class VaultOverlay extends Component<Props, State> {
                     transaction.innerBatchSigners().length > 1 ? 'true' : 'false',
             });
 
+            // If batch, check if at the final stage and signign with the same account as
+            // an inner batch signer is already present: in that case: suppress, no duplicate
+            // signing
+            if (transaction.JsonForSigning.TransactionType === 'Batch') {
+                if (!transaction.isBatchInNeedOfMultipleSigners()) {
+                    // ^^ inner signers already fulfilled or not required
+                    if (transaction?.JsonForSigning?.BatchSigners && transaction.innerBatchSigners().length > 0) {
+                        const overlappingInnerSigner = transaction.JsonForSigning.BatchSigners
+                            ?.find(b => b.BatchSigner.Account === transaction.Account);
+                        
+                        if (overlappingInnerSigner) {
+                            // console.log('Batch signer already present, no need to sign again')
+                            transaction.JsonForSigning.BatchSigners.splice(
+                                transaction.JsonForSigning.BatchSigners.indexOf(overlappingInnerSigner),
+                                1,
+                            );
+                        }
+                    }
+                }
+            }
+
             let signedObject = AccountLib.sign(
                 {
                     ...transaction.JsonForSigning,
