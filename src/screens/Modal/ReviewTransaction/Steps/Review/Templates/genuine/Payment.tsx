@@ -496,47 +496,49 @@ class PaymentTemplate extends Component<Props, State> {
                             AppStyles.stretchSelf,
                         ]}>
                             <View style={[AppStyles.flex1, AppStyles.flexStart]}>{this.renderAmountRate()}</View>
-                            <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
-                                <Text style={[
-                                    !isNativeAsset
-                                        ? AppStyles.textLeftAligned
-                                        : AppStyles.textRightAligned,
-                                    SummaryStepStyle.currencyBalance,
-                                ]}>
-                                    {Localize.t('global.available')}{': '}
-                                    {
-                                        !isNativeAsset && !this.isMPTAmount()
-                                            ? <AmountText
-                                                value={
-                                                    Math.floor(
-                                                        Number(this.currentCurrency?.balance || 0) * 100_000_000,
-                                                    ) / 100_000_000
-                                                }
-                                                style={[AppStyles.monoBold]}
-                                                currency={this.currentCurrency?.getFormattedCurrency()}
-                                                immutable
-                                            />    
-                                            : this.isMPTAmount() ? (
-                                                <Text style={[AppStyles.monoBold]}>
-                                                    {
-                                                        source.address === mptIssuanceDetails?.Issuer
-                                                            ? (
-                                                                (mptIssuanceDetails?.MaximumAmount || 0) > 0
-                                                                    ? mptAmount.availableForIssuance
-                                                                    : 'N/A (issuer)'
-                                                            )
-                                                            : mptAmount.holding
-                                                    }{' '}
-                                                </Text>
-                                            ) : (
-                                                <Text style={[AppStyles.monoBold]}>
-                                                    {Localize.formatNumber(CalculateAvailableBalance(source!))}{' '}
-                                                    {NetworkService.getNativeAsset()}
-                                                </Text>
-                                            )
-                                    }
-                                </Text>
-                            </View>
+                            {!isNativeAsset && (
+                                <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
+                                    <Text style={[
+                                        !isNativeAsset
+                                            ? AppStyles.textLeftAligned
+                                            : AppStyles.textRightAligned,
+                                        SummaryStepStyle.currencyBalance,
+                                    ]}>
+                                        {Localize.t('global.available')}{': '}
+                                        {
+                                            !isNativeAsset && !this.isMPTAmount()
+                                                ? <AmountText
+                                                    value={
+                                                        Math.floor(
+                                                            Number(this.currentCurrency?.balance || 0) * 100_000_000,
+                                                        ) / 100_000_000
+                                                    }
+                                                    style={[AppStyles.monoBold]}
+                                                    currency={this.currentCurrency?.getFormattedCurrency()}
+                                                    immutable
+                                                />
+                                                : this.isMPTAmount() ? (
+                                                    <Text style={[AppStyles.monoBold]}>
+                                                        {
+                                                            source.address === mptIssuanceDetails?.Issuer
+                                                                ? (
+                                                                    (mptIssuanceDetails?.MaximumAmount || 0) > 0
+                                                                        ? mptAmount.availableForIssuance
+                                                                        : 'N/A (issuer)'
+                                                                )
+                                                                : mptAmount.holding
+                                                        }{' '}
+                                                    </Text>
+                                                ) : (
+                                                    <Text style={[AppStyles.monoBold]}>
+                                                        {Localize.formatNumber(CalculateAvailableBalance(source!))}{' '}
+                                                        {NetworkService.getNativeAsset()}
+                                                    </Text>
+                                                )
+                                        }
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     </View>
                 </>
