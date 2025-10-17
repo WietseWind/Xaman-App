@@ -23,10 +23,17 @@ const styles = StyleService.create({
         marginVertical: AppSizes.scale(1),
     },
     notFound: {
-        opacity: 1,
+        opacity: 0.9,
         borderWidth: 1,
         borderColor: '$red',
         backgroundColor: '$lightRed',
+        marginVertical: AppSizes.scale(1),
+    },
+    isReplayed: {
+        opacity: 0.9,
+        borderWidth: 1,
+        borderColor: '$orange',
+        backgroundColor: '$lightOrange',
         marginVertical: AppSizes.scale(1),
     },
     batchCountCircle: {

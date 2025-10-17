@@ -44,6 +44,7 @@ export interface TransactionMetadata {
     TransactionResult: string;
     HookExecutions?: { HookExecution: HookExecution }[];
     HookEmissions?: { HookEmission: HookEmission }[];
+    ParentBatchID?: string;
     // "nftoken_id" is only present in transactions that involve NFTokens
     nftoken_id?: string;
     mpt_issuance_id?: string;

@@ -54,6 +54,7 @@ export interface Props {
     showDespiteThirdParty?: boolean;
     onPress?: () => void;
     notFound?: boolean;
+    isReplayed?: boolean;
     rates?: {
         fiatCurrency: string;
         fiatRate: RatesType | undefined;
@@ -82,7 +83,6 @@ class TransactionItem extends Component<Props, State> {
 
         this.state = {
             isLoading: true,
-            notFound: false,
             participant: undefined,
             explainer: undefined,
             cachedTokenDetails: {
@@ -371,6 +371,7 @@ class TransactionItem extends Component<Props, State> {
             showDespiteThirdParty,
             onPress,
             notFound,
+            isReplayed,
         } = this.props; // , rates
         const { participant, explainer, isFeeTransaction, feeText, cachedTokenDetails } = this.state;
 
@@ -418,6 +419,7 @@ class TransactionItem extends Component<Props, State> {
                     styles.container,
                     batchInfo.txCount > 0 && styles.batchContainer,
                     notFound && styles.notFound,
+                    isReplayed && styles.isReplayed,
                     {
                         height: isFeeTransaction
                             ? TransactionItem.FeeHeight
@@ -482,11 +484,31 @@ class TransactionItem extends Component<Props, State> {
                         </Text>
                     )}
                     {!isFeeTransaction && !isRejected && hasBalanceChanges && batchInfo.txCount === 0 && (
-                        notFound ? (
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorRed,
-                            ]}>{Localize.t('global.failed')}</Text>
+                        notFound || isReplayed ? (
+                            <>
+                                <Text style={[
+                                    AppStyles.pbold,
+                                    isReplayed
+                                        ? AppStyles.colorOrange
+                                        : AppStyles.colorRed,
+                                ]}>{
+                                    isReplayed
+                                        ? Localize.t('global.failed')
+                                        : Localize.t('global.failed')
+                                    }</Text>
+                                {!isReplayed && (
+                                    <Text style={[
+                                        AppStyles.smalltext,
+                                        AppStyles.colorRed,
+                                    ]}>{Localize.t('global.notFound')}</Text>
+                                )}
+                                {isReplayed && (
+                                    <Text style={[
+                                        AppStyles.smalltext,
+                                        AppStyles.colorOrange,
+                                    ]}>{Localize.t('global.foreign')}</Text>
+                                )}
+                            </>
                         ) : (
                             <Blocks.MonetaryBlock explainer={explainer} />
                         )

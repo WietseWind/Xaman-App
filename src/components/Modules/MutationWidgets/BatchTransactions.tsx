@@ -60,6 +60,7 @@ interface InnerTransaction {
     index: number;
     found: boolean;
     resp: TxResponse | ErrorResponse;
+    parentBatchId?: string;
 }
 
 interface ParentTransaction {
@@ -202,6 +203,7 @@ class BatchTransactions extends PureComponent<Props, State> {
                         index,
                         found: true,
                         resp,
+                        parentBatchId: resp?.meta?.ParentBatchID,
                     };
                 });
             }));
@@ -286,6 +288,7 @@ class BatchTransactions extends PureComponent<Props, State> {
                                         <Transaction
                                             showDespiteThirdParty
                                             notFound={!innerTx.found}
+                                            isReplayed={innerTx.found && innerTx?.parentBatchId !== (item as any)?.hash}
                                             onPress={() => {
                                                 if (!innerTx.found) {
                                                     return;
