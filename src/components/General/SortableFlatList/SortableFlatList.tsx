@@ -76,8 +76,9 @@ export default class SortableFlatList extends Component<Props, State> {
         super(props);
 
         this.state = {
-            containerHeight: (props.itemHeight + props.separatorHeight!) * props.dataSource.length +
-                (props.firstItemExtraHeight || 0) + 10,
+            containerHeight: (props.itemHeight + props.separatorHeight!) *
+                (props.dataSource.length + 1) +
+                (props.firstItemExtraHeight || 0) - 10,
             isItemActive: false,
         };
 
@@ -133,8 +134,13 @@ export default class SortableFlatList extends Component<Props, State> {
         const { containerHeight } = prevState;
 
         // if dataSource size or item height or separator size changed then apply new container height
-        const newContainerHeight = (nextProps.itemHeight + nextProps.separatorHeight!) * nextProps.dataSource.length +
-            (nextProps.firstItemExtraHeight || 0) + 10;
+        let newContainerHeight = (nextProps.itemHeight + nextProps.separatorHeight!) *
+            (nextProps.dataSource.length + 1) +
+            (nextProps.firstItemExtraHeight || 0) - 10;
+        
+        if (nextProps.sortable) {
+            newContainerHeight -= -40;
+        }
 
         if (newContainerHeight !== containerHeight) {
             return {
