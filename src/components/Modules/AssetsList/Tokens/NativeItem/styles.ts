@@ -27,6 +27,21 @@ export default StyleService.create({
     buyIcon: {
         tintColor: StyleService.select({ light: '$black', dark: '$white' }),
     },
+    reserveTextValue: {
+        fontSize: AppFonts.small.size,
+        fontFamily: AppFonts.base.familyMonoBold,
+        color: '$grey',
+        // marginRight: 5,
+    },
+    reserveTextValueCurrency: {
+        fontFamily: AppFonts.base.family,
+        fontSize: AppFonts.small.size * 0.7,
+        marginTop: 1.5,
+        marginRight: 2,
+    },
+    reserveTextValueNonBold: {
+        fontFamily: AppFonts.base.familyMono,
+    },
     buyButtonText: {
         fontFamily: AppFonts.base.familyMonoBold,
         fontSize: AppSizes.scale(12),
@@ -73,6 +88,13 @@ export default StyleService.create({
         alignItems: 'center',
         paddingRight: 7,
     },
+    reserveCurrencyAvatarContainerInline: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingRight: 3,
+        paddingLeft: 6,
+        marginTop: 1,
+    },
     reserveTextContainer: {
         flexDirection: 'column',
         justifyContent: 'center',
@@ -82,12 +104,6 @@ export default StyleService.create({
         fontSize: AppFonts.small.size,
         fontFamily: AppFonts.base.family,
         color: '$grey',
-    },
-    reserveTextValue: {
-        fontSize: AppFonts.small.size,
-        fontFamily: AppFonts.base.familyMonoBold,
-        color: '$grey',
-        // marginRight: 5,
     },
     reserveInfoIconContainer: {
         paddingLeft: AppSizes.scale(14),

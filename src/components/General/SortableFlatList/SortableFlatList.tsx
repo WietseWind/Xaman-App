@@ -10,16 +10,33 @@ import {
     PanResponderGestureState,
     LayoutChangeEvent,
     View,
+    Text,
+    InteractionManager,
 } from 'react-native';
 
 import CellComponent from '@components/General/SortableFlatList/CellComponent';
 
 import styles from './styles';
+import { TouchableDebounce } from '../TouchableDebounce';
+import { Navigator } from '@common/helpers/navigator';
+import { AppScreens } from '@common/constants';
+import { CoreRepository } from '@store/repositories';
+
+import tokenItemStyles from '@components/Modules/AssetsList/Tokens/TokenItem/styles';
+
+import Localize from '@locale';
+import { XAppOrigin } from '@common/libs/payload';
+import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
+import { Avatar } from '../Avatar';
+import { LoadingIndicator } from '../LoadingIndicator';
+import BackendService from '@services/BackendService';
+
 // import { AppStyles } from '@theme/index';
 
 /* Types ==================================================================== */
 interface Props {
     topFade: boolean;
+    accWorthEnabled: boolean;
     testID?: string;
     itemHeight: number;
     separatorHeight?: number;
@@ -31,11 +48,24 @@ interface Props {
     onItemPress?: (item: any, index: number) => void;
     keyExtractor?: ((item: any, index: number) => string) | undefined;
     onDataChange?: (dataSource: Array<any>) => void;
+    updateTokenPrices?: (data: any) => void;
+    lineWorthLoading?: (loading: boolean) => void;
 }
 
 interface State {
     containerHeight: number;
     isItemActive: boolean;
+    accWorthIdentifier: string;
+    accWorthTitle: string;
+    accWorthNativeAsset: string;
+    accWorthAmount: number;
+    accWorthLoading: boolean;
+    currencyRate: {
+        code: string;
+        rate: number;
+        symbol: string;
+        lastSync: number;
+    };
 }
 
 enum AutoScrollState {
@@ -53,6 +83,7 @@ export default class SortableFlatList extends Component<Props, State> {
 
     private scaleRecoveryTimeout: ReturnType<typeof setTimeout> | undefined;
     private autoScrollInterval: ReturnType<typeof setTimeout> | undefined;
+    private accountWorthInterval: ReturnType<typeof setTimeout> | undefined;
 
     private panResponder: PanResponderInstance;
     private isMovePanResponder: boolean;
@@ -80,6 +111,17 @@ export default class SortableFlatList extends Component<Props, State> {
                 (props.dataSource.length + 1) +
                 (props.firstItemExtraHeight || 0) - 10,
             isItemActive: false,
+            accWorthIdentifier: '',
+            accWorthTitle: '',
+            accWorthNativeAsset: '',
+            accWorthAmount: 0,
+            accWorthLoading: true,
+            currencyRate: {
+                code: '',
+                rate: 0,
+                symbol: '',
+                lastSync: 0,
+            },
         };
 
         this.itemRefs = new Map();
@@ -125,9 +167,78 @@ export default class SortableFlatList extends Component<Props, State> {
         });
     }
 
+    updateSettingsHandler = () => {
+        const { lineWorthLoading } = this.props;
+
+        const settings = CoreRepository.getSettings();
+        // Todo: fetch new value
+        this.setState({
+            accWorthNativeAsset: settings.currency,
+            accWorthLoading: true,
+        });
+
+        if (lineWorthLoading) {
+            lineWorthLoading(true);
+        }
+
+        this.fetchAccountWorth();
+    };
+
+    fetchAccountWorth = () => {
+        const { updateTokenPrices, lineWorthLoading } = this.props;
+        const settings = CoreRepository.getSettings();
+
+        Promise.all([
+            BackendService.getAccountWorth(settings.account.address, settings.network.key, settings.currency),
+            BackendService.getCurrencyRate(settings.currency),
+        ]).then(([res, rate]) => {
+            this.setState({
+                accWorthAmount: res.totalValue,
+                accWorthLoading: false,
+                currencyRate: rate,
+            });
+            if (lineWorthLoading) {
+                lineWorthLoading(false);
+            }
+            if (updateTokenPrices) {
+                updateTokenPrices({
+                    ...res,
+                    rate,
+                });
+            }
+        })
+        .catch(() => {
+            //
+        });
+    };
+
     componentDidMount() {
         clearInterval(this.autoScrollInterval);
+        clearInterval(this.accountWorthInterval);
         clearTimeout(this.scaleRecoveryTimeout);
+
+        InteractionManager.runAfterInteractions(() => { 
+            const settings = CoreRepository.getSettings();
+
+            this.setState({
+                accWorthIdentifier: settings.accountWorthInfo.split('|')[0],
+                accWorthTitle: settings.accountWorthInfo.split('|')[1],
+                accWorthNativeAsset: settings.currency,
+            });
+
+            this.fetchAccountWorth();
+
+            CoreRepository.on('updateSettings', this.updateSettingsHandler);
+
+            setInterval(() => {
+                this.fetchAccountWorth();
+            }, 60 * 1000);
+        });
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.accountWorthInterval);
+        CoreRepository.off('updateSettings', this.updateSettingsHandler);
     }
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State) {
@@ -511,7 +622,7 @@ export default class SortableFlatList extends Component<Props, State> {
 
         return (
             <CellComponent
-                key={`cellComponent-${index}`}
+                key={`cellComponent-${index}-${firstItemExtraHeight}`}
                 // key={cellKey}
                 testID={cellKey}
                 ref={async (ref) => {
@@ -535,9 +646,89 @@ export default class SortableFlatList extends Component<Props, State> {
                         paddingBottom: (firstItemExtraHeight || 0) / 2,
                     },
                 ]}>
+                    {index === 0 && cellKey === 'token-native' && this.renderAssetListxApp()}
                     {children}
                 </View>
             </CellComponent>
+        );
+    };
+
+    renderAssetListxApp = () => {
+        const {
+            accWorthIdentifier,
+            accWorthTitle,
+            accWorthNativeAsset,
+            accWorthAmount,
+            accWorthLoading,
+            currencyRate,
+        } = this.state;
+        const { accWorthEnabled } = this.props;
+
+        if (!accWorthEnabled) {
+            return null;
+        }
+
+        const asset = currencyRate.symbol && currencyRate.symbol !== ''
+            ? currencyRate.symbol
+            : currencyRate.code && currencyRate.code !== ''
+                ? currencyRate.code
+                : accWorthNativeAsset.toUpperCase();
+
+        return (
+            <TouchableDebounce key='xapp-asset' onPress={() => {
+                Navigator.showModal(
+                    AppScreens.Modal.XAppBrowser,
+                    {
+                        identifier: accWorthIdentifier,
+                        origin: XAppOrigin.XUMM,
+                    },
+                    {
+                        modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
+                        modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
+                    },
+                );
+            }} activeOpacity={0.7}>
+                <View
+                    testID='accountworthxapp'
+                    style={[
+                        tokenItemStyles.currencyItem,
+                        // eslint-disable-next-line react-native/no-inline-styles
+                        { marginTop: -32 },
+                        // eslint-disable-next-line react-native/no-inline-styles
+                        { marginBottom: 20 },
+                    ]}
+                >
+                    <View style={[tokenItemStyles.xAppTokenContainer]}>
+                        <View style={tokenItemStyles.tokenAvatarContainer}>
+                            <Avatar
+                                source={{ uri: `https://xaman.app/icon/xapp/${accWorthIdentifier}` }}
+                                size={35}
+                            />
+                        </View>
+                        <View>
+                            <Text numberOfLines={1} style={[
+                                tokenItemStyles.currencyLabel,
+                                tokenItemStyles.xAppLabel,
+                            ]} ellipsizeMode="middle">
+                                {accWorthTitle}
+                            </Text>
+                        </View>
+                    </View>
+                    <View style={[tokenItemStyles.balanceContainer]}>
+                        {accWorthLoading && <LoadingIndicator size='small' />}
+                        {!accWorthLoading && (
+                            <>
+                                <Text style={tokenItemStyles.xAppBalanceContainerCurrency}>{
+                                    asset
+                                }</Text>
+                                <Text style={tokenItemStyles.xAppBalanceContainer}>{
+                                    Localize.formatNumber(accWorthAmount, accWorthAmount > 1000 ? 0 : 2, true)
+                                }</Text>
+                            </>
+                        )}
+                    </View>
+                </View>
+            </TouchableDebounce>
         );
     };
 
@@ -551,6 +742,7 @@ export default class SortableFlatList extends Component<Props, State> {
             itemHeight,
             separatorHeight,
             topFade,
+            accWorthEnabled,
         } =
             this.props;
         const { isItemActive, containerHeight } = this.state;
@@ -561,6 +753,7 @@ export default class SortableFlatList extends Component<Props, State> {
                 <FlatList
                     testID={testID}
                     ref={this.listRef}
+                    key={`tokenlistflat-w-${accWorthEnabled ? 1 : 0}`}
                     style={[
                         styles.container,
                         // AppStyles.borderRed,

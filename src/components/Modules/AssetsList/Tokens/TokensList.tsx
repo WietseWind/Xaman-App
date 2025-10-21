@@ -1,6 +1,6 @@
 import { toLower, map, filter, sortBy, isEqual, has, findIndex } from 'lodash';
 import React, { Component } from 'react';
-import { View, ViewStyle } from 'react-native';
+import { InteractionManager, View, ViewStyle } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 
@@ -8,7 +8,7 @@ import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
 import { Navigator } from '@common/helpers/navigator';
 
-import { CurrencyRepository, TrustLineRepository } from '@store/repositories';
+import { CoreRepository, CurrencyRepository, TrustLineRepository } from '@store/repositories';
 import { AccountModel, NetworkModel, TrustLineModel } from '@store/models';
 
 import { SortableFlatList } from '@components/General';
@@ -29,6 +29,8 @@ import {
 import NetworkService from '@services/NetworkService';
 import { ASSETS_CATEGORY } from '@screens/Overlay/SwitchAssetCategory/types';
 
+import BigNumber from 'bignumber.js';
+
 /* Types ==================================================================== */
 interface Props {
     style?: ViewStyle | ViewStyle[];
@@ -44,12 +46,33 @@ interface Props {
 
 interface State {
     accountStateVersion: number;
+    lineWorthLoading?: boolean;
     account: AccountModel;
     tokens: TrustLineModel[];
     dataSource: TrustLineModel[];
     filters?: FiltersType;
     reorderEnabled: boolean;
     showHeader: boolean;
+    accWorthEnabled: boolean;
+    assetPricesInList: boolean;
+    tokenPrices: {
+        totalValue: number;
+        live: boolean;
+        lineItems: {
+            issuer: string;
+            asset: string;
+            value: number;
+            rate: number;
+            amount: number;
+            isAMM: boolean;
+        }[];
+        rate: {
+            code: string;
+            rate: number;
+            symbol: string;
+            lastSync: number;
+        };
+    };
 }
 
 /* Component ==================================================================== */
@@ -62,6 +85,8 @@ class TokensList extends Component<Props, State> {
         const { account } = props;
         const tokens = (account.lines?.sorted([['order', false]]) as TrustLineModel[] | undefined) ?? [];
 
+        const settings = CoreRepository.getSettings();
+
         this.state = {
             accountStateVersion: account.getStateVersion(),
             account,
@@ -69,11 +94,34 @@ class TokensList extends Component<Props, State> {
             dataSource: tokens,
             filters: undefined,
             reorderEnabled: false,
+            lineWorthLoading: true,
             showHeader: true,
+            accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
+            assetPricesInList: settings.showPerAssetWorth && !settings.discreetMode,
+            tokenPrices: {
+                totalValue: 0,
+                live: false,
+                lineItems: [],
+                rate: {
+                    code: '',
+                    rate: 0,
+                    symbol: '',
+                    lastSync: 0,
+                },
+            },
         };
-
+        
         this.dragSortableRef = React.createRef();
     }
+
+    updateSettingsHandler = () => {
+        const settings = CoreRepository.getSettings();
+        // Todo: fetch new value
+        this.setState({
+            accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
+            assetPricesInList: settings.showPerAssetWorth && !settings.discreetMode,
+        });
+    };
 
     componentDidMount(): void {
         // listen for token updates
@@ -81,6 +129,22 @@ class TokensList extends Component<Props, State> {
         TrustLineRepository.on('trustLineUpdate', this.onTrustLineUpdate);
         // this is needed when using ResolveService to sync the currency details
         CurrencyRepository.on('currencyDetailsUpdate', this.onCurrencyDetailsUpdate);
+
+        InteractionManager.runAfterInteractions(() => { 
+            const settings = CoreRepository.getSettings();
+            this.setState({
+                accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
+            });
+            CoreRepository.on('updateSettings', this.updateSettingsHandler);
+
+            if (settings.filterHideZeroValue) {
+                this.onFilterChange({
+                    favorite: false,
+                    hideZero: settings.filterHideZeroValue,
+                    text: '',
+                });
+            }
+        });
     }
 
     componentWillUnmount(): void {
@@ -88,13 +152,27 @@ class TokensList extends Component<Props, State> {
         TrustLineRepository.off('trustLineUpdate', this.onTrustLineUpdate);
         // remove listener
         CurrencyRepository.off('currencyDetailsUpdate', this.onCurrencyDetailsUpdate);
+
+        CoreRepository.off('updateSettings', this.updateSettingsHandler);
     }
 
     shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
         const { discreetMode, spendable, experimentalUI } = this.props;
-        const { dataSource, accountStateVersion, reorderEnabled, filters, showHeader } = this.state;
+        const {
+            dataSource,
+            accountStateVersion,
+            reorderEnabled,
+            filters,
+            showHeader,
+            accWorthEnabled,
+            assetPricesInList,
+            tokenPrices,
+        } = this.state;
 
         return (
+            !isEqual(nextState.tokenPrices, tokenPrices) ||
+            !isEqual(nextState.accWorthEnabled, accWorthEnabled) ||
+            !isEqual(nextState.assetPricesInList, assetPricesInList) ||
             !isEqual(nextState.showHeader, showHeader) ||
             !isEqual(nextProps.spendable, spendable) ||
             !isEqual(nextProps.discreetMode, discreetMode) ||
@@ -327,16 +405,53 @@ class TokensList extends Component<Props, State> {
         });
     };
 
+    getTokenPrice = (tokenPrices: typeof this.state.tokenPrices, token: TrustLineModel | 'native') => {
+        const { lineWorthLoading, account } = this.state;
+
+        if (lineWorthLoading) {
+            return '0';
+        }
+
+        const i = token === 'native' ? {
+            currency: {
+                issuer: 'rrrrrrrrrrrrrrrrrrrrrrrhoLvTp',
+                currencyCode: 'XRP',
+            },
+            balance: account.balance,
+        } : token;
+
+        const tokenValue = tokenPrices.lineItems
+            .find((x) => {
+                return x.issuer === i.currency.issuer && x.asset === i.currency.currencyCode;
+            })?.rate;
+
+        return tokenValue
+            ? new BigNumber(tokenValue).multipliedBy(i.balance).decimalPlaces(2).toNumber()
+            : '0';
+    };
+
     renderItem = ({ item, index }: { item: TrustLineModel; index: number }) => {
         const { discreetMode, experimentalUI, network } = this.props;
-        const { account, reorderEnabled } = this.state;
+        const {
+            account,
+            reorderEnabled,
+            assetPricesInList,
+            tokenPrices,
+        } = this.state;
+
+        const asset = tokenPrices.rate.symbol && tokenPrices.rate.symbol !== ''
+            ? `${tokenPrices.rate.symbol} `
+            : '';
         
         if (item?.id === 'native') {
             return (
                 <NativeItem
                     key={`nativeasset-${network?.key}`}
                     account={account}
+                    amountInline={assetPricesInList}
                     discreetMode={discreetMode}
+                    subPrice={assetPricesInList ? this.getTokenPrice(tokenPrices, 'native') : undefined}
+                    subPrefix={asset}
                     reorderEnabled={reorderEnabled}
                     onPress={this.onNativeItemPress}
                 />
@@ -349,6 +464,8 @@ class TokensList extends Component<Props, State> {
                 token={item}
                 reorderEnabled={reorderEnabled}
                 discreetMode={discreetMode}
+                subPrice={assetPricesInList ? this.getTokenPrice(tokenPrices, item) : undefined}
+                subPrefix={asset}
                 saturate={experimentalUI}
                 selfIssued={item.currency.issuer === account.address}
                 onPress={this.onTokenItemPress}
@@ -384,6 +501,20 @@ class TokensList extends Component<Props, State> {
         });
     };
 
+    updateTokenPrices = (prices: typeof this.state.tokenPrices) => {
+        if (typeof prices === 'object' && typeof prices?.totalValue === 'number') {
+            this.setState({
+                tokenPrices: prices,
+            });
+        }
+    };
+
+    updateLineWorthLoading = (loading: boolean) => {
+        this.setState({
+            lineWorthLoading: loading,
+        });
+    };
+
     render() {
         const {
             account,
@@ -398,10 +529,11 @@ class TokensList extends Component<Props, State> {
             reorderEnabled,
             filters,
             showHeader,
+            accWorthEnabled,
         } = this.state;
 
         return (
-            <View testID="token-list-container" style={style}>
+            <View key={`tokenlist-${!!accWorthEnabled}`} testID="token-list-container" style={style}>
                 {showHeader && (
                     <ListHeader
                         reorderEnabled={reorderEnabled}
@@ -437,11 +569,15 @@ class TokensList extends Component<Props, State> {
                     />
                 )}
                 <SortableFlatList
+                    key={`tokenlistflat-${accWorthEnabled ? 1 : 0}`}
                     ref={this.dragSortableRef}
                     itemHeight={TokenItem.Height}
                     separatorHeight={0}
                     topFade
-                    firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12)}
+                    updateTokenPrices={this.updateTokenPrices}
+                    lineWorthLoading={this.updateLineWorthLoading}
+                    accWorthEnabled={accWorthEnabled}
+                    firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
                     dataSource={[
                         ...(reorderEnabled ? [] : [{
                             id: 'native',
@@ -452,7 +588,7 @@ class TokensList extends Component<Props, State> {
                             isLiquidityPoolToken: () => false,
                             isMPToken: () => false,
                             getFormattedIssuer: () => '',
-                            getLpAssetPair: () => undefined,
+                            getLpAssetPair: () => [],
                         }]),
                         ...dataSource,
                     ]}

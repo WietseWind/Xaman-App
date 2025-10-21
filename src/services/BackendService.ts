@@ -729,6 +729,14 @@ class BackendService {
     acknowledgePurchase = (purchases: InAppPurchaseReceipt) => {
         return ApiService.fetch(Endpoints.VerifyPurchase, 'PATCH', null, purchases);
     };
+
+    getAccountWorth = (account: string, network: string, currency: string) => {
+        return ApiService.fetch(Endpoints.AccountWorth, 'GET', {
+            account,
+            network,
+            currency,
+        });
+    };
 }
 
 export default new BackendService();

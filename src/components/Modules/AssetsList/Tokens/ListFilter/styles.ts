@@ -19,6 +19,9 @@ export default StyleService.create({
         paddingLeft: 10,
         flexDirection: 'row',
     },
+    notVisible: {
+        display: 'none',
+    },
     filterBtn: {
         marginBottom: AppSizes.scale(9),
         height: AppSizes.scale(40),

@@ -1,5 +1,5 @@
 import has from 'lodash/has';
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { View, Text, InteractionManager } from 'react-native';
 
 import BackendService, { RatesType } from '@services/BackendService';
@@ -40,6 +40,9 @@ interface Props {
     reorderEnabled: boolean;
     onPress?: () => void;
     network?: NetworkModel;
+    amountInline?: boolean;
+    subPrice?: number | string;
+    subPrefix?: ReactNode;
 }
 
 interface State {
@@ -185,8 +188,9 @@ class NativeItem extends Component<Props, State> {
         return (
             <TokenIcon
                 token="Native"
-                size={8}
-                containerStyle={styles.reserveCurrencyAvatarContainer}
+                size={8.2}
+                // containerStyle={styles.reserveCurrencyAvatarContainer}
+                containerStyle={styles.reserveCurrencyAvatarContainerInline}
                 style={AppStyles.imgColorGrey}
             />
         );
@@ -267,7 +271,7 @@ class NativeItem extends Component<Props, State> {
     };
 
     renderReservePanel = () => {
-        const { account, reorderEnabled, discreetMode } = this.props;
+        const { account, reorderEnabled, discreetMode, amountInline, subPrice, subPrefix } = this.props;
         const { showFiatRate, showReservePanel, fiatRate, isLoadingRate } = this.state;
 
         // show fiat panel
@@ -280,10 +284,13 @@ class NativeItem extends Component<Props, State> {
 
         const accountReserve = CalculateTotalReserve(account);
 
+        // let prefixIsNativeAsset = false;
+
         if (showFiatRate && fiatRate) {
             totalReserve = new BigNumber(accountReserve).multipliedBy(fiatRate.rate).decimalPlaces(2).toNumber();
             prefix = `${fiatRate.symbol} `;
         } else {
+            // prefixIsNativeAsset = true;
             totalReserve = accountReserve;
             prefix = this.getReserveTokenIcon;
         }
@@ -294,21 +301,57 @@ class NativeItem extends Component<Props, State> {
                     <View style={styles.reserveInfoIconContainer}>
                         <Icon name="IconLock" size={8.5} style={AppStyles.imgColorGrey} />
                     </View>
-                    <View style={styles.reserveTextContainer}>
+                    <View style={[
+                        styles.reserveTextContainer,
+                        AppStyles.row,
+                    ]}>
                         <Text numberOfLines={1} style={styles.reserveTextLabel}>
                             {Localize.t('global.reserved')}
                         </Text>
+                        {amountInline && (
+                            <AmountText
+                                discreet={discreetMode}
+                                value={totalReserve}
+                                prefix={prefix}
+                                isLoading={isLoadingRate}
+                                style={styles.reserveTextValue}
+                                toggleDisabled
+                            />
+                        )}
                     </View>
                 </View>
                 <TouchableDebounce activeOpacity={0.7} style={styles.rightContainer} onPress={this.toggleBalance}>
-                    <AmountText
-                        discreet={discreetMode}
-                        value={totalReserve}
-                        prefix={prefix}
-                        isLoading={isLoadingRate}
-                        style={styles.reserveTextValue}
-                        toggleDisabled
-                    />
+                    {!amountInline && (
+                        <AmountText
+                            discreet={discreetMode}
+                            value={totalReserve}
+                            prefix={prefix}
+                            isLoading={isLoadingRate}
+                            style={styles.reserveTextValue}
+                            toggleDisabled
+                        />
+                    )}
+                    {amountInline && subPrice && (
+                        <AmountText
+                            discreet={discreetMode}
+                            value={subPrice}
+                            hideZero
+                            prefix={
+                                subPrice !== '' && subPrice !== '0' &&
+                                <Text style={[
+                                    styles.reserveTextValue,
+                                    styles.reserveTextValueNonBold,
+                                    styles.reserveTextValueCurrency,
+                                ]}>{subPrefix}</Text>
+                            }
+                            isLoading={isLoadingRate}
+                            style={[
+                                styles.reserveTextValue,
+                                styles.reserveTextValueNonBold,
+                            ]}
+                            toggleDisabled
+                        />
+                    )}
                 </TouchableDebounce>
             </View>
         );

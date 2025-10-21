@@ -158,9 +158,8 @@ class AssetListFilterOverlay extends Component<Props, State> {
         return (
             <ActionPanel
                 /** TODO: height based on keyboard size */
-                height={350 + AppSizes.safeAreaBottomInset + actionPanelExtraHeight}
+                height={400 + AppSizes.safeAreaBottomInset + actionPanelExtraHeight}
                 ref={this.actionPanelRef}
-                offset={AppSizes.scale(40)}
                 onSlideDown={Navigator.dismissOverlay}
             >
                 <View style={[AppStyles.column, AppStyles.centerAligned]}>

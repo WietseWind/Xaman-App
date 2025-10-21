@@ -1,6 +1,6 @@
 import isEqual from 'lodash/isEqual';
 
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactNode } from 'react';
 import { View, Text } from 'react-native';
 
 import { Button, AmountText, Icon, Badge, BadgeType } from '@components/General';
@@ -23,8 +23,10 @@ interface Props {
     reorderEnabled: boolean;
     discreetMode: boolean;
     saturate?: boolean;
+    subPrice?: string | number;
     onPress: (token: TrustLineModel, index: number) => void;
     onMoveTopPress: (token: TrustLineModel, index: number) => void;
+    subPrefix?: ReactNode;
 }
 
 interface State {
@@ -164,7 +166,7 @@ class TokenItem extends PureComponent<Props, State> {
     };
 
     render() {
-        const { token, saturate, reorderEnabled } = this.props;
+        const { token, saturate, reorderEnabled, subPrice, subPrefix } = this.props;
 
         return (
             <View testID={`${token.currency.id}`} style={[styles.currencyItem, { height: TokenItem.Height }]}>
@@ -209,8 +211,29 @@ class TokenItem extends PureComponent<Props, State> {
                         </Text>
                     </View>
                 </View>
-                <View style={styles.balanceContainer}>
+                <View style={[
+                    styles.balanceContainer,
+                    AppStyles.column,
+                    AppStyles.rightAligned,
+                    AppStyles.centerContent,
+                    AppStyles.centerSelf,
+                ]}>
                     {reorderEnabled ? this.renderReorderButtons() : this.renderBalance()}
+                    {subPrice && !reorderEnabled && (
+                        <AmountText
+                            value={subPrice}
+                            hideZero
+                            prefix={
+                                subPrice !== '' && subPrice !== '0' &&
+                                <Text style={[
+                                    styles.fiatValueAmount,
+                                    styles.fiatValueAmountCurrency,
+                                ]}>{subPrefix}</Text>
+                            }
+                            style={styles.fiatValueAmount}
+                            toggleDisabled
+                        />
+                    )}
                 </View>
             </View>
         );

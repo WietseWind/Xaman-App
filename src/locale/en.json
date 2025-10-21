@@ -21,6 +21,7 @@
     "okLetsGo": "Ok, let's go!",
     "close": "Close",
     "save": "Save",
+    "miscellaneous": "Miscellaneous",
     "helpCenter": "Xaman Help Center",
     "confirm": "Confirm",
     "failed": "Failed",
@@ -31,6 +32,7 @@
     "spendable": "Spendable",
     "home": "Home",
     "accounttxpush": "Transaction Push Notifications",
+    "homeScreen": "Home Screen",
     "events": "Events",
     "profile": "Profile",
     "pro": "Pro Beta",
@@ -41,6 +43,8 @@
     "send": "Send",
     "swap": "Swap",
     "swap3p": "Swap (third-party)",
+    "transactionsAndEvents": "Transactions & Events",
+    "languageAndCurrency": "Language & Currency",
     "slideToSend": "Slide to send",
     "done": "Done",
     "previous": "Previous",
@@ -798,6 +802,8 @@
     "appReadyToAcceptCommands": "The xApp must be in a ready state to be able to accept commands."
   },
   "settings": {
+    "accountWorthActive": "\"%{name}\" on home screen",
+    "showPerAssetWorth": "Show asset prices on home screen",
     "generalSettings": "General",
     "selectLanguage": "Please select a language",
     "autoLockAfter": "Auto-lock after ",

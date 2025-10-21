@@ -810,10 +810,14 @@ class XAppBrowserModal extends Component<Props, State> {
             return { uri: '#' };
         }
 
+        const uri = `https://${HOSTNAME}/detect/xapp:${app?.appid || app.identifier}?xAppToken=${ott}&xAppStyle=${toUpper(
+            this.getAppStyle(),
+        )}`;
+
+        // console.log('getSource', uri);
+
         return {
-            uri: `https://${HOSTNAME}/detect/xapp:${app?.appid || app.identifier}?xAppToken=${ott}&xAppStyle=${toUpper(
-                this.getAppStyle(),
-            )}`,
+            uri,
             headers: {
                 'X-OTT': ott,
             },

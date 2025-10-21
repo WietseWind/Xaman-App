@@ -198,10 +198,15 @@ class CellComponent extends PureComponent<Props> {
     };
 
     render() {
-        const { children, testID } = this.props;
+        const {
+            children,
+            testID,
+            firstItemExtraHeight,
+        } = this.props;
 
         return (
             <Animated.View
+                key={`x-cellComponent-${firstItemExtraHeight}`}
                 ref={this.itemRef}
                 style={[
                     // AppStyles.borderRed,

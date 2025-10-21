@@ -19,6 +19,37 @@ export default StyleService.create({
         marginRight: 10,
         marginBottom: 3,
     },
+    xAppTokenContainer: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+    xAppLabel: {
+        fontSize: AppFonts.p.size * 1.0,
+        fontFamily: AppFonts.p.familyBold,
+        fontWeight: 700,
+    },
+    xAppBalanceContainerCurrency: {
+        fontSize: AppFonts.small.size * 0.8,
+        paddingTop: 2,
+        paddingRight: 8,
+        color: '$grey',
+    },
+    fiatValueAmount: {
+        fontSize: AppFonts.small.size,
+        fontFamily: AppFonts.base.familyMono,
+        marginTop: 6,
+        color: '$grey',
+        // marginRight: 5,
+    },
+    fiatValueAmountCurrency: {
+        fontFamily: AppFonts.base.family,
+        fontSize: AppFonts.small.size * 0.7,
+        marginTop: 6.5,
+        marginRight: 2,
+    },
+    xAppBalanceContainer: {
+        color: '$textPrimary',
+        fontSize: AppFonts.p.size * 1.2,
+        fontFamily: AppFonts.p.familyMonoBold,
+        fontWeight: 800,
+    },
     issuerLabel: {
         fontSize: AppFonts.subtext.size * 0.9,
         fontFamily: AppFonts.base.family,
