@@ -48,9 +48,7 @@ export interface RatesType {
     lastSync: number;
 }
 
-const lastHashes: { [key: string]: string[] } = {
-    accountworth: ['', ''],
-};
+const lastHashes: { [key: string]: string[] } = {};
 
 /* Service  ==================================================================== */
 /**
@@ -735,25 +733,30 @@ class BackendService {
     };
 
     getAccountWorth = async (account: string, network: string, currency: string) => {
+        const hashKey = `accountworth_${account}_${network}_${currency}`;
+        if (typeof lastHashes?.[hashKey] === 'undefined') {
+            lastHashes[hashKey] = ['', ''];
+        }
+
         const data = await ApiService.fetch(Endpoints.AccountWorth, 'GET', {
             account,
             network,
             currency,
-            hash: lastHashes.accountworth[0],
+            hash: lastHashes[hashKey][0],
         });
 
         if (data?.hash) {
-            if (lastHashes.accountworth[0] === data.hash) {
+            if (lastHashes[hashKey][0] === data.hash) {
                 // console.log('Skipping accountworth', data.hash);
                 // Return from cache
-                // console.log('Account worth from local cache hash', data.hash);
-                return lastHashes.accountworth[1];
+                // console.log('Account worth from local cache hash', hashKey, data.hash);
+                return lastHashes[hashKey][1];
             }
 
-            // console.log('Account worth from live, remote hash', data.hash);
+            // console.log('Account worth from live, remote hash', hashKey, data.hash);
 
-            lastHashes.accountworth[0] = data.hash;
-            lastHashes.accountworth[1] = data;
+            lastHashes[hashKey][0] = data.hash;
+            lastHashes[hashKey][1] = data;
         }
 
         return data;
