@@ -94,6 +94,7 @@ class TokensList extends Component<Props, State> {
             dataSource: tokens,
             filters: undefined,
             reorderEnabled: false,
+            // eslint-disable-next-line react/no-unused-state
             lineWorthLoading: true,
             showHeader: true,
             accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
@@ -406,11 +407,11 @@ class TokensList extends Component<Props, State> {
     };
 
     getTokenPrice = (tokenPrices: typeof this.state.tokenPrices, token: TrustLineModel | 'native') => {
-        const { lineWorthLoading, account } = this.state;
+        const { account } = this.state;
 
-        if (lineWorthLoading) {
-            return '0';
-        }
+        // if (lineWorthLoading) {
+        //     return '0';
+        // }
 
         const i = token === 'native' ? {
             currency: {
@@ -511,6 +512,7 @@ class TokensList extends Component<Props, State> {
 
     updateLineWorthLoading = (loading: boolean) => {
         this.setState({
+            // eslint-disable-next-line react/no-unused-state
             lineWorthLoading: loading,
         });
     };

@@ -20,7 +20,7 @@ import styles from './styles';
 import { TouchableDebounce } from '../TouchableDebounce';
 import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
-import { CoreRepository } from '@store/repositories';
+import { AccountRepository, CoreRepository } from '@store/repositories';
 
 import tokenItemStyles from '@components/Modules/AssetsList/Tokens/TokenItem/styles';
 
@@ -167,10 +167,11 @@ export default class SortableFlatList extends Component<Props, State> {
         });
     }
 
-    updateSettingsHandler = () => {
+    updateSettingsHandler = (a: any) => {
         const { lineWorthLoading } = this.props;
 
         const settings = CoreRepository.getSettings();
+
         // Todo: fetch new value
         this.setState({
             accWorthNativeAsset: settings.currency,
@@ -181,12 +182,29 @@ export default class SortableFlatList extends Component<Props, State> {
             lineWorthLoading(true);
         }
 
-        this.fetchAccountWorth();
+        this.fetchAccountWorth(a);
     };
 
-    fetchAccountWorth = () => {
+    fetchAccountWorth = (a?: any) => {
         const { updateTokenPrices, lineWorthLoading } = this.props;
+        const { accWorthLoading, accWorthAmount } = this.state;
         const settings = CoreRepository.getSettings();
+
+        // console.log('fetchAccountWorth', settings.account.address);
+
+        if (accWorthAmount > 0 && accWorthLoading) {
+            this.setState({
+                accWorthLoading: false,
+            });
+
+            if (a && a.address === settings.account.address) {
+                // Something changed to this account, continue
+            } else {
+                // console.log('Skip loading account worth', accWorthAmount, accWorthLoading, a);
+                // Cache
+                return;
+            }
+        }
 
         Promise.all([
             BackendService.getAccountWorth(settings.account.address, settings.network.key, settings.currency),
@@ -209,6 +227,9 @@ export default class SortableFlatList extends Component<Props, State> {
         })
         .catch(() => {
             //
+            this.setState({
+                accWorthLoading: false,
+            });
         });
     };
 
@@ -229,16 +250,18 @@ export default class SortableFlatList extends Component<Props, State> {
             this.fetchAccountWorth();
 
             CoreRepository.on('updateSettings', this.updateSettingsHandler);
+            AccountRepository.on('accountUpdate', this.updateSettingsHandler);
 
             setInterval(() => {
                 this.fetchAccountWorth();
-            }, 60 * 1000);
+            }, 30 * 1000);
         });
     }
 
     componentWillUnmount() {
         clearInterval(this.accountWorthInterval);
         CoreRepository.off('updateSettings', this.updateSettingsHandler);
+        AccountRepository.off('accountUpdate', this.updateSettingsHandler);
     }
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State) {
@@ -715,8 +738,8 @@ export default class SortableFlatList extends Component<Props, State> {
                         </View>
                     </View>
                     <View style={[tokenItemStyles.balanceContainer]}>
-                        {accWorthLoading && <LoadingIndicator size='small' />}
-                        {!accWorthLoading && (
+                        {accWorthLoading && accWorthAmount === 0 && <LoadingIndicator size='small' />}
+                        {(!accWorthLoading || accWorthAmount > 0) && (
                             <>
                                 <Text style={tokenItemStyles.xAppBalanceContainerCurrency}>{
                                     asset
