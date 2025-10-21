@@ -48,6 +48,10 @@ export interface RatesType {
     lastSync: number;
 }
 
+const lastHashes: { [key: string]: string[] } = {
+    accountworth: ['', ''],
+};
+
 /* Service  ==================================================================== */
 /**
  * Service that handles interactions with the backend, including syncing curated IOUs,
@@ -730,12 +734,29 @@ class BackendService {
         return ApiService.fetch(Endpoints.VerifyPurchase, 'PATCH', null, purchases);
     };
 
-    getAccountWorth = (account: string, network: string, currency: string) => {
-        return ApiService.fetch(Endpoints.AccountWorth, 'GET', {
+    getAccountWorth = async (account: string, network: string, currency: string) => {
+        const data = await ApiService.fetch(Endpoints.AccountWorth, 'GET', {
             account,
             network,
             currency,
+            hash: lastHashes.accountworth[0],
         });
+
+        if (data?.hash) {
+            if (lastHashes.accountworth[0] === data.hash) {
+                // console.log('Skipping accountworth', data.hash);
+                // Return from cache
+                // console.log('Account worth from local cache hash', data.hash);
+                return lastHashes.accountworth[1];
+            }
+
+            // console.log('Account worth from live, remote hash', data.hash);
+
+            lastHashes.accountworth[0] = data.hash;
+            lastHashes.accountworth[1] = data;
+        }
+
+        return data;
     };
 }
 
