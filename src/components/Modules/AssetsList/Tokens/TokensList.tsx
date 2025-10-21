@@ -424,9 +424,9 @@ class TokensList extends Component<Props, State> {
             .find((x) => {
                 return x.issuer === i.currency.issuer && x.asset === i.currency.currencyCode;
             })?.rate;
-
+        
         return tokenValue
-            ? new BigNumber(tokenValue).multipliedBy(i.balance).decimalPlaces(2).toNumber()
+            ? String(new BigNumber(tokenValue).multipliedBy(i.balance).decimalPlaces(2).toNumber())
             : '0';
     };
 

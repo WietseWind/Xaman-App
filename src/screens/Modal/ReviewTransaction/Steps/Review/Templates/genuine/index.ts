@@ -56,6 +56,7 @@ import CredentialDelete from './CredentialDelete';
 import SetRemarks from './SetRemarks';
 import PermissionedDomainSet from './PermissionedDomainSet';
 import PermissionedDomainDelete from './PermissionedDomainDelete';
+// eslint-disable-next-line import/no-cycle
 import Batch from './Batch';
 
 export {

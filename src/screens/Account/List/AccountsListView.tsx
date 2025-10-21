@@ -244,7 +244,7 @@ class AccountListView extends Component<Props, State> {
         let accessLevelIcon = 'IconCornerLeftUp' as Extract<keyof typeof Images, string>;
 
         // const signable = find(signableAccount, { address: item.address });
-        const signable = accountDetails && accountDetails[item.address].isSignable;
+        const signable = accountDetails && accountDetails?.[item?.address].isSignable;
 
         if (!signable) {
             // if master key is disabled then show it in the label
