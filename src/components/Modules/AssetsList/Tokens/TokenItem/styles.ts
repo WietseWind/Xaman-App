@@ -41,7 +41,7 @@ export default StyleService.create({
     fiatValueAmountCurrency: {
         fontFamily: AppFonts.base.family,
         fontSize: AppFonts.small.size * 0.7,
-        marginTop: 6.5,
+        marginTop: 7,
         marginRight: 2,
     },
     xAppBalanceContainer: {
