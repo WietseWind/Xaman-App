@@ -228,7 +228,19 @@ class SecuritySettingsView extends Component<Props, State> {
                 />
 
                 <ScrollView>
-                    <Text style={styles.descriptionText}>{Localize.t('global.authentication')}</Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                        AppStyles.marginTopNone,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('global.authentication')}</Text>
+                        </View>
+                    </View>
+
                     <TouchableDebounce
                         testID="change-passcode-button"
                         style={styles.row}
@@ -282,9 +294,17 @@ class SecuritySettingsView extends Component<Props, State> {
                         />
                     )}
 
-                    <Text numberOfLines={1} style={styles.descriptionText}>
-                        {Localize.t('settings.additionalSecurity')}
-                    </Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('settings.additionalSecurity')}</Text>
+                        </View>
+                    </View>
                     <View style={styles.row}>
                         <View style={AppStyles.flex3}>
                             <Text numberOfLines={1} style={styles.label}>
@@ -297,9 +317,17 @@ class SecuritySettingsView extends Component<Props, State> {
                     </View>
                     <InfoMessage flat label={Localize.t('settings.eraseDataDescription')} type="error" />
 
-                    <Text numberOfLines={1} style={styles.descriptionText}>
-                        {Localize.t('global.other')}
-                    </Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('global.other')}</Text>
+                        </View>
+                    </View>
                     <View style={styles.row}>
                         <View style={AppStyles.flex3}>
                             <Text numberOfLines={1} style={styles.label}>

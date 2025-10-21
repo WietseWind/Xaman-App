@@ -277,9 +277,19 @@ class AdvancedSettingsView extends Component<Props, State> {
                 />
 
                 <ScrollView>
-                    <Text numberOfLines={1} style={styles.descriptionText}>
-                        {Localize.t('global.networks')}
-                    </Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                        AppStyles.marginTopNone,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('global.networks')}</Text>
+                        </View>
+                    </View>
+
                     <TouchableDebounce
                         testID="network-settings-button"
                         style={styles.row}
@@ -296,9 +306,18 @@ class AdvancedSettingsView extends Component<Props, State> {
                     </TouchableDebounce>
 
                     {/* push notification section */}
-                    <Text numberOfLines={1} style={styles.descriptionText}>
-                        {Localize.t('settings.pushNotifications')}
-                    </Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('settings.pushNotifications')}</Text>
+                        </View>
+                    </View>
+
                     <TouchableDebounce style={styles.row} onPress={this.reRegisterPushToken}>
                         <View style={AppStyles.flex3}>
                             <Text numberOfLines={1} style={styles.label}>
@@ -308,9 +327,17 @@ class AdvancedSettingsView extends Component<Props, State> {
                     </TouchableDebounce>
 
                     {/* release information section */}
-                    <Text numberOfLines={1} style={styles.descriptionText}>
-                        {Localize.t('settings.releaseInformation')}
-                    </Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('settings.releaseInformation')}</Text>
+                        </View>
+                    </View>
                     <View style={styles.row}>
                         <View style={AppStyles.flex3}>
                             <Text numberOfLines={1} style={styles.label}>
@@ -337,9 +364,17 @@ class AdvancedSettingsView extends Component<Props, State> {
                     </TouchableDebounce>
 
                     {/* debug section */}
-                    <Text numberOfLines={1} style={styles.descriptionText}>
-                        {Localize.t('global.debug')}
-                    </Text>
+                    <View style={[
+                        styles.row,
+                        styles.header,
+                    ]}>
+                        <View style={AppStyles.flex1}>
+                            <Text style={[
+                                AppStyles.pbold,
+                                AppStyles.colorPrimary,
+                            ]}>{Localize.t('global.debug')}</Text>
+                        </View>
+                    </View>
 
                     <View style={styles.row}>
                         <View style={AppStyles.flex1}>

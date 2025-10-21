@@ -92,7 +92,7 @@ export default StyleService.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingRight: 3,
-        paddingLeft: 6,
+        // paddingLeft: 6,
         marginTop: 1,
     },
     reserveTextContainer: {
@@ -104,6 +104,7 @@ export default StyleService.create({
         fontSize: AppFonts.small.size,
         fontFamily: AppFonts.base.family,
         color: '$grey',
+        paddingRight: 6,
     },
     reserveInfoIconContainer: {
         paddingLeft: AppSizes.scale(14),
