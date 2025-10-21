@@ -48,7 +48,7 @@ export interface RatesType {
     lastSync: number;
 }
 
-const lastHashes: { [key: string]: string[] } = {};
+const lastHashes: { [key: string]: [string, any] } = {};
 
 /* Service  ==================================================================== */
 /**
@@ -746,17 +746,33 @@ class BackendService {
         });
 
         if (data?.hash) {
-            if (lastHashes[hashKey][0] === data.hash) {
+            if (lastHashes[hashKey][0] === data.hash && (lastHashes[hashKey][1]?.lineItems || []).length > 0) {
                 // console.log('Skipping accountworth', data.hash);
                 // Return from cache
-                // console.log('Account worth from local cache hash', hashKey, data.hash);
+                // console.log('Account worth from local cache hash', hashKey, data.hash); // , lastHashes[hashKey][1]
                 return lastHashes[hashKey][1];
             }
 
-            // console.log('Account worth from live, remote hash', hashKey, data.hash);
+            // console.log('Account worth from live, remote hash', hashKey, data.hash); // , data
 
-            lastHashes[hashKey][0] = data.hash;
-            lastHashes[hashKey][1] = data;
+            if ((data?.lineItems || []).length > 0) {
+                // Only cache if we have something
+                lastHashes[hashKey][0] = data.hash;
+                lastHashes[hashKey][1] = data;
+            }
+        }
+
+        if ((data?.lineItems || []).length < 1) {
+            if ((lastHashes[hashKey][1]?.lineItems || []).length > 0) {
+                // Reponse had no line items, but we have them in cache
+                // console.log('[FALLBACK] account worth from local cache hash', hashKey, data.hash);
+                // lastHashes[hashKey][1],
+                this.logger.warn('[Fallback] AccountWorth fallback from local cache', {
+                    hashKey,
+                });
+
+                return lastHashes[hashKey][1];
+            }
         }
 
         return data;
