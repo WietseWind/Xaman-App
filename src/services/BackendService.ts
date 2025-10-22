@@ -735,14 +735,14 @@ class BackendService {
     getAccountWorth = async (account: string, network: string, currency: string, origin: string = '') => {
         const hashKey = `accountworth_${account}_${network}_${currency}`;
         if (typeof lastHashes?.[hashKey] === 'undefined') {
-            lastHashes[hashKey] = ['', ''];
+            lastHashes[hashKey] = ['', {}];
         }
 
         const data = await ApiService.fetch(Endpoints.AccountWorth, 'GET', {
             account,
             network,
             currency,
-            hash: lastHashes[hashKey][0],
+            hash: (lastHashes[hashKey][1]?.lineItems || []).length > 0 ? lastHashes[hashKey][0] : '',
             origin,
         });
 

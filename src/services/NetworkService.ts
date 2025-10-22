@@ -182,22 +182,17 @@ class NetworkService extends EventEmitter {
      * reinstate service
      */
     reinstate = () => {
-        // destroy the connection
         this.destroyConnection();
-        // remove listeners
         this.removeAppStateListeners();
     };
 
     setAppStateListeners = () => {
-        // on net state changed
         AppService.addListener('netStateChange', this.onNetStateChange);
-        // on app state changed
         AppService.addListener('appStateChange', this.onAppStateChange);
     };
 
     removeAppStateListeners = () => {
         AppService.removeListener('netStateChange', this.onNetStateChange);
-
         AppService.removeListener('appStateChange', this.onAppStateChange);
     };
 
