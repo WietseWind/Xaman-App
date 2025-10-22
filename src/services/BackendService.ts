@@ -758,8 +758,10 @@ class BackendService {
 
             if ((data?.lineItems || []).length > 0) {
                 // Only cache if we have something
-                lastHashes[hashKey][0] = data.hash;
-                lastHashes[hashKey][1] = data;
+                if (!data?.lineItemsCacheSuppressed) {
+                    lastHashes[hashKey][0] = data.hash;
+                    lastHashes[hashKey][1] = data;
+                }
             }
         }
 
