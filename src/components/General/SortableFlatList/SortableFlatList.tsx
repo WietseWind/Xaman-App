@@ -30,6 +30,7 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 import { Avatar } from '../Avatar';
 import { LoadingIndicator } from '../LoadingIndicator';
 import BackendService from '@services/BackendService';
+import AppService, { AppStateStatus } from '@services/AppService';
 
 // import { AppStyles } from '@theme/index';
 
@@ -84,6 +85,8 @@ export default class SortableFlatList extends Component<Props, State> {
     private scaleRecoveryTimeout: ReturnType<typeof setTimeout> | undefined;
     private autoScrollInterval: ReturnType<typeof setTimeout> | undefined;
     private accountWorthInterval: ReturnType<typeof setTimeout> | undefined;
+    
+    private currentAccountWorthAccount: string = '';
 
     private panResponder: PanResponderInstance;
     private isMovePanResponder: boolean;
@@ -182,34 +185,52 @@ export default class SortableFlatList extends Component<Props, State> {
             lineWorthLoading(true);
         }
 
-        this.fetchAccountWorth(a);
+        this.fetchAccountWorth(a, 'UPDATE_SETTINGS_HANDLER');
     };
 
-    fetchAccountWorth = (a?: any) => {
+    fetchAccountWorth = (
+        a?: any,
+        origin: 'UNKNOWN' | 'UPDATE_SETTINGS_HANDLER' | 'INTERVAL' | 'COMPONENT_MOUNT' | 'APPSTATE_CHANGE' =
+            'UNKNOWN',
+    ) => {
         const { updateTokenPrices, lineWorthLoading } = this.props;
         const { accWorthLoading, accWorthAmount } = this.state;
         const settings = CoreRepository.getSettings();
 
-        // console.log('fetchAccountWorth', settings.account.address);
+        if (settings.account.address !== this.currentAccountWorthAccount) {
+            // Account changed, current values are no longer relevant
+            // console.log('Account changed, current values are no longer relevant')
+            this.setState({
+                accWorthLoading: true,
+                accWorthAmount: 0,
+            });
+        }
+
+        if (a && a?.address) {
+            if (a.address !== settings.account.address) {
+                // console.log('returning early, not fetching worth, address mismatch')
+                return;
+            }
+        }
+
+        clearInterval(this.accountWorthInterval);
+        this.accountWorthInterval = setInterval(() => {
+            this.fetchAccountWorth(undefined, 'INTERVAL');
+        }, 30 * 1000);
 
         if (accWorthAmount > 0 && accWorthLoading) {
             this.setState({
                 accWorthLoading: false,
             });
-
-            if (a && a.address === settings.account.address) {
-                // Something changed to this account, continue
-            } else {
-                // console.log('Skip loading account worth', accWorthAmount, accWorthLoading, a);
-                // Cache
-                return;
-            }
         }
 
+        // console.log('fetchAccountWorth', settings.account.address);
         Promise.all([
-            BackendService.getAccountWorth(settings.account.address, settings.network.key, settings.currency),
+            BackendService.getAccountWorth(settings.account.address, settings.network.key, settings.currency, origin),
             BackendService.getCurrencyRate(settings.currency),
         ]).then(([res, rate]) => {
+            this.currentAccountWorthAccount = settings.account.address;
+
             this.setState({
                 accWorthAmount: res.totalValue,
                 accWorthLoading: false,
@@ -247,21 +268,29 @@ export default class SortableFlatList extends Component<Props, State> {
                 accWorthNativeAsset: settings.currency,
             });
 
-            this.fetchAccountWorth();
+            this.fetchAccountWorth(undefined, 'COMPONENT_MOUNT');
 
             CoreRepository.on('updateSettings', this.updateSettingsHandler);
             AccountRepository.on('accountUpdate', this.updateSettingsHandler);
-
-            setInterval(() => {
-                this.fetchAccountWorth();
-            }, 30 * 1000);
+            AppService.addListener('appStateChange', this.appStateChange);
         });
     }
+
+    appStateChange = (newState: AppStateStatus) => {
+        if (newState === AppStateStatus.Active) {
+            // console.log('App active, fetch')
+            return this.fetchAccountWorth(undefined, 'APPSTATE_CHANGE');
+        }
+
+        // console.log('App inactive, clear')
+        return clearInterval(this.accountWorthInterval);
+    };
 
     componentWillUnmount() {
         clearInterval(this.accountWorthInterval);
         CoreRepository.off('updateSettings', this.updateSettingsHandler);
         AccountRepository.off('accountUpdate', this.updateSettingsHandler);
+        AppService.removeListener('appStateChange', this.appStateChange);
     }
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State) {

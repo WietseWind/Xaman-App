@@ -732,7 +732,7 @@ class BackendService {
         return ApiService.fetch(Endpoints.VerifyPurchase, 'PATCH', null, purchases);
     };
 
-    getAccountWorth = async (account: string, network: string, currency: string) => {
+    getAccountWorth = async (account: string, network: string, currency: string, origin: string = '') => {
         const hashKey = `accountworth_${account}_${network}_${currency}`;
         if (typeof lastHashes?.[hashKey] === 'undefined') {
             lastHashes[hashKey] = ['', ''];
@@ -743,6 +743,7 @@ class BackendService {
             network,
             currency,
             hash: lastHashes[hashKey][0],
+            origin,
         });
 
         if (data?.hash) {
