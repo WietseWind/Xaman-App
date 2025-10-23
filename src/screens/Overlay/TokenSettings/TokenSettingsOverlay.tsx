@@ -75,6 +75,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
             isReviewScreenVisible: false,
             latestLineBalance: 0,
             canRemove: false,
+            issuerTransferFee: undefined,
         };
 
         this.animatedColor = new Animated.Value(0);
@@ -84,18 +85,29 @@ class TokenSettingsOverlay extends Component<Props, State> {
     }
 
     componentDidMount() {
+        const { token } = this.props;
         this.mounted = true;
+
+        LedgerService.getAccountTransferRate(token.currency.issuer)
+            .then((resp) => {
+                this.setState({
+                    issuerTransferFee: resp,
+                });
+            })
+            .catch(() => {
+                //
+            });
 
         Animated.parallel([
             Animated.timing(this.animatedColor, {
                 toValue: 150,
                 duration: 350,
-                useNativeDriver: false,
+                useNativeDriver: true,
             }),
             Animated.timing(this.animatedOpacity, {
                 toValue: 1,
                 duration: 200,
-                useNativeDriver: false,
+                useNativeDriver: true,
             }),
         ]).start();
 
@@ -112,12 +124,12 @@ class TokenSettingsOverlay extends Component<Props, State> {
                 Animated.timing(this.animatedColor, {
                     toValue: 0,
                     duration: 350,
-                    useNativeDriver: false,
+                    useNativeDriver: true,
                 }),
                 Animated.timing(this.animatedOpacity, {
                     toValue: 0,
                     duration: 200,
-                    useNativeDriver: false,
+                    useNativeDriver: true,
                 }),
             ]).start(async () => {
                 await Navigator.dismissOverlay();
@@ -241,12 +253,12 @@ class TokenSettingsOverlay extends Component<Props, State> {
                         Animated.timing(this.animatedColor, {
                             toValue: 0,
                             duration: 350,
-                            useNativeDriver: false,
+                            useNativeDriver: true,
                         }),
                         Animated.timing(this.animatedOpacity, {
                             toValue: 0,
                             duration: 200,
-                            useNativeDriver: false,
+                            useNativeDriver: true,
                         }),
                     ]).start(() => {
                         Navigator.showModal<ReviewTransactionModalProps<Payment>>(
@@ -364,12 +376,12 @@ class TokenSettingsOverlay extends Component<Props, State> {
                         Animated.timing(this.animatedColor, {
                             toValue: 0,
                             duration: 350,
-                            useNativeDriver: false,
+                            useNativeDriver: true,
                         }),
                         Animated.timing(this.animatedOpacity, {
                             toValue: 0,
                             duration: 200,
-                            useNativeDriver: false,
+                            useNativeDriver: true,
                         }),
                     ]).start(() => {
                         Navigator.showModal<ReviewTransactionModalProps<TrustSet>>(
@@ -404,12 +416,12 @@ class TokenSettingsOverlay extends Component<Props, State> {
                     Animated.timing(this.animatedColor, {
                         toValue: 150,
                         duration: 350,
-                        useNativeDriver: false,
+                        useNativeDriver: true,
                     }),
                     Animated.timing(this.animatedOpacity, {
                         toValue: 1,
                         duration: 200,
-                        useNativeDriver: false,
+                        useNativeDriver: true,
                     }),
                 ]).start();
             },
@@ -426,12 +438,12 @@ class TokenSettingsOverlay extends Component<Props, State> {
                     Animated.timing(this.animatedColor, {
                         toValue: 150,
                         duration: 350,
-                        useNativeDriver: false,
+                        useNativeDriver: true,
                     }),
                     Animated.timing(this.animatedOpacity, {
                         toValue: 1,
                         duration: 200,
-                        useNativeDriver: false,
+                        useNativeDriver: true,
                     }),
                 ]).start();
             },
@@ -731,7 +743,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                 targetInstance.pendingProps?.testID === 'currency-settings-overlay' &&
                 targetInstance.pendingProps?.style &&
                 typeof targetInstance.pendingProps?.style === 'object' &&
-                targetInstance.pendingProps?.style?.opacity === 0
+                Number(targetInstance.pendingProps?.style?.opacity || 0) < 0.5
             ) {
                 event?.preventDefault();
                 event?.stopPropagation();
@@ -742,7 +754,15 @@ class TokenSettingsOverlay extends Component<Props, State> {
 
     render() {
         const { token } = this.props;
-        const { isFavorite, isReviewScreenVisible, isRemoving, isLoading, canRemove, hasXAppIdentifier } = this.state;
+        const {
+            isFavorite,
+            isReviewScreenVisible,
+            isRemoving,
+            isLoading,
+            canRemove,
+            hasXAppIdentifier,
+            issuerTransferFee,
+        } = this.state;
 
         if (Platform.OS === 'ios' && isReviewScreenVisible) {
             // IOS will be at the back
@@ -775,6 +795,8 @@ class TokenSettingsOverlay extends Component<Props, State> {
             !token.obligation &&
             !token?.isMPToken() &&
             !token.isLiquidityPoolToken();
+
+        const showTransferFee = issuerTransferFee && issuerTransferFee > 0;
 
         return (
             <View
@@ -854,17 +876,36 @@ class TokenSettingsOverlay extends Component<Props, State> {
                                         AppStyles.centerAligned,
                                     ]}>
                                         <View style={[AppStyles.row, AppStyles.centerAligned]}>
-                                            <View style={styles.brandAvatarContainer}>
+                                            <View style={[
+                                                styles.brandAvatarContainer,
+                                                showTransferFee
+                                                    ? styles.brandAvatarContainerWithTransferFee
+                                                    : {},
+                                            ]}>
                                                 <TokenAvatar token={token} size={35} />
                                             </View>
                                             <View style={[AppStyles.column, AppStyles.centerContent]}>
                                                 <Text
                                                     numberOfLines={1}
-                                                    style={styles.currencyItemLabelSmall}
+                                                    style={[
+                                                        styles.currencyItemLabelSmall,
+                                                        showTransferFee
+                                                            ? styles.currencyItemLabelSmallWithTransferFee
+                                                            : {},
+                                                    ]}
                                                     ellipsizeMode="middle"
                                                 >
                                                     {token.getFormattedCurrency()}
                                                 </Text>
+                                                { showTransferFee && (
+                                                    <Text style={[
+                                                        styles.tokenTransferFee,
+                                                        Number(token.balance) > 0 && AppStyles.colorRed,
+                                                    ]}>
+                                                        {Localize.t('global.transferFee')}:{' '}
+                                                        {JSON.stringify(issuerTransferFee, null, 2)}%
+                                                    </Text>
+                                                )}
                                                 <TouchableDebounce
                                                     onPress={this.onCopyIssuerAddressPress}
                                                     style={AppStyles.row}
