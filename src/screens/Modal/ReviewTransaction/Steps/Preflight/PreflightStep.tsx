@@ -203,6 +203,7 @@ class PreflightStep extends Component<Props, State> {
 
                 // check for enforced signer accounts
                 const forcedSigners = payload.getSigners();
+                // console.log(forcedSigners)
 
                 if (Array.isArray(forcedSigners) && forcedSigners.length > 0) {
                     // filter available accounts base on forced signers
@@ -263,6 +264,27 @@ class PreflightStep extends Component<Props, State> {
                 if (!source) {
                     reject(new PreflightError(RequiredActionsType.ADD_ACCOUNT));
                     return;
+                }
+
+                // case & logic for below: 
+                //    https://github.com/WietseWind/Xaman-App/issues/67
+                if (Array.isArray(forcedSigners) && forcedSigners.length > 0) {
+                    if (transaction?.Account) {
+                        const fullAccessAccounts = AccountRepository.getFullAccessAccounts();
+                        if (!forcedSigners.includes(transaction.Account)) {
+                            const txAccountAsSigner = find(fullAccessAccounts, { address: transaction.Account });
+                            if (txAccountAsSigner?.regularKey) {
+                                if (forcedSigners.includes(txAccountAsSigner.regularKey)) {
+                                    // transaction.Account is one of the forced signers' regular key, so we will use
+                                    // the native payload's `Account` as source when the regular key account is selected
+                                    source = txAccountAsSigner;
+                                    availableAccounts = availableAccounts
+                                        .filter((a) => a.address !== txAccountAsSigner.regularKey);
+                                    availableAccounts.push(txAccountAsSigner);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // set the source
