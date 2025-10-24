@@ -197,7 +197,7 @@ class NativeItem extends Component<Props, State> {
     };
 
     renderBalance = () => {
-        const { account, discreetMode, reorderEnabled } = this.props;
+        const { account, discreetMode, reorderEnabled, network } = this.props;
         const { showFiatRate, fiatRate, isLoadingRate } = this.state;
 
         const availableBalance = CalculateAvailableBalance(account, true);
@@ -221,7 +221,11 @@ class NativeItem extends Component<Props, State> {
                         <Text numberOfLines={1} style={styles.currencyItemLabel}>
                             {NetworkService.getNativeAsset()}
                         </Text>
-                        { NetworkService.getNativeAsset() === 'XRP' && NetworkService.hasSwap() && !reorderEnabled && (
+                        {
+                            NetworkService.getNativeAsset() === 'XRP' &&
+                            (NetworkService.getNetwork()?.key === 'MAINNET' || network?.key === 'MAINNET') &&
+                            NetworkService.hasSwap() &&
+                            !reorderEnabled && (
                             <Button
                                 roundedMini
                                 light
