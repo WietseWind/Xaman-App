@@ -197,6 +197,16 @@ export default class SortableFlatList extends Component<Props, State> {
         const { accWorthLoading, accWorthAmount } = this.state;
         const settings = CoreRepository.getSettings();
 
+        const isValidNetwork = settings.network?.key === 'MAINNET' || settings.network?.key === 'XAHAU';
+        if ((!settings.accountWorthActive && !settings.showPerAssetWorth) || !isValidNetwork) {
+            this.setState({
+                accWorthLoading: true,
+                accWorthAmount: 0,
+            });
+
+            return;
+        }
+
         if (settings.account.address !== this.currentAccountWorthAccount) {
             // Account changed, current values are no longer relevant
             // console.log('Account changed, current values are no longer relevant')

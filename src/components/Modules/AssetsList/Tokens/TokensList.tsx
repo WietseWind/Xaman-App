@@ -87,6 +87,9 @@ class TokensList extends Component<Props, State> {
 
         const settings = CoreRepository.getSettings();
 
+        const isValidNetwork = settings.network?.key === 'MAINNET' || settings.network?.key === 'XAHAU';
+        const accWorthContext = !settings.discreetMode && isValidNetwork;
+
         this.state = {
             accountStateVersion: account.getStateVersion(),
             account,
@@ -97,8 +100,8 @@ class TokensList extends Component<Props, State> {
             // eslint-disable-next-line react/no-unused-state
             lineWorthLoading: true,
             showHeader: true,
-            accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
-            assetPricesInList: settings.showPerAssetWorth && !settings.discreetMode,
+            accWorthEnabled: settings.accountWorthActive && accWorthContext,
+            assetPricesInList: settings.showPerAssetWorth && accWorthContext,
             tokenPrices: {
                 totalValue: 0,
                 live: false,
@@ -118,9 +121,13 @@ class TokensList extends Component<Props, State> {
     updateSettingsHandler = () => {
         const settings = CoreRepository.getSettings();
         // Todo: fetch new value
+        const validContext = !settings.discreetMode && (
+            settings.network?.key === 'MAINNET' ||
+            settings.network?.key === 'XAHAU'
+        );
         this.setState({
-            accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
-            assetPricesInList: settings.showPerAssetWorth && !settings.discreetMode,
+            accWorthEnabled: settings.accountWorthActive && validContext,
+            assetPricesInList: settings.showPerAssetWorth && validContext,
         });
     };
 
@@ -133,8 +140,12 @@ class TokensList extends Component<Props, State> {
 
         InteractionManager.runAfterInteractions(() => { 
             const settings = CoreRepository.getSettings();
+            const validContext = !settings.discreetMode && (
+                settings.network?.key === 'MAINNET' ||
+                settings.network?.key === 'XAHAU'
+            );
             this.setState({
-                accWorthEnabled: settings.accountWorthActive && !settings.discreetMode,
+                accWorthEnabled: settings.accountWorthActive && validContext,
             });
             CoreRepository.on('updateSettings', this.updateSettingsHandler);
 
@@ -158,7 +169,7 @@ class TokensList extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-        const { discreetMode, spendable, experimentalUI } = this.props;
+        const { discreetMode, spendable, experimentalUI, network } = this.props;
         const {
             dataSource,
             accountStateVersion,
@@ -176,6 +187,7 @@ class TokensList extends Component<Props, State> {
             !isEqual(nextState.assetPricesInList, assetPricesInList) ||
             !isEqual(nextState.showHeader, showHeader) ||
             !isEqual(nextProps.spendable, spendable) ||
+            !isEqual(nextProps.network, network) ||
             !isEqual(nextProps.discreetMode, discreetMode) ||
             !isEqual(nextProps.experimentalUI, experimentalUI) ||
             !isEqual(nextState.accountStateVersion, accountStateVersion) ||
