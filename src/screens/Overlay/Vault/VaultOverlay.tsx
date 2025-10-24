@@ -143,10 +143,24 @@ class VaultOverlay extends Component<Props, State> {
                     );
                 }
             }
+            
+            let suppressSignerSelection = false;
 
+            if (signer?.flags?.disableMasterKey === true) {
+                // Main signer has master disabled
+                if (preferredSigner !== signer) {
+                    // Main signer is not the preferred signer
+                    // We should not allow the user to select the main signer
+                    // as it's already the regular key
+                    suppressSignerSelection = true;
+                }
+            }
+            // console.log('signerDelegate', JSON.stringify(signerDelegate.details, null, 2));
             // decide which step we are taking after setting signers
             // if signers more than one then let the users choose which account they want to sign the transaction with
-            const step = signer && signerDelegate ? Steps.SelectSigner : Steps.Authentication;
+            const step = signer && signerDelegate && !suppressSignerSelection                
+                ? Steps.SelectSigner
+                : Steps.Authentication;
 
             // set the state
             this.setState({
