@@ -181,20 +181,30 @@ class TokensList extends Component<Props, State> {
             tokenPrices,
         } = this.state;
 
-        return (
-            !isEqual(nextState.tokenPrices, tokenPrices) ||
-            !isEqual(nextState.accWorthEnabled, accWorthEnabled) ||
-            !isEqual(nextState.assetPricesInList, assetPricesInList) ||
-            !isEqual(nextState.showHeader, showHeader) ||
-            !isEqual(nextProps.spendable, spendable) ||
-            !isEqual(nextProps.network, network) ||
-            !isEqual(nextProps.discreetMode, discreetMode) ||
-            !isEqual(nextProps.experimentalUI, experimentalUI) ||
-            !isEqual(nextState.accountStateVersion, accountStateVersion) ||
-            !isEqual(nextState.reorderEnabled, reorderEnabled) ||
-            !isEqual(nextState.filters, filters) ||
-            !isEqual(map(nextState.dataSource, 'id').join(), map(dataSource, 'id').join())
-        );
+        if (nextState && nextProps) {
+            try {
+                return (
+                    !isEqual(nextState.tokenPrices, tokenPrices) ||
+                    !isEqual(nextState.accWorthEnabled, accWorthEnabled) ||
+                    !isEqual(nextState.assetPricesInList, assetPricesInList) ||
+                    !isEqual(nextState.showHeader, showHeader) ||
+                    !isEqual(nextProps.spendable, spendable) ||
+                    !isEqual(nextProps.network, network) ||
+                    !isEqual(nextProps.discreetMode, discreetMode) ||
+                    !isEqual(nextProps.experimentalUI, experimentalUI) ||
+                    !isEqual(nextState.accountStateVersion, accountStateVersion) ||
+                    !isEqual(nextState.reorderEnabled, reorderEnabled) ||
+                    !isEqual(nextState.filters, filters) ||
+                    !isEqual(map(nextState.dataSource, 'id').join(), map(dataSource, 'id').join())
+                );
+            } catch (e) {
+                // console.log('error in shouldComponentUpdate', e);
+                return false;
+            }
+        }
+
+        // console.log('do not update because: ', nextState, nextProps);
+        return false;
     }
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State): Partial<State> | null {
