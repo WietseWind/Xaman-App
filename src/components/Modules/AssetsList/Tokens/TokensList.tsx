@@ -223,8 +223,14 @@ class TokensList extends Component<Props, State> {
                 (prevState.account.isValid() && !isEqual(nextProps.account.address, prevState.account.address)) ||
                 !prevState.account.isValid()
             ) {
+                const settings = CoreRepository.getSettings();
+
                 filtersState = {
-                    filters: undefined,
+                    filters: settings.filterHideZeroValue ? {
+                        favorite: false,
+                        hideZero: settings.filterHideZeroValue,
+                        text: '',
+                    } : undefined,
                     reorderEnabled: false,
                 };
             }
