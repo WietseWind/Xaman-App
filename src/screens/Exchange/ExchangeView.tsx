@@ -164,8 +164,9 @@ class ExchangeView extends Component<Props, State> {
                 },
             );
 
-            try {
-                if (NetworkService.getNativeAsset() !== 'XRP') {
+            const liquidityParserMethod = async () => {
+                // console.log('liquidityParserMethod1')
+                try {
                     // non XRP network, fallback to old liquidity calculation
                     const liquidity = await this.ledgerExchange.getLiquidity(direction, Number(amount));
 
@@ -184,9 +185,17 @@ class ExchangeView extends Component<Props, State> {
                             exchangeRate,
                         });
                     }
+                } catch (e) {
+                    // ignore
+                }
+            };
+
+            try {
+                if (NetworkService.getNativeAsset() !== 'XRP') {
+                    // console.log('oldMethod')
+                    liquidityParserMethod();
                 } else {
                     // XRP based network, use new liquidity simulation
-
                     const calcOutcome = async (seq = 0, amnt = 1) => {
                         try {
                             const r = {
@@ -212,30 +221,40 @@ class ExchangeView extends Component<Props, State> {
                             const outcome = await LedgerService.simulateTransaction(r);
 
                             const meta = (outcome as any)?.meta;
-                            const balanceChanges = parseBalanceChanges(meta);
-                            const myBalanceChanges = balanceChanges?.[account.address];
-                            if (myBalanceChanges) {
-                                const nonXrpChange = (Array.isArray(myBalanceChanges)
-                                    ? myBalanceChanges.filter(c => c.counterparty !== '')
-                                    : [])?.[0];
 
-                                const xrpChange = (Array.isArray(myBalanceChanges)
-                                    ? myBalanceChanges.filter(c => c.counterparty === '')
-                                    : [])?.[0];
-                                                            
-                                const xrpValue = Math.abs(Math.round(Number(xrpChange?.value || 0) * 1_000_000)) - 50;
-                                const nonXrpVal = Math.abs(Number(nonXrpChange.value));
+                            if (!meta || meta.TransactionResult !== 'tesSUCCESS') {
+                                liquidityParserMethod();
+                                // console.log('liquidityParserMethod2', meta.TransactionResult)
+                            } else {
+                                // console.log('newMethod', meta.TransactionResult)
 
-                                let rate = 0;
-                                if (nonXrpChange?.value && xrpValue) {
-                                    if (direction === 'SELL') {
-                                        rate = nonXrpVal / (xrpValue / 1_000_000) / 100;
-                                    } else {
-                                        rate = (xrpValue / 1_000_000) / nonXrpVal / 100;
+                                const balanceChanges = parseBalanceChanges(meta);
+                                const myBalanceChanges = balanceChanges?.[account.address];
+                                if (myBalanceChanges) {
+                                    const nonXrpChange = (Array.isArray(myBalanceChanges)
+                                        ? myBalanceChanges.filter(c => c.counterparty !== '')
+                                        : [])?.[0];
+
+                                    const xrpChange = (Array.isArray(myBalanceChanges)
+                                        ? myBalanceChanges.filter(c => c.counterparty === '')
+                                        : [])?.[0];
+                                                                
+                                    const xrpValue =
+                                        Math.abs(Math.round(Number(xrpChange?.value || 0) * 1_000_000)) - 50;
+                                    const nonXrpVal =
+                                        Math.abs(Number(nonXrpChange.value));
+
+                                    let rate = 0;
+                                    if (nonXrpChange?.value && xrpValue) {
+                                        if (direction === 'SELL') {
+                                            rate = nonXrpVal / (xrpValue / 1_000_000) / 100;
+                                        } else {
+                                            rate = (xrpValue / 1_000_000) / nonXrpVal / 100;
+                                        }
                                     }
-                                }
-                                if (nonXrpChange?.value) {
-                                    return `${seq}|${nonXrpVal}|${xrpValue}|${rate}`;
+                                    if (nonXrpChange?.value) {
+                                        return `${seq}|${nonXrpVal}|${xrpValue}|${rate}`;
+                                    }
                                 }
                             }
                         } catch {
