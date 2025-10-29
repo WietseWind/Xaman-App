@@ -77,7 +77,7 @@ class PaymentTemplate extends Component<Props, State> {
 
         this.state = {
             account: undefined,
-            editableAmount: !transaction.Amount?.value,
+            editableAmount: !transaction.Amount?.value || transaction.Amount?.value === '0',
             amount: transaction.Amount?.value,
             currencyName: transaction.Amount?.currency
                 ? NormalizeCurrencyCode(transaction.Amount.currency)
@@ -445,7 +445,7 @@ class PaymentTemplate extends Component<Props, State> {
                             AppStyles.row,
                             // AppStyles.borderRed,
                         ]} onPress={this.onAmountEditPress}>
-                            {editableAmount && !this.isMPTAmount ? (
+                            {editableAmount && !this.isMPTAmount() ? (
                                 <>
                                     <View style={[AppStyles.row, AppStyles.flex1]}>
                                         <AmountInput

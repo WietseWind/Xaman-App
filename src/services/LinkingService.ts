@@ -188,7 +188,7 @@ class LinkingService {
                 Account: CoreRepository.getDefaultAccount().address,
                 Destination: to,
                 Amount: !destination?.amount
-                    ? '1'
+                    ? new AmountParser(1, false).nativeToDrops().toString()
                     : destination?.currency && destination?.issuer
                       ? {
                             currency: destination?.currency,
@@ -283,7 +283,8 @@ class LinkingService {
             const payload = Payload.build(
                 {
                     ...payment.JsonForSigning,
-                    ...(!destination?.amount ? { Amount: undefined } : {}),
+                    ...(!destination?.amount ? { Amount: '0' } : {}),
+                    // ^^ If no amount specified we allow user to enter
                 },
                 undefined, // Custom instruction
                 true, // Submit
