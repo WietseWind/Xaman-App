@@ -122,6 +122,7 @@ class TransactionLoaderModal extends Component<Props, State> {
             if ('error' in resp) {
                 this.setState({
                     error: true,
+                    isLoading: false,
                 });
                 return;
             }
