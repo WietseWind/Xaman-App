@@ -431,8 +431,15 @@ class XAppBrowserModal extends Component<Props, State> {
         });
     };
 
-    openTxDetails = async (data: { tx: string; account: string }) => {
-        const { network } = this.state;
+    openTxDetails = async (data: {
+        tx: string;
+        account: string;
+        network?: string;
+    }) => {
+        const { network: stateNetwork } = this.state;
+
+        const paramNetwork = NetworkRepository.findOne({ key: String(data?.network).toUpperCase() });
+        const txNetwork = paramNetwork || stateNetwork;
 
         const hash = get(data, 'tx', undefined);
         const address = get(data, 'account', undefined);
@@ -461,7 +468,7 @@ class XAppBrowserModal extends Component<Props, State> {
             Navigator.showModal<TransactionLoaderModalProps>(AppScreens.Modal.TransactionLoader, {
                 hash,
                 account,
-                network,
+                network: txNetwork,
             });
         }, delay);
     };
