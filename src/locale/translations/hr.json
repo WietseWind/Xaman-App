@@ -14,6 +14,7 @@
     "yes": "Da",
     "filterTokens": "Filter tokens",
     "cancel": "Otkaži",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Odbaci",
     "remove": "Ukloni",
     "go": "Idi",

@@ -14,6 +14,7 @@
     "yes": "Ya",
     "filterTokens": "Filter tokens",
     "cancel": "Batal",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Singkirkan",
     "remove": "Hapus",
     "go": "Lanjutkan",

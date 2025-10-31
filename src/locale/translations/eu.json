@@ -14,6 +14,7 @@
     "yes": "Bai",
     "filterTokens": "Filter tokens",
     "cancel": "Utzi",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Baztertu",
     "remove": "Kendu",
     "go": "Zoaz",

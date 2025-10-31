@@ -14,6 +14,7 @@
     "yes": "Kyllä",
     "filterTokens": "Filter tokens",
     "cancel": "Peruuta",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Hylkää",
     "remove": "Poista",
     "go": "Jatka",

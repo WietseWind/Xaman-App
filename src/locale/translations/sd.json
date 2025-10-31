@@ -14,6 +14,7 @@
     "yes": "ها",
     "filterTokens": "Filter tokens",
     "cancel": "رد ڪرڻ",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "خارج ڪريو",
     "remove": "هٽايو",
     "go": "وڃ",

@@ -14,6 +14,7 @@
     "yes": "Đúng",
     "filterTokens": "Filter tokens",
     "cancel": "Hủy bỏ",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Bỏ đi",
     "remove": "Xóa bỏ",
     "go": "Đi",

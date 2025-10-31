@@ -14,6 +14,7 @@
     "yes": "Wi",
     "filterTokens": "Filter tokens",
     "cancel": "Anile",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Jete",
     "remove": "Retire",
     "go": "Ale",

@@ -14,6 +14,7 @@
     "yes": "Ano",
     "filterTokens": "Filter tokens",
     "cancel": "Zrušit",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Vyřadit",
     "remove": "Odstranit",
     "go": "Jdeme na to",

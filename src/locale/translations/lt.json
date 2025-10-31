@@ -14,6 +14,7 @@
     "yes": "Taip",
     "filterTokens": "Filter tokens",
     "cancel": "Atšaukti",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Atmesti",
     "remove": "Pašalinti",
     "go": "Eiti",

@@ -14,6 +14,7 @@
     "yes": "होय",
     "filterTokens": "Filter tokens",
     "cancel": "रद्द करा",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "टाकून द्या",
     "remove": "काढा",
     "go": "जा",

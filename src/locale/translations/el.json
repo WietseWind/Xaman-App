@@ -14,6 +14,7 @@
     "yes": "Ναι",
     "filterTokens": "Filter tokens",
     "cancel": "Ακύρωση",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Απορρίψτε",
     "remove": "Αφαίρεση",
     "go": "Ξεκινήστε",

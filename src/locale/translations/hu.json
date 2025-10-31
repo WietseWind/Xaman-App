@@ -14,6 +14,7 @@
     "yes": "Igen",
     "filterTokens": "Filter tokens",
     "cancel": "Mégse",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Elvetés",
     "remove": "Eltávolítás",
     "go": "Mehet",

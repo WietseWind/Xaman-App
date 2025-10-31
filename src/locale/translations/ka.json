@@ -14,6 +14,7 @@
     "yes": "დიახ",
     "filterTokens": "Filter tokens",
     "cancel": "გაუქმება",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "გაუქმება",
     "remove": "წაშლა",
     "go": "დაყენება",

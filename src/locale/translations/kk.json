@@ -14,6 +14,7 @@
     "yes": "Иә",
     "filterTokens": "Filter tokens",
     "cancel": "Болдырмау",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Қабылдамау",
     "remove": "Өшіру",
     "go": "Барыңыз",

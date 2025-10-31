@@ -14,6 +14,7 @@
     "yes": "Sí",
     "filterTokens": "Filter tokens",
     "cancel": "Cancelar",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Descartar",
     "remove": "Eliminar",
     "go": "Ir",

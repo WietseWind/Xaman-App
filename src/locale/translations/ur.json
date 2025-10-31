@@ -14,6 +14,7 @@
     "yes": "جی ہاں",
     "filterTokens": "Filter tokens",
     "cancel": "منسوخ کریں",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "خارج کردیں",
     "remove": "دور",
     "go": "جاؤ",

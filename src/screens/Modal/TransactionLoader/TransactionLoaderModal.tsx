@@ -31,6 +31,7 @@ import { TransactionDetailsViewProps } from '@screens/Events/Details';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import { ErrorResponse } from '@common/libs/ledger/types/methods';
 
 /* types ==================================================================== */
 export interface Props {
@@ -108,14 +109,24 @@ class TransactionLoaderModal extends Component<Props, State> {
             });
         }
 
-        // some timing issue can be fixed with this
+        // Give the modal time to open
         await new Promise((resolve) => {
             setTimeout(resolve, 500);
         });
 
         // load the transaction from ledger
         try {
-            const resp = await LedgerService.getTransaction(hash);
+            const resp = await Promise.race([
+                new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            error: 'timeout',
+                            error_message: Localize.t('global.timeoutFetchingTx'),
+                        } as ErrorResponse);
+                    }, 10_000);
+                }) as Promise<ErrorResponse>,
+                LedgerService.getTransaction(hash),
+            ]);
 
             if (!this.mounted) {
                 return;
@@ -125,7 +136,7 @@ class TransactionLoaderModal extends Component<Props, State> {
                 this.setState({
                     error: true,
                     isLoading: false,
-                    errorMessage: String(resp.error_message || resp.error || ''),
+                    errorMessage: String(resp?.error_message || resp?.error || ''),
                 });
                 return;
             }
@@ -272,19 +283,21 @@ class TransactionLoaderModal extends Component<Props, State> {
                 >
                     <Text style={[AppStyles.subtext, AppStyles.textCenterAligned, AppStyles.colorGrey]}>
                         {Localize.t('events.unableToLoadTheTransaction')}
-                        {errorMessage && errorMessage !== '' && (
-                            <View style={[
-                                AppStyles.paddingTopSml,
-                                AppStyles.paddingBottomExtraSml,
-                            ]}>
-                                <Text style={[
-                                    AppStyles.baseText,
-                                    AppStyles.colorRed,
-                                    AppStyles.bold,
-                                ]}>{errorMessage}</Text>
-                            </View>
-                        )}
                     </Text>
+                    {errorMessage && errorMessage !== '' && (
+                        <View style={[
+                            AppStyles.paddingTopSml,
+                            AppStyles.paddingBottomExtraSml,
+                            AppStyles.centerSelf,
+                            AppStyles.centerContent,
+                        ]}>
+                            <Text style={[
+                                AppStyles.baseText,
+                                AppStyles.colorRed,
+                                AppStyles.bold,
+                            ]}>{errorMessage}</Text>
+                        </View>
+                    )}
                 </InfoMessage>
             </>
         );

@@ -14,6 +14,7 @@
     "yes": "Jā",
     "filterTokens": "Filter tokens",
     "cancel": "Atcelt",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Izmest",
     "remove": "Noņemt",
     "go": "Ieiet",

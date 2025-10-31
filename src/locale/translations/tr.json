@@ -14,6 +14,7 @@
     "yes": "Evet",
     "filterTokens": "Filter tokens",
     "cancel": "İptal",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "Kaydetme",
     "remove": "Kaldır",
     "go": "Devam",

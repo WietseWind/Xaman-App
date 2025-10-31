@@ -14,6 +14,7 @@
     "yes": "はい",
     "filterTokens": "Filter tokens",
     "cancel": "キャンセル",
+    "timeoutFetchingTx": "Timeout fetching transaction",
     "discard": "破棄する",
     "remove": "削除する",
     "go": "進む",
