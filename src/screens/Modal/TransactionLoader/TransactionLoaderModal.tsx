@@ -26,6 +26,7 @@ import { Button, Footer, Icon, InfoMessage, LoadingIndicator, Spacer } from '@co
 
 import Localize from '@locale';
 
+// eslint-disable-next-line import/no-cycle
 import { TransactionDetailsViewProps } from '@screens/Events/Details';
 
 import { AppStyles } from '@theme';
@@ -42,6 +43,7 @@ export interface State {
     isLoading: boolean;
     requiresSwitchNetwork: boolean;
     error: boolean;
+    errorMessage?: string;
 }
 
 /* Component ==================================================================== */
@@ -108,7 +110,7 @@ class TransactionLoaderModal extends Component<Props, State> {
 
         // some timing issue can be fixed with this
         await new Promise((resolve) => {
-            setTimeout(resolve, 1000);
+            setTimeout(resolve, 500);
         });
 
         // load the transaction from ledger
@@ -123,6 +125,7 @@ class TransactionLoaderModal extends Component<Props, State> {
                 this.setState({
                     error: true,
                     isLoading: false,
+                    errorMessage: String(resp.error_message || resp.error || ''),
                 });
                 return;
             }
@@ -255,18 +258,34 @@ class TransactionLoaderModal extends Component<Props, State> {
     };
 
     renderError = () => {
+        const { errorMessage } = this.state;
         return (
             <>
                 <Icon size={50} name="IconAlertTriangle" style={AppStyles.imgColorOrange} />
                 <Spacer size={40} />
                 <InfoMessage
                     type="neutral"
-                    label={Localize.t('events.unableToLoadTheTransaction')}
                     actionButtonLabel={Localize.t('global.tryAgain')}
                     actionButtonIcon="IconRefresh"
                     onActionButtonPress={this.loadTransaction}
                     containerStyle={styles.messageContainer}
-                />
+                >
+                    <Text style={[AppStyles.subtext, AppStyles.textCenterAligned, AppStyles.colorGrey]}>
+                        {Localize.t('events.unableToLoadTheTransaction')}
+                        {errorMessage && errorMessage !== '' && (
+                            <View style={[
+                                AppStyles.paddingTopSml,
+                                AppStyles.paddingBottomExtraSml,
+                            ]}>
+                                <Text style={[
+                                    AppStyles.baseText,
+                                    AppStyles.colorRed,
+                                    AppStyles.bold,
+                                ]}>{errorMessage}</Text>
+                            </View>
+                        )}
+                    </Text>
+                </InfoMessage>
             </>
         );
     };
