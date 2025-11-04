@@ -207,7 +207,7 @@ export default class SortableFlatList extends Component<Props, State> {
             return;
         }
 
-        if (settings.account.address !== this.currentAccountWorthAccount) {
+        if (settings?.account?.address !== this.currentAccountWorthAccount) {
             // Account changed, current values are no longer relevant
             // console.log('Account changed, current values are no longer relevant')
             this.setState({
@@ -217,7 +217,7 @@ export default class SortableFlatList extends Component<Props, State> {
         }
 
         if (a && a?.address) {
-            if (a.address !== settings.account.address) {
+            if (a.address !== settings?.account?.address) {
                 // console.log('returning early, not fetching worth, address mismatch')
                 return;
             }
@@ -236,10 +236,10 @@ export default class SortableFlatList extends Component<Props, State> {
 
         // console.log('fetchAccountWorth', settings.account.address);
         Promise.all([
-            BackendService.getAccountWorth(settings.account.address, settings.network.key, settings.currency, origin),
+            BackendService.getAccountWorth(settings?.account?.address, settings.network.key, settings.currency, origin),
             BackendService.getCurrencyRate(settings.currency),
         ]).then(([res, rate]) => {
-            this.currentAccountWorthAccount = settings.account.address;
+            this.currentAccountWorthAccount = settings?.account?.address;
 
             this.setState({
                 accWorthAmount: res.totalValue,
