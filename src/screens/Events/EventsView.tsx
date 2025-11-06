@@ -468,6 +468,7 @@ class EventsView extends Component<Props, State> {
                 'deposit_preauth',
                 'mpt_issuance',
                 'credential',
+                'cron',
             ];
 
             // Create an array of promises, one for each object type
@@ -750,6 +751,7 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.PayChannel,
                         LedgerEntryTypes.Delegate,
                         LedgerEntryTypes.Credential,
+                        LedgerEntryTypes.Cron,
                         // LedgerEntryTypes.SignerList,
                         // LedgerEntryTypes.DepositPreauth,
                         // LedgerEntryTypes.DID,
@@ -881,6 +883,7 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.MPToken,
                         LedgerEntryTypes.PermissionedDomain,
                         LedgerEntryTypes.DepositPreauth,
+                        // LedgerEntryTypes.Cron, // Already @ Planned
                         // ...TODO?
                         // LedgerEntryTypes.SignerList,
                         // LedgerEntryTypes.DepositPreauth,
@@ -1159,6 +1162,7 @@ class EventsView extends Component<Props, State> {
                         TransactionTypes.NFTokenModify,
                         LedgerEntryTypes.Ticket,
                         LedgerEntryTypes.PermissionedDomain,
+                        LedgerEntryTypes.Cron,
                         LedgerEntryTypes.Credential,
                         LedgerEntryTypes.MPTokenIssuance,
                         LedgerEntryTypes.MPToken,

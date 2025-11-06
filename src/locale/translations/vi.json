@@ -554,6 +554,7 @@
     "finishEscrow": "Hoàn thành ký quỹ",
     "cancelEscrow": "Hủy ký quỹ",
     "createCheck": "Tạo séc",
+    "cron": "Set Cron (Hook schedule)",
     "cashCheck": "Kiểm tra tiền",
     "cancelCheck": "Hủy séc",
     "accountSettings": "Cài đặt tài khoản",
@@ -1419,6 +1420,23 @@
     "title": "Deposit Preauth",
     "eventThisIsA": "This is a Deposit Preauthorisation. A deposit preauthorisation allows only a specific set of accounts, or accounts holding a specific Credential to deposit (if this is enabled on the receiving account).",
     "remove": "Remove Deposit Preauth"
+  },
+  "cronSet": {
+    "title": "CronSet",
+    "remove": "Remove Cron",
+    "invalidParams": "Invalid Cron parameters.\n\nMissing mandatory fields: Either StartTime must be present to schedule a new Cron, or Flags must be '1' (int) to remove an existing Cron.",
+    "invalidParamsUnset": "Invalid Cron parameters for a 'tfCronUnset' transaction.\n\nWhen removing a Cron using `tfCronUnset` (Flags: 1), the StartTime, RepeatCount and DelaySeconds must be omitted.",
+    "setOrUpdate": "This payload will create or update an existing Cron (scheduled Hook invoke).",
+    "didCreateOrUpdate": "This payload created or updated an existing Cron (scheduled Hook invoke).",
+    "StartTime": "Start date & time",
+    "RepeatCount": "Repeat count",
+    "DelaySeconds": "Delay in seconds",
+    "removeCron": "This payload will remove any existing Cron configuration (scheduled Hook invoke).",
+    "didRemoveCron": "This payload removed an existing Cron configuration (scheduled Hook invoke).",
+    "objectName": "Cron (Hook schedule)",
+    "objStartTime": "Start at (or after) moment:\n%{value}",
+    "objRepeatCount": "Repeat Count:\n%{value}",
+    "objDelaySeconds": "Delay Seconds:\n%{value}"
   },
   "moment": {
     "calendar": {

@@ -10,6 +10,7 @@ import Ledger from './Ledger';
 import { LedgerEntry, LedgerEntryFilter } from './LedgerEntry';
 import LedgerHashes from './LedgerHashes';
 import NegativeUNL from './NegativeUNL';
+import Cron from './Cron';
 import NFTokenOffer from './NFTokenOffer';
 import { NFTokenPage } from './NFTokenPage';
 import Offer, { OfferFlags } from './Offer';
@@ -59,4 +60,5 @@ export type {
     MPTokenIssuance,
     PermissionedDomain,
     MPTokenIssuanceFlags,
+    Cron,
 };

@@ -67,6 +67,7 @@ export enum TransactionTypes {
     PermissionedDomainSet = 'PermissionedDomainSet',
     SetRemarks = 'SetRemarks',
     Batch = 'Batch',
+    CronSet = 'CronSet',
 }
 
 /**
@@ -118,6 +119,7 @@ export enum LedgerEntryTypes {
     MPToken = 'MPToken',
     Remark = 'Remark',
     PermissionedDomain = 'PermissionedDomain',
+    Cron = 'Cron',
 }
 
 /**

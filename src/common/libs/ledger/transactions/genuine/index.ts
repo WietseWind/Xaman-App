@@ -59,3 +59,4 @@ export * from './SetRemarks';
 export * from './PermissionedDomainSet';
 export * from './PermissionedDomainDelete';
 export * from './Batch';
+export * from './CronSet';

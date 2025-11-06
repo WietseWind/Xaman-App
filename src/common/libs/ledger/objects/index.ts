@@ -13,3 +13,5 @@ export * from './MPToken';
 export * from './MPTokenIssuance';
 export * from './PermissionedDomain';
 export * from './DepositPreauth';
+export * from './Cron';
+

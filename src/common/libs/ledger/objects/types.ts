@@ -2,6 +2,7 @@ import {
     Offer,
     Escrow,
     Check,
+    Cron,
     Ticket,
     PayChannel,
     NFTokenOffer,
@@ -19,6 +20,7 @@ export type LedgerObjects =
     | Escrow
     | Check
     | Ticket
+    | Cron
     | PayChannel
     | NFTokenOffer
     | URIToken

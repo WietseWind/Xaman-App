@@ -49,6 +49,7 @@ import {
     PermissionedDomainDelete,
     PermissionedDomainSet,
     Batch,
+    CronSet,
 } from '.';
 
 // Pseudo transactions
@@ -113,6 +114,7 @@ export type Transactions =
     | Batch
     | PermissionedDomainDelete
     | PermissionedDomainSet
+    | CronSet
     | EnableAmendment;
 
 /**

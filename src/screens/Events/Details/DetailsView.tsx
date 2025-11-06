@@ -88,7 +88,13 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
     checkAdvisory = async () => {
         const { item, account } = this.props;
 
-        const acc = (item?.Type === 'Credential' ? item.Issuer : item.Account);
+        const acc = (
+            item?.Type === 'Credential'
+                ? item.Issuer
+                : item?.Type === 'Cron'
+                    ? item.Owner
+                    : item.Account
+        );
     
         // no need to check as the account is the initiator of the transaction
         if (acc === account.address) {
@@ -123,8 +129,8 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
         }
         
         // E.g. offers, NFT offers, etc.
-        if (item?.PreviousTxnID) {
-            return GetTransactionLink(item.PreviousTxnID);
+        if ((item as any)?.PreviousTxnID) {
+            return GetTransactionLink((item as any)?.PreviousTxnID);
         }
 
         return undefined;

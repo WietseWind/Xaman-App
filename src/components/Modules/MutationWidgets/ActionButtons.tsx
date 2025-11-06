@@ -41,6 +41,7 @@ enum ActionTypes {
     SELL_URITOKEN = 'SELL_URITOKEN',
     CANCEL_ESCROW = 'CANCEL_ESCROW',
     FINISH_ESCROW = 'FINISH_ESCROW',
+    CRON_SET = 'CRON_SET',
     CANCEL_CHECK = 'CANCEL_CHECK',
     CASH_CHECK = 'CASH_CHECK',
     CANCEL_TICKET = 'CANCEL_TICKET',
@@ -79,6 +80,8 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('events.acceptOffer'), secondary: true };
             case ActionTypes.CANCEL_ESCROW:
                 return { label: Localize.t('events.cancelEscrow'), secondary: true };
+            case ActionTypes.CRON_SET:
+                return { label: Localize.t('cronSet.remove'), secondary: true };
             case ActionTypes.FINISH_ESCROW:
                 return { label: Localize.t('events.finishEscrow'), secondary: false };
             case ActionTypes.CANCEL_CHECK:
@@ -238,6 +241,9 @@ class ActionButtons extends PureComponent<Props, State> {
                     availableActions.push(ActionTypes.FINISH_ESCROW);
                 }
                 break;
+            case LedgerEntryTypes.Cron:
+                availableActions.push(ActionTypes.CRON_SET);
+                break;
             case LedgerEntryTypes.Check:
                 if (item.Destination === account.address && !item.isExpired) {
                     availableActions.push(ActionTypes.CASH_CHECK);
@@ -301,6 +307,12 @@ class ActionButtons extends PureComponent<Props, State> {
         const craftedTxJson = {} as TransactionJson;
 
         switch (actionType) {
+            case ActionTypes.CRON_SET:
+                Object.assign(craftedTxJson, {
+                    TransactionType: TransactionTypes.CronSet,
+                    Flags: 1,
+                });
+                break;
             case ActionTypes.CANCEL_OFFER:
                 if (item.Type === LedgerEntryTypes.Offer) {
                     Object.assign(craftedTxJson, {

@@ -52,7 +52,11 @@ class Label extends PureComponent<Props, State> {
             !explainer?.getMonetaryDetails()?.mutate?.[OperationActions.DEC]?.[0] &&
             account.address !== ((item as any)?.Account || (item as any)?.Issuer);
         
-        if (noMutation && !item.Type.match(/Credential/)) {
+        if (
+            noMutation &&
+            !item.Type.match(/Credential/) &&
+            !item.Type.match(/Cron/)
+        ) {
             return <Text style={[
                 AppStyles.h4,
                 styles.noBold,
