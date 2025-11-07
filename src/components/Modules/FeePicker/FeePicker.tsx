@@ -344,6 +344,11 @@ class FeePicker extends Component<Props, State> {
                     <View style={AppStyles.paddingTopSml}>
                         <InfoMessage
                             type="info"
+                            labelStyle={[
+                                AppStyles.baseText,
+                                AppStyles.smalltext,
+                                AppStyles.colorBlue,
+                            ]}
                             label={selectedServiceFee?.note || 'No note'}
                         />
                     </View>
