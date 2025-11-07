@@ -196,7 +196,7 @@ const PaymentValidation: ValidationType<Payment> = (tx: Payment): Promise<void> 
 
             resolve();
         } catch (e) {
-            log.debug('PaymentValidation#13');
+            log.debug(`PaymentValidation#13: ${(e as Error)?.message}`);
             reject(new Error(ErrorMessages.unexpectedValidationError));
         }
     });
