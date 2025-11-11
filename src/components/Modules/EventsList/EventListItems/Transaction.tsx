@@ -219,12 +219,13 @@ class TransactionItem extends Component<Props, State> {
 
         Navigator.pop();
         setTimeout(() => {
+            Navigator.pop();
             Navigator.push<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
                 item,
                 account,
                 cachedTokenDetails,
             });
-        }, 500);
+        }, 100);
 
         // Navigator.push<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
         //     item,
