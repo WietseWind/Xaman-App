@@ -152,6 +152,10 @@ The parent key (`send`) and translation key (`confirmation`) indicate this appea
 
 **Don't create literal word-for-word translations.** Adapt the message to sound natural in your language while preserving the original meaning.
 
+So: use loan words where they are commonly used, use the English word if it's common for the language to use it for specific terminology. Especially in the context of the technology, the XRP ledger, a crypto wallet. Unless obviously the language/culture doesn't prefer loan words / English words.
+
+E.g.: some languages use English words for things they have native words for, but it's common for some words to be just taken from English. Take for example Estonian, it has several of them, like "main books" literally translated, instead of "ledger" - wherever a western language commonly uses the English variants over native words in modern informal language, prefer the English word instead of the literal translation. But only if using the English word for something is common for the given language.
+
 **Examples:**
 - English: "Please enter your passcode to unlock the app."
 - Spanish: "Introduce tu código para desbloquear la app."
