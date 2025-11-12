@@ -1396,6 +1396,7 @@
   },
   "mptoken": {
     "loading": "Loading MPT details...",
+    "errorLoading": "Error fetching MPToken details!",
     "event": "MPToken",
     "eventAuthOnly": "MPToken Authorization",
     "explain": "This is an MPToken, issued by %{issuer}.",
