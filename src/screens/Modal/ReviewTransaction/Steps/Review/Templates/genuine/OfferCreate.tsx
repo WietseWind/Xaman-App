@@ -123,7 +123,7 @@ class OfferCreateTemplate extends Component<Props, State> {
 
                 {warning && (
                     <View style={AppStyles.paddingBottomSml}>
-                        <InfoMessage type="error" label={warning} />
+                        <InfoMessage type="warning" label={warning} />
                     </View>
                 )}
 

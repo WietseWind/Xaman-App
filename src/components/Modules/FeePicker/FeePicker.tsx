@@ -37,6 +37,7 @@ interface Props {
     payload?: Payload;
     showHooksFee?: boolean;
     onSelect?: (txFee: any, serviceFee: any) => void;
+    sendAmountDrops?: number;
 }
 
 interface State {
@@ -81,6 +82,7 @@ class FeePicker extends Component<Props, State> {
                     // selectedServiceFee: undefined,
                     // feeHooks: undefined,
                     error: false,
+                    selectedServiceFee: undefined,
                 },
                 this.debouncedFetchFees,
             );
@@ -94,9 +96,14 @@ class FeePicker extends Component<Props, State> {
     }
 
     fetchServiceFee = (isFallback = false): Promise<void> => {
-        const { txJson, source, payload } = this.props;
+        const {
+            txJson,
+            source,
+            payload,
+        } = this.props;
 
         const noFee = () => {
+            // console.log('nofee')
             this.setState({
                 selectedServiceFee: {
                     type: 'LOW',
@@ -125,6 +132,8 @@ class FeePicker extends Component<Props, State> {
                 // console.log('Picked backend service service fee', res);
                 const { availableFees } = res;
 
+                // console.log(availableFees?.[0])
+                
                 if (Array.isArray(availableFees) && availableFees.length > 0) {
                     this.setState({
                         selectedServiceFee: availableFees[0],
@@ -137,6 +146,8 @@ class FeePicker extends Component<Props, State> {
     fetchFees = (isFallback = false): Promise<void> => {
         const { txJson } = this.props;
         const { error, selectedServiceFee, selectedTxFee } = this.state;
+
+        // console.log(txJson, sendAmountDrops)
 
         // clear any error for retrying again
         if (error) {
@@ -290,6 +301,7 @@ class FeePicker extends Component<Props, State> {
         const { containerStyle, textStyle } = this.props;
         const { selectedTxFee, selectedServiceFee, availableFees, feeHooks, error } = this.state;
 
+        // console.log('render', selectedServiceFee)
         // error while fetching the fee
         //  give the user ability to retry
         if (error) {
@@ -306,6 +318,7 @@ class FeePicker extends Component<Props, State> {
                 styles.outerContainer,
                 containerStyle,
             ]}>
+                {/* <Text style={ AppStyles.colorWhite}>{ JSON.stringify(selectedServiceFee) }</Text> */}
                 <TouchableDebounce activeOpacity={0.8} style={AppStyles.row} onPress={this.showFeeSelectOverlay}>
                     <View style={[AppStyles.flex1, AppStyles.row, AppStyles.centerAligned]}>
                         <Text style={textStyle}>
