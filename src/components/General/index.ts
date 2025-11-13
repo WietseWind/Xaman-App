@@ -48,3 +48,5 @@ export * from './HeartBeatAnimation';
 export * from './AnimatedDialog';
 export * from './JsonTree';
 export * from './CountDown';
+
+export * from './ServiceFeeSpendable';

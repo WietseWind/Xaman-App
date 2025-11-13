@@ -362,7 +362,11 @@ class ExchangeView extends Component<Props, State> {
 
     onExchangePress = () => {
         const { token } = this.props;
-        const { direction, amount, expectedOutcome } = this.state;
+        const {
+            direction,
+            amount,
+            // expectedOutcome,
+        } = this.state;
 
         // dismiss keyboard if present
         Keyboard.dismiss();
@@ -395,31 +399,32 @@ class ExchangeView extends Component<Props, State> {
             return;
         }
 
-        Prompt(
-            Localize.t('global.exchange'),
-            Localize.t('exchange.doYouWantToExchange', {
-                payAmount: Localize.formatNumber(Number(amount)),
-                payCurrency:
-                    direction === MarketDirection.SELL
-                        ? NetworkService.getNativeAsset()
-                        : NormalizeCurrencyCode(token.currency.currencyCode),
-                getAmount: Localize.formatNumber(Number(expectedOutcome)),
-                getCurrency:
-                    direction === MarketDirection.SELL
-                        ? NormalizeCurrencyCode(token.currency.currencyCode)
-                        : NetworkService.getNativeAsset(),
-            }),
-            [
-                { text: Localize.t('global.cancel') },
-                {
-                    text: Localize.t('global.doIt'),
+        this.prepareAndSign();
+        // Prompt(
+        //     Localize.t('global.exchange'),
+        //     Localize.t('exchange.doYouWantToExchange', {
+        //         payAmount: Localize.formatNumber(Number(amount)),
+        //         payCurrency:
+        //             direction === MarketDirection.SELL
+        //                 ? NetworkService.getNativeAsset()
+        //                 : NormalizeCurrencyCode(token.currency.currencyCode),
+        //         getAmount: Localize.formatNumber(Number(expectedOutcome)),
+        //         getCurrency:
+        //             direction === MarketDirection.SELL
+        //                 ? NormalizeCurrencyCode(token.currency.currencyCode)
+        //                 : NetworkService.getNativeAsset(),
+        //     }),
+        //     [
+        //         { text: Localize.t('global.cancel') },
+        //         {
+        //             text: Localize.t('global.doIt'),
 
-                    onPress: this.prepareAndSign,
-                    style: 'destructive',
-                },
-            ],
-            { type: 'default' },
-        );
+        //             onPress: this.prepareAndSign,
+        //             style: 'destructive',
+        //         },
+        //     ],
+        //     { type: 'default' },
+        // );
     };
 
     // showSlippageWarning = () => {

@@ -29,11 +29,13 @@ import { FallbackTemplate } from './Templates/fallback';
 
 import { StepsContext } from '../../Context';
 /* types ==================================================================== */
-export interface Props {}
+export interface Props {
+}
 
 export interface State {
     canScroll: boolean;
     timestamp?: number;
+    canSendFee: boolean;
 }
 
 /* Component ==================================================================== */
@@ -48,6 +50,7 @@ class ReviewStep extends Component<Props, State> {
 
         this.state = {
             canScroll: true,
+            canSendFee: true,
         };
     }
 
@@ -77,7 +80,15 @@ class ReviewStep extends Component<Props, State> {
     };
 
     renderDetails = () => {
-        const { payload, transaction, source, setLoading, setReady, setServiceFee } = this.context;
+        const {
+            payload,
+            transaction,
+            source,
+            setLoading,
+            setReady,
+            setServiceFee,
+            serviceFee,
+        } = this.context;
 
         if (!transaction) {
             return null;
@@ -113,6 +124,15 @@ class ReviewStep extends Component<Props, State> {
                     }),
                     React.createElement(get(GenuineTransactionTemplates, 'Global'), {
                         ...Props,
+                        serviceFee,
+                        canSendFee: (canSend: boolean) => {
+                            const { canSendFee } = this.state;
+                            if (canSend !== canSendFee) {
+                                this.setState({
+                                    canSendFee: canSend,
+                                });
+                            }
+                        },
                         key: 'GlobalTemplate',
                     }),
                 );
@@ -145,7 +165,11 @@ class ReviewStep extends Component<Props, State> {
             onClose,
             coreSettings,
         } = this.context;
-        const { canScroll } = this.state;
+
+        const {
+            canScroll,
+            canSendFee,
+        } = this.state;
 
         // waiting for accounts / transaction to be initiated
         if (typeof accounts === 'undefined' || !source || !transaction) {
@@ -207,20 +231,22 @@ class ReviewStep extends Component<Props, State> {
                                 <View style={styles.detailsContainer}>{this.renderDetails()}</View>
 
                                 {/* accept button */}
-                                <View style={styles.acceptButtonContainer}>
-                                    <SwipeButton
-                                        testID="accept-button"
-                                        color={this.getSwipeButtonColor()}
-                                        isLoading={isLoading}
-                                        isDisabled={!isReady}
-                                        onSwipeSuccess={onAccept}
-                                        label={Localize.t('global.slideToAccept')}
-                                        accessibilityLabel={Localize.t('global.accept')}
-                                        onPanResponderGrant={this.toggleCannotScroll}
-                                        onPanResponderRelease={this.toggleCanScroll}
-                                        shouldResetAfterSuccess
-                                    />
-                                </View>
+                                {canSendFee && (
+                                    <View style={styles.acceptButtonContainer}>
+                                        <SwipeButton
+                                            testID="accept-button"
+                                            color={this.getSwipeButtonColor()}
+                                            isLoading={isLoading}
+                                            isDisabled={!isReady}
+                                            onSwipeSuccess={onAccept}
+                                            label={Localize.t('global.slideToAccept')}
+                                            accessibilityLabel={Localize.t('global.accept')}
+                                            onPanResponderGrant={this.toggleCannotScroll}
+                                            onPanResponderRelease={this.toggleCanScroll}
+                                            shouldResetAfterSuccess
+                                        />
+                                    </View>
+                                )}
                             </View>
                         </View>
                     </View>
