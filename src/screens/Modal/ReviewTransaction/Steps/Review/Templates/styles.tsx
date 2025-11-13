@@ -226,7 +226,7 @@ const styles = StyleService.create({
     },
     rateText: {
         fontFamily: AppFonts.base.familyMono,
-        fontSize: AppFonts.base.size,
+        fontSize: AppFonts.base.size * 0.8,
         color: '$textSecondary',
     },
     feeText: {
