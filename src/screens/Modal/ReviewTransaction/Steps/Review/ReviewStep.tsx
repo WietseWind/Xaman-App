@@ -128,8 +128,10 @@ class ReviewStep extends Component<Props, State> {
                         canSendFee: (canSend: boolean) => {
                             const { canSendFee } = this.state;
                             if (canSend !== canSendFee) {
-                                this.setState({
-                                    canSendFee: canSend,
+                                requestAnimationFrame(() => {
+                                    this.setState({
+                                        canSendFee: canSend,
+                                    });
                                 });
                             }
                         },

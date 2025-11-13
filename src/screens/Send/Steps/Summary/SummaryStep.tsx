@@ -330,8 +330,10 @@ class SummaryStep extends Component<Props, State> {
 
         // console.log('--- [parent] canSendFee', canSend);
         if (canSend !== canSendFee) {
-            this.setState({
-                canSendFee: canSend,
+            requestAnimationFrame(() => {
+                this.setState({
+                    canSendFee: canSend,
+                });
             });
         }
     };
