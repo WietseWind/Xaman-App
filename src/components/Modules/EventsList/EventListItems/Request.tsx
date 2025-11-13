@@ -129,7 +129,7 @@ class RequestItem extends Component<Props, State> {
                 default:
                     break;
             }
-        }, 100);
+        }, 10);
     };
 
     setDetails = () => {
