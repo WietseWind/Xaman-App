@@ -1396,6 +1396,7 @@
   },
   "mptoken": {
     "loading": "Загрузка деталей MPT...",
+    "errorLoading": "Error fetching MPToken details!",
     "event": "MPToken",
     "eventAuthOnly": "Авторизация MPToken",
     "explain": "Это MPToken, выпущенный %{issuer}.",
@@ -1437,6 +1438,11 @@
     "objStartTime": "Начать в (или после) момент:\n%{value}",
     "objRepeatCount": "Количество повторений:\n%{value}",
     "objDelaySeconds": "Задержка в секундах:\n%{value}"
+  },
+  "xamanServiceFee": {
+    "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
+    "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
+    "updateBtn": "Update Sending Amount"
   },
   "moment": {
     "calendar": {
