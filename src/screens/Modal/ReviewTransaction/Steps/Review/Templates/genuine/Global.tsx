@@ -333,9 +333,10 @@ class GlobalTemplate extends Component<Props, State> {
     // Can it actually send tx + fee?
     canSendFee = (canSend: boolean) => {
         const { canSendFee } = this.state;
-        const { canSendFee: parentCanSendFee } = this.props;
+        const {
+            canSendFee: parentCanSendFee,
+        } = this.props;
 
-        // console.log('--- canSendFee', canSend);
         if (canSend !== canSendFee) {
             if (typeof parentCanSendFee === 'function') {
                 parentCanSendFee(canSend);

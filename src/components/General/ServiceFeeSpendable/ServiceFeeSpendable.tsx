@@ -93,7 +93,10 @@ class ServiceFeeSpendable extends Component<Props, State> {
         const { didUpdate } = this.state;
 
         if (onTxMaySend) {
-            onTxMaySend(this.postTxRemainingDrops() >= 0);
+            requestAnimationFrame(() => {
+                onTxMaySend(this.postTxRemainingDrops() >= 0);
+                // ^^ can be part of the render process so we're taking the next frame
+            });
         }
 
         const canSend = this.postTxRemainingDrops() >= 0;
