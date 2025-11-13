@@ -1396,6 +1396,8 @@
   },
   "mptoken": {
     "loading": "MPT üksikasjade laadimine...",
+    "loading": "Loading MPT details...",
+    "errorLoading": "Error fetching MPToken details!",
     "event": "MPToken",
     "eventAuthOnly": "MPToken volitamine",
     "explain": "See on MPToken, mille väljastas %{issuer} .",
@@ -1437,6 +1439,11 @@
     "objStartTime": "Alustab hetkel (või pärast):\n %{value}",
     "objRepeatCount": "Korduste arv:\n %{value}",
     "objDelaySeconds": "Viivitus sekundites:\n %{value}"
+  },
+  "xamanServiceFee": {
+    "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
+    "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
+    "updateBtn": "Update Sending Amount"
   },
   "moment": {
     "calendar": {

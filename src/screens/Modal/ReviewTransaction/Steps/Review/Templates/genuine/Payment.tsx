@@ -16,7 +16,7 @@ import { TrustLineModel } from '@store/models';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
-import { AmountInput, AmountText, Button } from '@components/General';
+import { AmountInput, AmountText, Button, InfoMessage } from '@components/General';
 import { AmountValueType } from '@components/General/AmountInput';
 import { AccountElement, MPTWidget, PaymentOptionsPicker } from '@components/Modules';
 
@@ -48,6 +48,7 @@ export interface State {
     selectedPath?: PathFindPathOption;
     mptDetails?: MPToken;
     mptIssuanceDetails?: MPTokenIssuance;
+    mptIssuanceError?: { error: string };
 }
 
 /* Component ==================================================================== */
@@ -150,9 +151,14 @@ class PaymentTemplate extends Component<Props, State> {
                     mptDetails: (mpt as any).node as MPToken,
                 });
             }
+
             if ((issuance as any)?.node) {
                 this.setState({
                     mptIssuanceDetails: (issuance as any).node as MPTokenIssuance,
+                });
+            } else if ((issuance as any)?.error) {
+                this.setState({
+                    mptIssuanceError: issuance as any,
                 });
             }
 
@@ -248,7 +254,10 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
     onAmountChange = (amount: string) => {
-        const { transaction } = this.props;
+        const {
+            transaction,
+            forceRender,
+        } = this.props;
 
         this.setState({
             amount,
@@ -260,10 +269,16 @@ class PaymentTemplate extends Component<Props, State> {
                     currency: NetworkService.getNativeAsset(),
                     value: amount,
                 };
+                if (typeof forceRender === 'function') {
+                    forceRender();
+                }
             } else {
                 const payAmount = { ...transaction.Amount };
                 Object.assign(payAmount, { value: amount });
                 transaction.Amount = payAmount;
+                if (typeof forceRender === 'function') {
+                    forceRender();
+                }
             }
         }
     };
@@ -324,7 +339,12 @@ class PaymentTemplate extends Component<Props, State> {
 
 
     renderAmountRate = () => {
-        const { amount, isLoadingRate, currencyRate } = this.state;
+        const {
+            amount,
+            isLoadingRate,
+            currencyRate,
+            currencyName,
+        } = this.state;
 
         if (isLoadingRate) {
             return (
@@ -335,8 +355,8 @@ class PaymentTemplate extends Component<Props, State> {
         }
 
         // only show rate for native asset
-        if (currencyRate && amount) {
-            const rate = Number(amount) * currencyRate.rate;
+        if (currencyRate && (amount || currencyName === NetworkService.getNativeAsset())) {
+            const rate = Number(amount || 1) * currencyRate.rate;
             if (rate > 0) {
                 return (
                     <View style={styles.rateContainer}>
@@ -365,6 +385,7 @@ class PaymentTemplate extends Component<Props, State> {
             currencyRate,
             mptDetails,
             mptIssuanceDetails,
+            mptIssuanceError,
         } = this.state;
 
         const mptAmount = {
@@ -386,7 +407,7 @@ class PaymentTemplate extends Component<Props, State> {
                 mptAmount.availableForIssuance /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
             }
 
-            if (!mptIssuanceDetails) {
+            if (!mptIssuanceDetails && !mptIssuanceError) {
                 return (
                     <>
                         <Text style={styles.label}>{Localize.t('mptoken.event')}</Text>
@@ -396,9 +417,23 @@ class PaymentTemplate extends Component<Props, State> {
                     </>
                 );
             }
+
+            if (!mptIssuanceDetails && mptIssuanceError) {
+                return (
+                    <>
+                        <Text style={styles.label}>{Localize.t('mptoken.event')}</Text>
+                        <InfoMessage
+                            type="error"
+                            label={`${Localize.t('mptoken.errorLoading')}${mptIssuanceError?.error ? `\n"${mptIssuanceError?.error}"` : ''}`}
+                            containerStyle={AppStyles.marginBottomSml}
+                        />
+                    </>
+                );
+            }
         }
 
-        const isNativeAsset = currencyRate && amount;
+        const isNativeAsset = (currencyRate && amount) ||
+            (currencyRate && !this.isMPTAmount() && currencyName === NetworkService.getNativeAsset());
 
         // TODO: better handling this part
         if (!account) {
@@ -495,50 +530,51 @@ class PaymentTemplate extends Component<Props, State> {
                                 : AppStyles.row,
                             AppStyles.stretchSelf,
                         ]}>
-                            <View style={[AppStyles.flex1, AppStyles.flexStart]}>{this.renderAmountRate()}</View>
-                            {!isNativeAsset && (
-                                <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
-                                    <Text style={[
-                                        !isNativeAsset
-                                            ? AppStyles.textLeftAligned
-                                            : AppStyles.textRightAligned,
-                                        SummaryStepStyle.currencyBalance,
-                                    ]}>
-                                        {Localize.t('global.available')}{': '}
-                                        {
-                                            !isNativeAsset && !this.isMPTAmount()
-                                                ? <AmountText
-                                                    value={
-                                                        Math.floor(
-                                                            Number(this.currentCurrency?.balance || 0) * 100_000_000,
-                                                        ) / 100_000_000
-                                                    }
-                                                    style={[AppStyles.monoBold]}
-                                                    currency={this.currentCurrency?.getFormattedCurrency()}
-                                                    immutable
-                                                />
-                                                : this.isMPTAmount() ? (
-                                                    <Text style={[AppStyles.monoBold]}>
-                                                        {
-                                                            source.address === mptIssuanceDetails?.Issuer
-                                                                ? (
-                                                                    (mptIssuanceDetails?.MaximumAmount || 0) > 0
-                                                                        ? mptAmount.availableForIssuance
-                                                                        : 'N/A (issuer)'
-                                                                )
-                                                                : mptAmount.holding
-                                                        }{' '}
-                                                    </Text>
-                                                ) : (
-                                                    <Text style={[AppStyles.monoBold]}>
-                                                        {Localize.formatNumber(CalculateAvailableBalance(source!))}{' '}
-                                                        {NetworkService.getNativeAsset()}
-                                                    </Text>
-                                                )
-                                        }
-                                    </Text>
-                                </View>
-                            )}
+                            <View style={[
+                                AppStyles.flex1,
+                                AppStyles.flexStart,
+                            ]}>{this.renderAmountRate()}</View>
+                            <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
+                                <Text style={[
+                                    !isNativeAsset
+                                        ? AppStyles.textLeftAligned
+                                        : AppStyles.textRightAligned,
+                                    SummaryStepStyle.currencyBalance,
+                                ]}>
+                                    {Localize.t('global.available')}{': '}
+                                    {
+                                        !isNativeAsset && !this.isMPTAmount()
+                                            ? <AmountText
+                                                value={
+                                                    Math.floor(
+                                                        Number(this.currentCurrency?.balance || 0) * 100_000_000,
+                                                    ) / 100_000_000
+                                                }
+                                                style={[AppStyles.monoBold]}
+                                                currency={this.currentCurrency?.getFormattedCurrency()}
+                                                immutable
+                                            />
+                                            : this.isMPTAmount() ? (
+                                                <Text style={[AppStyles.monoBold]}>
+                                                    {
+                                                        source.address === mptIssuanceDetails?.Issuer
+                                                            ? (
+                                                                (mptIssuanceDetails?.MaximumAmount || 0) > 0
+                                                                    ? mptAmount.availableForIssuance
+                                                                    : 'N/A (issuer)'
+                                                            )
+                                                            : mptAmount.holding
+                                                    }{' '}
+                                                </Text>
+                                            ) : (
+                                                <Text style={[AppStyles.monoBold]}>
+                                                    {Localize.formatNumber(CalculateAvailableBalance(source!))}{' '}
+                                                    {NetworkService.getNativeAsset()}
+                                                </Text>
+                                            )
+                                    }
+                                </Text>
+                            </View>
                         </View>
                     </View>
                 </>
