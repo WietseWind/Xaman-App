@@ -1507,7 +1507,7 @@
         "de novembre",
         "de desembre"
       ],
-      "isFormat": /D[oD]?(\s)+MMMM/
+      "isFormat": "/D[oD]?(\\s)+MMMM/"
     },
     "monthsShort": [
       "gen.",

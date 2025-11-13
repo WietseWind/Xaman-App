@@ -1501,7 +1501,7 @@
         "lapkritis",
         "gruodis"
       ],
-      "isFormat": /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?|MMMM?(\[[^\[\]]*\]|\s)+D[oD]?/
+      "isFormat": "/D[oD]?(\\[[^\\[\\]]*\\]|\\s)+MMMM?|MMMM?(\\[[^\\[\\]]*\\]|\\s)+D[oD]?/"
     },
     "monthsShort": [
       "sau",
@@ -1540,7 +1540,7 @@
         "penktadienis",
         "šeštadienis"
       ],
-      "isFormat": /dddd HH:mm/
+      "isFormat": "/dddd HH:mm/"
     },
     "weekdaysMin": [
       "S",
