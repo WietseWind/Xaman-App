@@ -1396,8 +1396,7 @@
   },
   "mptoken": {
     "loading": "MPT üksikasjade laadimine...",
-    "loading": "Loading MPT details...",
-    "errorLoading": "Error fetching MPToken details!",
+    "errorLoading": "Viga MPTokeni üksikasjade laadimisel!",
     "event": "MPToken",
     "eventAuthOnly": "MPToken volitamine",
     "explain": "See on MPToken, mille väljastas %{issuer} .",
@@ -1441,9 +1440,9 @@
     "objDelaySeconds": "Viivitus sekundites:\n %{value}"
   },
   "xamanServiceFee": {
-    "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
-    "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
-    "updateBtn": "Update Sending Amount"
+    "updateToMaxSpendingAmount": "Maksimaalne summa, mida saad saata, on %{amount}",
+    "updateToSatisfyMissingAmount": "Palun uuenda oma tehingut, et kulutada maksimaalselt %{amount}",
+    "updateBtn": "Uuenda saatmissummat"
   },
   "moment": {
     "calendar": {

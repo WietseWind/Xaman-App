@@ -1396,7 +1396,7 @@
   },
   "mptoken": {
     "loading": "Loading MPT details...",
-    "errorLoading": "Error fetching MPToken details!",
+    "errorLoading": "MPToken 세부정보를 가져오는 중 오류가 발생했습니다!",
     "event": "MPToken",
     "eventAuthOnly": "MPToken Authorization",
     "explain": "This is an MPToken, issued by %{issuer}.",
@@ -1440,9 +1440,9 @@
     "objDelaySeconds": "Delay Seconds:\n%{value}"
   },
   "xamanServiceFee": {
-    "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
-    "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
-    "updateBtn": "Update Sending Amount"
+    "updateToMaxSpendingAmount": "보낼 수 있는 최대 금액은 %{amount} 입니다",
+    "updateToSatisfyMissingAmount": "최대 %{amount} 를 사용하도록 거래를 업데이트해 주세요",
+    "updateBtn": "전송 금액 업데이트"
   },
   "moment": {
     "calendar": {

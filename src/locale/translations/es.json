@@ -1396,7 +1396,7 @@
   },
   "mptoken": {
     "loading": "Cargando detalles MPT...",
-    "errorLoading": "Error fetching MPToken details!",
+    "errorLoading": "¡Error al obtener detalles de MPToken!",
     "event": "MPToken",
     "eventAuthOnly": "Autorización MPToken",
     "explain": "Este es un MPToken, emitido por %{issuer}.",
@@ -1440,9 +1440,9 @@
     "objDelaySeconds": "Segundos de Retraso:\n%{value}"
   },
   "xamanServiceFee": {
-    "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
-    "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
-    "updateBtn": "Update Sending Amount"
+    "updateToMaxSpendingAmount": "La cantidad máxima que puedes enviar es %{amount}",
+    "updateToSatisfyMissingAmount": "Por favor actualiza tu transacción para gastar como máximo %{amount}",
+    "updateBtn": "Actualizar cantidad de envío"
   },
   "moment": {
     "calendar": {
