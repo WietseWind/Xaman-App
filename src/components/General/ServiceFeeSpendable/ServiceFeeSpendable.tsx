@@ -17,6 +17,7 @@ import NetworkService from '@services/NetworkService';
 import { Button } from '../Button';
 import { AppStyles } from '@theme/index';
 import { Icon } from '../Icon';
+import { TouchableDebounce } from '../TouchableDebounce';
 
 /* Types ==================================================================== */
 interface Props {
@@ -39,6 +40,7 @@ interface Props {
 
 interface State {
     didUpdate: boolean;
+    touchedCount: number;
 }
 
 /* Component ==================================================================== */
@@ -53,6 +55,7 @@ class ServiceFeeSpendable extends Component<Props, State> {
 
         this.state = {
             didUpdate: false,
+            touchedCount: 0,
         };
     }
 
@@ -120,8 +123,12 @@ class ServiceFeeSpendable extends Component<Props, State> {
             // updateSendingAmountDrops,
             serviceFeeDrops,
         } = this.props;
+        const {
+            touchedCount,
+        } = this.state;
 
         if (
+            touchedCount < 3 &&
             (typeof sendAmountDrops === 'number' && sendAmountDrops > 0) &&
             // ^^ ONLY ENFORCE WHEN ACTUALLY _SENDING_ XRP
             serviceFeeDrops >= 5_000_000 && // Only enforce if 5 XRP or higher
@@ -212,10 +219,22 @@ class ServiceFeeSpendable extends Component<Props, State> {
                     <Text style={styles.title}>{typeof updateSendingAmountDrops}</Text>
                 </View>
 
-                <View style={[
-                    style,
-                    styles.textContainer,
-                ]}>
+                <TouchableDebounce
+                    onPress={() => { 
+                        const { touchedCount } = this.state;
+                        if (typeof updateSendingAmountDrops !== 'function') {
+                            // Allow to bypass by slow-tapping
+                            this.setState({
+                                touchedCount: touchedCount + 1,
+                            });
+                        }
+                    }}
+                    activeOpacity={1}
+                    style={[
+                        style,
+                        styles.textContainer,
+                    ]}
+                >
                     <Icon name="IconInfo" size={30} style={[
                         styles.icon,
                     ]} />
@@ -278,7 +297,7 @@ class ServiceFeeSpendable extends Component<Props, State> {
                             </Text>
                         </Text>
                     )}
-                </View>
+                </TouchableDebounce>
 
                 { typeof updateSendingAmountDrops === 'function' && sendAmountDrops > 0 && (
                     <Button
