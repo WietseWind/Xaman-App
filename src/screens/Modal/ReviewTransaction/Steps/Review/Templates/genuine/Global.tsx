@@ -2,7 +2,7 @@ import { find, isEmpty, isUndefined } from 'lodash';
 import React, { Component } from 'react';
 import { InteractionManager, Text, View } from 'react-native';
 
-import { Transactions } from '@common/libs/ledger/transactions/types';
+import { MutatedTransaction, SignableTransaction, Transactions } from '@common/libs/ledger/transactions/types';
 
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
 import { AmountParser } from '@common/libs/ledger/parser/common';
@@ -29,10 +29,11 @@ import { AppStyles } from '@theme/index';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
-    transaction: Transactions;
+    transaction: SignableTransaction & MutatedTransaction;
     serviceFee?: number;
     setServiceFee: (serviceFee: number) => void;
     canSendFee: (canSend: boolean) => void;
+    setTransaction: (tx: SignableTransaction & MutatedTransaction, forced?: boolean) => void;
 }
 export interface State {
     warnings?: Array<string>;
@@ -318,7 +319,7 @@ class GlobalTemplate extends Component<Props, State> {
                     {/* <Text style={styles.label}>{Localize.t('global.hooks')}</Text> */}
                     <View style={styles.contentBox}>
                         <HooksExplainer
-                            transaction={transaction}
+                            transaction={transaction as Transactions}
                             account={source}
                             origin={HookExplainerOrigin.ReviewPayload}
                         />
@@ -353,7 +354,7 @@ class GlobalTemplate extends Component<Props, State> {
             source,
             payload,
             serviceFee,
-            // setTransaction,
+            setTransaction,
         } = this.props;
 
         const {
@@ -364,9 +365,7 @@ class GlobalTemplate extends Component<Props, State> {
         // we should not override the fee
         // either transaction fee has already been set in payload
         // or transaction is a multi sign tx
-        if (!showFeePicker && !(process?.env?.NODE_ENV === 'development')) { // TODO: REMOVE
-            // TODO: SET SERVICE FEE
-
+        if (!showFeePicker) { //  && !(process?.env?.NODE_ENV === 'development') // TODO: REMOVE(d)
             if (typeof transaction.Fee !== 'undefined') {
                 return (
                     <>
@@ -408,6 +407,14 @@ class GlobalTemplate extends Component<Props, State> {
         // if (transaction.TransactionType === 'OfferCreate') {
         //     amountField = 'TakerGets';
         // }
+        let isXrpPayment = false;
+        try {
+            isXrpPayment = transaction &&
+                transaction.TransactionType === 'Payment' &&
+                (transaction as any)?.Amount?.currency === NetworkService.getNativeAsset();
+        } catch (e) {
+            // console.log(e)
+        }
 
         return (
             <>
@@ -438,6 +445,19 @@ class GlobalTemplate extends Component<Props, State> {
                                 : 0,
                         ))}
                         onTxMaySend={this.canSendFee}
+                        updateSendingAmountDrops={
+                            isXrpPayment
+                                ? (drops) => { 
+                                    if (isXrpPayment) {
+                                        (transaction as any).Amount = {
+                                            ...(transaction as any).Amount,
+                                            value: String(drops / 1_000_000),
+                                        };
+                                        setTransaction(transaction, true);
+                                    }
+                                }
+                                : undefined
+                        }
                     />
                 </View>
             </>

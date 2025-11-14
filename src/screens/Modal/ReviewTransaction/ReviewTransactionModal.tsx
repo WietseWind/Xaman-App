@@ -576,12 +576,14 @@ class ReviewTransactionModal extends Component<Props, State> {
         });
     };
 
-    setTransaction = (tx: SignableTransaction & MutatedTransaction) => {
+    setTransaction = (tx: SignableTransaction & MutatedTransaction, forced = false) => {
         const { transaction } = this.state;
 
         // we shouldn't override already set transaction
-        if (transaction) {
+        if (transaction && !forced) {
             throw new Error('Transaction is already set and cannot be overwritten!');
+            // console.log('old', transaction);
+            // console.log('new', tx);
         }
 
         this.setState({

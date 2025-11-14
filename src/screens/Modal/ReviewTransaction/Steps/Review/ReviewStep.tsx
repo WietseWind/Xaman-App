@@ -88,6 +88,7 @@ class ReviewStep extends Component<Props, State> {
             setReady,
             setServiceFee,
             serviceFee,
+            setTransaction,
         } = this.context;
 
         if (!transaction) {
@@ -125,6 +126,7 @@ class ReviewStep extends Component<Props, State> {
                     React.createElement(get(GenuineTransactionTemplates, 'Global'), {
                         ...Props,
                         serviceFee,
+                        setTransaction,
                         canSendFee: (canSend: boolean) => {
                             const { canSendFee } = this.state;
                             if (canSend !== canSendFee) {
