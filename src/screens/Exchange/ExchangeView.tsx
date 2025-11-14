@@ -277,7 +277,7 @@ class ExchangeView extends Component<Props, State> {
                                     }
 
                                     if (nonXrpChange?.value) {
-                                        if (!simulateTxJsonFeeDrops) {
+                                        if (typeof simulateTxJsonFeeDrops === 'undefined') {
                                             // We got rate for entire amount, go back to one
                                             nonXrpVal /= xrpValue / 1_000_000;
                                         }
