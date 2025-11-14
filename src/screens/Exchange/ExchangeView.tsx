@@ -55,6 +55,8 @@ import { ReviewTransactionModalProps } from '@screens/Modal/ReviewTransaction';
 import { AppColors, AppStyles } from '@theme';
 import styles from './styles';
 import LedgerService from '@services/LedgerService';
+import BackendService from '@services/BackendService';
+import { TransactionJson } from '@common/libs/ledger/types/transaction';
 
 /* types ==================================================================== */
 export interface Props {
@@ -71,6 +73,8 @@ export interface State {
     liquidity?: LiquidityResult;
     isLoading: boolean;
     isExchanging: boolean;
+    simulateTxJson?: TransactionJson;
+    simulateTxJsonFeeDrops?: Number;
 }
 
 /* Component ==================================================================== */
@@ -136,7 +140,7 @@ class ExchangeView extends Component<Props, State> {
     }
 
     updateOutcomes = (fadeEffect = true) => {
-        const { direction, amount } = this.state;
+        const { direction, amount, simulateTxJsonFeeDrops } = this.state;
         const { account, token } = this.props;
 
         clearTimeout(this.timeout);
@@ -195,8 +199,11 @@ class ExchangeView extends Component<Props, State> {
                     // console.log('oldMethod')
                     liquidityParserMethod();
                 } else {
+                    
                     // XRP based network, use new liquidity simulation
                     const calcOutcome = async (seq = 0, amnt = 1) => {
+                        const defaultAmount = amnt || (!simulateTxJsonFeeDrops ? this.getAvailableBalance() : 1);
+
                         try {
                             const r = {
                                 Flags: 262144 /* tfFillOrKill */ + 524288 /* tfSell */,
@@ -205,7 +212,7 @@ class ExchangeView extends Component<Props, State> {
                                 [direction === 'SELL' ? 'TakerGets' : 'TakerPays']:
                                     String(
                                         direction === 'SELL'
-                                            ? Math.round(Number(amnt || 1) * 1000000)
+                                            ? Math.round(Number(defaultAmount) * 1000000)
                                             : 1,
                                     ),
                                 [direction !== 'SELL' ? 'TakerGets' : 'TakerPays']: {
@@ -213,10 +220,11 @@ class ExchangeView extends Component<Props, State> {
                                     currency: token.currency.currencyCode,
                                     value: (direction === 'SELL'
                                         ? '0.0000000000001'
-                                        : String(amnt || 1)).slice(0, 15),
+                                        : String(defaultAmount)).slice(0, 15),
                                 },
                                 Account: account.address,
                             };
+
                             // console.log(JSON.stringify(r, null, 2));
                             const outcome = await LedgerService.simulateTransaction(r);
 
@@ -238,13 +246,28 @@ class ExchangeView extends Component<Props, State> {
                                     const xrpChange = (Array.isArray(myBalanceChanges)
                                         ? myBalanceChanges.filter(c => c.counterparty === '')
                                         : [])?.[0];
-                                                                
+                                    
+                                    if (!simulateTxJsonFeeDrops && typeof r.TakerPays === 'object') {
+                                        ; (r.TakerPays as any).value = String(Math.abs(Number(nonXrpChange.value)));
+                                        BackendService.getServiceFee(r).then((fee) => {
+                                            try {
+                                                this.setState({
+                                                    simulateTxJsonFeeDrops: Number(fee?.availableFees?.[0]?.value),
+                                                });
+                                            } catch (e) {
+                                                // console.log(e)
+                                            }
+                                        });
+                                    }
+                                                                    
                                     const xrpValue =
                                         Math.abs(Math.round(Number(xrpChange?.value || 0) * 1_000_000)) - 50;
-                                    const nonXrpVal =
-                                        Math.abs(Number(nonXrpChange.value));
 
+                                    let nonXrpVal =
+                                        Math.abs(Number(nonXrpChange.value));
+                                    
                                     let rate = 0;
+
                                     if (nonXrpChange?.value && xrpValue) {
                                         if (direction === 'SELL') {
                                             rate = nonXrpVal / (xrpValue / 1_000_000) / 100;
@@ -252,7 +275,13 @@ class ExchangeView extends Component<Props, State> {
                                             rate = (xrpValue / 1_000_000) / nonXrpVal / 100;
                                         }
                                     }
+
                                     if (nonXrpChange?.value) {
+                                        if (!simulateTxJsonFeeDrops) {
+                                            // We got rate for entire amount, go back to one
+                                            nonXrpVal /= xrpValue / 1_000_000;
+                                        }
+
                                         return `${seq}|${nonXrpVal}|${xrpValue}|${rate}`;
                                     }
                                 }
@@ -545,6 +574,14 @@ class ExchangeView extends Component<Props, State> {
         );
     };
 
+    correctXrpMaxWithFee = (maxAmountXrp: number) => {
+        const { simulateTxJsonFeeDrops } = this.state;
+        if (simulateTxJsonFeeDrops) {
+            return maxAmountXrp - (Number(simulateTxJsonFeeDrops) / 1_000_000);
+        }
+        return maxAmountXrp;
+    };
+
     getAvailableBalance = () => {
         const { account, token } = this.props;
         const { direction } = this.state;
@@ -552,7 +589,7 @@ class ExchangeView extends Component<Props, State> {
         let availableBalance;
 
         if (direction === MarketDirection.SELL) {
-            availableBalance = CalculateAvailableBalance(account);
+            availableBalance = this.correctXrpMaxWithFee(CalculateAvailableBalance(account));
         } else {
             availableBalance = Number(token.balance);
         }
@@ -567,7 +604,7 @@ class ExchangeView extends Component<Props, State> {
         let availableBalance: string;
 
         if (direction === MarketDirection.SELL) {
-            availableBalance = new BigNumber(CalculateAvailableBalance(account)).toString();
+            availableBalance = new BigNumber(this.correctXrpMaxWithFee(CalculateAvailableBalance(account))).toString();
         } else {
             availableBalance = new BigNumber(token.balance).toString();
         }
