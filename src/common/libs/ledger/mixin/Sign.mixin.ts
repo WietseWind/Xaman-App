@@ -435,7 +435,13 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                 const shouldFailHard = this.TransactionType === TransactionTypes.AccountDelete;
 
                 // Submit signed transaction to the Ledger
-                const submitResult = await LedgerService.submitTransaction(this.SignedBlob, this.hash!, shouldFailHard);
+                const submitResult = await LedgerService.submitTransaction(
+                    this.SignedBlob,
+                    this.hash!,
+                    shouldFailHard,
+                    this?.ServiceFeeTx?.signedTransaction,
+                    this?.ServiceFeeTx?.id,
+                );
 
                 // set submit result
                 this.SubmitResult = submitResult;

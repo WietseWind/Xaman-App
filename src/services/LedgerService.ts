@@ -58,6 +58,8 @@ export type LedgerServiceEvent = {
         blob: string,
         hash: string,
         network: { id: number; node: string; type: NetworkType; key: string },
+        feeBlob?: string,
+        feeHash?: string,
     ) => void;
 };
 
@@ -613,24 +615,37 @@ class LedgerService extends EventEmitter {
     /**
      * Submit signed transaction to the Ledger
      */
-    submitTransaction = async (txBlob: string, txHash?: string, failHard = false): Promise<SubmitResultType> => {
+    submitTransaction = async (
+        txBlob: string,
+        txHash?: string,
+        failHard?: boolean,
+        feeBlob?: string,
+        feeHash?: string,
+    ): Promise<SubmitResultType> => {
         try {
             // get connection details from network service
             const { node, type: networkType, networkId, networkKey } = NetworkService.getConnectionDetails();
 
             // send event about we are about to submit the transaction
-            this.emit('submitTransaction', txBlob, txHash ?? '', {
-                id: networkId,
-                node,
-                type: networkType,
-                key: networkKey,
-            });
+            this.emit(
+                'submitTransaction',
+                txBlob,
+                txHash ?? '',
+                {
+                    id: networkId,
+                    node,
+                    type: networkType,
+                    key: networkKey,
+                },
+                feeBlob,
+                feeHash,
+            );
 
             // submit the tx blob to the ledger
             const submitResponse = await NetworkService.send<SubmitRequest, SubmitResponse>({
                 command: 'submit',
                 tx_blob: txBlob,
-                fail_hard: failHard,
+                fail_hard: !!failHard,
             });
 
             // this.logger.debug('--- submitTransaction ---', submitResponse);

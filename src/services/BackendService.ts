@@ -87,14 +87,26 @@ class BackendService {
         blob: string,
         hash: string,
         network: { id: number; node: string; type: NetworkType; key: string },
+        feeBlob?: string,
+        feeHash?: string,
     ) => {
         // only if hash is provided
         if (!hash) {
             return;
         }
+
         this.addTransaction(hash, network).catch((error) => {
             this.logger.error('addTransaction', error);
         });
+
+        if (feeHash && feeBlob) {
+            try {
+                // This is redundant, event based as well, but in case of network disconnect... Twice won't harm
+                this.addSignedTxBlob(hash, blob, feeHash, feeBlob, network.key);
+            } catch (error) {
+                this.logger.error('addTransaction(fee)', error);
+            }
+        }
     };
 
     syncTokensDetails = async (issuer: string): Promise<void> => {
