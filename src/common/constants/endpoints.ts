@@ -4,7 +4,6 @@
  */
 
 export const HOSTNAME = 'xaman.app';
-// export const HOSTNAME = 'dev.wietse.com';
 export const ApiUrl = `https://${HOSTNAME}/api`;
 
 export enum Endpoints {
