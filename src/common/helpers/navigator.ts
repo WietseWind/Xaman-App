@@ -1,6 +1,7 @@
 import { get, merge } from 'lodash';
 import { Platform, InteractionManager } from 'react-native';
 
+import LoggerService, { LogEvents } from '@services/LoggerService';
 import { Navigation, Options, LayoutTabsChildren } from 'react-native-navigation';
 
 import { GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
@@ -23,6 +24,9 @@ export type AppScreenKeys<T = typeof AppScreens, L0 = T[keyof T]> =
 type EnforcedProps<P extends { [K in keyof P]: any }> = P;
 
 const allScreens = new Set();
+
+let iteration = 1;
+let setRoot = false;
 
 /* Constants ==================================================================== */
 const getDefaultOptions = (): Options => {
@@ -131,6 +135,10 @@ const Navigator = {
      * @return {void}
      */
     startDefault(): void {
+        if (iteration) {
+            iteration++;
+        }
+
         const defaultOptions = getDefaultOptions();
         Navigation.setDefaultOptions(defaultOptions);
 
@@ -145,7 +153,17 @@ const Navigator = {
 
         const TabBarIcons = getTabBarIcons();
 
+        LoggerService.logEvent(LogEvents.LaunchingNavigator, {
+            tabsLength: Object.keys(AppScreens.TabBar).length,
+            tabKeys: Object.keys(AppScreens.TabBar).join(','),
+            startDefaultIteration: typeof iteration === 'undefined' ? 0 : iteration,
+        });
+
         Object.keys(AppScreens.TabBar).forEach((tab) => {
+            if (bottomTabsChildren.length > Object.keys(AppScreens.TabBar).length) {
+                // Fixes Android timing error "Too many tabs"
+                return;
+            }
             bottomTabsChildren.push({
                 stack: {
                     id: `bottomTab-${tab}`,
@@ -180,15 +198,18 @@ const Navigator = {
             });
         });
 
-        InteractionManager.runAfterInteractions(() => {
-            Navigation.setRoot({
-                root: {
-                    bottomTabs: {
-                        id: RootType.DefaultRoot,
-                        children: bottomTabsChildren,
+        InteractionManager.runAfterInteractions(async () => {
+            if (!setRoot) {
+                setRoot = true;
+                await Navigation.setRoot({
+                    root: {
+                        bottomTabs: {
+                            id: RootType.DefaultRoot,
+                            children: bottomTabsChildren,
+                        },
                     },
-                },
-            });
+                });
+            }
         });
     },
 
