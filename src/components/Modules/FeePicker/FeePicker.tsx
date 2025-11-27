@@ -114,7 +114,8 @@ class FeePicker extends Component<Props, State> {
 
         if (source && source?.accessLevel === AccessLevels.Full && source?.type === AccountTypes.Tangem) {
             // Tangem may sign this, no fees
-            return Promise.resolve(noFee());
+            // Tangem can now sign fees
+            // return Promise.resolve(noFee());
         }
         
         if (source && source?.accessLevel !== AccessLevels.Full) {

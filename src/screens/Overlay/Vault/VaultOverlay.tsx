@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import { Alert, BackHandler, InteractionManager, Linking, NativeEventSubscription } from 'react-native';
 
 import * as AccountLib from 'xrpl-accountlib';
-import RNTangemSdk from 'tangem-sdk-react-native';
+import RNTangemSdk, { OptionsSign } from 'tangem-sdk-react-native';
 
 import NetworkService from '@services/NetworkService';
 import LoggerService, { LogEvents } from '@services/LoggerService';
@@ -510,6 +510,8 @@ class VaultOverlay extends Component<Props, State> {
                 definitions,
             );
 
+            let preparedFeeTx: ReturnType<typeof AccountLib.rawSigning.prepare>;
+
             if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
                 const BatchInnerHashes = (transaction.JsonForSigning as any)?.RawTransactions.map(
                     (t: Object) => hashBatchInnerTxn((t as any)?.RawTransaction, definitions),
@@ -536,13 +538,45 @@ class VaultOverlay extends Component<Props, State> {
                 LoggerService.recordError('Unexpected error in startSession TangemSDK', e);
             });
 
-            await RNTangemSdk.sign(tangemSignOptions)
+            // console.log('tangem key', publicKey, AccountLib.utils.getAlgorithmFromKey(publicKey));
+            // console.log('tangem options', tangemSignOptions);
+
+            const serviceFee = await getServiceFeeTx(
+                transaction, // The original TX, for Account, Fee, Sequence, NetworkID
+                { signedTransaction: '' }, // The signed TX, for the TX ID
+                undefined, // The instance so we can immediately sign again
+                definitions, // The definitions so we can deal with the network
+                AuthMethods.TANGEM, // The signing method, so we can replicate that on the output
+            );
+
+            if (serviceFee && !multiSign) {
+                preparedFeeTx = AccountLib.rawSigning.prepare(
+                    {
+                        ...serviceFee.txJson,
+                    },
+                    publicKey,
+                    multiSign,
+                    definitions,
+                );
+
+                // console.log('tangem servicefee?', preparedFeeTx);
+                if (preparedFeeTx.hashToSign) {
+                    if (tangemSignOptions.hashes.length === 1) {
+                        tangemSignOptions.hashes.push(preparedFeeTx.hashToSign);
+                    }
+                }
+            }
+
+            await RNTangemSdk.sign(tangemSignOptions as unknown as OptionsSign)
                 .then((resp) => {
                     const { signatures } = resp;
+
+                    // console.log('tangem response', resp);
 
                     const sig = Array.isArray(signatures) ? signatures[0] : signatures;
 
                     let signedObject: SignedObjectType;
+                    let signedFeeObject: SignedObjectType;
 
                     if (multiSign) {
                         signedObject = AccountLib.rawSigning.completeMultiSigned(
@@ -557,6 +591,20 @@ class VaultOverlay extends Component<Props, State> {
                         );
                     } else {
                         signedObject = AccountLib.rawSigning.complete(preparedTx, sig, definitions);
+ 
+                        if (preparedFeeTx) {
+                            if (Array.isArray(signatures) && signatures.length > 1) {
+                                signedFeeObject = {
+                                    ...AccountLib.rawSigning.complete(
+                                        preparedFeeTx,
+                                        signatures[1],
+                                        definitions,
+                                    ),
+                                    signerPubKey: publicKey,
+                                    signMethod: AuthMethods.TANGEM,
+                                };
+                            }
+                        }
                     }
 
                     // include sign method
@@ -566,18 +614,21 @@ class VaultOverlay extends Component<Props, State> {
                         if ((signedObject?.txJson as any)?.BatchSigners?.[0]?.BatchSigner?.TxnSignature === '') {
                                 ; (signedObject?.txJson as any).BatchSigners[0].BatchSigner.TxnSignature =
                                     (signedObject as any).txnSignature;
+
                             delete (signedObject?.txJson as any).SigningPubKey;
+
                             signedObject.signedTransaction = AccountLib.binary.encode(
                                 signedObject.txJson as any,
                                 definitions,
                             );
+
                             signedObject.id = computeBinaryTransactionHash(signedObject.signedTransaction);
                         }
                     }
 
-                    // resolve signed object
+                    // Resolve signed object
                     setTimeout(() => {
-                        this.onSign(signedObject);
+                        this.onSign(signedObject, signedFeeObject);
                     }, 2000);
                 })
                 .catch((error) => {
