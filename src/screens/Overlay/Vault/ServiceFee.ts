@@ -19,7 +19,11 @@ const getServiceFeeTx = async (
         const feeTrx = {
             TransactionType: 'Payment',
             Account: transaction.JsonForSigning.Account,
-            InvoiceID: signedObject?.id || undefined,
+            InvoiceID:
+                signedObject?.id ||
+                `${'0'.repeat(64)}EE${String(transaction?.NetworkID) || '0'}AA${String(transaction?.JsonForSigning?.Sequence || '0')}`.slice(
+                    -64,
+                ),
             Memos: [
                 {
                     Memo: {
