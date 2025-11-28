@@ -16,14 +16,29 @@ const getServiceFeeTx = async (
     if (Number(transaction?.ServiceFee || 0) > 0) {
         const serviceFeeTxFee = String(Math.min(Number(transaction.JsonForSigning.Fee) || 100, 100));
 
+        const Sequence = transaction.JsonForSigning?.Sequence
+            ? transaction.JsonForSigning.Sequence + 1 // Prev needs + one
+            : await LedgerService.getAccountSequence(transaction.JsonForSigning.Account);
+        //      ^^ // If prev has no sequence ticket is used, so sequence is not already taken:
+
+        let sequenceType = 'B';
+        let sequenceInfo = '';
+        const networkId = String(transaction?.NetworkID ? transaction.NetworkID : '');
+
+        if (typeof Sequence === 'number') {
+            sequenceType = 'C';
+            sequenceInfo = String(Sequence);
+        }
+        if (typeof transaction?.JsonForSigning?.TicketSequence !== 'undefined') {
+            sequenceType = 'D';
+            sequenceInfo = String(transaction.JsonForSigning.TicketSequence);
+        }
+
         const feeTrx = {
             TransactionType: 'Payment',
             Account: transaction.JsonForSigning.Account,
             InvoiceID:
-                signedObject?.id ||
-                `${'0'.repeat(64)}EE${String(transaction?.NetworkID) || '0'}AA${String(transaction?.JsonForSigning?.Sequence || '0')}`.slice(
-                    -64,
-                ),
+                signedObject?.id || `${'0'.repeat(64)}EE000${networkId}AA${sequenceType}000${sequenceInfo}`.slice(-64),
             Memos: [
                 {
                     Memo: {
@@ -34,14 +49,13 @@ const getServiceFeeTx = async (
 
             // FEE DESTINATIONA DDRESS
             Destination: AppConfig.feeAccount,
-            Sequence: transaction.JsonForSigning?.Sequence
-                ? transaction.JsonForSigning.Sequence + 1 // Prev needs + one
-                : await LedgerService.getAccountSequence(transaction.JsonForSigning.Account),
-            // ^^ // If prev has no sequence ticket is used, so sequence is not already taken:
+            Sequence,
             NetworkID: transaction?.NetworkID,
             Amount: String(transaction.ServiceFee),
             Fee: serviceFeeTxFee,
         };
+
+        // console.log(feeTrx);
 
         if (!signerInstance && method === AuthMethods.TANGEM) {
             return {

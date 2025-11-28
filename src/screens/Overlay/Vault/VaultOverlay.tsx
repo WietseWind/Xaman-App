@@ -591,9 +591,11 @@ class VaultOverlay extends Component<Props, State> {
                         );
                     } else {
                         signedObject = AccountLib.rawSigning.complete(preparedTx, sig, definitions);
+                        // console.log('a')
  
                         if (preparedFeeTx) {
                             if (Array.isArray(signatures) && signatures.length > 1) {
+                                // console.log('b')
                                 signedFeeObject = {
                                     ...AccountLib.rawSigning.complete(
                                         preparedFeeTx,
@@ -603,9 +605,13 @@ class VaultOverlay extends Component<Props, State> {
                                     signerPubKey: publicKey,
                                     signMethod: AuthMethods.TANGEM,
                                 };
+                                // console.log('c')
+                                // console.log(signedFeeObject)
                             }
                         }
                     }
+
+                    // console.log('d')
 
                     // include sign method
                     signedObject = { ...signedObject, signerPubKey: publicKey, signMethod: AuthMethods.TANGEM };
