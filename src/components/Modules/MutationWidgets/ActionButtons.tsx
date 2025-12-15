@@ -434,13 +434,26 @@ class ActionButtons extends PureComponent<Props, State> {
                 break;
             case ActionTypes.CASH_CHECK:
                 if (item.Type === LedgerEntryTypes.Check) {
+                    const isIssuedCurrency = () => {
+                        return item?.SendMax?.issuer &&
+                            typeof item?.SendMax?.issuer === 'string' &&
+                            item?.SendMax?.value;
+                    };
+
+                    const isNativeCurrency = () => {
+                        return String(item?.SendMax?.issuer || '') === '' &&
+                            item?.SendMax?.value &&
+                            item?.SendMax?.currency === NetworkService.getNativeAsset();
+                    };
+
                     if (
                         item?.SendMax &&
-                        item?.SendMax?.issuer &&
-                        typeof item?.SendMax?.issuer === 'string' &&
-                        item?.SendMax?.value
+                        (isIssuedCurrency() || isNativeCurrency())
                     ) {
-                        const transferRate = await LedgerService.getAccountTransferRate(item?.SendMax?.issuer);
+                        const transferRate = isIssuedCurrency()
+                            ? await LedgerService.getAccountTransferRate(String(item?.SendMax?.issuer || ''))
+                            : undefined;
+
                         if (transferRate) {
                             Object.assign(craftedTxJson, {
                                 TransactionType: TransactionTypes.CheckCash,
