@@ -266,6 +266,8 @@ class SendView extends Component<Props, State> {
             }
         }
 
+        // console.log('txjson', txJson)
+
         return txJson;
     };
 

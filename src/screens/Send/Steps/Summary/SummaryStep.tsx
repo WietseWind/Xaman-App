@@ -548,7 +548,11 @@ class SummaryStep extends Component<Props, State> {
                         <FeePicker
                             txJson={{
                                 ...getPaymentJsonForFee(),
-                                Memos: undefined,
+                                ...(
+                                    NetworkService.getNativeAsset() === 'XRP'
+                                        ? { Memos: undefined } // If XRP: ignore memo to prevent bouncing
+                                        : {} // on Xahau: needs Memo as it adds to fee
+                                ),
                             }}
                             source={source}
                             containerStyle={styles.feePickerContainer}
