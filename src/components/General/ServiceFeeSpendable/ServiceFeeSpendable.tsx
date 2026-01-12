@@ -152,7 +152,11 @@ class ServiceFeeSpendable extends Component<Props, State> {
         } = this.props;
 
         if (typeof updateSendingAmountDrops === 'function') {
-            updateSendingAmountDrops(spendableBalanceDrops - txFeeDrops - serviceFeeDrops);
+            let sendingAmount = spendableBalanceDrops - txFeeDrops - serviceFeeDrops;
+            if (sendingAmount < 0) {
+                sendingAmount = 0;
+            }
+            updateSendingAmountDrops(sendingAmount);
             this.setState({
                 didUpdate: true,
             });
@@ -184,6 +188,14 @@ class ServiceFeeSpendable extends Component<Props, State> {
             // console.log('cansend')
             return null;
         }
+
+        let maxSpendable = (
+            spendableBalanceDrops -
+            txFeeDrops -
+            serviceFeeDrops
+        ) / 1_000_000;
+
+        maxSpendable = Math.max(0, maxSpendable);
 
         return (
             <View style={styles.container}>
@@ -249,15 +261,7 @@ class ServiceFeeSpendable extends Component<Props, State> {
                             </Text>
                             <Text style={[
                                 AppStyles.baseText, AppStyles.bold, AppStyles.colorPrimary, styles.textItem,
-                            ]}>
-                                {' '}{
-                                    Localize.formatNumber(
-                                        (
-                                            spendableBalanceDrops -
-                                            txFeeDrops -
-                                            serviceFeeDrops
-                                        ) / 1_000_000,
-                                    )} { NetworkService.getNativeAsset() }{' '}
+                            ]}>{' '}{Localize.formatNumber(maxSpendable)}{' '}{NetworkService.getNativeAsset()}{' '}
                             </Text>
                             <Text style={[ AppStyles.baseText, AppStyles.colorPrimary, styles.textItem ]}>
                                 {

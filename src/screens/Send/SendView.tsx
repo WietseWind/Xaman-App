@@ -19,6 +19,8 @@ import { Navigator } from '@common/helpers/navigator';
 
 import Memo from '@common/libs/ledger/parser/common/memo';
 
+import { CalculateAvailableBalance } from '@common/utils/balance';
+
 import { AmountParser } from '@common/libs/ledger/parser/common';
 import {
     CheckCreate,
@@ -142,14 +144,38 @@ class SendView extends Component<Props, State> {
         this.setState({ amount });
     };
 
-    setFee = (selectedFee: FeeItem, serviceFee: FeeItem) => {
+    setServiceFee = (serviceFee: FeeItem) => {
         const { payment } = this.state;
+
+        // ^^ also called from summary step
+
+        payment.setServiceFee(Number(serviceFee.value));
+        this.setState({ serviceFeeAmount: serviceFee });
+    };
+
+    setFee = (selectedFee: FeeItem, serviceFee: FeeItem) => {
+        const { token, source } = this.state;
         this.setState({ selectedFee });
 
         // console.log('SendView Service Fee Amount Set', serviceFeeAmount.value);
         if (serviceFee) {
-            payment.setServiceFee(Number(serviceFee.value));
-            this.setState({ serviceFeeAmount: serviceFee });
+            // payment.setServiceFee(Number(serviceFee.value));
+            // this.setState({ serviceFeeAmount: serviceFee });
+            this.setServiceFee(serviceFee);
+
+            const isNativeAsset = (typeof token === 'string' && token === NetworkService.getNativeAsset());
+            if (!isNativeAsset) {
+                const fee = Number(serviceFee?.value || 0) / 1_000_000;
+                const avail = CalculateAvailableBalance(source!);
+                const spendable = (Math.floor(Number(avail) * 1_000_000) - 100) / 1_000_000;
+                if (spendable < fee) {
+                    this.logger.debug(`Service fee: ${fee} is higher than spendable: ${spendable}`);
+                    this.setServiceFee({
+                        type: 'LOW',
+                        value: String(Math.floor(Number(avail) * 1_000_000) - 100),
+                    });
+                }
+            }
         };
     };
 
@@ -610,6 +636,7 @@ class SendView extends Component<Props, State> {
                     setAmount: this.setAmount,
                     setToken: this.setToken,
                     setFee: this.setFee,
+                    setServiceFee: this.setServiceFee,
                     setMemo: this.setMemo,
                     setCredentials: this.setCredentials,
                     submitAsAltTxTypeTo: this.submitAsAltTxTypeTo,
