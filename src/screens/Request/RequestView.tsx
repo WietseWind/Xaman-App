@@ -308,6 +308,9 @@ class RequestView extends Component<Props, State> {
                     if (line.isLiquidityPoolToken()) {
                         return false;
                     }
+                    if (line.isMPToken()) {
+                        return false;
+                    }
                     if (Number(line.balance) >= 0 || line.obligation === true) {
                         return true;
                     }
