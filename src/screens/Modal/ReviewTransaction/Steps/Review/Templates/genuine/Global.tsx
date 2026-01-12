@@ -90,7 +90,30 @@ class GlobalTemplate extends Component<Props, State> {
     };
 
     setServiceFeeAmount = (fee: any) => {
-        const { setServiceFee } = this.props;
+        const { setServiceFee, transaction, source } = this.props;
+
+        if (transaction && source) {
+            let isXrpPayment = false;
+            try {
+                isXrpPayment = transaction &&
+                    transaction.TransactionType === 'Payment' &&
+                    (transaction as any)?.Amount?.currency === NetworkService.getNativeAsset();
+            } catch (e) {
+                // console.log(e)
+            }
+
+            if (!isXrpPayment) {
+                const sfee = Number(fee?.value || 0) / 1_000_000;
+                const avail = CalculateAvailableBalance(source!);
+                const spendable = (Math.floor(Number(avail) * 1_000_000) - 100) / 1_000_000; 
+                if (spendable < sfee) {
+                    setServiceFee(Math.floor(Number(avail) * 1_000_000) - 100);
+                    // console.log(`${sfee} higher: ${spendable}, set ${Math.floor(Number(avail) * 1_000_000) - 100}`);
+                    return;
+                }
+            }
+        }
+
         setServiceFee(Number(fee?.value || 0));
     };
 
