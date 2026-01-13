@@ -20,6 +20,10 @@ export default StyleService.create({
         marginBottom: 3,
     },
     xAppTokenContainer: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+    externalAssetxApp: {
+        tintColor: '$white',
+        height: AppFonts.subtext.size,
+    },
     xAppLabel: {
         fontSize: AppFonts.p.size * 1.0,
         fontFamily: AppFonts.p.familyBold,
@@ -63,6 +67,9 @@ export default StyleService.create({
         paddingLeft: 4,
         paddingRight: 3,
         height: AppFonts.subtext.size * 0.95,
+    },
+    xAppBadge: {
+        paddingTop: 0,
     },
     balanceContainer: {
         flex: 1,

@@ -39,6 +39,7 @@ import NetworkService from '@services/NetworkService';
 import Localize from '@locale';
 
 import { Props as TermOfUseViewProps } from '@screens/Settings/TermOfUse/types';
+import { AccountLinesTrustline } from '@common/libs/ledger/types/methods';
 
 /* Types  ==================================================================== */
 export interface RatesType {
@@ -540,6 +541,8 @@ class BackendService {
             payload: payloadUuid,
         };
 
+        this.logger.warn(`Fetching service fee for ${txJson?.Account} @ ${payloadUuid}`);
+
         try {
             const pr = await Promise.race([
                 ApiService.fetch(Endpoints.ServiceFee, 'POST', null, body),
@@ -742,6 +745,55 @@ class BackendService {
 
     acknowledgePurchase = (purchases: InAppPurchaseReceipt) => {
         return ApiService.fetch(Endpoints.VerifyPurchase, 'PATCH', null, purchases);
+    };
+
+    getExtAssets = (account: string, network: string) => {
+        return ApiService.fetch(Endpoints.ExtAssets, 'GET', {
+            account,
+            network,
+        });
+    };
+
+    /**
+     * Get account external assets
+     */
+    getAccountExtAssets = async (
+        account: string,
+        marker?: string,
+        combined = [] as AccountLinesTrustline[],
+    ): Promise<AccountLinesTrustline[]> => {
+        return this.getExtAssets(account, NetworkService.getConnectionDetails().networkKey).then(async (resp) => {
+            if ('error' in resp) {
+                this.logger.error('Unable to get ext assets state', resp.error);
+                return combined;
+            }
+
+            if (resp?.assets?.length) {
+                return resp.assets.map(
+                    (asset: { account: string; currency: string; balance: string; limit_peer: string }) => {
+                        return {
+                            order: -10,
+                            account: asset.account,
+                            currency: asset.currency,
+                            balance: asset.balance,
+                            // limit: asset.limit,
+                            limit: String(-9999999999),
+                            limit_peer: asset.limit_peer,
+                            no_ripple: true,
+                            no_ripple_peer: false,
+                            freeze: false,
+                            obligation: false,
+                            quality_in: 0,
+                            quality_out: 0,
+                            authorized: true,
+                            peer_authorized: true,
+                        };
+                    },
+                );
+            }
+
+            return [];
+        });
     };
 
     getAccountWorth = async (account: string, network: string, currency: string, origin: string = '') => {

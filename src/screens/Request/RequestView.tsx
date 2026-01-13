@@ -311,6 +311,9 @@ class RequestView extends Component<Props, State> {
                     if (line.isMPToken()) {
                         return false;
                     }
+                    if (line.isExternalAsset()) {
+                        return false;
+                    }
                     if (Number(line.balance) >= 0 || line.obligation === true) {
                         return true;
                     }

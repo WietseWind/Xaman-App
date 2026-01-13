@@ -195,6 +195,26 @@ class TokenItem extends PureComponent<Props, State> {
                                 )
                             }
                             {
+                                token.isExternalAsset() && (
+                                    <View style={styles.lpBadgeContainer}>
+                                        <Badge
+                                            label={(
+                                                <Icon
+                                                    name='IconXApp'
+                                                    style={styles.externalAssetxApp}
+                                                    size={22}
+                                                />
+                                            )}
+                                            type={BadgeType.Planned}
+                                            containerStyle={[
+                                                styles.lpBadge,
+                                                styles.xAppBadge,
+                                            ]}
+                                        />
+                                    </View>
+                                )
+                            }
+                            {
                                 token?.isMPToken() && (
                                     <View style={styles.lpBadgeContainer}>
                                         <Badge

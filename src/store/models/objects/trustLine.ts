@@ -69,6 +69,11 @@ class TrustLine extends Realm.Object<TrustLine> {
         return this.currency.currencyCode.length === 48;
     }
 
+    isExternalAsset(): boolean {
+        // TODO: improve this check for Extenral Asset as set in
+        return this.limit === String(-9999999999);
+    }
+
     getLpAssetPair(): string[] {
         if (this.isLiquidityPoolToken()) {
             const assetPair = this.linkingObjects<{ pairs: Array<string | CurrencyModel> }>('AmmPair', 'line');

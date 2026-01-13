@@ -418,7 +418,7 @@ class ApiService {
                             );
                         } else {
                             throw new ApiError(
-                                `API error (non 200) ${rawRes.status} ${((jsonRes && JSON.stringify(jsonRes)) || rawRes).slice(0, 50)}`,
+                                `API error (non 200) ${rawRes.status} ${((jsonRes && JSON.stringify(jsonRes)) || rawRes).slice(0, 100)}`,
                                 jsonRes?.error?.code,
                                 jsonRes?.error?.reference,
                             );

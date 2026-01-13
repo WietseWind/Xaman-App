@@ -378,7 +378,8 @@ class DetailsStep extends Component<Props, State> {
                                           NetworkService.getNativeAsset(),
                                           ...filter(
                                               source.lines?.sorted([['order', false]]),
-                                              (line) => Number(line.balance) > 0 || line.obligation === true,
+                                              (line) => (Number(line.balance) > 0 || line.obligation === true) &&
+                                                  !line.isExternalAsset(),
                                           ),
                                       ]
                                     : []

@@ -1215,13 +1215,15 @@ class XAppBrowserModal extends Component<Props, State> {
 
     renderHeader = () => {
         const { app, network, account } = this.state;
-        const { noSwitching, altHeader } = this.props;
+        const { noSwitching, altHeader, containerStyle } = this.props;
 
         if (altHeader) {
             return (
                 <Header
+                    containerStyle={containerStyle}
                     leftComponent={{
                         icon: altHeader?.left?.icon,
+                        element: altHeader?.left?.element,
                         iconSize: altHeader?.left?.iconSize,
                         onPress: () => {
                             const fn = this?.[(altHeader?.left?.onPress || '_') as keyof this];
@@ -1230,19 +1232,24 @@ class XAppBrowserModal extends Component<Props, State> {
                     }}
                     centerComponent={{
                         text: altHeader?.center?.text,
-                        extraComponent: altHeader?.center?.showNetworkLabel && <NetworkLabel type="both" />,
+                        extraComponent: altHeader?.center?.showNetworkLabel
+                            ? <NetworkLabel type="both" />
+                            : altHeader?.center?.subtitle && <Text>{ String(altHeader?.center?.subtitle) }</Text>,
                     }}
                     rightComponent={
-                        Object.values(AppConfig.xappIdentifiers).indexOf(String(app?.identifier || '')) > -1
-                            ? { 
-                                icon: altHeader?.right?.icon,
-                                iconSize: altHeader?.right?.iconSize,
-                                onPress: () => {
-                                    const fn = this?.[(altHeader?.right?.onPress || '_') as keyof this];
-                                    if (typeof fn === 'function') fn(altHeader?.right?.onPressOptions);
-                                },
-                            }
-                            : undefined
+                        Object.values(AppConfig.xappIdentifiers).indexOf(String(app?.identifier || '')) > -1 ||
+                            altHeader?.right?.element ||
+                            (altHeader?.center?.subtitle && altHeader?.right?.icon)
+                                ? { 
+                                    icon: altHeader?.right?.icon,
+                                    element: altHeader?.right?.element,
+                                    iconSize: altHeader?.right?.iconSize,
+                                    onPress: () => {
+                                        const fn = this?.[(altHeader?.right?.onPress || '_') as keyof this];
+                                        if (typeof fn === 'function') fn(altHeader?.right?.onPressOptions);
+                                    },
+                                }
+                                : undefined
                     }
                 />
             );

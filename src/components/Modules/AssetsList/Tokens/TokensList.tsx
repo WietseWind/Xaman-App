@@ -30,6 +30,10 @@ import NetworkService from '@services/NetworkService';
 import { ASSETS_CATEGORY } from '@screens/Overlay/SwitchAssetCategory/types';
 
 import BigNumber from 'bignumber.js';
+import { type XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
+import { XAppOrigin } from '@common/libs/payload';
+import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
+import { TokenAvatar } from '@components/Modules/TokenElement';
 
 /* Types ==================================================================== */
 interface Props {
@@ -328,6 +332,67 @@ class TokensList extends Component<Props, State> {
 
         // ignore if reordering is enabled
         if (!token || reorderEnabled || token?.id === 'native') {
+            return;
+        }
+
+        if (token.isExternalAsset()) {
+            try {
+                const externalTokenInfo = JSON.parse(String(token.limit_peer).split('|')?.[1]);
+                const identifier = externalTokenInfo?.xApp;
+                const title = externalTokenInfo?.title || token.getFormattedCurrency();
+                const subtitle = externalTokenInfo?.subtitle || token.currency.issuer;
+
+                if (identifier && title && subtitle) {
+                    Navigator.showModal<XAppBrowserModalProps>(
+                        AppScreens.Modal.XAppBrowser,
+                        {
+                            identifier,
+                            containerStyle: {
+                                marginTop: 0,
+                            },
+                            noSwitching: true,
+                            altHeader: {
+                                left: {
+                                    // icon: 'IconChevronLeft',
+                                    onPress: 'onClose',
+                                    element: (
+                                        <View>
+                                            <TokenAvatar
+                                                token={token}
+                                                // border
+                                                size={35}
+                                            />
+                                        </View>
+                                    ),
+                                },
+                                center: {
+                                    text: title,
+                                    subtitle,
+                                    // showNetworkLabel: true,
+                                },
+                                right: {
+                                    onPress: 'onClose',
+                                    icon: 'IconX',
+                                    iconSize: 20,
+                                },
+                            },
+                            origin: XAppOrigin.XUMM,
+                            params: {
+                                issuer: token.currency.issuer,
+                                asset: token.currency.currencyCode,
+                                action: 'SETTINGS',
+                            },
+                        },
+                        {
+                            modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
+                            modalPresentationStyle: OptionsModalPresentationStyle.pageSheet,
+                        },
+                    );
+                }
+            } catch {
+                // Ignore
+            }
+
             return;
         }
 
