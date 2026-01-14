@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Iltimos, tranzaksiyangizni ko'pi bilan %{amount} sarflash uchun yangilang",
     "updateBtn": "Yuborish miqdorini yangilash"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Ogohlantirish: Xaman sizdan HECH QACHON Xaman-ga to'lov yuborishni so'ramaydi. Xaman jamoasi airdrop yubormaydi va foydalanuvchilarga bepul sovg'alar yoki kriptovalyuta taklif qilmaydi.",
+    "ifSomeoneThenScam": "Agar kimdir sizdan Xaman-ga to'lov yuborishni so'rasa, rad eting: kimdir sizni aldashga urinmoqda.",
+    "onlyProceedIf": "Faqat ishonchli tomon bilan muloqot qilayotganingizga 100% ishonchingiz komil bo'lsa va davom etmoqchi ekanligingizga 100% ishonchingiz komil bo'lsagina davom eting.",
+    "yes": "Ha",
+    "no": "Yo'q",
+    "beforeTransactionSomeQuestions": "Siz deyarli yaqinlashdingiz, lekin tranzaksiya tafsilotlariga o'tishdan oldin sizga bir nechta savol berishimiz kerak.",
+    "isSomeonePromising": "Kimdir sizga bepul sovg'alar, airdroplar yoki kriptovalyuta va'da qilyaptimi?",
+    "isSomeoneSupport": "Yordam taklif qilayotgan kimdir sizdan ushbu tranzaksiyani imzolashni so'rayaptimi?",
+    "isSomeoneTeam": "Xaman, XRPL Labs yoki Ripple jamoasining a'zosi ekanligini aytayotgan kimdir sizdan ushbu tranzaksiyani imzolashni so'rayaptimi?",
+    "areYouAwareThatNonReversible": "Blokcheyn tranzaksiyasini bekor qilish mumkinmi?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Бугун соат] LT [да]",

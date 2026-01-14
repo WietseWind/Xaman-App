@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Babala: HINDI kailanman hihilingin ng Xaman na magpadala ka ng bayad sa Xaman. HINDI nagpapadala ng airdrops ang Xaman team, at HINDI nag-aalok ng libreng rewards o cryptocurrency sa mga user.",
+    "ifSomeoneThenScam": "Kung may humihiling sa iyo na magpadala ng bayad sa Xaman, tanggihan ito: may nagtatangkang manloko sa iyo.",
+    "onlyProceedIf": "Magpatuloy lamang kung 100% kang sigurado na nakikipag-ugnayan ka sa isang mapagkakatiwalaang partido, at kung 100% kang sigurado na gusto mong magpatuloy.",
+    "yes": "Oo",
+    "no": "Hindi",
+    "beforeTransactionSomeQuestions": "Malapit ka na, ngunit bago ka makapagpatuloy sa mga detalye ng transaksyon, kailangan naming magtanong sa iyo ng ilang katanungan.",
+    "isSomeonePromising": "May nangangako ba sa iyo ng libreng rewards, airdrops, o cryptocurrency?",
+    "isSomeoneSupport": "Hinihiling ba sa iyo na pirmahan ang transaksyong ito ng isang taong nag-aalok ng suporta?",
+    "isSomeoneTeam": "Hinihiling ba sa iyo na pirmahan ang transaksyong ito ng isang taong nagsasabing bahagi siya ng Xaman, XRPL Labs o Ripple team?",
+    "areYouAwareThatNonReversible": "Maaari bang baligtarin ang isang blockchain transaction?"
   }
 }

@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "يرجى تحديث معاملتك لإنفاق %{amount} كحد أقصى",
     "updateBtn": "تحديث مبلغ الإرسال"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "تحذير: لن تطلب Xaman منك أبداً إرسال دفعة إلى Xaman. فريق Xaman لا يرسل airdrops، ولا يقدم مكافآت مجانية أو عملات رقمية للمستخدمين.",
+    "ifSomeoneThenScam": "إذا طلب منك شخص ما إرسال دفعة إلى Xaman، ارفض ذلك: شخص ما يحاول خداعك.",
+    "onlyProceedIf": "تابع فقط إذا كنت متأكداً 100% أنك تتعامل مع طرف موثوق، وإذا كنت متأكداً 100% أنك تريد المتابعة.",
+    "yes": "نعم",
+    "no": "لا",
+    "beforeTransactionSomeQuestions": "أنت على وشك الانتهاء، ولكن قبل أن تتمكن من متابعة تفاصيل المعاملة، نحتاج أن نطرح عليك بعض الأسئلة.",
+    "isSomeonePromising": "هل يعدك شخص ما بمكافآت مجانية أو airdrops أو عملات رقمية؟",
+    "isSomeoneSupport": "هل يُطلب منك توقيع هذه المعاملة من قبل شخص يقدم الدعم؟",
+    "isSomeoneTeam": "هل يُطلب منك توقيع هذه المعاملة من قبل شخص يدعي أنه جزء من فريق Xaman أو XRPL Labs أو Ripple؟",
+    "areYouAwareThatNonReversible": "هل يمكن عكس معاملة البلوكشين؟"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[اليوم عند الساعة] LT",

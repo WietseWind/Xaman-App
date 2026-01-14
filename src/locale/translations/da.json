@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "Det maksimale beløb, du kan sende, er %{amount}",
     "updateToSatisfyMissingAmount": "Opdater venligst din transaktion til at bruge højst %{amount}",
     "updateBtn": "Opdater afsendelsesbeløb"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Advarsel: Xaman vil ALDRIG bede dig om at sende en betaling til Xaman. Xaman-teamet sender IKKE airdrops og tilbyder IKKE gratis belønninger eller kryptovaluta til brugere.",
+    "ifSomeoneThenScam": "Hvis nogen beder dig om at sende en betaling til Xaman, afvis det: nogen forsøger at snyde dig.",
+    "onlyProceedIf": "Fortsæt kun hvis du er 100% sikker på, at du interagerer med en betroet part, og hvis du er 100% sikker på, at du vil fortsætte.",
+    "yes": "Ja",
+    "no": "Nej",
+    "beforeTransactionSomeQuestions": "Du er næsten i mål, men før du kan fortsætte til transaktionsdetaljerne, skal vi stille dig et par spørgsmål.",
+    "isSomeonePromising": "Lover nogen dig gratis belønninger, airdrops eller kryptovaluta?",
+    "isSomeoneSupport": "Bliver du bedt om at underskrive denne transaktion af nogen, der tilbyder support?",
+    "isSomeoneTeam": "Bliver du bedt om at underskrive denne transaktion af nogen, der siger, de er en del af Xaman-, XRPL Labs- eller Ripple-teamet?",
+    "areYouAwareThatNonReversible": "Kan en blockchain-transaktion tilbageføres?"
   }
 }

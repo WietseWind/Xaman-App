@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "请更新您的交易，最多支出 %{amount}",
     "updateBtn": "更新发送金额"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "警告：Xaman 绝对不会要求您向 Xaman 发送付款。Xaman 团队不会发送空投，也不会向用户提供免费奖励或加密货币。",
+    "ifSomeoneThenScam": "如果有人要求您向 Xaman 发送付款，请拒绝：有人正在试图诈骗您。",
+    "onlyProceedIf": "只有在您百分之百确定正在与可信任的对象互动，并且百分之百确定要继续时，才可以继续。",
+    "yes": "是",
+    "no": "否",
+    "beforeTransactionSomeQuestions": "您快完成了，但在您继续查看交易详情之前，我们需要问您几个问题。",
+    "isSomeonePromising": "是否有人承诺给您免费奖励、空投或加密货币？",
+    "isSomeoneSupport": "是否有人以提供支持为由要求您签署此交易？",
+    "isSomeoneTeam": "是否有人声称自己是 Xaman、XRPL Labs 或 Ripple 团队成员并要求您签署此交易？",
+    "areYouAwareThatNonReversible": "区块链交易可以撤销吗？"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[今天]LT",

@@ -7,6 +7,7 @@ export interface PayloadType {
     application: ApplicationType;
     payload: PayloadReferenceType;
     response?: ResponseType;
+    risk?: { __warn_user: boolean } & { [key: string]: number | boolean };
 }
 
 export interface ApplicationType {

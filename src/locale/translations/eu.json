@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Mesedez eguneratu zure transakzioa gehienez %{amount} gastatzeko",
     "updateBtn": "Eguneratu bidalketa zenbatekoa"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Abisua: Xamanek INOIZ EZ dizu eskatuko Xamanera ordainketa bat bidaltzeko. Xaman taldeak EZ ditu airdropak bidaltzen, eta EZ ditu dohaineko sariak edo kriptomoneta eskaintzen erabiltzaileei.",
+    "ifSomeoneThenScam": "Norbaitek Xamanera ordainketa bat bidaltzeko eskatzen badizu, ukatu ezazu: norbait iruzur egiten saiatzen ari da.",
+    "onlyProceedIf": "Jarraitu soilik %100 ziur bazaude konfiantzazko alde batekin elkarreragiten ari zarela, eta %100 ziur bazaude jarraitu nahi duzula.",
+    "yes": "Bai",
+    "no": "Ez",
+    "beforeTransactionSomeQuestions": "Ia bukatu duzu, baina transakzioaren xehetasunetara jarraitu aurretik, galdera batzuk egin behar dizkizugu.",
+    "isSomeonePromising": "Norbait dohaineko sariak, airdropak edo kriptomoneta agintzen ari zaizu?",
+    "isSomeoneSupport": "Laguntza eskaintzen duen norbaitek transakzio hau sinatzeko eskatzen ari zaizu?",
+    "isSomeoneTeam": "Xaman, XRPL Labs edo Ripple taldearen parte dela esaten duen norbaitek transakzio hau sinatzeko eskatzen ari zaizu?",
+    "areYouAwareThatNonReversible": "Blockchain transakzio bat alderantzikatu daiteke?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[gaur] LT[etan]",

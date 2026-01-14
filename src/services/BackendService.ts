@@ -511,7 +511,7 @@ class BackendService {
      * @param {{ reason: string }} reason - The reason for the audit trail action.
      * @returns {Promise} A promise that resolves when the audit trail action is completed.
      */
-    auditTrail = (destination: string, reason: { reason: string }): Promise<XamanBackend.AuditTrailResponse> => {
+    auditTrail = (destination: string, reason: { [key: string]: any }): Promise<XamanBackend.AuditTrailResponse> => {
         return ApiService.fetch(
             Endpoints.AuditTrail,
             'POST',

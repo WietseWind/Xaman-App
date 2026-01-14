@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Tanpri mizajou tranzaksyon ou pou depanse omwen %{amount}",
     "updateBtn": "Mizajou Kantite Vwayaj"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Avètisman: Xaman pap JANM mande w voye yon peman bay Xaman. Ekip Xaman PA voye airdrop, e PA ofri rekonpans gratis oswa kriptomonè bay itilizatè yo.",
+    "ifSomeoneThenScam": "Si yon moun mande w voye yon peman bay Xaman, refize: yon moun ap eseye fè w fwod.",
+    "onlyProceedIf": "Kontinye sèlman si ou 100% sèten ou ap kominike ak yon pati ou fè konfyans, e si ou 100% sèten ou vle kontinye.",
+    "yes": "Wi",
+    "no": "Non",
+    "beforeTransactionSomeQuestions": "Ou prèske rive, men anvan ou ka kontinye nan detay tranzaksyon an, nou bezwen poze w kèk kesyon.",
+    "isSomeonePromising": "Èske yon moun ap pwomèt ou rekonpans gratis, airdrop, oswa kriptomonè?",
+    "isSomeoneSupport": "Èske yon moun ki ap ofri sipò ap mande w siyen tranzaksyon sa a?",
+    "isSomeoneTeam": "Èske yon moun ki di li fè pati ekip Xaman, XRPL Labs oswa Ripple ap mande w siyen tranzaksyon sa a?",
+    "areYouAwareThatNonReversible": "Èske yon tranzaksyon blockchain ka ranvèse?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Today at] LT",

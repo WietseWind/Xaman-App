@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Aggiorna la tua transazione per spendere al massimo  %{amount} ",
     "updateBtn": "Aggiorna importo di invio"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Attenzione: Xaman non ti chiederà MAI di inviare un pagamento a Xaman. Il team di Xaman NON invia airdrop e NON offre premi gratuiti o criptovalute agli utenti.",
+    "ifSomeoneThenScam": "Se qualcuno ti chiede di inviare un pagamento a Xaman, rifiuta: qualcuno sta cercando di truffarti.",
+    "onlyProceedIf": "Procedi solo se sei sicuro al 100% di interagire con una parte fidata, e se sei sicuro al 100% di voler procedere.",
+    "yes": "Sì",
+    "no": "No",
+    "beforeTransactionSomeQuestions": "Ci sei quasi, ma prima di poter continuare con i dettagli della transazione, dobbiamo farti alcune domande.",
+    "isSomeonePromising": "Qualcuno ti sta promettendo premi gratuiti, airdrop o criptovalute?",
+    "isSomeoneSupport": "Ti viene chiesto di firmare questa transazione da qualcuno che offre supporto?",
+    "isSomeoneTeam": "Ti viene chiesto di firmare questa transazione da qualcuno che afferma di far parte del team Xaman, XRPL Labs o Ripple?",
+    "areYouAwareThatNonReversible": "Una transazione blockchain può essere annullata?"
+  },
   "moment": {
     "calendar": {
       "sameElse": "L"

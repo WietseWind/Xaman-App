@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "ಎಚ್ಚರಿಕೆ: Xaman ನಿಮ್ಮನ್ನು Xaman ಗೆ ಪಾವತಿ ಕಳುಹಿಸಲು ಎಂದಿಗೂ ಕೇಳುವುದಿಲ್ಲ. Xaman ತಂಡವು airdrops ಕಳುಹಿಸುವುದಿಲ್ಲ ಮತ್ತು ಬಳಕೆದಾರರಿಗೆ ಉಚಿತ ಬಹುಮಾನಗಳು ಅಥವಾ ಕ್ರಿಪ್ಟೋಕರೆನ್ಸಿ ನೀಡುವುದಿಲ್ಲ.",
+    "ifSomeoneThenScam": "ಯಾರಾದರೂ ನಿಮ್ಮನ್ನು Xaman ಗೆ ಪಾವತಿ ಕಳುಹಿಸಲು ಕೇಳಿದರೆ, ನಿರಾಕರಿಸಿ: ಯಾರೋ ನಿಮ್ಮನ್ನು ಮೋಸ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದ್ದಾರೆ.",
+    "onlyProceedIf": "ನೀವು ವಿಶ್ವಾಸಾರ್ಹ ಪಕ್ಷದೊಂದಿಗೆ ಸಂವಹನ ನಡೆಸುತ್ತಿದ್ದೀರಿ ಎಂದು 100% ಖಚಿತವಾಗಿದ್ದರೆ ಮತ್ತು ಮುಂದುವರಿಯಲು ಬಯಸುತ್ತೀರಿ ಎಂದು 100% ಖಚಿತವಾಗಿದ್ದರೆ ಮಾತ್ರ ಮುಂದುವರಿಯಿರಿ.",
+    "yes": "ಹೌದು",
+    "no": "ಇಲ್ಲ",
+    "beforeTransactionSomeQuestions": "ನೀವು ಬಹುತೇಕ ಮುಗಿಸಿದ್ದೀರಿ, ಆದರೆ ವಹಿವಾಟು ವಿವರಗಳಿಗೆ ಮುಂದುವರಿಯುವ ಮೊದಲು, ನಾವು ನಿಮಗೆ ಕೆಲವು ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಬೇಕಾಗಿದೆ.",
+    "isSomeonePromising": "ಯಾರಾದರೂ ನಿಮಗೆ ಉಚಿತ ಬಹುಮಾನಗಳು, airdrops ಅಥವಾ ಕ್ರಿಪ್ಟೋಕರೆನ್ಸಿ ಭರವಸೆ ನೀಡುತ್ತಿದ್ದಾರೆಯೇ?",
+    "isSomeoneSupport": "ಬೆಂಬಲ ನೀಡುತ್ತಿರುವ ಯಾರಾದರೂ ಈ ವಹಿವಾಟಿಗೆ ಸಹಿ ಮಾಡಲು ನಿಮ್ಮನ್ನು ಕೇಳುತ್ತಿದ್ದಾರೆಯೇ?",
+    "isSomeoneTeam": "Xaman, XRPL Labs ಅಥವಾ Ripple ತಂಡದ ಭಾಗ ಎಂದು ಹೇಳುವ ಯಾರಾದರೂ ಈ ವಹಿವಾಟಿಗೆ ಸಹಿ ಮಾಡಲು ನಿಮ್ಮನ್ನು ಕೇಳುತ್ತಿದ್ದಾರೆಯೇ?",
+    "areYouAwareThatNonReversible": "ಬ್ಲಾಕ್‌ಚೈನ್ ವಹಿವಾಟನ್ನು ಹಿಂತಿರುಗಿಸಬಹುದೇ?"
   }
 }

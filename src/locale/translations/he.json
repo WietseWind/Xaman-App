@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "הסכום המקסימלי שאתה יכול לשלוח הוא %{amount}",
     "updateToSatisfyMissingAmount": "אנא עדכן את העסקה שלך לשלוח לכל היותר %{amount}",
     "updateBtn": "עדכן סכום שליחה"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "אזהרה: Xaman לעולם לא תבקש ממך לשלוח תשלום ל-Xaman. צוות Xaman לא שולח airdrops, ולא מציע פרסים חינם או מטבעות קריפטו למשתמשים.",
+    "ifSomeoneThenScam": "אם מישהו מבקש ממך לשלוח תשלום ל-Xaman, סרב: מישהו מנסה להונות אותך.",
+    "onlyProceedIf": "המשך רק אם אתה בטוח ב-100% שאתה מתקשר עם גורם מהימן, ואם אתה בטוח ב-100% שאתה רוצה להמשיך.",
+    "yes": "כן",
+    "no": "לא",
+    "beforeTransactionSomeQuestions": "כמעט סיימת, אבל לפני שתוכל להמשיך לפרטי העסקה, עלינו לשאול אותך כמה שאלות.",
+    "isSomeonePromising": "האם מישהו מבטיח לך פרסים חינם, airdrops או מטבעות קריפטו?",
+    "isSomeoneSupport": "האם מישהו שמציע תמיכה מבקש ממך לחתום על עסקה זו?",
+    "isSomeoneTeam": "האם מישהו שטוען שהוא חלק מצוות Xaman, XRPL Labs או Ripple מבקש ממך לחתום על עסקה זו?",
+    "areYouAwareThatNonReversible": "האם ניתן לבטל עסקת בלוקצ'יין?"
   }
 }

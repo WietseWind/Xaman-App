@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Palun uuenda oma tehingut, et kulutada maksimaalselt %{amount}",
     "updateBtn": "Uuenda saatmissummat"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Hoiatus: Xaman ei palu KUNAGI teil saata makset Xamanile. Xamani meeskond EI saada airdroppe ja EI paku kasutajatele tasuta auhindu ega krüptovaluutat.",
+    "ifSomeoneThenScam": "Kui keegi palub teil saata makse Xamanile, keelduge: keegi üritab teid petta.",
+    "onlyProceedIf": "Jätkake ainult siis, kui olete 100% kindel, et suhtlete usaldusväärse osapoolega, ja kui olete 100% kindel, et soovite jätkata.",
+    "yes": "Jah",
+    "no": "Ei",
+    "beforeTransactionSomeQuestions": "Olete peaaegu kohal, kuid enne tehingu üksikasjade juurde jätkamist peame teilt mõned küsimused esitama.",
+    "isSomeonePromising": "Kas keegi lubab teile tasuta auhindu, airdroppe või krüptovaluutat?",
+    "isSomeoneSupport": "Kas keegi, kes pakub tuge, palub teil seda tehingut allkirjastada?",
+    "isSomeoneTeam": "Kas keegi, kes väidab end olevat Xamani, XRPL Labsi või Ripple'i meeskonna liige, palub teil seda tehingut allkirjastada?",
+    "areYouAwareThatNonReversible": "Kas plokiahela tehingut saab tagasi pöörata?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Täna,] LT",

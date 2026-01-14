@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "최대 %{amount} 를 사용하도록 거래를 업데이트해 주세요",
     "updateBtn": "전송 금액 업데이트"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "경고: Xaman은 절대로 Xaman에 결제를 보내달라고 요청하지 않습니다. Xaman 팀은 에어드롭을 보내지 않으며, 사용자에게 무료 보상이나 암호화폐를 제공하지 않습니다.",
+    "ifSomeoneThenScam": "누군가 Xaman에 결제를 보내달라고 요청하면 거절하세요: 누군가 당신을 사기치려고 합니다.",
+    "onlyProceedIf": "신뢰할 수 있는 상대방과 상호작용하고 있다고 100% 확신하고, 진행하고 싶다고 100% 확신하는 경우에만 진행하세요.",
+    "yes": "예",
+    "no": "아니오",
+    "beforeTransactionSomeQuestions": "거의 다 왔습니다. 하지만 거래 세부 정보로 진행하기 전에 몇 가지 질문을 드려야 합니다.",
+    "isSomeonePromising": "누군가 무료 보상, 에어드롭 또는 암호화폐를 약속하고 있나요?",
+    "isSomeoneSupport": "지원을 제공하는 사람이 이 거래에 서명하도록 요청하고 있나요?",
+    "isSomeoneTeam": "Xaman, XRPL Labs 또는 Ripple 팀의 일원이라고 주장하는 사람이 이 거래에 서명하도록 요청하고 있나요?",
+    "areYouAwareThatNonReversible": "블록체인 거래를 되돌릴 수 있나요?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "오늘 LT",

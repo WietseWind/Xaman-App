@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Lūdzu atjauniniet savu transakciju, lai tērētu ne vairāk par %{amount}",
     "updateBtn": "Atjaunināt sūtīšanas summu"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Brīdinājums: Xaman NEKAD nelūgs jūs nosūtīt maksājumu uz Xaman. Xaman komanda NESŪTA airdrop un NEPIEDĀVĀ lietotājiem bezmaksas balvas vai kriptovalūtu.",
+    "ifSomeoneThenScam": "Ja kāds lūdz jūs nosūtīt maksājumu uz Xaman, atsakieties: kāds mēģina jūs apmānīt.",
+    "onlyProceedIf": "Turpiniet tikai tad, ja esat 100% pārliecināts, ka sazināties ar uzticamu pusi, un ja esat 100% pārliecināts, ka vēlaties turpināt.",
+    "yes": "Jā",
+    "no": "Nē",
+    "beforeTransactionSomeQuestions": "Jūs esat gandrīz klāt, bet pirms varat turpināt ar darījuma detaļām, mums jums jāuzdod daži jautājumi.",
+    "isSomeonePromising": "Vai kāds jums sola bezmaksas balvas, airdrop vai kriptovalūtu?",
+    "isSomeoneSupport": "Vai kāds, kas piedāvā atbalstu, lūdz jūs parakstīt šo darījumu?",
+    "isSomeoneTeam": "Vai kāds, kas apgalvo, ka ir Xaman, XRPL Labs vai Ripple komandas dalībnieks, lūdz jūs parakstīt šo darījumu?",
+    "areYouAwareThatNonReversible": "Vai blokķēdes darījumu var atcelt?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Šodien pulksten] LT",

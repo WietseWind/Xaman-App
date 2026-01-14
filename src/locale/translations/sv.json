@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "Det maximala beloppet du kan skicka är %{amount}",
     "updateToSatisfyMissingAmount": "Uppdatera din transaktion för att spendera högst %{amount}",
     "updateBtn": "Uppdatera avsändningsbelopp"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Varning: Xaman kommer ALDRIG att be dig skicka en betalning till Xaman. Xaman-teamet skickar INTE airdrops och erbjuder INTE gratis belöningar eller kryptovaluta till användare.",
+    "ifSomeoneThenScam": "Om någon ber dig skicka en betalning till Xaman, avböj: någon försöker lura dig.",
+    "onlyProceedIf": "Fortsätt endast om du är 100% säker på att du interagerar med en betrodd part, och om du är 100% säker på att du vill fortsätta.",
+    "yes": "Ja",
+    "no": "Nej",
+    "beforeTransactionSomeQuestions": "Du är nästan där, men innan du kan fortsätta till transaktionsdetaljerna behöver vi ställa några frågor till dig.",
+    "isSomeonePromising": "Lovar någon dig gratis belöningar, airdrops eller kryptovaluta?",
+    "isSomeoneSupport": "Ber någon som erbjuder support dig att signera denna transaktion?",
+    "isSomeoneTeam": "Ber någon som påstår sig vara en del av Xaman-, XRPL Labs- eller Ripple-teamet dig att signera denna transaktion?",
+    "areYouAwareThatNonReversible": "Kan en blockkedjetransaktion ångras?"
   }
 }

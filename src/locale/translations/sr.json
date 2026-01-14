@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Упозорење: Xaman вас НИКАДА неће тражити да пошаљете уплату на Xaman. Xaman тим НЕ шаље airdrop-ове и НЕ нуди корисницима бесплатне награде или криптовалуту.",
+    "ifSomeoneThenScam": "Ако вас неко тражи да пошаљете уплату на Xaman, одбијте: неко покушава да вас превари.",
+    "onlyProceedIf": "Наставите само ако сте 100% сигурни да комуницирате са поузданом страном, и ако сте 100% сигурни да желите да наставите.",
+    "yes": "Да",
+    "no": "Не",
+    "beforeTransactionSomeQuestions": "Скоро сте завршили, али пре него што можете наставити са детаљима трансакције, морамо вам поставити неколико питања.",
+    "isSomeonePromising": "Да ли вам неко обећава бесплатне награде, airdrop-ове или криптовалуту?",
+    "isSomeoneSupport": "Да ли вас неко ко нуди подршку тражи да потпишете ову трансакцију?",
+    "isSomeoneTeam": "Да ли вас неко ко тврди да је део Xaman, XRPL Labs или Ripple тима тражи да потпишете ову трансакцију?",
+    "areYouAwareThatNonReversible": "Да ли се блокчејн трансакција може поништити?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[danas u] LT",

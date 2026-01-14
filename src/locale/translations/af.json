@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Dateer asseblief jou transaksie op om hoogstens %{amount} te spandeer",
     "updateBtn": "Opdateer Stuur Bedrag"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Waarskuwing: Xaman sal NOOIT vra dat jy 'n betaling aan Xaman stuur nie. Die Xaman-span stuur NIE airdrops nie, en bied NIE gratis belonings of kriptovaluta aan gebruikers nie.",
+    "ifSomeoneThenScam": "As iemand jou vra om 'n betaling aan Xaman te stuur, weier dit: iemand probeer jou bedrieg.",
+    "onlyProceedIf": "Gaan slegs voort as jy 100% seker is dat jy met 'n betroubare party kommunikeer, en as jy 100% seker is dat jy wil voortgaan.",
+    "yes": "Ja",
+    "no": "Nee",
+    "beforeTransactionSomeQuestions": "Jy is amper daar, maar voordat jy na die transaksiebesonderhede kan voortgaan, moet ons jou 'n paar vrae vra.",
+    "isSomeonePromising": "Beloof iemand jou gratis belonings, airdrops of kriptovaluta?",
+    "isSomeoneSupport": "Word jy gevra om hierdie transaksie te onderteken deur iemand wat ondersteuning aanbied?",
+    "isSomeoneTeam": "Word jy gevra om hierdie transaksie te onderteken deur iemand wat sê hulle is deel van die Xaman-, XRPL Labs- of Ripple-span?",
+    "areYouAwareThatNonReversible": "Kan 'n blokketting-transaksie omgekeer word?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Vandag om] LT",

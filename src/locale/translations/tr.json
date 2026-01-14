@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Uyarı: Xaman sizden ASLA Xaman'a ödeme göndermenizi istemez. Xaman ekibi airdrop göndermez ve kullanıcılara ücretsiz ödüller veya kripto para teklif etmez.",
+    "ifSomeoneThenScam": "Biri sizden Xaman'a ödeme göndermenizi isterse, reddedin: biri sizi dolandırmaya çalışıyor.",
+    "onlyProceedIf": "Yalnızca güvenilir bir tarafla etkileşimde olduğunuzdan %100 eminseniz ve devam etmek istediğinizden %100 eminseniz devam edin.",
+    "yes": "Evet",
+    "no": "Hayır",
+    "beforeTransactionSomeQuestions": "Neredeyse tamamladınız, ancak işlem detaylarına devam etmeden önce size birkaç soru sormamız gerekiyor.",
+    "isSomeonePromising": "Biri size ücretsiz ödüller, airdroplar veya kripto para vaat ediyor mu?",
+    "isSomeoneSupport": "Destek sunan biri sizden bu işlemi imzalamanızı mı istiyor?",
+    "isSomeoneTeam": "Xaman, XRPL Labs veya Ripple ekibinin bir parçası olduğunu söyleyen biri sizden bu işlemi imzalamanızı mı istiyor?",
+    "areYouAwareThatNonReversible": "Bir blockchain işlemi geri alınabilir mi?"
   }
 }

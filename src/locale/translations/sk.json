@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Prosím aktualizujte vašu transakciu, aby ste minuli maximálne %{amount}",
     "updateBtn": "Aktualizovať sumu odoslania"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Upozornenie: Xaman vás NIKDY nepožiada o odoslanie platby na Xaman. Tím Xaman NEPOSIELA airdropy a NEPONÚKA používateľom bezplatné odmeny ani kryptomeny.",
+    "ifSomeoneThenScam": "Ak vás niekto požiada o odoslanie platby na Xaman, odmietnite to: niekto sa vás pokúša podviesť.",
+    "onlyProceedIf": "Pokračujte len vtedy, ak ste si 100% istí, že komunikujete s dôveryhodnou stranou, a ak ste si 100% istí, že chcete pokračovať.",
+    "yes": "Áno",
+    "no": "Nie",
+    "beforeTransactionSomeQuestions": "Ste takmer na konci, ale predtým, ako budete môcť pokračovať k detailom transakcie, musíme vám položiť niekoľko otázok.",
+    "isSomeonePromising": "Sľubuje vám niekto bezplatné odmeny, airdropy alebo kryptomeny?",
+    "isSomeoneSupport": "Žiada vás niekto, kto ponúka podporu, aby ste podpísali túto transakciu?",
+    "isSomeoneTeam": "Žiada vás niekto, kto tvrdí, že je súčasťou tímu Xaman, XRPL Labs alebo Ripple, aby ste podpísali túto transakciu?",
+    "areYouAwareThatNonReversible": "Dá sa blockchai nová transakcia zvrátiť?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[dnes o] LT",

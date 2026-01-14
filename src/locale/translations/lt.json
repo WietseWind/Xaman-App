@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Prašome atnaujinti operaciją išleisti daugiausia %{amount}",
     "updateBtn": "Atnaujinti siuntimo sumą"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Įspėjimas: Xaman NIEKADA neprašys jūsų siųsti mokėjimo Xaman. Xaman komanda NESIUNČIA airdrop ir NESIŪLO naudotojams nemokamų apdovanojimų ar kriptovaliutos.",
+    "ifSomeoneThenScam": "Jei kas nors prašo jūsų siųsti mokėjimą Xaman, atsisakykite: kažkas bando jus apgauti.",
+    "onlyProceedIf": "Tęskite tik jei esate 100% tikri, kad bendraujate su patikima šalimi, ir jei esate 100% tikri, kad norite tęsti.",
+    "yes": "Taip",
+    "no": "Ne",
+    "beforeTransactionSomeQuestions": "Jūs beveik baigėte, bet prieš tęsiant su operacijos detalėmis, turime užduoti jums kelis klausimus.",
+    "isSomeonePromising": "Ar kas nors žada jums nemokamų apdovanojimų, airdrop ar kriptovaliutos?",
+    "isSomeoneSupport": "Ar kas nors, siūlantis pagalbą, prašo jūsų pasirašyti šią operaciją?",
+    "isSomeoneTeam": "Ar kas nors, teigiantis esąs Xaman, XRPL Labs ar Ripple komandos narys, prašo jūsų pasirašyti šią operaciją?",
+    "areYouAwareThatNonReversible": "Ar galima atšaukti blokų grandinės operaciją?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Šiandien] LT",

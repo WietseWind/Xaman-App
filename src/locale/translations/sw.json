@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Sasisha Sending Kiasi"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Onyo: Xaman KAMWE haitakuomba kutuma malipo kwa Xaman. Timu ya Xaman HAITUMAI airdrops, na HAITOI zawadi za bure au cryptocurrency kwa watumiaji.",
+    "ifSomeoneThenScam": "Ikiwa mtu anakuomba kutuma malipo kwa Xaman, kataa: mtu anajaribu kukuhadaa.",
+    "onlyProceedIf": "Endelea tu ikiwa una uhakika wa 100% kwamba unashirikiana na upande unaoaminika, na ikiwa una uhakika wa 100% kwamba unataka kuendelea.",
+    "yes": "Ndiyo",
+    "no": "Hapana",
+    "beforeTransactionSomeQuestions": "Umekaribia kufika, lakini kabla ya kuendelea na maelezo ya muamala, tunahitaji kukuuliza maswali machache.",
+    "isSomeonePromising": "Je, mtu anakuahidi zawadi za bure, airdrops, au cryptocurrency?",
+    "isSomeoneSupport": "Je, unaombwa kusaini muamala huu na mtu anayetoa msaada?",
+    "isSomeoneTeam": "Je, unaombwa kusaini muamala huu na mtu anayedai kuwa sehemu ya timu ya Xaman, XRPL Labs au Ripple?",
+    "areYouAwareThatNonReversible": "Je, muamala wa blockchain unaweza kubatilishwa?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[leo saa] LT",

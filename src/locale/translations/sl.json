@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Opozorilo: Xaman vas NIKOLI ne bo prosil, da pošljete plačilo na Xaman. Ekipa Xaman NE pošilja airdropov in NE ponuja uporabnikom brezplačnih nagrad ali kriptovalut.",
+    "ifSomeoneThenScam": "Če vas nekdo prosi, da pošljete plačilo na Xaman, zavrnite: nekdo vas poskuša prevarati.",
+    "onlyProceedIf": "Nadaljujte le, če ste 100% prepričani, da komunicirate z zaupanja vredno stranko, in če ste 100% prepričani, da želite nadaljevati.",
+    "yes": "Da",
+    "no": "Ne",
+    "beforeTransactionSomeQuestions": "Skoraj ste tam, vendar preden lahko nadaljujete s podrobnostmi transakcije, vam moramo zastaviti nekaj vprašanj.",
+    "isSomeonePromising": "Ali vam nekdo obljublja brezplačne nagrade, airdrop ali kriptovaluto?",
+    "isSomeoneSupport": "Ali vas nekdo, ki ponuja podporo, prosi, da podpišete to transakcijo?",
+    "isSomeoneTeam": "Ali vas nekdo, ki trdi, da je del ekipe Xaman, XRPL Labs ali Ripple, prosi, da podpišete to transakcijo?",
+    "areYouAwareThatNonReversible": "Ali je mogoče transakcijo na verigi blokov razveljaviti?"
   }
 }

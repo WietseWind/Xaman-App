@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Warning: Xaman will NEVER ask you to send a payment to Xaman. The Xaman team DOES NOT send airdrops, and DOES NOT offer free rewards or cryptocurrency to users.",
+    "ifSomeoneThenScam": "If someone asks you to send a payment to Xaman, decline it: someone is trying to scam you.",
+    "onlyProceedIf": "Only proceed if you are 100% certain you are interacting with a trusted party, and if you are 100% certain you want to proceed.",
+    "yes": "Yes",
+    "no": "No",
+    "beforeTransactionSomeQuestions": "You're almost there, but before you can continue to the transaction details, we need to ask you a few questions.",
+    "isSomeonePromising": "Is someone promising you free rewards, airdrops, or cryptocurrency?",
+    "isSomeoneSupport": "Are you being asked to sign this transaction by someone who is offering support?",
+    "isSomeoneTeam": "Are you being asked to sign this transaction by someone who tells you they are part of the Xaman, XRPL Labs or Ripple team?",
+    "areYouAwareThatNonReversible": "Can a blockchain transaction be reversed?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Today at] LT",

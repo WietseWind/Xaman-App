@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "A maximum összeg, amit küldhet: %{amount}",
     "updateToSatisfyMissingAmount": "Kérem, frissítse a tranzakcióját, hogy legfeljebb %{amount}-ot költsön",
     "updateBtn": "Küldési összeg frissítése"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Figyelmeztetés: A Xaman SOHA nem kéri, hogy küldjön fizetést a Xamannak. A Xaman csapata NEM küld airdropokat, és NEM kínál ingyenes jutalmakat vagy kriptovalutát a felhasználóknak.",
+    "ifSomeoneThenScam": "Ha valaki arra kéri, hogy küldjön fizetést a Xamannak, utasítsa el: valaki megpróbálja átver ni Önt.",
+    "onlyProceedIf": "Csak akkor folytassa, ha 100%-ig biztos abban, hogy megbízható féllel áll kapcsolatban, és ha 100%-ig biztos abban, hogy folytatni szeretné.",
+    "yes": "Igen",
+    "no": "Nem",
+    "beforeTransactionSomeQuestions": "Már majdnem kész van, de mielőtt folytathatná a tranzakció részleteivel, néhány kérdést kell feltennünk Önnek.",
+    "isSomeonePromising": "Ígér Önnek valaki ingyenes jutalmakat, airdropokat vagy kriptovalutát?",
+    "isSomeoneSupport": "Kéri-e Önt valaki, aki támogatást kínál, hogy írja alá ezt a tranzakciót?",
+    "isSomeoneTeam": "Kéri-e Önt valaki, aki azt állítja, hogy a Xaman, XRPL Labs vagy Ripple csapat tagja, hogy írja alá ezt a tranzakciót?",
+    "areYouAwareThatNonReversible": "Visszafordítható-e egy blockchain tranzakció?"
   }
 }

@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "ਚੇਤਾਵਨੀ: Xaman ਤੁਹਾਨੂੰ ਕਦੇ ਵੀ Xaman ਨੂੰ ਭੁਗਤਾਨ ਭੇਜਣ ਲਈ ਨਹੀਂ ਕਹੇਗਾ। Xaman ਟੀਮ airdrops ਨਹੀਂ ਭੇਜਦੀ, ਅਤੇ ਉਪਭੋਗਤਾਵਾਂ ਨੂੰ ਮੁਫ਼ਤ ਇਨਾਮ ਜਾਂ ਕ੍ਰਿਪਟੋਕਰੰਸੀ ਦੀ ਪੇਸ਼ਕਸ਼ ਨਹੀਂ ਕਰਦੀ।",
+    "ifSomeoneThenScam": "ਜੇਕਰ ਕੋਈ ਤੁਹਾਨੂੰ Xaman ਨੂੰ ਭੁਗਤਾਨ ਭੇਜਣ ਲਈ ਕਹੇ, ਤਾਂ ਇਨਕਾਰ ਕਰੋ: ਕੋਈ ਤੁਹਾਡੇ ਨਾਲ ਧੋਖਾ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਿਹਾ ਹੈ।",
+    "onlyProceedIf": "ਅੱਗੇ ਤਾਂ ਹੀ ਵਧੋ ਜੇਕਰ ਤੁਸੀਂ 100% ਯਕੀਨੀ ਹੋ ਕਿ ਤੁਸੀਂ ਭਰੋਸੇਯੋਗ ਧਿਰ ਨਾਲ ਗੱਲਬਾਤ ਕਰ ਰਹੇ ਹੋ, ਅਤੇ ਜੇਕਰ ਤੁਸੀਂ 100% ਯਕੀਨੀ ਹੋ ਕਿ ਤੁਸੀਂ ਅੱਗੇ ਵਧਣਾ ਚਾਹੁੰਦੇ ਹੋ।",
+    "yes": "ਹਾਂ",
+    "no": "ਨਹੀਂ",
+    "beforeTransactionSomeQuestions": "ਤੁਸੀਂ ਲਗਭਗ ਪਹੁੰਚ ਗਏ ਹੋ, ਪਰ ਲੈਣ-ਦੇਣ ਦੇ ਵੇਰਵਿਆਂ 'ਤੇ ਜਾਣ ਤੋਂ ਪਹਿਲਾਂ, ਸਾਨੂੰ ਤੁਹਾਨੂੰ ਕੁਝ ਸਵਾਲ ਪੁੱਛਣੇ ਹਨ।",
+    "isSomeonePromising": "ਕੀ ਕੋਈ ਤੁਹਾਨੂੰ ਮੁਫ਼ਤ ਇਨਾਮਾਂ, airdrops, ਜਾਂ ਕ੍ਰਿਪਟੋਕਰੰਸੀ ਦਾ ਵਾਅਦਾ ਕਰ ਰਿਹਾ ਹੈ?",
+    "isSomeoneSupport": "ਕੀ ਸਹਾਇਤਾ ਦੀ ਪੇਸ਼ਕਸ਼ ਕਰਨ ਵਾਲਾ ਕੋਈ ਵਿਅਕਤੀ ਤੁਹਾਨੂੰ ਇਸ ਲੈਣ-ਦੇਣ 'ਤੇ ਦਸਤਖਤ ਕਰਨ ਲਈ ਕਹਿ ਰਿਹਾ ਹੈ?",
+    "isSomeoneTeam": "ਕੀ ਕੋਈ ਜੋ Xaman, XRPL Labs ਜਾਂ Ripple ਟੀਮ ਦਾ ਹਿੱਸਾ ਹੋਣ ਦਾ ਦਾਅਵਾ ਕਰਦਾ ਹੈ, ਤੁਹਾਨੂੰ ਇਸ ਲੈਣ-ਦੇਣ 'ਤੇ ਦਸਤਖਤ ਕਰਨ ਲਈ ਕਹਿ ਰਿਹਾ ਹੈ?",
+    "areYouAwareThatNonReversible": "ਕੀ ਬਲਾਕਚੇਨ ਲੈਣ-ਦੇਣ ਨੂੰ ਉਲਟਾਇਆ ਜਾ ਸਕਦਾ ਹੈ?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Today at] LT",

@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Päivitä tapahtumasi lähettääksesi enintään %{amount}",
     "updateBtn": "Päivitä lähetysmäärä"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Varoitus: Xaman EI KOSKAAN pyydä sinua lähettämään maksua Xamanille. Xaman-tiimi EI lähetä airdropeja, EIKÄ tarjoa ilmaisia palkintoja tai kryptovaluuttaa käyttäjille.",
+    "ifSomeoneThenScam": "Jos joku pyytää sinua lähettämään maksun Xamanille, kieltäydy: joku yrittää huijata sinua.",
+    "onlyProceedIf": "Jatka vain, jos olet 100% varma, että olet tekemisissä luotettavan osapuolen kanssa, ja jos olet 100% varma, että haluat jatkaa.",
+    "yes": "Kyllä",
+    "no": "Ei",
+    "beforeTransactionSomeQuestions": "Olet melkein perillä, mutta ennen kuin voit jatkaa tapahtuman yksityiskohtiin, meidän täytyy kysyä sinulta muutama kysymys.",
+    "isSomeonePromising": "Lupaako joku sinulle ilmaisia palkintoja, airdropeja tai kryptovaluuttaa?",
+    "isSomeoneSupport": "Pyytääkö joku, joka tarjoaa tukea, sinua allekirjoittamaan tämän tapahtuman?",
+    "isSomeoneTeam": "Pyytääkö joku, joka väittää olevansa osa Xaman-, XRPL Labs- tai Ripple-tiimiä, sinua allekirjoittamaan tämän tapahtuman?",
+    "areYouAwareThatNonReversible": "Voidaanko lohkoketjutapahtuma peruuttaa?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[tänään] [klo] LT",

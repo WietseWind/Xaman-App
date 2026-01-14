@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "最大 %{amount} を使用するようにトランザクションを更新してください",
     "updateBtn": "送信金額を更新"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "警告：XamanがXamanへの支払いを求めることは決してありません。Xamanチームはエアドロップを送信せず、ユーザーに無料の報酬や暗号通貨を提供することもありません。",
+    "ifSomeoneThenScam": "誰かがXamanへの支払いを求めた場合は、拒否してください。誰かがあなたを詐欺しようとしています。",
+    "onlyProceedIf": "信頼できる相手とやり取りしていることが100%確実で、続行したいことが100%確実な場合にのみ続行してください。",
+    "yes": "はい",
+    "no": "いいえ",
+    "beforeTransactionSomeQuestions": "もう少しで完了ですが、取引の詳細に進む前に、いくつかの質問にお答えください。",
+    "isSomeonePromising": "誰かが無料の報酬、エアドロップ、または暗号通貨を約束していますか？",
+    "isSomeoneSupport": "サポートを提供している人から、この取引に署名するよう求められていますか？",
+    "isSomeoneTeam": "Xaman、XRPL Labs、またはRippleチームの一員だと主張する人から、この取引に署名するよう求められていますか？",
+    "areYouAwareThatNonReversible": "ブロックチェーン取引は取り消すことができますか？"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[今日] LT",

@@ -1443,5 +1443,17 @@
     "updateToMaxSpendingAmount": "The maximum amount you can send is %{amount}",
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
+  },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Προειδοποίηση: Το Xaman δεν θα σας ζητήσει ΠΟΤΕ να στείλετε πληρωμή στο Xaman. Η ομάδα του Xaman ΔΕΝ στέλνει airdrops και ΔΕΝ προσφέρει δωρεάν ανταμοιβές ή κρυπτονομίσματα στους χρήστες.",
+    "ifSomeoneThenScam": "Αν κάποιος σας ζητήσει να στείλετε πληρωμή στο Xaman, αρνηθείτε: κάποιος προσπαθεί να σας εξαπατήσει.",
+    "onlyProceedIf": "Συνεχίστε μόνο αν είστε 100% σίγουροι ότι αλληλεπιδράτε με ένα αξιόπιστο μέρος και αν είστε 100% σίγουροι ότι θέλετε να συνεχίσετε.",
+    "yes": "Ναι",
+    "no": "Όχι",
+    "beforeTransactionSomeQuestions": "Σχεδόν τελειώσατε, αλλά πριν συνεχίσετε στις λεπτομέρειες της συναλλαγής, πρέπει να σας κάνουμε μερικές ερωτήσεις.",
+    "isSomeonePromising": "Σας υπόσχεται κάποιος δωρεάν ανταμοιβές, airdrops ή κρυπτονομίσματα;",
+    "isSomeoneSupport": "Σας ζητείται να υπογράψετε αυτή τη συναλλαγή από κάποιον που προσφέρει υποστήριξη;",
+    "isSomeoneTeam": "Σας ζητείται να υπογράψετε αυτή τη συναλλαγή από κάποιον που ισχυρίζεται ότι είναι μέλος της ομάδας Xaman, XRPL Labs ή Ripple;",
+    "areYouAwareThatNonReversible": "Μπορεί μια συναλλαγή blockchain να αντιστραφεί;"
   }
 }

@@ -44,6 +44,7 @@ export class Payload {
     payload!: PayloadReferenceType;
     origin!: PayloadOrigin;
     generated!: boolean;
+    risk!: { __warn_user: boolean } & { [key: string]: number | boolean };
 
     /**
      * get payload object from payload UUID or payload Json
@@ -90,6 +91,10 @@ export class Payload {
             pathfinding,
             signers, // only can be signed by tx Account or any
             custom_instruction,
+        };
+
+        instance.risk = {
+            __warn_user: false,
         };
 
         // set the payload and transaction type
@@ -164,8 +169,8 @@ export class Payload {
      * @param object
      */
     assign = (object: PayloadType) => {
-        const { payload, application, meta } = object;
-        Object.assign(this, { payload, application, meta });
+        const { payload, application, meta, risk } = object;
+        Object.assign(this, { payload, application, meta, risk: risk || { __warn_user: false } });
     };
 
     /**
@@ -196,6 +201,8 @@ export class Payload {
                         reject(new Error(Localize.t('payload.payloadExpired')));
                         return;
                     }
+
+                    // logger.debug('Payload fetched', JSON.stringify(response, null, 2));
 
                     resolve(response);
                 })

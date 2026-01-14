@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Please update your transaction to spend at most %{amount}",
     "updateBtn": "Update Sending Amount"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "హెచ్చరిక: Xaman కు చెల్లింపు పంపమని Xaman ఎప్పుడూ అడగదు. Xaman టీమ్ airdrops పంపదు, మరియు వినియోగదారులకు ఉచిత బహుమతులు లేదా క్రిప్టోకరెన్సీ అందించదు.",
+    "ifSomeoneThenScam": "ఎవరైనా Xaman కు చెల్లింపు పంపమని అడిగితే, తిరస్కరించండి: ఎవరో మిమ్మల్ని మోసం చేయడానికి ప్రయత్నిస్తున్నారు.",
+    "onlyProceedIf": "మీరు నమ్మకమైన పక్షంతో సంభాషిస్తున్నారని 100% ఖచ్చితంగా ఉంటే మాత్రమే కొనసాగించండి, మరియు మీరు కొనసాగించాలనుకుంటున్నారని 100% ఖచ్చితంగా ఉంటే మాత్రమే.",
+    "yes": "అవును",
+    "no": "కాదు",
+    "beforeTransactionSomeQuestions": "మీరు దాదాపు చేరుకున్నారు, కానీ లావాదేవీ వివరాలకు కొనసాగించే ముందు, మేము మీకు కొన్ని ప్రశ్నలు అడగాలి.",
+    "isSomeonePromising": "ఎవరైనా మీకు ఉచిత బహుమతులు, airdrops లేదా క్రిప్టోకరెన్సీ వాగ్దానం చేస్తున్నారా?",
+    "isSomeoneSupport": "సపోర్ట్ అందిస్తున్న ఎవరైనా ఈ లావాదేవీపై సంతకం చేయమని మిమ్మల్ని అడుగుతున్నారా?",
+    "isSomeoneTeam": "Xaman, XRPL Labs లేదా Ripple టీమ్‌లో భాగమని చెప్పుకునే ఎవరైనా ఈ లావాదేవీపై సంతకం చేయమని మిమ్మల్ని అడుగుతున్నారా?",
+    "areYouAwareThatNonReversible": "బ్లాక్‌చెయిన్ లావాదేవీని రద్దు చేయవచ్చా?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[నేడు] LT",

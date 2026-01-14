@@ -1444,6 +1444,18 @@
     "updateToSatisfyMissingAmount": "Harap perbarui transaksi Anda untuk menghabiskan paling banyak  %{amount} ",
     "updateBtn": "Perbarui Jumlah Pengiriman"
   },
+  "payloadRiskWarning": {
+    "postAcceptedHeader": "Peringatan: Xaman TIDAK AKAN PERNAH meminta Anda mengirim pembayaran ke Xaman. Tim Xaman TIDAK mengirim airdrop, dan TIDAK menawarkan hadiah gratis atau cryptocurrency kepada pengguna.",
+    "ifSomeoneThenScam": "Jika seseorang meminta Anda mengirim pembayaran ke Xaman, tolak: seseorang sedang mencoba menipu Anda.",
+    "onlyProceedIf": "Lanjutkan hanya jika Anda 100% yakin bahwa Anda berinteraksi dengan pihak yang terpercaya, dan jika Anda 100% yakin ingin melanjutkan.",
+    "yes": "Ya",
+    "no": "Tidak",
+    "beforeTransactionSomeQuestions": "Anda hampir sampai, tetapi sebelum Anda dapat melanjutkan ke detail transaksi, kami perlu mengajukan beberapa pertanyaan kepada Anda.",
+    "isSomeonePromising": "Apakah seseorang menjanjikan Anda hadiah gratis, airdrop, atau cryptocurrency?",
+    "isSomeoneSupport": "Apakah Anda diminta untuk menandatangani transaksi ini oleh seseorang yang menawarkan dukungan?",
+    "isSomeoneTeam": "Apakah Anda diminta untuk menandatangani transaksi ini oleh seseorang yang mengaku sebagai bagian dari tim Xaman, XRPL Labs, atau Ripple?",
+    "areYouAwareThatNonReversible": "Bisakah transaksi blockchain dibatalkan?"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Hari ini pukul] LT",
