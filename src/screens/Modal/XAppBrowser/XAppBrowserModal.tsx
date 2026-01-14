@@ -159,6 +159,8 @@ class XAppBrowserModal extends Component<Props, State> {
     };
 
     onClose = (data?: { refreshEvents?: boolean }) => {
+        const { onClose } = this.props;
+
         // if refresh events flag set, publish a sign request update event
         // this will refresh the event list
         if (get(data, 'refreshEvents', false)) {
@@ -169,6 +171,11 @@ class XAppBrowserModal extends Component<Props, State> {
 
         // close the xApp modal
         Navigator.dismissModal();
+        if (typeof onClose === 'function') {
+            setTimeout(() => {
+                onClose();
+            }, 100);
+        }
 
         return true;
     };

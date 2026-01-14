@@ -16,6 +16,7 @@ export interface Props {
     origin?: XAppOrigin;
     originData?: any;
     noSwitching?: boolean;
+    onClose?: () => void;
     altHeader?: {
         left?: {
             icon?: Extract<keyof typeof Images, string>;

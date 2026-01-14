@@ -34,6 +34,7 @@ import { type XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 import { XAppOrigin } from '@common/libs/payload';
 import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 import { TokenAvatar } from '@components/Modules/TokenElement';
+import AccountService from '@services/AccountService';
 
 /* Types ==================================================================== */
 interface Props {
@@ -347,6 +348,9 @@ class TokensList extends Component<Props, State> {
                         AppScreens.Modal.XAppBrowser,
                         {
                             identifier,
+                            onClose: () => {
+                                AccountService.updateAccountInfo(account.address);
+                            },
                             containerStyle: {
                                 marginTop: 0,
                             },
