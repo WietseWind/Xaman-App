@@ -43,6 +43,7 @@ import {
     LedgerEntryRequest,
     LedgerEntryResponse,
 } from '@common/libs/ledger/types/methods';
+import { AccountAdvisoryResolveType, AccountNameResolveType } from '@services/ResolverService';
 
 /* types ==================================================================== */
 export interface Props {}
@@ -55,6 +56,8 @@ export interface State {
     contacts: Realm.Results<ContactModel>;
     dataSource: any[];
 }
+
+const XAMAN_BACKEND_API_TIMEOUT = 10_000;
 
 enum PassableChecks {
     AMOUNT_CREATE_ACCOUNT = 'AMOUNT_CREATE_ACCOUNT',
@@ -111,10 +114,26 @@ class RecipientStep extends Component<Props, State> {
             isSearching: true,
         });
 
+        // console.log('lookup')
+
         const { to, tag } = NormalizeDestination(result);
 
         if (to) {
-            const accountInfo = await ResolverService.getAccountName(to, tag);
+            // console.log('ifto')
+            const accountInfo = await Promise.race([
+                ResolverService.getAccountName(to, tag),
+                new Promise((resolve: (res: AccountNameResolveType) => void) => { 
+                    // console.log('resolving lookup')
+                    setTimeout(() => {
+                        // console.log('resolving lookup timeout, proceed')
+                        resolve({
+                            name: '',
+                            address: to,
+                            tag: toNumber(tag) || undefined,
+                        });
+                    }, XAMAN_BACKEND_API_TIMEOUT);
+                }),
+            ]);
 
             this.setState({
                 dataSource: this.getSearchResultSource([
@@ -132,6 +151,7 @@ class RecipientStep extends Component<Props, State> {
             // select as destination
             setDestination({ name: accountInfo.name || '', address: to, tag: toNumber(tag) || undefined });
         } else {
+            // console.log('notif-to')
             this.doLookUp(result.to);
         }
     };
@@ -210,7 +230,19 @@ class RecipientStep extends Component<Props, State> {
 
             // if text length is more than 4 do server lookup
             if (searchText?.length >= 4) {
-                BackendService.lookup(searchText)
+                // console.log('lookup')
+                const lookupResults = Promise.race([
+                    BackendService.lookup(searchText),
+                    new Promise((resolve: (res: void) => void) => {
+                        // console.log('searchtext  lookup')
+                        setTimeout(() => {
+                            // console.log('searchtext lookup timeout, proceed')
+                            resolve();
+                        }, XAMAN_BACKEND_API_TIMEOUT);
+                    }),
+                ]);
+
+                lookupResults
                     .then((res: any) => {
                         if (!isEmpty(res) && res.error !== true) {
                             if (!isEmpty(res.matches)) {
@@ -268,6 +300,8 @@ class RecipientStep extends Component<Props, State> {
             searchText,
         });
 
+        // console.log('onsearch')
+
         if (searchText && searchText?.length > 0) {
             // check if it's a valid address
             // eslint-disable-next-line prefer-regex-literals
@@ -276,6 +310,7 @@ class RecipientStep extends Component<Props, State> {
             );
 
             if (possibleAccountAddress.test(searchText)) {
+                // console.log('accountlookup')
                 this.doAccountLookUp({ to: searchText });
             } else {
                 this.doLookUp(searchText);
@@ -418,12 +453,39 @@ class RecipientStep extends Component<Props, State> {
                 return;
             }
 
+            // console.log('checkandnext')
+
             if (!destinationInfo) {
                 // check for account exist and potential destination tag required
-                destinationInfo = await ResolverService.getAccountAdvisoryInfo(destination.address);
+                // console.log('advisory')
+                try {
+                    destinationInfo = await Promise.race([
+                        ResolverService.getAccountAdvisoryInfo(destination.address),
+                        new Promise((resolve: (res: AccountAdvisoryResolveType) => void) => {
+                            // console.log('advisory lookup')
+                            setTimeout(() => {
+                                // console.log('advisory lookup timeout, proceed')
+                                resolve({
+                                    exist: true,
+                                    danger: 'NONE',
+                                });
+                            }, XAMAN_BACKEND_API_TIMEOUT);
+                        }),
+                    ]);
+
+                } catch (e) {
+                    // console.log('advisory error', e.message)
+                    destinationInfo = {
+                        exist: true,
+                        danger: 'NONE',
+                    };
+                }
+                
                 // set destination account info
                 setDestinationInfo(destinationInfo);
             }
+
+            // console.log('___1')
 
             // check for account risk and scam
             if (
@@ -453,6 +515,8 @@ class RecipientStep extends Component<Props, State> {
                 return;
             }
 
+            // console.log('___2')
+
             if (destinationInfo.danger === 'CONFIRMED' && passedChecks.indexOf(PassableChecks.CONFIRMED_SCAM) === -1) {
                 setTimeout(() => {
                     Navigator.showOverlay<FlaggedDestinationOverlayProps>(AppScreens.Overlay.FlaggedDestination, {
@@ -463,6 +527,8 @@ class RecipientStep extends Component<Props, State> {
                 }, 50);
                 return;
             }
+
+            // console.log('___3')
 
             // account doesn't exist no need to check account risk
             if (!destinationInfo.exist) {
@@ -549,6 +615,8 @@ class RecipientStep extends Component<Props, State> {
                     return;
                 }
             }
+
+            // console.log('___4')
 
             // check if recipient have proper trustline for receiving this IOU
             // ignore if the recipient is the issuer, or if approved to send alt tx
@@ -674,6 +742,8 @@ class RecipientStep extends Component<Props, State> {
                 }
             }
 
+            // console.log('___5')
+
             // if account is set to black hole then reject sending
             // IMMEDIATE REJECT
             if (destinationInfo.blackHole) {
@@ -698,6 +768,8 @@ class RecipientStep extends Component<Props, State> {
                 }, 50);
                 return;
             }
+
+            // console.log('___6')
 
             // check for xrp income disallow
             if (
@@ -733,6 +805,8 @@ class RecipientStep extends Component<Props, State> {
                 return;
             }
 
+            // console.log('___7')
+
             // check for destination tag require
             if (destinationInfo.requireDestinationTag && (!destination.tag || Number(destination.tag) === 0)) {
                 setTimeout(() => {
@@ -757,8 +831,9 @@ class RecipientStep extends Component<Props, State> {
                     destination_account: destination.address,
                 });
 
+                // console.log('___7a', isAuthorized)
 
-                if (!((isAuthorized as any) || {})?.deposit_authorized) {
+                if (((isAuthorized as any) || {})?.deposit_authorized === false) {
                     // Not authorised, let's check if it's a credential thing
                     const ownedCredentials = (await NetworkService.send<AccountObjectsRequest, AccountObjectsResponse>({
                         command: 'account_objects',
@@ -771,23 +846,28 @@ class RecipientStep extends Component<Props, State> {
                         notAuthorized = true;
                     }
 
+                    // console.log('___7b', ownedCredentials)
+
                     // So this account has credentials, let's see if there's one that would satisfy the
                     // destination's PreAuth
-                    const credentialMatch = (await Promise.all(ownedCredentials?.map((credential: {
-                        Issuer: string;
-                        CredentialType: string;
-                    }) => {
-                        return NetworkService.send<LedgerEntryRequest, LedgerEntryResponse>({
-                            command: 'ledger_entry',
-                            deposit_preauth: {
-                                owner: destination.address,
-                                authorized_credentials: [{
-                                    issuer: credential.Issuer,
-                                    credential_type: credential.CredentialType,
-                                }],
-                            },
-                        });
-                    })) as any)
+                    const credentialMatch = (ownedCredentials
+                        ? (await Promise.all(ownedCredentials?.map((credential: {
+                            Issuer: string;
+                            CredentialType: string;
+                        }) => {
+                            // console.log('___7c')
+                            return NetworkService.send<LedgerEntryRequest, LedgerEntryResponse>({
+                                command: 'ledger_entry',
+                                deposit_preauth: {
+                                    owner: destination.address,
+                                    authorized_credentials: [{
+                                        issuer: credential.Issuer,
+                                        credential_type: credential.CredentialType,
+                                    }],
+                                },
+                            });
+                        })) as any)
+                    : [])
                         ?.filter((authorisation: {
                             node: {
                                 AuthorizeCredentials: { Credential: { Issuer: string; CredentialType: string } }[];
@@ -799,6 +879,8 @@ class RecipientStep extends Component<Props, State> {
                             };
                         }) => authorisation?.node?.AuthorizeCredentials?.[0]?.Credential)
                         ?.[0];
+
+                    // console.log('___7d', credentialMatch)
 
                     if (credentialMatch) {
                         const useCredential = ownedCredentials?.filter((credential: {
@@ -816,7 +898,6 @@ class RecipientStep extends Component<Props, State> {
                             notAuthorized = true;
                         }
                     } else {
-                        // No match, let's just inform the user, we cannot satisfy this
                         notAuthorized = true;
                     }
 
@@ -839,6 +920,8 @@ class RecipientStep extends Component<Props, State> {
                     }
                 }
             };
+
+            // console.log('___8')
         } catch (e) {
             Toast(Localize.t('send.unableGetRecipientAccountInfoPleaseTryAgain'));
             // console.log(e.message, e.stack);
