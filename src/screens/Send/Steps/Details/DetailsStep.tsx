@@ -84,13 +84,13 @@ class DetailsStep extends Component<Props, State> {
                 );
             })
             .catch(() => {
-                Alert.alert(
-                    Localize.t('global.warning'),
-                    Localize.t('global.unableToFetchCurrencyRate'),
-                    [
-                        { text: Localize.t('global.ok') },
-                    ],
-                );
+                // Alert.alert(
+                //     Localize.t('global.warning'),
+                //     Localize.t('global.unableToFetchCurrencyRate'),
+                //     [
+                //         { text: Localize.t('global.ok') },
+                //     ],
+                // );
             });
     };
 

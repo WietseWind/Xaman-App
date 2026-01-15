@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, InteractionManager, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, InteractionManager } from 'react-native';
 
 import SummaryStepStyle from '@screens/Send/Steps/Summary/styles';
 import { BackendService, LedgerService, NetworkService, StyleService } from '@services';
@@ -243,13 +243,13 @@ class PaymentTemplate extends Component<Props, State> {
                 this.setState({
                     isLoadingRate: false,
                 });
-                Alert.alert(
-                    Localize.t('global.warning'),
-                    Localize.t('global.unableToFetchCurrencyRate'),
-                    [
-                        { text: Localize.t('global.ok') },
-                    ],
-                );
+                // Alert.alert(
+                //     Localize.t('global.warning'),
+                //     Localize.t('global.unableToFetchCurrencyRate'),
+                //     [
+                //         { text: Localize.t('global.ok') },
+                //     ],
+                // );
             });
     };
 
