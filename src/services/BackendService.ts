@@ -560,11 +560,12 @@ class BackendService {
             // No fee
         }
 
-        // Default, so we know if we get a 6 drop Fee payment there has been a timeout on
+        // Default, so we know if we get a 0 drop Fee payment there has been a timeout on
         // fetching the available fee.
+        // This will fail but that's fine.
 
         return {
-            availableFees: [{ type: 'LOW', value: '6' }],
+            availableFees: [{ type: 'LOW', value: '0' }],
             feeHooks: 0,
             feePercentage: 0,
             suggested: 'LOW',
