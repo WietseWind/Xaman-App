@@ -1152,6 +1152,7 @@
     "addToContacts": "Adăugați la contacte.",
     "sendingFailed": "Trimiterea a eşuat !",
     "couldNotVerifyTransaction": "Nu a putut verifica finalitatea tranzacției",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Tranzacția dvs. a fost semnată și depusă cu succes, cu toate acestea: nu am putut confirma finalitatea tranzacției.\r\n\r\nAcest lucru poate fi cauzat de o problemă la conexiunea de internet sau o sarcină sporită pe nodul registrului XRP la care sunteți conectat(ă).\r\n\r\nVă rugăm să verificați manual dacă această tranzacție aparen istoricul tranzacțiilor (Evenimente).",
     "submitFailed": "Trimiterea a eşuat !",
     "somethingWentWrong": "Ceva nu a funcționat !",

@@ -1152,6 +1152,7 @@
     "addToContacts": "संपर्कांमध्ये जोडा",
     "sendingFailed": "पाठविणे अयशस्वी!",
     "couldNotVerifyTransaction": "Couldn't verify transaction finality",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Your transaction has been signed and submitted successfully, however, we could not confirm transaction finality.\r\n\r\nThis can be caused by an internet connection hiccup or increased load on the XRP Ledger node you are connected to.\r\n\r\nPlease manually verify if this transaction shows in your transaction history (Events).",
     "submitFailed": "सबमिशन अयशस्वी!",
     "somethingWentWrong": "काहीतरी चूक झाली!",

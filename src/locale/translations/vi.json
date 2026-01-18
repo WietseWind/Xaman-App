@@ -1152,6 +1152,7 @@
     "addToContacts": "Thêm vào liên lạc",
     "sendingFailed": "Gửi không thành công!",
     "couldNotVerifyTransaction": "Không thể xác minh giao dịch hoàn tất",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Giao dịch của bạn đã được ký và gửi thành công, tuy nhiên, chúng tôi không thể xác nhận giao dịch hoàn tất.\r\n\r\nĐiều này có thể do kết nối internet gián đoạn hoặc tải tăng cao trên nút XRP Ledger mà bạn đang kết nối.\r\n\r\nVui lòng xác minh thủ công xem giao dịch này có hiển thị trong lịch sử giao dịch (Sự kiện) của bạn không.",
     "submitFailed": "Trình không thành công!",
     "somethingWentWrong": "Đã xảy ra lỗi!",

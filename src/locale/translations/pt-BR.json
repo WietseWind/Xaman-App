@@ -1152,6 +1152,7 @@
     "addToContacts": "Adicionar aos contatos",
     "sendingFailed": "Falha ao enviar!",
     "couldNotVerifyTransaction": "Não foi possível verificar a finalidade da transação",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Sua transação foi assinada e enviada com sucesso, no entanto: não poderíamos confirmar a finalidade da transação.\n\nIsso pode ser causado por um soluço de conexão à internet ou aumento de carga no nó do XRP Ledger que você está conectado.\n\nPor favor, verifique manualmente se esta transação mostra em seu histórico de transações (Eventos).",
     "submitFailed": "Falha ao submeter!",
     "somethingWentWrong": "Alguma coisa correu mal!",

@@ -1152,6 +1152,7 @@
     "addToContacts": "పరిచయాలకు జోడించండి",
     "sendingFailed": "పంపడం విఫలమైంది!",
     "couldNotVerifyTransaction": "వాటాను నిర్ధారణ చేయలేకపోయింది",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Your transaction has been signed and submitted successfully, however, we could not confirm transaction finality.\r\n\r\nThis can be caused by an internet connection hiccup or increased load on the XRP Ledger node you are connected to.\r\n\r\nPlease manually verify if this transaction shows in your transaction history (Events).",
     "submitFailed": "సమర్పణ విఫలమైంది!",
     "somethingWentWrong": "ఎక్కడో తేడ జరిగింది!",

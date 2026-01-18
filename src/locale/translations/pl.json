@@ -1152,6 +1152,7 @@
     "addToContacts": "Dodaj do kontaktów",
     "sendingFailed": "Błąd wysyłania!",
     "couldNotVerifyTransaction": "Nie udało się zweryfikować zakończenia transakcji",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Twoja transakcja została podpisana i przesłana pomyślnie, jednak: nie mogliśmy potwierdzić zakończenia transakcji.\r\n\r\nMoże to być spowodowane przeszkodą w połączeniu internetowym lub zwiększonym obciążeniem węzła XRP Ledger, z którym jesteś połączony.\r\n\r\nSprawdź ręcznie, czy ta transakcja pojawia się w Twojej historii transakcji (Transakcje).",
     "submitFailed": "Błąd wysyłania!",
     "somethingWentWrong": "Coś poszło nie tak!",

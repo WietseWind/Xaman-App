@@ -1152,6 +1152,7 @@
     "addToContacts": "Додати до контактів",
     "sendingFailed": "Не вдалося надіслати!",
     "couldNotVerifyTransaction": "Не вдалося перевірити фіналізацію транзакції",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Ваша операція була підписана і представлена успішно, але ми не могли підтвердити скінченність операції.\n\nЦе може бути спричинено за допомогою Internet connection hcup або збільшення навантаження на вузол XRP Ledger, до якого ви з ' єднані.\n\nБудь ласка, перевіряйте, чи буде ця операція у вашій історії транзакцій (Події).",
     "submitFailed": "Помилка подання!",
     "somethingWentWrong": "Щось пішло не так!",

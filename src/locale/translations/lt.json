@@ -1152,6 +1152,7 @@
     "addToContacts": "Pridėti prie kontaktų",
     "sendingFailed": "Siuntimas nepavyko!",
     "couldNotVerifyTransaction": "Nepavyko patikrinti operacijos užbaigimo",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Jūsų operacija buvo pasirašyta ir pateikta sėkmingai, tačiau negalėjome patvirtinti operacijos užbaigimo.\r\n\r\nTai gali būti dėl interneto ryšio trikdžio ar padidėjusios apkrovos knygos mazge, prie kurio esate prisijungęs.\r\n\r\nPrašome rankiniu būdu patikrinti, ar ši operacija rodoma jūsų operacijų istorijoje (Įvykiai).",
     "submitFailed": "Pateikimas nepavyko!",
     "somethingWentWrong": "Kažkas nepavyko!",

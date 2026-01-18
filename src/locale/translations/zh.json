@@ -1152,6 +1152,7 @@
     "addToContacts": "添加到通讯录",
     "sendingFailed": "发送失败！",
     "couldNotVerifyTransaction": "无法验证交易最终性",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "您的交易已成功签名并提交，但我们无法确认交易最终性。\r\n\r\n这可能是由于互联网连接中断或您连接的 XRP Ledger 节点负载增加造成的。\r\n\r\n请手动验证此交易是否显示在您的交易历史记录（事件）中。",
     "submitFailed": "提交失败！",
     "somethingWentWrong": "出问题了！",

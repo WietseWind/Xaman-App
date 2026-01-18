@@ -1152,6 +1152,7 @@
     "addToContacts": "Toevoegen aan contacten",
     "sendingFailed": "Versturen mislukt!",
     "couldNotVerifyTransaction": "Kon transactie finaliteit niet bevestigen",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Uw transactie is succesvol ondertekend en ingediend, maar we konden de transactie finaliteit niet bevestigen.\r\n\r\nDit kan worden veroorzaakt door een internetverbinding storing of verhoogde belasting op de %{network} node waarmee u verbonden bent.\r\n\r\nControleer handmatig of deze transactie in uw transactiegeschiedenis (Gebeurtenissen) verschijnt.",
     "submitFailed": "Indienen mislukt!",
     "somethingWentWrong": "Er is iets misgegaan!",

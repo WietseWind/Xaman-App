@@ -1152,6 +1152,7 @@
     "addToContacts": "Kişilere ekle",
     "sendingFailed": "Gönderme başarısız oldu!",
     "couldNotVerifyTransaction": "İşlem kesinliği doğrulanamadı",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Hareketiniz başarıyla imzalandı ve gönderildi, ancak işlem kesinliğini doğrulayamadık.\n\nBu durum, bağlı olduğunuz XRP Ledger düğümünde bir Internet bağlantısı hıçkırığı ya da artırılmış yükleme nedeniyle ortaya çıkmış olabilir.\n\nLütfen bu işlemin hareket geçmişinizde (Olaylar) gösterilip gösterilmediğini el ile doğrulayın.",
     "submitFailed": "Gönderim başarısız oldu!",
     "somethingWentWrong": "Bir şeyler ters gitti!",

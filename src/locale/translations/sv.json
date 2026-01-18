@@ -1152,6 +1152,7 @@
     "addToContacts": "Lägg till i kontakter",
     "sendingFailed": "Sänder misslyckades!",
     "couldNotVerifyTransaction": "Det gick inte att verifiera transaktionsörighet",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Er transaktion har undertecknats och lämnats in med framgång: vi kunde inte bekräfta transaktionsfinalen.\n\nDetta kan orsakas av en internetanslutning hicka eller ökad belastning på XRP-kontonoden som du är ansluten till.\n\nVerifiera manuellt om den här transaktionen visar i transaktionshistoriken (händelser).",
     "submitFailed": "Inlämning misslyckades!",
     "somethingWentWrong": "Något gick fel!",

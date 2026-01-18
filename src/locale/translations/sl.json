@@ -1152,6 +1152,7 @@
     "addToContacts": "Dodaj med stike",
     "sendingFailed": "Pošiljanje ni uspelo!",
     "couldNotVerifyTransaction": "Ni bilo mogoče preveriti dokončnost transakcije",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Vaša transakcija je bila podpisana in uspešno predložena, vendar ne moremo potrditi dokončnost transakcij.\r\n\r\nTo lahko povzroči nestabilna internetna povezava ali povečana obremenitev v vozlišču glavne knjige XRP, s katerim ste povezani.\r\n\r\nRočno preverite, ali je ta transakcija prikazana v vaši zgodovini transakcij (dogodki).",
     "submitFailed": "Predložitev ni uspela!",
     "somethingWentWrong": "Nekaj je šlo narobe!",

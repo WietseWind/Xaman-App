@@ -1152,6 +1152,7 @@
     "addToContacts": "Kontaktlarga qo'shish",
     "sendingFailed": "Yuborish amalga oshmadi",
     "couldNotVerifyTransaction": "Tranzaksiya yakuniyligini tasdiqlab bo‘lmadi",
+    "verificationFailed": "Finality uncertain",
     "verificationFailedDescription": "Sizning bitimingiz imzolandi va muvaffaqiyatli topshirildi, ammo biz bitimning yakuniyligini tasdiqlay olmadik.\r\n\r\nBunga internet ulanishining uzilishi yoki siz ulangan XRP Ledger tuguniga yukning ko'payishi sabab bo'lishi mumkin.\r\n\r\nIltimos, ushbu tranzaksiya sizning tranzaktsiyalar tarixida (Voqealar) ko'rsatilishini qo'lda tekshiring.",
     "submitFailed": "Yuborilmadi!",
     "somethingWentWrong": "Nimadir noto'g'ri bajarildi!",
