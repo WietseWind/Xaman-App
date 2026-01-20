@@ -771,13 +771,21 @@ class BackendService {
 
             if (resp?.assets?.length) {
                 return resp.assets.map(
-                    (asset: { account: string; currency: string; balance: string; limit_peer: string }) => {
+                    (
+                        asset: {
+                            account: string;
+                            currency: string;
+                            balance: string;
+                            limit_peer: string;
+                            order?: number;
+                        },
+                        index: number,
+                    ) => {
                         return {
-                            order: -10,
+                            order: asset.order || -5000 + index,
                             account: asset.account,
                             currency: asset.currency,
                             balance: asset.balance,
-                            // limit: asset.limit,
                             limit: String(-9999999999),
                             limit_peer: asset.limit_peer,
                             no_ripple: true,
