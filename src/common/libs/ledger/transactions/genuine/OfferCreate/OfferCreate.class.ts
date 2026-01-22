@@ -58,9 +58,10 @@ class OfferCreate extends BaseGenuineTransaction {
         if (typeof this._tx?.OfferSequence === 'number') {
             return this._tx?.OfferSequence;
         }
-        if (typeof this._tx.Sequence === 'number') {
-            return this._tx.Sequence;
-        }
+        // No, this should never be the same as Sequence, that's Account based, this is Offer based
+        // if (typeof this._tx.Sequence === 'number') {
+        //     return this._tx.Sequence;
+        // }
 
         return undefined;
     }
