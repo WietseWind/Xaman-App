@@ -534,11 +534,11 @@ class ExchangeView extends Component<Props, State> {
             isExchanging: false,
         });
 
-        if (offer.TransactionResult?.success === false) {
+        if (offer.TransactionResult?.success === false && offer?.TransactionResult?.message) {
             this.showResultAlert(
                 Localize.t('global.error'),
                 Localize.t('exchange.errorDuringExchange', {
-                    error: offer.TransactionResult.message || 'UNKNOWN ERROR',
+                    error: offer.TransactionResult.message,
                 }),
             );
             return;
