@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Xaman, XRPL Labs edo Ripple taldearen parte dela esaten duen norbaitek transakzio hau sinatzeko eskatzen ari zaizu?",
     "areYouAwareThatNonReversible": "Blockchain transakzio bat alderantzikatu daiteke?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Txartel berri-berria!",
+    "newDescription": "Zorionak zure Tangem txartel berriarekin, zure kripto-aktiboetarako biltegiratze hotz erosoena.",
+    "newDescriptionBoldAfter": "Txartel hau erabili gabe dago eta ez da manipulatu.",
+    "newDescriptionAfter": "Txartelak orain zure zorroa sortuko du, erabiltzen has zaitezken.",
+    "newButton": "Jarraitu",
+    "existingTitle": "Inportatu txartela",
+    "existingDescription": "Tangem txartel bat inportatzen ari zara.",
+    "existingDescriptionUsedBefore": "Txartel hau lehenago erabili da!",
+    "existingDescriptionBoldAfter": "Txartel hau berria eta erabili gabea izan behar bada, jarri harremanetan laguntzarekin.",
+    "existingDescriptionAfter": "Txartel hau zurea bada edo konfiantzazko norbaitek eman badizu, dena ondo dago.",
+    "existingButtonSupport": "Jarri harremanetan laguntzarekin",
+    "existingButtonContinue": "Jarraitu"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[gaur] LT[etan]",

@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "क्या कोई जो खुद को Xaman, XRPL Labs या Ripple टीम का हिस्सा बताता है, आपसे इस लेन-देन पर हस्ताक्षर करने के लिए कह रहा है?",
     "areYouAwareThatNonReversible": "क्या ब्लॉकचेन लेन-देन को उलटा किया जा सकता है?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "बिल्कुल नया कार्ड!",
+    "newDescription": "आपके नए Tangem कार्ड पर बधाई, यह आपकी क्रिप्टो संपत्तियों के लिए सबसे सुविधाजनक कोल्ड स्टोरेज है।",
+    "newDescriptionBoldAfter": "यह कार्ड अप्रयुक्त है और इसमें कोई छेड़छाड़ नहीं की गई है।",
+    "newDescriptionAfter": "कार्ड अब आपका वॉलेट बनाएगा, ताकि आप इसका उपयोग शुरू कर सकें।",
+    "newButton": "जारी रखें",
+    "existingTitle": "कार्ड आयात करें",
+    "existingDescription": "आप एक Tangem कार्ड आयात कर रहे हैं।",
+    "existingDescriptionUsedBefore": "यह कार्ड पहले इस्तेमाल किया जा चुका है!",
+    "existingDescriptionBoldAfter": "यदि यह कार्ड नया और अप्रयुक्त होना चाहिए, तो कृपया सहायता से संपर्क करें।",
+    "existingDescriptionAfter": "यदि यह कार्ड आपका है या किसी विश्वसनीय व्यक्ति ने आपको दिया है, तो सब ठीक है।",
+    "existingButtonSupport": "सहायता से संपर्क करें",
+    "existingButtonContinue": "जारी रखें"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[आज] LT",

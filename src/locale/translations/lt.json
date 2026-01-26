@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Ar kas nors, teigiantis esąs Xaman, XRPL Labs ar Ripple komandos narys, prašo jūsų pasirašyti šią operaciją?",
     "areYouAwareThatNonReversible": "Ar galima atšaukti blokų grandinės operaciją?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Visiškai nauja kortelė!",
+    "newDescription": "Sveikiname su nauja Tangem kortele – patogiausiu šaltojo saugojimo sprendimu jūsų kriptovaliutoms.",
+    "newDescriptionBoldAfter": "Ši kortelė yra nenaudota ir nepažeista.",
+    "newDescriptionAfter": "Kortelė dabar sukurs jūsų piniginę, kad galėtumėte pradėti ja naudotis.",
+    "newButton": "Tęsti",
+    "existingTitle": "Importuoti kortelę",
+    "existingDescription": "Jūs importuojate Tangem kortelę.",
+    "existingDescriptionUsedBefore": "Ši kortelė jau buvo naudota!",
+    "existingDescriptionBoldAfter": "Jei ši kortelė turėtų būti nauja ir nenaudota, susisiekite su palaikymo komanda.",
+    "existingDescriptionAfter": "Jei ši kortelė yra jūsų arba gavote ją iš žmogaus, kuriuo pasitikite, viskas gerai.",
+    "existingButtonSupport": "Susisiekti su palaikymu",
+    "existingButtonContinue": "Tęsti"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Šiandien] LT",

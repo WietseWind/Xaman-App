@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Просит ли вас кто-то, утверждающий, что является частью команды Xaman, XRPL Labs или Ripple, подписать эту транзакцию?",
     "areYouAwareThatNonReversible": "Можно ли отменить транзакцию в блокчейне?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Новая карта!",
+    "newDescription": "Поздравляем с новой картой Tangem — самым удобным холодным хранилищем для ваших криптоактивов.",
+    "newDescriptionBoldAfter": "Эта карта не использовалась и не была изменена.",
+    "newDescriptionAfter": "Карта сейчас создаст ваш кошелёк, чтобы вы могли начать им пользоваться.",
+    "newButton": "Продолжить",
+    "existingTitle": "Импорт карты",
+    "existingDescription": "Вы импортируете карту Tangem.",
+    "existingDescriptionUsedBefore": "Эта карта уже использовалась!",
+    "existingDescriptionBoldAfter": "Если эта карта должна быть новой и неиспользованной, обратитесь в службу поддержки.",
+    "existingDescriptionAfter": "Если эта карта ваша или вы получили её от человека, которому доверяете, всё в порядке.",
+    "existingButtonSupport": "Связаться с поддержкой",
+    "existingButtonContinue": "Продолжить"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Сегодня, в] LT",

@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Да ли вас неко ко тврди да је део Xaman, XRPL Labs или Ripple тима тражи да потпишете ову трансакцију?",
     "areYouAwareThatNonReversible": "Да ли се блокчејн трансакција може поништити?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Потпуно нова картица!",
+    "newDescription": "Честитамо на новој Tangem картици, најпрактичнијем хладном складишту за вашу криптоимовину.",
+    "newDescriptionBoldAfter": "Ова картица није коришћена и није дирана.",
+    "newDescriptionAfter": "Картица ће сада креирати ваш новчаник како бисте могли почети да га користите.",
+    "newButton": "Настави",
+    "existingTitle": "Увези картицу",
+    "existingDescription": "Увозите Tangem картицу.",
+    "existingDescriptionUsedBefore": "Ова картица је већ коришћена!",
+    "existingDescriptionBoldAfter": "Ако би ова картица требало да буде нова и некоришћена, контактирајте подршку.",
+    "existingDescriptionAfter": "Ако је ова картица ваша или сте је добили од некога коме верујете, све је у реду.",
+    "existingButtonSupport": "Контактирајте подршку",
+    "existingButtonContinue": "Настави"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[danas u] LT",

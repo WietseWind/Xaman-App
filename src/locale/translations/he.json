@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "האם מישהו שמציע תמיכה מבקש ממך לחתום על עסקה זו?",
     "isSomeoneTeam": "האם מישהו שטוען שהוא חלק מצוות Xaman, XRPL Labs או Ripple מבקש ממך לחתום על עסקה זו?",
     "areYouAwareThatNonReversible": "האם ניתן לבטל עסקת בלוקצ'יין?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "כרטיס חדש לגמרי!",
+    "newDescription": "מזל טוב על כרטיס ה-Tangem החדש שלך, האחסון הקר הנוח ביותר לנכסי הקריפטו שלך.",
+    "newDescriptionBoldAfter": "כרטיס זה לא נעשה בו שימוש ולא בוצעה בו חבלה.",
+    "newDescriptionAfter": "הכרטיס יצור כעת את הארנק שלך, כך שתוכל להתחיל להשתמש בו.",
+    "newButton": "המשך",
+    "existingTitle": "ייבוא כרטיס",
+    "existingDescription": "אתה מייבא כרטיס Tangem.",
+    "existingDescriptionUsedBefore": "כרטיס זה כבר נעשה בו שימוש!",
+    "existingDescriptionBoldAfter": "אם כרטיס זה אמור להיות חדש ולא בשימוש, אנא צור קשר עם התמיכה.",
+    "existingDescriptionAfter": "אם הכרטיס הזה שלך או שקיבלת אותו ממישהו שאתה סומך עליו, הכל בסדר.",
+    "existingButtonSupport": "צור קשר עם התמיכה",
+    "existingButtonContinue": "המשך"
   }
 }

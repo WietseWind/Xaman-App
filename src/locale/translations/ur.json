@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "کیا سپورٹ پیش کرنے والا کوئی شخص آپ سے اس ٹرانزیکشن پر دستخط کرنے کو کہہ رہا ہے؟",
     "isSomeoneTeam": "کیا کوئی جو کہتا ہے کہ وہ Xaman، XRPL Labs یا Ripple ٹیم کا حصہ ہے، آپ سے اس ٹرانزیکشن پر دستخط کرنے کو کہہ رہا ہے؟",
     "areYouAwareThatNonReversible": "کیا بلاکچین ٹرانزیکشن واپس کی جا سکتی ہے؟"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "بالکل نیا کارڈ!",
+    "newDescription": "آپ کے نئے Tangem کارڈ پر مبارکباد، یہ آپ کے کرپٹو اثاثوں کے لیے سب سے آسان کولڈ سٹوریج ہے۔",
+    "newDescriptionBoldAfter": "یہ کارڈ غیر استعمال شدہ ہے اور اس کے ساتھ چھیڑ چھاڑ نہیں کی گئی۔",
+    "newDescriptionAfter": "کارڈ اب آپ کا والیٹ بنائے گا، تاکہ آپ اسے استعمال کرنا شروع کر سکیں۔",
+    "newButton": "جاری رکھیں",
+    "existingTitle": "کارڈ درآمد کریں",
+    "existingDescription": "آپ Tangem کارڈ درآمد کر رہے ہیں۔",
+    "existingDescriptionUsedBefore": "یہ کارڈ پہلے استعمال ہو چکا ہے!",
+    "existingDescriptionBoldAfter": "اگر یہ کارڈ نیا اور غیر استعمال شدہ ہونا چاہیے، تو براہ کرم سپورٹ سے رابطہ کریں۔",
+    "existingDescriptionAfter": "اگر یہ کارڈ آپ کا ہے یا کسی قابل اعتماد شخص نے آپ کو دیا ہے، تو سب ٹھیک ہے۔",
+    "existingButtonSupport": "سپورٹ سے رابطہ کریں",
+    "existingButtonContinue": "جاری رکھیں"
   }
 }

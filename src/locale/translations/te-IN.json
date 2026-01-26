@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Xaman, XRPL Labs లేదా Ripple టీమ్‌లో భాగమని చెప్పుకునే ఎవరైనా ఈ లావాదేవీపై సంతకం చేయమని మిమ్మల్ని అడుగుతున్నారా?",
     "areYouAwareThatNonReversible": "బ్లాక్‌చెయిన్ లావాదేవీని రద్దు చేయవచ్చా?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "కొత్త కార్డ్!",
+    "newDescription": "మీ కొత్త Tangem కార్డ్‌పై అభినందనలు, ఇది మీ క్రిప్టో ఆస్తులకు అత్యంత అనుకూలమైన కోల్డ్ స్టోరేజ్.",
+    "newDescriptionBoldAfter": "ఈ కార్డ్ వాడనిది మరియు మార్పు చేయబడలేదు.",
+    "newDescriptionAfter": "కార్డ్ ఇప్పుడు మీ వాలెట్‌ను సృష్టిస్తుంది, మీరు దాన్ని ఉపయోగించడం ప్రారంభించవచ్చు.",
+    "newButton": "కొనసాగించు",
+    "existingTitle": "కార్డ్ దిగుమతి చేయండి",
+    "existingDescription": "మీరు Tangem కార్డ్‌ను దిగుమతి చేస్తున్నారు.",
+    "existingDescriptionUsedBefore": "ఈ కార్డ్ ఇంతకు ముందు ఉపయోగించబడింది!",
+    "existingDescriptionBoldAfter": "ఈ కార్డ్ కొత్తదిగా మరియు వాడనిదిగా ఉండాలంటే, దయచేసి సపోర్ట్‌ను సంప్రదించండి.",
+    "existingDescriptionAfter": "ఈ కార్డ్ మీది అయితే లేదా మీరు నమ్మే వారి నుండి వచ్చినట్లయితే, అంతా సరిగ్గానే ఉంది.",
+    "existingButtonSupport": "సపోర్ట్‌ను సంప్రదించండి",
+    "existingButtonContinue": "కొనసాగించు"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[నేడు] LT",

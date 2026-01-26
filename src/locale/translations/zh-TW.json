@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "是否有人聲稱自己是 Xaman、XRPL Labs 或 Ripple 團隊成員並要求您簽署此交易？",
     "areYouAwareThatNonReversible": "區塊鏈交易可以撤銷嗎？"
   },
+  "tangemImportMsgs": {
+    "newTitle": "全新卡片！",
+    "newDescription": "恭喜您獲得新的 Tangem 卡，這是存儲加密資產最便捷的冷錢包。",
+    "newDescriptionBoldAfter": "此卡未被使用且未被篡改。",
+    "newDescriptionAfter": "卡片現在將建立您的錢包，以便您開始使用。",
+    "newButton": "繼續",
+    "existingTitle": "匯入卡片",
+    "existingDescription": "您正在匯入一張 Tangem 卡。",
+    "existingDescriptionUsedBefore": "此卡已被使用過！",
+    "existingDescriptionBoldAfter": "如果此卡應該是全新未使用的，請聯繫客服。",
+    "existingDescriptionAfter": "如果此卡是您的或由您信任的人提供，則一切正常。",
+    "existingButtonSupport": "聯繫客服",
+    "existingButtonContinue": "繼續"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[今天] LT",

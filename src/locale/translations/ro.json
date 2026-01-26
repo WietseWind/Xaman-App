@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Vi se cere să semnați această tranzacție de către cineva care pretinde că face parte din echipa Xaman, XRPL Labs sau Ripple?",
     "areYouAwareThatNonReversible": "Poate fi anulată o tranzacție blockchain?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Card nou-nouț!",
+    "newDescription": "Felicitări pentru noul tău card Tangem, cea mai convenabilă stocare la rece pentru activele tale crypto.",
+    "newDescriptionBoldAfter": "Acest card este neutilizat și nu a fost alterat.",
+    "newDescriptionAfter": "Cardul va genera acum portofelul tău, astfel încât să poți începe să-l folosești.",
+    "newButton": "Continuă",
+    "existingTitle": "Importă cardul",
+    "existingDescription": "Importezi un card Tangem.",
+    "existingDescriptionUsedBefore": "Acest card a fost folosit înainte!",
+    "existingDescriptionBoldAfter": "Dacă acest card ar trebui să fie nou și neutilizat, te rugăm să contactezi suportul.",
+    "existingDescriptionAfter": "Dacă acest card este al tău sau ți l-a dat cineva în care ai încredere, totul este în regulă.",
+    "existingButtonSupport": "Contactează suportul",
+    "existingButtonContinue": "Continuă"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[azi la] LT",

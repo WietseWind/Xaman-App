@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Alguém que oferece suporte está a pedir para assinar esta transação?",
     "isSomeoneTeam": "Alguém que afirma ser parte da equipa Xaman, XRPL Labs ou Ripple está a pedir para assinar esta transação?",
     "areYouAwareThatNonReversible": "Uma transação de blockchain pode ser revertida?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Cartão novinho!",
+    "newDescription": "Parabéns pelo seu novo cartão Tangem, o armazenamento a frio mais prático para os seus criptoativos.",
+    "newDescriptionBoldAfter": "Este cartão não foi utilizado nem adulterado.",
+    "newDescriptionAfter": "O cartão irá agora gerar a sua carteira, para que possa começar a utilizá-la.",
+    "newButton": "Continuar",
+    "existingTitle": "Importar cartão",
+    "existingDescription": "Está a importar um cartão Tangem.",
+    "existingDescriptionUsedBefore": "Este cartão já foi utilizado!",
+    "existingDescriptionBoldAfter": "Se este cartão deveria ser novo e por utilizar, por favor contacte o suporte.",
+    "existingDescriptionAfter": "Se este cartão é seu ou foi-lhe dado por alguém de confiança, está tudo bem.",
+    "existingButtonSupport": "Contactar suporte",
+    "existingButtonContinue": "Continuar"
   }
 }

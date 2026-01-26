@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "কেউ কি আপনাকে এই লেনদেনে স্বাক্ষর করতে বলছে যে নিজেকে Xaman, XRPL Labs বা Ripple টিমের অংশ বলে দাবি করছে?",
     "areYouAwareThatNonReversible": "একটি ব্লকচেইন লেনদেন কি বিপরীত করা যায়?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "একদম নতুন কার্ড!",
+    "newDescription": "আপনার নতুন Tangem কার্ডের জন্য অভিনন্দন, এটি আপনার ক্রিপ্টো সম্পদের জন্য সবচেয়ে সুবিধাজনক কোল্ড স্টোরেজ।",
+    "newDescriptionBoldAfter": "এই কার্ডটি অব্যবহৃত এবং এতে কোনো হেরফের করা হয়নি।",
+    "newDescriptionAfter": "কার্ডটি এখন আপনার ওয়ালেট তৈরি করবে, যাতে আপনি এটি ব্যবহার শুরু করতে পারেন।",
+    "newButton": "চালিয়ে যান",
+    "existingTitle": "কার্ড আমদানি করুন",
+    "existingDescription": "আপনি একটি Tangem কার্ড আমদানি করছেন।",
+    "existingDescriptionUsedBefore": "এই কার্ডটি আগে ব্যবহার করা হয়েছে!",
+    "existingDescriptionBoldAfter": "যদি এই কার্ডটি নতুন এবং অব্যবহৃত হওয়ার কথা, তাহলে অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।",
+    "existingDescriptionAfter": "যদি এই কার্ডটি আপনার হয় বা আপনি বিশ্বাস করেন এমন কারো কাছ থেকে পেয়ে থাকেন, তাহলে সব ঠিক আছে।",
+    "existingButtonSupport": "সাপোর্টে যোগাযোগ করুন",
+    "existingButtonContinue": "চালিয়ে যান"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[আজ] LT",

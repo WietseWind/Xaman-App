@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "ڇا ڪو جيڪو چوي ٿو ته هو Xaman، XRPL Labs يا Ripple ٽيم جو حصو آهي توهان کان هن ٽرانزيڪشن تي دستخط ڪرڻ جي درخواست ڪري رهيو آهي؟",
     "areYouAwareThatNonReversible": "ڇا بلاڪچين ٽرانزيڪشن واپس ڪري سگهجي ٿي؟"
   },
+  "tangemImportMsgs": {
+    "newTitle": "بلڪل نئون ڪارڊ!",
+    "newDescription": "توهان جي نئين Tangem ڪارڊ تي مبارڪون، توهان جي ڪرپٽو اثاثن لاءِ سڀ کان وڌيڪ آسان ٿڌي اسٽوريج.",
+    "newDescriptionBoldAfter": "هي ڪارڊ اڻ استعمال ٿيل آهي ۽ ان سان ڇڙڇاڙ نه ڪئي وئي آهي.",
+    "newDescriptionAfter": "ڪارڊ هاڻي توهان جو والٽ ٺاهيندو، تنهنڪري توهان ان کي استعمال ڪرڻ شروع ڪري سگهو ٿا.",
+    "newButton": "جاري رکو",
+    "existingTitle": "ڪارڊ درآمد ڪريو",
+    "existingDescription": "توهان Tangem ڪارڊ درآمد ڪري رهيا آهيو.",
+    "existingDescriptionUsedBefore": "هي ڪارڊ اڳ ۾ استعمال ٿي چڪو آهي!",
+    "existingDescriptionBoldAfter": "جيڪڏهن هي ڪارڊ نئون ۽ اڻ استعمال ٿيل هجڻ گهرجي، مهرباني ڪري سپورٽ سان رابطو ڪريو.",
+    "existingDescriptionAfter": "جيڪڏهن هي ڪارڊ توهان جو آهي يا ڪنهن قابل اعتماد ماڻهوءَ ڏنو آهي، سڀ ڪجهه ٺيڪ آهي.",
+    "existingButtonSupport": "سپورٽ سان رابطو ڪريو",
+    "existingButtonContinue": "جاري رکو"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[اڄ] LT",

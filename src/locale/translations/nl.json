@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Vraagt iemand die beweert deel uit te maken van het Xaman-, XRPL Labs- of Ripple-team je om deze transactie te ondertekenen?",
     "areYouAwareThatNonReversible": "Kan een blockchain-transactie worden teruggedraaid?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Gloednieuwe kaart!",
+    "newDescription": "Gefeliciteerd met je nieuwe Tangem kaart, de handigste cold storage voor je crypto.",
+    "newDescriptionBoldAfter": "Deze kaart is ongebruikt en niet gemanipuleerd.",
+    "newDescriptionAfter": "De kaart zal nu je wallet aanmaken, zodat je hem kunt gaan gebruiken.",
+    "newButton": "Doorgaan",
+    "existingTitle": "Kaart importeren",
+    "existingDescription": "Je importeert een Tangem kaart.",
+    "existingDescriptionUsedBefore": "Deze kaart is eerder gebruikt!",
+    "existingDescriptionBoldAfter": "Als deze kaart nieuw en ongebruikt zou moeten zijn, neem dan contact op met support.",
+    "existingDescriptionAfter": "Als deze kaart van jou is of je hem hebt gekregen van iemand die je vertrouwt, is er niets aan de hand.",
+    "existingButtonSupport": "Contact opnemen",
+    "existingButtonContinue": "Doorgaan"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[vandaag om] LT",

@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Destek sunan biri sizden bu işlemi imzalamanızı mı istiyor?",
     "isSomeoneTeam": "Xaman, XRPL Labs veya Ripple ekibinin bir parçası olduğunu söyleyen biri sizden bu işlemi imzalamanızı mı istiyor?",
     "areYouAwareThatNonReversible": "Bir blockchain işlemi geri alınabilir mi?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Yeni kart!",
+    "newDescription": "Yeni Tangem kartınız için tebrikler, kripto varlıklarınız için en kullanışlı soğuk depolama çözümü.",
+    "newDescriptionBoldAfter": "Bu kart kullanılmamış ve kurcalanmamıştır.",
+    "newDescriptionAfter": "Kart şimdi cüzdanınızı oluşturacak, böylece kullanmaya başlayabilirsiniz.",
+    "newButton": "Devam",
+    "existingTitle": "Kartı içe aktar",
+    "existingDescription": "Bir Tangem kartı içe aktarıyorsunuz.",
+    "existingDescriptionUsedBefore": "Bu kart daha önce kullanılmış!",
+    "existingDescriptionBoldAfter": "Bu kartın yeni ve kullanılmamış olması gerekiyorsa, lütfen destekle iletişime geçin.",
+    "existingDescriptionAfter": "Bu kart sizinse veya güvendiğiniz biri tarafından size verilmişse, her şey yolunda.",
+    "existingButtonSupport": "Destekle iletişime geç",
+    "existingButtonContinue": "Devam"
   }
 }

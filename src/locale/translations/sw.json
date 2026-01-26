@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Je, unaombwa kusaini muamala huu na mtu anayedai kuwa sehemu ya timu ya Xaman, XRPL Labs au Ripple?",
     "areYouAwareThatNonReversible": "Je, muamala wa blockchain unaweza kubatilishwa?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Kadi mpya kabisa!",
+    "newDescription": "Hongera kwa kadi yako mpya ya Tangem, hifadhi baridi rahisi zaidi kwa mali zako za crypto.",
+    "newDescriptionBoldAfter": "Kadi hii haijatumika na haijabadilishwa.",
+    "newDescriptionAfter": "Kadi sasa itaunda pochi yako, ili uweze kuanza kuitumia.",
+    "newButton": "Endelea",
+    "existingTitle": "Ingiza kadi",
+    "existingDescription": "Unaingiza kadi ya Tangem.",
+    "existingDescriptionUsedBefore": "Kadi hii imetumika hapo awali!",
+    "existingDescriptionBoldAfter": "Ikiwa kadi hii inapaswa kuwa mpya na haijatumika, tafadhali wasiliana na msaada.",
+    "existingDescriptionAfter": "Ikiwa kadi hii ni yako au ulipewa na mtu unayemwamini, kila kitu kiko sawa.",
+    "existingButtonSupport": "Wasiliana na msaada",
+    "existingButtonContinue": "Endelea"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[leo saa] LT",

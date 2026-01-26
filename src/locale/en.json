@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Are you being asked to sign this transaction by someone who is offering support?",
     "isSomeoneTeam": "Are you being asked to sign this transaction by someone who tells you they are part of the Xaman, XRPL Labs or Ripple team?",
     "areYouAwareThatNonReversible": "Can a blockchain transaction be reversed?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Brand new card!",
+    "newDescription": "Congratulations on your new Tangem card, the most convenient cold storage for your crypto assets.",
+    "newDescriptionBoldAfter": "This card is unused and has not been tampered with.",
+    "newDescriptionAfter": "The card will now generate your wallet, so you can start using it.",
+    "newButton": "Continue",
+    "existingTitle": "Import card",
+    "existingDescription": "You are importing a Tangem card.",
+    "existingDescriptionUsedBefore": "This card has been used before!",
+    "existingDescriptionBoldAfter": "If this card should be new and unused, please contact support.",
+    "existingDescriptionAfter": "If this card is yours or was given to you by someone you trust, everything is fine.",
+    "existingButtonSupport": "Contact support",
+    "existingButtonContinue": "Continue"
   }
 }

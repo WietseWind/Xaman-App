@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Có ai tuyên bố là thành viên của đội ngũ Xaman, XRPL Labs hoặc Ripple yêu cầu bạn ký giao dịch này không?",
     "areYouAwareThatNonReversible": "Giao dịch blockchain có thể đảo ngược được không?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Thẻ mới hoàn toàn!",
+    "newDescription": "Chúc mừng bạn đã có thẻ Tangem mới, giải pháp lưu trữ lạnh tiện lợi nhất cho tài sản tiền điện tử của bạn.",
+    "newDescriptionBoldAfter": "Thẻ này chưa được sử dụng và không bị can thiệp.",
+    "newDescriptionAfter": "Thẻ sẽ tạo ví cho bạn để bạn có thể bắt đầu sử dụng.",
+    "newButton": "Tiếp tục",
+    "existingTitle": "Nhập thẻ",
+    "existingDescription": "Bạn đang nhập thẻ Tangem.",
+    "existingDescriptionUsedBefore": "Thẻ này đã được sử dụng trước đó!",
+    "existingDescriptionBoldAfter": "Nếu thẻ này phải là mới và chưa sử dụng, vui lòng liên hệ hỗ trợ.",
+    "existingDescriptionAfter": "Nếu thẻ này là của bạn hoặc được tặng bởi người bạn tin tưởng, mọi thứ đều ổn.",
+    "existingButtonSupport": "Liên hệ hỗ trợ",
+    "existingButtonContinue": "Tiếp tục"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Hôm nay lúc] LT",

@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Hinihiling ba sa iyo na pirmahan ang transaksyong ito ng isang taong nag-aalok ng suporta?",
     "isSomeoneTeam": "Hinihiling ba sa iyo na pirmahan ang transaksyong ito ng isang taong nagsasabing bahagi siya ng Xaman, XRPL Labs o Ripple team?",
     "areYouAwareThatNonReversible": "Maaari bang baligtarin ang isang blockchain transaction?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Bagong-bagong card!",
+    "newDescription": "Binabati kita sa iyong bagong Tangem card, ang pinakamaginhawang cold storage para sa iyong mga crypto asset.",
+    "newDescriptionBoldAfter": "Hindi pa nagagamit ang card na ito at hindi ito nababago.",
+    "newDescriptionAfter": "Lilikha na ngayon ng wallet ang card para magamit mo na ito.",
+    "newButton": "Magpatuloy",
+    "existingTitle": "I-import ang card",
+    "existingDescription": "Nag-i-import ka ng Tangem card.",
+    "existingDescriptionUsedBefore": "Nagamit na ang card na ito dati!",
+    "existingDescriptionBoldAfter": "Kung dapat ay bago at hindi pa nagagamit ang card na ito, mangyaring makipag-ugnayan sa suporta.",
+    "existingDescriptionAfter": "Kung sa iyo ang card na ito o ibinigay sa iyo ng taong pinagkakatiwalaan mo, walang problema.",
+    "existingButtonSupport": "Makipag-ugnayan sa suporta",
+    "existingButtonContinue": "Magpatuloy"
   }
 }

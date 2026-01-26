@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Alguén que ofrece soporte estache pedindo que asines esta transacción?",
     "isSomeoneTeam": "Alguén que di ser parte do equipo de Xaman, XRPL Labs ou Ripple estache pedindo que asines esta transacción?",
     "areYouAwareThatNonReversible": "Pódese reverter unha transacción de blockchain?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Tarxeta nova!",
+    "newDescription": "Parabéns pola túa nova tarxeta Tangem, o almacenamento en frío máis conveniente para os teus criptoactivos.",
+    "newDescriptionBoldAfter": "Esta tarxeta non foi usada nin manipulada.",
+    "newDescriptionAfter": "A tarxeta creará agora a túa carteira para que poidas comezar a usala.",
+    "newButton": "Continuar",
+    "existingTitle": "Importar tarxeta",
+    "existingDescription": "Estás importando unha tarxeta Tangem.",
+    "existingDescriptionUsedBefore": "Esta tarxeta xa foi usada!",
+    "existingDescriptionBoldAfter": "Se esta tarxeta debería ser nova e sen usar, por favor contacta co soporte.",
+    "existingDescriptionAfter": "Se esta tarxeta é túa ou a deucha alguén de confianza, todo está ben.",
+    "existingButtonSupport": "Contactar soporte",
+    "existingButtonContinue": "Continuar"
   }
 }

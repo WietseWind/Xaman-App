@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Blir du bedt om å signere denne transaksjonen av noen som sier de er en del av Xaman-, XRPL Labs- eller Ripple-teamet?",
     "areYouAwareThatNonReversible": "Kan en blokkjedetransaksjon reverseres?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Helt nytt kort!",
+    "newDescription": "Gratulerer med det nye Tangem-kortet ditt, den mest praktiske kalde lagringen for kryptoaktivene dine.",
+    "newDescriptionBoldAfter": "Dette kortet er ubrukt og ikke manipulert.",
+    "newDescriptionAfter": "Kortet vil nå opprette lommeboken din, slik at du kan begynne å bruke den.",
+    "newButton": "Fortsett",
+    "existingTitle": "Importer kort",
+    "existingDescription": "Du importerer et Tangem-kort.",
+    "existingDescriptionUsedBefore": "Dette kortet har blitt brukt før!",
+    "existingDescriptionBoldAfter": "Hvis dette kortet burde være nytt og ubrukt, ta kontakt med support.",
+    "existingDescriptionAfter": "Hvis dette kortet er ditt eller du har fått det av noen du stoler på, er alt i orden.",
+    "existingButtonSupport": "Kontakt support",
+    "existingButtonContinue": "Fortsett"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[I dag klokka] LT",

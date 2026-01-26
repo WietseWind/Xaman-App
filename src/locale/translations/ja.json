@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Xaman、XRPL Labs、またはRippleチームの一員だと主張する人から、この取引に署名するよう求められていますか？",
     "areYouAwareThatNonReversible": "ブロックチェーン取引は取り消すことができますか？"
   },
+  "tangemImportMsgs": {
+    "newTitle": "新品カード！",
+    "newDescription": "新しいTangemカードをご購入いただきありがとうございます。暗号資産を保管する最も便利なコールドウォレットです。",
+    "newDescriptionBoldAfter": "このカードは未使用で、改ざんされていません。",
+    "newDescriptionAfter": "カードがウォレットを作成しますので、すぐにご使用いただけます。",
+    "newButton": "続ける",
+    "existingTitle": "カードをインポート",
+    "existingDescription": "Tangemカードをインポートしています。",
+    "existingDescriptionUsedBefore": "このカードは既に使用されています！",
+    "existingDescriptionBoldAfter": "このカードが新品で未使用のはずの場合は、サポートにお問い合わせください。",
+    "existingDescriptionAfter": "このカードがご自身のものか、信頼できる方から受け取ったものであれば問題ありません。",
+    "existingButtonSupport": "サポートに連絡",
+    "existingButtonContinue": "続ける"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[今日] LT",

@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "ಬೆಂಬಲ ನೀಡುತ್ತಿರುವ ಯಾರಾದರೂ ಈ ವಹಿವಾಟಿಗೆ ಸಹಿ ಮಾಡಲು ನಿಮ್ಮನ್ನು ಕೇಳುತ್ತಿದ್ದಾರೆಯೇ?",
     "isSomeoneTeam": "Xaman, XRPL Labs ಅಥವಾ Ripple ತಂಡದ ಭಾಗ ಎಂದು ಹೇಳುವ ಯಾರಾದರೂ ಈ ವಹಿವಾಟಿಗೆ ಸಹಿ ಮಾಡಲು ನಿಮ್ಮನ್ನು ಕೇಳುತ್ತಿದ್ದಾರೆಯೇ?",
     "areYouAwareThatNonReversible": "ಬ್ಲಾಕ್‌ಚೈನ್ ವಹಿವಾಟನ್ನು ಹಿಂತಿರುಗಿಸಬಹುದೇ?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "ಹೊಸ ಕಾರ್ಡ್!",
+    "newDescription": "ನಿಮ್ಮ ಹೊಸ Tangem ಕಾರ್ಡ್‌ಗೆ ಅಭಿನಂದನೆಗಳು, ಇದು ನಿಮ್ಮ ಕ್ರಿಪ್ಟೋ ಆಸ್ತಿಗಳಿಗೆ ಅತ್ಯಂತ ಅನುಕೂಲಕರ ಕೋಲ್ಡ್ ಸ್ಟೋರೇಜ್.",
+    "newDescriptionBoldAfter": "ಈ ಕಾರ್ಡ್ ಬಳಸಲಾಗಿಲ್ಲ ಮತ್ತು ಟ್ಯಾಂಪರ್ ಮಾಡಲಾಗಿಲ್ಲ.",
+    "newDescriptionAfter": "ಕಾರ್ಡ್ ಈಗ ನಿಮ್ಮ ವಾಲೆಟ್ ರಚಿಸುತ್ತದೆ, ಆದ್ದರಿಂದ ನೀವು ಅದನ್ನು ಬಳಸಲು ಪ್ರಾರಂಭಿಸಬಹುದು.",
+    "newButton": "ಮುಂದುವರಿಸಿ",
+    "existingTitle": "ಕಾರ್ಡ್ ಆಮದು ಮಾಡಿ",
+    "existingDescription": "ನೀವು Tangem ಕಾರ್ಡ್ ಆಮದು ಮಾಡುತ್ತಿದ್ದೀರಿ.",
+    "existingDescriptionUsedBefore": "ಈ ಕಾರ್ಡ್ ಮೊದಲು ಬಳಸಲಾಗಿದೆ!",
+    "existingDescriptionBoldAfter": "ಈ ಕಾರ್ಡ್ ಹೊಸದಾಗಿ ಮತ್ತು ಬಳಸದಿರಬೇಕಾದರೆ, ದಯವಿಟ್ಟು ಬೆಂಬಲವನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+    "existingDescriptionAfter": "ಈ ಕಾರ್ಡ್ ನಿಮ್ಮದಾಗಿದ್ದರೆ ಅಥವಾ ನೀವು ನಂಬುವ ಯಾರಾದರೂ ನಿಮಗೆ ನೀಡಿದ್ದರೆ, ಎಲ್ಲವೂ ಸರಿ.",
+    "existingButtonSupport": "ಬೆಂಬಲವನ್ನು ಸಂಪರ್ಕಿಸಿ",
+    "existingButtonContinue": "ಮುಂದುವರಿಸಿ"
   }
 }

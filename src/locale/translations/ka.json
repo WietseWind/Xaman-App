@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "ვინმე, ვინც მხარდაჭერას გთავაზობთ, გთხოვთ ამ ტრანზაქციის ხელმოწერას?",
     "isSomeoneTeam": "ვინმე, ვინც ამბობს რომ Xaman-ის, XRPL Labs-ის ან Ripple-ის გუნდის წევრია, გთხოვთ ამ ტრანზაქციის ხელმოწერას?",
     "areYouAwareThatNonReversible": "შესაძლებელია თუ არა ბლოკჩეინის ტრანზაქციის უკან დაბრუნება?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "სრულიად ახალი ბარათი!",
+    "newDescription": "გილოცავთ ახალ Tangem ბარათს, ყველაზე მოსახერხებელ ცივ საცავს თქვენი კრიპტო აქტივებისთვის.",
+    "newDescriptionBoldAfter": "ეს ბარათი გამოუყენებელია და არ არის დაზიანებული.",
+    "newDescriptionAfter": "ბარათი ახლა შექმნის თქვენს საფულეს, რომ შეძლოთ მისი გამოყენება.",
+    "newButton": "გაგრძელება",
+    "existingTitle": "ბარათის იმპორტი",
+    "existingDescription": "თქვენ იმპორტირებთ Tangem ბარათს.",
+    "existingDescriptionUsedBefore": "ეს ბარათი უკვე გამოყენებული იყო!",
+    "existingDescriptionBoldAfter": "თუ ეს ბარათი ახალი და გამოუყენებელი უნდა იყოს, გთხოვთ დაუკავშირდეთ მხარდაჭერას.",
+    "existingDescriptionAfter": "თუ ეს ბარათი თქვენია ან მოგცათ ვინმემ, ვისაც ენდობით, ყველაფერი რიგზეა.",
+    "existingButtonSupport": "დაუკავშირდით მხარდაჭერას",
+    "existingButtonContinue": "გაგრძელება"
   }
 }

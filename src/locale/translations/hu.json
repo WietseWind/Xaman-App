@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Kéri-e Önt valaki, aki támogatást kínál, hogy írja alá ezt a tranzakciót?",
     "isSomeoneTeam": "Kéri-e Önt valaki, aki azt állítja, hogy a Xaman, XRPL Labs vagy Ripple csapat tagja, hogy írja alá ezt a tranzakciót?",
     "areYouAwareThatNonReversible": "Visszafordítható-e egy blockchain tranzakció?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Vadonatúj kártya!",
+    "newDescription": "Gratulálunk új Tangem kártyájához, a legkényelmesebb hideg tárolóhoz kriptovalutáihoz.",
+    "newDescriptionBoldAfter": "Ez a kártya használatlan és nem lett manipulálva.",
+    "newDescriptionAfter": "A kártya most létrehozza a pénztárcáját, így elkezdheti használni.",
+    "newButton": "Tovább",
+    "existingTitle": "Kártya importálása",
+    "existingDescription": "Tangem kártyát importál.",
+    "existingDescriptionUsedBefore": "Ezt a kártyát már használták!",
+    "existingDescriptionBoldAfter": "Ha ennek a kártyának újnak és használatlannak kellene lennie, kérjük, lépjen kapcsolatba a támogatással.",
+    "existingDescriptionAfter": "Ha ez a kártya az Öné, vagy valaki adta, akiben megbízik, minden rendben van.",
+    "existingButtonSupport": "Kapcsolat a támogatással",
+    "existingButtonContinue": "Tovább"
   }
 }

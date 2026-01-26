@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Word jy gevra om hierdie transaksie te onderteken deur iemand wat sê hulle is deel van die Xaman-, XRPL Labs- of Ripple-span?",
     "areYouAwareThatNonReversible": "Kan 'n blokketting-transaksie omgekeer word?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Splinternuwe kaart!",
+    "newDescription": "Geluk met jou nuwe Tangem-kaart, die gerieflikste koue berging vir jou kripto-bates.",
+    "newDescriptionBoldAfter": "Hierdie kaart is ongebruik en nie mee gepeuter nie.",
+    "newDescriptionAfter": "Die kaart sal nou jou beursie skep, sodat jy dit kan begin gebruik.",
+    "newButton": "Gaan voort",
+    "existingTitle": "Voer kaart in",
+    "existingDescription": "Jy voer 'n Tangem-kaart in.",
+    "existingDescriptionUsedBefore": "Hierdie kaart is al voorheen gebruik!",
+    "existingDescriptionBoldAfter": "As hierdie kaart nuut en ongebruik moet wees, kontak asseblief ondersteuning.",
+    "existingDescriptionAfter": "As hierdie kaart joune is of aan jou gegee is deur iemand wat jy vertrou, is alles reg.",
+    "existingButtonSupport": "Kontak ondersteuning",
+    "existingButtonContinue": "Gaan voort"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Vandag om] LT",

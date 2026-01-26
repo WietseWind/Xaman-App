@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "सपोर्ट देणारी एखादी व्यक्ती तुम्हाला या व्यवहारावर स्वाक्षरी करण्यास सांगत आहे का?",
     "isSomeoneTeam": "Xaman, XRPL Labs किंवा Ripple टीमचा भाग असल्याचे सांगणारी एखादी व्यक्ती तुम्हाला या व्यवहारावर स्वाक्षरी करण्यास सांगत आहे का?",
     "areYouAwareThatNonReversible": "ब्लॉकचेन व्यवहार उलटवता येतो का?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "अगदी नवीन कार्ड!",
+    "newDescription": "तुमच्या नवीन Tangem कार्डबद्दल अभिनंदन, तुमच्या क्रिप्टो मालमत्तेसाठी हे सर्वात सोयीस्कर कोल्ड स्टोरेज आहे.",
+    "newDescriptionBoldAfter": "हे कार्ड न वापरलेले आणि छेडछाड न केलेले आहे.",
+    "newDescriptionAfter": "कार्ड आता तुमचे वॉलेट तयार करेल, जेणेकरून तुम्ही ते वापरणे सुरू करू शकता.",
+    "newButton": "पुढे चालू ठेवा",
+    "existingTitle": "कार्ड आयात करा",
+    "existingDescription": "तुम्ही Tangem कार्ड आयात करत आहात.",
+    "existingDescriptionUsedBefore": "हे कार्ड आधी वापरले गेले आहे!",
+    "existingDescriptionBoldAfter": "जर हे कार्ड नवीन आणि न वापरलेले असायला हवे, तर कृपया सपोर्टशी संपर्क साधा.",
+    "existingDescriptionAfter": "जर हे कार्ड तुमचे आहे किंवा तुम्ही विश्वास ठेवता अशा कोणाकडून मिळाले असेल, तर सर्व काही ठीक आहे.",
+    "existingButtonSupport": "सपोर्टशी संपर्क साधा",
+    "existingButtonContinue": "पुढे चालू ठेवा"
   }
 }

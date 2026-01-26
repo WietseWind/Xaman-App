@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Czy ktoś, kto twierdzi, że jest częścią zespołu Xaman, XRPL Labs lub Ripple, prosi Cię o podpisanie tej transakcji?",
     "areYouAwareThatNonReversible": "Czy transakcję blockchain można cofnąć?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Nowa karta!",
+    "newDescription": "Gratulacje! Masz nową kartę Tangem, najwygodniejszy cold storage dla Twoich kryptowalut.",
+    "newDescriptionBoldAfter": "Ta karta jest nieużywana i nie została naruszona.",
+    "newDescriptionAfter": "Karta wygeneruje teraz Twój portfel, abyś mógł zacząć go używać.",
+    "newButton": "Kontynuuj",
+    "existingTitle": "Importuj kartę",
+    "existingDescription": "Importujesz kartę Tangem.",
+    "existingDescriptionUsedBefore": "Ta karta była już używana!",
+    "existingDescriptionBoldAfter": "Jeśli ta karta powinna być nowa i nieużywana, skontaktuj się z pomocą techniczną.",
+    "existingDescriptionAfter": "Jeśli ta karta należy do Ciebie lub otrzymałeś ją od kogoś, komu ufasz, wszystko jest w porządku.",
+    "existingButtonSupport": "Kontakt z pomocą",
+    "existingButtonContinue": "Kontynuuj"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Dziś o] LT",

@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Vai kāds, kas apgalvo, ka ir Xaman, XRPL Labs vai Ripple komandas dalībnieks, lūdz jūs parakstīt šo darījumu?",
     "areYouAwareThatNonReversible": "Vai blokķēdes darījumu var atcelt?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Pavisam jauna karte!",
+    "newDescription": "Apsveicam ar jauno Tangem karti – ērtāko aukstās glabāšanas risinājumu taviem kriptoaktīviem.",
+    "newDescriptionBoldAfter": "Šī karte ir nelietota un nav bojāta.",
+    "newDescriptionAfter": "Karte tagad izveidos tavu maku, lai tu varētu sākt to lietot.",
+    "newButton": "Turpināt",
+    "existingTitle": "Importēt karti",
+    "existingDescription": "Tu importē Tangem karti.",
+    "existingDescriptionUsedBefore": "Šī karte ir lietota iepriekš!",
+    "existingDescriptionBoldAfter": "Ja šai kartei vajadzētu būt jaunai un nelietotai, lūdzu, sazinies ar atbalstu.",
+    "existingDescriptionAfter": "Ja šī karte ir tava vai tu to saņēmi no kāda, kuram uzticies, viss ir kārtībā.",
+    "existingButtonSupport": "Sazināties ar atbalstu",
+    "existingButtonContinue": "Turpināt"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Šodien pulksten] LT",

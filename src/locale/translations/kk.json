@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Xaman, XRPL Labs немесе Ripple командасының мүшесі екенін айтатын біреу сізден бұл транзакцияға қол қоюды сұрап жатыр ма?",
     "areYouAwareThatNonReversible": "Блокчейн транзакциясын кері қайтаруға бола ма?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Жаңа карта!",
+    "newDescription": "Жаңа Tangem картаңызбен құттықтаймыз, бұл крипто активтеріңіз үшін ең ыңғайлы суық сақтау.",
+    "newDescriptionBoldAfter": "Бұл карта пайдаланылмаған және бұзылмаған.",
+    "newDescriptionAfter": "Карта енді әмияныңызды жасайды, оны пайдалана бастауға болады.",
+    "newButton": "Жалғастыру",
+    "existingTitle": "Картаны импорттау",
+    "existingDescription": "Сіз Tangem картасын импорттап жатырсыз.",
+    "existingDescriptionUsedBefore": "Бұл карта бұрын пайдаланылған!",
+    "existingDescriptionBoldAfter": "Егер бұл карта жаңа және пайдаланылмаған болуы керек болса, қолдау қызметіне хабарласыңыз.",
+    "existingDescriptionAfter": "Егер бұл карта сіздікі немесе сенімді біреу берген болса, бәрі жақсы.",
+    "existingButtonSupport": "Қолдауға хабарласу",
+    "existingButtonContinue": "Жалғастыру"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Бүгін сағат] LT",

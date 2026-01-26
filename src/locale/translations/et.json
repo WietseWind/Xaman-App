@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Kas keegi, kes väidab end olevat Xamani, XRPL Labsi või Ripple'i meeskonna liige, palub teil seda tehingut allkirjastada?",
     "areYouAwareThatNonReversible": "Kas plokiahela tehingut saab tagasi pöörata?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Täiesti uus kaart!",
+    "newDescription": "Palju õnne uue Tangemi kaardi puhul – see on kõige mugavam külmhoidla sinu krüptovaradele.",
+    "newDescriptionBoldAfter": "See kaart on kasutamata ja seda pole rikutud.",
+    "newDescriptionAfter": "Kaart loob nüüd sinu rahakoti, et saaksid seda kasutama hakata.",
+    "newButton": "Jätka",
+    "existingTitle": "Impordi kaart",
+    "existingDescription": "Sa impordid Tangemi kaarti.",
+    "existingDescriptionUsedBefore": "Seda kaarti on varem kasutatud!",
+    "existingDescriptionBoldAfter": "Kui see kaart peaks olema uus ja kasutamata, võta palun ühendust toega.",
+    "existingDescriptionAfter": "Kui see kaart on sinu oma või said selle kelleltki, keda usaldad, on kõik korras.",
+    "existingButtonSupport": "Võta ühendust toega",
+    "existingButtonContinue": "Jätka"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Täna,] LT",

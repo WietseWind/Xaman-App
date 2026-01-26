@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "શું Xaman, XRPL Labs અથવા Ripple ટીમનો ભાગ હોવાનો દાવો કરનાર કોઈ વ્યક્તિ તમને આ વ્યવહાર પર સહી કરવાનું કહી રહી છે?",
     "areYouAwareThatNonReversible": "શું બ્લોકચેન વ્યવહાર ઉલટાવી શકાય છે?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "બિલકુલ નવું કાર્ડ!",
+    "newDescription": "તમારા નવા Tangem કાર્ડ માટે અભિનંદન, આ તમારી ક્રિપ્ટો સંપત્તિ માટે સૌથી અનુકૂળ કોલ્ડ સ્ટોરેજ છે.",
+    "newDescriptionBoldAfter": "આ કાર્ડ વપરાયેલ નથી અને તેની સાથે છેડછાડ કરવામાં આવી નથી.",
+    "newDescriptionAfter": "કાર્ડ હવે તમારું વૉલેટ બનાવશે, જેથી તમે તેનો ઉપયોગ શરૂ કરી શકો.",
+    "newButton": "ચાલુ રાખો",
+    "existingTitle": "કાર્ડ આયાત કરો",
+    "existingDescription": "તમે Tangem કાર્ડ આયાત કરી રહ્યા છો.",
+    "existingDescriptionUsedBefore": "આ કાર્ડ પહેલાં વપરાયેલ છે!",
+    "existingDescriptionBoldAfter": "જો આ કાર્ડ નવું અને વપરાયેલ ન હોવું જોઈએ, તો કૃપા કરીને સપોર્ટનો સંપર્ક કરો.",
+    "existingDescriptionAfter": "જો આ કાર્ડ તમારું છે અથવા તમે વિશ્વાસ કરો છો તેવા કોઈએ તમને આપ્યું છે, તો બધું બરાબર છે.",
+    "existingButtonSupport": "સપોર્ટનો સંપર્ક કરો",
+    "existingButtonContinue": "ચાલુ રાખો"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[આજ] LT",

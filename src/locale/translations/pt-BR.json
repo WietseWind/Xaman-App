@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Alguém que afirma ser parte da equipe Xaman, XRPL Labs ou Ripple está pedindo para você assinar esta transação?",
     "areYouAwareThatNonReversible": "Uma transação de blockchain pode ser revertida?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Cartão novinho!",
+    "newDescription": "Parabéns pelo seu novo cartão Tangem, o armazenamento a frio mais prático para seus criptoativos.",
+    "newDescriptionBoldAfter": "Este cartão não foi usado nem adulterado.",
+    "newDescriptionAfter": "O cartão vai agora gerar sua carteira, para que você possa começar a usá-la.",
+    "newButton": "Continuar",
+    "existingTitle": "Importar cartão",
+    "existingDescription": "Você está importando um cartão Tangem.",
+    "existingDescriptionUsedBefore": "Este cartão já foi usado!",
+    "existingDescriptionBoldAfter": "Se este cartão deveria ser novo e sem uso, por favor entre em contato com o suporte.",
+    "existingDescriptionAfter": "Se este cartão é seu ou foi dado por alguém de confiança, está tudo bem.",
+    "existingButtonSupport": "Contatar suporte",
+    "existingButtonContinue": "Continuar"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Hoje às] LT",

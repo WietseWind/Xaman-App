@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Žiada vás niekto, kto tvrdí, že je súčasťou tímu Xaman, XRPL Labs alebo Ripple, aby ste podpísali túto transakciu?",
     "areYouAwareThatNonReversible": "Dá sa blockchai nová transakcia zvrátiť?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Úplne nová karta!",
+    "newDescription": "Gratulujeme k novej karte Tangem, najpohodlnejšiemu cold storage riešeniu pre vaše kryptoaktíva.",
+    "newDescriptionBoldAfter": "Táto karta je nepoužitá a nebola manipulovaná.",
+    "newDescriptionAfter": "Karta teraz vytvorí vašu peňaženku, aby ste ju mohli začať používať.",
+    "newButton": "Pokračovať",
+    "existingTitle": "Importovať kartu",
+    "existingDescription": "Importujete kartu Tangem.",
+    "existingDescriptionUsedBefore": "Táto karta už bola použitá!",
+    "existingDescriptionBoldAfter": "Ak by táto karta mala byť nová a nepoužitá, kontaktujte prosím podporu.",
+    "existingDescriptionAfter": "Ak je táto karta vaša alebo ste ju dostali od niekoho, komu dôverujete, je všetko v poriadku.",
+    "existingButtonSupport": "Kontaktovať podporu",
+    "existingButtonContinue": "Pokračovať"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[dnes o] LT",

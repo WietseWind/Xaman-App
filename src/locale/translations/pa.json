@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "ਕੀ ਕੋਈ ਜੋ Xaman, XRPL Labs ਜਾਂ Ripple ਟੀਮ ਦਾ ਹਿੱਸਾ ਹੋਣ ਦਾ ਦਾਅਵਾ ਕਰਦਾ ਹੈ, ਤੁਹਾਨੂੰ ਇਸ ਲੈਣ-ਦੇਣ 'ਤੇ ਦਸਤਖਤ ਕਰਨ ਲਈ ਕਹਿ ਰਿਹਾ ਹੈ?",
     "areYouAwareThatNonReversible": "ਕੀ ਬਲਾਕਚੇਨ ਲੈਣ-ਦੇਣ ਨੂੰ ਉਲਟਾਇਆ ਜਾ ਸਕਦਾ ਹੈ?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "ਬਿਲਕੁਲ ਨਵਾਂ ਕਾਰਡ!",
+    "newDescription": "ਤੁਹਾਡੇ ਨਵੇਂ Tangem ਕਾਰਡ ਲਈ ਵਧਾਈ, ਇਹ ਤੁਹਾਡੀਆਂ ਕ੍ਰਿਪਟੋ ਸੰਪਤੀਆਂ ਲਈ ਸਭ ਤੋਂ ਸੁਵਿਧਾਜਨਕ ਕੋਲਡ ਸਟੋਰੇਜ ਹੈ।",
+    "newDescriptionBoldAfter": "ਇਹ ਕਾਰਡ ਅਣਵਰਤਿਆ ਹੈ ਅਤੇ ਇਸ ਨਾਲ ਛੇੜਛਾੜ ਨਹੀਂ ਕੀਤੀ ਗਈ।",
+    "newDescriptionAfter": "ਕਾਰਡ ਹੁਣ ਤੁਹਾਡਾ ਵਾਲੇਟ ਬਣਾਏਗਾ, ਤਾਂ ਜੋ ਤੁਸੀਂ ਇਸਦੀ ਵਰਤੋਂ ਸ਼ੁਰੂ ਕਰ ਸਕੋ।",
+    "newButton": "ਜਾਰੀ ਰੱਖੋ",
+    "existingTitle": "ਕਾਰਡ ਆਯਾਤ ਕਰੋ",
+    "existingDescription": "ਤੁਸੀਂ Tangem ਕਾਰਡ ਆਯਾਤ ਕਰ ਰਹੇ ਹੋ।",
+    "existingDescriptionUsedBefore": "ਇਹ ਕਾਰਡ ਪਹਿਲਾਂ ਵਰਤਿਆ ਜਾ ਚੁੱਕਾ ਹੈ!",
+    "existingDescriptionBoldAfter": "ਜੇਕਰ ਇਹ ਕਾਰਡ ਨਵਾਂ ਅਤੇ ਅਣਵਰਤਿਆ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਸਪੋਰਟ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।",
+    "existingDescriptionAfter": "ਜੇਕਰ ਇਹ ਕਾਰਡ ਤੁਹਾਡਾ ਹੈ ਜਾਂ ਕਿਸੇ ਭਰੋਸੇਯੋਗ ਵਿਅਕਤੀ ਨੇ ਤੁਹਾਨੂੰ ਦਿੱਤਾ ਹੈ, ਤਾਂ ਸਭ ਠੀਕ ਹੈ।",
+    "existingButtonSupport": "ਸਪੋਰਟ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
+    "existingButtonContinue": "ਜਾਰੀ ਰੱਖੋ"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Today at] LT",

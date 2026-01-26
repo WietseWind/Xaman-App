@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Apakah Anda diminta untuk menandatangani transaksi ini oleh seseorang yang mengaku sebagai bagian dari tim Xaman, XRPL Labs, atau Ripple?",
     "areYouAwareThatNonReversible": "Bisakah transaksi blockchain dibatalkan?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Kartu baru!",
+    "newDescription": "Selamat atas kartu Tangem baru Anda, penyimpanan dingin paling praktis untuk aset kripto Anda.",
+    "newDescriptionBoldAfter": "Kartu ini belum digunakan dan tidak dirusak.",
+    "newDescriptionAfter": "Kartu akan membuat dompet Anda sekarang, sehingga Anda dapat mulai menggunakannya.",
+    "newButton": "Lanjutkan",
+    "existingTitle": "Impor kartu",
+    "existingDescription": "Anda sedang mengimpor kartu Tangem.",
+    "existingDescriptionUsedBefore": "Kartu ini sudah pernah digunakan!",
+    "existingDescriptionBoldAfter": "Jika kartu ini seharusnya baru dan belum digunakan, silakan hubungi dukungan.",
+    "existingDescriptionAfter": "Jika kartu ini milik Anda atau diberikan oleh seseorang yang Anda percaya, semuanya baik-baik saja.",
+    "existingButtonSupport": "Hubungi dukungan",
+    "existingButtonContinue": "Lanjutkan"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Hari ini pukul] LT",

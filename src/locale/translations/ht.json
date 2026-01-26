@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Èske yon moun ki di li fè pati ekip Xaman, XRPL Labs oswa Ripple ap mande w siyen tranzaksyon sa a?",
     "areYouAwareThatNonReversible": "Èske yon tranzaksyon blockchain ka ranvèse?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Kat tou nèf!",
+    "newDescription": "Felisitasyon pou nouvo kat Tangem ou a, depo fwèt ki pi pratik pou byen kriptografik ou yo.",
+    "newDescriptionBoldAfter": "Kat sa a pa itilize e li pa te chanje.",
+    "newDescriptionAfter": "Kat la pral kreye bous ou a kounye a, pou ou ka kòmanse itilize li.",
+    "newButton": "Kontinye",
+    "existingTitle": "Enpòte kat",
+    "existingDescription": "Ou ap enpòte yon kat Tangem.",
+    "existingDescriptionUsedBefore": "Kat sa a te itilize anvan!",
+    "existingDescriptionBoldAfter": "Si kat sa a ta dwe nouvo e pa itilize, tanpri kontakte sipò.",
+    "existingDescriptionAfter": "Si kat sa a se pa ou oswa yon moun ou fè konfyans te ba ou li, tout bagay anfòm.",
+    "existingButtonSupport": "Kontakte sipò",
+    "existingButtonContinue": "Kontinye"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Today at] LT",

@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "هل يُطلب منك توقيع هذه المعاملة من قبل شخص يدعي أنه جزء من فريق Xaman أو XRPL Labs أو Ripple؟",
     "areYouAwareThatNonReversible": "هل يمكن عكس معاملة البلوكشين؟"
   },
+  "tangemImportMsgs": {
+    "newTitle": "بطاقة جديدة تماماً!",
+    "newDescription": "تهانينا على بطاقة Tangem الجديدة، أكثر وسائل التخزين البارد ملاءمة لأصولك الرقمية.",
+    "newDescriptionBoldAfter": "هذه البطاقة غير مستخدمة ولم يتم العبث بها.",
+    "newDescriptionAfter": "ستقوم البطاقة الآن بإنشاء محفظتك، حتى تتمكن من البدء في استخدامها.",
+    "newButton": "متابعة",
+    "existingTitle": "استيراد البطاقة",
+    "existingDescription": "أنت تقوم باستيراد بطاقة Tangem.",
+    "existingDescriptionUsedBefore": "تم استخدام هذه البطاقة من قبل!",
+    "existingDescriptionBoldAfter": "إذا كان يجب أن تكون هذه البطاقة جديدة وغير مستخدمة، يرجى التواصل مع الدعم.",
+    "existingDescriptionAfter": "إذا كانت هذه البطاقة ملكك أو أعطاها لك شخص تثق به، فكل شيء على ما يرام.",
+    "existingButtonSupport": "التواصل مع الدعم",
+    "existingButtonContinue": "متابعة"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[اليوم عند الساعة] LT",

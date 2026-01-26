@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Algú que ofereix suport t'està demanant que signis aquesta transacció?",
     "isSomeoneTeam": "Algú que diu que és part de l'equip de Xaman, XRPL Labs o Ripple t'està demanant que signis aquesta transacció?",
     "areYouAwareThatNonReversible": "Es pot revertir una transacció de blockchain?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Targeta nova!",
+    "newDescription": "Felicitats per la teva nova targeta Tangem, l'emmagatzematge en fred més convenient per als teus criptoactius.",
+    "newDescriptionBoldAfter": "Aquesta targeta no s'ha utilitzat i no s'ha manipulat.",
+    "newDescriptionAfter": "La targeta ara crearà la teva cartera perquè puguis començar a utilitzar-la.",
+    "newButton": "Continua",
+    "existingTitle": "Importa la targeta",
+    "existingDescription": "Estàs important una targeta Tangem.",
+    "existingDescriptionUsedBefore": "Aquesta targeta ja s'ha utilitzat!",
+    "existingDescriptionBoldAfter": "Si aquesta targeta hauria de ser nova i no utilitzada, contacta amb el suport.",
+    "existingDescriptionAfter": "Si aquesta targeta és teva o te l'ha donat algú de confiança, tot està bé.",
+    "existingButtonSupport": "Contacta amb el suport",
+    "existingButtonContinue": "Continua"
   }
 }

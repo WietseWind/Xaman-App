@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Pyytääkö joku, joka väittää olevansa osa Xaman-, XRPL Labs- tai Ripple-tiimiä, sinua allekirjoittamaan tämän tapahtuman?",
     "areYouAwareThatNonReversible": "Voidaanko lohkoketjutapahtuma peruuttaa?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Upouusi kortti!",
+    "newDescription": "Onnittelut uudesta Tangem-kortistasi, kätevin kylmäsäilytysratkaisu kryptovaroillesi.",
+    "newDescriptionBoldAfter": "Tämä kortti on käyttämätön eikä sitä ole peukaloitu.",
+    "newDescriptionAfter": "Kortti luo nyt lompakkosi, jotta voit aloittaa sen käytön.",
+    "newButton": "Jatka",
+    "existingTitle": "Tuo kortti",
+    "existingDescription": "Olet tuomassa Tangem-korttia.",
+    "existingDescriptionUsedBefore": "Tätä korttia on käytetty aiemmin!",
+    "existingDescriptionBoldAfter": "Jos tämän kortin pitäisi olla uusi ja käyttämätön, ota yhteyttä tukeen.",
+    "existingDescriptionAfter": "Jos tämä kortti on sinun tai olet saanut sen joltain johon luotat, kaikki on kunnossa.",
+    "existingButtonSupport": "Ota yhteyttä tukeen",
+    "existingButtonContinue": "Jatka"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[tänään] [klo] LT",

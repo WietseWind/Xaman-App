@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Traži li vas netko tko nudi podršku da potpišete ovu transakciju?",
     "isSomeoneTeam": "Traži li vas netko tko tvrdi da je dio Xaman, XRPL Labs ili Ripple tima da potpišete ovu transakciju?",
     "areYouAwareThatNonReversible": "Može li se blockchain transakcija poništiti?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Potpuno nova kartica!",
+    "newDescription": "Čestitamo na novoj Tangem kartici, najpraktičnijem hladnom spremištu za vašu kriptoimovinu.",
+    "newDescriptionBoldAfter": "Ova kartica nije korištena i nije dirana.",
+    "newDescriptionAfter": "Kartica će sada stvoriti vaš novčanik kako biste ga mogli početi koristiti.",
+    "newButton": "Nastavi",
+    "existingTitle": "Uvezi karticu",
+    "existingDescription": "Uvozite Tangem karticu.",
+    "existingDescriptionUsedBefore": "Ova kartica je već korištena!",
+    "existingDescriptionBoldAfter": "Ako bi ova kartica trebala biti nova i nekorištena, obratite se podršci.",
+    "existingDescriptionAfter": "Ako je ova kartica vaša ili ste je dobili od nekoga kome vjerujete, sve je u redu.",
+    "existingButtonSupport": "Kontaktirajte podršku",
+    "existingButtonContinue": "Nastavi"
   }
 }

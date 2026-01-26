@@ -1456,5 +1456,19 @@
     "isSomeoneSupport": "Bliver du bedt om at underskrive denne transaktion af nogen, der tilbyder support?",
     "isSomeoneTeam": "Bliver du bedt om at underskrive denne transaktion af nogen, der siger, de er en del af Xaman-, XRPL Labs- eller Ripple-teamet?",
     "areYouAwareThatNonReversible": "Kan en blockchain-transaktion tilbageføres?"
+  },
+  "tangemImportMsgs": {
+    "newTitle": "Helt nyt kort!",
+    "newDescription": "Tillykke med dit nye Tangem kort, den mest praktiske cold storage til dine kryptoaktiver.",
+    "newDescriptionBoldAfter": "Dette kort er ubrugt og ikke manipuleret.",
+    "newDescriptionAfter": "Kortet vil nu oprette din wallet, så du kan begynde at bruge den.",
+    "newButton": "Fortsæt",
+    "existingTitle": "Importér kort",
+    "existingDescription": "Du importerer et Tangem kort.",
+    "existingDescriptionUsedBefore": "Dette kort er blevet brugt før!",
+    "existingDescriptionBoldAfter": "Hvis dette kort burde være nyt og ubrugt, kontakt venligst support.",
+    "existingDescriptionAfter": "Hvis dette kort er dit eller du har fået det af en du stoler på, er alt i orden.",
+    "existingButtonSupport": "Kontakt support",
+    "existingButtonContinue": "Fortsæt"
   }
 }

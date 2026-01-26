@@ -1457,6 +1457,20 @@
     "isSomeoneTeam": "Quelqu'un qui prétend faire partie de l'équipe Xaman, XRPL Labs ou Ripple vous demande-t-il de signer cette transaction ?",
     "areYouAwareThatNonReversible": "Une transaction blockchain peut-elle être annulée ?"
   },
+  "tangemImportMsgs": {
+    "newTitle": "Carte toute neuve !",
+    "newDescription": "Félicitations pour votre nouvelle carte Tangem, le stockage à froid le plus pratique pour vos cryptomonnaies.",
+    "newDescriptionBoldAfter": "Cette carte est neuve et n'a pas été altérée.",
+    "newDescriptionAfter": "La carte va maintenant générer votre portefeuille pour que vous puissiez commencer à l'utiliser.",
+    "newButton": "Continuer",
+    "existingTitle": "Importer la carte",
+    "existingDescription": "Vous importez une carte Tangem.",
+    "existingDescriptionUsedBefore": "Cette carte a déjà été utilisée !",
+    "existingDescriptionBoldAfter": "Si cette carte devait être neuve et inutilisée, veuillez contacter le support.",
+    "existingDescriptionAfter": "Si cette carte vous appartient ou vous a été donnée par quelqu'un de confiance, tout va bien.",
+    "existingButtonSupport": "Contacter le support",
+    "existingButtonContinue": "Continuer"
+  },
   "moment": {
     "calendar": {
       "sameDay": "[Aujourd’hui à] LT",
