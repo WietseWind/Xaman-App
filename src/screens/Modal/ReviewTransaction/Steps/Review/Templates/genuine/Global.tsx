@@ -457,6 +457,7 @@ class GlobalTemplate extends Component<Props, State> {
                     !canSendFee && AppStyles.marginTopSml,
                 ]}>
                     <ServiceFeeSpendable
+                        txType={transaction?.TransactionType || transaction?.JsonForSigning?.TransactionType}
                         spendableBalanceDrops={Math.floor(Number(CalculateAvailableBalance(source!)) * 1_000_000)}
                         serviceFeeDrops={Number(serviceFee || 0)}
                         txFeeDrops={Number(transaction?.JsonForSigning?.Fee || 0)}

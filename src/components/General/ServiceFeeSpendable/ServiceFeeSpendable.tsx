@@ -21,6 +21,7 @@ import { TouchableDebounce } from '../TouchableDebounce';
 
 /* Types ==================================================================== */
 interface Props {
+    txType?: string;
     spendableBalanceDrops: number;
     serviceFeeDrops: number;
     txFeeDrops: number;
@@ -122,6 +123,7 @@ class ServiceFeeSpendable extends Component<Props, State> {
             onTxMaySend,
             // updateSendingAmountDrops,
             serviceFeeDrops,
+            txType,
         } = this.props;
         const {
             touchedCount,
@@ -137,7 +139,24 @@ class ServiceFeeSpendable extends Component<Props, State> {
             // &&
             // typeof updateSendingAmountDrops === 'function'
         ) {
-            return true;
+            // Only enforce for payments, offers, and AMM deposits
+            // To prevent people from getting stuck with e.g. XRP withdrawing from AMM
+            if (
+                !txType || (
+                    String(txType || '').match(/payment/i) ||
+                    String(txType || '').match(/deposit/i) ||
+                    String(txType || '').match(/create/i) ||
+                    String(txType || '').match(/accept/i) ||
+                    String(txType || '').match(/finish/i) ||
+                    String(txType || '').match(/mint/i) ||
+                    String(txType || '').match(/modify/i) ||
+                    String(txType || '').match(/claim/i) ||
+                    String(txType || '').match(/authorize/i) ||
+                    String(txType || '').match(/batch/i)
+                )
+            ) {
+                return true;
+            }
         }
     
         return false;
@@ -165,6 +184,7 @@ class ServiceFeeSpendable extends Component<Props, State> {
 
     render() {
         // const { title, direction, checked, isDisabled, testID, style } = this.props;
+
         const {
             spendableBalanceDrops,
             serviceFeeDrops,
