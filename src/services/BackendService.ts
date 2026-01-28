@@ -265,39 +265,31 @@ class BackendService {
      * Pings the backend and updates the user profile.
      */
     ping = async () => {
-        const accounts = AccountRepository.getAccounts()
-            .map((a) => {
-                try {
-                    return {
-                        address: a.address,
-                        publicKey: a.publicKey,
-                        accessLevel: a.accessLevel,
-                        encryptionLevel: a.encryptionLevel,
-                        hidden: a.hidden,
-                        label: a.label,
-                        type: a.type,
-                        regularKey: a.regularKey,
-                        order: a.order,
-                        card: {
-                            serial: a.additionalInfo?.cardId,
-                            cardFirmwareVersion: a.additionalInfo?.firmwareVersion?.stringValue,
-                            isAccessCodeSet: a.additionalInfo?.isAccessCodeSet,
-                            isPasscodeSet: a.additionalInfo?.isPasscodeSet,
-                            securityDelay: a.additionalInfo?.settings?.securityDelay,
-                        },
-                    };
-                } catch (e) {
-                    return null;
-                }
-            })
-            .filter((a) => a !== null);
-
         return ApiService.fetch(Endpoints.Ping, 'POST', null, {
             appVersion: GetAppReadableVersion(),
             appLanguage: Localize.getCurrentLocale(),
             appCurrency: CoreRepository.getAppCurrency(),
             devicePushToken: await PushNotificationsService.getToken(),
-            accounts,
+            accounts: AccountRepository.getAccounts().map((a) => {
+                return {
+                    address: a.address,
+                    publicKey: a.publicKey,
+                    accessLevel: a.accessLevel,
+                    encryptionLevel: a.encryptionLevel,
+                    hidden: a.hidden,
+                    label: a.label,
+                    type: a.type,
+                    regularKey: a.regularKey,
+                    order: a.order,
+                    card: {
+                        serial: a.additionalInfo?.cardId,
+                        cardFirmwareVersion: a.additionalInfo?.firmwareVersion?.stringValue,
+                        isAccessCodeSet: a.additionalInfo?.isAccessCodeSet,
+                        isPasscodeSet: a.additionalInfo?.isPasscodeSet,
+                        securityDelay: a.additionalInfo?.settings?.securityDelay,
+                    },
+                };
+            }),
         })
             .then((res: XamanBackend.PingResponse) => {
                 const { auth, badge, env, monetization, tosAndPrivacyPolicyVersion } = res;
