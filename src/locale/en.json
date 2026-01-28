@@ -1466,9 +1466,9 @@
     "existingTitle": "Import card",
     "existingDescription": "You are importing a Tangem card.",
     "existingDescriptionUsedBefore": "This card has been used before!",
-    "existingDescriptionBoldAfter": "If this card should be new and unused, please contact support.",
+    "existingDescriptionBoldAfter": "If you expect this card to be new and unused, please contact support.",
     "existingDescriptionAfter": "If this card is yours or was given to you by someone you trust, everything is fine.",
     "existingButtonSupport": "Contact support",
-    "existingButtonContinue": "Continue"
+    "existingButtonContinue": "Continue anyway"
   }
 }
