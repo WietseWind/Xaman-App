@@ -55,9 +55,12 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
     }
 
     componentDidMount() {
+        const {embeddedInsteadOfModal} = this.props;
         this.mounted = true;
 
-        this.navigationListener = Navigation.events().bindComponent(this);
+        if (!embeddedInsteadOfModal) {
+            this.navigationListener = Navigation.events().bindComponent(this);
+        }
 
         InteractionManager.runAfterInteractions(this.checkAdvisory);
     }

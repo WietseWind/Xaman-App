@@ -27,11 +27,12 @@ import { Button, Footer, Icon, InfoMessage, LoadingIndicator, Spacer } from '@co
 import Localize from '@locale';
 
 // eslint-disable-next-line import/no-cycle
-import { TransactionDetailsViewProps } from '@screens/Events/Details';
+import TransactionDetailsView from '@screens/Events/Details';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
 import { ErrorResponse } from '@common/libs/ledger/types/methods';
+import { ComponentTypes } from '@services/NavigationService';
 
 /* types ==================================================================== */
 export interface Props {
@@ -45,6 +46,8 @@ export interface State {
     requiresSwitchNetwork: boolean;
     error: boolean;
     errorMessage?: string;
+    transactionInstance?: Transactions & MutationsMixinType;
+    account?: AccountModel;
 }
 
 /* Component ==================================================================== */
@@ -68,6 +71,8 @@ class TransactionLoaderModal extends Component<Props, State> {
             isLoading: true,
             requiresSwitchNetwork: false,
             error: false,
+            transactionInstance: undefined,
+            account: undefined,
         };
     }
 
@@ -165,16 +170,24 @@ class TransactionLoaderModal extends Component<Props, State> {
                 });
             }
 
+            // Moved to rendering in page
             // close this modal and open the transaction details screen
-            await Navigator.dismissModal();
+            // await Navigator.dismissModal();
+
+            this.setState({
+                transactionInstance,
+                account,
+            });
 
             // redirect to details screen with a little-bit delay
-            setTimeout(() => {
-                Navigator.showModal<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
-                    item: transactionInstance,
-                    account,
-                });
-            }, 500);
+            // setTimeout(() => {
+            //     Navigator.showModal<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
+            //         item: transactionInstance,
+            //         account,
+            //     }, {
+            //        modalPresentationStyle: OptionsModalPresentationStyle.pageSheet,
+            //     });
+            // }, 500);
         } catch (error) {
             if (!this.mounted) {
                 return;
@@ -304,7 +317,11 @@ class TransactionLoaderModal extends Component<Props, State> {
     };
 
     renderContent = () => {
-        const { isLoading, requiresSwitchNetwork, error } = this.state;
+        const {
+            isLoading,
+            requiresSwitchNetwork,
+            error,
+        } = this.state;
 
         if (isLoading) {
             return this.renderLoading();
@@ -315,11 +332,27 @@ class TransactionLoaderModal extends Component<Props, State> {
         if (error) {
             return this.renderError();
         }
+
         return null;
     };
 
     render() {
-        const { isLoading } = this.state;
+        const {
+            isLoading,
+            transactionInstance,
+            account,
+        } = this.state;
+
+        if (transactionInstance && account) {
+            return (
+                <TransactionDetailsView
+                    componentType={ComponentTypes.Modal}
+                    item={transactionInstance}
+                    account={account}
+                    embeddedInsteadOfModal
+                />
+            );
+        }
 
         return (
             <ImageBackground
