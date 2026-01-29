@@ -9,6 +9,7 @@ export const ApiUrl = `https://${HOSTNAME}/api`;
 
 export enum Endpoints {
     Ping = '/v1/app/ping',
+    Actions = '/v1/app/actions',
     ExtAssets = '/v1/app/ext-assets',
     AddUser = '/v1/app/add-user',
     ActivateDevice = '/v1/app/activate-device',
