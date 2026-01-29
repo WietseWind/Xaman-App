@@ -48,6 +48,7 @@ import styles from './styles';
 
 /* types ==================================================================== */
 import { Props, State } from './types';
+import BackendService from '@services/BackendService';
 
 /* Component ==================================================================== */
 class TokenSettingsOverlay extends Component<Props, State> {
@@ -496,6 +497,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
 
         this.dismiss().then(() => {
             if (NetworkService.hasSwap()) {
+                setTimeout(() => BackendService.action('assetswap', `${token.currency.currencyCode}.${token.currency.issuer}`), 1000);
                 Navigator.showModal<XAppBrowserModalProps>(
                     AppScreens.Modal.XAppBrowser,
                     {
@@ -542,6 +544,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
         const { account, token } = this.props;
 
         this.dismiss().then(() => {
+            setTimeout(() => BackendService.action('assetexchange', `${token.currency.currencyCode}.${token.currency.issuer}`), 1000);
             Navigator.push<ExchangeViewProps>(AppScreens.Transaction.Exchange, { account, token });
         });
     };

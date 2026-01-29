@@ -265,11 +265,18 @@ class BackendService {
      * Pings the backend and updates the user profile.
      */
     ping = async () => {
+        const settings = CoreRepository.getSettings();
         return ApiService.fetch(Endpoints.Ping, 'POST', null, {
             appVersion: GetAppReadableVersion(),
             appLanguage: Localize.getCurrentLocale(),
             appCurrency: CoreRepository.getAppCurrency(),
             devicePushToken: await PushNotificationsService.getToken(),
+            developerMode: CoreRepository.isDeveloperModeEnabled(),
+            hideSpamEvents: settings.hideAdvisoryTransactions,
+            hideServiceFeeEvents: settings.hideServiceFeeTransactions,
+            reserveOnHomescreen: settings.showReservePanel,
+            assetPricesOnHomescreen: settings.showPerAssetWorth,
+            accountWorthOnHomescreen: settings.accountWorthActive,
             accounts: AccountRepository.getAccounts().map((a) => {
                 return {
                     address: a.address,
@@ -340,6 +347,17 @@ class BackendService {
             .catch((error) => {
                 this.logger.error('ping', error);
             });
+    };
+
+    /**
+     * Debug trace action
+     */
+    action = async (action: string, param?: string): Promise<any> => {
+        const data = {
+            action,
+            param,
+        };
+        return ApiService.fetch(Endpoints.Actions, 'POST', null, data).then().catch();
     };
 
     getCuratedIOUs = (params: { promoted?: boolean; issuer?: string }): Promise<XamanBackend.CuratedIOUsResponse> => {

@@ -11,7 +11,7 @@ import { CoreRepository, NetworkRepository } from '@store/repositories';
 import { NetworkModel, CoreModel } from '@store/models';
 import { NetworkType } from '@store/types';
 
-import { NetworkService } from '@services';
+import { BackendService, NetworkService } from '@services';
 
 import { Navigator } from '@common/helpers/navigator';
 
@@ -116,6 +116,7 @@ class SwitchNetworkOverlay extends Component<Props, State> {
         if (!network.id.equals(coreSettings.network.id)) {
             // switch network
             NetworkService.switchNetwork(network);
+            BackendService.action('switchnetwork', network.key);
             // callback
             if (typeof onChangeNetwork === 'function') {
                 onChangeNetwork(network);

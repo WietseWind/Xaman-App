@@ -236,6 +236,7 @@ class NativeItem extends Component<Props, State> {
                                 testID="buy-btn"
                                 label={Localize.t('global.buy')}
                                 onPress={() => {
+                                    BackendService.action('buybtn');
                                     Navigator.showModal(
                                         AppScreens.Modal.XAppBrowser,
                                         {

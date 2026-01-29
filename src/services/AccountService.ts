@@ -66,7 +66,10 @@ class AccountService extends EventEmitter {
                 AccountRepository.on('accountRemove', this.onAccountsChange);
 
                 // Account switched, selectively update account details & TrustLines
-                CoreRepository.on('switchAccount', (accountAddress) => this.updateAccountsDetails([accountAddress]));
+                CoreRepository.on('switchAccount', (accountAddress) => {
+                    this.updateAccountsDetails([accountAddress]);
+                    BackendService.action('switchaccount', accountAddress);
+                });
 
                 // on network service connect
                 NetworkService.on('connect', this.onNetworkConnect);

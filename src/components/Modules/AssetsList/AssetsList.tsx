@@ -11,6 +11,7 @@ import { ASSETS_CATEGORY, Props as SwitchAssetCategoryOverlayProps } from '@scre
 import { TokensList } from './Tokens';
 import { NFTsList } from './NFTs';
 import { VibrateHapticFeedback } from '@common/helpers/interface';
+import BackendService from '@services/BackendService';
 
 /* Types ==================================================================== */
 
@@ -57,6 +58,7 @@ class AssetsList extends Component<Props, State> {
         const { category } = this.state;
 
         if (selectedCategory !== category) {
+            setTimeout(() => BackendService.action('assetcatswitch', selectedCategory), 1000);
             this.setState({
                 category: selectedCategory,
             });

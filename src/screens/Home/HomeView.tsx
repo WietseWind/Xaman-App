@@ -22,7 +22,7 @@ import {
     OptionsModalPresentationStyle,
     OptionsModalTransitionStyle,
 } from 'react-native-navigation';
-import { AccountService, NetworkService, StyleService } from '@services';
+import { AccountService, BackendService, NetworkService, StyleService } from '@services';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
@@ -290,15 +290,18 @@ class HomeView extends Component<Props, State> {
         const { account } = this.state;
 
         if (account) {
+            setTimeout(() => BackendService.action('receivebtn'), 1000);
             Navigator.showOverlay<ShareAccountOverlayProps>(AppScreens.Overlay.ShareAccount, { account });
         }
     };
 
     pushSendScreen = () => {
         Navigator.push<SendViewProps>(AppScreens.Transaction.Payment, {});
+        setTimeout(() => BackendService.action('sendbtn'), 1000);
     };
 
     pushSwapScreen = () => {
+        setTimeout(() => BackendService.action('swapbtn'), 1000);
         Navigator.showModal<XAppBrowserModalProps>(
             AppScreens.Modal.XAppBrowser,
             {
@@ -333,6 +336,7 @@ class HomeView extends Component<Props, State> {
     };
 
     pushTokenScreen = () => {
+        setTimeout(() => BackendService.action('addtokenbtn'), 1000);
         Navigator.showModal<XAppBrowserModalProps>(
             AppScreens.Modal.XAppBrowser,
             {

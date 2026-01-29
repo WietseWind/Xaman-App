@@ -18,6 +18,7 @@ import { SwitchNetworkOverlayProps } from '@screens/Overlay/SwitchNetwork';
 
 import { AppSizes, AppStyles } from '@theme';
 import styles from './styles';
+import BackendService from '@services/BackendService';
 
 /* Types ==================================================================== */
 interface Props {
@@ -171,6 +172,7 @@ class NetworkSwitchButton extends PureComponent<Props, State> {
             const toNetwork = NetworkRepository.findBy('key', toNetworkKey);
             if (toNetwork.length === 1) {
                 try {
+                    BackendService.action('switchnetwork', toNetwork[0].key);
                     NetworkService.switchNetwork(toNetwork[0]);
                 } catch (e) {
                     //
