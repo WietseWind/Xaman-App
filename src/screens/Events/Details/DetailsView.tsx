@@ -95,9 +95,11 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
         const acc = (
             item?.Type === 'Credential'
                 ? item.Issuer
-                : item?.Type === 'Cron' || item?.Type === 'Vault'
+                : item?.Type === 'Cron' || item?.Type === 'Vault' || item?.Type === 'LoanBroker'
                     ? item.Owner
-                    : item.Account
+                    : item?.Type === 'Loan'
+                        ? (item as any).Borrower
+                        : item.Account
         );
     
         // no need to check as the account is the initiator of the transaction

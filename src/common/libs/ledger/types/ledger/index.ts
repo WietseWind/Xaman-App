@@ -25,6 +25,8 @@ import PermissionedDomain from './PermissionedDomain';
 import MPToken, { MPTokenFlags } from './MPToken';
 import MPTokenIssuance, { MPTokenIssuanceFlags } from './MPTokenIssuance';
 import Vault, { VaultFlags } from './Vault';
+import LoanBroker, { LoanBrokerFlags } from './LoanBroker';
+import Loan, { LoanFlags } from './Loan';
 
 export type {
     AccountRoot,
@@ -64,4 +66,9 @@ export type {
     Cron,
     Vault,
     VaultFlags,
+    LoanBroker,
+    Loan,
 };
+
+// Export enums as values (not types) so they can be used at runtime
+export { LoanFlags, LoanBrokerFlags };

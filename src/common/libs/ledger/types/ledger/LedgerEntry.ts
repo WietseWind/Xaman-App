@@ -22,6 +22,8 @@ import MPTokenIssuance from './MPTokenIssuance';
 import PermissionedDomain from './PermissionedDomain';
 import Cron from './Cron';
 import Vault from './Vault';
+import LoanBroker from './LoanBroker';
+import Loan from './Loan';
 
 type LedgerEntry =
     | AccountRoot
@@ -47,6 +49,8 @@ type LedgerEntry =
     | PermissionedDomain
     | Cron
     | Vault
+    | LoanBroker
+    | Loan
     | MPToken;
 
 type LedgerEntryFilter =
@@ -74,6 +78,8 @@ type LedgerEntryFilter =
     | 'permissioned_domain'
     | 'cron'
     | 'vault'
+    | 'loan_broker'
+    | 'loan'
     | 'credential';
 
 export type { LedgerEntry, LedgerEntryFilter };

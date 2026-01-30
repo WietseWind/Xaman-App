@@ -74,6 +74,17 @@ export enum TransactionTypes {
     VaultDeposit = 'VaultDeposit',
     VaultWithdraw = 'VaultWithdraw',
     VaultClawback = 'VaultClawback',
+    // Loan Broker Transactions (XLS-66)
+    LoanBrokerSet = 'LoanBrokerSet',
+    LoanBrokerDelete = 'LoanBrokerDelete',
+    LoanBrokerCoverDeposit = 'LoanBrokerCoverDeposit',
+    LoanBrokerCoverWithdraw = 'LoanBrokerCoverWithdraw',
+    LoanBrokerCoverClawback = 'LoanBrokerCoverClawback',
+    // Loan Transactions (XLS-66)
+    LoanSet = 'LoanSet',
+    LoanDelete = 'LoanDelete',
+    LoanManage = 'LoanManage',
+    LoanPay = 'LoanPay',
 }
 
 /**
@@ -127,6 +138,8 @@ export enum LedgerEntryTypes {
     PermissionedDomain = 'PermissionedDomain',
     Cron = 'Cron',
     Vault = 'Vault',
+    LoanBroker = 'LoanBroker',
+    Loan = 'Loan',
 }
 
 /**

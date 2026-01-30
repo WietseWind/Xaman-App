@@ -54,6 +54,11 @@ enum ActionTypes {
     DELETE_VAULT = 'DELETE_VAULT',
     DEPOSIT_VAULT = 'DEPOSIT_VAULT',
     WITHDRAW_VAULT = 'WITHDRAW_VAULT',
+    DELETE_LOAN_BROKER = 'DELETE_LOAN_BROKER',
+    DEPOSIT_LOAN_BROKER_COVER = 'DEPOSIT_LOAN_BROKER_COVER',
+    WITHDRAW_LOAN_BROKER_COVER = 'WITHDRAW_LOAN_BROKER_COVER',
+    DELETE_LOAN = 'DELETE_LOAN',
+    PAY_LOAN = 'PAY_LOAN',
 }
 
 interface State {
@@ -111,6 +116,16 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('vault.deposit'), secondary: false };
             case ActionTypes.WITHDRAW_VAULT:
                 return { label: Localize.t('vault.withdraw'), secondary: false };
+            case ActionTypes.DELETE_LOAN_BROKER:
+                return { label: Localize.t('loan.deleteLoanBroker'), secondary: true };
+            case ActionTypes.DEPOSIT_LOAN_BROKER_COVER:
+                return { label: Localize.t('loan.depositCover'), secondary: false };
+            case ActionTypes.WITHDRAW_LOAN_BROKER_COVER:
+                return { label: Localize.t('loan.withdrawCover'), secondary: false };
+            case ActionTypes.DELETE_LOAN:
+                return { label: Localize.t('loan.deleteLoan'), secondary: true };
+            case ActionTypes.PAY_LOAN:
+                return { label: Localize.t('loan.makePayment'), secondary: false };
             default:
                 return null;
         }
@@ -275,6 +290,26 @@ class ActionButtons extends PureComponent<Props, State> {
                 break;
             case LedgerEntryTypes.Ticket:
                 availableActions.push(ActionTypes.CANCEL_TICKET);
+                break;
+            case LedgerEntryTypes.LoanBroker:
+                // Owner can deposit and withdraw cover
+                if (item.Owner === account.address) {
+                    availableActions.push(ActionTypes.DEPOSIT_LOAN_BROKER_COVER);
+                    if (item.CoverAvailable && Number(item.CoverAvailable) > 0) {
+                        availableActions.push(ActionTypes.WITHDRAW_LOAN_BROKER_COVER);
+                    }
+                    // Can delete if no active loans
+                    if (!item.OwnerCount || item.OwnerCount === 0) {
+                        availableActions.push(ActionTypes.DELETE_LOAN_BROKER);
+                    }
+                }
+                break;
+            case LedgerEntryTypes.Loan:
+                // Borrower can pay and delete
+                if (item.Borrower === account.address) {
+                    availableActions.push(ActionTypes.PAY_LOAN);
+                    availableActions.push(ActionTypes.DELETE_LOAN);
+                }
                 break;
             default:
                 break;
@@ -537,6 +572,46 @@ class ActionButtons extends PureComponent<Props, State> {
                             item.Amount!.currency === NetworkService.getNativeAsset()
                                 ? new AmountParser(item.Amount!.value, false).nativeToDrops().toString()
                                 : item.Amount,
+                    });
+                }
+                break;
+            case ActionTypes.DELETE_LOAN_BROKER:
+                if (item.Type === LedgerEntryTypes.LoanBroker && item.Owner === account.address) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.LoanBrokerDelete,
+                        LoanBrokerID: item.Index,
+                    });
+                }
+                break;
+            case ActionTypes.DEPOSIT_LOAN_BROKER_COVER:
+                if (item.Type === LedgerEntryTypes.LoanBroker) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.LoanBrokerCoverDeposit,
+                        LoanBrokerID: item.Index,
+                    });
+                }
+                break;
+            case ActionTypes.WITHDRAW_LOAN_BROKER_COVER:
+                if (item.Type === LedgerEntryTypes.LoanBroker) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.LoanBrokerCoverWithdraw,
+                        LoanBrokerID: item.Index,
+                    });
+                }
+                break;
+            case ActionTypes.DELETE_LOAN:
+                if (item.Type === LedgerEntryTypes.Loan) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.LoanDelete,
+                        LoanID: item.Index,
+                    });
+                }
+                break;
+            case ActionTypes.PAY_LOAN:
+                if (item.Type === LedgerEntryTypes.Loan) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.LoanPay,
+                        LoanID: item.Index,
                     });
                 }
                 break;

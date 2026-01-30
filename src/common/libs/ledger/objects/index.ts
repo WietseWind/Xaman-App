@@ -15,4 +15,6 @@ export * from './PermissionedDomain';
 export * from './DepositPreauth';
 export * from './Cron';
 export * from './Vault';
+export * from './LoanBroker';
+export * from './Loan';
 

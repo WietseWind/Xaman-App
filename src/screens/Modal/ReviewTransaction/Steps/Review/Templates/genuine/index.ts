@@ -63,6 +63,15 @@ import VaultDelete from './VaultDelete';
 import VaultDeposit from './VaultDeposit';
 import VaultWithdraw from './VaultWithdraw';
 import VaultClawback from './VaultClawback';
+import LoanBrokerSet from './LoanBrokerSet';
+import LoanBrokerDelete from './LoanBrokerDelete';
+import LoanBrokerCoverDeposit from './LoanBrokerCoverDeposit';
+import LoanBrokerCoverWithdraw from './LoanBrokerCoverWithdraw';
+import LoanBrokerCoverClawback from './LoanBrokerCoverClawback';
+import LoanSet from './LoanSet';
+import LoanDelete from './LoanDelete';
+import LoanManage from './LoanManage';
+import LoanPay from './LoanPay';
 // eslint-disable-next-line import/no-cycle
 import Batch from './Batch';
 
@@ -131,6 +140,15 @@ export {
     VaultDeposit,
     VaultWithdraw,
     VaultClawback,
+    LoanBrokerSet,
+    LoanBrokerDelete,
+    LoanBrokerCoverDeposit,
+    LoanBrokerCoverWithdraw,
+    LoanBrokerCoverClawback,
+    LoanSet,
+    LoanDelete,
+    LoanManage,
+    LoanPay,
     Batch,
     CronSet,
 };

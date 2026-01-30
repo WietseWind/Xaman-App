@@ -56,6 +56,15 @@ import {
     VaultDeposit,
     VaultWithdraw,
     VaultClawback,
+    LoanBrokerSet,
+    LoanBrokerDelete,
+    LoanBrokerCoverDeposit,
+    LoanBrokerCoverWithdraw,
+    LoanBrokerCoverClawback,
+    LoanSet,
+    LoanDelete,
+    LoanManage,
+    LoanPay,
 } from '.';
 
 // Pseudo transactions
@@ -127,6 +136,15 @@ export type Transactions =
     | VaultDeposit
     | VaultWithdraw
     | VaultClawback
+    | LoanBrokerSet
+    | LoanBrokerDelete
+    | LoanBrokerCoverDeposit
+    | LoanBrokerCoverWithdraw
+    | LoanBrokerCoverClawback
+    | LoanSet
+    | LoanDelete
+    | LoanManage
+    | LoanPay
     | EnableAmendment;
 
 /**

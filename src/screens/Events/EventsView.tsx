@@ -470,6 +470,8 @@ class EventsView extends Component<Props, State> {
                 'credential',
                 'cron',
                 'vault',
+                'loan_broker',
+                'loan',
             ];
 
             // Create an array of promises, one for each object type
@@ -886,6 +888,8 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.PermissionedDomain,
                         LedgerEntryTypes.DepositPreauth,
                         LedgerEntryTypes.Vault,
+                        LedgerEntryTypes.LoanBroker,
+                        LedgerEntryTypes.Loan,
                         // LedgerEntryTypes.Cron, // Already @ Planned
                         // ...TODO?
                         // LedgerEntryTypes.SignerList,
@@ -1170,6 +1174,8 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.Credential,
                         LedgerEntryTypes.MPTokenIssuance,
                         LedgerEntryTypes.MPToken,
+                        LedgerEntryTypes.LoanBroker,
+                        LedgerEntryTypes.Loan,
                     ];
                     break;
                 default:
