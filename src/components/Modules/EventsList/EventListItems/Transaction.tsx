@@ -22,6 +22,7 @@ import { AccountModel } from '@store/models';
 import { TokenAvatar } from '@components/Modules/TokenElement';
 
 import ResolverService, { AccountNameResolveType } from '@services/ResolverService';
+import LedgerService from '@services/LedgerService';
 
 import { Navigator } from '@common/helpers/navigator';
 
@@ -69,6 +70,7 @@ export interface State {
     isFeeTransaction?: boolean;
     feeText?: string;
     cachedTokenDetails: cachedTokenDetailsState;
+    vaultInfo?: { asset: any; owner: string };
 }
 
 /* Component ==================================================================== */
@@ -97,12 +99,13 @@ class TransactionItem extends Component<Props, State> {
     shouldComponentUpdate(nextProps: Props, nextState: State) {
         // const { item, timestamp } = this.props;
         // const { isLoading, participant, explainer } = this.state;
-        const { isLoading, cachedTokenDetails } = this.state;
+        const { isLoading, cachedTokenDetails, vaultInfo } = this.state;
 
         return (
             // !isEqual(nextProps.item?.hash, item?.hash) ||
             !isEqual(nextState.isLoading, isLoading) ||
-            !isEqual(nextState.cachedTokenDetails.account, cachedTokenDetails.account)
+            !isEqual(nextState.cachedTokenDetails.account, cachedTokenDetails.account) ||
+            !isEqual(nextState.vaultInfo, vaultInfo)
             // !isEqual(nextState.participant, participant) ||
             // !isEqual(nextState.explainer, explainer) // ||
             // !isEqual(nextProps.timestamp, timestamp)
@@ -211,6 +214,26 @@ class TransactionItem extends Component<Props, State> {
         }
 
         this.getTokenDetails();
+        this.checkVaultShare();
+    };
+
+    checkVaultShare = async () => {
+        const { item } = this.props;
+
+        // Only check for Payment transactions with MPT amount
+        if (item.TransactionType !== 'Payment') return;
+
+        const mptIssuanceId = (item as any)?.Amount?.mpt_issuance_id;
+        if (!mptIssuanceId) return;
+
+        try {
+            const vaultInfo = await LedgerService.getVaultForMPTIssuance(mptIssuanceId);
+            if (vaultInfo && this.mounted) {
+                this.setState({ vaultInfo });
+            }
+        } catch {
+            // Ignore errors - just won't show vault info
+        }
     };
 
     onPress = () => {
@@ -374,7 +397,7 @@ class TransactionItem extends Component<Props, State> {
             notFound,
             isReplayed,
         } = this.props; // , rates
-        const { participant, explainer, isFeeTransaction, feeText, cachedTokenDetails } = this.state;
+        const { participant, explainer, isFeeTransaction, feeText, cachedTokenDetails, vaultInfo } = this.state;
 
         // if participant is block the show an overlay to reduce the visibility
         const showHalfTransparent = participant?.blocked && !isFeeTransaction;
@@ -448,7 +471,12 @@ class TransactionItem extends Component<Props, State> {
                     )}
                 </View>
                 <View style={[AppStyles.flex3, AppStyles.centerContent, opacity]}>
-                    { !isFeeTransaction && hasBalanceChanges && (
+                    { !isFeeTransaction && hasBalanceChanges && vaultInfo && (
+                        <Text style={styles.boldTitle}>
+                            {NormalizeCurrencyCode(vaultInfo.asset?.currency || '')}
+                        </Text>
+                    )}
+                    { !isFeeTransaction && hasBalanceChanges && !vaultInfo && (
                         cachedTokenDetails?.title
                     )}
                     { !isFeeTransaction && !hasBalanceChanges && (
@@ -463,7 +491,10 @@ class TransactionItem extends Component<Props, State> {
                     )}
                     { !isFeeTransaction && !participant?.blocked && (
                         <View style={[AppStyles.row, AppStyles.centerAligned]}>
-                            {hasBalanceChanges && (
+                            {hasBalanceChanges && vaultInfo && (
+                                <Text style={styles.actionText}>{Localize.t('vault.title')}</Text>
+                            )}
+                            {hasBalanceChanges && !vaultInfo && (
                                 <Blocks.ActionBlock item={item} explainer={explainer} participant={participant} />
                             )}
                             {!hasBalanceChanges && (

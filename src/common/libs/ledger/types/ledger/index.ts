@@ -24,6 +24,7 @@ import Credential from './Credential';
 import PermissionedDomain from './PermissionedDomain';
 import MPToken, { MPTokenFlags } from './MPToken';
 import MPTokenIssuance, { MPTokenIssuanceFlags } from './MPTokenIssuance';
+import Vault, { VaultFlags } from './Vault';
 
 export type {
     AccountRoot,
@@ -61,4 +62,6 @@ export type {
     PermissionedDomain,
     MPTokenIssuanceFlags,
     Cron,
+    Vault,
+    VaultFlags,
 };

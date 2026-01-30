@@ -200,6 +200,12 @@ const styles = StyleService.create({
         borderWidth: 1,
         borderColor: '$tint',
     },
+    currencyElementContainer: {
+        borderWidth: 1,
+        borderColor: '$tint',
+        borderRadius: 10,
+        padding: 10,
+    },
 });
 
 export default styles;

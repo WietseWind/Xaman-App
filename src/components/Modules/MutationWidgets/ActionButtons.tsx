@@ -51,6 +51,9 @@ enum ActionTypes {
     DELETE_DEPOSIT_PREAUTH = 'DELETE_DEPOSIT_PREAUTH',
     REMOVE_MPT = 'REMOVE_MPT',
     REMOVE_PERMISSIONED_DOMAIN = 'REMOVE_PERMISSIONED_DOMAIN',
+    DELETE_VAULT = 'DELETE_VAULT',
+    DEPOSIT_VAULT = 'DEPOSIT_VAULT',
+    WITHDRAW_VAULT = 'WITHDRAW_VAULT',
 }
 
 interface State {
@@ -102,6 +105,12 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('permissionedDomain.remove'), secondary: true };
             case ActionTypes.DELETE_DEPOSIT_PREAUTH:
                 return { label: Localize.t('depositPreauth.remove'), secondary: true };
+            case ActionTypes.DELETE_VAULT:
+                return { label: Localize.t('vault.delete'), secondary: true };
+            case ActionTypes.DEPOSIT_VAULT:
+                return { label: Localize.t('vault.deposit'), secondary: false };
+            case ActionTypes.WITHDRAW_VAULT:
+                return { label: Localize.t('vault.withdraw'), secondary: false };
             default:
                 return null;
         }
@@ -244,6 +253,18 @@ class ActionButtons extends PureComponent<Props, State> {
             case LedgerEntryTypes.Cron:
                 availableActions.push(ActionTypes.CRON_SET);
                 break;
+            case LedgerEntryTypes.Vault:
+                // Anyone can deposit (if public)
+                availableActions.push(ActionTypes.DEPOSIT_VAULT);
+                // Only show withdraw if vault has assets
+                if (item.AssetsTotal?.value && Number(item.AssetsTotal.value) > 0) {
+                    availableActions.push(ActionTypes.WITHDRAW_VAULT);
+                }
+                // Only owner can delete
+                if (item.Owner === account.address) {
+                    availableActions.push(ActionTypes.DELETE_VAULT);
+                }
+                break;
             case LedgerEntryTypes.Check:
                 if (item.Destination === account.address && !item.isExpired) {
                     availableActions.push(ActionTypes.CASH_CHECK);
@@ -312,6 +333,30 @@ class ActionButtons extends PureComponent<Props, State> {
                     TransactionType: TransactionTypes.CronSet,
                     Flags: 1,
                 });
+                break;
+            case ActionTypes.DELETE_VAULT:
+                if (item.Type === LedgerEntryTypes.Vault && item.Owner === account.address) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.VaultDelete,
+                        VaultID: item.Index,
+                    });
+                }
+                break;
+            case ActionTypes.DEPOSIT_VAULT:
+                if (item.Type === LedgerEntryTypes.Vault) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.VaultDeposit,
+                        VaultID: item.Index,
+                    });
+                }
+                break;
+            case ActionTypes.WITHDRAW_VAULT:
+                if (item.Type === LedgerEntryTypes.Vault) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.VaultWithdraw,
+                        VaultID: item.Index,
+                    });
+                }
                 break;
             case ActionTypes.CANCEL_OFFER:
                 if (item.Type === LedgerEntryTypes.Offer) {

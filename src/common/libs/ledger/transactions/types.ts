@@ -50,6 +50,12 @@ import {
     PermissionedDomainSet,
     Batch,
     CronSet,
+    VaultCreate,
+    VaultSet,
+    VaultDelete,
+    VaultDeposit,
+    VaultWithdraw,
+    VaultClawback,
 } from '.';
 
 // Pseudo transactions
@@ -115,6 +121,12 @@ export type Transactions =
     | PermissionedDomainDelete
     | PermissionedDomainSet
     | CronSet
+    | VaultCreate
+    | VaultSet
+    | VaultDelete
+    | VaultDeposit
+    | VaultWithdraw
+    | VaultClawback
     | EnableAmendment;
 
 /**

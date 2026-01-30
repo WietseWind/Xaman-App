@@ -68,6 +68,12 @@ export enum TransactionTypes {
     SetRemarks = 'SetRemarks',
     Batch = 'Batch',
     CronSet = 'CronSet',
+    VaultCreate = 'VaultCreate',
+    VaultSet = 'VaultSet',
+    VaultDelete = 'VaultDelete',
+    VaultDeposit = 'VaultDeposit',
+    VaultWithdraw = 'VaultWithdraw',
+    VaultClawback = 'VaultClawback',
 }
 
 /**
@@ -120,6 +126,7 @@ export enum LedgerEntryTypes {
     Remark = 'Remark',
     PermissionedDomain = 'PermissionedDomain',
     Cron = 'Cron',
+    Vault = 'Vault',
 }
 
 /**

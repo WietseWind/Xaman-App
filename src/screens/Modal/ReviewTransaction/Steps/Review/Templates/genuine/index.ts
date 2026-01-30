@@ -57,6 +57,12 @@ import CredentialDelete from './CredentialDelete';
 import SetRemarks from './SetRemarks';
 import PermissionedDomainSet from './PermissionedDomainSet';
 import PermissionedDomainDelete from './PermissionedDomainDelete';
+import VaultCreate from './VaultCreate';
+import VaultSet from './VaultSet';
+import VaultDelete from './VaultDelete';
+import VaultDeposit from './VaultDeposit';
+import VaultWithdraw from './VaultWithdraw';
+import VaultClawback from './VaultClawback';
 // eslint-disable-next-line import/no-cycle
 import Batch from './Batch';
 
@@ -119,6 +125,12 @@ export {
     SetRemarks,
     PermissionedDomainSet,
     PermissionedDomainDelete,
+    VaultCreate,
+    VaultSet,
+    VaultDelete,
+    VaultDeposit,
+    VaultWithdraw,
+    VaultClawback,
     Batch,
     CronSet,
 };

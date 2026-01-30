@@ -1,3 +1,6 @@
+import React from 'react';
+import { TextStyle, ViewStyle } from 'react-native';
+
 import { AccountModel } from '@store/models';
 
 import { Transactions, FallbackTransaction } from '@common/libs/ledger/transactions/types';
@@ -9,7 +12,17 @@ import { ComponentTypes } from '@services/NavigationService';
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
 
 import { type cachedTokenDetailsState } from '@components/Modules/EventsList/EventListItems/Transaction';
-import { TextStyle, ViewStyle } from 'react-native';
+
+// Props for the Transaction component used by BatchTransactions
+export interface TransactionComponentProps {
+    item: Transactions & MutationsMixinType;
+    account: AccountModel;
+    timestamp?: number;
+    onPress?: () => void;
+    showDespiteThirdParty?: boolean;
+    notFound?: boolean;
+    isReplayed?: boolean;
+}
 
 export interface Props {
     item: ((FallbackTransaction | Transactions) & MutationsMixinType) | LedgerObjects;
@@ -22,4 +35,6 @@ export interface Props {
     explainer?: ExplainerAbstract<FallbackTransaction | Transactions | LedgerObjects>;
     componentType: ComponentTypes;
     cachedTokenDetails?: cachedTokenDetailsState;
+    // Optional Transaction component for BatchTransactions widget
+    TransactionComponent?: React.ComponentType<TransactionComponentProps>;
 }

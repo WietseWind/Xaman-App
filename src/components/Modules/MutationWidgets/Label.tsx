@@ -55,7 +55,8 @@ class Label extends PureComponent<Props, State> {
         if (
             noMutation &&
             !item.Type.match(/Credential/) &&
-            !item.Type.match(/Cron/)
+            !item.Type.match(/Cron/) &&
+            !item.Type.match(/Vault/)
         ) {
             return <Text style={[
                 AppStyles.h4,

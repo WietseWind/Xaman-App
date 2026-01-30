@@ -1,10 +1,5 @@
 import React, { PureComponent } from 'react';
-import { View, Text, InteractionManager, SectionList, ActivityIndicator } from 'react-native';
-
-import { Account } from '@common/libs/ledger/parser/types';
-
-import { Icon } from '@components/General';
-import AccountElement from '@components/Modules/AccountElement/AccountElement';
+import { View, Text, InteractionManager, ActivityIndicator } from 'react-native';
 
 import Localize from '@locale';
 
@@ -13,30 +8,21 @@ import styles from './styles';
 
 /* Types ==================================================================== */
 import { Props } from './types';
-import StyleService from '@services/StyleService';
 import { AccountModel } from '@store/models';
 import { Transactions } from '@common/libs/ledger/transactions/types';
 import { MixingTypes, MutationsMixinType } from '@common/libs/ledger/mixin/types';
 
-// eslint-disable-next-line import/no-cycle
-import { Transaction } from '@components/Modules/EventsList/EventListItems';
-
-// import { sha512Half } from 'xrpl-binary-codec-prerelease/dist/hashes';
-// import { encode } from 'xrpl-binary-codec-prerelease';
 import { utils } from 'xrpl-accountlib';
 
 import { TransactionFactory } from '@common/libs/ledger/factory';
 import LedgerFactoryTx from '@common/libs/ledger/factory/transaction';
 import LedgerService from '@services/LedgerService';
-import NavigationService from '@services/NavigationService';
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
-import { TransactionLoaderModalProps } from '@screens/Modal/TransactionLoader';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { Batch } from '@common/libs/ledger/transactions';
 import NetworkService from '@services/NetworkService';
 import { AccountTxTransaction, ErrorResponse, TxResponse } from '@common/libs/ledger/types/methods';
-import { TransactionDetailsViewProps } from '@screens/Events/Details';
 
 interface State {
     // participants?: any;
@@ -157,10 +143,10 @@ class BatchTransactions extends PureComponent<Props, State> {
             ]) as Transactions & MutationsMixinType;
 
             await Navigator.dismissModal();
-                
-            // // redirect to details screen with a little-bit delay
+
+            // redirect to details screen with a little-bit delay
             setTimeout(() => {
-                Navigator.showModal<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
+                Navigator.showModal(AppScreens.Transaction.Details, {
                     item: transactionInstance,
                     account: txData.account,
                 });
@@ -222,11 +208,16 @@ class BatchTransactions extends PureComponent<Props, State> {
     };
 
     render() {
-        const { item, account } = this.props;
+        const { item, account, TransactionComponent } = this.props;
         const { parentTransaction, innerTransactions, loadingParent, loadingInner } = this.state;
 
         const parentBatch = (item as any || {})?.MetaData?.ParentBatchID;
         const innerBatch = ((item as any || {}).RawTransactions || []).length;
+
+        // TransactionComponent is required to render batch transactions
+        if (!TransactionComponent) {
+            return null;
+        }
 
         if (parentBatch && loadingParent) {
             return (
@@ -250,7 +241,7 @@ class BatchTransactions extends PureComponent<Props, State> {
                     <View key={`tx-${parentBatch}`} style={[
                         styles.parentBatchContainer,
                     ]}>
-                        <Transaction
+                        <TransactionComponent
                             showDespiteThirdParty
                             onPress={() => this.onPress({
                                 parentTransaction: parentTransaction as Transactions & MutationsMixinType,
@@ -264,7 +255,7 @@ class BatchTransactions extends PureComponent<Props, State> {
                     </View>
                 </View>
             );
-    
+
         }
 
         if (innerBatch) {
@@ -278,17 +269,19 @@ class BatchTransactions extends PureComponent<Props, State> {
                     {
                         loadingInner && <ActivityIndicator style={AppStyles.marginTopSml} size="large" />
                     }
-                    { 
+                    {
                         !loadingInner && innerTransactions && innerTransactions
                             .map((innerTx: InnerTransaction, index: number) => {
                                 const { transaction, hash } = innerTx;
 
                                 return (
                                     <View key={`tx-${index}`}>
-                                        <Transaction
+                                        <TransactionComponent
                                             showDespiteThirdParty
                                             notFound={!innerTx.found}
-                                            isReplayed={innerTx.found && innerTx?.parentBatchId !== (item as any)?.hash}
+                                            isReplayed={
+                                                innerTx.found && innerTx?.parentBatchId !== (item as any)?.hash
+                                            }
                                             onPress={() => {
                                                 if (!innerTx.found) {
                                                     return;
@@ -300,7 +293,7 @@ class BatchTransactions extends PureComponent<Props, State> {
                                                     account: { address: transaction.Account } as AccountModel,
                                                 });
                                             }}
-                                            item={transaction}
+                                            item={transaction as Transactions & MutationsMixinType}
                                             account={
                                                 { address: transaction.Account } as AccountModel
                                             }
@@ -308,7 +301,7 @@ class BatchTransactions extends PureComponent<Props, State> {
                                         />
                                     </View>
                                 );
-                        })
+                            })
                     }
                 </View>
             );

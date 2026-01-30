@@ -21,8 +21,9 @@ import { GetTransactionLink } from '@common/utils/explorer';
 
 import { Header } from '@components/General';
 
-// eslint-disable-next-line import/no-cycle
 import * as MutationWidgets from '@components/Modules/MutationWidgets';
+// eslint-disable-next-line import/no-cycle
+import { Transaction } from '@components/Modules/EventsList/EventListItems';
 
 import Localize from '@locale';
 
@@ -94,7 +95,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
         const acc = (
             item?.Type === 'Credential'
                 ? item.Issuer
-                : item?.Type === 'Cron'
+                : item?.Type === 'Cron' || item?.Type === 'Vault'
                     ? item.Owner
                     : item.Account
         );
@@ -190,6 +191,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
         const widgetsList: WidgetKey[] = [
             'LabelWidget',
             'AssetsMutationsWidget',
+            'VaultAssetWidget',
             'MemoWidget',
             'ReserveChangeWidget',
             'ParticipantsWidget',
@@ -244,6 +246,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                             advisory,
                             componentType,
                             cachedTokenDetails,
+                            TransactionComponent: Transaction,
                         });
                     })}
                 </ScrollView>

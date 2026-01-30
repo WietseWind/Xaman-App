@@ -1,7 +1,11 @@
 import isEqual from 'lodash/isEqual';
 
 import React, { PureComponent, ReactNode } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, InteractionManager } from 'react-native';
+
+import { LedgerService } from '@services';
+
+import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
 import { Button, AmountText, Icon, Badge, BadgeType } from '@components/General';
 
@@ -34,11 +38,14 @@ interface State {
     favorite: boolean;
     no_ripple: boolean;
     limit?: string;
+    vaultInfo?: { asset: any; owner: string };
 }
 
 /* Component ==================================================================== */
 class TokenItem extends PureComponent<Props, State> {
     static Height = AppSizes.scale(55);
+
+    private mounted = false;
 
     constructor(props: Props) {
         super(props);
@@ -48,10 +55,42 @@ class TokenItem extends PureComponent<Props, State> {
             favorite: !!props.token.favorite,
             no_ripple: !!props.token.no_ripple,
             limit: props.token.limit,
+            vaultInfo: undefined,
         };
     }
 
-    static getDerivedStateFromProps(nextProps: Props, prevState: State): State | null {
+    componentDidMount() {
+        this.mounted = true;
+        InteractionManager.runAfterInteractions(this.checkVaultShare);
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
+    checkVaultShare = async () => {
+        const { token } = this.props;
+
+        if (!token.isMPToken()) {
+            return;
+        }
+
+        const mptIssuanceId = token.currency.currencyCode;
+        if (!mptIssuanceId) {
+            return;
+        }
+
+        try {
+            const vaultInfo = await LedgerService.getVaultForMPTIssuance(mptIssuanceId);
+            if (vaultInfo && this.mounted) {
+                this.setState({ vaultInfo });
+            }
+        } catch {
+            // Ignore errors
+        }
+    };
+
+    static getDerivedStateFromProps(nextProps: Props, prevState: State): Partial<State> | null {
         if (
             !isEqual(nextProps.token.balance, prevState.balance) ||
             !isEqual(nextProps.token.favorite, prevState.favorite) ||
@@ -165,8 +204,26 @@ class TokenItem extends PureComponent<Props, State> {
         );
     };
 
+    getDisplayCurrency = (): string => {
+        const { token } = this.props;
+        const { vaultInfo } = this.state;
+
+        // If this is a vault share, show the vault's asset currency
+        if (vaultInfo?.asset) {
+            const assetCurrency = vaultInfo.asset.currency;
+            if (assetCurrency) {
+                return NormalizeCurrencyCode(assetCurrency);
+            }
+        }
+
+        return token.getFormattedCurrency();
+    };
+
     render() {
         const { token, saturate, reorderEnabled, subPrice, subPrefix } = this.props;
+        const { vaultInfo } = this.state;
+
+        const isVaultShare = token.isMPToken() && vaultInfo;
 
         return (
             <View testID={`${token.currency.id}`} style={[styles.currencyItem, { height: TokenItem.Height }]}>
@@ -182,7 +239,7 @@ class TokenItem extends PureComponent<Props, State> {
                     </View>
                     <View style={[AppStyles.column, AppStyles.centerContent]}>
                         <Text numberOfLines={1} style={styles.currencyLabel} ellipsizeMode="middle">
-                            {token.getFormattedCurrency()}
+                            {this.getDisplayCurrency()}
                             {
                                 token.isLiquidityPoolToken() && (
                                     <View style={styles.lpBadgeContainer}>
@@ -215,7 +272,15 @@ class TokenItem extends PureComponent<Props, State> {
                                 )
                             }
                             {
-                                token?.isMPToken() && (
+                                isVaultShare ? (
+                                    <View style={styles.lpBadgeContainer}>
+                                        <Badge
+                                            label="Vault"
+                                            type={BadgeType.Planned}
+                                            containerStyle={styles.lpBadge}
+                                        />
+                                    </View>
+                                ) : token?.isMPToken() && (
                                     <View style={styles.lpBadgeContainer}>
                                         <Badge
                                             label="MPT"

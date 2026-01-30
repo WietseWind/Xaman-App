@@ -14,4 +14,5 @@ export * from './MPTokenIssuance';
 export * from './PermissionedDomain';
 export * from './DepositPreauth';
 export * from './Cron';
+export * from './Vault';
 

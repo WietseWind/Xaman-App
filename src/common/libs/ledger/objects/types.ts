@@ -13,6 +13,7 @@ import {
     PermissionedDomain,
     MPTokenIssuance,
     DepositPreauth,
+    Vault,
 } from '.';
 
 export type LedgerObjects =
@@ -29,4 +30,5 @@ export type LedgerObjects =
     | MPToken
     | PermissionedDomain
     | DepositPreauth
+    | Vault
     | MPTokenIssuance;

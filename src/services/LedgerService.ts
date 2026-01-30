@@ -272,6 +272,65 @@ class LedgerService extends EventEmitter {
     };
 
     /**
+     * Check if an MPT issuance ID is a vault share and return vault info if so.
+     * Returns the vault's Asset info if the MPT is a vault share, otherwise undefined.
+     */
+    getVaultForMPTIssuance = async (mptIssuanceId: string): Promise<{ asset: any; owner: string } | undefined> => {
+        try {
+            // Get the issuer from the MPT issuance ID
+            const issuer = DecodeMPTokenIssuanceToIssuer(mptIssuanceId);
+            if (!issuer) {
+                this.logger.debug('getVaultForMPTIssuance: could not decode issuer from', mptIssuanceId);
+                return undefined;
+            }
+
+            this.logger.debug('getVaultForMPTIssuance: looking up vaults for issuer', issuer);
+
+            // Fetch account objects owned by the issuer (don't filter by type as 'vault' may not be supported)
+            const resp = await this.getAccountObjects(issuer);
+            if ('error' in resp) {
+                this.logger.debug('getVaultForMPTIssuance: error fetching account objects', resp);
+                return undefined;
+            }
+
+            const { account_objects } = resp as { account_objects: any[] };
+            if (!account_objects || account_objects.length === 0) {
+                this.logger.debug('getVaultForMPTIssuance: no account objects found');
+                return undefined;
+            }
+
+            // Log all vault objects found for debugging
+            const vaults = account_objects.filter((obj) => obj.LedgerEntryType === 'Vault');
+            this.logger.debug('getVaultForMPTIssuance: found vaults', {
+                count: vaults.length,
+                ids: vaults.map((v) => v.ShareMPTID),
+            });
+
+            // Normalize the MPT ID for comparison (uppercase)
+            const normalizedMptId = mptIssuanceId.toUpperCase();
+
+            // Find a vault whose ShareMPTID matches the MPT issuance ID
+            const vault = vaults.find(
+                (obj) => obj.ShareMPTID && obj.ShareMPTID.toUpperCase() === normalizedMptId,
+            );
+
+            if (vault) {
+                this.logger.debug('getVaultForMPTIssuance: found matching vault', vault.ShareMPTID);
+                return {
+                    asset: vault.Asset,
+                    owner: vault.Owner || vault.Account,
+                };
+            }
+
+            this.logger.debug('getVaultForMPTIssuance: no matching vault found for', normalizedMptId);
+            return undefined;
+        } catch (error) {
+            this.logger.debug('getVaultForMPTIssuance error', error);
+            return undefined;
+        }
+    };
+
+    /**
      * Get ledger data
      */
     getLedgerData = (marker: string, limit?: number) => {
