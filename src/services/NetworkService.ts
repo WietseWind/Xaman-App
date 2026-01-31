@@ -319,6 +319,14 @@ class NetworkService extends EventEmitter {
             return this.getNetwork().definitions;
         }
 
+        if (
+            typeof binary.DEFAULT_DEFINITIONS?.TRANSACTION_TYPES === 'object' &&
+            binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES
+        ) {
+            Object.assign(binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES, {
+                SignIn: 999,
+            });
+        }
         return binary.DEFAULT_DEFINITIONS;
     };
 
@@ -327,7 +335,20 @@ class NetworkService extends EventEmitter {
      */
     getNetworkDefinitions = (): XrplDefinitions => {
         if (this.network && this.getNetwork().definitions) {
-            return new XrplDefinitions(<DefinitionsData>this.getNetwork().definitions);
+            const defs = <DefinitionsData>this.getNetwork().definitions;
+            if (typeof defs?.TRANSACTION_TYPES === 'object' && defs.TRANSACTION_TYPES) {
+                defs.TRANSACTION_TYPES.SignIn = 999;
+            }
+            return new XrplDefinitions(defs);
+        }
+
+        if (
+            typeof binary.DEFAULT_DEFINITIONS?.TRANSACTION_TYPES === 'object' &&
+            binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES
+        ) {
+            Object.assign(binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES, {
+                SignIn: 999,
+            });
         }
 
         return new XrplDefinitions(binary.DEFAULT_DEFINITIONS);
