@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Naisakatuparan ang Hook",
+    "youWillPay": "Magbabayad ka ng",
+    "amountToPay": "Halagang babayaran",
+    "nftToBuy": "NFT na iyong binibili",
     "language": "Wika",
     "ok": "Sige",
     "buy": "Bumili",

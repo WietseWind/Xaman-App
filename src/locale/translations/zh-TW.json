@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook 已執行",
+    "youWillPay": "您將支付",
+    "amountToPay": "應付金額",
+    "nftToBuy": "您正在購買的NFT",
     "language": "語言",
     "ok": "了解",
     "buy": "購買",

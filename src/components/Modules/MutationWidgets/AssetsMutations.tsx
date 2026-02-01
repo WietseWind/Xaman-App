@@ -14,6 +14,7 @@ import { AppStyles } from '@theme';
 import styles from './styles';
 
 import { Props } from './types';
+import NetworkService from '@services/NetworkService';
 
 /* Types ==================================================================== */
 interface State {
@@ -166,6 +167,29 @@ class AssetsMutations extends PureComponent<Props, State> {
             !item.Type.match(/Cron/) &&
             !item.Type.match(/Vault/) &&
             !(item.Type.match(/Clawback/) && (item as any)?.Holder === account.address);
+        
+        let specificAmount = null;
+        if (noMutation) {
+            if (item.Type.match(/NFTokenOffer/) && item.Flags?.lsfSellNFToken) {
+                try {
+                    const amount = (item as any)?._object?.Amount;   
+                    if (typeof amount === 'string') {
+                        specificAmount = {
+                            currency: NetworkService.getNativeAsset(),
+                            value: Number(amount) / 1_000_000,
+                        };
+                    } else if (typeof amount === 'object' && amount?.value) {
+                        specificAmount = {
+                            currency: amount?.currency,
+                            value: Number(amount?.value),
+                        };
+                    }
+                } catch (e) {
+                    //
+                }
+            }
+        }
+
 
         return (
             <View style={[styles.itemContainer, styles.itemContainerGap]}>
@@ -176,6 +200,22 @@ class AssetsMutations extends PureComponent<Props, State> {
                 {mutatedDec?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
                 {hasBothMutation && this.renderSwitchIcon()}
                 {mutatedInc?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
+                {specificAmount && (
+                    <View style={styles.amountContainer}>
+                        <AmountText
+                            value={specificAmount.value}
+                            currency={specificAmount.currency}
+                            prefix="-"
+                            truncateLp
+                            style={[
+                                styles.amountText,
+                                {
+                                    color: styles.outgoingColor.color,
+                                },
+                            ]}
+                        />
+                    </View>
+                )}
                 {noMutation && (
                     // #45 - https://github.com/WietseWind/Xaman-App/issues/45
                     <View key='monetary-hasNoMutations' style={[

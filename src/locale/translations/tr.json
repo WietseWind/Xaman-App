@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook çalıştırıldı",
+    "youWillPay": "Ödeyeceksiniz",
+    "amountToPay": "Ödenecek tutar",
+    "nftToBuy": "Satın aldığınız NFT",
     "language": "Dil",
     "ok": "Tamam",
     "buy": "Satın Al",

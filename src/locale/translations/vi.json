@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook đã thực thi",
+    "youWillPay": "Bạn sẽ thanh toán",
+    "amountToPay": "Số tiền cần thanh toán",
+    "nftToBuy": "NFT bạn đang mua",
     "language": "Ngôn ngữ",
     "ok": "Đồng ý",
     "buy": "Mua",

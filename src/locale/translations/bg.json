@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook изпълнен",
+    "youWillPay": "Ще платите",
+    "amountToPay": "Сума за плащане",
+    "nftToBuy": "NFT, който купувате",
     "language": "Език",
     "ok": "OK",
     "buy": "Купи",

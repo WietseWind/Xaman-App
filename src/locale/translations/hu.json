@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook végrehajtva",
+    "youWillPay": "Fizetni fog",
+    "amountToPay": "Fizetendő összeg",
+    "nftToBuy": "Az NFT amit vásárol",
     "language": "Nyelv",
     "ok": "Oké",
     "buy": "Vásárlás",

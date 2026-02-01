@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook vykonán",
+    "youWillPay": "Zaplatíte",
+    "amountToPay": "Částka k zaplacení",
+    "nftToBuy": "NFT, které kupujete",
     "language": "Jazyk",
     "ok": "OK",
     "buy": "Koupit",

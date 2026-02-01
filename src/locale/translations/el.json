@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook εκτελέστηκε",
+    "youWillPay": "Θα πληρώσετε",
+    "amountToPay": "Ποσό προς πληρωμή",
+    "nftToBuy": "NFT που αγοράζετε",
     "language": "Γλώσσα",
     "ok": "Εντάξει",
     "buy": "Αγορά",

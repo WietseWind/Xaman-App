@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook imetikelezwa",
+    "youWillPay": "Utalipa",
+    "amountToPay": "Kiasi cha kulipa",
+    "nftToBuy": "NFT unayonunua",
     "language": "Lugha",
     "ok": "Sawa",
     "buy": "Nunua",

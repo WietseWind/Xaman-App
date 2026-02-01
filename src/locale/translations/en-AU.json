@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook executed",
+    "youWillPay": "You will pay",
+    "amountToPay": "Amount to pay",
+    "nftToBuy": "NFT you are buying",
     "language": "Language",
     "ok": "OK",
     "buy": "Buy",

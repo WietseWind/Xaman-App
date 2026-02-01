@@ -19,6 +19,7 @@ import { DecodeNFTokenID } from '@common/utils/codec';
 import Localize from '@locale';
 
 import styles from './styles';
+import { AppStyles } from '@theme/index';
 
 /* types ==================================================================== */
 export interface Props {
@@ -159,8 +160,29 @@ class NFTokenOfferTemplate extends Component<Props, State> {
 
                 {object!.Amount && (
                     <>
-                        <Text style={styles.label}>{Localize.t('global.amount')}</Text>
-                        <View style={styles.contentBox}>
+                        <Text style={styles.label}>{
+                            (object?.Flags?.lsfSellNFToken && Number(object?.Amount?.value || 0) > 0)
+                                ? Localize.t('global.amountToPay')
+                                : Localize.t('global.amount')
+                        }</Text>
+                        <View style={[
+                            styles.contentBox,
+                            object?.Flags?.lsfSellNFToken && styles.sellingAmount,
+                        ]}>
+                            {object?.Flags?.lsfSellNFToken && Number(object?.Amount?.value || 0) > 0 && (
+                                <View style={[
+                                    AppStyles.row,
+                                    styles.nftSellPrefixContainer,
+                                ]}>
+                                    <Text style={[
+                                        AppStyles.pbold,
+                                        AppStyles.baseText,
+                                        AppStyles.colorRed,
+                                    ]}>
+                                        {Localize.t('global.youWillPay')}
+                                    </Text>
+                                </View>
+                            )}
                             <AmountText
                                 value={object!.Amount.value}
                                 currency={object!.Amount.currency}
@@ -173,7 +195,11 @@ class NFTokenOfferTemplate extends Component<Props, State> {
 
                 {object!.NFTokenID && (
                     <>
-                        <Text style={styles.label}>{Localize.t('global.nft')}</Text>
+                        <Text style={styles.label}>{
+                            (object?.Flags?.lsfSellNFToken && Number(object?.Amount?.value || 0) > 0)
+                                ? Localize.t('global.nftToBuy')
+                                : Localize.t('global.nft')
+                        }</Text>
                         <View style={styles.contentBox}>
                             <NFTokenElement
                                 account={source.address}

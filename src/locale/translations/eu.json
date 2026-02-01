@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook exekutatuta",
+    "youWillPay": "Ordainduko duzu",
+    "amountToPay": "Ordaintzeko zenbatekoa",
+    "nftToBuy": "Erosten ari zaren NFT",
     "language": "Hizkuntza",
     "ok": "Ados",
     "buy": "Erosi",

@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook įvykdytas",
+    "youWillPay": "Jūs mokėsite",
+    "amountToPay": "Mokėtina suma",
+    "nftToBuy": "NFT, kurį perkate",
     "language": "Kalba",
     "ok": "Gerai",
     "buy": "Pirkti",

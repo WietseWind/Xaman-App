@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook შესრულებულია",
+    "youWillPay": "თქვენ გადაიხდით",
+    "amountToPay": "გადასახდელი თანხა",
+    "nftToBuy": "NFT რომელსაც ყიდულობთ",
     "language": "ენა",
     "ok": "გასაგებია",
     "buy": "ყიდვა",

@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook орындалды",
+    "youWillPay": "Сіз төлейсіз",
+    "amountToPay": "Төленетін сома",
+    "nftToBuy": "Сіз сатып алатын NFT",
     "language": "Тіл",
     "ok": "Жақсы",
     "buy": "Сатып алу",

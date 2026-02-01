@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook egzekite",
+    "youWillPay": "Ou pral peye",
+    "amountToPay": "Montan pou peye",
+    "nftToBuy": "NFT w ap achte",
     "language": "Lang",
     "ok": "Ok",
     "buy": "Achte",

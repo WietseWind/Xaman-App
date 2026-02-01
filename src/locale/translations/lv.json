@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook izpildīts",
+    "youWillPay": "Jūs maksāsiet",
+    "amountToPay": "Maksājamā summa",
+    "nftToBuy": "NFT, ko pērkat",
     "language": "Valoda",
     "ok": "Labi",
     "buy": "Pirkt",

@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook käivitatud",
+    "youWillPay": "Te maksate",
+    "amountToPay": "Makstav summa",
+    "nftToBuy": "NFT, mida ostate",
     "language": "Keel",
     "ok": "Olgu",
     "buy": "Osta",

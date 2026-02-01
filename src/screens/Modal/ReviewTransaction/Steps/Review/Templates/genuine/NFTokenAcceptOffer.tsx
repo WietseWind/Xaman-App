@@ -27,7 +27,9 @@ class NFTokenAcceptOfferTemplate extends Component<Props, State> {
             <>
                 {transaction.NFTokenSellOffer && (
                     <>
-                        <Text style={styles.label}>{Localize.t('global.sellOffer')}</Text>
+                        <Text style={styles.label}>
+                            {Localize.t('global.accept')}: {Localize.t('global.sellOffer')}
+                        </Text>
                         <ExpandableView
                             expanded
                             title={transaction.NFTokenSellOffer}
@@ -42,7 +44,9 @@ class NFTokenAcceptOfferTemplate extends Component<Props, State> {
 
                 {transaction.NFTokenBuyOffer && (
                     <>
-                        <Text style={styles.label}>{Localize.t('global.buyOffer')}</Text>
+                        <Text style={styles.label}>
+                            {Localize.t('global.accept')}: {Localize.t('global.buyOffer')}
+                        </Text>
                         <ExpandableView
                             expanded
                             title={transaction.NFTokenBuyOffer}

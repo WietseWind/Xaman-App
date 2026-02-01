@@ -171,6 +171,7 @@ class TransactionItem extends Component<Props, State> {
 
             const isFeeTransaction = resp?.address && AppConfig?.feeAccount &&
                 String(resp?.address || '') === String(AppConfig?.feeAccount || '') &&
+                String((item as any)?.Destination || '') === String(AppConfig?.feeAccount || '') &&
                 typeof item.MetaData.delivered_amount === 'string' &&
                 (item as any)?._tx?.InvoiceID;
 

@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook executed",
+    "youWillPay": "તમે ચૂકવશો",
+    "amountToPay": "ચૂકવવાની રકમ",
+    "nftToBuy": "તમે જે NFT ખરીદી રહ્યા છો",
     "language": "ભાષા",
     "ok": "બરાબર",
     "buy": "ખરીદો",

@@ -1,6 +1,9 @@
 {
   "global": {
     "hookExecuted": "Hook suoritettu",
+    "youWillPay": "Maksat",
+    "amountToPay": "Maksettava summa",
+    "nftToBuy": "Ostamasi NFT",
     "language": "Kieli",
     "ok": "OK",
     "buy": "Osta",
