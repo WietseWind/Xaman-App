@@ -200,7 +200,7 @@ class AssetsMutations extends PureComponent<Props, State> {
                 {mutatedDec?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
                 {hasBothMutation && this.renderSwitchIcon()}
                 {mutatedInc?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
-                {specificAmount && (
+                {specificAmount && specificAmount.value > 0 && (
                     <View style={styles.amountContainer}>
                         <AmountText
                             value={specificAmount.value}
