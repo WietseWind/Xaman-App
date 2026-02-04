@@ -95,7 +95,7 @@ class Label extends PureComponent<Props, State> {
             const noMutation = 
                 !explainer?.getMonetaryDetails()?.mutate?.[OperationActions.INC]?.[0] &&
                 !explainer?.getMonetaryDetails()?.mutate?.[OperationActions.DEC]?.[0] &&
-                account.address !== ((item as any)?.Account || (item as any)?.Issuer) &&
+                account.address !== ((item as any)?.Account || (item as any)?.Issuer) && // 3rd party
                 (
                     explainer?.getParticipants()?.end?.address === account.address ||
                     explainer?.getParticipants()?.start?.address === account.address
