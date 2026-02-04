@@ -3,7 +3,7 @@ import { View, Text, InteractionManager } from 'react-native';
 
 import LedgerService from '@services/LedgerService';
 
-import { NFTokenMint } from '@common/libs/ledger/transactions';
+import { NFTokenAcceptOffer, NFTokenCancelOffer, NFTokenMint } from '@common/libs/ledger/transactions';
 import { NFTokenOffer } from '@common/libs/ledger/objects';
 import { NFTokenOffer as LedgerNFTokenOffer } from '@common/libs/ledger/types/ledger';
 import FlagParser from '@common/libs/ledger/parser/common/flag';
@@ -25,6 +25,7 @@ import { AppStyles } from '@theme/index';
 export interface Props {
     source: AccountModel;
     nfTokenOffer: string;
+    transaction?: NFTokenAcceptOffer | NFTokenCancelOffer;
 }
 
 export interface State {
@@ -116,7 +117,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
     };
 
     render() {
-        const { source } = this.props;
+        const { source, transaction } = this.props;
         const { object, isTokenBurnable, isLoading } = this.state;
 
         if (isLoading) {
@@ -135,6 +136,11 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                 />
             );
         }
+
+        const isAboutToPay = String(transaction?.TransactionType).match(/accept/i) &&
+            object?.Flags?.lsfSellNFToken &&
+            ((transaction || {}) as any)?.NFTokenSellOffer &&
+            Number(object?.Amount?.value || 0) > 0;
 
         return (
             <>
@@ -161,15 +167,15 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                 {object!.Amount && (
                     <>
                         <Text style={styles.label}>{
-                            (object?.Flags?.lsfSellNFToken && Number(object?.Amount?.value || 0) > 0)
+                            isAboutToPay
                                 ? Localize.t('global.amountToPay')
                                 : Localize.t('global.amount')
                         }</Text>
                         <View style={[
                             styles.contentBox,
-                            object?.Flags?.lsfSellNFToken && styles.sellingAmount,
+                            isAboutToPay && styles.sellingAmount,
                         ]}>
-                            {object?.Flags?.lsfSellNFToken && Number(object?.Amount?.value || 0) > 0 && (
+                            {isAboutToPay && (
                                 <View style={[
                                     AppStyles.row,
                                     styles.nftSellPrefixContainer,
@@ -186,7 +192,9 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                             <AmountText
                                 value={object!.Amount.value}
                                 currency={object!.Amount.currency}
-                                style={styles.amount}
+                                style={[
+                                    isAboutToPay ? styles.amount : {},
+                                ]}
                                 immutable
                             />
                         </View>
@@ -196,7 +204,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                 {object!.NFTokenID && (
                     <>
                         <Text style={styles.label}>{
-                            (object?.Flags?.lsfSellNFToken && Number(object?.Amount?.value || 0) > 0)
+                            isAboutToPay
                                 ? Localize.t('global.nftToBuy')
                                 : Localize.t('global.nft')
                         }</Text>

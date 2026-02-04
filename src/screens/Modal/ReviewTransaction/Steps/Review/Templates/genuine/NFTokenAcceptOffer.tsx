@@ -37,7 +37,11 @@ class NFTokenAcceptOfferTemplate extends Component<Props, State> {
                             containerStyle={styles.objectTemplateContainer}
                             contentContainerStyle={styles.objectTemplateChildContainer}
                         >
-                            <NFTokenOfferTemplate source={source} nfTokenOffer={transaction.NFTokenSellOffer} />
+                            <NFTokenOfferTemplate
+                                transaction={transaction}
+                                source={source}
+                                nfTokenOffer={transaction.NFTokenSellOffer}
+                            />
                         </ExpandableView>
                     </>
                 )}
@@ -54,7 +58,11 @@ class NFTokenAcceptOfferTemplate extends Component<Props, State> {
                             containerStyle={styles.objectTemplateContainer}
                             contentContainerStyle={styles.objectTemplateChildContainer}
                         >
-                            <NFTokenOfferTemplate source={source} nfTokenOffer={transaction.NFTokenBuyOffer} />
+                            <NFTokenOfferTemplate
+                                transaction={transaction}
+                                source={source}
+                                nfTokenOffer={transaction.NFTokenBuyOffer}
+                            />
                         </ExpandableView>
                     </>
                 )}
