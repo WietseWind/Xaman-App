@@ -193,7 +193,9 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                                 value={object!.Amount.value}
                                 currency={object!.Amount.currency}
                                 style={[
-                                    isAboutToPay ? styles.amount : {},
+                                    isAboutToPay
+                                        ? styles.amount // Red
+                                        : AppStyles.colorPrimary, // white/dark mode invert
                                 ]}
                                 immutable
                             />
