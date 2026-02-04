@@ -71,8 +71,9 @@ class Label extends PureComponent<Props, State> {
     };
 
     renderStatus = () => {
-        const { item } = this.props;
+        const { item, explainer, account } = this.props;
 
+        let returnValue = true;
         let badgeType: BadgeType;
 
         if (item.InstanceType === InstanceTypes.LedgerObject) {
@@ -90,9 +91,22 @@ class Label extends PureComponent<Props, State> {
         } else {
             // transaction
             badgeType = BadgeType.Success;
+
+            const noMutation = 
+                !explainer?.getMonetaryDetails()?.mutate?.[OperationActions.INC]?.[0] &&
+                !explainer?.getMonetaryDetails()?.mutate?.[OperationActions.DEC]?.[0] &&
+                account.address !== ((item as any)?.Account || (item as any)?.Issuer) &&
+                (
+                    explainer?.getParticipants()?.end?.address === account.address ||
+                    explainer?.getParticipants()?.start?.address === account.address
+                );
+            
+            if (noMutation) {
+                returnValue = false;
+            }
         }
 
-        return <Badge size="medium" type={badgeType} />;
+        return returnValue && <Badge size="medium" type={badgeType} />;
     };
 
     renderDate = () => {
