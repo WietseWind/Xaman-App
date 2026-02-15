@@ -20,6 +20,9 @@ import Localize from '@locale';
 
 import styles from './styles';
 import { AppStyles } from '@theme/index';
+import BackendService from '@services/BackendService';
+import { CoreRepository } from '@store/repositories';
+import NetworkService from '@services/NetworkService';
 
 /* types ==================================================================== */
 export interface Props {
@@ -32,6 +35,7 @@ export interface State {
     object?: NFTokenOffer;
     isTokenBurnable: any;
     isLoading: boolean;
+    wantsPercentage?: number;
 }
 
 /* Component ==================================================================== */
@@ -52,10 +56,56 @@ class NFTokenOfferTemplate extends Component<Props, State> {
 
     fetchDetails = async () => {
         // fetch the object first
-        await this.fetchObject();
+        const { transaction } = this.props;
+
+        const settings = await CoreRepository.getSettings();
+
+        const [, accountWorth] = await Promise.all([
+            this.fetchObject(),
+            BackendService.getAccountWorth(
+                transaction!.Account,
+                settings.network.key,
+                settings.currency,
+                'NFTOKENOFFER_ACCEPT',
+            ),
+        ]);
 
         // check if token is burnable
         this.checkTokenBurnable();
+
+        const { object } = this.state;
+
+        if (object && object!?.Amount) {
+            const amount = object!.Amount;
+            const nativeAsset = NetworkService.getNativeAsset();
+
+            const lineItems: {
+                issuer: string;
+                asset: string;
+                amount: number;
+            }[] = accountWorth?.lineItems || [];
+
+            if (typeof amount !== 'string') {
+                let matchingAWItem;
+                if (amount?.currency === nativeAsset) {
+                    matchingAWItem = lineItems
+                        .filter(l => l.issuer === 'rrrrrrrrrrrrrrrrrrrrrrrhoLvTp')
+                        .filter(l => l.asset === nativeAsset);
+                } else {
+                    matchingAWItem = lineItems
+                        .filter(l => l.issuer === amount.issuer)
+                        .filter(l => l.asset === amount.currency);
+                }
+                if (Array.isArray(matchingAWItem) && matchingAWItem.length > 0) {
+                    const matchingAWItemAmount = matchingAWItem[0].amount;
+                    const wantsPercentage = Math.round(Number(amount.value) / Number(matchingAWItemAmount) * 100);
+                    this.setState({
+                        wantsPercentage,
+                    });
+                }
+            }
+            // console.log('accountWorth', );
+        }
     };
 
     fetchObject = () => {
@@ -118,7 +168,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
 
     render() {
         const { source, transaction } = this.props;
-        const { object, isTokenBurnable, isLoading } = this.state;
+        const { object, isTokenBurnable, isLoading, wantsPercentage } = this.state;
 
         if (isLoading) {
             return <LoadingIndicator />;
@@ -200,6 +250,17 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                                 immutable
                             />
                         </View>
+                        {isAboutToPay && wantsPercentage && wantsPercentage > 50 && (
+                            <View style={AppStyles.marginBottom}>
+                                <InfoMessage
+                                    icon="IconInfo"
+                                    type="warning"
+                                    label={Localize.t('payloadRiskWarning.thisOfferConsumesPercentage', {
+                                        wantsPercentage,
+                                    })}
+                                />
+                            </View>
+                        )}
                     </>
                 )}
 

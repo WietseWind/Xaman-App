@@ -849,6 +849,7 @@ class BackendService {
         if (typeof lastHashes?.[hashKey] === 'undefined') {
             lastHashes[hashKey] = ['', {}];
         }
+        // console.log('getAccountWorth', account, network, currency, origin);
 
         const data = await ApiService.fetch(Endpoints.AccountWorth, 'GET', {
             account,
