@@ -269,6 +269,8 @@ class ReviewStep extends Component<Props, State> {
                                     <View style={[
                                         AppStyles.row,
                                         AppStyles.marginTopSml,
+                                        AppStyles.marginBottom,
+                                        AppStyles.paddingBottom,
                                     ]}>
                                         <View style={[
                                             AppStyles.flex1,
