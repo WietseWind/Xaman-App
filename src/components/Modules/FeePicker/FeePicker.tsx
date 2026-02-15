@@ -11,9 +11,10 @@ import StyleService from '@services/StyleService';
 import { AmountParser } from '@common/libs/ledger/parser/common';
 
 import { Navigator } from '@common/helpers/navigator';
-import { Capitalize } from '@common/utils/string';
+// import { Capitalize } from '@common/utils/string';
 
-import { TouchableDebounce, Badge, Button, LoadingIndicator, InfoMessage } from '@components/General';
+import { TouchableDebounce, Button, LoadingIndicator, InfoMessage } from '@components/General';
+// Badge
 import BackendService from '@services/BackendService';
 
 import { type Payload } from '@common/libs/payload';
@@ -330,21 +331,21 @@ class FeePicker extends Component<Props, State> {
                         <Text style={textStyle}>
                             {this.getNormalizedFee()} {NetworkService.getNativeAsset()}
                         </Text>
-                        <Badge
+                        {/* <Badge
                             label={Capitalize(selectedTxFee.type)}
                             size="small"
                             color={this.getFeeColor()}
                             labelStyle={styles.badgeLabel}
-                        />
+                        /> */}
                     </View>
                     {availableFees && (
                         <Button
                             onPress={this.showFeeSelectOverlay}
                             style={styles.editButton}
                             roundedMini
-                            iconSize={13}
+                            iconSize={15}
                             light
-                            icon="IconEdit"
+                            icon="IconInfo"
                         />
                     )}
                 </TouchableDebounce>
