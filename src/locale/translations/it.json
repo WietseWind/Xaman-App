@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Qualcuno ti sta promettendo premi gratuiti, airdrop o criptovalute?",
     "isSomeoneSupport": "Ti viene chiesto di firmare questa transazione da qualcuno che offre supporto?",
     "isSomeoneTeam": "Ti viene chiesto di firmare questa transazione da qualcuno che afferma di far parte del team Xaman, XRPL Labs o Ripple?",
-    "areYouAwareThatNonReversible": "Una transazione blockchain può essere annullata?"
+    "areYouAwareThatNonReversible": "Una transazione blockchain può essere annullata?",
+    "thisOfferConsumesPercentage": "Questa offerta consuma una grande parte del tuo saldo: %{wantsPercentage}% del tuo saldo nell'asset richiesto! Sei sicuro di voler accettare questa offerta?"
   },
   "tangemImportMsgs": {
     "newTitle": "Carta nuova di zecca!",

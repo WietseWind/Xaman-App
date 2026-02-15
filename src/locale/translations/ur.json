@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "کیا کوئی آپ کو مفت انعامات، airdrops، یا کرپٹو کرنسی کا وعدہ کر رہا ہے؟",
     "isSomeoneSupport": "کیا سپورٹ پیش کرنے والا کوئی شخص آپ سے اس ٹرانزیکشن پر دستخط کرنے کو کہہ رہا ہے؟",
     "isSomeoneTeam": "کیا کوئی جو کہتا ہے کہ وہ Xaman، XRPL Labs یا Ripple ٹیم کا حصہ ہے، آپ سے اس ٹرانزیکشن پر دستخط کرنے کو کہہ رہا ہے؟",
-    "areYouAwareThatNonReversible": "کیا بلاکچین ٹرانزیکشن واپس کی جا سکتی ہے؟"
+    "areYouAwareThatNonReversible": "کیا بلاکچین ٹرانزیکشن واپس کی جا سکتی ہے؟",
+    "thisOfferConsumesPercentage": "یہ آفر آپ کے بیلنس کا ایک بڑا حصہ استعمال کرتی ہے: درخواست کردہ اثاثے میں آپ کے بیلنس کا %{wantsPercentage}%! کیا آپ کو یقین ہے کہ آپ اس آفر کو قبول کرنا چاہتے ہیں؟"
   },
   "tangemImportMsgs": {
     "newTitle": "بالکل نیا کارڈ!",

@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Norbait dohaineko sariak, airdropak edo kriptomoneta agintzen ari zaizu?",
     "isSomeoneSupport": "Laguntza eskaintzen duen norbaitek transakzio hau sinatzeko eskatzen ari zaizu?",
     "isSomeoneTeam": "Xaman, XRPL Labs edo Ripple taldearen parte dela esaten duen norbaitek transakzio hau sinatzeko eskatzen ari zaizu?",
-    "areYouAwareThatNonReversible": "Blockchain transakzio bat alderantzikatu daiteke?"
+    "areYouAwareThatNonReversible": "Blockchain transakzio bat alderantzikatu daiteke?",
+    "thisOfferConsumesPercentage": "Eskaintza honek zure saldoaren zati handi bat kontsumitzen du: eskatutako aktiboan zure saldoaren %{wantsPercentage}%! Ziur al zaude eskaintza hau onartu nahi duzula?"
   },
   "tangemImportMsgs": {
     "newTitle": "Txartel berri-berria!",

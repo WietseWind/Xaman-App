@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "האם מישהו מבטיח לך פרסים חינם, airdrops או מטבעות קריפטו?",
     "isSomeoneSupport": "האם מישהו שמציע תמיכה מבקש ממך לחתום על עסקה זו?",
     "isSomeoneTeam": "האם מישהו שטוען שהוא חלק מצוות Xaman, XRPL Labs או Ripple מבקש ממך לחתום על עסקה זו?",
-    "areYouAwareThatNonReversible": "האם ניתן לבטל עסקת בלוקצ'יין?"
+    "areYouAwareThatNonReversible": "האם ניתן לבטל עסקת בלוקצ'יין?",
+    "thisOfferConsumesPercentage": "הצעה זו צורכת חלק גדול מהיתרה שלך: %{wantsPercentage}% מהיתרה שלך בנכס המבוקש! האם אתה בטוח שברצונך לקבל הצעה זו?"
   },
   "tangemImportMsgs": {
     "newTitle": "כרטיס חדש לגמרי!",

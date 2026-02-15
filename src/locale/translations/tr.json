@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Biri size ücretsiz ödüller, airdroplar veya kripto para vaat ediyor mu?",
     "isSomeoneSupport": "Destek sunan biri sizden bu işlemi imzalamanızı mı istiyor?",
     "isSomeoneTeam": "Xaman, XRPL Labs veya Ripple ekibinin bir parçası olduğunu söyleyen biri sizden bu işlemi imzalamanızı mı istiyor?",
-    "areYouAwareThatNonReversible": "Bir blockchain işlemi geri alınabilir mi?"
+    "areYouAwareThatNonReversible": "Bir blockchain işlemi geri alınabilir mi?",
+    "thisOfferConsumesPercentage": "Bu teklif bakiyenizin büyük bir kısmını tüketir: talep edilen varlıktaki bakiyenizin %{wantsPercentage}%'i! Bu teklifi kabul etmek istediğinizden emin misiniz?"
   },
   "tangemImportMsgs": {
     "newTitle": "Yeni kart!",

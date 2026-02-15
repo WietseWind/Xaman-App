@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "May nangangako ba sa iyo ng libreng rewards, airdrops, o cryptocurrency?",
     "isSomeoneSupport": "Hinihiling ba sa iyo na pirmahan ang transaksyong ito ng isang taong nag-aalok ng suporta?",
     "isSomeoneTeam": "Hinihiling ba sa iyo na pirmahan ang transaksyong ito ng isang taong nagsasabing bahagi siya ng Xaman, XRPL Labs o Ripple team?",
-    "areYouAwareThatNonReversible": "Maaari bang baligtarin ang isang blockchain transaction?"
+    "areYouAwareThatNonReversible": "Maaari bang baligtarin ang isang blockchain transaction?",
+    "thisOfferConsumesPercentage": "Gumagamit ang alok na ito ng malaking bahagi ng iyong balanse: %{wantsPercentage}% ng iyong balanse sa hiniling na asset! Sigurado ka bang gusto mong tanggapin ang alok na ito?"
   },
   "tangemImportMsgs": {
     "newTitle": "Bagong-bagong card!",

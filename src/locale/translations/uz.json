@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Kimdir sizga bepul sovg'alar, airdroplar yoki kriptovalyuta va'da qilyaptimi?",
     "isSomeoneSupport": "Yordam taklif qilayotgan kimdir sizdan ushbu tranzaksiyani imzolashni so'rayaptimi?",
     "isSomeoneTeam": "Xaman, XRPL Labs yoki Ripple jamoasining a'zosi ekanligini aytayotgan kimdir sizdan ushbu tranzaksiyani imzolashni so'rayaptimi?",
-    "areYouAwareThatNonReversible": "Blokcheyn tranzaksiyasini bekor qilish mumkinmi?"
+    "areYouAwareThatNonReversible": "Blokcheyn tranzaksiyasini bekor qilish mumkinmi?",
+    "thisOfferConsumesPercentage": "Ushbu taklif balansingizning katta qismini sarflaydi: so'ralgan aktivdagi balansingizning %{wantsPercentage}%! Ushbu taklifni qabul qilmoqchi ekanligingizga ishonchingiz komilmi?"
   },
   "tangemImportMsgs": {
     "newTitle": "Yangi karta!",

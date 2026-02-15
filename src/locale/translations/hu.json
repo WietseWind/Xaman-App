@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Ígér Önnek valaki ingyenes jutalmakat, airdropokat vagy kriptovalutát?",
     "isSomeoneSupport": "Kéri-e Önt valaki, aki támogatást kínál, hogy írja alá ezt a tranzakciót?",
     "isSomeoneTeam": "Kéri-e Önt valaki, aki azt állítja, hogy a Xaman, XRPL Labs vagy Ripple csapat tagja, hogy írja alá ezt a tranzakciót?",
-    "areYouAwareThatNonReversible": "Visszafordítható-e egy blockchain tranzakció?"
+    "areYouAwareThatNonReversible": "Visszafordítható-e egy blockchain tranzakció?",
+    "thisOfferConsumesPercentage": "Ez az ajánlat az egyenleged nagy részét felhasználja: a kért eszközben lévő egyenleged %{wantsPercentage}%-át! Biztosan el szeretnéd fogadni ezt az ajánlatot?"
   },
   "tangemImportMsgs": {
     "newTitle": "Vadonatúj kártya!",

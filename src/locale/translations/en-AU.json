@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Is someone promising you free rewards, airdrops, or cryptocurrency?",
     "isSomeoneSupport": "Are you being asked to sign this transaction by someone who is offering support?",
     "isSomeoneTeam": "Are you being asked to sign this transaction by someone who tells you they are part of the Xaman, XRPL Labs or Ripple team?",
-    "areYouAwareThatNonReversible": "Can a blockchain transaction be reversed?"
+    "areYouAwareThatNonReversible": "Can a blockchain transaction be reversed?",
+    "thisOfferConsumesPercentage": "This offer consumes a large portion of your balance: %{wantsPercentage}% of your balance in the requested asset! Are you certain you want to accept this offer?"
   },
   "tangemImportMsgs": {
     "newTitle": "Brand new card!",

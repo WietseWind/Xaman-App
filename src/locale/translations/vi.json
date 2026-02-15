@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Có ai đang hứa hẹn phần thưởng miễn phí, airdrop hoặc tiền điện tử cho bạn không?",
     "isSomeoneSupport": "Có ai đang cung cấp hỗ trợ yêu cầu bạn ký giao dịch này không?",
     "isSomeoneTeam": "Có ai tuyên bố là thành viên của đội ngũ Xaman, XRPL Labs hoặc Ripple yêu cầu bạn ký giao dịch này không?",
-    "areYouAwareThatNonReversible": "Giao dịch blockchain có thể đảo ngược được không?"
+    "areYouAwareThatNonReversible": "Giao dịch blockchain có thể đảo ngược được không?",
+    "thisOfferConsumesPercentage": "Ưu đãi này tiêu thụ một phần lớn số dư của bạn: %{wantsPercentage}% số dư của bạn trong tài sản được yêu cầu! Bạn có chắc chắn muốn chấp nhận ưu đãi này không?"
   },
   "tangemImportMsgs": {
     "newTitle": "Thẻ mới hoàn toàn!",

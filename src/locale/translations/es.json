@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "¿Alguien te está prometiendo recompensas gratuitas, airdrops o criptomonedas?",
     "isSomeoneSupport": "¿Alguien que ofrece soporte te está pidiendo que firmes esta transacción?",
     "isSomeoneTeam": "¿Alguien que dice ser parte del equipo de Xaman, XRPL Labs o Ripple te está pidiendo que firmes esta transacción?",
-    "areYouAwareThatNonReversible": "¿Se puede revertir una transacción de blockchain?"
+    "areYouAwareThatNonReversible": "¿Se puede revertir una transacción de blockchain?",
+    "thisOfferConsumesPercentage": "Esta oferta consume una gran parte de tu saldo: ¡%{wantsPercentage}% de tu saldo en el activo solicitado! ¿Estás seguro de que deseas aceptar esta oferta?"
   },
   "tangemImportMsgs": {
     "newTitle": "¡Tarjeta nueva!",

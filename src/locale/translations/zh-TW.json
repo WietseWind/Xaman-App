@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "是否有人承諾給您免費獎勵、空投或加密貨幣？",
     "isSomeoneSupport": "是否有人以提供支援為由要求您簽署此交易？",
     "isSomeoneTeam": "是否有人聲稱自己是 Xaman、XRPL Labs 或 Ripple 團隊成員並要求您簽署此交易？",
-    "areYouAwareThatNonReversible": "區塊鏈交易可以撤銷嗎？"
+    "areYouAwareThatNonReversible": "區塊鏈交易可以撤銷嗎？",
+    "thisOfferConsumesPercentage": "此報價消耗了您餘額的很大一部分：所請求資產中您餘額的 %{wantsPercentage}%！您確定要接受此報價嗎？"
   },
   "tangemImportMsgs": {
     "newTitle": "全新卡片！",

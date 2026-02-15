@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "누군가 무료 보상, 에어드롭 또는 암호화폐를 약속하고 있나요?",
     "isSomeoneSupport": "지원을 제공하는 사람이 이 거래에 서명하도록 요청하고 있나요?",
     "isSomeoneTeam": "Xaman, XRPL Labs 또는 Ripple 팀의 일원이라고 주장하는 사람이 이 거래에 서명하도록 요청하고 있나요?",
-    "areYouAwareThatNonReversible": "블록체인 거래를 되돌릴 수 있나요?"
+    "areYouAwareThatNonReversible": "블록체인 거래를 되돌릴 수 있나요?",
+    "thisOfferConsumesPercentage": "이 오퍼는 잔액의 큰 부분을 소비합니다: 요청된 자산에서 잔액의 %{wantsPercentage}%! 이 오퍼를 수락하시겠습니까?"
   },
   "tangemImportMsgs": {
     "newTitle": "새 카드!",

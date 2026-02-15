@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "誰かが無料の報酬、エアドロップ、または暗号通貨を約束していますか？",
     "isSomeoneSupport": "サポートを提供している人から、この取引に署名するよう求められていますか？",
     "isSomeoneTeam": "Xaman、XRPL Labs、またはRippleチームの一員だと主張する人から、この取引に署名するよう求められていますか？",
-    "areYouAwareThatNonReversible": "ブロックチェーン取引は取り消すことができますか？"
+    "areYouAwareThatNonReversible": "ブロックチェーン取引は取り消すことができますか？",
+    "thisOfferConsumesPercentage": "このオファーは残高の大部分を消費します：リクエストされた資産の残高の%{wantsPercentage}%！このオファーを受け入れてもよろしいですか？"
   },
   "tangemImportMsgs": {
     "newTitle": "新品カード！",

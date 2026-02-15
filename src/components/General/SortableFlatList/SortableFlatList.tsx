@@ -193,8 +193,13 @@ export default class SortableFlatList extends Component<Props, State> {
         origin: 'UNKNOWN' | 'UPDATE_SETTINGS_HANDLER' | 'INTERVAL' | 'COMPONENT_MOUNT' | 'APPSTATE_CHANGE' =
             'UNKNOWN',
     ) => {
-        const { updateTokenPrices, lineWorthLoading } = this.props;
+        const { updateTokenPrices, lineWorthLoading, accWorthEnabled } = this.props;
         const { accWorthLoading, accWorthAmount } = this.state;
+
+        if (!accWorthEnabled) {
+            return;
+        }
+
         const settings = CoreRepository.getSettings();
 
         const isValidNetwork = settings.network?.key === 'MAINNET' || settings.network?.key === 'XAHAU';

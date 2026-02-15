@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Vai kāds jums sola bezmaksas balvas, airdrop vai kriptovalūtu?",
     "isSomeoneSupport": "Vai kāds, kas piedāvā atbalstu, lūdz jūs parakstīt šo darījumu?",
     "isSomeoneTeam": "Vai kāds, kas apgalvo, ka ir Xaman, XRPL Labs vai Ripple komandas dalībnieks, lūdz jūs parakstīt šo darījumu?",
-    "areYouAwareThatNonReversible": "Vai blokķēdes darījumu var atcelt?"
+    "areYouAwareThatNonReversible": "Vai blokķēdes darījumu var atcelt?",
+    "thisOfferConsumesPercentage": "Šis piedāvājums patērē lielu daļu jūsu atlikuma: %{wantsPercentage}% no jūsu atlikuma pieprasītajā aktīvā! Vai esat pārliecināts, ka vēlaties pieņemt šo piedāvājumu?"
   },
   "tangemImportMsgs": {
     "newTitle": "Pavisam jauna karte!",

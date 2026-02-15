@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Belooft iemand je gratis beloningen, airdrops of cryptocurrency?",
     "isSomeoneSupport": "Vraagt iemand die ondersteuning aanbiedt je om deze transactie te ondertekenen?",
     "isSomeoneTeam": "Vraagt iemand die beweert deel uit te maken van het Xaman-, XRPL Labs- of Ripple-team je om deze transactie te ondertekenen?",
-    "areYouAwareThatNonReversible": "Kan een blockchain-transactie worden teruggedraaid?"
+    "areYouAwareThatNonReversible": "Kan een blockchain-transactie worden teruggedraaid?",
+    "thisOfferConsumesPercentage": "Dit aanbod verbruikt een groot deel van je saldo: %{wantsPercentage}% van je saldo in het gevraagde activum! Weet je zeker dat je dit aanbod wilt accepteren?"
   },
   "tangemImportMsgs": {
     "newTitle": "Gloednieuwe kaart!",

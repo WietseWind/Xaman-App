@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Да ли вам неко обећава бесплатне награде, airdrop-ове или криптовалуту?",
     "isSomeoneSupport": "Да ли вас неко ко нуди подршку тражи да потпишете ову трансакцију?",
     "isSomeoneTeam": "Да ли вас неко ко тврди да је део Xaman, XRPL Labs или Ripple тима тражи да потпишете ову трансакцију?",
-    "areYouAwareThatNonReversible": "Да ли се блокчејн трансакција може поништити?"
+    "areYouAwareThatNonReversible": "Да ли се блокчејн трансакција може поништити?",
+    "thisOfferConsumesPercentage": "Ова понуда троши велики део вашег салда: %{wantsPercentage}% вашег салда у траженој имовини! Да ли сте сигурни да желите да прихватите ову понуду?"
   },
   "tangemImportMsgs": {
     "newTitle": "Потпуно нова картица!",

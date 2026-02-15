@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Sľubuje vám niekto bezplatné odmeny, airdropy alebo kryptomeny?",
     "isSomeoneSupport": "Žiada vás niekto, kto ponúka podporu, aby ste podpísali túto transakciu?",
     "isSomeoneTeam": "Žiada vás niekto, kto tvrdí, že je súčasťou tímu Xaman, XRPL Labs alebo Ripple, aby ste podpísali túto transakciu?",
-    "areYouAwareThatNonReversible": "Dá sa blockchai nová transakcia zvrátiť?"
+    "areYouAwareThatNonReversible": "Dá sa blockchai nová transakcia zvrátiť?",
+    "thisOfferConsumesPercentage": "Táto ponuka spotrebuje veľkú časť vášho zostatku: %{wantsPercentage}% vášho zostatku v požadovanom aktíve! Ste si istí, že chcete túto ponuku prijať?"
   },
   "tangemImportMsgs": {
     "newTitle": "Úplne nová karta!",

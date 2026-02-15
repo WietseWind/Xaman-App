@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Je, mtu anakuahidi zawadi za bure, airdrops, au cryptocurrency?",
     "isSomeoneSupport": "Je, unaombwa kusaini muamala huu na mtu anayetoa msaada?",
     "isSomeoneTeam": "Je, unaombwa kusaini muamala huu na mtu anayedai kuwa sehemu ya timu ya Xaman, XRPL Labs au Ripple?",
-    "areYouAwareThatNonReversible": "Je, muamala wa blockchain unaweza kubatilishwa?"
+    "areYouAwareThatNonReversible": "Je, muamala wa blockchain unaweza kubatilishwa?",
+    "thisOfferConsumesPercentage": "Ofa hii inatumia sehemu kubwa ya salio lako: %{wantsPercentage}% ya salio lako katika mali iliyoombwa! Je, una uhakika unataka kukubali ofa hii?"
   },
   "tangemImportMsgs": {
     "newTitle": "Kadi mpya kabisa!",

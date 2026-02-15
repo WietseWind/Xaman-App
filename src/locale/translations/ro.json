@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Vă promite cineva recompense gratuite, airdrop-uri sau criptomonede?",
     "isSomeoneSupport": "Vi se cere să semnați această tranzacție de către cineva care oferă suport?",
     "isSomeoneTeam": "Vi se cere să semnați această tranzacție de către cineva care pretinde că face parte din echipa Xaman, XRPL Labs sau Ripple?",
-    "areYouAwareThatNonReversible": "Poate fi anulată o tranzacție blockchain?"
+    "areYouAwareThatNonReversible": "Poate fi anulată o tranzacție blockchain?",
+    "thisOfferConsumesPercentage": "Această ofertă consumă o mare parte din soldul tău: %{wantsPercentage}% din soldul tău în activul solicitat! Ești sigur că dorești să accepți această ofertă?"
   },
   "tangemImportMsgs": {
     "newTitle": "Card nou-nouț!",

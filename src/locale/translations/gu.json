@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "શું કોઈ તમને મફત પુરસ્કારો, airdrops અથવા ક્રિપ્ટોકરન્સીનું વચન આપી રહ્યું છે?",
     "isSomeoneSupport": "શું સપોર્ટ ઓફર કરનાર કોઈ વ્યક્તિ તમને આ વ્યવહાર પર સહી કરવાનું કહી રહી છે?",
     "isSomeoneTeam": "શું Xaman, XRPL Labs અથવા Ripple ટીમનો ભાગ હોવાનો દાવો કરનાર કોઈ વ્યક્તિ તમને આ વ્યવહાર પર સહી કરવાનું કહી રહી છે?",
-    "areYouAwareThatNonReversible": "શું બ્લોકચેન વ્યવહાર ઉલટાવી શકાય છે?"
+    "areYouAwareThatNonReversible": "શું બ્લોકચેન વ્યવહાર ઉલટાવી શકાય છે?",
+    "thisOfferConsumesPercentage": "આ ઓફર તમારા બેલેન્સનો મોટો ભાગ વાપરે છે: વિનંતી કરેલ એસેટમાં તમારા બેલેન્સનો %{wantsPercentage}%! શું તમે ખાતરી કરો છો કે તમે આ ઓફર સ્વીકારવા માંગો છો?"
   },
   "tangemImportMsgs": {
     "newTitle": "બિલકુલ નવું કાર્ડ!",

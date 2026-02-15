@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Èske yon moun ap pwomèt ou rekonpans gratis, airdrop, oswa kriptomonè?",
     "isSomeoneSupport": "Èske yon moun ki ap ofri sipò ap mande w siyen tranzaksyon sa a?",
     "isSomeoneTeam": "Èske yon moun ki di li fè pati ekip Xaman, XRPL Labs oswa Ripple ap mande w siyen tranzaksyon sa a?",
-    "areYouAwareThatNonReversible": "Èske yon tranzaksyon blockchain ka ranvèse?"
+    "areYouAwareThatNonReversible": "Èske yon tranzaksyon blockchain ka ranvèse?",
+    "thisOfferConsumesPercentage": "Òf sa a konsome yon gwo pòsyon nan balans ou: %{wantsPercentage}% nan balans ou nan byen yo mande a! Èske ou sèten ou vle aksepte òf sa a?"
   },
   "tangemImportMsgs": {
     "newTitle": "Kat tou nèf!",

@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Lupaako joku sinulle ilmaisia palkintoja, airdropeja tai kryptovaluuttaa?",
     "isSomeoneSupport": "Pyytääkö joku, joka tarjoaa tukea, sinua allekirjoittamaan tämän tapahtuman?",
     "isSomeoneTeam": "Pyytääkö joku, joka väittää olevansa osa Xaman-, XRPL Labs- tai Ripple-tiimiä, sinua allekirjoittamaan tämän tapahtuman?",
-    "areYouAwareThatNonReversible": "Voidaanko lohkoketjutapahtuma peruuttaa?"
+    "areYouAwareThatNonReversible": "Voidaanko lohkoketjutapahtuma peruuttaa?",
+    "thisOfferConsumesPercentage": "Tämä tarjous kuluttaa suuren osan saldostasi: %{wantsPercentage}% saldostasi pyydetyssä omaisuuserässä! Oletko varma, että haluat hyväksyä tämän tarjouksen?"
   },
   "tangemImportMsgs": {
     "newTitle": "Upouusi kortti!",

@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Kas keegi lubab teile tasuta auhindu, airdroppe või krüptovaluutat?",
     "isSomeoneSupport": "Kas keegi, kes pakub tuge, palub teil seda tehingut allkirjastada?",
     "isSomeoneTeam": "Kas keegi, kes väidab end olevat Xamani, XRPL Labsi või Ripple'i meeskonna liige, palub teil seda tehingut allkirjastada?",
-    "areYouAwareThatNonReversible": "Kas plokiahela tehingut saab tagasi pöörata?"
+    "areYouAwareThatNonReversible": "Kas plokiahela tehingut saab tagasi pöörata?",
+    "thisOfferConsumesPercentage": "See pakkumine tarbib suure osa teie saldost: %{wantsPercentage}% teie saldost soovitud varas! Kas olete kindel, et soovite selle pakkumise vastu võtta?"
   },
   "tangemImportMsgs": {
     "newTitle": "Täiesti uus kaart!",

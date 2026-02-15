@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Verspricht Ihnen jemand kostenlose Belohnungen, Airdrops oder Kryptowährungen?",
     "isSomeoneSupport": "Werden Sie von jemandem, der Support anbietet, aufgefordert, diese Transaktion zu unterzeichnen?",
     "isSomeoneTeam": "Werden Sie von jemandem, der behauptet, Teil des Xaman-, XRPL Labs- oder Ripple-Teams zu sein, aufgefordert, diese Transaktion zu unterzeichnen?",
-    "areYouAwareThatNonReversible": "Kann eine Blockchain-Transaktion rückgängig gemacht werden?"
+    "areYouAwareThatNonReversible": "Kann eine Blockchain-Transaktion rückgängig gemacht werden?",
+    "thisOfferConsumesPercentage": "Dieses Angebot verbraucht einen großen Teil Ihres Guthabens: %{wantsPercentage}% Ihres Guthabens im angeforderten Asset! Sind Sie sicher, dass Sie dieses Angebot annehmen möchten?"
   },
   "tangemImportMsgs": {
     "newTitle": "Brandneue Karte!",

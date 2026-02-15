@@ -36,6 +36,7 @@ export interface State {
     isTokenBurnable: any;
     isLoading: boolean;
     wantsPercentage?: number;
+    wantsValue?: string;
 }
 
 /* Component ==================================================================== */
@@ -60,7 +61,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
 
         const settings = await CoreRepository.getSettings();
 
-        const [, accountWorth] = await Promise.all([
+        const [, accountWorth, currencyRate] = await Promise.all([
             this.fetchObject(),
             BackendService.getAccountWorth(
                 transaction!.Account,
@@ -68,6 +69,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                 settings.currency,
                 'NFTOKENOFFER_ACCEPT',
             ),
+            BackendService.getCurrencyRate(settings.currency),
         ]);
 
         // check if token is burnable
@@ -83,6 +85,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                 issuer: string;
                 asset: string;
                 amount: number;
+                value?: number;
             }[] = accountWorth?.lineItems || [];
 
             if (typeof amount !== 'string') {
@@ -99,8 +102,12 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                 if (Array.isArray(matchingAWItem) && matchingAWItem.length > 0) {
                     const matchingAWItemAmount = matchingAWItem[0].amount;
                     const wantsPercentage = Math.round(Number(amount.value) / Number(matchingAWItemAmount) * 100);
+                    const ff = Localize.formatNumber(
+                        Number(matchingAWItem[0]?.value), Number(matchingAWItem[0]?.value) > 1000 ? 0 : 2, true,
+                    );
                     this.setState({
                         wantsPercentage,
+                        wantsValue: `${currencyRate.code || settings.currency} ${currencyRate.symbol} ${ff}`,
                     });
                 }
             }
@@ -168,7 +175,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
 
     render() {
         const { source, transaction } = this.props;
-        const { object, isTokenBurnable, isLoading, wantsPercentage } = this.state;
+        const { object, isTokenBurnable, isLoading, wantsPercentage, wantsValue } = this.state;
 
         if (isLoading) {
             return <LoadingIndicator />;
@@ -256,7 +263,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                                     icon="IconInfo"
                                     type="warning"
                                     label={Localize.t('payloadRiskWarning.thisOfferConsumesPercentage', {
-                                        wantsPercentage,
+                                        wantsPercentage: `${wantsValue} / ${wantsPercentage}`,
                                     })}
                                 />
                             </View>

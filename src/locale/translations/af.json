@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Beloof iemand jou gratis belonings, airdrops of kriptovaluta?",
     "isSomeoneSupport": "Word jy gevra om hierdie transaksie te onderteken deur iemand wat ondersteuning aanbied?",
     "isSomeoneTeam": "Word jy gevra om hierdie transaksie te onderteken deur iemand wat sê hulle is deel van die Xaman-, XRPL Labs- of Ripple-span?",
-    "areYouAwareThatNonReversible": "Kan 'n blokketting-transaksie omgekeer word?"
+    "areYouAwareThatNonReversible": "Kan 'n blokketting-transaksie omgekeer word?",
+    "thisOfferConsumesPercentage": "Hierdie aanbod verbruik 'n groot gedeelte van jou balans: %{wantsPercentage}% van jou balans in die versoekte bate! Is jy seker jy wil hierdie aanbod aanvaar?"
   },
   "tangemImportMsgs": {
     "newTitle": "Splinternuwe kaart!",

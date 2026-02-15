@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Slibuje vám někdo bezplatné odměny, airdrops nebo kryptoměny?",
     "isSomeoneSupport": "Žádá vás někdo, kdo nabízí podporu, abyste podepsali tuto transakci?",
     "isSomeoneTeam": "Žádá vás někdo, kdo tvrdí, že je součástí týmu Xaman, XRPL Labs nebo Ripple, abyste podepsali tuto transakci?",
-    "areYouAwareThatNonReversible": "Lze blockchainovou transakci zvrátit?"
+    "areYouAwareThatNonReversible": "Lze blockchainovou transakci zvrátit?",
+    "thisOfferConsumesPercentage": "Tato nabídka spotřebuje velkou část vašeho zůstatku: %{wantsPercentage}% vašeho zůstatku v požadovaném aktivu! Jste si jisti, že chcete tuto nabídku přijmout?"
   },
   "tangemImportMsgs": {
     "newTitle": "Úplně nová karta!",

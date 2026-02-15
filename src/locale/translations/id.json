@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "Apakah seseorang menjanjikan Anda hadiah gratis, airdrop, atau cryptocurrency?",
     "isSomeoneSupport": "Apakah Anda diminta untuk menandatangani transaksi ini oleh seseorang yang menawarkan dukungan?",
     "isSomeoneTeam": "Apakah Anda diminta untuk menandatangani transaksi ini oleh seseorang yang mengaku sebagai bagian dari tim Xaman, XRPL Labs, atau Ripple?",
-    "areYouAwareThatNonReversible": "Bisakah transaksi blockchain dibatalkan?"
+    "areYouAwareThatNonReversible": "Bisakah transaksi blockchain dibatalkan?",
+    "thisOfferConsumesPercentage": "Penawaran ini menghabiskan sebagian besar saldo Anda: %{wantsPercentage}% dari saldo Anda dalam aset yang diminta! Apakah Anda yakin ingin menerima penawaran ini?"
   },
   "tangemImportMsgs": {
     "newTitle": "Kartu baru!",

@@ -1693,7 +1693,8 @@
     "isSomeonePromising": "هل يعدك شخص ما بمكافآت مجانية أو airdrops أو عملات رقمية؟",
     "isSomeoneSupport": "هل يُطلب منك توقيع هذه المعاملة من قبل شخص يقدم الدعم؟",
     "isSomeoneTeam": "هل يُطلب منك توقيع هذه المعاملة من قبل شخص يدعي أنه جزء من فريق Xaman أو XRPL Labs أو Ripple؟",
-    "areYouAwareThatNonReversible": "هل يمكن عكس معاملة البلوكشين؟"
+    "areYouAwareThatNonReversible": "هل يمكن عكس معاملة البلوكشين؟",
+    "thisOfferConsumesPercentage": "يستهلك هذا العرض جزءًا كبيرًا من رصيدك: %{wantsPercentage}% من رصيدك في الأصل المطلوب! هل أنت متأكد أنك تريد قبول هذا العرض؟"
   },
   "tangemImportMsgs": {
     "newTitle": "بطاقة جديدة تماماً!",
