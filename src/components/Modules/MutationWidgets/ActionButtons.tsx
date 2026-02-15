@@ -36,6 +36,7 @@ enum ActionTypes {
     CANCEL_OFFER = 'CANCEL_OFFER',
     REMOVE_DELEGATION = 'REMOVE_DELEGATION',
     ACCEPT_NFTOKEN_OFFER = 'ACCEPT_NFTOKEN_OFFER',
+    CANCEL_NFTOKEN_OFFER = 'CANCEL_NFTOKEN_OFFER',
     ACCEPT_URITOKEN_OFFER = 'ACCEPT_URITOKEN_OFFER',
     SELL_NFTOKEN = 'SELL_NFTOKEN',
     SELL_URITOKEN = 'SELL_URITOKEN',
@@ -78,6 +79,8 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
                 return { label: Localize.t('events.cancelOffer'), secondary: true };
             case ActionTypes.REMOVE_DELEGATION:
                 return { label: Localize.t('txDelegateSet.removeAuthorize'), secondary: false };
+            case ActionTypes.CANCEL_NFTOKEN_OFFER:
+                return { label: Localize.t('events.cancelOffer'), secondary: false };
             case ActionTypes.ACCEPT_NFTOKEN_OFFER:
                 return { label: Localize.t('events.acceptOffer'), secondary: true };
             case ActionTypes.SELL_NFTOKEN:
@@ -240,6 +243,9 @@ class ActionButtons extends PureComponent<Props, State> {
                     availableActions.push(ActionTypes.CANCEL_OFFER);
                 } else if (!item.Destination || item.Destination === account.address) {
                     if (item.Flags?.lsfSellNFToken) {
+                        if (item.Destination === account.address) {
+                            availableActions.push(ActionTypes.CANCEL_NFTOKEN_OFFER);
+                        }
                         availableActions.push(ActionTypes.ACCEPT_NFTOKEN_OFFER);
                     } else {
                         availableActions.push(ActionTypes.SELL_NFTOKEN);
@@ -424,6 +430,14 @@ class ActionButtons extends PureComponent<Props, State> {
                     Issuer: (item as any)?.Issuer,
                     CredentialType: (item as any)?.CredentialType,
                 });
+                break;
+            case ActionTypes.CANCEL_NFTOKEN_OFFER:
+                if (item.Type === LedgerEntryTypes.NFTokenOffer) {
+                    Object.assign(craftedTxJson, {
+                        TransactionType: TransactionTypes.NFTokenCancelOffer,
+                        NFTokenOffers: [item.Index],
+                    });
+                }
                 break;
             case ActionTypes.ACCEPT_NFTOKEN_OFFER:
             case ActionTypes.SELL_NFTOKEN:
