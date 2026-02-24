@@ -292,7 +292,7 @@ class TokenItem extends PureComponent<Props, State> {
                             }
                         </Text>
                         <Text numberOfLines={1} style={styles.issuerLabel}>
-                            {token.getFormattedIssuer(undefined, 16)}
+                            {token.getFormattedIssuer(undefined, 20)}
                         </Text>
                     </View>
                 </View>

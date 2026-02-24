@@ -45,7 +45,7 @@ class MemoParser {
         // check memo format
         const { MemoData, MemoFormat, MemoType } = memo;
 
-        const decodedFormat = MemoFormat ? HexEncoding.toUTF8(MemoFormat) : undefined;
+        let decodedFormat = MemoFormat ? HexEncoding.toUTF8(MemoFormat) : undefined;
         const decodedType = MemoType ? HexEncoding.toUTF8(MemoType) : undefined;
 
         // if application/x-binary then return the data without decoding to hex
@@ -55,6 +55,14 @@ class MemoParser {
                 MemoFormat: decodedFormat,
                 MemoType: decodedType,
             };
+        }
+
+        if (!decodedFormat && typeof MemoData === 'string') {
+            if (MemoData.match(/^[0-9A-F]+$/)) {
+                if (MemoData.length % 2 === 0 && MemoData.length > 16) {
+                    decodedFormat = 'hex';
+                }
+            }
         }
 
         let _MemoData = MemoData;

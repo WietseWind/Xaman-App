@@ -1241,7 +1241,9 @@ class XAppBrowserModal extends Component<Props, State> {
                         text: altHeader?.center?.text,
                         extraComponent: altHeader?.center?.showNetworkLabel
                             ? <NetworkLabel type="both" />
-                            : altHeader?.center?.subtitle && <Text>{ String(altHeader?.center?.subtitle) }</Text>,
+                            : altHeader?.center?.subtitle && (
+                                <Text style={AppStyles.smalltext}>{String(altHeader?.center?.subtitle)}</Text>
+                            ),
                     }}
                     rightComponent={
                         Object.values(AppConfig.xappIdentifiers).indexOf(String(app?.identifier || '')) > -1 ||
