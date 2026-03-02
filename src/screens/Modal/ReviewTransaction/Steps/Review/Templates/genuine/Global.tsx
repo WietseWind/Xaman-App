@@ -288,10 +288,11 @@ class GlobalTemplate extends Component<Props, State> {
                 <Text style={styles.label}>{Localize.t('global.memo')}</Text>
                 <View style={styles.contentBox}>
                     {
-                        transaction.Memos.map((m) => {
+                        transaction.Memos.map((m, i) => {
                             return (
                                 <View
                                     style={styles.memoContainer}
+                                    key={`memo-${i}`}
                                 >
                                     {m.MemoType && (
                                         <Text style={[styles.value, styles.memoType]}>{m.MemoType}</Text>

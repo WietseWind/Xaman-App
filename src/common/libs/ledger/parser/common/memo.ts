@@ -60,7 +60,10 @@ class MemoParser {
         if (!decodedFormat && typeof MemoData === 'string') {
             if (MemoData.match(/^[0-9A-F]+$/)) {
                 if (MemoData.length % 2 === 0 && MemoData.length > 16) {
-                    decodedFormat = 'hex';
+                    const asUtf8 = HexEncoding.toUTF8(MemoData);
+                    if (!asUtf8.match(/[a-zA-Z0-9\s]{3,}.*[a-zA-Z0-9\s]{3,}/) && !decodedType) {
+                        decodedFormat = 'hex';
+                    }
                 }
             }
         }
