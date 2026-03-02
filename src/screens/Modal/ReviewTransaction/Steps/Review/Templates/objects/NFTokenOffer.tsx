@@ -257,7 +257,7 @@ class NFTokenOfferTemplate extends Component<Props, State> {
                                 immutable
                             />
                         </View>
-                        {isAboutToPay && wantsPercentage && wantsPercentage > 50 && (
+                        {isAboutToPay && (Number(wantsPercentage || 0) || 0) > 50 && (
                             <View style={AppStyles.marginBottom}>
                                 <InfoMessage
                                     icon="IconInfo"
