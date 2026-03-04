@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "无法获取账户 NFT。请确保您已连接到 XRP Ledger 节点。"
   },
   "send": {
+    "mustOpenxAppInstead": "您无法直接向此账户发送资金：目标账户需要特定的发送参数。您可以使用专用 xApp 与此账户互动。您是否要打开 xApp？",
+    "cannotOpenDirectly": "不允许直接向此账户发送资金：目标账户需要特定的发送参数。这些参数无法在手动付款交易中提供。",
     "theDestinationAccountDidNotAuthorize": "目标账户未授权此交易。检查您选择的发送账户，或联系目标账户所有者。",
     "txResultQueued": "交易已排队！",
     "txResultQueuedExplain": "交易已添加到队列",

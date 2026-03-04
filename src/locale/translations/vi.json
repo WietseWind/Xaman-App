@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Không thể tải NFT của tài khoản. Vui lòng đảm bảo bạn đã kết nối với nút XRP Ledger."
   },
   "send": {
+    "mustOpenxAppInstead": "Bạn không thể gửi tiền trực tiếp đến tài khoản này: tài khoản đích yêu cầu các tham số gửi cụ thể. Bạn có thể sử dụng xApp chuyên dụng để tương tác với tài khoản này. Bạn có muốn mở xApp không?",
+    "cannotOpenDirectly": "Không được phép gửi tiền trực tiếp đến tài khoản này: tài khoản đích yêu cầu các tham số gửi cụ thể. Những tham số này không thể được cung cấp trong một giao dịch Thanh toán thủ công.",
     "theDestinationAccountDidNotAuthorize": "Tài khoản đích không ủy quyền giao dịch này. Kiểm tra tài khoản gửi đã chọn hoặc liên hệ với chủ sở hữu tài khoản đích.",
     "txResultQueued": "Giao dịch đã xếp hàng!",
     "txResultQueuedExplain": "Giao dịch đã được thêm vào hàng đợi",

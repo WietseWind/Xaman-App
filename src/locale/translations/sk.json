@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Nemôžete poslať prostriedky priamo na tento účet: cieľový účet vyžaduje špecifické parametre odosielania. Na interakciu s týmto účtom môžete použiť vyhradenú xApp. Chcete otvoriť xApp?",
+    "cannotOpenDirectly": "Odosielanie prostriedkov priamo na tento účet nie je povolené: cieľový účet vyžaduje špecifické parametre odosielania. Tieto nie je možné zadať v manuálnej platobnej transakcii.",
     "theDestinationAccountDidNotAuthorize": "Cieľový účet neautorizoval túto transakciu. Skontrolujte vybraný účet na odosielanie alebo požiadajte príjemcu o autorizáciu vášho účtu pre DepositPreauth.",
     "txResultQueued": "Transakcia zaradená do fronty!",
     "txResultQueuedExplain": "Transakcia pridaná do fronty",

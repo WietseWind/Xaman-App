@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Não foi possível buscar os NFTs da conta. Por favor, certifique-se de que está conectado ao nó do XRP Ledger."
   },
   "send": {
+    "mustOpenxAppInstead": "Você não pode enviar fundos diretamente para esta conta: a conta de destino requer parâmetros de envio específicos. Você pode usar um xApp dedicado para interagir com esta conta. Deseja abrir o xApp?",
+    "cannotOpenDirectly": "O envio de fundos diretamente para esta conta não é permitido: a conta de destino requer parâmetros de envio específicos. Estes não podem ser fornecidos em uma transação de Pagamento manual.",
     "theDestinationAccountDidNotAuthorize": "A conta de destino não autorizou esta transação. Verifique sua conta de envio selecionada ou entre em contato com o proprietário da conta de destino.",
     "txResultQueued": "Transação na fila!",
     "txResultQueuedExplain": "Transação adicionada à fila",

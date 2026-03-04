@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Nie można pobrać NFT konta. Upewnij się, że jesteś połączony z węzłem XRP Ledger."
   },
   "send": {
+    "mustOpenxAppInstead": "Nie możesz wysłać środków bezpośrednio na to konto: konto docelowe wymaga określonych parametrów wysyłania. Możesz użyć dedykowanej xApp, aby interagować z tym kontem. Czy chcesz otworzyć xApp?",
+    "cannotOpenDirectly": "Wysyłanie środków bezpośrednio na to konto jest niedozwolone: konto docelowe wymaga określonych parametrów wysyłania. Nie mogą one być podane w ręcznej transakcji płatniczej.",
     "theDestinationAccountDidNotAuthorize": "Konto docelowe nie autoryzowało tej transakcji. Sprawdź wybrane konto wysyłające lub skontaktuj się z właścicielem konta docelowego.",
     "txResultQueued": "Transakcja w kolejce!",
     "txResultQueuedExplain": "Transakcja dodana do kolejki",

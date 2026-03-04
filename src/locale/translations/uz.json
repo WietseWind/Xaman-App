@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Siz bu hisobga to'g'ridan-to'g'ri mablag' yubora olmaysiz: maqsadli hisob ma'lum yuborish parametrlarini talab qiladi. Bu hisob bilan o'zaro ta'sir qilish uchun maxsus xApp-dan foydalanishingiz mumkin. xApp-ni ochmoqchimisiz?",
+    "cannotOpenDirectly": "Bu hisobga to'g'ridan-to'g'ri mablag' yuborish ruxsat etilmaydi: maqsadli hisob ma'lum yuborish parametrlarini talab qiladi. Ularni qo'lda To'lov tranzaksiyasida taqdim etib bo'lmaydi.",
     "theDestinationAccountDidNotAuthorize": "Manzil hisobi ushbu tranzaksiyani ruxsat bermadi",
     "txResultQueued": "Tranzaksiya navbatga qo'yildi!",
     "txResultQueuedExplain": "Tranzaksiya navbatga qo'shildi",

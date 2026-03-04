@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "אינך יכול לשלוח כספים ישירות לחשבון זה: חשבון היעד מחייב פרמטרי שליחה ספציפיים. תוכל להשתמש ב-xApp ייעודי כדי לתקשר עם חשבון זה. האם ברצונך לפתוח את xApp?",
+    "cannotOpenDirectly": "שליחת כספים ישירות לחשבון זה אינה מותרת: חשבון היעד מחייב פרמטרי שליחה ספציפיים. לא ניתן לספק אותם בעסקת תשלום ידנית.",
     "theDestinationAccountDidNotAuthorize": "The destination account did not authorize this transaction. Check your selected sending account, or contact the destination account owner.",
     "txResultQueued": "עסקה בתור!",
     "txResultQueuedExplain": "עסקה נוספה לתור",

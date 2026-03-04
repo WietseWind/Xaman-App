@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Ou pa ka voye lajan dirèkteman nan kont sa a: kont destinasyon an mande paramèt voye espesifik. Ou ka itilize yon xApp dedye pou entèaji ak kont sa a. Èske ou vle ouvri xApp la?",
+    "cannotOpenDirectly": "Voye lajan dirèkteman nan kont sa a pa pèmèt: kont destinasyon an mande paramèt voye espesifik. Sa yo pa ka founi nan yon tranzaksyon Peman manyèl.",
     "theDestinationAccountDidNotAuthorize": "Kont destinasyon an pa t otorize tranzaksyon sa a. Yo ka bezwen otorize kont ou anvan ou ka voye peman yo.",
     "txResultQueued": "Tranzaksyon nan keu!",
     "txResultQueuedExplain": "Tranzaksyon ajoute nan keu",

@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "您無法直接向此帳戶發送資金：目標帳戶需要特定的發送參數。您可以使用專用 xApp 與此帳戶互動。您是否要開啟 xApp？",
+    "cannotOpenDirectly": "不允許直接向此帳戶發送資金：目標帳戶需要特定的發送參數。這些參數無法在手動付款交易中提供。",
     "theDestinationAccountDidNotAuthorize": "目標帳戶未授權此交易。",
     "txResultQueued": "交易已排隊!",
     "txResultQueuedExplain": "交易已新增至佇列",

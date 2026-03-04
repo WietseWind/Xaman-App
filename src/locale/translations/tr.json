@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Bu hesaba doğrudan fon gönderemezsiniz: hedef hesap belirli gönderme parametreleri gerektiriyor. Bu hesapla etkileşim kurmak için özel bir xApp kullanabilirsiniz. xApp'i açmak ister misiniz?",
+    "cannotOpenDirectly": "Bu hesaba doğrudan fon gönderme izni verilmemektedir: hedef hesap belirli gönderme parametreleri gerektiriyor. Bunlar manuel bir Ödeme işleminde sağlanamaz.",
     "theDestinationAccountDidNotAuthorize": "The destination account did not authorize this transaction. Check your selected sending account, or contact the destination account owner.",
     "txResultQueued": "Transaction queued!",
     "txResultQueuedExplain": "Transaction added to the queue",

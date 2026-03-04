@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Impossible de récupérer les NFT du compte. Veuillez vous assurer que vous êtes connecté au nœud XRPL."
   },
   "send": {
+    "mustOpenxAppInstead": "Vous ne pouvez pas envoyer des fonds directement à ce compte : le compte de destination nécessite des paramètres d'envoi spécifiques. Vous pouvez utiliser une xApp dédiée pour interagir avec ce compte. Voulez-vous ouvrir l'xApp ?",
+    "cannotOpenDirectly": "L'envoi de fonds directement à ce compte n'est pas autorisé : le compte de destination nécessite des paramètres d'envoi spécifiques. Ceux-ci ne peuvent pas être fournis dans une transaction de paiement manuelle.",
     "theDestinationAccountDidNotAuthorize": "Le compte de destination n'a pas autorisé cette transaction. Vérifiez votre compte d'envoi sélectionné ou contactez le propriétaire du compte de destination.",
     "txResultQueued": "Transaction en file d'attente !",
     "txResultQueuedExplain": "Transaction ajoutée à la file d'attente",

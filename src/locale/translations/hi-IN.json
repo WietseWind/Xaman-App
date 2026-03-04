@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "आप इस खाते में सीधे धनराशि नहीं भेज सकते: गंतव्य खाते को विशिष्ट भेजने के पैरामीटर की आवश्यकता है। आप इस खाते के साथ बातचीत करने के लिए एक समर्पित xApp का उपयोग कर सकते हैं। क्या आप xApp खोलना चाहते हैं?",
+    "cannotOpenDirectly": "इस खाते में सीधे धनराशि भेजने की अनुमति नहीं है: गंतव्य खाते को विशिष्ट भेजने के पैरामीटर की आवश्यकता है। इन्हें मैन्युअल भुगतान लेनदेन में प्रदान नहीं किया जा सकता।",
     "theDestinationAccountDidNotAuthorize": "गंतव्य खाते ने इस लेन-देन को अधिकृत नहीं किया।",
     "txResultQueued": "लेन-देन कतारबद्ध!",
     "txResultQueuedExplain": "लेन-देन कतार में जोड़ा गया",

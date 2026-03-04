@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Jy kan nie fondse direk na hierdie rekening stuur nie: die bestemmingsrekening vereis spesifieke stuurparameters. Jy kan 'n toegewyde xApp gebruik om met hierdie rekening te kommunikeer. Wil jy die xApp oopmaak?",
+    "cannotOpenDirectly": "Die stuur van fondse direk na hierdie rekening is nie toegelaat nie: die bestemmingsrekening vereis spesifieke stuurparameters. Hierdie kan nie in 'n handmatige Betalingstransaksie voorsien word nie.",
     "theDestinationAccountDidNotAuthorize": "Die bestemmingsrekening het nie hierdie transaksie gemagtig nie. Kontroleer jou geselekteerde stuurrekening, of kontak die bestemmingsrekening eienaar.",
     "txResultQueued": "Transaksie in die tou!",
     "txResultQueuedExplain": "Transaksie by die tou gevoeg",

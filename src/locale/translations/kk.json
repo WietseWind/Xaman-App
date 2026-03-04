@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Сіз бұл шотқа тікелей қаражат жібере алмайсыз: тағайындалған шот жіберудің арнайы параметрлерін талап етеді. Осы шотпен өзара әрекеттесу үшін арнайы xApp пайдалануға болады. xApp ашқыңыз келе ме?",
+    "cannotOpenDirectly": "Бұл шотқа тікелей қаражат жіберуге рұқсат жоқ: тағайындалған шот жіберудің арнайы параметрлерін талап етеді. Оларды қолмен Төлем транзакциясында ұсыну мүмкін емес.",
     "theDestinationAccountDidNotAuthorize": "Тағайындау шоты бұл транзакцияны авторизациялаған жоқ.",
     "txResultQueued": "Транзакция кезекке қосылды!",
     "txResultQueuedExplain": "Транзакция кезекке қосылды",

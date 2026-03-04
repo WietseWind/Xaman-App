@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Nu puteți trimite fonduri direct la acest cont: contul destinatarului necesită parametri de trimitere specifici. Puteți folosi o xApp dedicată pentru a interacționa cu acest cont. Doriți să deschideți xApp?",
+    "cannotOpenDirectly": "Trimiterea de fonduri direct la acest cont nu este permisă: contul destinatarului necesită parametri de trimitere specifici. Aceștia nu pot fi furnizați într-o tranzacție de plată manuală.",
     "theDestinationAccountDidNotAuthorize": "The destination account did not authorize this transaction. Check your selected sending account, or contact the destination account owner.",
     "txResultQueued": "Tranzacție în coadă!",
     "txResultQueuedExplain": "Tranzacție adăugată în coadă",

@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Nepavyko gauti sąskaitos NFT. Įsitikinkite, kad esate prisijungę prie mazgo."
   },
   "send": {
+    "mustOpenxAppInstead": "Negalite tiesiogiai siųsti lėšų į šią sąskaitą: paskirties sąskaita reikalauja konkrečių siuntimo parametrų. Galite naudoti specialiai skirtą xApp, kad sąveikautumėte su šia sąskaita. Ar norite atidaryti xApp?",
+    "cannotOpenDirectly": "Siųsti lėšas tiesiogiai į šią sąskaitą yra draudžiama: paskirties sąskaita reikalauja konkrečių siuntimo parametrų. Jų negalima pateikti rankinėje mokėjimo operacijoje.",
     "theDestinationAccountDidNotAuthorize": "Paskirties sąskaita neautorizavo šios operacijos. Patikrinkite pasirinktą siuntimo sąskaitą arba susisiekite su paskirties sąskaitos savininku.",
     "txResultQueued": "Operacija eilėje!",
     "txResultQueuedExplain": "Operacija pridėta į eilę",

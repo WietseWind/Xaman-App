@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Et voi lähettää varoja suoraan tälle tilille: kohdekäyttäjätili vaatii tiettyjä lähetysparametreja. Voit käyttää omistettua xApp-ia ollaksesi vuorovaikutuksessa tämän tilin kanssa. Haluatko avata xApp-in?",
+    "cannotOpenDirectly": "Varojen lähettäminen suoraan tälle tilille ei ole sallittua: kohdekäyttäjätili vaatii tiettyjä lähetysparametreja. Näitä ei voida tarjota manuaalisessa maksutapahtumassa.",
     "theDestinationAccountDidNotAuthorize": "Kohdetili ei valtuuttanut tätä tapahtumaa.",
     "txResultQueued": "Tapahtuma jonossa!",
     "txResultQueuedExplain": "Tapahtuma lisätty jonoon",

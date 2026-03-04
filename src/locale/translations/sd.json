@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "توهان هن کاتي ۾ سڌو فنڊ نٿا موڪلي سگهو: منزل واري کاتي کي مخصوص موڪلڻ جي پيرامِيٽرن جي ضرورت آهي. توهان هن کاتي سان رابطو ڪرڻ لاءِ هڪ خاص xApp استعمال ڪري سگهو ٿا. ڇا توهان xApp کولڻ چاهيو ٿا؟",
+    "cannotOpenDirectly": "هن کاتي ۾ سڌو فنڊ موڪلڻ جي اجازت نه آهي: منزل واري کاتي کي مخصوص موڪلڻ جي پيرامِيٽرن جي ضرورت آهي. اهي هٿ سان پيمنٽ ٽرانزيڪشن ۾ مهيا نه ٿا ٿي سگهن.",
     "theDestinationAccountDidNotAuthorize": "منزل اڪائونٽ اجازت نه ڏني",
     "txResultQueued": "قطار ۾ رکيل",
     "txResultQueuedExplain": "ٽرانزيڪشن قطار ۾ آھي",

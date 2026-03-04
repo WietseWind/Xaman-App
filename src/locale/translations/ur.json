@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "آپ اس اکاؤنٹ میں براہ راست رقم نہیں بھیج سکتے: منزل اکاؤنٹ کو مخصوص بھیجنے کے پیرامیٹرز کی ضرورت ہے۔ آپ اس اکاؤنٹ کے ساتھ تعامل کرنے کے لیے ایک مخصوص xApp استعمال کر سکتے ہیں۔ کیا آپ xApp کھولنا چاہتے ہیں؟",
+    "cannotOpenDirectly": "اس اکاؤنٹ میں براہ راست رقم بھیجنے کی اجازت نہیں ہے: منزل اکاؤنٹ کو مخصوص بھیجنے کے پیرامیٹرز کی ضرورت ہے۔ یہ دستی ادائیگی لین دین میں فراہم نہیں کیے جا سکتے۔",
     "theDestinationAccountDidNotAuthorize": "منزل کے اکاؤنٹ نے اس ٹرانزیکشن کی اجازت نہیں دی۔ اپنے منتخب کردہ بھیجنے والے اکاؤنٹ کو چیک کریں، یا منزل کے اکاؤنٹ کے مالک سے رابطہ کریں۔",
     "txResultQueued": "ٹرانزیکشن قطار میں!",
     "txResultQueuedExplain": "ٹرانزیکشن قطار میں شامل کی گئی",

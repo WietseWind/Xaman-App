@@ -44,6 +44,9 @@ import {
     LedgerEntryResponse,
 } from '@common/libs/ledger/types/methods';
 import { AccountAdvisoryResolveType, AccountNameResolveType } from '@services/ResolverService';
+import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
+import { XAppOrigin } from '@common/libs/payload';
+import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 
 /* types ==================================================================== */
 export interface Props {}
@@ -120,19 +123,61 @@ class RecipientStep extends Component<Props, State> {
 
         if (to) {
             // console.log('ifto')
-            const accountInfo = await Promise.race([
-                ResolverService.getAccountName(to, tag),
-                new Promise((resolve: (res: AccountNameResolveType) => void) => { 
-                    // console.log('resolving lookup')
-                    setTimeout(() => {
-                        // console.log('resolving lookup timeout, proceed')
-                        resolve({
-                            name: '',
-                            address: to,
-                            tag: toNumber(tag) || undefined,
-                        });
-                    }, XAMAN_BACKEND_API_TIMEOUT);
-                }),
+            const [accountInfo, addressInfo] = await Promise.all([
+                Promise.race([
+                    ResolverService.getAccountName(to, tag).catch(() => ({
+                        name: '',
+                        address: to,
+                        tag: toNumber(tag) || undefined,
+                        source: 'CATCH',
+                        kycApproved: false,
+                    })),
+                    new Promise((resolve: (res: AccountNameResolveType) => void) => {
+                        // console.log('resolving lookup')
+                        setTimeout(() => {
+                            // console.log('resolving lookup timeout, proceed')
+                            resolve({
+                                name: '',
+                                address: to,
+                                tag: toNumber(tag) || undefined,
+                                source: 'TIMEOUT',
+                                kycApproved: false,
+                            });
+                        }, XAMAN_BACKEND_API_TIMEOUT);
+                    }),
+                ]),
+                Promise.race([
+                    BackendService.getAddressInfo(to).catch(() => ({
+                        account: '',
+                        name: '',
+                        domain: '',
+                        blocked: false,
+                        source: 'CATCH',
+                        force_dtag: false,
+                        kycApproved: false,
+                        proSubscription: false,
+                        xapp_identifier: '',
+                        no_direct_send: 0,
+                    })),
+                    new Promise((resolve: (res: XamanBackend.AccountInfoResponse) => void) => { 
+                        // console.log('resolving lookup')
+                        setTimeout(() => {
+                            // console.log('resolving lookup timeout, proceed')\
+                            resolve({
+                                account: '',
+                                name: '',
+                                domain: '',
+                                blocked: false,
+                                source: 'TIMEOUT',
+                                force_dtag: false,
+                                kycApproved: false,
+                                proSubscription: false,
+                                xapp_identifier: '',
+                                no_direct_send: 0,
+                            });
+                        }, XAMAN_BACKEND_API_TIMEOUT);
+                    }),
+                ]),
             ]);
 
             this.setState({
@@ -143,6 +188,8 @@ class RecipientStep extends Component<Props, State> {
                         tag,
                         source: accountInfo.source,
                         kycApproved: accountInfo.kycApproved,
+                        accountInfo,
+                        addressInfo,
                     },
                 ]),
                 isSearching: false,
@@ -232,7 +279,7 @@ class RecipientStep extends Component<Props, State> {
             if (searchText?.length >= 4) {
                 // console.log('lookup')
                 const lookupResults = Promise.race([
-                    BackendService.lookup(searchText),
+                    BackendService.lookup(searchText).catch(() => { }),
                     new Promise((resolve: (res: void) => void) => {
                         // console.log('searchtext  lookup')
                         setTimeout(() => {
@@ -433,6 +480,75 @@ class RecipientStep extends Component<Props, State> {
             setCredentials,
         } = this.context;
         let { destinationInfo } = this.context;
+        const { dataSource } = this.state;
+
+        try {
+            const searchItem: {
+                accountInfo: any;
+                addressInfo: XamanBackend.AccountInfoResponse;
+            } = ((dataSource as any)?.[0]?.data || []).filter(
+                (itm: { address: string }) => itm && itm?.address === destination?.address,
+            )?.[0];
+            if (searchItem && searchItem?.addressInfo) {
+                if (searchItem?.addressInfo?.no_direct_send === 1) {
+                    if (
+                        typeof searchItem?.addressInfo?.xapp_identifier === 'string' &&
+                        searchItem?.addressInfo?.xapp_identifier !== ''
+                    ) {
+                        setTimeout(() => {
+                            Navigator.showAlertModal({
+                                type: 'warning',
+                                text: Localize.t('send.mustOpenxAppInstead'),
+                                buttons: [
+                                    {
+                                        text: Localize.t('global.back'),
+                                        onPress: this.resetResult,
+                                        type: 'dismiss',
+                                        light: true,
+                                    },
+                                    {
+                                        text: Localize.t('global.continue'),
+                                        onPress: () => {
+                                            Navigator.popToRoot();
+                                            requestAnimationFrame(() => {
+                                                // dismiss the modal
+                                                Navigator.dismissModal();
+                                                requestAnimationFrame(() => {
+                                                    Navigator.dismissOverlay();
+                                                    setTimeout(() => {
+                                                        Navigator.showModal<XAppBrowserModalProps>(
+                                                            AppScreens.Modal.XAppBrowser,
+                                                            {
+                                                                identifier: searchItem?.addressInfo?.xapp_identifier!,
+                                                                origin: XAppOrigin.MANUAL_SEND,
+                                                                originData: {},
+                                                            },
+                                                            {
+                                                                modalTransitionStyle:
+                                                                    OptionsModalTransitionStyle.coverVertical,
+                                                                modalPresentationStyle:
+                                                                    OptionsModalPresentationStyle.overFullScreen,
+                                                            },
+                                                        );
+                                                    }, 50);
+                                                });
+                                            });
+                                        },
+                                        type: 'continue',
+                                    },
+                                ],
+                            });
+                        }, 50);
+                        return;
+                    }
+
+                    Alert.alert(Localize.t('global.error'), Localize.t('send.cannotOpenDirectly'));
+                    return;
+                }
+            }
+        } catch (e) {
+            //
+        }
 
         // double check, this should not be happening
         if (!destination || !source) {
@@ -460,7 +576,12 @@ class RecipientStep extends Component<Props, State> {
                 // console.log('advisory')
                 try {
                     destinationInfo = await Promise.race([
-                        ResolverService.getAccountAdvisoryInfo(destination.address),
+                        ResolverService.getAccountAdvisoryInfo(destination.address).catch(() => {
+                            return {
+                                exist: true,
+                                danger: 'NONE',
+                            };
+                        }),
                         new Promise((resolve: (res: AccountAdvisoryResolveType) => void) => {
                             // console.log('advisory lookup')
                             setTimeout(() => {
@@ -743,7 +864,6 @@ class RecipientStep extends Component<Props, State> {
             }
 
             // console.log('___5')
-
             // if account is set to black hole then reject sending
             // IMMEDIATE REJECT
             if (destinationInfo.blackHole) {

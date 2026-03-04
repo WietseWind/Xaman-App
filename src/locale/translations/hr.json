@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Ne možete izravno poslati sredstva na ovaj račun: odredišni račun zahtijeva specifične parametre slanja. Možete koristiti namjensku xApp za interakciju s ovim računom. Želite li otvoriti xApp?",
+    "cannotOpenDirectly": "Slanje sredstava izravno na ovaj račun nije dopušteno: odredišni račun zahtijeva specifične parametre slanja. Ovi se ne mogu navesti u ručnoj transakciji plaćanja.",
     "theDestinationAccountDidNotAuthorize": "Odredišni račun nije autorizirao ovu transakciju. Provjerite odabrani račun za slanje ili kontaktirajte vlasnika odredišnog računa.",
     "txResultQueued": "Transakcija u redu čekanja!",
     "txResultQueuedExplain": "Transakcija dodana u red čekanja",

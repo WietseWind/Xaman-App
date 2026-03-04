@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "アカウントのNFTを取得できません。XRP Ledgerノードへの接続を確認してください。"
   },
   "send": {
+    "mustOpenxAppInstead": "このアカウントに直接送金することはできません：送金先アカウントは特定の送信パラメーターを必要とします。専用のxAppを使用してこのアカウントとやり取りすることができます。xAppを開きますか？",
+    "cannotOpenDirectly": "このアカウントへの直接送金は許可されていません：送金先アカウントは特定の送信パラメーターを必要とします。これらは手動の支払いトランザクションでは指定できません。",
     "theDestinationAccountDidNotAuthorize": "宛先アカウントはこのトランザクションを承認しませんでした。選択した送信アカウントを確認するか、宛先アカウントの所有者に連絡してください。",
     "txResultQueued": "トランザクションがキューに追加されました！",
     "txResultQueuedExplain": "トランザクションがキューに追加されました",

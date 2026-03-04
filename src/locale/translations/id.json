@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Tidak dapat mengambil NFT akun. Harap pastikan Anda terhubung ke node XRP Ledger."
   },
   "send": {
+    "mustOpenxAppInstead": "Anda tidak dapat mengirim dana langsung ke akun ini: akun tujuan memerlukan parameter pengiriman tertentu. Anda dapat menggunakan xApp khusus untuk berinteraksi dengan akun ini. Apakah Anda ingin membuka xApp?",
+    "cannotOpenDirectly": "Mengirim dana langsung ke akun ini tidak diizinkan: akun tujuan memerlukan parameter pengiriman tertentu. Parameter ini tidak dapat disediakan dalam transaksi Pembayaran manual.",
     "theDestinationAccountDidNotAuthorize": "Akun tujuan tidak mengotorisasi transaksi ini. Periksa akun pengirim yang Anda pilih, atau hubungi pemilik akun tujuan.",
     "txResultQueued": "Transaksi diantrekan!",
     "txResultQueuedExplain": "Transaksi ditambahkan ke antrian",

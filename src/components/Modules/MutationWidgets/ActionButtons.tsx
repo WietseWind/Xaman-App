@@ -1,6 +1,6 @@
 import React, { PureComponent, useMemo } from 'react';
 import { InteractionManager, View } from 'react-native';
-import { OptionsModalPresentationStyle } from 'react-native-navigation';
+import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 
 import { AppScreens } from '@common/constants';
 
@@ -9,7 +9,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { ComponentTypes } from '@services/NavigationService';
 import NetworkService from '@services/NetworkService';
 
-import { Payload } from '@common/libs/payload';
+import { Payload, XAppOrigin } from '@common/libs/payload';
 
 import { LedgerEntryTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 import { AmountParser } from '@common/libs/ledger/parser/common';
@@ -30,8 +30,11 @@ import { Props } from './types';
 import { AppStyles } from '@theme/index';
 import LedgerService from '@services/LedgerService';
 import BigNumber from 'bignumber.js';
+import BackendService from '@services/BackendService';
+import { type XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 
 enum ActionTypes {
+    OPEN_XAPP = 'OPEN_XAPP',
     NEW_PAYMENT = 'NEW_PAYMENT',
     CANCEL_OFFER = 'CANCEL_OFFER',
     REMOVE_DELEGATION = 'REMOVE_DELEGATION',
@@ -64,6 +67,7 @@ enum ActionTypes {
 
 interface State {
     availableActions?: ActionTypes[];
+    xAppIdentifier?: string;
 }
 
 /* Action Button ==================================================================== */
@@ -73,6 +77,8 @@ const ActionButton: React.FC<{ actionType: ActionTypes; onPress: (actionType: Ac
 }) => {
     const buttonData = useMemo(() => {
         switch (actionType) {
+            case ActionTypes.OPEN_XAPP:
+                return { label: Localize.t('global.openXApp'), secondary: false };
             case ActionTypes.NEW_PAYMENT:
                 return { label: Localize.t('events.newPayment'), secondary: false };
             case ActionTypes.CANCEL_OFFER:
@@ -163,7 +169,7 @@ class ActionButtons extends PureComponent<Props, State> {
         InteractionManager.runAfterInteractions(this.setAvailableActions);
     }
 
-    setAvailableActions = () => {
+    setAvailableActions = async () => {
         const { item, account } = this.props;
 
         const spendableAccounts = AccountRepository.getSpendableAccounts();
@@ -194,7 +200,25 @@ class ActionButtons extends PureComponent<Props, State> {
                             break;
                         }
                     }
-                    availableActions.push(ActionTypes.NEW_PAYMENT);
+                    
+                    const acct = account?.address === item?.Destination ? item?.Account : item?.Destination;
+                    const accountInfo = acct
+                        ? await BackendService.getAddressInfo(acct)
+                        : null;
+
+                    if (accountInfo && accountInfo.no_direct_send === 1 && !item.DestinationTag) {
+                        // We won't offer sending here directly unless if there's a
+                        // destination tag, then we assume the destination knows
+                        // how to process it
+                        if (typeof accountInfo.xapp_identifier === 'string' && accountInfo.xapp_identifier !== '') {
+                            this.setState({
+                                xAppIdentifier: accountInfo.xapp_identifier,
+                            });
+                            availableActions.push(ActionTypes.OPEN_XAPP);
+                        }
+                    } else {
+                        availableActions.push(ActionTypes.NEW_PAYMENT);
+                    }
                 }
                 break;
             case LedgerEntryTypes.Offer:
@@ -326,8 +350,40 @@ class ActionButtons extends PureComponent<Props, State> {
         });
     };
 
+    onOpenXAppPress = () => {
+        const { item } = this.props;
+        const { xAppIdentifier } = this.state;
+        
+        requestAnimationFrame(() => {
+            // dismiss the modal
+            Navigator.dismissModal();
+            requestAnimationFrame(() => {
+                Navigator.dismissOverlay();
+                requestAnimationFrame(() => {
+                    Navigator.showModal<XAppBrowserModalProps>(
+                        AppScreens.Modal.XAppBrowser,
+                        {
+                            identifier: xAppIdentifier!,
+                            origin: XAppOrigin.EVENT_SEND,
+                            originData: { txid: (item as any).hash },
+                        },
+                        {
+                            modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
+                            modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
+                        },
+                    );
+                });
+            });
+        });
+    };    
+
     onActionButtonPress = async (actionType: ActionTypes) => {
         const { item, account } = this.props;
+
+        if (actionType === ActionTypes.OPEN_XAPP) {
+            this.onOpenXAppPress();
+            return;
+        }
 
         // NEW PAYMENT
         if (actionType === ActionTypes.NEW_PAYMENT && item.Type === TransactionTypes.Payment) {

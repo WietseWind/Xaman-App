@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Ne morete poslati sredstev neposredno na ta račun: ciljni račun zahteva specifične parametre pošiljanja. Za interakcijo s tem računom lahko uporabite namenjeno xApp. Ali želite odpreti xApp?",
+    "cannotOpenDirectly": "Pošiljanje sredstev neposredno na ta račun ni dovoljeno: ciljni račun zahteva specifične parametre pošiljanja. Teh ni mogoče navesti v ročni plačilni transakciji.",
     "theDestinationAccountDidNotAuthorize": "The destination account did not authorize this transaction. Check your selected sending account, or contact the destination account owner.",
     "txResultQueued": "Transaction queued!",
     "txResultQueuedExplain": "Transaction added to the queue",

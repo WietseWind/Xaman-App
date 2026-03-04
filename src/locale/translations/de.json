@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Konto-NFTs können nicht abgerufen werden. Bitte stellen Sie sicher, dass Sie mit dem XRP-Ledger-Node verbunden sind."
   },
   "send": {
+    "mustOpenxAppInstead": "Sie können keine Gelder direkt an dieses Konto senden: das Zielkonto erfordert spezifische Sendeparameter. Sie können eine dedizierte xApp verwenden, um mit diesem Konto zu interagieren. Möchten Sie die xApp öffnen?",
+    "cannotOpenDirectly": "Das Senden von Geldern direkt an dieses Konto ist nicht erlaubt: das Zielkonto erfordert spezifische Sendeparameter. Diese können nicht in einer manuellen Zahlungstransaktion angegeben werden.",
     "theDestinationAccountDidNotAuthorize": "Das Zielkonto hat diese Transaktion nicht autorisiert. Überprüfen Sie Ihr ausgewähltes Sendekonto oder kontaktieren Sie den Besitzer des Zielkontos.",
     "txResultQueued": "Transaktion in Warteschlange!",
     "txResultQueuedExplain": "Transaktion zur Warteschlange hinzugefügt",

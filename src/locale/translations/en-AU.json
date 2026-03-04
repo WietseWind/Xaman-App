@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the node."
   },
   "send": {
+    "mustOpenxAppInstead": "You cannot send funds straight to this account: the destination account requires specific sending parameters. You can use a dedicated xApp to interact with this account. Do you want to open the xApp?",
+    "cannotOpenDirectly": "Sending funds directly to this account is not allowed: the destination account requires specific sending parameters. These cannot be provided in a manual Payment transaction.",
     "theDestinationAccountDidNotAuthorize": "The destination account did not authorise this transaction. Check your selected sending account, or contact the destination account owner.",
     "txResultQueued": "Transaction queued!",
     "txResultQueuedExplain": "Transaction added to the queue",

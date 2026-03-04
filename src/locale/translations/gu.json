@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "તમે આ ખાતામાં સીધા ભંડોળ મોકલી શકતા નથી: ગંતવ્ય ખાતાને ચોક્કસ મોકલવાના પ્રમાણ-દળ જરૂરી છે. તમે આ ખાતા સાથે ક્રિયાપ્રતિક્રિયા કરવા માટે સમર્પિત xApp નો ઉપયોગ કરી શકો છો. શું તમે xApp ખોલવા ઇચ્છો છો?",
+    "cannotOpenDirectly": "આ ખાતામાં સીધા ભંડોળ મોકલવાની મંજૂરી નથી: ગંતવ્ય ખાતાને ચોક્કસ મોકલવાના પ્રમાણ-દળ જરૂરી છે. આ મેન્યુઅલ ચુકવણી વ્યવહારમાં આપી શકાય નહીં.",
     "theDestinationAccountDidNotAuthorize": "લક્ષ્ય એકાઉન્ટે અધિકૃત કર્યું નથી",
     "txResultQueued": "વ્યવહાર કતારમાં",
     "txResultQueuedExplain": "તમારું વ્યવહાર કતારમાં છે",

@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "لا يمكنك إرسال الأموال مباشرةً إلى هذا الحساب: يتطلب الحساب الوجهة معلمات إرسال محددة. يمكنك استخدام xApp مخصص للتفاعل مع هذا الحساب. هل تريد فتح xApp؟",
+    "cannotOpenDirectly": "إرسال الأموال مباشرةً إلى هذا الحساب غير مسموح به: يتطلب الحساب الوجهة معلمات إرسال محددة. لا يمكن توفير هذه المعلمات في معاملة دفع يدوية.",
     "theDestinationAccountDidNotAuthorize": "لم يفوض حساب الوجهة هذه المعاملة. تحقق من حساب الإرسال المحدد، أو اتصل بمالك حساب الوجهة.",
     "txResultQueued": "تمت إضافة المعاملة إلى الطابور!",
     "txResultQueuedExplain": "تمت إضافة المعاملة إلى الطابور",

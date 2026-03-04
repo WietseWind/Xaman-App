@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "계정 NFT를 가져올 수 없습니다. XRP 원장 노드에 연결되어 있는지 확인하십시오."
   },
   "send": {
+    "mustOpenxAppInstead": "이 계정으로 직접 자금을 보낼 수 없습니다: 수신 계정은 특정 전송 매개변수를 필요로 합니다. 전용 xApp을 사용하여 이 계정과 상호 작용할 수 있습니다. xApp을 열겠습니까?",
+    "cannotOpenDirectly": "이 계정으로 직접 자금을 보내는 것은 허용되지 않습니다: 수신 계정은 특정 전송 매개변수를 필요로 합니다. 이는 수동 결제 트랜잭션에서 제공할 수 없습니다.",
     "theDestinationAccountDidNotAuthorize": "목적지 계정이 이 거래를 승인하지 않았습니다. 선택한 송금 계정을 확인하거나 목적지 계정 소유자에게 문의하십시오.",
     "txResultQueued": "거래가 대기열에 추가되었습니다!",
     "txResultQueuedExplain": "거래가 대기열에 추가되었습니다",

@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Kan de account NFT's niet ophalen. Zorg ervoor dat u verbonden bent met de %{network} node."
   },
   "send": {
+    "mustOpenxAppInstead": "U kunt geen geld rechtstreeks naar dit account sturen: het doelaccount vereist specifieke verzendparameters. U kunt een speciale xApp gebruiken om met dit account te communiceren. Wilt u de xApp openen?",
+    "cannotOpenDirectly": "Het rechtstreeks sturen van geld naar dit account is niet toegestaan: het doelaccount vereist specifieke verzendparameters. Deze kunnen niet worden opgegeven in een handmatige betalingstransactie.",
     "theDestinationAccountDidNotAuthorize": "Het bestemmingsaccount heeft deze transactie niet geautoriseerd. Controleer je geselecteerde verzendaccount, of neem contact op met de eigenaar van het bestemmingsaccount.",
     "txResultQueued": "Transactie in wachtrij!",
     "txResultQueuedExplain": "Transactie toegevoegd aan wachtrij",

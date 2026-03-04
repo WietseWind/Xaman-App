@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Du kan ikke sende midler direkte til denne konto: destinationskontoen kræver specifikke sendeparametre. Du kan bruge en dedikeret xApp til at interagere med denne konto. Vil du åbne xApp?",
+    "cannotOpenDirectly": "Det er ikke tilladt at sende midler direkte til denne konto: destinationskontoen kræver specifikke sendeparametre. Disse kan ikke leveres i en manuel betalingstransaktion.",
     "theDestinationAccountDidNotAuthorize": "Destinationskontoen godkendte ikke denne transaktion på forhånd. Transaktionen kan mislykkes.",
     "txResultQueued": "Transaktion i kø!",
     "txResultQueuedExplain": "Transaktion tilføjet til køen",

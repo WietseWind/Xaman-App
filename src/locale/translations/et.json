@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Ei saa hankida konto NFT-sid. Palun veendu, et oled ühendatud XRP Ledgeri sõlmega."
   },
   "send": {
+    "mustOpenxAppInstead": "Te ei saa fondid otse sellele kontole saata: sihtkoha konto nõuab spetsiifilisi saateparameetreid. Selle kontoga suhtlemiseks võite kasutada pühendunud xApp-i. Kas soovite xApp-i avada?",
+    "cannotOpenDirectly": "Fondide otse sellele kontole saatmine ei ole lubatud: sihtkoha konto nõuab spetsiifilisi saateparameetreid. Neid ei saa käsitsi maksekandes esitada.",
     "theDestinationAccountDidNotAuthorize": "Sihtkonto ei andnud sellele tehingule luba. Kontrolli oma valitud saatmiskontot või võta ühendust sihtkonto omanikuga.",
     "txResultQueued": "Tehing järjekorras!",
     "txResultQueuedExplain": "Tehing lisatud järjekorda",

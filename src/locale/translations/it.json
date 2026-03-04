@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Impossibile recuperare gli NFT dell'account. Assicurati di essere connesso al nodo del Registro XRP."
   },
   "send": {
+    "mustOpenxAppInstead": "Non è possibile inviare fondi direttamente a questo conto: il conto di destinazione richiede parametri di invio specifici. È possibile utilizzare una xApp dedicata per interagire con questo conto. Si desidera aprire la xApp?",
+    "cannotOpenDirectly": "L'invio di fondi direttamente a questo conto non è consentito: il conto di destinazione richiede parametri di invio specifici. Questi non possono essere forniti in una transazione di pagamento manuale.",
     "theDestinationAccountDidNotAuthorize": "L'account di destinazione non ha autorizzato questa transazione. Controlla l'account di invio selezionato o contatta il proprietario dell'account di destinazione.",
     "txResultQueued": "Transazione in coda!",
     "txResultQueuedExplain": "Transazione aggiunta alla coda",

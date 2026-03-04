@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Non podes enviar fondos directamente a esta conta: a conta de destino require parámetros de envío específicos. Podes usar unha xApp dedicada para interactuar con esta conta. Queres abrir a xApp?",
+    "cannotOpenDirectly": "Non se permite enviar fondos directamente a esta conta: a conta de destino require parámetros de envío específicos. Estes non se poden proporcionar nunha transacción de pago manual.",
     "theDestinationAccountDidNotAuthorize": "A conta de destino non autorizou esta transacción. Comprobe a súa conta de envío seleccionada ou póñase en contacto co propietario da conta de destino.",
     "txResultQueued": "Transacción en cola!",
     "txResultQueuedExplain": "Transacción engadida á cola",

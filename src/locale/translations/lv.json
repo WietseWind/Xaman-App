@@ -1126,6 +1126,8 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the XRP Ledger node."
   },
   "send": {
+    "mustOpenxAppInstead": "Jūs nevarat tieši nosūtīt līdzekļus uz šo kontu: galamērķa konts prasa īpašus sūtīšanas parametrus. Varat izmantot speciālu xApp, lai mijiedarbotos ar šo kontu. Vai vēlaties atvērt xApp?",
+    "cannotOpenDirectly": "Līdzekļu tieša sūtīšana uz šo kontu nav atļauta: galamērķa konts prasa īpašus sūtīšanas parametrus. Tos nevar norādīt manuālā maksājuma darījumā.",
     "theDestinationAccountDidNotAuthorize": "Galamērķa konts neautorizēja šo transakciju. Pārbaudiet savu izvēlēto sūtīšanas kontu vai sazinieties ar galamērķa konta īpašnieku.",
     "txResultQueued": "Transakcija ierindota!",
     "txResultQueuedExplain": "Transakcija pievienota rindai",
