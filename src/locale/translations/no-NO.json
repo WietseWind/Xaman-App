@@ -1212,6 +1212,8 @@
     "successRemoved": "Aktivum ble fjernet fra kontoen din",
     "failedRemove": "Kan ikke fjerne aktivum. Det oppstod en feil!",
     "removeAsset": "Fjern aktivum",
+    "trustlineDustNoDepositAuth": "Denne TrustLine inneholder fortsatt et svært lite beløp på %{balance} %{currency}.\n\nDu må rydde opp den gjenværende saldoen før du kan fjerne denne TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Du kan gjøre dette med 'Token Trasher' xApp.",
     "trustLineDustRemoveWarning": "Denne TrustLine inneholder fortsatt et lite beløp av %{balance} %{currency}. Hvis du fortsetter vil dette beløpet bli sendt tilbake til utsteder av TrustLine den blir slettet.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Din mikroskopiske balanse har blitt sendt tilbake til utsteder. TrustLine kan nå bli fjernet.",
     "addingAssetReserveDescription": "Å legge til et token på kontoen din vil øke din håndhevede kontoreserve med %{ownerReserve} %{nativeAsset}",

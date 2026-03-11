@@ -1212,6 +1212,8 @@
     "successRemoved": "代幣已成功從您的帳戶移除",
     "failedRemove": "錯誤:無法移除代幣!",
     "removeAsset": "Remove token",
+    "trustlineDustNoDepositAuth": "此TrustLine仍包含極少量的 %{balance} %{currency}。\n\n您需要清除剩餘餘額才能移除此TrustLine。",
+    "trustlineDustNoDepositAuthTrasherXapp": "您可以使用 'Token Trasher' xApp 來完成此操作。",
     "trustLineDustRemoveWarning": "This TrustLine still contains a really small amount of %{balance} %{currency}. If you continue, it will be sent back to the issuer before your TrustLine is deleted. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

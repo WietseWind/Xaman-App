@@ -1212,6 +1212,8 @@
     "successRemoved": "האסימון הוסר בהצלחה מחשבונך",
     "failedRemove": "שגיאה: לא ניתן היה להסיר את האסימון!",
     "removeAsset": "הסר אסימון",
+    "trustlineDustNoDepositAuth": "TrustLine זו עדיין מכילה כמות קטנה מאוד של %{balance} %{currency}.\n\nעליך לנקות את היתרה הנותרת לפני שתוכל להסיר TrustLine זו.",
+    "trustlineDustNoDepositAuthTrasherXapp": "תוכל לעשות זאת עם ה-xApp של 'Token Trasher'.",
     "trustLineDustRemoveWarning": "TrustLine זה עדיין מכיל יתרה ממש קטנה של %{balance} %{currency}. אם תמשיך, סכום זה יוחזר למנפיק לפני שנמחק TrustLine שלך.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "יתרת האבק שלך הוחזרה למנפיק. כעת ניתן להסיר את TrustLine.",
     "addingAssetReserveDescription": "הוספת טוקן לחשבון שלך תגדיל את עתודת החשבון הנאכפת שלך ב-%{ownerReserve} %{nativeAsset}",

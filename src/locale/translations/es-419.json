@@ -1212,6 +1212,8 @@
     "successRemoved": "Activo eliminado correctamente de tu cuenta.",
     "failedRemove": "No se puede eliminar el activo. ¡Se produjo un error!",
     "removeAsset": "Quitar activo",
+    "trustlineDustNoDepositAuth": "Esta TrustLine todavía contiene una cantidad muy pequeña de %{balance} %{currency}.\n\nDebes limpiar el saldo restante antes de poder eliminar esta TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Puedes hacerlo con la xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Esta TrustLine todavía contiene un saldo realmente pequeño de %{balance} %{currency}. Si continúa, esta cantidad se enviará de nuevo al emisor antes de que se suprima su TrustLine. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Su pequeño saldo remanente ha sido devuelto al emisor. Ahora se puede eliminar la línea de confianza (TrustLine).",
     "addingAssetReserveDescription": "Agregar un token a tu cuenta aumentará tu reserva de cuenta obligatoria en %{ownerReserve} %{nativeAsset}",

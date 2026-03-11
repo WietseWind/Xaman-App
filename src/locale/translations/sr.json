@@ -1212,6 +1212,8 @@
     "successRemoved": "Ресурс је успешно уклоњен са вашег рачуна",
     "failedRemove": "Грешка: жетон није могуће уклонити.",
     "removeAsset": "Уклонити жетон",
+    "trustlineDustNoDepositAuth": "Ова TrustLine još uvek sadrži veoma mali iznos od %{balance} %{currency}.\n\nMorate da očistite preostali saldo pre nego što možete da uklonite ovu TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "To možete uraditi pomoću xApp-a 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Ова Поузданост још увек садржи веома малу равнотежу од %{balance} %{currency}. Ако наставите, ова количина ће бити послата назад издавању пре него што се ваша TrustLine избрише. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Ваш баланс прашине је послат назад издавару. Сада се може уклонити повереница.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

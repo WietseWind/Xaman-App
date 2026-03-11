@@ -1212,6 +1212,8 @@
     "successRemoved": "Vermögenswert (Asset) erfolgreich von Ihrem Account entfernt",
     "failedRemove": "Vermögenswert (Asset) kann nicht entfernt werden. Ein Fehler ist aufgetreten!",
     "removeAsset": "Vermögenswert (Asset) entfernen",
+    "trustlineDustNoDepositAuth": "Diese TrustLine enthält noch einen sehr kleinen Betrag von %{balance} %{currency}.\n\nSie müssen das verbleibende Guthaben bereinigen, bevor Sie diese TrustLine entfernen können.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Dies können Sie mit der 'Token Trasher' xApp tun.",
     "trustLineDustRemoveWarning": "Diese TrustLine enthält immer noch einen sehr kleinen Saldo von %{balance} %{currency}. Wenn Sie fortfahren, wird dieser Betrag an den Emittenten zurückgesendet, bevor Ihre TrustLine gelöscht wird.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Ihre Staubbilanz wurde an den Emittenten zurückgesandt. Die TrustLine kann jetzt entfernt werden.",
     "addingAssetReserveDescription": "Das Hinzufügen eines Tokens zu Ihrem Konto erhöht Ihre erzwungene Kontoreserve um %{ownerReserve} %{nativeAsset}",

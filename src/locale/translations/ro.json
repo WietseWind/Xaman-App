@@ -1212,6 +1212,8 @@
     "successRemoved": "Activul a fost înlăturat cu succes din contul dumneavoastră.",
     "failedRemove": "Nu se poate înlătura activul. A apărut o eroare !",
     "removeAsset": "Elimină token",
+    "trustlineDustNoDepositAuth": "Acest TrustLine conține încă o sumă foarte mică de %{balance} %{currency}.\n\nTrebuie să curățați soldul rămas înainte de a putea elimina acest TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Puteți face acest lucru cu xApp-ul 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Acest TrustLine încă conține un sold foarte mic de %{balance} %{currency}. Dacă continuaţi, această sumă va fi trimisă înapoi la emitent înainte ca TrustLine-ul să fie şters. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Soldul dumneavoastră a fost trimis înapoi la emitent. TrustLine-ul poate fi acum înlăturat.",
     "addingAssetReserveDescription": "Adăugarea unui token la contul dumneavoastră va crește rezerva obligatorie a contului",

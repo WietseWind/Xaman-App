@@ -1212,6 +1212,8 @@
     "successRemoved": "Aktiv sizning hisobingizdan muvaffaqiyatli olib tashlandi",
     "failedRemove": "Aktiv olib tashlanmadi. Xato yuz berdi",
     "removeAsset": "Aktivni olib tashlash",
+    "trustlineDustNoDepositAuth": "Bu TrustLine hali ham %{balance} %{currency} miqdorida juda kichik mablag' saqlaydi.\n\nBu TrustLine'ni olib tashlashdan oldin qolgan balansingizni tozalashingiz kerak.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Buni 'Token Trasher' xApp bilan qilishingiz mumkin.",
     "trustLineDustRemoveWarning": "Ushbu IshonchChizig'i-da hali juda oz miqdordagi %{balance} %{currency} mavjud. Agar davom ettirsangiz, u IshonchChizig'i o'chirilishidan oldin emitentga qaytarib yuboriladi.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Sizning chang balansingiz emitentga qaytarib yuborildi. IshonchChizigi-ni endi yo'q qilish mumkin.",
     "addingAssetReserveDescription": "Hisobingizga token qo'shish zaxirangizni oshiradi",

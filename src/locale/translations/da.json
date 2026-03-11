@@ -1212,6 +1212,8 @@
     "successRemoved": "Aktivet er fjernet fra din konto",
     "failedRemove": "Kan ikke fjerne aktiv. Der opstod en fejl!",
     "removeAsset": "Fjern aktiv",
+    "trustlineDustNoDepositAuth": "Denne TrustLine indeholder stadig et meget lille beløb på %{balance} %{currency}.\n\nDu skal rydde den resterende saldo, inden du kan fjerne denne TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Du kan gøre dette med 'Token Trasher' xApp.",
     "trustLineDustRemoveWarning": "Denne TrustLine indeholder stadig en meget lille saldo af %{balance} %{currency}. Hvis du fortsætter, bliver dette beløb sendt tilbage til udstederen, før din TrustLine slettes. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Din støvbalance er blevet sendt tilbage til udstederen. TrustLine kan nu fjernes.",
     "addingAssetReserveDescription": "Tilføjelse af et token til din konto vil øge din reserve med %{reserveInNative} %{nativeAsset}.",

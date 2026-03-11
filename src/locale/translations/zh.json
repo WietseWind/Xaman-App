@@ -1212,6 +1212,8 @@
     "successRemoved": "资产已成功从您的帐户中删除",
     "failedRemove": "无法删除资产。发生了错误！",
     "removeAsset": "移除资产",
+    "trustlineDustNoDepositAuth": "此TrustLine仍包含极少量的 %{balance} %{currency}。\n\n您需要清除剩余余额才能删除此TrustLine。",
+    "trustlineDustNoDepositAuthTrasherXapp": "您可以使用 'Token Trasher' xApp 来完成此操作。",
     "trustLineDustRemoveWarning": "此授信额度仍包含极少量的 %{balance} %{currency} 。如果您继续，它将在删除授信额度之前被发送回发行人。",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "您的少量余额已发送回发行人。现在可以删除授信额度。",
     "addingAssetReserveDescription": "向您的账户添加代币将使您的强制账户保留金增加 %{ownerReserve} %{nativeAsset}",

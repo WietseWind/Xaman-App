@@ -1212,6 +1212,8 @@
     "successRemoved": "Актив успішно вилучено з Вашого акаунта",
     "failedRemove": "Не вдається вилучити актив. Сталася помилка!",
     "removeAsset": "Вилучити актив",
+    "trustlineDustNoDepositAuth": "Ця TrustLine все ще містить дуже невелику суму %{balance} %{currency}.\n\nВам потрібно очистити залишок балансу, перш ніж ви зможете видалити цю TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Ви можете зробити це за допомогою xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Ця лінія довіри все ще містить дуже невеликий залишок %{balance} %{currency}. Якщо Ви продовжите, ця сума буде повернута емітенту до того як лінія довіри буде видалена.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Ваш залишок балансу відправлено назад до емітента(видавця). Тепер можна вилучити лінію довіри.",
     "addingAssetReserveDescription": "Додавання токена до вашого акаунта збільшить ваш примусовий резерв акаунта на %{ownerReserve} %{nativeAsset}",

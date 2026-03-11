@@ -1212,6 +1212,8 @@
     "successRemoved": "Το νόμισμα αφαιρέθηκε με επιτυχία από το λογαριασμό σας",
     "failedRemove": "Αδυναμία αφαίρεσης νομίσματος. Παρουσιάστηκε σφάλμα!",
     "removeAsset": "Αφαίρεση νομίσματος",
+    "trustlineDustNoDepositAuth": "Αυτή η TrustLine εξακολουθεί να περιέχει ένα πολύ μικρό ποσό %{balance} %{currency}.\n\nΠρέπει να εκκαθαρίσετε το υπόλοιπο πριν μπορέσετε να αφαιρέσετε αυτή την TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Μπορείτε να το κάνετε αυτό με το xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Αυτό το TrustLine εξακολουθεί να περιέχει ένα πραγματικά μικρό υπόλοιπο του %{balance} %{currency}. Αν συνεχίσετε, το ποσό αυτό θα σταλεί ξανά στον εκδότη πριν τη διαγραφή του TrustLine. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Το υπόλοιπο της σκόνης σας έχει αποσταλεί στον εκδότη. Το TrustLine μπορεί πλέον να αφαιρεθεί.",
     "addingAssetReserveDescription": "Η προσθήκη ενός token στο λογαριασμό σας θα αυξήσει το επιβαλλόμενο αποθεματικό λογαριασμού σας κατά %{",

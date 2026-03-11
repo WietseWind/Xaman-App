@@ -1212,6 +1212,8 @@
     "successRemoved": "সম্পদ সফলভাবে আপনার অ্যাকাউন্ট থেকে সরানো হয়েছে",
     "failedRemove": "সম্পদ সরানো যায় না। ত্রুটি ঘটেছে!",
     "removeAsset": "সম্পদ সরান",
+    "trustlineDustNoDepositAuth": "এই TrustLine-এ এখনও %{balance} %{currency}-এর একটি খুব ছোট পরিমাণ রয়েছে।\n\nএই TrustLine মুছে ফেলার আগে আপনাকে অবশিষ্ট ব্যালেন্স পরিষ্কার করতে হবে।",
+    "trustlineDustNoDepositAuthTrasherXapp": "আপনি 'Token Trasher' xApp দিয়ে এটি করতে পারেন।",
     "trustLineDustRemoveWarning": "এই TrustLine এখনও %{balance} %{currency} একটি সত্যিই ছোট ভারসাম্য আপনি অব্যাহত রাখলে এই পরিমাণ ইস্যুকারী ফিরে পাঠানো হবে আগে আপনার TrustLine মুছে ফেলা হয় ধারণ করে।",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "আপনার ধুলা ভারসাম্য ইস্যুকারীকে আবার পাঠানো হয়েছে। ট্রাস্টলাইন এখন সরানো যেতে পারে।",
     "addingAssetReserveDescription": "আপনার অ্যাকাউন্টে একটি টোকেন যোগ করলে আপনার বাধ্যতামূলক অ্যাকাউন্ট রিজার্ভ %{ownerReserve} %{nativeCurrency} বৃদ্ধি পাবে।",

@@ -1212,6 +1212,8 @@
     "successRemoved": "계정에서 자산이 제거되었습니다.",
     "failedRemove": "자산을 제거할 수 없습니다. 오류가 발생했습니다!",
     "removeAsset": "자산 제거",
+    "trustlineDustNoDepositAuth": "이 TrustLine에는 아직 아주 적은 금액인 %{balance} %{currency}가 남아 있습니다.\n\n이 TrustLine을 제거하기 전에 남은 잔액을 정리해야 합니다.",
+    "trustlineDustNoDepositAuthTrasherXapp": "'Token Trasher' xApp으로 이를 수행할 수 있습니다.",
     "trustLineDustRemoveWarning": "This TrustLine still contains a really small amount of %{balance} %{currency}. If you continue, it will be sent back to the issuer before your TrustLine is deleted. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "소액의 잔액이 발행자에게 반송되었습니다. 이제 신뢰 라인을 제거할 수 있습니다.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

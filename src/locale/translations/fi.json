@@ -1212,6 +1212,8 @@
     "successRemoved": "Omaisuuserä on poistettu tililtäsi",
     "failedRemove": "Omaisuuserää ei voi poistaa. Virhe tapahtui!",
     "removeAsset": "Poista omaisuus",
+    "trustlineDustNoDepositAuth": "Tämä TrustLine sisältää edelleen hyvin pienen määrän %{balance} %{currency}.\n\nSinun täytyy tyhjentää jäljellä oleva saldo ennen kuin voit poistaa tämän TrustLine-yhteyden.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Voit tehdä tämän 'Token Trasher' xApp:in avulla.",
     "trustLineDustRemoveWarning": "Tämä TrustLine sisältää edelleen todella pienen määrän %{balance} %{currency}. Jos jatkat, se lähetetään takaisin liikkeeseenlaskijalle, ennen kuin TrustLine poistetaan.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Pölytaseesi on lähetetty takaisin liikkeeseenlaskijalle. TrustLine voidaan nyt poistaa.",
     "addingAssetReserveDescription": "Tokenin lisääminen tilillesi kasvattaa pakollista varausvaatimustasi.",

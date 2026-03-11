@@ -1212,6 +1212,8 @@
     "successRemoved": "Matagumpay na naalis ang token mula sa iyong account",
     "failedRemove": "Error: hindi maalis ang token!",
     "removeAsset": "Alisin ang token",
+    "trustlineDustNoDepositAuth": "Ang TrustLine na ito ay naglalaman pa rin ng napakaliit na halaga ng %{balance} %{currency}.\n\nKailangan mong linisin ang natitirang balanse bago mo maalis ang TrustLine na ito.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Maaari mong gawin ito gamit ang 'Token Trasher' xApp.",
     "trustLineDustRemoveWarning": "TrustLine ito pa rin ay naglalaman ng isang talagang maliit na balanse ng %{balance} %{currency}. Kung magpapatuloy ka, ibabalik ang halagang ito sa nagpalabas bago matanggal ang iyong TrustLine.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Ang iyong dust na balanse ay naipadala pabalik sa issuer. Ang TrustLine ay maaari na ngayong alisin.",
     "addingAssetReserveDescription": "Ang pagdagdag ng token sa iyong account ay magpapataas ng iyong enforced account reserve ng %{ownerReserve} %{nativeAsset}",

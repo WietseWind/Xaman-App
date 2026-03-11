@@ -1212,6 +1212,8 @@
     "successRemoved": "L'actif a été supprimé de votre compte",
     "failedRemove": "Erreur: l'actif n'a pas pu être supprimé!",
     "removeAsset": "Supprimer le jeton",
+    "trustlineDustNoDepositAuth": "Cette TrustLine contient encore un très petit montant de %{balance} %{currency}.\n\nVous devez nettoyer le solde restant avant de pouvoir supprimer cette TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Vous pouvez le faire avec l'xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Cette ligne de confiance contient toujours un solde très faible de %{balance} %{currency}. Si vous continuez, ce montant sera renvoyé à l'émetteur avant que votre TrustLine ne soit supprimé. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Votre solde de poussière a été renvoyé à l'émetteur. La ligne TrustLine peut maintenant être supprimée.",
     "addingAssetReserveDescription": "L'ajout d'un token à votre compte augmentera votre réserve de compte obligatoire de %{ownerReserve} %{nativeAsset}",

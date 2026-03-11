@@ -1212,6 +1212,8 @@
     "successRemoved": "アカウントから通貨が正常に削除されました",
     "failedRemove": "エラーが発生しました！通貨を削除できません。",
     "removeAsset": "通貨を削除する",
+    "trustlineDustNoDepositAuth": "このトラストラインにはまだ非常に少量の %{balance} %{currency} が残っています。\n\nこのトラストラインを削除する前に、残高を清算する必要があります。",
+    "trustlineDustNoDepositAuthTrasherXapp": "'Token Trasher' xApp でこれを行うことができます。",
     "trustLineDustRemoveWarning": "このトラストラインには、実際には %{balance} %{currency} の小さな残高が含まれています。続行すると、この金額は、トラストラインが削除される前に発行者に送り返されます。 ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "ダストバランスが発行者に返送されました。 これでトラストラインを削除できます。",
     "addingAssetReserveDescription": "トークンをアカウントに追加すると、アカウント準備金が %{ownerReserve} %{nativeAsset} 増加します",

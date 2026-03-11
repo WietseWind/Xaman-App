@@ -1212,6 +1212,8 @@
     "successRemoved": "உங்கள் கணக்கிலிருந்து சொத்து வெற்றிகரமாக அகற்றப்பட்டது",
     "failedRemove": "சொத்தை அகற்ற முடியாது. பிழை ஏற்பட்டுவிட்டது!",
     "removeAsset": "சொத்தை அகற்று",
+    "trustlineDustNoDepositAuth": "இந்த TrustLine இன்னும் %{balance} %{currency} என்ற மிகவும் சிறிய தொகையை கொண்டுள்ளது.\n\nஇந்த TrustLine-ஐ அகற்றுவதற்கு முன்பு மீதமுள்ள இருப்பை அழிக்க வேண்டும்.",
+    "trustlineDustNoDepositAuthTrasherXapp": "'Token Trasher' xApp மூலம் இதை செய்யலாம்.",
     "trustLineDustRemoveWarning": "இந்த டிரஸ்ட்லைன் இன்னும் %{balance} %{currency} இன் சிறிய இருப்பைக் கொண்டுள்ளது. நீங்கள் தொடர்ந்தால், உங்கள் டிரஸ்ட்லைன் நீக்கப்படுவதற்கு முன்பு இந்த தொகை வழங்குநருக்கு திருப்பி அனுப்பப்படும்.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "உங்கள் தூசி இருப்பு வழங்குபவருக்கு திருப்பி அனுப்பப்பட்டுள்ளது. டிரஸ்ட்லைன் இப்போது அகற்றப்படலாம்.",
     "addingAssetReserveDescription": "உங்கள் கணக்கில் ஒரு டோக்கனைச் சேர்ப்பது உங்கள் கட்டாய கணக்கு ஒதுக்கீட்டை %{ownerReserve} %{nativeAsset} அதிகரிக்கும்",

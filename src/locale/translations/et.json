@@ -1212,6 +1212,8 @@
     "successRemoved": "Vara sinu kontolt edukalt eemaldatud",
     "failedRemove": "Vara eemaldamine nurjus. Tekkis viga!",
     "removeAsset": "Eemalda vara",
+    "trustlineDustNoDepositAuth": "See TrustLine sisaldab veel väga väikest summat %{balance} %{currency}.\n\nPeate enne selle TrustLine eemaldamist allesoleva saldo puhastama.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Seda saate teha 'Token Trasher' xApp abil.",
     "trustLineDustRemoveWarning": "Sellel TrustLine'il on veel väike saldo %{balance} %{currency}. Kui jätkate, saadetakse see summa tagasi emitendile enne, kui teie TrustLine kustutatakse. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Teie tolmusaldo on saadetud tagasi väljaandjale. TrustLine'i saab nüüd eemaldada.",
     "addingAssetReserveDescription": "Tokeni lisamine sinu kontole suurendab sundreservi %{ownerReserve} %{nativeAsset} võrra",

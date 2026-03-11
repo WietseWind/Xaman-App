@@ -1212,6 +1212,8 @@
     "successRemoved": "Inventarien togs bort från ditt konto",
     "failedRemove": "Kan inte ta bort inventarie. Ett fel inträffade!",
     "removeAsset": "Ta bort inventarie",
+    "trustlineDustNoDepositAuth": "Den här TrustLine innehåller fortfarande ett mycket litet belopp på %{balance} %{currency}.\n\nDu måste rensa det återstående saldot innan du kan ta bort den här TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Du kan göra detta med 'Token Trasher' xApp.",
     "trustLineDustRemoveWarning": "Den här TrustLine innehåller fortfarande en riktigt liten saldo av %{balance} %{currency}. Om du fortsätter kommer detta belopp att skickas tillbaka till emittenten innan din Trustlinje tas bort. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Din dammbalans har skickats tillbaka till emittenten. Trustaden kan nu tas bort.",
     "addingAssetReserveDescription": "Att lägga till en token på ditt konto ökar din påtvingade kontoreserv med %{ownerReserve} %{nativeAsset}",

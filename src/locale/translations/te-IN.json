@@ -1212,6 +1212,8 @@
     "successRemoved": "మీ ఖాతా నుండి ఆస్తి విజయవంతంగా తొలగించబడింది",
     "failedRemove": "ఆస్తిని తొలగించలేరు. లోపం సంభవించింది!",
     "removeAsset": "ఆస్తిని తొలగించండి",
+    "trustlineDustNoDepositAuth": "ఈ TrustLine ఇంకా చాలా తక్కువ మొత్తమైన %{balance} %{currency} కలిగి ఉంది.\n\nఈ TrustLine తొలగించడానికి ముందు మిగిలిన బ్యాలెన్స్ క్లియర్ చేయాలి.",
+    "trustlineDustNoDepositAuthTrasherXapp": "మీరు 'Token Trasher' xApp తో ఇది చేయవచ్చు.",
     "trustLineDustRemoveWarning": "ఈ ట్రస్ట్‌లైన్ ఇప్పటికీ  %{balance} %{currency} యొక్క చిన్న బ్యాలెన్స్‌ను కలిగి ఉంది. మీరు కొనసాగితే, మీ ట్రస్ట్‌లైన్ తొలగించబడటానికి ముందు ఈ మొత్తం తిరిగి జారీచేసేవారికి పంపబడుతుంది.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "మీ డస్ట్ బ్యాలెన్స్ జారీ చేసినవారికి తిరిగి పంపబడింది. ట్రస్ట్‌లైన్ ఇప్పుడు తొలగించబడుతుంది.",
     "addingAssetReserveDescription": "టోకెన్ జోడించడం వల్ల మీ ఖాతా రిజర్వ్ %{reserve} %{nativeAsset} పెరుగుతుంది",

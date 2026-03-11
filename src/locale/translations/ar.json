@@ -1212,6 +1212,8 @@
     "successRemoved": "تم إزالة الرمز بنجاح من حسابك",
     "failedRemove": "خطأ: لا يمكن إزالة الرمز المميز!",
     "removeAsset": "إزالة الرمز المميز",
+    "trustlineDustNoDepositAuth": "لا تزال هذه TrustLine تحتوي على مبلغ صغير جداً من %{balance} %{currency}.\n\nتحتاج إلى مسح الرصيد المتبقي قبل أن تتمكن من إزالة هذه TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "يمكنك القيام بذلك باستخدام تطبيق 'Token Trasher' xApp.",
     "trustLineDustRemoveWarning": "لا يزال TrustLine هذا يحتوي على رصيد صغير حقًا يبلغ %{balance} %{currency}. إذا تابعت ، فسيتم إعادة هذا المبلغ إلى المُصدر قبل حذف TrustLine الخاص بك.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "تمت إعادة رصيد الغبار الخاص بك إلى المُصدر. يمكن الآن إزالة TrustLine.",
     "addingAssetReserveDescription": "ستزيد إضافة رمز إلى حسابك من احتياطي الحساب المفروض بمقدار %{ownerReserve} %{nativeAsset}",

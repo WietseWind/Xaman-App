@@ -1212,6 +1212,8 @@
     "successRemoved": "Jeton yo te retire avèk siksè nan kont ou",
     "failedRemove": "Erè: siy la pa t 'kapab retire!",
     "removeAsset": "Retire siy",
+    "trustlineDustNoDepositAuth": "TrustLine sa a gen toujou yon trè ti montan %{balance} %{currency}.\n\nVou bezwen netwaye balans ki rete a anvan ou ka retire TrustLine sa a.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Ou kapab fè sa ak xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "TrustLine sa a toujou gen yon vrèman ti balans nan %{balance} %{currency}. Si ou kontinye, yo pral kantite lajan sa a dwe voye tounen nan konpayi an anvan yo TrustLine ou efase.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "te balans pousyè ou te voye tounen nan konpayi an. TrustLine a kapab kounye a ka retire li.",
     "addingAssetReserveDescription": "Lè w ajoute yon jeton nan kont ou, sa pral ogmante rezèv obligatwa kont ou pa %{reserveAmount} %{nativeAsset}. Ou ka toujou retire jeton an pita.",

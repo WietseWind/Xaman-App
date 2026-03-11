@@ -49,6 +49,7 @@ import styles from './styles';
 /* types ==================================================================== */
 import { Props, State } from './types';
 import BackendService from '@services/BackendService';
+import { DepositAuthorizedRequest, DepositAuthorizedResponse } from '@common/libs/ledger/types/methods';
 
 /* Component ==================================================================== */
 class TokenSettingsOverlay extends Component<Props, State> {
@@ -307,6 +308,28 @@ class TokenSettingsOverlay extends Component<Props, State> {
         );
     };
 
+    onOpenXAppPress = () => {      
+        const { token } = this.props;
+
+        this.dismiss().then(() => {
+            Navigator.showModal<XAppBrowserModalProps>(
+                AppScreens.Modal.XAppBrowser,
+                {
+                    identifier: AppConfig.xappIdentifiers.tokentrasher,
+                    origin: XAppOrigin.TOKEN_REMOVE,
+                    originData: {
+                        token: token.currency.currencyCode,
+                        issuer: token.currency.issuer,
+                    },
+                },
+                {
+                    modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
+                    modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
+                },
+            );
+        });
+    };    
+
     removeTrustLine = async () => {
         const { token, account } = this.props;
         const { latestLineBalance } = this.state;
@@ -314,19 +337,64 @@ class TokenSettingsOverlay extends Component<Props, State> {
         try {
             // there is dust balance in the account
             if (latestLineBalance !== 0 && !token?.isMPToken()) {
+
+                // Check if deposit auth is blocking this
+                const isAuthorized = await NetworkService.send<DepositAuthorizedRequest, DepositAuthorizedResponse>({
+                    command: 'deposit_authorized',
+                    source_account: account.address,
+                    destination_account: token.currency.issuer,
+                });
+
+                const hasNoAuth = ((isAuthorized as any) || {})?.deposit_authorized === false;
+                const isMainnet = await NetworkService?.getNetwork()?.key === 'MAINNET';
+                
+                const localizeArgs = {
+                    balance: new BigNumber(latestLineBalance).toFixed(),
+                    currency: NormalizeCurrencyCode(token.currency.currencyCode),
+                };
+
+                const title = [
+                    Localize.t(hasNoAuth
+                        ? 'asset.trustlineDustNoDepositAuth'
+                        : 'asset.trustLineDustRemoveWarning'
+                    , localizeArgs),
+                ];
+
+                if (hasNoAuth && isMainnet) {
+                    title.push(Localize.t('asset.trustlineDustNoDepositAuthTrasherXapp', localizeArgs));
+                }
+
+                let secondaryButton: {
+                    text: string;
+                    onPress: () => void;
+                    style: 'destructive' | 'primary';
+                } | undefined = {
+                    text: Localize.t('global.continue'),
+                    onPress: this.clearDustAmounts,
+                    style: 'destructive',
+                };
+
+                if (hasNoAuth) {
+                    if (isMainnet) {
+                        secondaryButton = {
+                            text: Localize.t('global.openXApp'),
+                            onPress: async () => { 
+                                this.onOpenXAppPress();
+                            },
+                            style: 'destructive',
+                        };
+                    } else {
+                        // Not mainnet, has deposit auth, we can't do anything
+                        secondaryButton = undefined;
+                    }
+                }
+
                 Prompt(
                     Localize.t('global.warning'),
-                    Localize.t('asset.trustLineDustRemoveWarning', {
-                        balance: new BigNumber(latestLineBalance).toFixed(),
-                        currency: NormalizeCurrencyCode(token.currency.currencyCode),
-                    }),
+                    title.join('\n\n'),
                     [
                         { text: Localize.t('global.cancel') },
-                        {
-                            text: Localize.t('global.continue'),
-                            onPress: this.clearDustAmounts,
-                            style: 'destructive',
-                        },
+                        secondaryButton,
                     ],
                     { type: 'default' },
                 );
@@ -466,22 +534,6 @@ class TokenSettingsOverlay extends Component<Props, State> {
         }, () => {
             this.dismiss();
         });
-    };
-
-    onRemovePress = async () => {
-        Prompt(
-            Localize.t('global.warning'),
-            Localize.t('account.removeTrustLineWarning'),
-            [
-                { text: Localize.t('global.cancel') },
-                {
-                    text: Localize.t('global.doIt'),
-                    onPress: this.removeTrustLine,
-                    style: 'destructive',
-                },
-            ],
-            { type: 'default' },
-        );
     };
 
     onSendPress = async () => {
@@ -1061,7 +1113,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                                     iconStyle={styles.removeButtonIcon}
                                     label={Localize.t('asset.removeAsset')}
                                     textStyle={styles.removeButtonText}
-                                    onPress={this.onRemovePress}
+                                    onPress={this.removeTrustLine}
                                 />
                             </View>
                         </View>

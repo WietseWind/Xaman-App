@@ -1212,6 +1212,8 @@
     "successRemoved": "აქტივი მოიხსნა წარმატებით თქვენი ანგარიშიდან",
     "failedRemove": "აქტივის მოხსნა შეუძლებელია. დაფიქსირდა შეცდომა! ",
     "removeAsset": "ტოკენის მოხსნა",
+    "trustlineDustNoDepositAuth": "ეს TrustLine ჯერ კიდევ შეიცავს ძალიან მცირე თანხას %{balance} %{currency}.\n\nამ TrustLine-ის წაშლამდე საჭიროა დარჩენილი ბალანსის გასუფთავება.",
+    "trustlineDustNoDepositAuthTrasherXapp": "ამის გაკეთება შეგიძლიათ 'Token Trasher' xApp-ით.",
     "trustLineDustRemoveWarning": "ეს TrustLine მაინც შეიცავს ძალიან მცირე რაოდენობის %{balance} %{currency} . გაგრძელების შემთხვევაში უკან გაეგზავნება გამცემს თქვენი TrustLine - ს წაშლამდე.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "თქვენი მტვრის ბალანსი დაუბრუნდა გამცემს. TrustLine ახლა ამოიშლება.",
     "addingAssetReserveDescription": "ტოკენის თქვენს ანგარიშზე დამატება გაზრდის თქვენი ანგარიშის სავალდებულო რეზერვს %{ownerReserve} %{nativeAsset}-ით",

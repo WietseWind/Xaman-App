@@ -1212,6 +1212,8 @@
     "successRemoved": "Đã xóa thành công tài sản khỏi tài khoản của bạn",
     "failedRemove": "Không thể xóa tài sản. Xảy ra lỗi!",
     "removeAsset": "Xóa tài sản",
+    "trustlineDustNoDepositAuth": "TrustLine này vẫn còn một lượng rất nhỏ là %{balance} %{currency}.\n\nBạn cần xóa số dư còn lại trước khi có thể xóa TrustLine này.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Bạn có thể thực hiện điều này bằng xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "TrustLine này vẫn chứa một số dư thực sự nhỏ là %{balance} %{currency}. Nếu bạn tiếp tục, số tiền này sẽ được gửi lại cho tổ chức phát hành trước khi TrustLine của bạn bị xóa.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Số dư bụi của bạn đã được gửi lại cho tổ chức phát hành. TrustLine hiện có thể bị xóa.",
     "addingAssetReserveDescription": "Thêm token vào tài khoản của bạn sẽ tăng dự trữ tài khoản bắt buộc lên %{ownerReserve} %{nativeAsset}",

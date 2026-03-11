@@ -1212,6 +1212,8 @@
     "successRemoved": "Активът е премахнат успешно от вашата сметка",
     "failedRemove": "Не може да се премахне актив. Възникна грешка!",
     "removeAsset": "Премахване на актив",
+    "trustlineDustNoDepositAuth": "Тази TrustLine все още съдържа много малка сума от %{balance} %{currency}.\n\nТрябва да изчистите оставащото салдо, преди да можете да премахнете тази TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Можете да направите това с xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Тази доверителна линия все още съдържа наистина малък баланс на %{balance} %{currency}. Ако продължите, тази сума ще бъде изпратена обратно до издателя, преди TrustLine да бъде изтрита. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Прахът ви е върнат обратно на издателя. The TrustLine сега може да бъде премахнат.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

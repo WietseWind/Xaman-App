@@ -1212,6 +1212,8 @@
     "successRemoved": "Risorsa digitale rimossa con successo dal tuo account",
     "failedRemove": "Errore! Impossibile rimuovere la risorsa digitale.",
     "removeAsset": "Rimuovi risorsa digitale",
+    "trustlineDustNoDepositAuth": "Questa TrustLine contiene ancora una quantità molto piccola di %{balance} %{currency}.\n\nDevi eliminare il saldo rimanente prima di poter rimuovere questa TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Puoi farlo con la xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Questa TrustLine contiene ancora un saldo davvero piccolo di %{balance} %{currency}. Se continuate, questo importo verrà rinviato all'emittente prima che la vostra TrustLine venga cancellata. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Il tuo saldo non spendibile ti è stato riaccreditato dall'emittente. La TrustLine può essere rimossa.",
     "addingAssetReserveDescription": "L'aggiunta di un token al tuo account aumenterà la riserva imposta del tuo account di  %{ownerReserve}   %{nativeAsset} ",

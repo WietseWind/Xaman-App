@@ -1212,6 +1212,8 @@
     "successRemoved": "Token telah berhasil dihapus dari akun Anda",
     "failedRemove": "Kesalahan: token tidak dapat dihapus!",
     "removeAsset": "Hapus asset (token)",
+    "trustlineDustNoDepositAuth": "TrustLine ini masih mengandung jumlah yang sangat kecil sebesar %{balance} %{currency}.\n\nAnda perlu membersihkan saldo yang tersisa sebelum dapat menghapus TrustLine ini.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Anda dapat melakukannya dengan xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "TrustLine ini masih memiliki saldo yang sangat kecil yaitu %{balance} %{currency}. Jika Anda melanjutkan, jumlah ini akan dikirim kembali ke penerbit sebelum TrustLine Anda dihapus.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Neraca debu Anda telah dikirim kembali ke penerbit. TrustLine sekarang dapat dihapus.",
     "addingAssetReserveDescription": "Menambahkan token ke akun Anda akan meningkatkan cadangan akun yang diberlakukan sebesar  %{ownerReserve}   %{nativeAsset} ",

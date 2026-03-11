@@ -1212,6 +1212,8 @@
     "successRemoved": "Token is suksesvol uit u rekening verwyder",
     "failedRemove": "Fout: die token kon nie verwyder word nie!",
     "removeAsset": "Verwyder token",
+    "trustlineDustNoDepositAuth": "Hierdie TrustLine bevat nog steeds 'n baie klein bedrag van %{balance} %{currency}.\n\nJy moet die oorblywende saldo opruim voordat jy hierdie TrustLine kan verwyder.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Jy kan dit doen met die 'Token Trasher' xApp.",
     "trustLineDustRemoveWarning": "Hierdie trustlyn bevat steeds 'n baie klein saldo van %{balance} %{currency}. As jy aanhou, sal hierdie bedrag terug gestuur word aan die gemeenskap voor jou vertroue Line is geskrap.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Jou stof balans is teruggestuur na die uitgewer. Die Trustlyn kan nou verwyder word.",
     "addingAssetReserveDescription": "Om 'n token by jou rekening te voeg sal jou afgedwonge rekening reserwe verhoog met %{ownerReserve} %{nativeAsset}",

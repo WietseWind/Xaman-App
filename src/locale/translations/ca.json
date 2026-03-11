@@ -1212,6 +1212,8 @@
     "successRemoved": "L'actiu s'ha eliminat correctament del teu compte",
     "failedRemove": "No es pot eliminar l'actiu. S'ha produït un error!",
     "removeAsset": "Eliminar actiu",
+    "trustlineDustNoDepositAuth": "Aquesta TrustLine encara conté una quantitat molt petita de %{balance} %{currency}.\n\nHeu de netejar el saldo restant abans de poder eliminar aquesta TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Podeu fer-ho amb l'xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Aquesta línia de confiança encara conté un saldo molt petit de %{balance} %{currency}.  Si continues, aquesta quantitat s'enviarà de tornada a l'emissor abans que se suprimeixi la teva línia de confiança.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "El saldo romanent ha estat retornat a l'emissor.  Ara es pot eliminar la línia de confiança.",
     "addingAssetReserveDescription": "Afegir un token al teu compte augmentarà la reserva obligatòria del compte en %{ownerReserve} %{nativeAsset}",

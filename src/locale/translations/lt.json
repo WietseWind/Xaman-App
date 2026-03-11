@@ -1212,6 +1212,8 @@
     "successRemoved": "Žetonas sėkmingai pašalintas iš jūsų sąskaitos",
     "failedRemove": "Klaida: žetonas negalėjo būti pašalintas!",
     "removeAsset": "Pašalinti žetoną",
+    "trustlineDustNoDepositAuth": "Šioje TrustLine vis dar yra labai maža suma – %{balance} %{currency}.\n\nPrieš šalindami šią TrustLine turite išvalyti likusį balansą.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Tai galite padaryti naudodami xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Šis TrustLine vis dar turi labai mažą kiekį %{balance} %{currency}. Jei tęsite, ji bus išsiųsta atgal emitentui prieš ištrinant jūsų TrustLine.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Jūsų dulkių balansas išsiųstas atgal emitentui. TrustLine dabar gali būti pašalintas.",
     "addingAssetReserveDescription": "Žetono pridėjimas prie sąskaitos padidins privalomą sąskaitos rezervą %{ownerReserve} %{nativeAsset}",

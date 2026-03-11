@@ -1212,6 +1212,8 @@
     "successRemoved": "आपल्या खात्यातून मालमत्ता यशस्वीरित्या काढली गेली",
     "failedRemove": "मालमत्ता काढू शकत नाही. त्रुटी आली!",
     "removeAsset": "मालमत्ता काढा",
+    "trustlineDustNoDepositAuth": "या TrustLine मध्ये अद्याप %{balance} %{currency} ची अत्यंत कमी रक्कम आहे.\n\nही TrustLine काढण्यापूर्वी तुम्हाला शिल्लक बॅलन्स साफ करावी लागेल.",
+    "trustlineDustNoDepositAuthTrasherXapp": "तुम्ही 'Token Trasher' xApp सोबत हे करू शकता.",
     "trustLineDustRemoveWarning": "या ट्रस्टलाइनमध्ये अद्याप %{balance} %{currency}  चे खरोखरच लहान शिल्लक आहे. आपण सुरू ठेवल्यास, आपली ट्रस्टलाइन हटविण्यापूर्वी ही रक्कम परत जारीकर्ता परत पाठविली जाईल.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "आपले धूळ शिल्लक जारीकर्ता परत पाठविण्यात आले आहे. ट्रस्टलाइन आता काढली जाऊ शकते.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

@@ -22,6 +22,7 @@ export default {
         swap: 'xaman.swap',
         tokens: 'xaman.tokens',
         buysell: 'xumm.buysellxrp',
+        tokentrasher: 'nixer.tokentrasher',
     },
 
     // localization config

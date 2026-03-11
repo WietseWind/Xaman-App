@@ -1212,6 +1212,8 @@
     "successRemoved": "Актив Сіздің шотыңыздан сәтті алынып тасталды",
     "failedRemove": "Қате: активті жою мүмкін емес!",
     "removeAsset": "Активті жою",
+    "trustlineDustNoDepositAuth": "Бұл TrustLine-да әлі де өте аз мөлшер бар: %{balance} %{currency}.\n\nБұл TrustLine-ды жою алдында қалған балансты тазалауыңыз қажет.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Мұны 'Token Trasher' xApp арқылы жасауға болады.",
     "trustLineDustRemoveWarning": "Бұл TrustLine әлі де %{balance} Variable %{currency} айнымалысының өте аз балансы бар. Егер сіз жалғастырсаңыз, бұл сома сіздің сенім желіңіз жойылғанға дейін эмитентке қайтарылады.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Сіздің шаң балансыңыз эмитентке қайтарылды. Енді TrustLine алынып мүмкін.",
     "addingAssetReserveDescription": "Шотыңызға токен қосу шот резервін ұлғайтады.",

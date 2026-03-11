@@ -1212,6 +1212,8 @@
     "successRemoved": "Token kendu egin da ongi zure kontutik",
     "failedRemove": "Errorea: token ezin izan da kendu!",
     "removeAsset": "Kendu aktiboa",
+    "trustlineDustNoDepositAuth": "TrustLine honek oraindik %{balance} %{currency} zenbateko oso txiki bat dauka.\n\nTrustLine hau kendu ahal izateko gainerako saldoa garbitu behar duzu.",
+    "trustlineDustNoDepositAuthTrasherXapp": "'Token Trasher' xApp-ekin egin dezakezu hori.",
     "trustLineDustRemoveWarning": "TrustLine honek oraindik %{balance} %{currency} saldo txikia du. Jarraituz gero, zenbateko hori igorleari bidaliko zaio zure TrustLine ezabatu aurretik.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Zure hauts saldoa igorleari bidali zaio. TrustLine kendu daiteke.",
     "addingAssetReserveDescription": "Token bat zure kontura gehitzeak zure derrigorrezko kontu erreserba %{ownerReserve} %{nativeAsset} handitu egingo du",

@@ -1212,6 +1212,8 @@
     "successRemoved": "Aktívum bol z vášho účtu úspešne odstránený",
     "failedRemove": "Chyba: žetón sa nepodarilo odstrániť!",
     "removeAsset": "Odobrať žetón",
+    "trustlineDustNoDepositAuth": "Táto TrustLine stále obsahuje veľmi malé množstvo %{balance} %{currency}.\n\nPred odstránením tejto TrustLine musíte vyčistiť zostatok.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Môžete to urobiť pomocou xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Táto TrustLine stále obsahuje skutočne malý zostatok vo výške %{balance} %{currency}. Ak budete pokračovať, táto suma bude odoslaná späť emitentovi pred odstránením vašej TrustLine.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Váš zostatok prachu bol odoslaný späť vydavateľovi. TrustLine je teraz možné odstrániť.",
     "addingAssetReserveDescription": "Pridanie tokenu na váš účet zvýši vynútenú rezervu účtu o %{ownerReserve} %{nativeAsset}.",

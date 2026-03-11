@@ -1212,6 +1212,8 @@
     "successRemoved": "Aktivum bylo úspěšně odebráno z vašeho účtu",
     "failedRemove": "Aktivum nelze odebrat. Došlo k chybě!",
     "removeAsset": "Odebrat aktivum",
+    "trustlineDustNoDepositAuth": "Tato TrustLine stále obsahuje velmi malé množství %{balance} %{currency}.\n\nPřed odstraněním této TrustLine musíte vyčistit zbývající zůstatek.",
+    "trustlineDustNoDepositAuthTrasherXapp": "To můžete udělat pomocí xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Tento TrustLine účet stále obsahuje malý zůstatek %{balance} %{currency}. Budete-li pokračovat, bude tato částka odeslána zpět vydavateli, ještě před odstraněním této TrustLine. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Zanedbatelný zůstatek byl odeslán zpět jeho vydavateli. Účet aktiva TrustLine lze nyní odebrat.",
     "addingAssetReserveDescription": "Přidání tohoto aktiva vyžaduje rezervaci %{reserveAmount} %{nativeAsset}",

@@ -1212,6 +1212,8 @@
     "successRemoved": "ਸੰਪਤੀ ਨੂੰ ਸਫਲਤਾਪੂਰਵਕ ਤੁਹਾਡੇ ਖਾਤੇ ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ",
     "failedRemove": "ਸੰਪਤੀ ਨੂੰ ਹਟਾ ਨਹੀਂ ਸਕਦਾ. ਗਲਤੀ ਆਈ!",
     "removeAsset": "ਸੰਪਤੀ ਨੂੰ ਹਟਾਓ",
+    "trustlineDustNoDepositAuth": "ਇਸ TrustLine ਵਿੱਚ ਅਜੇ ਵੀ %{balance} %{currency} ਦੀ ਬਹੁਤ ਛੋਟੀ ਰਕਮ ਹੈ।\n\nਇਸ TrustLine ਨੂੰ ਹਟਾਉਣ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਨੂੰ ਬਾਕੀ ਬਚੀ ਬੈਲੇਂਸ ਨੂੰ ਸਾਫ਼ ਕਰਨਾ ਹੋਵੇਗਾ।",
+    "trustlineDustNoDepositAuthTrasherXapp": "ਤੁਸੀਂ 'Token Trasher' xApp ਨਾਲ ਇਹ ਕਰ ਸਕਦੇ ਹੋ।",
     "trustLineDustRemoveWarning": "ਇਸ ਟਰੱਸਟਲਾਈਨ ਵਿੱਚ ਅਜੇ ਵੀ %{balance} %{currency} ਦਾ ਇੱਕ ਬਹੁਤ ਛੋਟਾ ਜਿਹਾ ਸੰਤੁਲਨ ਹੈ. ਜੇ ਤੁਸੀਂ ਜਾਰੀ ਰੱਖਦੇ ਹੋ, ਤਾਂ ਇਹ ਰਕਮ ਤੁਹਾਡੀ ਟਰੱਸਟਲਾਈਨ ਨੂੰ ਮਿਟਾਉਣ ਤੋਂ ਪਹਿਲਾਂ ਜਾਰੀਕਰਤਾ ਨੂੰ ਵਾਪਸ ਭੇਜ ਦਿੱਤੀ ਜਾਏਗੀ.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "ਤੁਹਾਡਾ ਧੂੜ ਸੰਤੁਲਨ ਜਾਰੀਕਰਤਾ ਨੂੰ ਵਾਪਸ ਭੇਜ ਦਿੱਤਾ ਗਿਆ ਹੈ. ਟਰੱਸਟਲਾਈਨ ਨੂੰ ਹੁਣ ਹਟਾਇਆ ਜਾ ਸਕਦਾ ਹੈ.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

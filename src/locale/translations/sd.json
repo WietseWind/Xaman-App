@@ -1212,6 +1212,8 @@
     "successRemoved": "توهان جي اڪائونٽ مان اثاثو ڪاميابي سان هٽايو ويو آهي",
     "failedRemove": "نقص: اثاثو ختم نه ٿو ڪري سگهجي!",
     "removeAsset": "اثاثو هٽايو",
+    "trustlineDustNoDepositAuth": "هن TrustLine ۾ اڃا تائين %{balance} %{currency} جي تمام ننڍي رقم آهي.\n\nهن TrustLine کي هٽائڻ کان پهريان توهان کي باقي بيلنس صاف ڪرڻو پوندو.",
+    "trustlineDustNoDepositAuthTrasherXapp": "توهان 'Token Trasher' xApp سان اهو ڪري سگهو ٿا.",
     "trustLineDustRemoveWarning": "ھن ٽرسٽ لائن اڃا تائين ھڪڙي %{balance} %{currency} جي واقعي نن توازن توازن تي مشتمل آھي. جيڪڏهن توهان جاري رکو ٿا ، اها رقم توهان جي ٽرسٽ لائين حذف ٿيڻ کان پهريان واپس جاري ڪندڙ ڏانهن موڪلي ويندي.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "توهان جي مٽيءَ جو توازن جاري ڪندڙ کي واپس موڪليو ويو آهي. ٽرسٽ لائين هاڻي ختم ڪري سگهجي ٿي.",
     "addingAssetReserveDescription": "اثاثو شامل ڪرڻ محفوظ رقم گھٽائيندو",

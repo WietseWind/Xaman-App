@@ -1212,6 +1212,8 @@
     "successRemoved": "اثاثہ کامیابی کے ساتھ آپ کے اکاؤنٹ سے ہٹا دیا گیا",
     "failedRemove": "اثاثہ نہیں ہٹا سکتا۔ خرابی واقع ہوئی!",
     "removeAsset": "اثاثہ کو ہٹا دیں",
+    "trustlineDustNoDepositAuth": "اس TrustLine میں ابھی بھی %{balance} %{currency} کی ایک بہت چھوٹی رقم ہے۔\n\nاس TrustLine کو ہٹانے سے پہلے آپ کو باقی بیلنس صاف کرنا ہوگا۔",
+    "trustlineDustNoDepositAuthTrasherXapp": "آپ 'Token Trasher' xApp کے ذریعے یہ کر سکتے ہیں۔",
     "trustLineDustRemoveWarning": "اس ٹرسٹ لائن میں اب بھی واقعی میں ایک چھوٹا سا بیلنس ہے %{balance} %{currency} ۔ اگر آپ جاری رکھتے ہیں تو ، آپ کی ٹرسٹ لائن کو حذف ہونے سے پہلے یہ رقم جاری کرنے والے کو واپس بھیج دی جائے گی۔",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "آپ کا دھول توازن جاری کرنے والے کو واپس بھیج دیا گیا ہے۔ ٹرسٹ لائن کو اب ختم کیا جاسکتا ہے۔",
     "addingAssetReserveDescription": "اپنے اکاؤنٹ میں ٹوکن شامل کرنے سے آپ کے لازمی اکاؤنٹ ریزرو میں %{ownerReserve} %{nativeAsset} کا اضافہ ہوگا",

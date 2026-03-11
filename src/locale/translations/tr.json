@@ -1212,6 +1212,8 @@
     "successRemoved": "Varlık hesabınızdan başarıyla kaldırıldı",
     "failedRemove": "Varlık kaldırılamıyor. Hata oluştu!",
     "removeAsset": "Varlığı kaldır",
+    "trustlineDustNoDepositAuth": "Bu TrustLine hâlâ çok küçük bir miktar %{balance} %{currency} içeriyor.\n\nBu TrustLine'ı kaldırabilmek için kalan bakiyeyi temizlemeniz gerekiyor.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Bunu 'Token Trasher' xApp ile yapabilirsiniz.",
     "trustLineDustRemoveWarning": "Bu güvenili hat, %{balance} %{currency} tutarında gerçekten küçük bir bakiye içeriyor. Devam ederseniz, bu tutar güvenli hat silinmeden önce yayıncısına geri gönderilecektir. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Kalan bakiyeniz, yayıncısına geri gönderilmiştir. Artık güvenli hat kaldırılabilir.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

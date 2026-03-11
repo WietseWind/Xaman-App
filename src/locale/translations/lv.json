@@ -1212,6 +1212,8 @@
     "successRemoved": "Aktīvs veiksmīgi noņemts no jūsu konta",
     "failedRemove": "Nevar izņemt aktīvu. Gadījās kļūda!",
     "removeAsset": "Izņemt aktīvu",
+    "trustlineDustNoDepositAuth": "Šajā TrustLine joprojām ir ļoti neliels atlikums %{balance} %{currency}.\n\nJums ir jāiztīra atlikušais atlikums, pirms varēsiet noņemt šo TrustLine.",
+    "trustlineDustNoDepositAuthTrasherXapp": "To var izdarīt ar xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Šis TrustLine joprojām satur ļoti mazu summu %{balance} %{currency}. Ja turpināsiet, tā tiks nosūtīta atpakaļ izdevējam pirms jūsu TrustLine dzēšanas.",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Jūsu putekļu bilance ir nosūtīta atpakaļ izdevējam. TrustLine tagad var tikt likvidēts.",
     "addingAssetReserveDescription": "Tokena pievienošana jūsu kontam palielinās jūsu piespiedu konta rezervi par %{ownerReserve} %{nativeAsset}",

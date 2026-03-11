@@ -113,6 +113,7 @@ export enum PayloadOrigin {
 
 export enum XAppOrigin {
     XAPP_STORE = 'XAPP_STORE',
+    TOKEN_REMOVE = 'TOKEN_REMOVE',
     XAPP_STORE_MESSAGE = 'XAPP_STORE_MESSAGE',
     XAPP_SHORT_LIST = 'XAPP_SHORT_LIST',
 

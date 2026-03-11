@@ -1212,6 +1212,8 @@
     "successRemoved": "Sredstvo je bilo uspešno odstranjeno iz vašega računa",
     "failedRemove": "Sredstva ni mogoče odstraniti. Prišlo je do napake!",
     "removeAsset": "Odstrani sredstvo",
+    "trustlineDustNoDepositAuth": "Ta TrustLine še vedno vsebuje zelo majhen znesek %{balance} %{currency}.\n\nPreden odstranite to TrustLine, morate počistiti preostalo stanje.",
+    "trustlineDustNoDepositAuthTrasherXapp": "To lahko storite z xApp 'Token Trasher'.",
     "trustLineDustRemoveWarning": "Ta TrustLine še vedno vsebuje zelo majhno stanje  %{balance} %{currency}. Če nadaljujete, bo ta znesek poslan nazaj izdajatelju, preden bo vaš TrustLine izbrisan. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Vaše stanje v drobižu je bilo poslano nazaj k izdajatelju. The TrustLine lahko zdaj odstranite.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",

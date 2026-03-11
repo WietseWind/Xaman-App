@@ -1212,6 +1212,8 @@
     "successRemoved": "A token sikeresen eltávolítva a fiókjából",
     "failedRemove": "Hiba: a token nem távolítható el!",
     "removeAsset": "Eszköz eltávolítása",
+    "trustlineDustNoDepositAuth": "Ez a TrustLine még mindig tartalmaz egy nagyon kis összeget: %{balance} %{currency}.\n\nA fennmaradó egyenleget el kell távolítani, mielőtt eltávolíthatná ezt a TrustLine-t.",
+    "trustlineDustNoDepositAuthTrasherXapp": "Ezt megteheti a 'Token Trasher' xApp segítségével.",
     "trustLineDustRemoveWarning": "This TrustLine still contains a really small amount of %{balance} %{currency}. If you continue, it will be sent back to the issuer before your TrustLine is deleted. ",
     "dustAmountRemovedYouCanRemoveTrustLineNow": "Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated.",
     "addingAssetReserveDescription": "Adding a token to your account will increase your enforced account reserve by %{ownerReserve} %{nativeAsset}",
