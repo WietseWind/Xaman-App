@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Kapab jwenn enfòmasyon kont moun k ap resevwa a tanpri eseye ankò.",
     "unableToSetFeesPleaseTryAgain": "Kapab konfigirasyon frè tranzaksyon, tanpri eseye ankò.",
     "theDestinationAccountIsSetAsBlackHole": "Se kont lan destinasyon mete kòm twou nwa, voye nan kont sa a ap lakòz pèdi {currenc %{currency} y} voye XRP.",
+    "fundsPermanentlyLost": "LAJAN OU AP VOYE A PRAL PÈDI POU TOUJOU!",
+    "fundsMaybePermanentlyLost": "LAJAN OU AP VOYE A KAPAB PÈDI POU TOUJOU!",
     "noDestinationTag": "Pa gen tag destinasyon",
     "addDestinationTag": "Ajoute tag destinasyon",
     "thisAddressRequiredDestinationTag": "Adrès sa a egzije yon etikèt destinasyon",

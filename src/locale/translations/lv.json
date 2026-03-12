@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Nevar saņemt saņēmēja konta informāciju. Lūdzu, mēģiniet vēlreiz.",
     "unableToSetFeesPleaseTryAgain": "Neizdevās iestatīt transakcijas maksas, lūdzu mēģiniet vēlreiz.",
     "theDestinationAccountIsSetAsBlackHole": "Saņēmēja konts iestatīts kā tukšums, sūtot uz šo kontu variet zaudēt nosū {currency %{currency} } tītos XRP.",
+    "fundsPermanentlyLost": "NOSŪTĀMIE LĪDZEKĻI TIKS NEATGRIEZENISKI ZAUDĒTI!",
+    "fundsMaybePermanentlyLost": "NOSŪTĀMIE LĪDZEKĻI VAR TIKT NEATGRIEZENISKI ZAUDĒTI!",
     "noDestinationTag": "Nav autentifikatora",
     "addDestinationTag": "Pievienot galamērķa Tag",
     "thisAddressRequiredDestinationTag": "Adresei nepieciešams autentifikators",

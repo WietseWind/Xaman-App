@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "ინფორმაცია მიმღებ ანგარიშზე მიუწვდომელია, მოგვიანებით სცადეთ. ",
     "unableToSetFeesPleaseTryAgain": "ტრანზაქციის საკომისიოს დაყენება შეუძლებელია, გთხოვთ, სცადოთ ხელახლა.",
     "theDestinationAccountIsSetAsBlackHole": "მიმღები ანგარიში დაყენებულია როგროც შავი ხვრელი, ამ ანგარიშზე განხორციელებული გზავნილი გამოიწვევს თქვენი XRP {currenc %{currency} y} -ის დაკარგვას.",
+    "fundsPermanentlyLost": "გაგზავნილი სახსრები სამუდამოდ დაიკარგება!",
+    "fundsMaybePermanentlyLost": "გაგზავნილი სახსრები შეიძლება სამუდამოდ დაიკარგოს!",
     "noDestinationTag": "მიმღები ანგარიშის თეგი ცარიელია",
     "addDestinationTag": "დაამატეთ დანიშნულების თეგი",
     "thisAddressRequiredDestinationTag": "ამ მისამართზე მიმღები ანგარიშის თეგის შეყვანა სავალდებულოა ",

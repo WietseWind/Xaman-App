@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Nepavyko gauti gavėjo sąskaitos informacijos, bandykite dar kartą.",
     "unableToSetFeesPleaseTryAgain": "Nepavyko nustatyti operacijos mokesčių, bandykite dar kartą.",
     "theDestinationAccountIsSetAsBlackHole": "Paskirties sąskaita 'Black Holed', siuntimas į šią sąskaitą sukels išsiųsto %{currency} praradimą.",
+    "fundsPermanentlyLost": "SIUNČIAMOS LĖŠOS BUS NEGRĮŽTAMAI PRARASTOS!",
+    "fundsMaybePermanentlyLost": "SIUNČIAMOS LĖŠOS GALI BŪTI NEGRĮŽTAMAI PRARASTOS!",
     "noDestinationTag": "Nėra paskirties žymos",
     "addDestinationTag": "Pridėti paskirties žymą",
     "thisAddressRequiredDestinationTag": "Šis adresas reikalauja paskirties žymos",

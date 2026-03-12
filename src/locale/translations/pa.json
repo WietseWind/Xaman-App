@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "ਪ੍ਰਾਪਤਕਰਤਾ ਦੇ ਖਾਤੇ ਦੀ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਵਿੱਚ ਅਸਮਰੱਥ. ਮੁੜ ਕੋਸ਼ਿਸ ਕਰੋ ਜੀ.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "ਚੇਤਾਵਨੀ: ਇਹ ਮੰਜ਼ਿਲ ਖਾਤਾ ਇੱਕ ਬਲੈਕ ਹੋਲ ਦੇ ਰੂਪ ਵਿੱਚ ਸੈਟ ਕੀਤਾ ਗਿਆ ਹੈ. ਇਸ ਖਾਤੇ ਨੂੰ ਭੇਜਿਆ ਗਿਆ ਕੋਈ ਵੀ ਐਕਸਆਰਪੀ ਫੰਡਾਂ ਦੇ ਨੁਕਸਾਨ ਦੇ ਨਤ {currenc %{currency} y} ੀਜੇ ਵਜੋਂ ਹੋਵੇਗਾ!",
+    "fundsPermanentlyLost": "ਤੁਸੀਂ ਜੋ ਫੰਡ ਭੇਜ ਰਹੇ ਹੋ ਉਹ ਸਦਾ ਲਈ ਗੁੰਮ ਹੋ ਜਾਣਗੇ!",
+    "fundsMaybePermanentlyLost": "ਤੁਸੀਂ ਜੋ ਫੰਡ ਭੇਜ ਰਹੇ ਹੋ ਉਹ ਸਦਾ ਲਈ ਗੁੰਮ ਹੋ ਸਕਦੇ ਹਨ!",
     "noDestinationTag": "ਕੋਈ ਮੰਜ਼ਿਲ ਟੈਗ ਨਹੀਂ",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "ਇਸ ਪਤੇ ਲਈ ਇੱਕ ਟਿਕਾਣਾ ਟੈਗ ਚਾਹੀਦਾ ਹੈ.",

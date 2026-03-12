@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Hindi makakuha ng impormasyon ng tatanggap ng account mangyaring subukang muli.",
     "unableToSetFeesPleaseTryAgain": "Hindi makapagtakda ng mga bayarin sa transaksyon, pakisubukang muli.",
     "theDestinationAccountIsSetAsBlackHole": "Ang patutunguhang account ay itinakda bilang itim na butas, ang pagpapadala sa account na ito ay magiging sanhi ng pagkawala ng {currenc %{currency} y} naipadala na XRP.",
+    "fundsPermanentlyLost": "ANG MGA PONDONG IPINAPADALA MO AY MAWAWALA NANG TULUYAN!",
+    "fundsMaybePermanentlyLost": "ANG MGA PONDONG IPINAPADALA MO AY MAAARING MAWALA NANG TULUYAN!",
     "noDestinationTag": "Walang patutunguhang tag",
     "addDestinationTag": "Magdagdag ng destination tag",
     "thisAddressRequiredDestinationTag": "Nangangailangan ang address na ito ng patutunguhang Tag",

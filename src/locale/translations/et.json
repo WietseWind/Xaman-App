@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Ei ole võimalik saada vastuvõtja konto infot. Proovi uuesti.",
     "unableToSetFeesPleaseTryAgain": "Ei saa määrata tehingutasusid, palun proovi uuesti.",
     "theDestinationAccountIsSetAsBlackHole": "Sihtkonto on must auk, saates see konto põhjustab kaotades saadetud %{currency}.",
+    "fundsPermanentlyLost": "SAADETAVAD VAHENDID LÄHEVAD JÄÄDAVALT KAOTSI!",
+    "fundsMaybePermanentlyLost": "SAADETAVAD VAHENDID VÕIVAD JÄÄDAVALT KAOTSI MINNA!",
     "noDestinationTag": "Sihtmärgi silt puudub",
     "addDestinationTag": "Lisa sihtkoha silt",
     "thisAddressRequiredDestinationTag": "See aadress nõuab sihtsilti",

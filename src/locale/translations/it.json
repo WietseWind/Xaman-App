@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Impossibile ottenere le informazioni dell'account del destinatario, riprova di nuovo.",
     "unableToSetFeesPleaseTryAgain": "Impossibile impostare la tassa di transazione, riprovare.",
     "theDestinationAccountIsSetAsBlackHole": "L'account di destinazione è un black hole, gli %{currency} inviati non potranno più essere recuperati.",
+    "fundsPermanentlyLost": "I FONDI CHE STAI INVIANDO ANDRANNO PERSI DEFINITIVAMENTE!",
+    "fundsMaybePermanentlyLost": "I FONDI CHE STAI INVIANDO POTREBBERO ANDARE PERSI DEFINITIVAMENTE!",
     "noDestinationTag": "Nessun tag di destinazione ",
     "addDestinationTag": "Aggiungi tag di destinazione",
     "thisAddressRequiredDestinationTag": "Questo indirizzo richiede un tag di destinazione",

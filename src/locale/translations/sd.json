@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "وصول ڪندڙ کاتي جي معلومات حاصل ڪرڻ کان قاصر. مهرباني ڪري ٻيهر ڪوشش ڪريو. ",
     "unableToSetFeesPleaseTryAgain": "فيس سيٽ ڪرڻ جي قابل نه، مھرباني ڪري ٻيهر ڪوشش ڪريو",
     "theDestinationAccountIsSetAsBlackHole": "منزل وارو کاتو بليڪ هول طور مقرر ڪيو ويو آهي. XRP انهي اڪائونٽ تي موڪلڻ جي نتيجي ۾ فنڊز جي {currenc %{currency} y} ضايع ٿيندي.",
+    "fundsPermanentlyLost": "توهان موڪلي رهيا آهيو اهي فنڊ هميشه لاءِ وڃائجي ويندا!",
+    "fundsMaybePermanentlyLost": "توهان موڪلي رهيا آهيو اهي فنڊ هميشه لاءِ وڃائجي سگهن ٿا!",
     "noDestinationTag": "نه منزل ٽيگ",
     "addDestinationTag": "منزل ٽيگ شامل ڪريو",
     "thisAddressRequiredDestinationTag": "هن ايڊريس کي منزل جي ٽيگ جي ضرورت آهي",

@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Δεν είναι δυνατή η ανάκτηση πληροφοριών λογαριασμού παραλήπτη. Παρακαλώ προσπαθήστε ξανά.",
     "unableToSetFeesPleaseTryAgain": "Αδυναμία ορισμού χρεώσεων συναλλαγής, παρακαλώ δοκιμάστε ξανά.",
     "theDestinationAccountIsSetAsBlackHole": "ΠΡΟΣΟΧΗ: Ο λογαριασμός του προορισμού έχει οριστεί ως \"μαύρη τρύπα\". Στέλνοντας XRP σε αυτό το λογαριασμό θα οδηγήσει στην απώλ {currenc %{currency} y} εια των χρημάτων.",
+    "fundsPermanentlyLost": "ΤΑ ΧΡΉΜΑΤΑ ΠΟΥ ΣΤΈΛΝΕΤΕ ΘΑ ΧΑΘΟΎΝ ΜΌΝΙΜΑ!",
+    "fundsMaybePermanentlyLost": "ΤΑ ΧΡΉΜΑΤΑ ΠΟΥ ΣΤΈΛΝΕΤΕ ΜΠΟΡΕΊ ΝΑ ΧΑΘΟΎΝ ΜΌΝΙΜΑ!",
     "noDestinationTag": "Δεν υπάρχει ετικέτα προορισμού",
     "addDestinationTag": "Προσθήκη αριθμού προορισμού",
     "thisAddressRequiredDestinationTag": "Αυτή η διεύθυνση απαιτεί ετικέτα προορισμού",

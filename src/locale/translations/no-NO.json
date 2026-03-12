@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Ute av stand til å hente mottaker kontoinformasjon. Vennligst prøv igjen.",
     "unableToSetFeesPleaseTryAgain": "Kan ikke sette transaksjonsgebyrer, vennligst prøv igjen.",
     "theDestinationAccountIsSetAsBlackHole": "ADVARSEL: denne destinasjonkontoen er konfigurert som et svart hull. Alt av XRP sent til denne kontoen vil resultere i {curren %{currency} cy} tap av midler!",
+    "fundsPermanentlyLost": "MIDLENE DU SENDER VIL BLI PERMANENT TAPT!",
+    "fundsMaybePermanentlyLost": "MIDLENE DU SENDER KAN BLI PERMANENT TAPT!",
     "noDestinationTag": "Blankt destinasjonsmerke",
     "addDestinationTag": "Legg til destinasjonsmerke",
     "thisAddressRequiredDestinationTag": "Denne adressen krever et destinasjonsmerke",

@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "ಸ್ವೀಕರಿಸುವವರ ಖಾತೆ ಮಾಹಿತಿಯನ್ನು ಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "ಎಚ್ಚರಿಕೆ: ಈ ಗಮ್ಯಸ್ಥಾನ ಖಾತೆಯನ್ನು ಕಪ್ಪು ಕುಳಿಯಂತೆ ಹೊಂದಿಸಲಾಗಿದೆ. ಈ ಖಾತೆಗೆ ಕಳುಹಿಸಿದ ಯಾವುದೇ ಎಕ್ಸ್‌ಆರ್‌ಪಿ ಹಣದ ನಷ್ಟಕ್ಕೆ {currenc %{currency} y} ಕಾರಣವಾಗುತ್ತದೆ!",
+    "fundsPermanentlyLost": "ನೀವು ಕಳುಹಿಸುತ್ತಿರುವ ಹಣವು ಶಾಶ್ವತವಾಗಿ ಕಳೆದುಹೋಗುತ್ತದೆ!",
+    "fundsMaybePermanentlyLost": "ನೀವು ಕಳುಹಿಸುತ್ತಿರುವ ಹಣವು ಶಾಶ್ವತವಾಗಿ ಕಳೆದುಹೋಗಬಹುದು!",
     "noDestinationTag": "ಗಮ್ಯಸ್ಥಾನ ಟ್ಯಾಗ್ ಇಲ್ಲ",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "ಈ ವಿಳಾಸಕ್ಕೆ ಗಮ್ಯಸ್ಥಾನ ಟ್ಯಾಗ್ ಅಗತ್ಯವಿದೆ",

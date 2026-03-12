@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Unable to get recipient account info please try again.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "The destination account is 'Black Holed', sending to this account will cause losin {currency %{currency} } g sent XRP.",
+    "fundsPermanentlyLost": "FEDHA UNAZOTUMA ZITAPOTEA KABISA!",
+    "fundsMaybePermanentlyLost": "FEDHA UNAZOTUMA ZINAWEZA KUPOTEA KABISA!",
     "noDestinationTag": "Hapana destination tag",
     "addDestinationTag": "Ongeza destination tag",
     "thisAddressRequiredDestinationTag": "This address requires a Destination Tag",

@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Nie można uzyskać informacji o koncie odbiorcy, spróbuj ponownie.",
     "unableToSetFeesPleaseTryAgain": "Nie można ustawić opłaty transakcyjnej. Spróbuj ponownie.",
     "theDestinationAccountIsSetAsBlackHole": "Konto docelowe jest ustawione jako czarna dziura, wysyłanie na to konto spowoduje utratę wysłanych %{currency}.",
+    "fundsPermanentlyLost": "WYSYŁANE ŚRODKI ZOSTANĄ TRWALE UTRACONE!",
+    "fundsMaybePermanentlyLost": "WYSYŁANE ŚRODKI MOGĄ ZOSTAĆ TRWALE UTRACONE!",
     "noDestinationTag": "Brak tagu docelowego",
     "addDestinationTag": "Dodaj tag docelowy",
     "thisAddressRequiredDestinationTag": "Ten adres wymaga tagu docelowego",

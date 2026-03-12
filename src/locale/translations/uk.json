@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Не вдається отримати інформацію про акаунт отримувача, спробуйте ще раз.",
     "unableToSetFeesPleaseTryAgain": "Не вдається встановити комісію за транзакцію, спробуйте ще раз.",
     "theDestinationAccountIsSetAsBlackHole": "Цільовий акаунт встановлений як чорна діра, надсилання на цей акаунт призведе до втрати відпр {currenc %{currency} y} авлених XRP.",
+    "fundsPermanentlyLost": "КОШТИ, ЯКІ ВИ НАДСИЛАЄТЕ, БУДУТЬ БЕЗПОВОРОТНО ВТРАЧЕНІ!",
+    "fundsMaybePermanentlyLost": "КОШТИ, ЯКІ ВИ НАДСИЛАЄТЕ, МОЖУТЬ БУТИ БЕЗПОВОРОТНО ВТРАЧЕНІ!",
     "noDestinationTag": "Відсутній тег призначення",
     "addDestinationTag": "Додати тег призначення",
     "thisAddressRequiredDestinationTag": "Для цієї адреси потрібен тег призначення",

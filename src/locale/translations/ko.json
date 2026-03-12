@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "받는 사람 계정 정보를 가져올 수 없습니다. 다시 시도하십시오.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "입금 계좌가 블랙홀로 설정되어 있으므로 이 계좌로 전송시 %{currency}가 손실됩니다.",
+    "fundsPermanentlyLost": "보내시는 자금은 영구적으로 손실됩니다!",
+    "fundsMaybePermanentlyLost": "보내시는 자금은 영구적으로 손실될 수 있습니다!",
     "noDestinationTag": "목적지 태그 없음",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "이 주소에는 목적지 태그가 필요합니다.",

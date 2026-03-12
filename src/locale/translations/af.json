@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Kan nie inligting oor ontvangersrekeninge kry nie, probeer asseblief weer.",
     "unableToSetFeesPleaseTryAgain": "Kan nie transaksie fooie stel nie, probeer asseblief weer.",
     "theDestinationAccountIsSetAsBlackHole": "Die bestemmingsrekening is an 'n swart gat gestel. As u na hierdie rekening stuur, kan die gestuurde XRP {currenc %{currency} y} verloor word.",
+    "fundsPermanentlyLost": "DIE FONDSE WAT JY STUUR SAL PERMANENT VERLORE GAAN!",
+    "fundsMaybePermanentlyLost": "DIE FONDSE WAT JY STUUR MAG PERMANENT VERLORE GAAN!",
     "noDestinationTag": "Geen bestemmingsplaatjie nie",
     "addDestinationTag": "Voeg bestemming etiket by",
     "thisAddressRequiredDestinationTag": "Hierdie adres vereis 'n bestemmingsplaatjie",

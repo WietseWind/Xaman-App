@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Tidak dapat mendapatkan informasi akun penerima, silakan coba lagi.",
     "unableToSetFeesPleaseTryAgain": "Tidak dapat menset nilai transaksi, silakan coba lagi.",
     "theDestinationAccountIsSetAsBlackHole": "Akun tujuan ditetapkan sebagai lubang hitam, mengirim ke akun ini akan menyebabkan kehilangan %{currency} yang dikirim.",
+    "fundsPermanentlyLost": "DANA YANG ANDA KIRIM AKAN HILANG SECARA PERMANEN!",
+    "fundsMaybePermanentlyLost": "DANA YANG ANDA KIRIM MUNGKIN AKAN HILANG SECARA PERMANEN!",
     "noDestinationTag": "Tidak ada tag tujuan",
     "addDestinationTag": "Tambahkan tag tujuan",
     "thisAddressRequiredDestinationTag": "Alamat ini membutuhkan Tag Tujuan",

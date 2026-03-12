@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "לא ניתן לקבל את פרטי חשבון הנמען, נסה שוב.",
     "unableToSetFeesPleaseTryAgain": "לא ניתן להגדיר עמלות עסקה, אנא נסה שוב.",
     "theDestinationAccountIsSetAsBlackHole": "חשבון היעד מוגדר כחור שחור, שליחה לחשבון זה תגרום לאיבוד XR {currency %{currency} } P שנשלח.",
+    "fundsPermanentlyLost": "הכספים שאתה שולח יאבדו לצמיתות!",
+    "fundsMaybePermanentlyLost": "הכספים שאתה שולח עלולים לאבד לצמיתות!",
     "noDestinationTag": "אין תג יעד",
     "addDestinationTag": "הוסף תגית יעד",
     "thisAddressRequiredDestinationTag": "כתובת זו דורשת תג יעד",

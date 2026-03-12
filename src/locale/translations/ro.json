@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Nu se pot obţine informaţii despre contul destinatar, vă rugăm să încercaţi din nou.",
     "unableToSetFeesPleaseTryAgain": "Imposibil de stabilit taxa de tranzacție, vă rugăm să încercați din nou.",
     "theDestinationAccountIsSetAsBlackHole": "Atenție: Contul destinar este setat ca ”gaură neagră”. Acest lucru înseamnă că fondurile trimise la această adresă nu vor mai putea fi vr {currenc %{currency} y} eodată recuperate.",
+    "fundsPermanentlyLost": "FONDURILE PE CARE LE TRIMITEȚI VOR FI PIERDUTE PERMANENT!",
+    "fundsMaybePermanentlyLost": "FONDURILE PE CARE LE TRIMITEȚI POT FI PIERDUTE PERMANENT!",
     "noDestinationTag": "Nicio etichetă pentru destinaţie",
     "addDestinationTag": "Adaugă eticheta de destinație",
     "thisAddressRequiredDestinationTag": "Această adresă necesită o etichetă (tag).",

@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "No s'ha pogut obtenir informació del compte del destinatari.  Torna-ho a provar.",
     "unableToSetFeesPleaseTryAgain": "No s'han pogut establir les taxes de transacció, torna-ho a provar.",
     "theDestinationAccountIsSetAsBlackHole": "AVÍS: Aquest compte de destinació està establert com a forat negre. L'XRP que s'hi enviï  es perdr {currenc %{currency} y} à per sempre!",
+    "fundsPermanentlyLost": "ELS FONS QUE ESTEU ENVIANT ES PERDRAN PERMANENTMENT!",
+    "fundsMaybePermanentlyLost": "ELS FONS QUE ESTEU ENVIANT PODRIEN PERDRE'S PERMANENTMENT!",
     "noDestinationTag": "Sense etiqueta de destinació",
     "addDestinationTag": "Afegir etiqueta de destinació",
     "thisAddressRequiredDestinationTag": "Aquesta adreça requereix una etiqueta de destinació (Destination Tag)",

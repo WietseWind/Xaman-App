@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "تعذر الحصول على معلومات حساب المستلم. يرجى المحاولة مرة أخرى.",
     "unableToSetFeesPleaseTryAgain": "تعذر تعيين رسوم المعاملة، يرجى المحاولة مرة أخرى.",
     "theDestinationAccountIsSetAsBlackHole": "تم تعيين حساب الوجهة على أنه ثقب أسود ، وسيؤدي الإرسال إلى هذا الحساب إلى فقد X {currenc %{currency} y} RP المرسل.",
+    "fundsPermanentlyLost": "الأموال التي ترسلها ستُفقد بشكل دائم!",
+    "fundsMaybePermanentlyLost": "الأموال التي ترسلها قد تُفقد بشكل دائم!",
     "noDestinationTag": "لا توجد علامة وجهة",
     "addDestinationTag": "إضافة علامة الوجهة",
     "thisAddressRequiredDestinationTag": "يتطلب هذا العنوان علامة الوجهة",

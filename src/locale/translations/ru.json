@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Невозможно получить информацию об аккаунте получателя, попробуйте еще раз. ",
     "unableToSetFeesPleaseTryAgain": "Невозможно установить плату за транзакцию, повторите попытку.",
     "theDestinationAccountIsSetAsBlackHole": "ВНИМАНИЕ: целевой аккаунт обозначен как \"черная дыра\". Все %{currency} отправленные на этот акаунт будут потеряны.",
+    "fundsPermanentlyLost": "ОТПРАВЛЯЕМЫЕ СРЕДСТВА БУДУТ БЕЗВОЗВРАТНО УТЕРЯНЫ!",
+    "fundsMaybePermanentlyLost": "ОТПРАВЛЯЕМЫЕ СРЕДСТВА МОГУТ БЫТЬ БЕЗВОЗВРАТНО УТЕРЯНЫ!",
     "noDestinationTag": "Отсутствует тег назначения",
     "addDestinationTag": "Добавить тег назначения",
     "thisAddressRequiredDestinationTag": "Для этого адреса требуется тег назначения",

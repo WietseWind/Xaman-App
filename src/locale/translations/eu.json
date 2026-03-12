@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Ezin da hartzailearen kontuaren informazioa eskuratu saiatu berriro.",
     "unableToSetFeesPleaseTryAgain": "Ezin izan dira transakzio kuotak ezarri, saiatu berriro mesedez.",
     "theDestinationAccountIsSetAsBlackHole": "Helmugako kontua zulo beltz gisa ezarrita dago, kontu honetara bidaltzeak bidalitako XRP galtzea {currenc %{currency} y} eragingo du.",
+    "fundsPermanentlyLost": "BIDALTZEN ARI ZAREN FUNTSAK BETIRAKO GALDUKO DIRA!",
+    "fundsMaybePermanentlyLost": "BIDALTZEN ARI ZAREN FUNTSAK BETIRAKO GAL DAITEZKE!",
     "noDestinationTag": "Helmugako etiketarik ez",
     "addDestinationTag": "Gehitu helmuga etiketa",
     "thisAddressRequiredDestinationTag": "Helbide honek helmuga etiketa behar du",

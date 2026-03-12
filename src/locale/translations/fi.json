@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Vastaanottajatietoja ei saada, yritä uudelleen.",
     "unableToSetFeesPleaseTryAgain": "Tapahtumamaksuja ei voitu asettaa, yritä uudelleen.",
     "theDestinationAccountIsSetAsBlackHole": "VAROITUS! Määränpäätili on kirjattu musta aukko. Kaikki XRP-varat mitkä lähetetään tälle tilille katoa {currency %{currency} } vat pysyvästi!",
+    "fundsPermanentlyLost": "LÄHETTÄMÄSI VARAT MENETETÄÄN PYSYVÄSTI!",
+    "fundsMaybePermanentlyLost": "LÄHETTÄMÄSI VARAT SAATETAAN MENETTÄÄ PYSYVÄSTI!",
     "noDestinationTag": "Ei kohdetilin tagi-merkintää",
     "addDestinationTag": "Lisää kohde-tag",
     "thisAddressRequiredDestinationTag": "Tämä osoite edellyttää kohdetilin tagi-tunnistetta",

@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Incapaz de recibir a información da conta, por favor inténteo de novo.",
     "unableToSetFeesPleaseTryAgain": "Non se puideron establecer as comisións de transacción, por favor, ténteo de novo.",
     "theDestinationAccountIsSetAsBlackHole": "AVISO: Esta conta de destino configúrase como un burato negro. Calquera XRP enviado a esta conta provocará a p {currency %{currency} } erda de fondos.",
+    "fundsPermanentlyLost": "OS FONDOS QUE ESTÁ A ENVIAR PERDERANSE PERMANENTEMENTE!",
+    "fundsMaybePermanentlyLost": "OS FONDOS QUE ESTÁ A ENVIAR PODERÍAN PERDERSE PERMANENTEMENTE!",
     "noDestinationTag": "Non hai etiqueta de destino",
     "addDestinationTag": "Engadir etiqueta de destino",
     "thisAddressRequiredDestinationTag": "Esta dirección precisa dunha etiqueta de destino",

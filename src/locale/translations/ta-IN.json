@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "பெறுநரின் கணக்குத் தகவலைப் பெற முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சி செய்க.",
     "unableToSetFeesPleaseTryAgain": "பரிவர்த்தனை கட்டணங்களை அமைக்க முடியவில்லை, மீண்டும் முயற்சிக்கவும்.",
     "theDestinationAccountIsSetAsBlackHole": "எச்சரிக்கை: இந்த இலக்கு கணக்கு கருந்துளையாக அமைக்கப்பட்டுள்ளது. இந்தக் கணக்கில் அனுப்பிய எந்த XRP நிதி இழப்பு {curren %{currency} cy} ஏற்படுத்தும்!",
+    "fundsPermanentlyLost": "நீங்கள் அனுப்பும் நிதி நிரந்தரமாக இழக்கப்படும்!",
+    "fundsMaybePermanentlyLost": "நீங்கள் அனுப்பும் நிதி நிரந்தரமாக இழக்கப்படலாம்!",
     "noDestinationTag": "இலக்கு குறிச்சொல் இல்லை",
     "addDestinationTag": "இலக்கு குறிச்சொல்லை சேர்",
     "thisAddressRequiredDestinationTag": "இந்த முகவரிக்கு இலக்கு குறிச்சொல் தேவை.",

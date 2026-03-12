@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Die Informationen des Empfängerkontos können nicht abgerufen werden. Bitte versuchen Sie es erneut.",
     "unableToSetFeesPleaseTryAgain": "Die Transaktionsgebühr kann nicht festgelegt werden. Versuchen Sie es erneut.",
     "theDestinationAccountIsSetAsBlackHole": "WARNUNG: Dieser Ziel-Account wurde als \"schwarzes Loch\" gekennzeichnet. Alle %{currency} die an diesen Account gesendet werden, gehen verloren!",
+    "fundsPermanentlyLost": "DIE GELDER, DIE SIE SENDEN, WERDEN DAUERHAFT VERLOREN SEIN!",
+    "fundsMaybePermanentlyLost": "DIE GELDER, DIE SIE SENDEN, KÖNNTEN DAUERHAFT VERLOREN SEIN!",
     "noDestinationTag": "Kein Ziel-Tag (destination tag)",
     "addDestinationTag": "Destination-Tag hinzufügen",
     "thisAddressRequiredDestinationTag": "Diese Adresse erfordert eine Bestimmungszahl (destination tag)",

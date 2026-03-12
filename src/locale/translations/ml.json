@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "സ്വീകർത്താവിന്റെ അക്കൗണ്ട് വിവരം നേടാനായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
     "unableToSetFeesPleaseTryAgain": "ഇടപാട് ഫീസ് സജ്ജമാക്കാൻ കഴിയില്ല, ദയവായി വീണ്ടും ശ്രമിക്കുക.",
     "theDestinationAccountIsSetAsBlackHole": "മുന്നറിയിപ്പ്: ഈ ലക്ഷ്യസ്ഥാന അക്കൗണ്ട് ഒരു തമോഗർത്തമായി സജ്ജമാക്കി. ഈ അക്ക to ണ്ടിലേക്ക് അയച്ച ഏത് എക്സ്ആർ‌പിയും ഫണ്ട {currenc %{currency} y} ് നഷ്‌ടപ്പെടും.",
+    "fundsPermanentlyLost": "നിങ്ങൾ അയക്കുന്ന ഫണ്ടുകൾ സ്ഥിരമായി നഷ്ടപ്പെടും!",
+    "fundsMaybePermanentlyLost": "നിങ്ങൾ അയക്കുന്ന ഫണ്ടുകൾ സ്ഥിരമായി നഷ്ടപ്പെടാം!",
     "noDestinationTag": "ഉദ്ദിഷ്ടസ്ഥാന ടാഗ് ഇല്ല",
     "addDestinationTag": "ഡെസ്റ്റിനേഷൻ ടാഗ് ചേർക്കുക",
     "thisAddressRequiredDestinationTag": "ഈ വിലാസത്തിന് ഒരു ലക്ഷ്യസ്ഥാന ടാഗ് ആവശ്യമാണ്.",

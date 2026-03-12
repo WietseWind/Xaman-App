@@ -20,6 +20,7 @@ import Advisory from '@common/helpers/advisory';
 
 import LRUCache from '@common/utils/cache';
 import { PromiseQueue } from '@common/utils/queue';
+import { AccountRoot } from '@common/libs/ledger/types/ledger';
 
 /* Types  ==================================================================== */
 export interface PayIDInfo {
@@ -254,6 +255,7 @@ class ResolverService {
                 return {
                     exist: false,
                     danger: accountAdvisory.danger,
+                    blackHole: Advisory.checkBlackHoleAccount({ Account: address } as AccountRoot),
                 };
             }
             throw new Error('Error fetching account info.');

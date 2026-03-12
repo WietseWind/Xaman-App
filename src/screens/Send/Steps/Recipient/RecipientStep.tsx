@@ -47,6 +47,7 @@ import { AccountAdvisoryResolveType, AccountNameResolveType } from '@services/Re
 import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 import { XAppOrigin } from '@common/libs/payload';
 import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
+import Advisory from '@common/helpers/advisory';
 
 /* types ==================================================================== */
 export interface Props {}
@@ -876,23 +877,38 @@ class RecipientStep extends Component<Props, State> {
                 passedChecks.indexOf(PassableChecks.ALLOW_BLACKHOLE_DEVMODE) === -1
             ) {
                 setTimeout(() => {
+                    const isXahau = NetworkService.getNativeAsset() === 'XAH';
+                    const isHardBlackHole = Advisory.BLACK_HOLE_KEYS.includes(String(destination.address || '')) ||
+                        Advisory.LOST_KEYS.includes(String(destination.address || ''));
+                    
                     Navigator.showAlertModal({
-                        type: 'warning',
-                        text: Localize.t('send.theDestinationAccountIsSetAsBlackHole', {
-                            currency:
-                                typeof token === 'string'
-                                    ? NetworkService.getNativeAsset()
-                                    : NormalizeCurrencyCode(token.currency.currencyCode),
-                        }),
+                        type: (isXahau && !isHardBlackHole) ? 'warning' : 'error',
+                        text: [
+                            Localize.t('send.theDestinationAccountIsSetAsBlackHole', {
+                                currency:
+                                    typeof token === 'string'
+                                        ? NetworkService.getNativeAsset()
+                                        : NormalizeCurrencyCode(token.currency.currencyCode),
+                            }),
+                            ...(
+                                (isXahau && !isHardBlackHole) ? [
+                                    Localize.t('send.fundsMaybePermanentlyLost', {
+                                        currency:
+                                            typeof token === 'string'
+                                                ? NetworkService.getNativeAsset()
+                                                : NormalizeCurrencyCode(token.currency.currencyCode),
+                                    }),
+                                ] : [
+                                    Localize.t('send.fundsPermanentlyLost', {
+                                        currency:
+                                            typeof token === 'string'
+                                                ? NetworkService.getNativeAsset()
+                                                : NormalizeCurrencyCode(token.currency.currencyCode),
+                                    }),
+                                ]
+                            ),
+                        ].join('\n\n'),
                         buttons: [
-                            ...[
-                                {
-                                    text: Localize.t('global.back'),
-                                    onPress: this.clearDestination,
-                                    type: 'dismiss' as const,
-                                    light: false,
-                                },
-                            ],
                             ...(
                                 isDevMode
                                     ? [
@@ -908,6 +924,14 @@ class RecipientStep extends Component<Props, State> {
                                     ]
                                     : []
                             ),
+                            ...[
+                                {
+                                    text: Localize.t('global.back'),
+                                    onPress: this.clearDestination,
+                                    type: 'dismiss' as const,
+                                    light: false,
+                                },
+                            ],
                         ],
                     });
                 }, 50);

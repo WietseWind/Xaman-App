@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "గ్రహీత ఖాతా సమాచారం పొందడం సాధ్యం కాలేదు దయచేసి మళ్ళీ ప్రయత్నించండి.",
     "unableToSetFeesPleaseTryAgain": "లావాదేవీ రుసుములను సెట్ చేయడం సాధ్యపడలేదు, దయచేసి మళ్లీ ప్రయత్నించండి",
     "theDestinationAccountIsSetAsBlackHole": "హెచ్చరిక: ఈ గమ్యం ఖాతా కాల రంధ్రంగా సెట్ చేయబడింది. ఈ ఖాతాకు పంపిన ఏదైనా XRP నిధుల నష్టానికి ద {currency %{currency} } ారితీస్తుంది!",
+    "fundsPermanentlyLost": "మీరు పంపుతున్న నిధులు శాశ్వతంగా కోల్పోతాయి!",
+    "fundsMaybePermanentlyLost": "మీరు పంపుతున్న నిధులు శాశ్వతంగా కోల్పోవచ్చు!",
     "noDestinationTag": "గమ్యం ట్యాగ్ లేదు",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "ఈ చిరునామాకు గమ్యం ట్యాగ్ అవసరం",

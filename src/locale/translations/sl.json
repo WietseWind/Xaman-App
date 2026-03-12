@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Podatkov o računu prejemnika ni mogoče dobiti, prosimo poskusite znova.",
     "unableToSetFeesPleaseTryAgain": "Ne morem nastaviti stroškov transakcije. Prosimo, poskusite znova.",
     "theDestinationAccountIsSetAsBlackHole": "OPOZORILO: Ciljni račun je nastavljen kot črna luknja, pošiljanje na ta račun pa bo povzročilo izgubo {currenc %{currency} y} poslanih XRP.",
+    "fundsPermanentlyLost": "SREDSTVA, KI JIH POŠILJATE, BODO TRAJNO IZGUBLJENA!",
+    "fundsMaybePermanentlyLost": "SREDSTVA, KI JIH POŠILJATE, SO LAHKO TRAJNO IZGUBLJENA!",
     "noDestinationTag": "Ni ciljne oznake",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "Ta naslov zahteva ciljno oznako",

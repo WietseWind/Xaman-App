@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "受信者のアカウント情報を取得できません。もう一度お試しください。",
     "unableToSetFeesPleaseTryAgain": "取引手数料を設定できません。再試行してください。",
     "theDestinationAccountIsSetAsBlackHole": "送信先のアカウントがブラックホールに設定されており、このアカウントに送信すると送信した%{currency}を失うことになります。",
+    "fundsPermanentlyLost": "送信する資金は永久に失われます！",
+    "fundsMaybePermanentlyLost": "送信する資金は永久に失われる可能性があります！",
     "noDestinationTag": "宛先タグなし",
     "addDestinationTag": "宛先タグを追加",
     "thisAddressRequiredDestinationTag": "このアドレスには宛先タグが必要です",

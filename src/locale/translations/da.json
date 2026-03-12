@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Kan ikke hente oplysninger om modtagerens konto. Prøv igen.",
     "unableToSetFeesPleaseTryAgain": "Kan ikke angive transaktionsgebyr. Prøv venligst igen.",
     "theDestinationAccountIsSetAsBlackHole": "ADVARSEL! Denne destinationskonto er angivet som et sort hul. Alle XRP, der sendes til denne konto, {curren %{currency} cy} vil gå tabt!",
+    "fundsPermanentlyLost": "DE MIDLER, DU SENDER, VIL GÅ PERMANENT TABT!",
+    "fundsMaybePermanentlyLost": "DE MIDLER, DU SENDER, KAN GÅ PERMANENT TABT!",
     "noDestinationTag": "Ingen destinationskode",
     "addDestinationTag": "Tilføj destination tag",
     "thisAddressRequiredDestinationTag": "Denne adresse kræver en destinationskode",

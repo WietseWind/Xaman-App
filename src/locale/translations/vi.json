@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Không thể lấy thông tin tài khoản người nhận. Vui lòng thử lại.",
     "unableToSetFeesPleaseTryAgain": "Không thể đặt phí giao dịch, vui lòng thử lại.",
     "theDestinationAccountIsSetAsBlackHole": "Tài khoản đích được đặt là lỗ đen, việc gửi đến tài khoản này sẽ làm mất %{currency} đã gửi.",
+    "fundsPermanentlyLost": "SỐ TIỀN BẠN ĐANG GỬI SẼ BỊ MẤT VĨNH VIỄN!",
+    "fundsMaybePermanentlyLost": "SỐ TIỀN BẠN ĐANG GỬI CÓ THỂ BỊ MẤT VĨNH VIỄN!",
     "noDestinationTag": "Không có thẻ nhận",
     "addDestinationTag": "Thêm thẻ đích",
     "thisAddressRequiredDestinationTag": "Địa chỉ này yêu cầu thẻ đích đến",

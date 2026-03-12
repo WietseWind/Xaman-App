@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Nepodarilo sa získať informácie o účte príjemcu skúste to znova.",
     "unableToSetFeesPleaseTryAgain": "Nepodarilo sa nastaviť poplatky transakcie, prosím skúste znova.",
     "theDestinationAccountIsSetAsBlackHole": "Cieľový účet je nastavený ako čierna diera, odoslanie na tento účet spôsobí stratu odos {currenc %{currency} y} laného XRP.",
+    "fundsPermanentlyLost": "ODOSIELANÉ PROSTRIEDKY BUDÚ TRVALO STRATENÉ!",
+    "fundsMaybePermanentlyLost": "ODOSIELANÉ PROSTRIEDKY MÔŽU BYŤ TRVALO STRATENÉ!",
     "noDestinationTag": "Žiadna cieľová značka",
     "addDestinationTag": "Pridať destination tag",
     "thisAddressRequiredDestinationTag": "Táto adresa vyžaduje cieľovú značku",

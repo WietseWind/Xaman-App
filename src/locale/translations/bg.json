@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Не може да получи информация за сметката на получателя. Моля, опитайте отново.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "Сметката на местоназначение е определена като черна дупка, изпращане към тази сметка ще доведе до з {currenc %{currency} y} агуба на XRP.",
+    "fundsPermanentlyLost": "СРЕДСТВАТА, КОИТО ИЗПРАЩАТЕ, ЩЕ БЪДАТ ЗАГУБЕНИ ЗАВИНАГИ!",
+    "fundsMaybePermanentlyLost": "СРЕДСТВАТА, КОИТО ИЗПРАЩАТЕ, МОЖЕ ДА БЪДАТ ЗАГУБЕНИ ЗАВИНАГИ!",
     "noDestinationTag": "Няма етикет на местоназначение (destination tag)",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "Този адрес изисква етикет на местоназначение (destination tag)",

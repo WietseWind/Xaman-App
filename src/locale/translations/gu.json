@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "પ્રાપ્તકર્તા એકાઉન્ટ માહિતી મેળવવા માટે અસમર્થ. મહેરબાની કરીને ફરીથી પ્રયતન કરો.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "ચેતવણી: આ લક્ષ્યસ્થાન એકાઉન્ટમાં એક બ્લેક હોલ તરીકે સેટ કરવામાં આવે છે. આ એકાઉન્ટ પર મોકલેલા કોઇ XRP ભંડોળના ન {currenc %{currency} y} ુકશાન પરિણમશે!",
+    "fundsPermanentlyLost": "તમે મોકલી રહ્યા છો તે ભંડોળ કાયમ માટે ખોવાઈ જશે!",
+    "fundsMaybePermanentlyLost": "તમે મોકલી રહ્યા છો તે ભંડોળ કાયમ માટે ખોવાઈ જઈ શકે છે!",
     "noDestinationTag": "કોઈ ગંતવ્ય ટેગ",
     "addDestinationTag": "લક્ષ્ય ટેગ ઉમેરો",
     "thisAddressRequiredDestinationTag": "આ સરનામાં માટે ગંતવ્ય ટ tagગની જરૂર છે.",

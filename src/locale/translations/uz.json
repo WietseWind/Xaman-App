@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Qabul qiluvchilarni hisobi haqida ma'lumot olinmadi. Iltimos, yana bir bor urinib ko'ring.",
     "unableToSetFeesPleaseTryAgain": "Tranzaksiya to'lovlarini o'rnatib bo'lmadi, iltimos qaytadan urinib ko'ring.",
     "theDestinationAccountIsSetAsBlackHole": "Belgilangan hisob qora tuynuk sifatida o'rnatiladi. Ushbu hisob raqamiga XRP yuborish mablag'larning yo'qolishi {currency %{currency} } ga olib keladi.",
+    "fundsPermanentlyLost": "YUBORAYOTGAN MABLAG'LARINGIZ BUTUNLAY YO'QOLADI!",
+    "fundsMaybePermanentlyLost": "YUBORAYOTGAN MABLAG'LARINGIZ BUTUNLAY YO'QOLISHI MUMKIN!",
     "noDestinationTag": "Belgilangan yorliq (tag) yo'q",
     "addDestinationTag": "Manzil yorlig'ini qo'shish",
     "thisAddressRequiredDestinationTag": "Ushbu manzil manzil yorlig'i (Tag)ni talab qiladi",

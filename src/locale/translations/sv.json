@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Det gick inte att hämta mottagarens kontoinformation. Försök igen.",
     "unableToSetFeesPleaseTryAgain": "Det går inte att ställa in transaktionsavgiftens. Försök igen.",
     "theDestinationAccountIsSetAsBlackHole": "Destinationskontot är inställt som svart hål, som skickar till det här kontot kommer att förlora {currenc %{currency} y} skickat XRP.",
+    "fundsPermanentlyLost": "DE MEDEL DU SKICKAR KOMMER ATT GÅ FÖRLORADE FÖR ALLTID!",
+    "fundsMaybePermanentlyLost": "DE MEDEL DU SKICKAR KAN GÅ FÖRLORADE FÖR ALLTID!",
     "noDestinationTag": "Inget målmärkord",
     "addDestinationTag": "Lägg till destinationstagg",
     "thisAddressRequiredDestinationTag": "Den här adressen kräver en måltagg",

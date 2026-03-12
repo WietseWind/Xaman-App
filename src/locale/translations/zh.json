@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "无法获取接收帐户信息，请重试。",
     "unableToSetFeesPleaseTryAgain": "无法设置交易费用，请重试。",
     "theDestinationAccountIsSetAsBlackHole": "目标账户被设置为'黑洞'，向此账户发送将导致发送的 %{currency} 丢失。",
+    "fundsPermanentlyLost": "您正在发送的资金将永久丢失！",
+    "fundsMaybePermanentlyLost": "您正在发送的资金可能永久丢失！",
     "noDestinationTag": "没有标签",
     "addDestinationTag": "添加目标标签",
     "thisAddressRequiredDestinationTag": "此地址需要目的地标签",

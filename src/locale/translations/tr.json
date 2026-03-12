@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Alıcı hesap bilgisi alınamıyor, lütfen yeniden deneyin.",
     "unableToSetFeesPleaseTryAgain": "İşlem ücreti ayarlanamıyor, lütfen yeniden deneyin.",
     "theDestinationAccountIsSetAsBlackHole": "UYARI: Hedef hesap bir kara delik olarak ayarlanmıştır. Bu hesaba XRP gönderimi fonların kaybına seb {currenc %{currency} y} ep olacaktır.",
+    "fundsPermanentlyLost": "GÖNDERDİĞİNİZ FONLAR KALICI OLARAK KAYBOLACAK!",
+    "fundsMaybePermanentlyLost": "GÖNDERDİĞİNİZ FONLAR KALICI OLARAK KAYBOLABİLİR!",
     "noDestinationTag": "Hedef etiketi yok",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "Bu adres bir hedef etiketi gerektirir",

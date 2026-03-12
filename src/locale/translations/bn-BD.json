@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "প্রাপক অ্যাকাউন্ট সম্পর্কিত তথ্য পেতে অক্ষম। অনুগ্রহপূর্বক আবার চেষ্টা করুন.",
     "unableToSetFeesPleaseTryAgain": "লেনদেন ফি সেট করতে অক্ষম, অনুগ্রহ করে আবার চেষ্টা করুন।",
     "theDestinationAccountIsSetAsBlackHole": "সতর্কতা: এই গন্তব্য অ্যাকাউন্টটি একটি ব্ল্যাকহোল হিসাবে সেট করা আছে। এই অ্যাকাউন্টে যে কোনও এক্সআরপি প্রেরণ করা হলে তহ {currency %{currency} } বিলের ক্ষতি হবে!",
+    "fundsPermanentlyLost": "আপনি যে অর্থ পাঠাচ্ছেন তা স্থায়ীভাবে হারিয়ে যাবে!",
+    "fundsMaybePermanentlyLost": "আপনি যে অর্থ পাঠাচ্ছেন তা স্থায়ীভাবে হারিয়ে যেতে পারে!",
     "noDestinationTag": "কোনও গন্তব্য ট্যাগ নেই",
     "addDestinationTag": "গন্তব্য ট্যাগ যোগ করুন",
     "thisAddressRequiredDestinationTag": "এই ঠিকানার জন্য একটি গন্তব্য ট্যাগ প্রয়োজন।",

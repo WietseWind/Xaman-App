@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Није могуће добити информације о налогу примаоца. Молим вас, покушајте поново.",
     "unableToSetFeesPleaseTryAgain": "Не могу да поставим трансакциони хонорар, покушајте поново.",
     "theDestinationAccountIsSetAsBlackHole": "УПОЗОРЕЊЕ: Овај одредишни рачун постављен је као црна рупа. Било који XRP послат на овај рачун резултираће губи {currency %{currency} } тком средстава!",
+    "fundsPermanentlyLost": "СРЕДСТВА КОЈА ШАЉЕТЕ ЋЕ БИТИ ТРАЈНО ИЗГУБЉЕНА!",
+    "fundsMaybePermanentlyLost": "СРЕДСТВА КОЈА ШАЉЕТЕ МОГУ БИТИ ТРАЈНО ИЗГУБЉЕНА!",
     "noDestinationTag": "Нема ознаке за одредиште",
     "addDestinationTag": "Dodaj destination tag",
     "thisAddressRequiredDestinationTag": "Ова веб адреса захтева ознаку за одредиште ",

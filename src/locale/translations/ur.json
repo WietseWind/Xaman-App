@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "وصول کنندہ اکاؤنٹ کی معلومات حاصل کرنے سے قاصر ہے۔ دوبارہ کوشش کریں.",
     "unableToSetFeesPleaseTryAgain": "ٹرانزیکشن فیسیں سیٹ کرنے سے قاصر، براہ کرم دوبارہ کوشش کریں۔",
     "theDestinationAccountIsSetAsBlackHole": "منزل مقصود کو بلیک ہول کی حیثیت سے ترتیب دیا گیا ہے۔ اس اکاؤنٹ میں XRP بھیجنے کے نتیجے میں فنڈز ک {currency %{currency} } ا نقصان ہوگا۔",
+    "fundsPermanentlyLost": "آپ جو فنڈز بھیج رہے ہیں وہ مستقل طور پر ضائع ہو جائیں گے!",
+    "fundsMaybePermanentlyLost": "آپ جو فنڈز بھیج رہے ہیں وہ مستقل طور پر ضائع ہو سکتے ہیں!",
     "noDestinationTag": "منزل مقصود نہیں",
     "addDestinationTag": "Destination tag شامل کریں",
     "thisAddressRequiredDestinationTag": "اس پتے کے لئے منزل مقصود ٹیگ کی ضرورت ہے",

@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "प्राप्तकर्ता खाता जानकारी प्राप्त करने में असमर्थ करें कृपया पुनः प्रयास करें.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "चेतावनी: यह गंतव्य खाता ब्लैक होल के रूप में सेट है. इस खाते में भेजे गए किसी भी XRP के परिणामस्वरूप धन {currenc %{currency} y} की हानि होगी.",
+    "fundsPermanentlyLost": "आप जो धनराशि भेज रहे हैं वह स्थायी रूप से खो जाएगी!",
+    "fundsMaybePermanentlyLost": "आप जो धनराशि भेज रहे हैं वह स्थायी रूप से खो सकती है!",
     "noDestinationTag": "कोई गंतव्य टैग नहीं",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "इस पते के लिए एक गंतव्य टैग की आवश्यकता होती है",

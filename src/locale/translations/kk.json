@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Алушының есептік жазбасы туралы ақпарат алу мүмкін емес, қайталап көріңіз.",
     "unableToSetFeesPleaseTryAgain": "Транзакция комиссияларын орнату мүмкін емес, қайталап көріңіз.",
     "theDestinationAccountIsSetAsBlackHole": "Мақсатты шот қара тесік ретінде орнатылады, осы шотқа жіберу жіберілген XRP жоғалуы {currency %{currency} } на әкеледі.",
+    "fundsPermanentlyLost": "ЖІБЕРІП ЖАТҚАН ҚАРАЖАТЫҢЫЗ МӘҢГІЛІККЕ ЖОҒАЛАДЫ!",
+    "fundsMaybePermanentlyLost": "ЖІБЕРІП ЖАТҚАН ҚАРАЖАТЫҢЫЗ МӘҢГІЛІККЕ ЖОҒАЛУЫ МҮМКІН!",
     "noDestinationTag": "Тағайындау тегі жоқ",
     "addDestinationTag": "Тағайындау тегін қосу",
     "thisAddressRequiredDestinationTag": "Бұл мекен-жай тағайындалған тегті қажет етеді",

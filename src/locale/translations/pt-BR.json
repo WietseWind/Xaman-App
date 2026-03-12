@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Incapaz de obter informações sobre a conta do destinatário, por favor, tente novamente.",
     "unableToSetFeesPleaseTryAgain": "Incapaz de definir taxa de transação, tente novamente.",
     "theDestinationAccountIsSetAsBlackHole": "AVISO: A conta de destino está definida como buraco negro. O envio de %{currency} para esta conta, resultará numa perda de fundos.",
+    "fundsPermanentlyLost": "OS FUNDOS QUE VOCÊ ESTÁ ENVIANDO SERÃO PERDIDOS PERMANENTEMENTE!",
+    "fundsMaybePermanentlyLost": "OS FUNDOS QUE VOCÊ ESTÁ ENVIANDO PODEM SER PERDIDOS PERMANENTEMENTE!",
     "noDestinationTag": "Sem etiqueta de destino",
     "addDestinationTag": "Adicionar etiqueta de destino",
     "thisAddressRequiredDestinationTag": "Este endereço requer uma etiqueta de destino (destination tag)",

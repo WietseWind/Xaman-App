@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Impossible d'obtenir les informations du compte destinataire, veuillez réessayer.",
     "unableToSetFeesPleaseTryAgain": "Impossible de définir les frais de transaction, veuillez réessayer.",
     "theDestinationAccountIsSetAsBlackHole": "ATTENTION : Le compte de destination est reconnu comme un trou noir. Tout %{currency} envoyé à ce compte entraînera la perte de vos fonds !",
+    "fundsPermanentlyLost": "LES FONDS QUE VOUS ENVOYEZ SERONT DÉFINITIVEMENT PERDUS!",
+    "fundsMaybePermanentlyLost": "LES FONDS QUE VOUS ENVOYEZ POURRAIENT ÊTRE DÉFINITIVEMENT PERDUS!",
     "noDestinationTag": "Aucun tag de destination",
     "addDestinationTag": "Ajouter tag de destination",
     "thisAddressRequiredDestinationTag": "Cette adresse nécessite un tag de destination",

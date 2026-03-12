@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Unable to get recipient account info please try again.",
     "unableToSetFeesPleaseTryAgain": "Unable to set transaction fees, please try again.",
     "theDestinationAccountIsSetAsBlackHole": "The destination account is 'Black Holed', sending to this account will cause losin {currency %{currency} } g sent XRP.",
+    "fundsPermanentlyLost": "您正在發送的資金將永久丟失！",
+    "fundsMaybePermanentlyLost": "您正在發送的資金可能永久丟失！",
     "noDestinationTag": "No destination tag",
     "addDestinationTag": "Add destination tag",
     "thisAddressRequiredDestinationTag": "This address requires a Destination Tag",

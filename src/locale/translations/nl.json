@@ -1183,6 +1183,8 @@
     "unableGetRecipientAccountInfoPleaseTryAgain": "Kan ontvanger account info niet ophalen, probeer het opnieuw.",
     "unableToSetFeesPleaseTryAgain": "Kan transactiekosten niet instellen, probeer het opnieuw.",
     "theDestinationAccountIsSetAsBlackHole": "Het bestemmingsaccount is ingesteld als black hole, versturen naar dit account zal leiden tot verlies van verstuurde %{currency}.",
+    "fundsPermanentlyLost": "DE FONDSEN DIE U VERSTUURT ZULLEN PERMANENT VERLOREN GAAN!",
+    "fundsMaybePermanentlyLost": "DE FONDSEN DIE U VERSTUURT KUNNEN PERMANENT VERLOREN GAAN!",
     "noDestinationTag": "Geen destination tag",
     "addDestinationTag": "Destination tag toevoegen",
     "thisAddressRequiredDestinationTag": "Dit adres vereist een Destination Tag",
