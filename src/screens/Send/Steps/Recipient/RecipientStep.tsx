@@ -10,7 +10,7 @@ import { View, Text, SectionList, Alert, RefreshControl } from 'react-native';
 
 import { StringType, XrplDestination } from 'xumm-string-decode';
 
-import { AccountRepository, ContactRepository } from '@store/repositories';
+import { AccountRepository, ContactRepository, CoreRepository } from '@store/repositories';
 import { ContactModel, AccountModel } from '@store/models';
 
 import { AppScreens } from '@common/constants';
@@ -54,6 +54,7 @@ export interface Props {}
 export interface State {
     isSearching: boolean;
     isLoading: boolean;
+    isDevMode: boolean;
     searchText: string;
     accounts: Realm.Results<AccountModel>;
     contacts: Realm.Results<ContactModel>;
@@ -63,6 +64,7 @@ export interface State {
 const XAMAN_BACKEND_API_TIMEOUT = 10_000;
 
 enum PassableChecks {
+    ALLOW_BLACKHOLE_DEVMODE = 'ALLOW_BLACKHOLE_DEVMODE',
     AMOUNT_CREATE_ACCOUNT = 'AMOUNT_CREATE_ACCOUNT',
     PROBABLE_SCAM = 'PROBABLE_SCAM',
     CONFIRMED_SCAM = 'CONFIRMED_SCAM',
@@ -81,10 +83,13 @@ class RecipientStep extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
+        const coreSettings = CoreRepository.getSettings();
+
         this.state = {
             isSearching: false,
             isLoading: false,
             searchText: '',
+            isDevMode: coreSettings.developerMode,
             accounts: AccountRepository.getAccounts({ hidden: false }).sorted([['order', false]]),
             contacts: ContactRepository.getContacts(),
             dataSource: [],
@@ -480,7 +485,7 @@ class RecipientStep extends Component<Props, State> {
             setCredentials,
         } = this.context;
         let { destinationInfo } = this.context;
-        const { dataSource } = this.state;
+        const { dataSource, isDevMode } = this.state;
 
         try {
             const searchItem: {
@@ -866,7 +871,10 @@ class RecipientStep extends Component<Props, State> {
             // console.log('___5')
             // if account is set to black hole then reject sending
             // IMMEDIATE REJECT
-            if (destinationInfo.blackHole) {
+            if (
+                destinationInfo.blackHole &&
+                passedChecks.indexOf(PassableChecks.ALLOW_BLACKHOLE_DEVMODE) === -1
+            ) {
                 setTimeout(() => {
                     Navigator.showAlertModal({
                         type: 'warning',
@@ -877,12 +885,29 @@ class RecipientStep extends Component<Props, State> {
                                     : NormalizeCurrencyCode(token.currency.currencyCode),
                         }),
                         buttons: [
-                            {
-                                text: Localize.t('global.back'),
-                                onPress: this.clearDestination,
-                                type: 'dismiss',
-                                light: false,
-                            },
+                            ...[
+                                {
+                                    text: Localize.t('global.back'),
+                                    onPress: this.clearDestination,
+                                    type: 'dismiss' as const,
+                                    light: false,
+                                },
+                            ],
+                            ...(
+                                isDevMode
+                                    ? [
+                                        {
+                                            text: Localize.t('tangemImportMsgs.existingButtonContinue'),
+                                            onPress: this.checkAndNext.bind(null, [
+                                                ...passedChecks,
+                                                PassableChecks.ALLOW_BLACKHOLE_DEVMODE,
+                                            ]),
+                                            type: 'continue' as const,
+                                            light: true,
+                                        },
+                                    ]
+                                    : []
+                            ),
                         ],
                     });
                 }, 50);
