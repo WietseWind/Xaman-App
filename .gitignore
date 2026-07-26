@@ -81,3 +81,5 @@ scripts/imageprepare-app/*.svg
 scripts/imageprepare-app/*.png
 scripts/imageprepare-app/*/*
 android/app/libs/*.aar
+
+.claude_session
