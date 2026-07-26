@@ -285,7 +285,7 @@ dependencies {
     implementation "androidx.biometric:biometric:1.1.0"
     implementation 'com.github.kenglxn.QRGen:android:2.6.0'
     implementation 'com.github.Dimezis:BlurView:version-2.0.6'
-    implementation 'com.android.billingclient:billing:7.0.0'
+    implementation 'com.android.billingclient:billing:8.0.0'
     implementation 'com.google.android.gms:play-services-wallet:19.4.0'
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'com.google.android.gms:play-services-base:18.4.0'
