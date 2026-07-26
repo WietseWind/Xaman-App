@@ -573,6 +573,7 @@ class EventsView extends Component<Props, State> {
                                     transaction?.tx?.Destination &&
                                     finalFields?.RegularKey &&
                                     finalFields?.Account &&
+                                    // TODO: Below: this doesn't work if I'm at the regular key account, ticket #107146
                                     finalFields.RegularKey === account.address &&
                                     finalFields.Account === transaction.tx.Destination;
 
