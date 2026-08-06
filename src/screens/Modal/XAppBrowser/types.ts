@@ -86,6 +86,7 @@ export enum XAppMethods {
     Ready = 'ready',
     NetworkSwitch = 'networkSwitch',
     RequestInAppPurchase = 'requestInAppPurchase',
+    GetEntropy = 'getEntropy',
 }
 
 export enum XAppSpecialPermissions {
