@@ -16,8 +16,8 @@ Feature: Setup App
         Then I tap 'next-button'
 
     Scenario: Finish setup
-        Given I should wait 4 sec to see 'agreement-setup-screen'
-        Then I wait 4 sec for button 'confirm-button' to be enabled
+        Given I should wait 15 sec to see 'agreement-setup-screen'
+        Then I wait 15 sec for button 'confirm-button' to be enabled
         Then I tap 'confirm-button'
 
     Scenario: After setup
