@@ -9,11 +9,8 @@ import { AppScreens } from '@common/constants';
 import { Toast } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
 import { Clipboard } from '@common/helpers/clipboard';
-// import ScreenBrightness from 'react-native-screen-brightness';
 
 import { AccountModel } from '@store/models';
-
-// import DeviceBrightness from '@adrianso/react-native-device-brightness';
 
 import { Footer, ActionPanel, Button, QRCode } from '@components/General';
 
@@ -23,7 +20,6 @@ import { RequestViewProps } from '@screens/Request';
 
 import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
-// import AppService, { AppStateStatus } from '@services/AppService';
 
 /* types ==================================================================== */
 export interface Props {
@@ -31,14 +27,8 @@ export interface Props {
     timestamp?: number;
 }
 
-export interface State {
-    ogBrightness: number | null;
-    // keepBrightness: boolean;
-}
-
-
 /* Component ==================================================================== */
-class ShareAccountOverlay extends Component<Props, State> {
+class ShareAccountOverlay extends Component<Props> {
     static screenName = AppScreens.Overlay.ShareAccount;
 
     private actionPanelRef: React.RefObject<ActionPanel>;
@@ -58,50 +48,7 @@ class ShareAccountOverlay extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        this.state = {
-            ogBrightness: null,
-            // keepBrightness: false,
-        };
-
         this.actionPanelRef = React.createRef();
-    }
-
-    // appStateChange(status: AppStateStatus) {
-    //     const { ogBrightness } = this.state;
-
-    //     console.log('x', status, ogBrightness)
-        
-    //     if (status !== AppStateStatus.Active) {
-    //         if (typeof ogBrightness === 'number') {
-    //             DeviceBrightness.setBrightnessLevel(Platform.OS === 'android' ? -1 : ogBrightness);
-    //         }
-    //     }
-    //     if (status === AppStateStatus.Active) {
-    //         DeviceBrightness.setBrightnessLevel(1);
-    //     }
-    // }
-
-    componentDidMount() {
-        // const { ogBrightness } = this.state;
-
-        // DeviceBrightness.getBrightnessLevel().then(brightness => {
-        //     // if (typeof ogBrightness !== 'number') {
-        //     //     this.setState({ ogBrightness: brightness });
-        //     // }
-        //     // setTimeout(() => {
-        //     //     DeviceBrightness.setBrightnessLevel(1);
-        //     // }, 400);
-        // });
-
-        // AppService.on('appStateChange', status => this.appStateChange(status));
-    }
-
-    componentWillUnmount(): void {
-        // const { ogBrightness, keepBrightness } = this.state;
-        // if (!keepBrightness) {
-        //     DeviceBrightness.setBrightnessLevel(Number(Platform.OS === 'android' ? -1 : ogBrightness));
-        // }
-        // AppService.off('appStateChange', status => this.appStateChange(status));
     }
 
     onSharePress = () => {
@@ -131,16 +78,10 @@ class ShareAccountOverlay extends Component<Props, State> {
     };
 
     onPaymentRequestPress = () => {
-        const { ogBrightness } = this.state;
-
         this.actionPanelRef?.current?.slideDown();
 
-        // this.setState({ keepBrightness: true });
-
         setTimeout(() => {
-            Navigator.push<RequestViewProps>(AppScreens.Transaction.Request, {
-                ogBrightness: Number(ogBrightness || 1),
-            });
+            Navigator.push<RequestViewProps>(AppScreens.Transaction.Request, {});
         }, 500);
     };
 
