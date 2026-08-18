@@ -139,7 +139,7 @@ retest-e2e:  ## Runs e2e tests
 verify-step: ## Typecheck + Debug compile Android arm64 and iOS simulator
 	@node node_modules/typescript/lib/tsc.js --noEmit
 	@cd android && ./gradlew :app:assembleDebug -PreactNativeArchitectures=arm64-v8a
-	@cd ios && xcodebuild -workspace Xaman.xcworkspace -scheme Xaman -configuration Debug -destination 'platform=iOS Simulator,name=$(SIMULATOR)' CODE_SIGNING_ALLOWED=NO build
+	@cd ios && xcodebuild -workspace Xaman.xcworkspace -scheme Xaman -configuration Debug -destination 'platform=iOS Simulator,name=$(SIMULATOR)' DEVELOPMENT_TEAM=LK5BBJNJZ6 CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY='Apple Development' build
 
 bump-build-number: ## Bump build number for Android and iOS
 	@./scripts/bump-build-number.sh;
