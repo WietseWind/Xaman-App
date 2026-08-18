@@ -209,3 +209,10 @@ Key knowledge:
 feature/fix branch off main → PR on WietseWind fork targeting `update/5.2.6` → Wietse tests on device + approves → merge PR into update branch. At end of cycle, `update/5.2.6` merges to main as a whole. First merged: PR #99 (fix #96, template QR network detection). Open: PR #100 (jest repair), PR #101 (e2e revival).
 
 `UPDATES.md` (repo root, committed): per-version table of issue → PR → branch → change; update on every PR merged into the update branch.
+
+## CI / release protection (added 2026-08-18)
+
+- `scripts/check-endpoints.sh`: guards production `HOSTNAME`/`ApiUrl` in `src/common/constants/endpoints.ts` (exact active lines, no extra assignments; commented dev lines allowed). Runs in pre-commit AND the `endpoints-guard` workflow (GitHub-hosted ubuntu).
+- Branch protection on `main`: required check `check-production-endpoints`, `enforce_admins: true` → direct pushes to main are blocked for everyone; everything lands via PR with the green check. Version bumps go on the update branch.
+- The five heavy workflows (validate/unit/ios/android/e2e) need self-hosted macOS ARM64 runners; temp-disabled repo-level (`gh workflow disable`) until runners exist — issue #105 has the re-enable runbook. Do NOT globally disable Actions: it would kill the required guard check and deadlock main merges.
+- Locale gotcha: `Localize.t` renders missing keys as broken text — `theQRIsNotWhatWeExpect` lives under `scan.`, not `global.` (fixed in #104). When touching error strings, verify the key path in `src/locale/en.json`.
