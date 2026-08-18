@@ -1172,6 +1172,7 @@ class XAppBrowserModal extends Component<Props, State> {
     renderApp = () => {
         return (
             <WebView
+                testID="xapp-webview"
                 ref={this.webView}
                 containerStyle={styles.webViewContainer}
                 style={styles.webView}

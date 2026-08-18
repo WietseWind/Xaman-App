@@ -4,8 +4,9 @@
  * Does not rebuild, reinstall, or launch a new app instance.
  *
  *   node scripts/ios-by-id.js tap start-button
+ *   node scripts/ios-by-id.js tap scan-qr-button
  *   node scripts/ios-by-id.js tap 1-key
- *   node scripts/ios-by-id.js exists home-tab-empty-view
+ *   node scripts/ios-by-id.js exists scan-modal
  *   node scripts/ios-by-id.js label "Use anyway"
  */
 const detox = require('detox/internals');

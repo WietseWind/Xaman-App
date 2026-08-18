@@ -95,6 +95,7 @@ class ShareAccountOverlay extends Component<Props> {
         return (
             <ActionPanel
                 ref={this.actionPanelRef}
+                testID="share-account-overlay"
                 height={AppSizes.moderateScale(570)}
                 onSlideDown={Navigator.dismissOverlay}
                 contentStyle={[
@@ -124,6 +125,7 @@ class ShareAccountOverlay extends Component<Props> {
                         <Button
                             light
                             roundedSmall
+                            testID="share-account-close-button"
                             isDisabled={false}
                             onPress={this.onClosePress}
                             textStyle={[AppStyles.subtext, AppStyles.bold]}
@@ -145,6 +147,7 @@ class ShareAccountOverlay extends Component<Props> {
                                 <Button
                                     light
                                     roundedMini
+                                    testID="share-account-share-button"
                                     key={`share-account-overlay-${timestamp}-btn1`}
                                     numberOfLines={1}
                                     icon="IconShare"
@@ -156,6 +159,7 @@ class ShareAccountOverlay extends Component<Props> {
                                 <Button
                                     light
                                     roundedMini
+                                    testID="share-account-copy-button"
                                     key={`share-account-overlay-${timestamp}-btn2`}
                                     numberOfLines={1}
                                     icon="IconClipboard"
@@ -189,6 +193,7 @@ class ShareAccountOverlay extends Component<Props> {
                 ]}>
                     <Button
                         numberOfLines={1}
+                        testID="share-account-request-button"
                         nonBlock
                         label={Localize.t('global.createPaymentRequestLink')}
                         onPress={this.onPaymentRequestPress}

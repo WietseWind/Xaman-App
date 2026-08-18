@@ -152,6 +152,7 @@ class HomeActionsOverlay extends Component<Props, State> {
         return (
             <ActionPanel
                 ref={this.actionPanel}
+                testID="home-actions-overlay"
                 height={AppSizes.moderateScale(430)}
                 onSlideDown={Navigator.dismissOverlay}
                 extraBottomInset

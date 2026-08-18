@@ -778,6 +778,7 @@ class ScanModal extends Component<Props, State> {
                     <Spacer size={50} />
                     <Button
                         secondary
+                        testID="scan-permission-close-button"
                         label={Localize.t('global.close')}
                         onPress={this.onClose}
                         style={{ backgroundColor: AppColors.silver }}
@@ -785,6 +786,7 @@ class ScanModal extends Component<Props, State> {
                     />
                     <Spacer size={15} />
                     <Button
+                        testID="scan-permission-approve-button"
                         style={{ backgroundColor: AppColors.green }}
                         label={Localize.t('global.approvePermissions')}
                         // nonBlock
@@ -816,6 +818,7 @@ class ScanModal extends Component<Props, State> {
         if (isLoading) {
             return (
                 <ImageBackground
+                    testID="scan-loading-view"
                     resizeMode="cover"
                     source={
                         StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
