@@ -6,8 +6,13 @@ const adapter = require('./adapter');
 
 const { setDeviceUdid, startRecordingVideo, stopRecordingVideo } = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
+const { checkNetwork, ensureLocalSimulator } = require('./preflight');
 
 BeforeAll(async () => {
+    // fail fast with a clear message when the suite cannot possibly pass
+    await checkNetwork();
+    ensureLocalSimulator();
+
     await detox.init({
         argv: {
             // reuse: false,
