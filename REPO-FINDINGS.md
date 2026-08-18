@@ -190,10 +190,13 @@ A recent example (`CronSet`) touches exactly these files:
 
 **Run locally:**
 ```
-xcrun simctl create "Xaman-e2e" "iPhone 16 Pro"   # once
 DETOX_CONFIGURATION=ios.simulator.local+xaman.ios make test-e2e
 DETOX_CONFIGURATION=ios.simulator.local+xaman.ios make retest-e2e   # rerun without rebuild
 ```
+The `Xaman-e2e` simulator is auto-created when missing, and a preflight fails fast with a clear
+message when the Xaman backend / xahau-test.net are unreachable (PR #107). The network need itself
+is inherent (real device registration + real on-ledger signing); going offline = backend mock +
+local ledger node, a separate project.
 
 Key knowledge:
 - **Release sim builds hang on splash without the `TARGET_IPHONE_SIMULATOR` exemption in `DeviceUtils.m` `isJailBroken`** — sim sees host FS (`/bin/bash`), path check flags jailbroken, `app.tsx checkup()` silently never resolves. Debug builds skip via NODE_ENV, which is why dev sims never showed this.
