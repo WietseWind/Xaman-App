@@ -142,7 +142,7 @@ class ListHeader extends PureComponent<Props> {
                         light
                         roundedMini
                         numberOfLines={1}
-                        testID="add-token-button"
+                        testID="token-list-settings-button"
                         onPress={this.tokenListSettingsPress}
                         iconSize={23}
                         icon="IconMoreHorizontal"

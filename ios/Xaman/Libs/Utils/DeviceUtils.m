@@ -152,12 +152,18 @@ RCT_EXPORT_MODULE();
 
 RCT_REMAP_METHOD(isJailBroken, jailbreak_resolver:(RCTPromiseResolveBlock)resolve  rejecter:(RCTPromiseRejectBlock)reject)
 {
+#if TARGET_IPHONE_SIMULATOR
+  // the simulator sees the host filesystem (/bin/bash, /usr/sbin/sshd, ...) so the
+  // path checks always flag it as jailbroken, hanging Release builds on the splash screen
+  resolve(@NO);
+#else
   if([self checkPaths] || [self checkSchemes] || [self canViolateSandbox]) {
     resolve(@YES);
   }
   else {
     resolve(@NO);
   }
+#endif
 }
 
 RCT_EXPORT_METHOD(getElapsedRealtime: (RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)

@@ -17,6 +17,12 @@ module.exports = {
             headless: process.env.CI ? true : undefined,
             device: { type: 'iPhone 16 Pro' },
         },
+        // dedicated local simulator so e2e runs never wipe the dev simulator's app state
+        // create it once with: xcrun simctl create "Xaman-e2e" "iPhone 16 Pro"
+        'ios.simulator.local': {
+            type: 'ios.simulator',
+            device: { name: 'Xaman-e2e' },
+        },
         'android.emulator': {
             type: 'android.apk',
             device: { avdName: 'Nexus_5X_API_28' },
@@ -31,6 +37,10 @@ module.exports = {
     configurations: {
         'ios.simulator+xaman.ios': {
             device: 'ios.simulator',
+            app: 'xaman.ios',
+        },
+        'ios.simulator.local+xaman.ios': {
+            device: 'ios.simulator.local',
             app: 'xaman.ios',
         },
         'android.emulator+xaman.android': {
