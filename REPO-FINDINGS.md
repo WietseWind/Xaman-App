@@ -1,6 +1,6 @@
 # Xaman App — Repository Findings
 
-Working reference for feature development. Read-only survey, nothing changed. (2026-08-18)
+Working reference for feature development. (2026-08-18; recreated after the file went missing — content preserved from the same day's revision)
 
 ## What this is
 
@@ -115,6 +115,7 @@ A recent example (`CronSet`) touches exactly these files:
 - `src/common/libs/crypto.ts`, `biometric.ts`
 - Signing: `mixin/Sign.mixin.ts` + xrpl-accountlib
 - Native also includes: IAP, LocalNotification, custom WebView (forked RNCWebView) for xApps, BlurView, HapticFeedback, QRCode, Toast, SharedPreferences, AppUpdate, DeviceUtils/AppUtils
+- **`DeviceUtils.m` `isJailBroken`**: since 2026-08-18 resolves `NO` under `TARGET_IPHONE_SIMULATOR` (sim sees host FS → path checks always false-positived, hanging Release sim builds on splash via the silent `return;` in `app.tsx checkup()`). Real devices unaffected. The silent-hang-on-jailbreak in app.tsx is deliberate — do not "fix" it.
 
 ## Storage (Realm)
 
@@ -134,8 +135,8 @@ A recent example (`CronSet`) touches exactly these files:
 
 - `make run-ios` (default sim: iPhone 16 Pro Max), `make run-android`, `make build-ios|build-android`
 - `npm start` — Metro; `npm run validate` — eslint + tsc; `npm test` — jest (116 test files + snapshots)
-- e2e: Detox + Cucumber (`e2e/*.feature`), `make test-e2e`
-- CI: GitHub Actions — validate, unit, ios, android, e2e
+- e2e: Detox + Cucumber (`e2e/*.feature`), see "Detox e2e" below for local runs
+- CI: GitHub Actions — validate, unit, ios, android, e2e (but see branch-trigger caveat below)
 - `scripts/build-env.sh` generates env files pre-build; `bump-build-number.sh` for releases
 - react-cosmos configured (`.cosmos/`) for component fixtures
 
@@ -164,7 +165,7 @@ A recent example (`CronSet`) touches exactly these files:
 
 - Fresh build: `npx react-native run-ios --simulator="iPhone 16 Pro" --mode=Debug --no-packager` (Wietse normally builds from Xcode play button; `make .pre-ios` currently fails on a stale CocoaPods/bundler gem pin — bypass when Pods/Manifest.lock matches Podfile.lock)
 - **Metro stale-bundle gotcha:** edits to boot-time singletons (services) do NOT apply via Fast Refresh, and Metro's delta graph can serve a stale bundle even after app relaunch. When in doubt: kill Metro, `npm start -- --reset-cache`, then terminate+relaunch the app, and verify with `curl -s 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false' | grep -c "<new code marker>"`.
-- App passcode on the dev sim: local detail (kept out of the repo); auto-lock set to 1 week for dev convenience.
+- App passcode on dev sim: 111111; auto-lock set to 1 week for dev convenience.
 
 ## Watch-outs
 
@@ -175,17 +176,36 @@ A recent example (`CronSet`) touches exactly these files:
 - Android 16KB page-size compliance is deferred and likely gates the next release
 - `.pre-ios` runs `pod install` via Makefile; `scripts/check-pod-install.sh` guards pod state
 
-## Test suite state (repaired 2026-08-18, branch `fix/jest-suite-stale`)
+## Test suite state (repaired 2026-08-18, branch `fix/jest-suite-stale`, PR #100)
 
 - Jest unit tests run REAL Realm (Node binding) — storage-setup pattern lives in `src/store/__tests__/utils/index.ts`; services-level suites can boot a real store with `new DataStorage(); await storage.initialize()` + `DataStorage.wipe()/close()` in afterAll (see repaired `LinkingService.test.ts`). Native modules (VaultManagerModule etc.) come from `src/__mocks__/react-native.ts`; service mocks live in `src/services/__mocks__/` (activate with `jest.mock('@services/NetworkService')` / `('@services/LedgerService')`).
 - `npm test` green as of repair: 114 suites passed, 2 pre-existing `describe.skip` (Button, ledger objects base), 720 tests. Full run ~1 min with coverage.
 - A test that throws inside an un-awaited async service handler kills the whole Node runner (unhandled rejection, Node 24) — one bad suite can abort `npm test` mid-run and mask everything after it. Inventory per-suite when that happens.
 - Common staleness patterns fixed (recognize these when they reappear): Amount-type getters now emit `mpt_issuance_id: undefined` for non-native amounts (`parser/fields/Amount.ts`) breaking `toStrictEqual`; OfferCreate `OfferSequence` no longer falls back to `Sequence` (commit b86fccc0) so fixtures without a real OfferSequence parse as undefined and lose the "will also cancel" description line; credential tx descriptions are now implemented (note trailing space in `theCredentialTypeIs` locale string); overlay options gained `statusBar`; `ApiError` message is now `API error (non 200) …`; `StyleService.select()` returns an unresolved `$({...})` marker under Jest so snapshot colors can render as `undefined` (test-env artifact, not an app bug).
 - ESLint and `tsc --noEmit` both EXCLUDE test files (`**/*.test.ts` in tsconfig exclude, `__tests__` eslint-ignored); ts-jest runs `isolatedModules` (transpile-only) — Jest execution is the only gate on test code.
-- Detox e2e (`e2e/`): Detox 20.32.0 + cucumber-js 10.3.1, iOS sim (iPhone 16 Pro, Release xcodebuild) via `make test-e2e`. Not exercised in a long time: `.github/workflows/*.yml` (unit AND e2e) trigger only on `master`/`develop` while the repo branch is `main` — CI test gates effectively never fire; `e2e/helpers/simulator.js` still filters device logs on `process == "XUMM"` (binary is now Xaman) so simulator.log capture is dead; features reference `xumm.app` URLs (still valid deeplink hosts). Requires a mac with full Release sim build; runtime state unverified.
+
+## Detox e2e (REVIVED locally 2026-08-18, branch `fix/e2e-local-run`, PR #101)
+
+44/44 scenarios, 542 steps green in ~12 min. Detox 20.32.0 + cucumber-js 10.3.1, Release sim build.
+
+**Run locally:**
+```
+xcrun simctl create "Xaman-e2e" "iPhone 16 Pro"   # once
+DETOX_CONFIGURATION=ios.simulator.local+xaman.ios make test-e2e
+DETOX_CONFIGURATION=ios.simulator.local+xaman.ios make retest-e2e   # rerun without rebuild
+```
+
+Key knowledge:
+- **Release sim builds hang on splash without the `TARGET_IPHONE_SIMULATOR` exemption in `DeviceUtils.m` `isJailBroken`** — sim sees host FS (`/bin/bash`), path check flags jailbroken, `app.tsx checkup()` silently never resolves. Debug builds skip via NODE_ENV, which is why dev sims never showed this.
+- The `ios.simulator.local` detox device targets the dedicated `Xaman-e2e` sim by name so e2e never wipes the dev simulator's app state; CI config (`ios.simulator`) untouched.
+- Scenarios use the real Xahau testnet faucet (`xahau-test.net/newcreds`, per-IP rate limited — fixtures retry with backoff) and real backend device registration; the suite needs network. Activation is verified on-ledger before the step passes.
+- The cucumber adapter force-stops everything after the first failure — only the FIRST failure in a run log is meaningful.
+- App-flow changes absorbed into features: DegenMode (Safe/Degen) step on first account generate; activated accounts show the native XAH row (anchor on `account-native-balance`, spendable balance e.g. `99`) instead of `tokens-list-empty-view`; zero-balance trustline removal goes straight to review (no "Yes, I'm sure" alert — only the dust path prompts).
+- Detox URL blacklist must include both `.*xumm.app.*` and `.*xaman.app.*` (backend long-polls stall Detox sync otherwise).
+- `.github/workflows/*.yml` (unit AND e2e) still trigger only on `master`/`develop` while the repo branch is `main` — CI test gates never fire (deliberately left alone for now).
 
 ## Release-cycle git flow (current: update/5.2.6)
 
-feature/fix branch off main → PR on WietseWind fork targeting `update/5.2.6` → Wietse tests on device + approves → merge PR into update branch. At end of cycle, `update/5.2.6` merges to main as a whole. First merged: PR #99 (fix #96, template QR network detection).
+feature/fix branch off main → PR on WietseWind fork targeting `update/5.2.6` → Wietse tests on device + approves → merge PR into update branch. At end of cycle, `update/5.2.6` merges to main as a whole. First merged: PR #99 (fix #96, template QR network detection). Open: PR #100 (jest repair), PR #101 (e2e revival).
 
 `UPDATES.md` (repo root, committed): per-version table of issue → PR → branch → change; update on every PR merged into the update branch.
