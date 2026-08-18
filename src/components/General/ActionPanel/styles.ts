@@ -24,6 +24,11 @@ const styles = StyleService.create({
         right: 0,
         backgroundColor: '$darkGrey',
     },
+    panel: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+    },
     panelHeader: {
         alignItems: 'center',
         marginBottom: 20,

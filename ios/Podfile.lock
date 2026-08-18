@@ -160,8 +160,6 @@ PODS:
     - hermes-engine/Pre-built (= 0.74.2)
   - hermes-engine/Pre-built (0.74.2)
   - HMSegmentedControl (1.5.6)
-  - Interactable (2.0.1):
-    - React
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -1106,8 +1104,6 @@ PODS:
     - React-Core
   - react-native-camera/RN (4.2.1):
     - React-Core
-  - react-native-device-brightness (1.2.7):
-    - React
   - react-native-netinfo (11.3.2):
     - React-Core
   - react-native-sdk (7.1.0):
@@ -1396,7 +1392,6 @@ DEPENDENCIES:
   - GoogleDataTransport
   - GoogleUtilities
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
-  - Interactable (from `../node_modules/react-native-interactable`)
   - nanopb
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1425,7 +1420,6 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-camera (from `../node_modules/react-native-camera`)
-  - "react-native-device-brightness (from `../node_modules/@adrianso/react-native-device-brightness`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - "react-native-sdk (from `../node_modules/@veriff/react-native-sdk`)"
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -1497,8 +1491,6 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-06-03-RNv0.74.2-bb1e74fe1e95c2b5a2f4f9311152da052badc2bc
-  Interactable:
-    :path: "../node_modules/react-native-interactable"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1549,8 +1541,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   react-native-camera:
     :path: "../node_modules/react-native-camera"
-  react-native-device-brightness:
-    :path: "../node_modules/@adrianso/react-native-device-brightness"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-sdk:
@@ -1639,7 +1629,6 @@ SPEC CHECKSUMS:
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   hermes-engine: 01d3e052018c2a13937aca1860fbedbccd4a41b7
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
-  Interactable: 411887c89fa16ac41f8e7898aca06dcad55e5f22
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
@@ -1668,7 +1657,6 @@ SPEC CHECKSUMS:
   React-logger: 29fa3e048f5f67fe396bc08af7606426d9bd7b5d
   React-Mapbuffer: bf56147c9775491e53122a94c423ac201417e326
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
-  react-native-device-brightness: 886cfbfb49a32b6de4ccfc1f720776dc5f381d24
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-sdk: f5e5134a8855b4b6d7e923c8332d236a5fd814b2
   React-nativeconfig: 9f223cd321823afdecf59ed00861ab2d69ee0fc1
@@ -1706,6 +1694,6 @@ SPEC CHECKSUMS:
   VeriffSDK: 9c4e31693dfe772af8553209c4a6543bffc75d24
   Yoga: ae3c32c514802d30f687a04a6a35b348506d411f
 
-PODFILE CHECKSUM: f947ef6218c1db942687c4ffe318679d03d75520
+PODFILE CHECKSUM: 77141f9e8e501eb3cf9516c2602c7d28ca3c77eb
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.14.3

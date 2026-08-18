@@ -11,7 +11,6 @@ LIBS_REQUIRING_POD_INSTALL=(
     "@veriff/react-native-sdk"
     "react-native"
     "react-native-camera"
-    "react-native-interactable"
     "react-native-navigation"
     "realm"
     "tangem-sdk-react-native"
