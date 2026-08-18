@@ -41,7 +41,7 @@ Feature: Generate Account
     Scenario: Activate Account
         Given I should see 'not-activated-account-container'
         Then I activate the account
-        Then I should wait 20 sec to see 'tokens-list-empty-view'
+        Then I should wait 30 sec to see 'account-native-balance'
         Given I should see '99' in 'account-native-balance'
 
     Scenario: Test signing by adding a asset
@@ -100,7 +100,7 @@ Feature: Generate Account
     Scenario: Activate Account
         Given I should see 'not-activated-account-container'
         Then I activate the account
-        Then I should wait 20 sec to see 'tokens-list-empty-view'
+        Then I should wait 30 sec to see 'account-native-balance'
         Given I should see '99' in 'account-native-balance'
 
     Scenario: Test signing by adding a asset
