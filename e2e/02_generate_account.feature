@@ -7,6 +7,8 @@ Feature: Generate Account
         Then I tap 'add-account-button'
         Given I should see 'account-add-screen'
         Then I tap 'account-generate-button'
+        Given I should see 'account-import-secret-type-view'
+        Then I tap 'next-button'
         Given I should see 'account-generate-explanation-private-view'
         Then I tap 'next-button'
         Given I should see 'account-generate-show-private-view'
