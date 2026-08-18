@@ -186,7 +186,7 @@ A recent example (`CronSet`) touches exactly these files:
 
 ## Detox e2e (REVIVED locally 2026-08-18, branch `fix/e2e-local-run`, PR #101)
 
-44/44 scenarios, 542 steps green in ~12 min. Detox 20.32.0 + cucumber-js 10.3.1, Release sim build.
+49/49 scenarios, 567 steps green in ~12 min — incl. `07_transaction_template.feature` (PR #106) covering #99 template deeplinks: direct sign (steps through the non-curated `new-trust-line-alert-overlay`), unknown/missing NetworkID rejection, switch-network offer for known other network, non-TrustSet rejection. Detox 20.32.0 + cucumber-js 10.3.1, Release sim build. Note: `theQRIsNotWhatWeExpect` lives under the `scan.` i18n scope (a `global.` reference shows a missing-translation placeholder — fixed in #106).
 
 **Run locally:**
 ```
