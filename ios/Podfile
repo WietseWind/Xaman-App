@@ -47,8 +47,16 @@ target 'Xaman' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
-    installer.pods_project.build_configurations.each do |config|
-        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    # Apple Silicon + Xcode 16/26: do not force x86_64 simulator slices.
+    # TangemSdk exposes an internal C module (TangemSdk_secp256k1) that Xcode's
+    # explicit Swift modules cannot resolve when RNTangemSdk imports TangemSdk.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
+        if ['RNTangemSdk', 'TangemSdk'].include?(target.name)
+          config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
+        end
+      end
     end
   end
 end
