@@ -834,7 +834,7 @@ class ScanModal extends Component<Props, State> {
         }
 
         return (
-            <View style={styles.container}>
+            <View testID="scan-modal" style={styles.container}>
                 <RNCamera
                     style={AppStyles.flex1}
                     type={RNCamera.Constants.Type.back}
@@ -872,6 +872,7 @@ class ScanModal extends Component<Props, State> {
                     <View style={AppStyles.centerSelf}>
                         <Button
                             numberOfLines={1}
+                            testID="scan-clipboard-button"
                             onPress={this.checkClipboardContent}
                             label={Localize.t('scan.importFromClipboard')}
                             // icon="IconClipboard"
@@ -884,6 +885,7 @@ class ScanModal extends Component<Props, State> {
                         <Spacer size={15} />
                         <Button
                             numberOfLines={1}
+                            testID="scan-close-button"
                             activeOpacity={0.9}
                             label={Localize.t('global.close')}
                             onPress={this.onClose}

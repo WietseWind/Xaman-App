@@ -1,5 +1,5 @@
 .EXPORT_ALL_VARIABLES:
-.PHONY: clean validate-style start stop run run-ios run-android build build-ios build-android lear test help test-e2e test-e2e-local test-e2e-smoke verify-step
+.PHONY: clean validate-style start stop run run-ios run-android build build-ios build-android lear test help test-e2e test-e2e-local test-e2e-smoke verify-step ios-by-id
 
 OS := $(shell sh -c 'uname -s 2>/dev/null')
 VARIANT ?= Debug
@@ -134,6 +134,11 @@ test-e2e-smoke: ## Onboarding + account-generate e2e on Xaman-e2e (needs a prior
 
 retest-e2e:  ## Runs e2e tests
 	@DETOX_LOGLEVEL=trace DETOX_REUSE=yes npx cucumber-js ./e2e test;
+
+# Attach to the booted iPhone 17 Pro Debug app (Xcode Run). First call installs WDA.
+# Example: make ios-by-id ARGS='tap scan-qr-button'
+ios-by-id: ## Detox-by-testID on the live iOS Debug sim (no reinstall)
+	@DETOX_CONFIGURATION=ios.simulator.dev+xaman.ios.debug node scripts/ios-by-id.js $(ARGS)
 
 # Gate for each incremental 16kb/native step. Does not launch or run e2e.
 verify-step: ## Typecheck + Debug compile Android arm64 and iOS simulator
