@@ -235,7 +235,7 @@ class ScanModal extends Component<Props, State> {
     };
 
     handleTransactionTemplate = (parsed: any) => {
-        let errorMsg = Localize.t('global.theQRIsNotWhatWeExpect');
+        let errorMsg = Localize.t('scan.theQRIsNotWhatWeExpect');
 
         try {
             const str = Buffer.from(String(parsed?.jsonhex || ''), 'hex').toString('utf-8');
