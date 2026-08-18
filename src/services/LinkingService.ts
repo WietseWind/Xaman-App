@@ -433,12 +433,25 @@ class LinkingService {
             const str = Buffer.from(String(parsed?.jsonhex || ''), 'hex').toString('utf-8');
             const json = JSON.parse(str);
 
-            if (
-                json?.NetworkID !== NetworkService.getNetwork().networkId ||
-                (NetworkService.getNetwork().networkId > 1024 && !json?.NetworkID)
-            ) {
-                errorMsg = Localize.t('payload.payloadForceNetworkError');
-                throw new Error('Invalid network');
+            // resolve the network this template is intended for, without NetworkID the template
+            // targets XRPL networks (id <= 1024) as these cannot include NetworkID in txn
+            let templateNetwork;
+
+            if (typeof json?.NetworkID === 'undefined') {
+                if (NetworkService.getNetwork().networkId > 1024) {
+                    errorMsg = Localize.t('payload.payloadForceNetworkError');
+                    throw new Error('Invalid network');
+                }
+            } else {
+                templateNetwork = NetworkRepository.findOne({ networkId: json.NetworkID });
+
+                if (!templateNetwork) {
+                    errorMsg = Localize.t('payload.payloadForceNetworkError');
+                    throw new Error('Invalid network');
+                }
+
+                // NetworkID is populated at signing time based on the connected network
+                delete json.NetworkID;
             }
 
             if (json?.TransactionType === 'TrustSet') {
@@ -451,6 +464,11 @@ class LinkingService {
                         nativeAsset: NetworkService.getNativeAsset(),
                     }),
                 );
+
+                if (templateNetwork) {
+                    // review flow will offer switching if not connected to the declared network
+                    payload.meta.force_network = templateNetwork.key;
+                }
 
                 setTimeout(() => {
                     Navigator.showModal(
