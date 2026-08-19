@@ -85,13 +85,17 @@ const ALERT_TAPS = {
     "Yes, I'm sure": [['832', '1383'], ['832', '1530']],
 };
 
-const tapAndroidAlertButton = async (label, serial) => {
+const tapAndroidAlertButton = async (label, serial, click) => {
     const adbSerial = resolveSerial(serial);
     await sleep(800);
     const points = ALERT_TAPS[label] || ALERT_TAPS.OK;
     for (let i = 0; i < points.length; i += 1) {
         const [x, y] = points[i];
-        execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', x, y]);
+        if (typeof click === 'function') {
+            await click(Number(x), Number(y));
+        } else {
+            execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', String(x), String(y)]);
+        }
         await sleep(400);
     }
 };
