@@ -80,19 +80,19 @@ const waitForAndroidAlertText = async () => {
 // RN Alert is a native AlertDialog. Dump is SIGKILL'd under Detox.
 // AVD 1080x2400. Short dialogs ~y=1380. Tall downgrade ~y=1530. Tap both for Yes.
 const ALERT_TAPS = {
-    OK: [['900', '1380']],
+    OK: [['900', '1380'], ['900', '1380']],
     Cancel: [['585', '1383'], ['585', '1530']],
     "Yes, I'm sure": [['832', '1383'], ['832', '1530']],
 };
 
 const tapAndroidAlertButton = async (label, serial) => {
     const adbSerial = resolveSerial(serial);
-    await sleep(400);
+    await sleep(800);
     const points = ALERT_TAPS[label] || ALERT_TAPS.OK;
     for (let i = 0; i < points.length; i += 1) {
         const [x, y] = points[i];
         execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', x, y]);
-        await sleep(350);
+        await sleep(400);
     }
 };
 
