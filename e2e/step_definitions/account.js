@@ -9,6 +9,7 @@ const {
     generateFamilySeed,
     generateMnemonic,
 } = require('../helpers/fixtures');
+const { dismissKeyboard } = require('../helpers/keyboard');
 
 Then('I write down secret numbers', async () => {
     this.numbers = [...Array(8)].map(() => Array(6));
@@ -60,7 +61,13 @@ Then('I generate testnet account', async () => {
 });
 
 Then('I enter the address in the input', async () => {
-    await element(by.id('address-input')).typeText(`${this.address}\n`);
+    const input = element(by.id('address-input'));
+    await input.replaceText(this.address);
+    try {
+        await input.tapReturnKey();
+    } catch (e) {
+        await dismissKeyboard();
+    }
 });
 
 Then('I generate new family seed', async () => {
@@ -68,7 +75,13 @@ Then('I generate new family seed', async () => {
 });
 
 Then('I enter my seed in the input', async () => {
-    await element(by.id('seed-input')).typeText(`${this.seed}\n`);
+    const input = element(by.id('seed-input'));
+    await input.replaceText(this.seed);
+    try {
+        await input.tapReturnKey();
+    } catch (e) {
+        await dismissKeyboard();
+    }
 });
 
 Then('I generate new mnemonic', async () => {
@@ -76,9 +89,12 @@ Then('I generate new mnemonic', async () => {
 });
 
 Then('I enter my mnemonic', async () => {
+    // typeText + return advances to the next word field. replaceText leaves
+    // later rows under the keyboard and they fail Detox visibility.
     for (let i = 0; i < 24; i++) {
         await element(by.id(`word-${i}-input`)).typeText(`${this.mnemonic[i]}\n`);
     }
+    await dismissKeyboard();
 });
 
 Then('I tap my account in the list', async () => {

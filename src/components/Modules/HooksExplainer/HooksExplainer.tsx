@@ -57,7 +57,9 @@ class HooksExplainer extends Component<Props, State> {
         };
     }
 
-    getSource = (returnParamsOnly = false) => {
+    getSource(returnParamsOnly: true): Record<string, unknown>;
+    getSource(returnParamsOnly?: false): { uri: string; headers: { 'User-Agent': string } };
+    getSource(returnParamsOnly = false) {
         const { account, payload, transaction, origin } = this.props;
 
         const params = {
@@ -112,7 +114,7 @@ class HooksExplainer extends Component<Props, State> {
                 // 'Content-Type': 'application/json',
             },
         };
-    };
+    }
 
     openBrowserLink = (url: string) => {
         if (!url) {

@@ -1,11 +1,34 @@
 const { Given, Then } = require('@cucumber/cucumber');
 const { waitFor, expect, element, by, device } = require('detox');
+const { dismissKeyboard } = require('../helpers/keyboard');
 
 Then('I tap {string}', async (buttonId) => {
-    await waitFor(element(by.id(buttonId)))
-        .toBeVisible()
-        .withTimeout(5000);
-    await element(by.id(buttonId)).tap();
+    // Finish dismisses the add-account modal onto Home. Tapping tab-Home then
+    // fails iOS 26 visibility (selected _UITabButton clipped). Same reason
+    // 03_import secret-numbers already comments this step out.
+    if (buttonId === 'tab-Home') {
+        try {
+            await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(1500);
+            return;
+        } catch (e) {
+            // not on home yet, tap the tab
+        }
+    }
+
+    const btn = element(by.id(buttonId));
+    // toExist: Next can be fully covered by the iOS keyboard and fail toBeVisible.
+    await waitFor(btn).toExist().withTimeout(5000);
+    try {
+        await btn.tap();
+    } catch (e) {
+        if (String(buttonId).startsWith('tab-')) {
+            await btn.tap({ x: 8, y: 8 });
+            return;
+        }
+        await dismissKeyboard();
+        await waitFor(btn).toExist().withTimeout(3000);
+        await btn.tap();
+    }
 });
 
 Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, buttonId) => {
@@ -31,7 +54,14 @@ Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, bu
 });
 
 Then('I enter {string} in {string}', async (value, textInputId) => {
-    await element(by.id(textInputId)).typeText(`${value}\n`);
+    const input = element(by.id(textInputId));
+    await waitFor(input).toBeVisible().withTimeout(5000);
+    await input.replaceText(value);
+    try {
+        await input.tapReturnKey();
+    } catch (e) {
+        await dismissKeyboard();
+    }
 });
 
 Given('I should have {string}', async (elementId) => {

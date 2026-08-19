@@ -1,5 +1,6 @@
 const { Then } = require('@cucumber/cucumber');
-const { expect, element, by } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { dismissKeyboard } = require('../helpers/keyboard');
 
 let passcode = '167349';
 
@@ -37,10 +38,27 @@ Then('I type my new passcode', async () => {
     await element(by.id(`${passcode[5]}-key`)).tap();
 });
 
+const typeIntoField = async (inputId, value) => {
+    const field = element(by.id(inputId));
+    await waitFor(field).toBeVisible().withTimeout(5000);
+    try {
+        await field.tap();
+    } catch (e) {
+        // iOS 26 keyboard accessory can steal the default hit point
+        await field.tap({ x: 8, y: 8 });
+    }
+    await field.replaceText(value);
+    try {
+        await field.tapReturnKey();
+    } catch (e) {
+        await dismissKeyboard();
+    }
+};
+
 Then('I enter my passphrase in {string}', async (input) => {
-    await element(by.id(input)).typeText(`${passphrase}\n`);
+    await typeIntoField(input, passphrase);
 });
 
 Then('I enter my new passphrase in {string}', async (input) => {
-    await element(by.id(input)).typeText(`${newPassphrase}\n`);
+    await typeIntoField(input, newPassphrase);
 });
