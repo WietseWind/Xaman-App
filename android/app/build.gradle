@@ -206,6 +206,8 @@ android {
     packagingOptions {
         // NDK 28 STL vs RN 0.74's r26 copy — pick one so the merge does not fail.
         pickFirst '**/libc++_shared.so'
+        // ReactAndroid AAR still embeds fbjni 0.6.0 (4KB). Prefer Maven 0.7.0.
+        pickFirst '**/libfbjni.so'
         jniLibs {
             useLegacyPackaging = false
         }
@@ -229,14 +231,32 @@ def ndk28LibcxxForAbi = { String abi ->
     return prebuilt ? file("$prebuilt/sysroot/usr/lib/$triple/libc++_shared.so") : null
 }
 
+def fbjni07Aar = file("${projectDir}/libs/fbjni-0.7.0.aar")
+def fbjni07ExtractDir = file("${buildDir}/fbjni-0.7.0-jni")
+
 afterEvaluate {
     tasks.matching { it.name ==~ /merge.*NativeLibs/ }.configureEach { task ->
         task.doLast {
+            if (!fbjni07Aar.exists()) {
+                throw new GradleException("Missing ${fbjni07Aar}. Copy Maven com.facebook.fbjni:fbjni:0.7.0 into android/app/libs/")
+            }
+            copy {
+                from zipTree(fbjni07Aar)
+                include 'jni/**/libfbjni.so'
+                into fbjni07ExtractDir
+            }
             task.outputs.files.each { out ->
                 fileTree(out).matching { include '**/libc++_shared.so' }.each { dest ->
                     def src = ndk28LibcxxForAbi(dest.parentFile.name)
                     if (src == null || !src.exists()) {
                         throw new GradleException("NDK 28 libc++_shared.so missing for ${dest.parentFile.name}")
+                    }
+                    dest.bytes = src.bytes
+                }
+                fileTree(out).matching { include '**/libfbjni.so' }.each { dest ->
+                    def src = file("${fbjni07ExtractDir}/jni/${dest.parentFile.name}/libfbjni.so")
+                    if (!src.exists()) {
+                        throw new GradleException("fbjni 0.7.0 libfbjni.so missing for ${dest.parentFile.name}")
                     }
                     dest.bytes = src.bytes
                 }
@@ -251,7 +271,8 @@ dependencies {
     releaseImplementation files('libs/ReactAndroid-release.aar')
     
     // React Native Core Dependencies (that your AAR might be missing)
-    implementation 'com.facebook.fbjni:fbjni:0.5.1'
+    // 0.7.0 is the first Maven fbjni with 16KB-aligned libfbjni.so (fbjni#97).
+    implementation 'com.facebook.fbjni:fbjni:0.7.0'
     implementation 'com.facebook.soloader:soloader:0.10.5'
     implementation 'com.facebook.yoga:proguard-annotations:1.19.0'
     

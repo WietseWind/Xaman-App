@@ -11,6 +11,8 @@
 # Copy into android/app/libs/ (gitignored):
 #   ReactAndroid-debug.aar / ReactAndroid-release.aar
 #   hermes-engine-debug.aar / hermes-engine-release.aar
+#   fbjni-0.7.0.aar  (Maven com.facebook.fbjni:fbjni:0.7.0 — first 16KB libfbjni.so;
+#                     merge hook overwrites the 4KB copy still inside ReactAndroid)
 # Do NOT touch CryptoModule / Vault / global.ts (native entropy override).
 
 git clone https://github.com/facebook/react-native.git
