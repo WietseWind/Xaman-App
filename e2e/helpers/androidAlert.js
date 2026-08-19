@@ -78,15 +78,13 @@ const waitForAndroidAlertText = async () => {
 };
 
 // RN Alert is a native AlertDialog. Espresso cannot see it. uiautomator dump
-// is SIGKILL'd while instrumentation is attached. Use key events instead.
+// is SIGKILL'd while instrumentation is attached. ENTER does not hit the
+// Material OK on the right. Tap the button row on AVD 1080x2400.
 const tapAndroidAlertButton = async (label, serial) => {
     const adbSerial = resolveSerial(serial);
     await sleep(400);
-    if (label === 'Cancel') {
-        execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'keyevent', '4']);
-        return;
-    }
-    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'keyevent', '66']);
+    const x = label === 'Cancel' ? '220' : '900';
+    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', x, '1380']);
 };
 
 module.exports = { tapAndroidAlertButton, waitForAndroidAlertText };
