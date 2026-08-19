@@ -5,6 +5,8 @@ const sleep = (ms) =>
         setTimeout(resolve, ms);
     });
 
+const resolveSerial = (serial) => process.env.ANDROID_SERIAL || serial || 'emulator-5554';
+
 const dumpWindows = (serial) => {
     const out = execFileSync('adb', ['-s', serial, 'exec-out', 'uiautomator', 'dump', '/dev/tty'], {
         encoding: 'utf8',
@@ -12,9 +14,20 @@ const dumpWindows = (serial) => {
     });
     const start = out.indexOf('<hierarchy');
     if (start < 0) {
-        throw new Error(`uiautomator dump failed: ${out.slice(0, 200)}`);
+        throw new Error(`uiautomator dump failed: ${out.slice(0, 240)}`);
     }
     return out.slice(start);
+};
+
+const boundsFromTag = (tag) => {
+    const bounds = tag.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+    if (!bounds) {
+        return null;
+    }
+    return {
+        x: Math.floor((Number(bounds[1]) + Number(bounds[3])) / 2),
+        y: Math.floor((Number(bounds[2]) + Number(bounds[4])) / 2),
+    };
 };
 
 const boundsForText = (xml, label) => {
@@ -22,38 +35,69 @@ const boundsForText = (xml, label) => {
     for (let i = 0; i < nodes.length; i += 1) {
         const tag = nodes[i];
         const text = (tag.match(/text="([^"]*)"/) || [])[1];
-        const bounds = tag.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
-        if (text === label && bounds) {
-            return {
-                x: Math.floor((Number(bounds[1]) + Number(bounds[3])) / 2),
-                y: Math.floor((Number(bounds[2]) + Number(bounds[4])) / 2),
-            };
+        if (text === label) {
+            const point = boundsFromTag(tag);
+            if (point) {
+                return point;
+            }
+        }
+    }
+    return null;
+};
+
+const findAlertPoint = (xml, label) => {
+    const byText = boundsForText(xml, label);
+    if (byText) {
+        return byText;
+    }
+    // Positive dialog action when the label is the default confirm.
+    if (label === 'OK' || label === "Yes, I'm sure") {
+        const nodes = xml.match(/<node [^>]*>/g) || [];
+        for (let i = 0; i < nodes.length; i += 1) {
+            const tag = nodes[i];
+            if (tag.includes('resource-id="android:id/button1"')) {
+                return boundsFromTag(tag);
+            }
+        }
+    }
+    if (label === 'Cancel') {
+        const nodes = xml.match(/<node [^>]*>/g) || [];
+        for (let i = 0; i < nodes.length; i += 1) {
+            const tag = nodes[i];
+            if (tag.includes('resource-id="android:id/button2"')) {
+                return boundsFromTag(tag);
+            }
         }
     }
     return null;
 };
 
 const waitForAndroidAlertText = async (label, serial) => {
+    const adbSerial = resolveSerial(serial);
+    let lastError = '';
     for (let i = 0; i < 12; i += 1) {
         try {
-            if (boundsForText(dumpWindows(serial), label)) {
+            if (findAlertPoint(dumpWindows(adbSerial), label)) {
                 return;
             }
         } catch (e) {
-            // dump can fail while the dialog is opening
+            lastError = e.message;
         }
         await sleep(400);
     }
-    throw new Error(`Android alert text "${label}" not found`);
+    throw new Error(`Android alert text "${label}" not found (${adbSerial}) ${lastError}`);
 };
 
 // RN Alert is a native AlertDialog. Espresso (Detox by.text) does not see it.
 const tapAndroidAlertButton = async (label, serial) => {
+    const adbSerial = resolveSerial(serial);
     let point = null;
-    for (let i = 0; i < 10; i += 1) {
+    let lastError = '';
+    for (let i = 0; i < 12; i += 1) {
         try {
-            point = boundsForText(dumpWindows(serial), label);
+            point = findAlertPoint(dumpWindows(adbSerial), label);
         } catch (e) {
+            lastError = e.message;
             point = null;
         }
         if (point) {
@@ -62,9 +106,9 @@ const tapAndroidAlertButton = async (label, serial) => {
         await sleep(400);
     }
     if (!point) {
-        throw new Error(`Android alert button "${label}" not found`);
+        throw new Error(`Android alert button "${label}" not found (${adbSerial}) ${lastError}`);
     }
-    execFileSync('adb', ['-s', serial, 'shell', 'input', 'tap', String(point.x), String(point.y)]);
+    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', String(point.x), String(point.y)]);
 };
 
 module.exports = { tapAndroidAlertButton, waitForAndroidAlertText };
