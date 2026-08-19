@@ -6,12 +6,15 @@ const sleep = (ms) =>
     });
 
 const dumpWindows = (serial) => {
-    execFileSync('adb', ['-s', serial, 'shell', 'uiautomator', 'dump', '/sdcard/uidump.xml'], {
-        stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    return execFileSync('adb', ['-s', serial, 'shell', 'cat', '/sdcard/uidump.xml'], {
+    const out = execFileSync('adb', ['-s', serial, 'exec-out', 'uiautomator', 'dump', '/dev/tty'], {
         encoding: 'utf8',
+        timeout: 8000,
     });
+    const start = out.indexOf('<hierarchy');
+    if (start < 0) {
+        throw new Error(`uiautomator dump failed: ${out.slice(0, 200)}`);
+    }
+    return out.slice(start);
 };
 
 const boundsForText = (xml, label) => {
