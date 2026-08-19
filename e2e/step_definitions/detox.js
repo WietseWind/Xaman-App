@@ -124,6 +124,7 @@ Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
         await device.disableSynchronization();
         try {
+            await new Promise((resolve) => setTimeout(resolve, 400));
             await tapAndroidAlertButton(label, device.id);
         } finally {
             await device.enableSynchronization();
