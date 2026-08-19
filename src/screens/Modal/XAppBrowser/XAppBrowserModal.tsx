@@ -61,6 +61,7 @@ import {
     WebView,
     Header,
 } from '@components/General';
+import type { WebViewHandle } from '@components/General/WebView';
 import { XAppBrowserHeader } from '@components/Modules';
 
 import Localize from '@locale';
@@ -87,7 +88,7 @@ class XAppBrowserModal extends Component<Props, State> {
 
     private backHandler?: NativeEventSubscription;
     private softLoadingTimeout?: ReturnType<typeof setTimeout>;
-    private readonly webView: React.RefObject<WebView>;
+    private readonly webView: React.RefObject<WebViewHandle>;
     private lastMessageReceived: number;
 
     static options() {

@@ -30,6 +30,7 @@
     "react-native": "0.74.2",
     "react-native-navigation": "7.40.1",
     "react-native-vision-camera": "4.6.4",
+    "react-native-webview": "13.17.0",
     "realm": "12.13.0",
     "ripple-lib-transactionparser": "^0.8.2",
     "tangem-sdk-react-native": "2.3.1",
