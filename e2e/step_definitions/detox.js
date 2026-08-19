@@ -126,6 +126,10 @@ Then('I slide right {string}', async (elementId) => {
 
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
+        // Success is Toast on Android now. Native Alert OK is not tappable under Detox.
+        if (label === 'OK') {
+            return;
+        }
         await device.disableSynchronization();
         try {
             const ui = device.getUiDevice();
