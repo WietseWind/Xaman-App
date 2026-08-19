@@ -1,6 +1,7 @@
 const { Given, Then } = require('@cucumber/cucumber');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
+const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
 
 Then('I tap {string}', async (buttonId) => {
     // Finish dismisses the add-account modal onto Home. Tapping tab-Home then
@@ -121,18 +122,20 @@ Then('I slide right {string}', async (elementId) => {
 
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
-        // by.text + by.type(Button) never matches: Detox text matcher is TextView.
-        const btn = element(by.text(label));
-        await waitFor(btn).toExist().withTimeout(5000);
-        await btn.tap();
+        await tapAndroidAlertButton(label, device.id);
         return;
     }
     await element(by.label(label).and(by.type('_UIAlertControllerActionView'))).tap();
 });
 
 Given('I should see alert with content {string}', async (title) => {
-    const matcher = device.getPlatform() === 'android' ? by.text(title) : by.label(title);
-    await waitFor(element(matcher)).toBeVisible().withTimeout(5000);
+    if (device.getPlatform() === 'android') {
+        await waitForAndroidAlertText(title, device.id);
+        return;
+    }
+    await waitFor(element(by.label(title)))
+        .toBeVisible()
+        .withTimeout(5000);
 });
 
 Then('I send the app to the background', async () => {
