@@ -121,7 +121,10 @@ Then('I slide right {string}', async (elementId) => {
 
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
-        await element(by.text(label).and(by.type('android.widget.Button'))).tap();
+        // by.text + by.type(Button) never matches: Detox text matcher is TextView.
+        const btn = element(by.text(label));
+        await waitFor(btn).toExist().withTimeout(5000);
+        await btn.tap();
         return;
     }
     await element(by.label(label).and(by.type('_UIAlertControllerActionView'))).tap();
