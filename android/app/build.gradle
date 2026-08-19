@@ -168,6 +168,7 @@ android {
             minifyEnabled true
             shrinkResources false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            testProguardFiles 'proguard-test.pro'
             manifestPlaceholders = [excludeSystemAlertWindowPermission: "true"]
             /* Add the firebaseCrashlytics extension (by default,
             * it's disabled to improve build speeds) and set
@@ -351,7 +352,17 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
 
     // Test dependencies
+    // androidTest does not inherit the RN Firebase BOM, so unversioned ktx deps fail to resolve.
+    androidTestImplementation platform('com.google.firebase:firebase-bom:33.1.2')
     androidTestImplementation 'com.wix:detox:+'
+}
+
+// Release minifyEnabled=true also minifies the instrumentation APK and
+// strips JUnit (NoClassDefFoundError: RunListener). Do not shrink that APK.
+tasks.configureEach { task ->
+    if (task.name == 'minifyReleaseAndroidTestWithR8') {
+        task.enabled = false
+    }
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
