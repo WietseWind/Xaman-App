@@ -255,7 +255,12 @@ class SwitchAccountOverlay extends Component<Props, State> {
         if (!accounts || !contentHeight) return null;
 
         return (
-            <ActionPanel height={contentHeight} onSlideDown={this.onPanelSlideDown} ref={this.actionPanelRef}>
+            <ActionPanel
+                testID="switch-account-overlay"
+                height={contentHeight}
+                onSlideDown={this.onPanelSlideDown}
+                ref={this.actionPanelRef}
+            >
                 <View style={[
                     AppStyles.row,
                     AppStyles.centerAligned,

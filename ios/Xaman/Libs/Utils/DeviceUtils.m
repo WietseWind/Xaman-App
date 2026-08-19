@@ -50,9 +50,44 @@ RCT_EXPORT_MODULE();
 
 - (NSDictionary *) getLayoutInsets
 {
+  UIWindow *window = nil;
+  if (@available(iOS 13.0, *)) {
+    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+      if (scene.activationState != UISceneActivationStateForegroundActive) {
+        continue;
+      }
+      if (![scene isKindOfClass:[UIWindowScene class]]) {
+        continue;
+      }
+      UIWindowScene *windowScene = (UIWindowScene *)scene;
+      for (UIWindow *candidate in windowScene.windows) {
+        if (candidate.isKeyWindow) {
+          window = candidate;
+          break;
+        }
+      }
+      if (!window) {
+        window = windowScene.windows.firstObject;
+      }
+      if (window) {
+        break;
+      }
+    }
+  }
+  if (!window) {
+    window = UIApplication.sharedApplication.keyWindow;
+  }
+
+  UIEdgeInsets insets = window.safeAreaInsets;
+  // Non-notch phones still have a 20pt status bar. keyWindow is often nil
+  // at constantsToExport time on iOS 13+, which would report top=0.
+  if (insets.top < 1.0 && !UIApplication.sharedApplication.isStatusBarHidden) {
+    insets.top = 20.0;
+  }
+
   return @{
-    @"top": @(UIApplication.sharedApplication.keyWindow.safeAreaInsets.top),
-    @"bottom": @(UIApplication.sharedApplication.keyWindow.safeAreaInsets.bottom)
+    @"top": @(insets.top),
+    @"bottom": @(insets.bottom)
   };
 }
 
