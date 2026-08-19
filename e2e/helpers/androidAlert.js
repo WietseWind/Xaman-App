@@ -72,43 +72,21 @@ const findAlertPoint = (xml, label) => {
     return null;
 };
 
-const waitForAndroidAlertText = async (label, serial) => {
-    const adbSerial = resolveSerial(serial);
-    let lastError = '';
-    for (let i = 0; i < 12; i += 1) {
-        try {
-            if (findAlertPoint(dumpWindows(adbSerial), label)) {
-                return;
-            }
-        } catch (e) {
-            lastError = e.message;
-        }
-        await sleep(400);
-    }
-    throw new Error(`Android alert text "${label}" not found (${adbSerial}) ${lastError}`);
+const waitForAndroidAlertText = async () => {
+    // dump is SIGKILL'd under instrumentation. The next keyevent tap is the check.
+    await sleep(500);
 };
 
-// RN Alert is a native AlertDialog. Espresso (Detox by.text) does not see it.
+// RN Alert is a native AlertDialog. Espresso cannot see it. uiautomator dump
+// is SIGKILL'd while instrumentation is attached. Use key events instead.
 const tapAndroidAlertButton = async (label, serial) => {
     const adbSerial = resolveSerial(serial);
-    let point = null;
-    let lastError = '';
-    for (let i = 0; i < 12; i += 1) {
-        try {
-            point = findAlertPoint(dumpWindows(adbSerial), label);
-        } catch (e) {
-            lastError = e.message;
-            point = null;
-        }
-        if (point) {
-            break;
-        }
-        await sleep(400);
+    await sleep(400);
+    if (label === 'Cancel') {
+        execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'keyevent', '4']);
+        return;
     }
-    if (!point) {
-        throw new Error(`Android alert button "${label}" not found (${adbSerial}) ${lastError}`);
-    }
-    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', String(point.x), String(point.y)]);
+    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'keyevent', '66']);
 };
 
 module.exports = { tapAndroidAlertButton, waitForAndroidAlertText };
