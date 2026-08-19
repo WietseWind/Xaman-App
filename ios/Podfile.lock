@@ -1096,14 +1096,6 @@ PODS:
   - React-Mapbuffer (0.74.2):
     - glog
     - React-debug
-  - react-native-camera (4.2.1):
-    - React-Core
-    - react-native-camera/RCT (= 4.2.1)
-    - react-native-camera/RN (= 4.2.1)
-  - react-native-camera/RCT (4.2.1):
-    - React-Core
-  - react-native-camera/RN (4.2.1):
-    - React-Core
   - react-native-netinfo (11.3.2):
     - React-Core
   - react-native-sdk (7.1.0):
@@ -1376,6 +1368,12 @@ PODS:
   - SocketRocket (0.7.0)
   - TangemSdk (3.4.0)
   - VeriffSDK (7.4.0)
+  - VisionCamera (4.6.4):
+    - VisionCamera/Core (= 4.6.4)
+    - VisionCamera/React (= 4.6.4)
+  - VisionCamera/Core (4.6.4)
+  - VisionCamera/React (4.6.4):
+    - React-Core
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -1419,7 +1417,6 @@ DEPENDENCIES:
   - React-jsitracing (from `../node_modules/react-native/ReactCommon/hermes/executor/`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
-  - react-native-camera (from `../node_modules/react-native-camera`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - "react-native-sdk (from `../node_modules/@veriff/react-native-sdk`)"
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -1452,6 +1449,7 @@ DEPENDENCIES:
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNTangemSdk (from `../node_modules/tangem-sdk-react-native`)
+  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1539,8 +1537,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
-  react-native-camera:
-    :path: "../node_modules/react-native-camera"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-sdk:
@@ -1605,6 +1601,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNTangemSdk:
     :path: "../node_modules/tangem-sdk-react-native"
+  VisionCamera:
+    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1656,7 +1654,6 @@ SPEC CHECKSUMS:
   React-jsitracing: 0fa7f78d8fdda794667cb2e6f19c874c1cf31d7e
   React-logger: 29fa3e048f5f67fe396bc08af7606426d9bd7b5d
   React-Mapbuffer: bf56147c9775491e53122a94c423ac201417e326
-  react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-sdk: f5e5134a8855b4b6d7e923c8332d236a5fd814b2
   React-nativeconfig: 9f223cd321823afdecf59ed00861ab2d69ee0fc1
@@ -1692,8 +1689,9 @@ SPEC CHECKSUMS:
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   TangemSdk: d782fc8c55cb56ffdfcaf7081422e02b19f18334
   VeriffSDK: 9c4e31693dfe772af8553209c4a6543bffc75d24
+  VisionCamera: 168f46071274ce58c50adef4c82ae3367b2ba2a6
   Yoga: ae3c32c514802d30f687a04a6a35b348506d411f
 
-PODFILE CHECKSUM: 77141f9e8e501eb3cf9516c2602c7d28ca3c77eb
+PODFILE CHECKSUM: 7cc27bfd5ac987a186f29c38ed1b0ae6dca624b2
 
 COCOAPODS: 1.14.3

@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { View, Platform, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
+import { View, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
 
 import {
     Navigation,
@@ -11,7 +11,6 @@ import {
     OptionsModalPresentationStyle,
     OptionsModalTransitionStyle,
 } from 'react-native-navigation';
-import { RNCamera, GoogleVisionBarcodesDetectedEvent, BarCodeReadEvent } from 'react-native-camera';
 import { StringTypeDetector, StringDecoder, StringType, XrplDestination, PayId } from 'xumm-string-decode';
 
 import { StyleService, BackendService, NetworkService, LinkingService } from '@services';
@@ -40,6 +39,7 @@ import styles from './styles';
 
 /* types ==================================================================== */
 import { Props, State } from './types';
+import CameraScanner from './CameraScanner';
 import { TrustSet } from '@common/libs/ledger/transactions';
 import { ReviewTransactionModalProps } from '../ReviewTransaction';
 
@@ -681,26 +681,6 @@ class ScanModal extends Component<Props, State> {
         }
     };
 
-    onGoogleVisionBarcodesDetected = ({ barcodes }: GoogleVisionBarcodesDetectedEvent) => {
-        // should ba array and not empty
-        if (!Array.isArray(barcodes) || barcodes.length === 0) {
-            return;
-        }
-        // get first barcode that exist
-        const barcode = barcodes[0];
-
-        // type check
-        if (typeof barcode === 'object' && barcode?.data) {
-            this.onReadCode(barcode?.data);
-        }
-    };
-
-    onBarCodeRead = ({ data }: BarCodeReadEvent) => {
-        if (data) {
-            this.onReadCode(data);
-        }
-    };
-
     onReadCode = (data: string) => {
         const { coreSettings } = this.state;
 
@@ -838,24 +818,7 @@ class ScanModal extends Component<Props, State> {
 
         return (
             <View testID="scan-modal" style={styles.container}>
-                <RNCamera
-                    style={AppStyles.flex1}
-                    type={RNCamera.Constants.Type.back}
-                    flashMode={RNCamera.Constants.FlashMode.on}
-                    androidCameraPermissionOptions={{
-                        title: Localize.t('global.permissionToUseCamera'),
-                        message: Localize.t('global.weNeedYourPermissionToUseYourCamera'),
-                        buttonPositive: Localize.t('global.ok'),
-                        buttonNegative: Localize.t('global.cancel'),
-                    }}
-                    notAuthorizedView={this.renderNotAuthorizedView()}
-                    captureAudio={false}
-                    onGoogleVisionBarcodesDetected={
-                        Platform.OS === 'android' ? this.onGoogleVisionBarcodesDetected : undefined
-                    }
-                    onBarCodeRead={Platform.OS === 'ios' ? this.onBarCodeRead : undefined}
-                    barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
-                >
+                <CameraScanner onRead={this.onReadCode} notAuthorizedView={this.renderNotAuthorizedView()}>
                     <View style={styles.rectangleContainer}>
                         <View style={styles.topLeft} />
                         <View style={styles.topRight} />
@@ -899,7 +862,7 @@ class ScanModal extends Component<Props, State> {
                             ]}
                         />
                     </View>
-                </RNCamera>
+                </CameraScanner>
             </View>
         );
     }

@@ -10,7 +10,7 @@ LIBS_REQUIRING_POD_INSTALL=(
     "@react-native-firebase/messaging"
     "@veriff/react-native-sdk"
     "react-native"
-    "react-native-camera"
+    "react-native-vision-camera"
     "react-native-navigation"
     "realm"
     "tangem-sdk-react-native"

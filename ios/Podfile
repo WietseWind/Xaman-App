@@ -11,6 +11,10 @@ prepare_react_native_project!
 # no-ad-tracking Analytics subspec as we do not use it at all
 $RNFirebaseAnalyticsWithoutAdIdSupport = true
 
+# QR scan only — no GPS overlay and no worklets frame processors
+$VCEnableLocation = false
+$VCEnableFrameProcessors = false
+
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
