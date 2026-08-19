@@ -120,13 +120,16 @@ Then('I slide right {string}', async (elementId) => {
 });
 
 Then('I tap alert button with label {string}', async (label) => {
+    if (device.getPlatform() === 'android') {
+        await element(by.text(label).and(by.type('android.widget.Button'))).tap();
+        return;
+    }
     await element(by.label(label).and(by.type('_UIAlertControllerActionView'))).tap();
 });
 
 Given('I should see alert with content {string}', async (title) => {
-    await waitFor(element(by.label(title)))
-        .toBeVisible()
-        .withTimeout(5000);
+    const matcher = device.getPlatform() === 'android' ? by.text(title) : by.label(title);
+    await waitFor(element(matcher)).toBeVisible().withTimeout(5000);
 });
 
 Then('I send the app to the background', async () => {
