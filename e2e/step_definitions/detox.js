@@ -122,7 +122,12 @@ Then('I slide right {string}', async (elementId) => {
 
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
-        await tapAndroidAlertButton(label, device.id);
+        await device.disableSynchronization();
+        try {
+            await tapAndroidAlertButton(label, device.id);
+        } finally {
+            await device.enableSynchronization();
+        }
         return;
     }
     await element(by.label(label).and(by.type('_UIAlertControllerActionView'))).tap();
@@ -130,7 +135,12 @@ Then('I tap alert button with label {string}', async (label) => {
 
 Given('I should see alert with content {string}', async (title) => {
     if (device.getPlatform() === 'android') {
-        await waitForAndroidAlertText(title, device.id);
+        await device.disableSynchronization();
+        try {
+            await waitForAndroidAlertText(title, device.id);
+        } finally {
+            await device.enableSynchronization();
+        }
         return;
     }
     await waitFor(element(by.label(title)))
