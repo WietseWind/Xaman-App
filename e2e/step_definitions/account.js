@@ -98,24 +98,27 @@ Then('I enter my mnemonic', async () => {
 });
 
 Then('I tap my account in the list', async () => {
-    // swipe up until we see the account in the list
-    let isElementVisible = false;
+    const row = element(by.id(`account-${this.address}`));
+    const list = element(by.id('account-list-scroll'));
 
-    while (!isElementVisible) {
+    // Android: a 90% hit-test can fail on the list itself (bottom nav clips
+    // account-list-scroll). Do not swipe the list. Scroll, then tap a point.
+    for (let i = 0; i < 8; i += 1) {
         try {
-            await waitFor(element(by.id(`account-${this.address}`)))
-                .toBeVisible()
-                .withTimeout(200);
-
-            isElementVisible = true;
-        } catch {
-            // ignore
-        }
-
-        if (!isElementVisible) {
-            await element(by.id('account-list-scroll')).swipe('up', 'slow', 0.2);
+            await waitFor(row).toBeVisible().withTimeout(400);
+            break;
+        } catch (e) {
+            try {
+                await list.scroll(280, 'down');
+            } catch (scrollErr) {
+                break;
+            }
         }
     }
 
-    await element(by.id(`account-${this.address}`)).tap();
+    try {
+        await row.tap();
+    } catch (e) {
+        await row.tap({ x: 24, y: 24 });
+    }
 });
