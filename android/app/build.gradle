@@ -295,9 +295,10 @@ dependencies {
     implementation 'androidx.fragment:fragment:1.6.2'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     
-    // Hermes/JSC (uncomment the one you're using)
+    // Hermes: local NDK-26 + 16KB-relinked AARs (Maven hermes-android is 4KB).
     if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
+        debugImplementation files('libs/hermes-engine-debug.aar')
+        releaseImplementation files('libs/hermes-engine-release.aar')
     } else {
         implementation jscFlavor
     }
@@ -338,4 +339,5 @@ apply from: file("../../node_modules/@react-native-community/cli-platform-androi
 // Exclude React Native from all configurations to avoid conflicts with local AAR
 configurations.all {
     exclude group: 'com.facebook.react', module: 'react-android'
+    exclude group: 'com.facebook.react', module: 'hermes-android'
 }
