@@ -2,7 +2,7 @@ import { get, isEmpty } from 'lodash';
 
 import React, { Component } from 'react';
 
-import { WebLinks } from '@common/constants/endpoints';
+import { HOSTNAME } from '@common/constants/endpoints';
 
 import { Payload } from '@common/libs/payload';
 
@@ -104,8 +104,11 @@ class HooksExplainer extends Component<Props, State> {
             return params;
         }
 
+        // String export + fallback: named WebLinks can be undefined after Metro lazy/HMR remaps this factory.
+        const host = typeof HOSTNAME === 'string' && HOSTNAME ? HOSTNAME : 'xaman.app';
+
         return {
-            uri: `${WebLinks.HooksExplainerURL}/${Localize.getCurrentLocale()}?theme=${StyleService.getCurrentTheme()}`,
+            uri: `https://${host}/app/webviews/hooks/${Localize.getCurrentLocale()}?theme=${StyleService.getCurrentTheme()}`,
             // uri: `https://dev.wietse.com/app/webviews/hooks/${Localize.getCurrentLocale()}`,
             // method: 'POST',
             // body: JSON.stringify(params),
