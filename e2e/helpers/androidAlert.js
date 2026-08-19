@@ -77,14 +77,19 @@ const waitForAndroidAlertText = async () => {
     await sleep(500);
 };
 
-// RN Alert is a native AlertDialog. Espresso cannot see it. uiautomator dump
-// is SIGKILL'd while instrumentation is attached. ENTER does not hit the
-// Material OK on the right. Tap the button row on AVD 1080x2400.
+// RN Alert is a native AlertDialog. Dump is SIGKILL'd under Detox.
+// Coords are for AVD 1080x2400. Short Success OK is higher; downgrade Yes is lower.
+const ALERT_TAPS = {
+    OK: ['900', '1380'],
+    Cancel: ['585', '1530'],
+    "Yes, I'm sure": ['832', '1530'],
+};
+
 const tapAndroidAlertButton = async (label, serial) => {
     const adbSerial = resolveSerial(serial);
     await sleep(400);
-    const x = label === 'Cancel' ? '220' : '900';
-    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', x, '1380']);
+    const [x, y] = ALERT_TAPS[label] || ALERT_TAPS.OK;
+    execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'tap', x, y]);
 };
 
 module.exports = { tapAndroidAlertButton, waitForAndroidAlertText };
