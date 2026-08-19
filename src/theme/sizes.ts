@@ -30,8 +30,9 @@ const tabbarHeight = Platform.select({
     default: 0,
 });
 
-// status bar size
-const statusBarHeight = topInset;
+// status bar size. iOS always has at least the classic 20pt bar; DeviceUtils
+// can report 0 when keyWindow is nil at JS module init.
+const statusBarHeight = topInset > 0 ? topInset : Platform.OS === 'ios' ? 20 : 0;
 
 // in some android devices the screen goes under navigation bar
 // this help's us to add extra padding if necessary
@@ -47,7 +48,7 @@ if (Platform.OS === 'android') {
 
 let safeAreaTopInset = 0;
 if (Platform.OS === 'ios') {
-    safeAreaTopInset = topInset;
+    safeAreaTopInset = statusBarHeight;
 }
 
 const Sizes = {

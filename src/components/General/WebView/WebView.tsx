@@ -100,6 +100,8 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             keyboardDisplayRequiresUserAction
             sharedCookiesEnabled={false}
             nestedScrollEnabled={false}
+            autoManageStatusBarEnabled={false}
+            automaticallyAdjustContentInsets={false}
             renderLoading={() => <></>}
             onFileDownload={rejectFileDownload}
         />
