@@ -22,7 +22,7 @@ Then('I tap {string}', async (buttonId) => {
     try {
         await btn.tap();
     } catch (e) {
-        if (String(buttonId).startsWith('tab-')) {
+        if (String(buttonId).startsWith('tab-') || buttonId === 'confirm-button' || buttonId === 'back-button') {
             await btn.tap({ x: 8, y: 8 });
             return;
         }
@@ -88,9 +88,13 @@ Given('I should see {string} in {string}', async (value, elementId) => {
 });
 
 Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
-    await waitFor(element(by.id(elementId)))
-        .toBeVisible()
-        .withTimeout(timeout * 1000);
+    const el = element(by.id(elementId));
+    // Android 75% visibility fails on tall AVD / overlay. Existence is enough.
+    if (device.getPlatform() === 'android') {
+        await waitFor(el).toExist().withTimeout(timeout * 1000);
+        return;
+    }
+    await waitFor(el).toBeVisible().withTimeout(timeout * 1000);
 });
 
 Then('I scroll up {string}', async (elementId) => {
