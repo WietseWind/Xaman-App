@@ -93,7 +93,14 @@ Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
 });
 
 Then('I scroll up {string}', async (elementId) => {
-    await element(by.id(elementId)).swipe('up', 'slow', 0.5);
+    const scroller = element(by.id(elementId));
+    // Android review is taller (dev JSON + fees). One 50% swipe does not
+    // reach accept-button. iOS already passed with a single swipe.
+    if (device.getPlatform() === 'android') {
+        await scroller.scrollTo('bottom');
+        return;
+    }
+    await scroller.swipe('up', 'slow', 0.5);
 });
 
 Then('I scroll down {string}', async (elementId) => {
