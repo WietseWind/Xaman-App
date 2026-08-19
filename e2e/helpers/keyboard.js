@@ -1,4 +1,4 @@
-const { element, by, waitFor } = require('detox');
+const { element, by, waitFor, device } = require('detox');
 
 const sleep = (ms) =>
     new Promise((resolve) => {
@@ -19,6 +19,12 @@ const CHROME_IDS = [
 // Do not swipe UIKeyboardLayoutStar: on iOS 26 that swipe hits the keys
 // (we typed "To to to to" into the label) instead of dismissing.
 const dismissKeyboard = async () => {
+    // iOS-only. On Android, label "done" matches IME keys and Detox can hang
+    // for the cucumber timeout (we lost 6+ minutes on add-and-sign-button).
+    if (device.getPlatform() === 'android') {
+        return;
+    }
+
     try {
         await element(by.traits(['keyboardKey']).and(by.label('return'))).tap();
         await sleep(250);
