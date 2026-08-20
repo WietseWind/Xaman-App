@@ -416,6 +416,7 @@ class EnterMnemonicStep extends Component<Props, State> {
 
                 <KeyboardAwareScrollView
                     ref={this.scrollViewRef}
+                    testID="mnemonic-words-scroll"
                     style={[AppStyles.flex1, AppStyles.stretchSelf]}
                     contentContainerStyle={AppStyles.paddingHorizontal}
                     onContentSizeChange={this.onContentSizeChange}
