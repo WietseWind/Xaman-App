@@ -355,12 +355,16 @@ dependencies {
     // androidTest does not inherit the RN Firebase BOM, so unversioned ktx deps fail to resolve.
     androidTestImplementation platform('com.google.firebase:firebase-bom:33.1.2')
     androidTestImplementation 'com.wix:detox:+'
+    // Keep JUnit on the instrumentation APK. Do not bump past 4.12
+    // (resolutionStrategy in this repo is strict).
+    androidTestImplementation 'junit:junit:4.12'
 }
 
 // Release minifyEnabled=true also minifies the instrumentation APK and
-// strips JUnit (NoClassDefFoundError: RunListener). Do not shrink that APK.
+// strips JUnit (NoClassDefFoundError: RunListener). Disable every
+// minify*AndroidTest* task, not only the exact R8 name.
 tasks.configureEach { task ->
-    if (task.name == 'minifyReleaseAndroidTestWithR8') {
+    if (task.name.toLowerCase().contains('androidtest') && task.name.toLowerCase().contains('minify')) {
         task.enabled = false
     }
 }
