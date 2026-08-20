@@ -102,50 +102,21 @@ Then('I enter my mnemonic', async () => {
     for (let i = 0; i < this.mnemonic.length; i++) {
         const field = element(by.id(`word-${i}-input`));
         if (device.getPlatform() === 'android') {
-            // Espresso replaceText needs 75% visible. Word 12+ never reaches that
-            // (footer + IME). Scroll until the frame is on screen, then type
-            // with UiDevice + adb. BIP39 words are a-z only.
-            const scroller = element(by.id('mnemonic-words-scroll'));
+            // Click-per-row missed later fields; adb typed into word 3
+            // (concatenated blob). Focus word 0 once, then type + ENTER
+            // so onSubmitEditing advances. BIP39 words are a-z.
             const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
-            if (i >= 5) {
-                try {
-                    await scroller.scroll(80, 'down');
-                } catch (e) {
-                    // already at end
-                }
+            if (i === 0) {
+                const attrs = await field.getAttributes();
+                const frame = attrs.frame || {};
+                await device.getUiDevice().click(
+                    Math.round(Number(frame.x || 180) + 40),
+                    Math.round(Number(frame.y || 900) + 20),
+                );
             }
-            let written = false;
-            for (let s = 0; s < 24 && !written; s += 1) {
-                let frame = {};
-                try {
-                    const attrs = await field.getAttributes();
-                    frame = attrs.frame || {};
-                } catch (attrErr) {
-                    frame = {};
-                }
-                const y = Number(frame.y || 0);
-                const h = Number(frame.height || 0);
-                const w = Number(frame.width || 0);
-                const x = Number(frame.x || 0);
-                // Last 12-word row sits in the footer. Click the top of the
-                // field. Do not cap y at 2280.
-                if (y > 80 && w > 0) {
-                    await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + Math.min(12, h / 2)));
-                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], {
-                        timeout: 5000,
-                    });
-                    written = true;
-                    break;
-                }
-                try {
-                    await scroller.scroll(90, 'down');
-                } catch (scrollErr) {
-                    // list end
-                }
-            }
-            if (!written) {
-                throw new Error(`could not enter mnemonic word ${i}`);
-            }
+            execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], { timeout: 5000 });
+            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
+            await new Promise((resolve) => setTimeout(resolve, 250));
         } else {
             await field.typeText(`${this.mnemonic[i]}\n`);
         }
