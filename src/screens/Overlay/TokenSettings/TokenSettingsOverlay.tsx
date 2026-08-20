@@ -526,7 +526,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
         }
 
         InteractionManager.runAfterInteractions(() => {
-            Alert.alert(Localize.t('global.success'), Localize.t('asset.successRemoved'));
+            Toast(Localize.t('asset.successRemoved'));
         });
 
         this.setState({
