@@ -24,14 +24,24 @@ Then('I tap {string}', async (buttonId) => {
     // Do not use UiDevice for every tap: Continue is RN modal padding.
     if (device.getPlatform() === 'android') {
         if (buttonId === 'confirm-button' || buttonId === 'add-and-sign-button') {
-            try {
-                const attrs = await btn.getAttributes();
-                const frame = attrs.frame || {};
-                const x = Math.round(Number(frame.x || 0) + 24);
-                const y = Math.round(Number(frame.y || 0) + 16);
-                await device.getUiDevice().click(x, y);
-            } catch (e) {
-                await btn.tap({ x: 24, y: 16 });
+            const clickFooter = async () => {
+                try {
+                    const attrs = await btn.getAttributes();
+                    const frame = attrs.frame || {};
+                    const x = Math.round(Number(frame.x || 53) + 24);
+                    const y = Math.round(Number(frame.y || 2146) + 16);
+                    await device.getUiDevice().click(x, y);
+                } catch (e) {
+                    await btn.tap({ x: 24, y: 16 });
+                }
+            };
+            await clickFooter();
+            // ToS WebView eats the first press. Button isLoading ignores extras.
+            if (buttonId === 'confirm-button') {
+                for (let i = 0; i < 2; i += 1) {
+                    await new Promise((resolve) => setTimeout(resolve, 1200));
+                    await clickFooter();
+                }
             }
             return;
         }
