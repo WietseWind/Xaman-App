@@ -28,8 +28,13 @@ Then('I tap {string}', async (buttonId) => {
             const frame = attrs.frame || {};
             const width = Number(frame.width || 0);
             const height = Number(frame.height || 0);
-            const x = Math.round(Number(frame.x || 0) + Math.min(24, width > 0 ? width / 2 : 24));
-            const y = Math.round(Number(frame.y || 0) + Math.min(16, height > 0 ? height / 2 : 16));
+            const left = Number(frame.x || 0);
+            const top = Number(frame.y || 0);
+            // Footer on 1080x2400 sits in the 3-button nav. Click the top
+            // of those views. All other views use the center (Continue).
+            const nearBottom = top + height > 2100;
+            const x = Math.round(left + (width > 0 ? width / 2 : 24));
+            const y = Math.round(nearBottom ? top + Math.min(20, height > 0 ? height / 3 : 20) : top + (height > 0 ? height / 2 : 16));
             await device.getUiDevice().click(x, y);
         } catch (e) {
             await btn.tap({ x: 24, y: 16 });
