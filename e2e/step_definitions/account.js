@@ -116,7 +116,7 @@ Then('I enter my mnemonic', async () => {
             }
             execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], { timeout: 5000 });
             execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-            await new Promise((resolve) => setTimeout(resolve, 250));
+            await new Promise((resolve) => { setTimeout(resolve, 250); });
         } else {
             await field.typeText(`${this.mnemonic[i]}\n`);
         }
@@ -130,15 +130,28 @@ Then('I tap my account in the list', async () => {
 
     // Android: a 90% hit-test can fail on the list itself (bottom nav clips
     // account-list-scroll). Do not swipe the list. Scroll, then tap a point.
+    // Detox list.scroll() starts its gesture at the scroll view's bottom edge
+    // (y ~= window bottom), which this app's bottom tab bar overlays and
+    // swallows, so the list never moves and the off-screen row tap no-ops.
+    // On Android use a physical swipe that starts well above the tab bar.
     for (let i = 0; i < 8; i += 1) {
         try {
             await waitFor(row).toBeVisible().withTimeout(400);
             break;
         } catch (e) {
-            try {
-                await list.scroll(280, 'down');
-            } catch (scrollErr) {
-                break;
+            if (device.getPlatform() === 'android') {
+                try {
+                    await device.getUiDevice().swipe(540, 1400, 540, 1000, 40);
+                    await new Promise((resolve) => { setTimeout(resolve, 600); });
+                } catch (swipeErr) {
+                    break;
+                }
+            } else {
+                try {
+                    await list.scroll(280, 'down');
+                } catch (scrollErr) {
+                    break;
+                }
             }
         }
     }
