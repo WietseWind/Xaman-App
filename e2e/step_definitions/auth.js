@@ -18,9 +18,21 @@ Then('I enter my passcode', async () => {
 });
 
 Then('I type my passcode', async () => {
-    await waitFor(element(by.id(`${passcode[0]}-key`)))
-        .toExist()
-        .withTimeout(10000);
+    try {
+        await waitFor(element(by.id(`${passcode[0]}-key`)))
+            .toExist()
+            .withTimeout(10000);
+    } catch (e) {
+        // Downgrade can already have applied with no pin overlay.
+        try {
+            await waitFor(element(by.id('account-access-level-value')))
+                .toHaveText('Read only')
+                .withTimeout(1500);
+            return;
+        } catch (skipErr) {
+            throw e;
+        }
+    }
     await element(by.id(`${passcode[0]}-key`)).tap();
     await element(by.id(`${passcode[1]}-key`)).tap();
     await element(by.id(`${passcode[2]}-key`)).tap();

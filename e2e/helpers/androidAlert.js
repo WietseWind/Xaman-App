@@ -95,7 +95,9 @@ const tapAndroidAlertButton = async (label, serial, click) => {
     // 126 -> ~21px max gap between consecutive targets; 0-5 line messages
     // are all covered.
     const x = label === 'Cancel' ? 585 : 832;
-    const ys = [925, 1000, 1075, 1148, 1222, 1295, 1369];
+    // Tall downgrade copy sits lower than the 1-line dialog. ENTER after the
+    // sweep can hit Cancel and leave Access level on Full with no pin pad.
+    const ys = [925, 1000, 1075, 1148, 1222, 1295, 1369, 1443, 1516, 1590];
     logLine(`label=${JSON.stringify(label)} guarded sweep x=${x}`);
     let count = appWindowCount(adbSerial);
     logLine(`pre-sweep window count: ${count}`);
@@ -121,21 +123,23 @@ const tapAndroidAlertButton = async (label, serial, click) => {
         count = next;
         await sleep(400);
     }
-    // Dialog apparently still open: activate the default (positive) button via
-    // DPAD_CENTER / ENTER as the final resort.
-    for (const code of [23, 66]) {
-        try {
-            execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'keyevent', String(code)], {
-                timeout: 5000,
-            });
-        } catch (e) {
-            logLine(`keyevent ${code} failed: ${String((e && e.message) || e).slice(0, 120)}`);
-        }
-        await sleep(800);
-        const gone = alertGone(adbSerial);
-        logLine(`keyevent ${code}: dialog ${gone === true ? 'GONE' : gone === false ? 'still present' : 'unknown'}`);
-        if (gone !== false) {
-            return;
+    // Do not send ENTER for Yes/OK. On a tall dialog ENTER can activate
+    // Cancel and leave the account on Full access with no pin pad.
+    if (label === 'Cancel') {
+        for (const code of [23, 66]) {
+            try {
+                execFileSync('adb', ['-s', adbSerial, 'shell', 'input', 'keyevent', String(code)], {
+                    timeout: 5000,
+                });
+            } catch (e) {
+                logLine(`keyevent ${code} failed: ${String((e && e.message) || e).slice(0, 120)}`);
+            }
+            await sleep(800);
+            const gone = alertGone(adbSerial);
+            logLine(`keyevent ${code}: dialog ${gone === true ? 'GONE' : gone === false ? 'still present' : 'unknown'}`);
+            if (gone !== false) {
+                return;
+            }
         }
     }
     logLine(`fallback exhausted for label=${JSON.stringify(label)}`);
