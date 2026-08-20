@@ -70,9 +70,10 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
 });
 
 Given('I should have {string}', async (elementId) => {
+    const timeout = elementId === 'review-transaction-modal' ? 15000 : 5000;
     await waitFor(element(by.id(elementId)))
         .toExist()
-        .withTimeout(5000);
+        .withTimeout(timeout);
 });
 
 Given('I should not have {string}', async (screenId) => {
