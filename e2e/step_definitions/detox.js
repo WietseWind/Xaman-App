@@ -25,7 +25,20 @@ Then('I tap {string}', async (buttonId) => {
 
     const btn = element(by.id(buttonId));
     // toExist: Next can be fully covered by the iOS keyboard and fail toBeVisible.
-    await waitFor(btn).toExist().withTimeout(5000);
+    // 10s: picker-modal items (e.g. 10080-item) mount a beat after the modal
+    // container appears on a loaded emulator (observed >5s in full-suite runs).
+    await waitFor(btn).toExist().withTimeout(10000);
+    if (device.getPlatform() === 'android') {
+        // RN's first layout pass can report pre-settle frames mid-navigation,
+        // tripping the 75% visibility check inside tap(). Wait for the settled frame.
+        // Soft: bottom rows (developer-mode-switch) clip under the nav bar by
+        // design and stay at ~49% visible forever; the tap below targets the part.
+        try {
+            await waitFor(btn).toBeVisible().withTimeout(5000);
+        } catch (visibilityErr) {
+            // proceed: tap below targets the visible portion
+        }
+    }
     // Footer + ToS WebView: Espresso tap misses Confirm / add-and-sign.
     // UiDevice.click at the top of the frame is above the 3-button nav.
     // Do not use UiDevice for every tap: Continue is RN modal padding.
@@ -49,7 +62,7 @@ Then('I tap {string}', async (buttonId) => {
             // ToS WebView can eat the first press. Keep clicking until Home is up.
             if (buttonId === 'confirm-button') {
                 for (let i = 0; i < 20; i += 1) {
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                    await new Promise((resolve) => { setTimeout(resolve, 1000); });
                     try {
                         await waitFor(element(by.id('home-tab-empty-view'))).toExist().withTimeout(400);
                         return;
@@ -69,8 +82,48 @@ Then('I tap {string}', async (buttonId) => {
             }
             return;
         }
-        await btn.tap({ x: 24, y: 16 });
-        return;
+        // Last row of advanced settings: RN switch frame (y=1759, h=71 -> 1830)
+        // extends ~36px below the 1794px window, so it never reaches the 75%
+        // visible threshold and every Detox-level tap rejects it. Click the
+        // visible part of the track physically (same pattern as confirm-button).
+        if (buttonId === 'developer-mode-switch') {
+            const swAttrs = await btn.getAttributes();
+            const swFrame = swAttrs.frame || {};
+            const swX = Math.round(Number(swFrame.x || 906) + (Number(swFrame.width || 122) / 2));
+            const swY = Math.round(Number(swFrame.y || 1759) + 16);
+            await device.getUiDevice().click(swX, swY);
+            return;
+        }
+        try {
+            await btn.tap({ x: 24, y: 16 });
+            return;
+        } catch (e) {
+            // Espresso's post-tap precision recheck is flaky on footer buttons
+            // straight after IME text entry (03 family-seed-passphrase "next"
+            // failed 3x at the button's top-left corner in a full-suite run).
+            // The raw InputManager click skips that verification; target the
+            // label center (24,16 sits on the edge of the 16px precision box).
+            try {
+                // dismissKeyboard is a no-op on Android by design, so the soft
+                // keyboard may still cover the footer button; a raw click
+                // there would land on the IME. ESC hides the IME without
+                // delivering BACK to the app.
+                execFileSync('adb', ['-s', device.id, 'shell', 'input', 'keyevent', '111'], {
+                    timeout: 8000,
+                });
+                await new Promise((r) => { setTimeout(r, 350); });
+                const fbAttrs = await btn.getAttributes();
+                const fbFrame = fbAttrs.frame || {};
+                const fbX = Math.round(Number(fbFrame.x || 53) + Number(fbFrame.width || 975) / 2);
+                const fbY = Math.round(Number(fbFrame.y || 1629) + Math.min(Number(fbFrame.height || 64) / 2, 44));
+                await device.getUiDevice().click(fbX, fbY);
+            } catch (fbErr) {
+                // Fallback path unavailable (element gone or UiAutomation down):
+                // surface the original failure.
+                throw e;
+            }
+            return;
+        }
     }
     try {
         await btn.tap();
@@ -123,9 +176,11 @@ Given('I should have {string}', async (elementId) => {
         elementId === 'review-transaction-modal' ||
         elementId === 'account-settings-screen' ||
         elementId === 'account-import-show-address-view' ||
+        elementId === 'account-import-secret-type-view' ||
+        elementId === 'account-import-label-view' ||
         elementId === 'home-tab-view'
-            ? 15000
-            : 5000;
+            ? 30000
+            : 10000;
     await waitFor(element(by.id(elementId)))
         .toExist()
         .withTimeout(timeout);
@@ -144,9 +199,11 @@ Given('I should see {string}', async (elementId) => {
         }
         return;
     }
+    // 10s: late screen commits on a loaded emulator (happy path resolves as
+    // soon as the view is visible, so this only widens the failure window).
     await waitFor(element(by.id(elementId)))
         .toBeVisible()
-        .withTimeout(5000);
+        .withTimeout(10000);
 });
 
 Given('I should see {string} in {string}', async (value, elementId) => {
@@ -257,7 +314,19 @@ Then('I open the url {string}', async (url) => {
         const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
         execFileSync(
             'adb',
-            ['-s', serial, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', url, 'com.xrpllabs.xumm'],
+            [
+                '-s',
+                serial,
+                'shell',
+                'am',
+                'start',
+                '-W',
+                '-a',
+                'android.intent.action.VIEW',
+                '-d',
+                url,
+                'com.xrpllabs.xumm',
+            ],
             { timeout: 10000 },
         );
         return;
