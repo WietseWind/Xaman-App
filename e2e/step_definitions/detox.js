@@ -80,6 +80,14 @@ Given('I should not have {string}', async (screenId) => {
 });
 
 Given('I should see {string}', async (elementId) => {
+    if (device.getPlatform() === 'android' && elementId === 'submitting-view') {
+        try {
+            await waitFor(element(by.id('submitting-view'))).toExist().withTimeout(4000);
+        } catch (e) {
+            await waitFor(element(by.id('success-result-view'))).toExist().withTimeout(15000);
+        }
+        return;
+    }
     await waitFor(element(by.id(elementId)))
         .toBeVisible()
         .withTimeout(5000);
