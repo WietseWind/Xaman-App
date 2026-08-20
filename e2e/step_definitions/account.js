@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
 const { element, by, waitFor, device } = require('detox');
 
@@ -94,17 +95,32 @@ Then('I enter my mnemonic', async () => {
     for (let i = 0; i < 24; i++) {
         const field = element(by.id(`word-${i}-input`));
         if (device.getPlatform() === 'android') {
+            // Espresso replaceText needs 75% visible. Word 12+ never reaches that
+            // (footer + IME). Scroll until the frame is on screen, then type
+            // with UiDevice + adb. BIP39 words are a-z only.
+            const scroller = element(by.id('mnemonic-words-scroll'));
             let written = false;
             for (let s = 0; s < 16 && !written; s += 1) {
-                try {
-                    await field.replaceText(this.mnemonic[i]);
+                const attrs = await field.getAttributes();
+                const frame = attrs.frame || {};
+                const y = Number(frame.y || 0);
+                const h = Number(frame.height || 0);
+                const w = Number(frame.width || 0);
+                const x = Number(frame.x || 0);
+                if (y > 200 && y + h < 1900 && w > 0) {
+                    await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + h / 2));
+                    execFileSync(
+                        'adb',
+                        ['-s', process.env.ANDROID_SERIAL || 'emulator-5554', 'shell', 'input', 'text', this.mnemonic[i]],
+                        { timeout: 5000 },
+                    );
                     written = true;
-                } catch (e) {
-                    try {
-                        await element(by.id('mnemonic-words-scroll')).scroll(90, 'down');
-                    } catch (scrollErr) {
-                        await element(by.id('account-import-enter-mnemonic-view')).swipe('up', 'slow', 0.2);
-                    }
+                    break;
+                }
+                try {
+                    await scroller.scroll(90, 'down');
+                } catch (scrollErr) {
+                    await element(by.id('account-import-enter-mnemonic-view')).swipe('up', 'slow', 0.2);
                 }
             }
             if (!written) {
