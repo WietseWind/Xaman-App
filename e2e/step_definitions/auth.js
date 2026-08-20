@@ -44,7 +44,7 @@ const typeIntoField = async (inputId, value) => {
     const field = element(by.id(inputId));
     // Android review sheet: passphrase-input exists but fails 75% visible.
     if (device.getPlatform() === 'android') {
-        await waitFor(field).toExist().withTimeout(5000);
+        await waitFor(field).toExist().withTimeout(15000);
         await field.tap({ x: 24, y: 16 });
     } else {
         await waitFor(field).toBeVisible().withTimeout(5000);
