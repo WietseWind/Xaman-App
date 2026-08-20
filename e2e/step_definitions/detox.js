@@ -19,8 +19,12 @@ Then('I tap {string}', async (buttonId) => {
     const btn = element(by.id(buttonId));
     // toExist: Next can be fully covered by the iOS keyboard and fail toBeVisible.
     await waitFor(btn).toExist().withTimeout(5000);
-    if (device.getPlatform() === 'android' && buttonId === 'confirm-button') {
-        await btn.tap({ x: 20, y: 20 });
+    // AVD 1080x2400: footer center sits in the 3-button nav. Detox tap()
+    // hits the geometric center; RN never gets the press. Point near the
+    // top-left of the view. confirm-button and add-and-sign-button both fail
+    // this way.
+    if (device.getPlatform() === 'android') {
+        await btn.tap({ x: 24, y: 16 });
         return;
     }
     try {
