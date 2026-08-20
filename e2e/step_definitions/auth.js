@@ -18,7 +18,9 @@ Then('I enter my passcode', async () => {
 });
 
 Then('I type my passcode', async () => {
-    // await element(by.id('pin-input')).typeText(`${passcode}\n`);
+    await waitFor(element(by.id(`${passcode[0]}-key`)))
+        .toExist()
+        .withTimeout(10000);
     await element(by.id(`${passcode[0]}-key`)).tap();
     await element(by.id(`${passcode[1]}-key`)).tap();
     await element(by.id(`${passcode[2]}-key`)).tap();
