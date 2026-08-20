@@ -130,7 +130,7 @@ Then('I enter my mnemonic', async () => {
                 try {
                     await scroller.scroll(90, 'down');
                 } catch (scrollErr) {
-                    await element(by.id('account-import-enter-mnemonic-view')).swipe('up', 'slow', 0.2);
+                    // list end. Do not swipe the screen; that leaves the form.
                 }
             }
             if (!written) {
