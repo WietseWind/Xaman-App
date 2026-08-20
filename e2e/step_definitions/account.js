@@ -90,22 +90,17 @@ Then('I generate new mnemonic', async () => {
 
 Then('I enter my mnemonic', async () => {
     // typeText + return advances to the next word field on iOS. Android
-    // word-16+ is off-screen / <75% visible under the IME.
+    // later rows are under 75% visible. Do not tap (IME covers the list).
     for (let i = 0; i < 24; i++) {
         const field = element(by.id(`word-${i}-input`));
         if (device.getPlatform() === 'android') {
-            if (i > 0 && i % 4 === 0) {
-                try {
-                    await element(by.id('mnemonic-words-scroll')).scroll(140, 'down');
-                } catch (e) {
-                    // already at end
-                }
-            }
             try {
-                await field.tap({ x: 8, y: 8 });
+                await waitFor(field).toBeVisible().withTimeout(600);
             } catch (e) {
-                await element(by.id('mnemonic-words-scroll')).scroll(160, 'down');
-                await field.tap({ x: 8, y: 8 });
+                await waitFor(field)
+                    .toBeVisible()
+                    .whileElement(by.id('mnemonic-words-scroll'))
+                    .scroll(120, 'down');
             }
             await field.replaceText(this.mnemonic[i]);
         } else {
