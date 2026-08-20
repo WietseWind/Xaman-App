@@ -107,6 +107,13 @@ Then('I enter my mnemonic', async () => {
             // with UiDevice + adb. BIP39 words are a-z only.
             const scroller = element(by.id('mnemonic-words-scroll'));
             const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
+            if (i >= 8) {
+                try {
+                    await scroller.scrollTo('bottom');
+                } catch (e) {
+                    // already at end
+                }
+            }
             let written = false;
             for (let s = 0; s < 24 && !written; s += 1) {
                 let frame = {};
@@ -120,12 +127,13 @@ Then('I enter my mnemonic', async () => {
                 const h = Number(frame.height || 0);
                 const w = Number(frame.width || 0);
                 const x = Number(frame.x || 0);
-                if (y > 80 && y < 2280 && w > 0) {
-                    await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + Math.min(16, h / 2)));
+                // Last 12-word row sits in the footer. Click the top of the
+                // field. Do not cap y at 2280.
+                if (y > 80 && w > 0) {
+                    await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + Math.min(12, h / 2)));
                     execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], {
                         timeout: 5000,
                     });
-                    // Close IME so later rows stay on screen.
                     try {
                         execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 3000 });
                     } catch (imeErr) {
@@ -137,7 +145,7 @@ Then('I enter my mnemonic', async () => {
                 try {
                     await scroller.scroll(90, 'down');
                 } catch (scrollErr) {
-                    // list end. Do not swipe the screen; that leaves the form.
+                    // list end
                 }
             }
             if (!written) {
