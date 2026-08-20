@@ -86,13 +86,20 @@ Then('I enter my seed in the input', async () => {
 });
 
 Then('I generate new mnemonic', async () => {
+    // 24 rows do not fit the 1080x2400 AVD. 12 words is a valid BIP39
+    // strength-128 mnemonic and stays on screen.
+    if (device.getPlatform() === 'android') {
+        await element(by.id('12-words-button')).tap({ x: 24, y: 16 });
+        this.mnemonic = generateMnemonic(128);
+        return;
+    }
     this.mnemonic = generateMnemonic();
 });
 
 Then('I enter my mnemonic', async () => {
     // typeText + return advances to the next word field on iOS. Android
     // later rows are under 75% visible. Do not tap (IME covers the list).
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < this.mnemonic.length; i++) {
         const field = element(by.id(`word-${i}-input`));
         if (device.getPlatform() === 'android') {
             // Espresso replaceText needs 75% visible. Word 12+ never reaches that
