@@ -31,6 +31,9 @@ const takeScreenshot = () => {
 };
 
 const startRecordingVideo = () => {
+    if (process.platform !== 'darwin') {
+        return;
+    }
     if (!existsSync(ARTIFACTS_DIR)) {
         mkdirSync(ARTIFACTS_DIR);
     }
