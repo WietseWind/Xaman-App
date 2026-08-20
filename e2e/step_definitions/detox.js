@@ -19,26 +19,23 @@ Then('I tap {string}', async (buttonId) => {
     const btn = element(by.id(buttonId));
     // toExist: Next can be fully covered by the iOS keyboard and fail toBeVisible.
     await waitFor(btn).toExist().withTimeout(5000);
-    // AVD 1080x2400: footer center sits in the 3-button nav. Espresso tap()
-    // at an offset still misses Confirm (WebView sibling). UiDevice.click
-    // at the same screen point fires onPress.
+    // Footer + ToS WebView: Espresso tap misses Confirm / add-and-sign.
+    // UiDevice.click at the top of the frame is above the 3-button nav.
+    // Do not use UiDevice for every tap: Continue is RN modal padding.
     if (device.getPlatform() === 'android') {
-        try {
-            const attrs = await btn.getAttributes();
-            const frame = attrs.frame || {};
-            const width = Number(frame.width || 0);
-            const height = Number(frame.height || 0);
-            const left = Number(frame.x || 0);
-            const top = Number(frame.y || 0);
-            // Footer on 1080x2400 sits in the 3-button nav. Click the top
-            // of those views. All other views use the center (Continue).
-            const nearBottom = top + height > 2100;
-            const x = Math.round(left + (width > 0 ? width / 2 : 24));
-            const y = Math.round(nearBottom ? top + Math.min(20, height > 0 ? height / 3 : 20) : top + (height > 0 ? height / 2 : 16));
-            await device.getUiDevice().click(x, y);
-        } catch (e) {
-            await btn.tap({ x: 24, y: 16 });
+        if (buttonId === 'confirm-button' || buttonId === 'add-and-sign-button') {
+            try {
+                const attrs = await btn.getAttributes();
+                const frame = attrs.frame || {};
+                const x = Math.round(Number(frame.x || 0) + 24);
+                const y = Math.round(Number(frame.y || 0) + 16);
+                await device.getUiDevice().click(x, y);
+            } catch (e) {
+                await btn.tap({ x: 24, y: 16 });
+            }
+            return;
         }
+        await btn.tap({ x: 24, y: 16 });
         return;
     }
     try {
