@@ -1,10 +1,13 @@
-const { spawn, kill } = require('child_process');
+const { spawn } = require('child_process');
 const { createWriteStream, existsSync, unlinkSync, mkdirSync } = require('fs');
 const path = require('path');
 
 const ARTIFACTS_DIR = path.resolve(__dirname, '../artifacts');
 
 const startDeviceLogStream = (udid = 'booted') => {
+    if (process.platform !== 'darwin') {
+        return;
+    }
     const logFile = `${ARTIFACTS_DIR}/simulator.log`;
 
     if (!existsSync(ARTIFACTS_DIR)) {
@@ -24,7 +27,7 @@ const startDeviceLogStream = (udid = 'booted') => {
     proc.stderr.pipe(logStream);
 
     proc.on('error', () => {
-        kill(proc.pid);
+        proc.kill();
     });
 };
 

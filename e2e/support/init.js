@@ -1,10 +1,17 @@
 const detox = require('detox/internals');
 
-const { device } = require('detox');
-const { Before, BeforeAll, AfterAll, After } = require('@cucumber/cucumber');
+const { device, element, by, waitFor } = require('detox');
+const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
-const { setDeviceUdid, startRecordingVideo, stopRecordingVideo } = require('../helpers/artifacts');
+const {
+    setDeviceUdid,
+    setScreenshotPlatform,
+    nextStepIndex,
+    takeNamedScreenshot,
+    startRecordingVideo,
+    stopRecordingVideo,
+} = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
 const { checkNetwork, ensureLocalSimulator } = require('./preflight');
 
@@ -22,6 +29,7 @@ BeforeAll(async () => {
 
     // target the detox-managed simulator, not whatever happens to be "booted"
     setDeviceUdid(device.id);
+    setScreenshotPlatform(device.getPlatform());
 
     // start device log
     startDeviceLogStream(device.id);
@@ -48,11 +56,41 @@ BeforeAll(async () => {
     await device.setURLBlacklist(['.*xumm.app.*', '.*xaman.app.*']);
 });
 
+// On fresh Android installs the app auto-opens the "What's new" release-notes
+// modal shortly after launch; its full-screen backdrop swallows taps on the
+// screen underneath (e.g. the developer-mode switch) and trips Detox's
+// 75% visibility check. Close it before every scenario if it is up.
+async function dismissChangelogOverlay() {
+    try {
+        const overlay = element(by.id('change-log-overlay'));
+        await waitFor(overlay).toExist().withTimeout(1500);
+        await waitFor(element(by.id('close-change-log-button'))).toBeVisible().withTimeout(5000);
+        await element(by.id('close-change-log-button')).tap();
+        await waitFor(overlay).not.toExist().withTimeout(5000);
+    } catch (e) {
+        // overlay was not shown; nothing to dismiss
+    }
+}
+
 Before(async (context) => {
+    await dismissChangelogOverlay();
     await adapter.beforeEach(context);
 });
 
+BeforeStep(async (context) => {
+    nextStepIndex();
+    takeNamedScreenshot(`before-${context.pickleStep.text}`);
+});
+
+AfterStep(async (context) => {
+    const status = context.result && context.result.status ? context.result.status : 'UNKNOWN';
+    takeNamedScreenshot(`after-${status}-${context.pickleStep.text}`);
+});
+
 After(async (context) => {
+    if (context.result && context.result.status === 'FAILED') {
+        takeNamedScreenshot(`FAIL-${context.pickle.name}`);
+    }
     await adapter.afterEach(context);
 });
 
