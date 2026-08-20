@@ -114,13 +114,6 @@ Then('I enter my mnemonic', async () => {
                     // already at end
                 }
             }
-            if (i >= 9) {
-                try {
-                    await scroller.scrollTo('bottom');
-                } catch (e) {
-                    // already at end
-                }
-            }
             let written = false;
             for (let s = 0; s < 24 && !written; s += 1) {
                 let frame = {};
