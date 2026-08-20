@@ -94,16 +94,22 @@ Then('I enter my mnemonic', async () => {
     for (let i = 0; i < 24; i++) {
         const field = element(by.id(`word-${i}-input`));
         if (device.getPlatform() === 'android') {
-            try {
-                await waitFor(field).toBeVisible().withTimeout(600);
-            } catch (e) {
-                await waitFor(field)
-                    .toBeVisible()
-                    .whileElement(by.id('mnemonic-words-scroll'))
-                    .scroll(120, 'down')
-                    .withTimeout(15000);
+            let written = false;
+            for (let s = 0; s < 16 && !written; s += 1) {
+                try {
+                    await field.replaceText(this.mnemonic[i]);
+                    written = true;
+                } catch (e) {
+                    try {
+                        await element(by.id('mnemonic-words-scroll')).scroll(90, 'down');
+                    } catch (scrollErr) {
+                        await element(by.id('account-import-enter-mnemonic-view')).swipe('up', 'slow', 0.2);
+                    }
+                }
             }
-            await field.replaceText(this.mnemonic[i]);
+            if (!written) {
+                throw new Error(`could not enter mnemonic word ${i}`);
+            }
         } else {
             await field.typeText(`${this.mnemonic[i]}\n`);
         }
