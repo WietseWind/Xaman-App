@@ -107,7 +107,8 @@ Given('I should have {string}', async (elementId) => {
     const timeout =
         elementId === 'review-transaction-modal' ||
         elementId === 'account-settings-screen' ||
-        elementId === 'account-import-show-address-view'
+        elementId === 'account-import-show-address-view' ||
+        elementId === 'home-tab-view'
             ? 15000
             : 5000;
     await waitFor(element(by.id(elementId)))
