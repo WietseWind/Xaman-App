@@ -1,3 +1,4 @@
+const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
@@ -251,5 +252,15 @@ Then('I launch the app with url {string}', async (url) => {
 });
 
 Then('I open the url {string}', async (url) => {
+    if (device.getPlatform() === 'android') {
+        // Detox VIEW is activity-anonymous. After ToS loads xaman.app, Chrome can take the intent.
+        const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
+        execFileSync(
+            'adb',
+            ['-s', serial, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.VIEW', '-d', url, 'com.xrpllabs.xumm'],
+            { timeout: 10000 },
+        );
+        return;
+    }
     await device.openURL({ url });
 });
