@@ -1,5 +1,5 @@
 const { Then } = require('@cucumber/cucumber');
-const { expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 
 let passcode = '167349';
@@ -42,12 +42,18 @@ Then('I type my new passcode', async () => {
 
 const typeIntoField = async (inputId, value) => {
     const field = element(by.id(inputId));
-    await waitFor(field).toBeVisible().withTimeout(5000);
-    try {
-        await field.tap();
-    } catch (e) {
-        // iOS 26 keyboard accessory can steal the default hit point
-        await field.tap({ x: 8, y: 8 });
+    // Android review sheet: passphrase-input exists but fails 75% visible.
+    if (device.getPlatform() === 'android') {
+        await waitFor(field).toExist().withTimeout(5000);
+        await field.tap({ x: 24, y: 16 });
+    } else {
+        await waitFor(field).toBeVisible().withTimeout(5000);
+        try {
+            await field.tap();
+        } catch (e) {
+            // iOS 26 keyboard accessory can steal the default hit point
+            await field.tap({ x: 8, y: 8 });
+        }
     }
     await field.replaceText(value);
     try {
