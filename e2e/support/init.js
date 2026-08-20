@@ -1,6 +1,6 @@
 const detox = require('detox/internals');
 
-const { device } = require('detox');
+const { device, element, by, waitFor } = require('detox');
 const { Before, BeforeAll, AfterAll, After } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
@@ -48,7 +48,27 @@ BeforeAll(async () => {
     await device.setURLBlacklist(['.*xumm.app.*', '.*xaman.app.*']);
 });
 
+// On fresh Android installs the app auto-opens the "What's new" release-notes
+// modal shortly after launch; its full-screen backdrop swallows taps on the
+// screen underneath (e.g. the developer-mode switch) and trips Detox's
+// 75% visibility check. Close it before every scenario if it is up.
+async function dismissChangelogOverlay() {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+    try {
+        const overlay = element(by.id('change-log-overlay'));
+        await waitFor(overlay).toExist().withTimeout(1500);
+        await waitFor(element(by.id('close-change-log-button'))).toBeVisible().withTimeout(5000);
+        await element(by.id('close-change-log-button')).tap();
+        await waitFor(overlay).not.toExist().withTimeout(5000);
+    } catch (e) {
+        // overlay was not shown; nothing to dismiss
+    }
+}
+
 Before(async (context) => {
+    await dismissChangelogOverlay();
     await adapter.beforeEach(context);
 });
 
