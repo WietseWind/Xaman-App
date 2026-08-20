@@ -31,26 +31,34 @@ Then('I tap {string}', async (buttonId) => {
                 try {
                     const attrs = await btn.getAttributes();
                     const frame = attrs.frame || {};
-                    const x = Math.round(Number(frame.x || 53) + 24);
-                    const y = Math.round(Number(frame.y || 2146) + 16);
+                    const width = Number(frame.width || 975);
+                    const height = Number(frame.height || 139);
+                    // Label center. +24,+16 is the top-left padding and misses Confirm.
+                    const x = Math.round(Number(frame.x || 53) + width / 2);
+                    const y = Math.round(Number(frame.y || 2146) + Math.min(height / 2, 48));
                     await device.getUiDevice().click(x, y);
                 } catch (e) {
                     await btn.tap({ x: 24, y: 16 });
                 }
             };
             await clickFooter();
-            // ToS WebView eats the first press. If Confirm is gone, Home is up.
+            // ToS WebView can eat the first press. Keep clicking until Home is up.
             if (buttonId === 'confirm-button') {
-                for (let i = 0; i < 2; i += 1) {
-                    await new Promise((resolve) => setTimeout(resolve, 1200));
+                for (let i = 0; i < 20; i += 1) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
                     try {
                         await waitFor(element(by.id('home-tab-empty-view'))).toExist().withTimeout(400);
                         return;
                     } catch (e) {
                         try {
-                            await clickFooter();
-                        } catch (retryErr) {
+                            await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(200);
                             return;
+                        } catch (homeErr) {
+                            try {
+                                await clickFooter();
+                            } catch (retryErr) {
+                                // Confirm can already be gone while Home is coming up.
+                            }
                         }
                     }
                 }
