@@ -177,6 +177,19 @@ Then('I tap my account in the list', async () => {
         }
     }
 
+    if (device.getPlatform() === 'android') {
+        try {
+            const attrs = await row.getAttributes();
+            const frame = attrs.frame || {};
+            const x = Math.round(Number(frame.x || 0) + 40);
+            const y = Math.round(Number(frame.y || 0) + 30);
+            await device.getUiDevice().click(x, y);
+        } catch (e) {
+            await row.tap({ x: 24, y: 24 });
+        }
+        return;
+    }
+
     try {
         await row.tap();
     } catch (e) {
