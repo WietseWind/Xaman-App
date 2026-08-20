@@ -87,7 +87,12 @@ class PickerModal extends Component<Props, State> {
                         <Text style={styles.descriptionText}>{description}</Text>
                     </View>
                 )}
-                <FlatList data={items} renderItem={this.renderItem} keyExtractor={(i) => `${i.value}`} />
+                <FlatList
+                    testID="picker-item-list"
+                    data={items}
+                    renderItem={this.renderItem}
+                    keyExtractor={(i) => `${i.value}`}
+                />
             </View>
         );
     }
