@@ -4,6 +4,9 @@ const { dismissKeyboard } = require('../helpers/keyboard');
 const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
 
 Then('I tap {string}', async (buttonId) => {
+    if (device.getPlatform() === 'android' && buttonId === '24-words-button') {
+        buttonId = '12-words-button';
+    }
     // Finish dismisses the add-account modal onto Home. Tapping tab-Home then
     // fails iOS 26 visibility (selected _UITabButton clipped). Same reason
     // 03_import secret-numbers already comments this step out.
