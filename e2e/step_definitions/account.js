@@ -99,21 +99,31 @@ Then('I enter my mnemonic', async () => {
             // (footer + IME). Scroll until the frame is on screen, then type
             // with UiDevice + adb. BIP39 words are a-z only.
             const scroller = element(by.id('mnemonic-words-scroll'));
+            const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
             let written = false;
             for (let s = 0; s < 16 && !written; s += 1) {
-                const attrs = await field.getAttributes();
-                const frame = attrs.frame || {};
+                let frame = {};
+                try {
+                    const attrs = await field.getAttributes();
+                    frame = attrs.frame || {};
+                } catch (attrErr) {
+                    frame = {};
+                }
                 const y = Number(frame.y || 0);
                 const h = Number(frame.height || 0);
                 const w = Number(frame.width || 0);
                 const x = Number(frame.x || 0);
-                if (y > 200 && y + h < 1900 && w > 0) {
-                    await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + h / 2));
-                    execFileSync(
-                        'adb',
-                        ['-s', process.env.ANDROID_SERIAL || 'emulator-5554', 'shell', 'input', 'text', this.mnemonic[i]],
-                        { timeout: 5000 },
-                    );
+                if (y > 150 && y < 2100 && w > 0) {
+                    await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + Math.min(16, h / 2)));
+                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], {
+                        timeout: 5000,
+                    });
+                    // Close IME so later rows stay on screen.
+                    try {
+                        execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 3000 });
+                    } catch (imeErr) {
+                        // ignore
+                    }
                     written = true;
                     break;
                 }
