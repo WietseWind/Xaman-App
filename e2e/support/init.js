@@ -33,10 +33,14 @@ BeforeAll(async () => {
         newInstance: true,
         permissions: { notifications: 'YES', camera: 'YES' },
         disableTouchIndicators: false,
+        // Must be set at launch. Android RN Animated (Toast) trips
+        // AnimatedModuleIdlingResource during "ready".
+        launchArgs:
+            process.env.DETOX_CONFIGURATION && String(process.env.DETOX_CONFIGURATION).startsWith('android.')
+                ? { detoxEnableSynchronization: 0 }
+                : undefined,
     });
 
-    // Android: RN Animated (Toast, loops) trips AnimatedModuleIdlingResource.
-    // Explicit waits in steps are enough.
     if (device.getPlatform() === 'android') {
         await device.disableSynchronization();
     }
