@@ -1,10 +1,17 @@
 const detox = require('detox/internals');
 
 const { device, element, by, waitFor } = require('detox');
-const { Before, BeforeAll, AfterAll, After } = require('@cucumber/cucumber');
+const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
-const { setDeviceUdid, startRecordingVideo, stopRecordingVideo } = require('../helpers/artifacts');
+const {
+    setDeviceUdid,
+    setScreenshotPlatform,
+    nextStepIndex,
+    takeNamedScreenshot,
+    startRecordingVideo,
+    stopRecordingVideo,
+} = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
 const { checkNetwork, ensureLocalSimulator } = require('./preflight');
 
@@ -22,6 +29,7 @@ BeforeAll(async () => {
 
     // target the detox-managed simulator, not whatever happens to be "booted"
     setDeviceUdid(device.id);
+    setScreenshotPlatform(device.getPlatform());
 
     // start device log
     startDeviceLogStream(device.id);
@@ -53,9 +61,6 @@ BeforeAll(async () => {
 // screen underneath (e.g. the developer-mode switch) and trips Detox's
 // 75% visibility check. Close it before every scenario if it is up.
 async function dismissChangelogOverlay() {
-    if (device.getPlatform() !== 'android') {
-        return;
-    }
     try {
         const overlay = element(by.id('change-log-overlay'));
         await waitFor(overlay).toExist().withTimeout(1500);
@@ -72,7 +77,20 @@ Before(async (context) => {
     await adapter.beforeEach(context);
 });
 
+BeforeStep(async (context) => {
+    nextStepIndex();
+    takeNamedScreenshot(`before-${context.pickleStep.text}`);
+});
+
+AfterStep(async (context) => {
+    const status = context.result && context.result.status ? context.result.status : 'UNKNOWN';
+    takeNamedScreenshot(`after-${status}-${context.pickleStep.text}`);
+});
+
 After(async (context) => {
+    if (context.result && context.result.status === 'FAILED') {
+        takeNamedScreenshot(`FAIL-${context.pickle.name}`);
+    }
     await adapter.afterEach(context);
 });
 

@@ -128,13 +128,10 @@ Then('I tap my account in the list', async () => {
     const row = element(by.id(`account-${this.address}`));
     const list = element(by.id('account-list-scroll'));
 
-    // Android: a 90% hit-test can fail on the list itself (bottom nav clips
-    // account-list-scroll). Do not swipe the list. Scroll, then tap a point.
-    // Detox list.scroll() starts its gesture at the scroll view's bottom edge
-    // (y ~= window bottom), which this app's bottom tab bar overlays and
-    // swallows, so the list never moves and the off-screen row tap no-ops.
-    // On Android use a physical swipe that starts well above the tab bar.
-    for (let i = 0; i < 8; i += 1) {
+    // Detox list.scroll() starts at the bottom edge. The tab bar swallows it
+    // so the list does not move (I-ReadOnly stays below the fold). Swipe from
+    // the middle of the list instead.
+    for (let i = 0; i < 12; i += 1) {
         try {
             await waitFor(row).toBeVisible().withTimeout(400);
             break;
@@ -142,17 +139,19 @@ Then('I tap my account in the list', async () => {
             if (device.getPlatform() === 'android') {
                 try {
                     await device.getUiDevice().swipe(540, 1400, 540, 1000, 40);
-                    await new Promise((resolve) => { setTimeout(resolve, 600); });
                 } catch (swipeErr) {
                     break;
                 }
             } else {
                 try {
-                    await list.scroll(280, 'down');
+                    await list.swipe('up', 'slow', 0.55);
                 } catch (scrollErr) {
                     break;
                 }
             }
+            await new Promise((resolve) => {
+                setTimeout(resolve, 500);
+            });
         }
     }
 
@@ -170,8 +169,8 @@ Then('I tap my account in the list', async () => {
     }
 
     try {
-        await row.tap();
-    } catch (e) {
         await row.tap({ x: 24, y: 24 });
+    } catch (e) {
+        await row.tap();
     }
 });

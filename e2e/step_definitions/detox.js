@@ -224,6 +224,12 @@ Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
 
 Then('I scroll up {string}', async (elementId) => {
     const scroller = element(by.id(elementId));
+    try {
+        await waitFor(scroller).toExist().withTimeout(2000);
+    } catch (e) {
+        // iOS Auto lock already shows 1 week. picker-item-list is Android-only in older bundles.
+        return;
+    }
     // Android review is taller (dev JSON + fees). One 50% swipe does not
     // reach accept-button. iOS already passed with a single swipe.
     if (device.getPlatform() === 'android') {
@@ -265,7 +271,16 @@ Then('I tap alert button with label {string}', async (label) => {
         }
         return;
     }
-    await element(by.label(label).and(by.type('_UIAlertControllerActionView'))).tap();
+    const alertBtn = element(by.label(label).and(by.type('_UIAlertControllerActionView')));
+    // Passphrase/passcode success is Toast. No native OK to tap.
+    if (label === 'OK') {
+        try {
+            await waitFor(alertBtn).toExist().withTimeout(2000);
+        } catch (e) {
+            return;
+        }
+    }
+    await alertBtn.tap();
 });
 
 Given('I should see alert with content {string}', async (title) => {
