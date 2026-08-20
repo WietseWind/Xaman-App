@@ -101,7 +101,7 @@ Then('I enter my mnemonic', async () => {
             const scroller = element(by.id('mnemonic-words-scroll'));
             const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
             let written = false;
-            for (let s = 0; s < 16 && !written; s += 1) {
+            for (let s = 0; s < 24 && !written; s += 1) {
                 let frame = {};
                 try {
                     const attrs = await field.getAttributes();
@@ -113,7 +113,7 @@ Then('I enter my mnemonic', async () => {
                 const h = Number(frame.height || 0);
                 const w = Number(frame.width || 0);
                 const x = Number(frame.x || 0);
-                if (y > 150 && y < 2100 && w > 0) {
+                if (y > 80 && y < 2280 && w > 0) {
                     await device.getUiDevice().click(Math.round(x + w / 2), Math.round(y + Math.min(16, h / 2)));
                     execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], {
                         timeout: 5000,
