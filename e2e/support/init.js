@@ -35,6 +35,12 @@ BeforeAll(async () => {
         disableTouchIndicators: false,
     });
 
+    // Android: RN Animated (Toast, loops) trips AnimatedModuleIdlingResource.
+    // Explicit waits in steps are enough.
+    if (device.getPlatform() === 'android') {
+        await device.disableSynchronization();
+    }
+
     await device.setURLBlacklist(['.*xumm.app.*', '.*xaman.app.*']);
 });
 
