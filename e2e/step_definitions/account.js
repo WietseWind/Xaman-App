@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { Given, Then } = require('@cucumber/cucumber');
-const { element, by, waitFor } = require('detox');
+const { element, by, waitFor, device } = require('detox');
 
 const {
     activateAccount,
@@ -89,10 +89,28 @@ Then('I generate new mnemonic', async () => {
 });
 
 Then('I enter my mnemonic', async () => {
-    // typeText + return advances to the next word field. replaceText leaves
-    // later rows under the keyboard and they fail Detox visibility.
+    // typeText + return advances to the next word field on iOS. Android
+    // word-16+ is off-screen / <75% visible under the IME.
     for (let i = 0; i < 24; i++) {
-        await element(by.id(`word-${i}-input`)).typeText(`${this.mnemonic[i]}\n`);
+        const field = element(by.id(`word-${i}-input`));
+        if (device.getPlatform() === 'android') {
+            if (i > 0 && i % 4 === 0) {
+                try {
+                    await element(by.id('mnemonic-words-scroll')).scroll(140, 'down');
+                } catch (e) {
+                    // already at end
+                }
+            }
+            try {
+                await field.tap({ x: 8, y: 8 });
+            } catch (e) {
+                await element(by.id('mnemonic-words-scroll')).scroll(160, 'down');
+                await field.tap({ x: 8, y: 8 });
+            }
+            await field.replaceText(this.mnemonic[i]);
+        } else {
+            await field.typeText(`${this.mnemonic[i]}\n`);
+        }
     }
     await dismissKeyboard();
 });
