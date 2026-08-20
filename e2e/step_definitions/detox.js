@@ -3,6 +3,9 @@ const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
 
+// Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
+let androidAlertPending = false;
+
 Then('I tap {string}', async (buttonId) => {
     if (device.getPlatform() === 'android' && buttonId === '24-words-button') {
         buttonId = '12-words-button';
@@ -190,10 +193,11 @@ Then('I slide right {string}', async (elementId) => {
 
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
-        // Success is Toast on Android now. Native Alert OK is not tappable under Detox.
-        if (label === 'OK') {
+        // Passphrase/passcode success is Toast. Do not tap a ghost OK on those screens.
+        if (label === 'OK' && !androidAlertPending) {
             return;
         }
+        androidAlertPending = false;
         await device.disableSynchronization();
         try {
             const ui = device.getUiDevice();
@@ -208,6 +212,7 @@ Then('I tap alert button with label {string}', async (label) => {
 
 Given('I should see alert with content {string}', async (title) => {
     if (device.getPlatform() === 'android') {
+        androidAlertPending = true;
         await device.disableSynchronization();
         try {
             await waitForAndroidAlertText(title, device.id);
