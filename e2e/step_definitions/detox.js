@@ -19,12 +19,21 @@ Then('I tap {string}', async (buttonId) => {
     const btn = element(by.id(buttonId));
     // toExist: Next can be fully covered by the iOS keyboard and fail toBeVisible.
     await waitFor(btn).toExist().withTimeout(5000);
-    // AVD 1080x2400: footer center sits in the 3-button nav. Detox tap()
-    // hits the geometric center; RN never gets the press. Point near the
-    // top-left of the view. confirm-button and add-and-sign-button both fail
-    // this way.
+    // AVD 1080x2400: footer center sits in the 3-button nav. Espresso tap()
+    // at an offset still misses Confirm (WebView sibling). UiDevice.click
+    // at the same screen point fires onPress.
     if (device.getPlatform() === 'android') {
-        await btn.tap({ x: 24, y: 16 });
+        try {
+            const attrs = await btn.getAttributes();
+            const frame = attrs.frame || {};
+            const width = Number(frame.width || 0);
+            const height = Number(frame.height || 0);
+            const x = Math.round(Number(frame.x || 0) + Math.min(24, width > 0 ? width / 2 : 24));
+            const y = Math.round(Number(frame.y || 0) + Math.min(16, height > 0 ? height / 2 : 16));
+            await device.getUiDevice().click(x, y);
+        } catch (e) {
+            await btn.tap({ x: 24, y: 16 });
+        }
         return;
     }
     try {
