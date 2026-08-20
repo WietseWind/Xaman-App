@@ -100,7 +100,8 @@ Then('I enter my mnemonic', async () => {
                 await waitFor(field)
                     .toBeVisible()
                     .whileElement(by.id('mnemonic-words-scroll'))
-                    .scroll(120, 'down');
+                    .scroll(120, 'down')
+                    .withTimeout(15000);
             }
             await field.replaceText(this.mnemonic[i]);
         } else {
