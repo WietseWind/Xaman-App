@@ -36,11 +36,20 @@ Then('I tap {string}', async (buttonId) => {
                 }
             };
             await clickFooter();
-            // ToS WebView eats the first press. Button isLoading ignores extras.
+            // ToS WebView eats the first press. If Confirm is gone, Home is up.
             if (buttonId === 'confirm-button') {
                 for (let i = 0; i < 2; i += 1) {
                     await new Promise((resolve) => setTimeout(resolve, 1200));
-                    await clickFooter();
+                    try {
+                        await waitFor(element(by.id('home-tab-empty-view'))).toExist().withTimeout(400);
+                        return;
+                    } catch (e) {
+                        try {
+                            await clickFooter();
+                        } catch (retryErr) {
+                            return;
+                        }
+                    }
                 }
             }
             return;
