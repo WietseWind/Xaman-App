@@ -107,7 +107,14 @@ Then('I enter my mnemonic', async () => {
             // with UiDevice + adb. BIP39 words are a-z only.
             const scroller = element(by.id('mnemonic-words-scroll'));
             const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
-            if (i >= 8) {
+            if (i >= 5) {
+                try {
+                    await scroller.scroll(80, 'down');
+                } catch (e) {
+                    // already at end
+                }
+            }
+            if (i >= 9) {
                 try {
                     await scroller.scrollTo('bottom');
                 } catch (e) {
@@ -134,11 +141,6 @@ Then('I enter my mnemonic', async () => {
                     execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], {
                         timeout: 5000,
                     });
-                    try {
-                        execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 3000 });
-                    } catch (imeErr) {
-                        // ignore
-                    }
                     written = true;
                     break;
                 }
