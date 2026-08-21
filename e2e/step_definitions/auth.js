@@ -1,5 +1,6 @@
 const { Then } = require('@cucumber/cucumber');
-const { expect, element, by } = require('detox');
+const { expect, element, by, waitFor, device } = require('detox');
+const { dismissKeyboard } = require('../helpers/keyboard');
 
 let passcode = '167349';
 
@@ -17,7 +18,21 @@ Then('I enter my passcode', async () => {
 });
 
 Then('I type my passcode', async () => {
-    // await element(by.id('pin-input')).typeText(`${passcode}\n`);
+    try {
+        await waitFor(element(by.id(`${passcode[0]}-key`)))
+            .toExist()
+            .withTimeout(10000);
+    } catch (e) {
+        // Downgrade can already have applied with no pin overlay.
+        try {
+            await waitFor(element(by.id('account-access-level-value')))
+                .toHaveText('Read only')
+                .withTimeout(1500);
+            return;
+        } catch (skipErr) {
+            throw e;
+        }
+    }
     await element(by.id(`${passcode[0]}-key`)).tap();
     await element(by.id(`${passcode[1]}-key`)).tap();
     await element(by.id(`${passcode[2]}-key`)).tap();
@@ -37,10 +52,33 @@ Then('I type my new passcode', async () => {
     await element(by.id(`${passcode[5]}-key`)).tap();
 });
 
+const typeIntoField = async (inputId, value) => {
+    const field = element(by.id(inputId));
+    // Android review sheet: passphrase-input exists but fails 75% visible.
+    if (device.getPlatform() === 'android') {
+        await waitFor(field).toExist().withTimeout(15000);
+        await field.tap({ x: 24, y: 16 });
+    } else {
+        await waitFor(field).toBeVisible().withTimeout(5000);
+        try {
+            await field.tap();
+        } catch (e) {
+            // iOS 26 keyboard accessory can steal the default hit point
+            await field.tap({ x: 8, y: 8 });
+        }
+    }
+    await field.replaceText(value);
+    try {
+        await field.tapReturnKey();
+    } catch (e) {
+        await dismissKeyboard();
+    }
+};
+
 Then('I enter my passphrase in {string}', async (input) => {
-    await element(by.id(input)).typeText(`${passphrase}\n`);
+    await typeIntoField(input, passphrase);
 });
 
 Then('I enter my new passphrase in {string}', async (input) => {
-    await element(by.id(input)).typeText(`${newPassphrase}\n`);
+    await typeIntoField(input, newPassphrase);
 });

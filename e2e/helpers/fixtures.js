@@ -5,8 +5,8 @@ const AccountLib = require('xrpl-accountlib');
 let testNetCredits;
 
 // generate family seed
-const generateMnemonic = () => {
-    const generatedAccount = AccountLib.generate.mnemonic();
+const generateMnemonic = (strength = 256) => {
+    const generatedAccount = AccountLib.generate.mnemonic({ strength });
 
     return generatedAccount.secret.mnemonic.split(' ');
 };

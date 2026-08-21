@@ -2,7 +2,7 @@ import { get, isEmpty } from 'lodash';
 
 import React, { Component } from 'react';
 
-import { WebLinks } from '@common/constants/endpoints';
+import { HOSTNAME } from '@common/constants/endpoints';
 
 import { Payload } from '@common/libs/payload';
 
@@ -57,7 +57,9 @@ class HooksExplainer extends Component<Props, State> {
         };
     }
 
-    getSource = (returnParamsOnly = false) => {
+    getSource(returnParamsOnly: true): Record<string, unknown>;
+    getSource(returnParamsOnly?: false): { uri: string; headers: { 'User-Agent': string } };
+    getSource(returnParamsOnly = false) {
         const { account, payload, transaction, origin } = this.props;
 
         const params = {
@@ -102,8 +104,11 @@ class HooksExplainer extends Component<Props, State> {
             return params;
         }
 
+        // String export + fallback: named WebLinks can be undefined after Metro lazy/HMR remaps this factory.
+        const host = typeof HOSTNAME === 'string' && HOSTNAME ? HOSTNAME : 'xaman.app';
+
         return {
-            uri: `${WebLinks.HooksExplainerURL}/${Localize.getCurrentLocale()}?theme=${StyleService.getCurrentTheme()}`,
+            uri: `https://${host}/app/webviews/hooks/${Localize.getCurrentLocale()}?theme=${StyleService.getCurrentTheme()}`,
             // uri: `https://dev.wietse.com/app/webviews/hooks/${Localize.getCurrentLocale()}`,
             // method: 'POST',
             // body: JSON.stringify(params),
@@ -112,7 +117,7 @@ class HooksExplainer extends Component<Props, State> {
                 // 'Content-Type': 'application/json',
             },
         };
-    };
+    }
 
     openBrowserLink = (url: string) => {
         if (!url) {

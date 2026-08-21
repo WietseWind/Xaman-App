@@ -400,7 +400,7 @@ class PasscodeSetupView extends Component<Props, State> {
                 style={onboardingStyles.backgroundImageStyle}
                 imageStyle={onboardingStyles.backgroundImageStyle}
             >
-                <SafeAreaView style={[AppStyles.flex2, AppStyles.centerAligned, AppStyles.padding]}>
+                <SafeAreaView style={[AppStyles.flex2, AppStyles.centerAligned, AppStyles.padding, AppStyles.androidSystemBarTop]}>
                     <Image
                         style={onboardingStyles.logo}
                         source={StyleService.getImageIfLightModeIfDarkMode('XamanLogo', 'XamanLogoLight')}
@@ -417,6 +417,7 @@ class PasscodeSetupView extends Component<Props, State> {
                         <Footer style={[
                             AppStyles.paddingBottom,
                             AppStyles.paddingTopNone,
+                            AppStyles.androidSystemBarBottom,
                         ]}>
                             {this.renderFooter()}
                         </Footer>

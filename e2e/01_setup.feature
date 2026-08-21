@@ -19,11 +19,12 @@ Feature: Setup App
         Given I should wait 15 sec to see 'agreement-setup-screen'
         Then I wait 15 sec for button 'confirm-button' to be enabled
         Then I tap 'confirm-button'
+        Given I should wait 30 sec to see 'home-tab-empty-view'
 
     Scenario: After setup
 #        Given I should see 'change-log-overlay'
 #        Then I tap 'close-change-log-button'
-        Given I should see 'home-tab-empty-view'
+        Given I should have 'home-tab-empty-view'
 
     Scenario: Enabled developer mode
         Then I tap 'tab-Settings'

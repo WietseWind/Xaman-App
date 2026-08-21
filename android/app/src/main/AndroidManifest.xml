@@ -76,8 +76,8 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:exported="true"
             android:launchMode="singleTask"
+            android:documentLaunchMode="never"
             android:screenOrientation="portrait"
-            android:taskAffinity=""
             android:windowSoftInputMode="adjustNothing"
             tools:ignore="LockedOrientationActivity">
 
