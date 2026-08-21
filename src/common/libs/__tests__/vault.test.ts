@@ -5,7 +5,7 @@ import { NativeModules } from 'react-native';
 import LoggerService from '@services/LoggerService';
 import Vault from '../vault';
 
-const { VaultManagerModule } = NativeModules;
+const { VaultManagerModule, UniqueIdProviderModule } = NativeModules;
 
 describe('Vault', () => {
     const name = 'vaultName';
@@ -25,6 +25,22 @@ describe('Vault', () => {
             await Vault.open(name, key).then(() => {
                 expect(VaultManagerModule.openVault).toHaveBeenCalled();
             });
+        });
+
+        it('should warn in session log when stored device id fallback succeeded', async () => {
+            UniqueIdProviderModule.consumeLastDeviceIdUnlockReport.mockReturnValueOnce({
+                fallbackUsed: true,
+                storedDifferedFromLive: true,
+            });
+
+            await expect(Vault.open(name, key)).resolves.toBe('clearText');
+
+            const warn = LoggerService.getLogs().find(
+                (entry) =>
+                    entry.level === 'warn' &&
+                    entry.message.includes('LIVE DEVICE ID DID NOT DECRYPT'),
+            );
+            expect(warn).toBeDefined();
         });
 
         it('should resolve undefined and keep native reason out of the return value', async () => {

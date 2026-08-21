@@ -65,10 +65,10 @@ public class UniqueIdProviderTest {
     @Test
     public void lastKnownDeviceIdChangedOnlyWhenStoredAndLiveDiffer() {
         UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
-        String liveId = provider.getDeviceUniqueId();
+        String liveId = provider.getLiveAndroidId();
         Assert.assertNotNull(liveId);
 
-        provider.persistConfirmedDeviceUniqueId(liveId);
+        provider.saveLastKnownAndroidId(liveId);
         Assert.assertFalse(provider.isLastKnownDeviceIdChanged());
 
         String previous = provider.loadLastKnownAndroidId();
@@ -79,6 +79,37 @@ public class UniqueIdProviderTest {
             provider.saveLastKnownAndroidId(previous);
         }
         Assert.assertFalse(provider.isLastKnownDeviceIdChanged());
+    }
+
+    @Test
+    public void decryptCandidatesTryLiveFirst() {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        List<String> candidates = provider.getDecryptCandidateIds();
+        Assert.assertFalse(candidates.isEmpty());
+        Assert.assertArrayEquals(
+                UniqueIdProvider.toDeviceIdBytes(liveId),
+                UniqueIdProvider.toDeviceIdBytes(candidates.get(0))
+        );
+    }
+
+    @Test
+    public void decryptSuccessWithStoredAfterLiveFailSetsFallbackReport() {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        provider.saveLastKnownAndroidId("ffffffffffffffff");
+        try {
+            provider.recordDecryptSuccess("ffffffffffffffff", true);
+            UniqueIdProvider.DeviceIdUnlockReport report = provider.consumeLastUnlockReport();
+            Assert.assertNotNull(report);
+            Assert.assertTrue(report.storedDifferedFromLive);
+            Assert.assertTrue(report.fallbackUsed);
+            Assert.assertNull(provider.consumeLastUnlockReport());
+        } finally {
+            provider.saveLastKnownAndroidId(liveId);
+        }
     }
 
     @Test

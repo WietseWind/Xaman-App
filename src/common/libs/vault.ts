@@ -11,7 +11,7 @@ import { HexEncoding } from '@common/utils/string';
 import LoggerService from '@services/LoggerService';
 
 /* Module ==================================================================== */
-const { VaultManagerModule } = NativeModules;
+const { VaultManagerModule, UniqueIdProviderModule } = NativeModules;
 
 /* Logger ==================================================================== */
 const logger = LoggerService.createLogger('Vault');
@@ -50,6 +50,13 @@ const Vault = {
                     if (!clearText) {
                         reject(new Error('Vault open, received empty clear text!'));
                         return;
+                    }
+                    const report = UniqueIdProviderModule?.consumeLastDeviceIdUnlockReport?.();
+                    if (report?.fallbackUsed) {
+                        logger.warn(
+                            'WARNING: LIVE DEVICE ID DID NOT DECRYPT. SIGNING SUCCEEDED WITH LAST STORED DEVICE ID.',
+                            { vault: name, storedDifferedFromLive: !!report.storedDifferedFromLive },
+                        );
                     }
                     resolve(clearText);
                 })

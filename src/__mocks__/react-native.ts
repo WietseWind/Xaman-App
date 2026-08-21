@@ -74,6 +74,10 @@ ReactNative.NativeModules.AppUtilsModule = {
 
 ReactNative.NativeModules.UniqueIdProviderModule = {
     getDeviceUniqueId: jest.fn(() => 'e988b7a9-f685-4674-87bc-0ad52a52faa5'),
+    consumeLastDeviceIdUnlockReport: jest.fn(() => ({
+        fallbackUsed: false,
+        storedDifferedFromLive: false,
+    })),
 };
 
 ReactNative.NativeModules.HapticFeedbackModule = {

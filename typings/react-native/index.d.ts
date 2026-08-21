@@ -264,6 +264,10 @@ export interface UniqueIdProviderModuleInterface extends NativeModule {
      * iOS: UUIDV4 & Android: Hex
      */
     getDeviceUniqueId: () => string;
+    consumeLastDeviceIdUnlockReport?: () => {
+        fallbackUsed: boolean;
+        storedDifferedFromLive: boolean;
+    };
 }
 
 /**

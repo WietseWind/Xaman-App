@@ -28,6 +28,12 @@ public class UniqueIdProvider {
 
     private Context applicationContent;
     private Keychain keychain;
+    private DeviceIdUnlockReport lastUnlockReport;
+
+    public static class DeviceIdUnlockReport {
+        public boolean fallbackUsed;
+        public boolean storedDifferedFromLive;
+    }
 
     public synchronized UniqueIdProvider init(final ReactApplicationContext context) {
         if (context == null) {
@@ -160,7 +166,8 @@ public class UniqueIdProvider {
 
     /**
      * Candidate ANDROID_ID values for Cipher V2 decrypt, first match wins.
-     * Order: Keychain cache, last-known plain prefs, live ANDROID_ID.
+     * Order: live ANDROID_ID, Keychain cache, last-known plain prefs.
+     * Live first so a stored-id success is a real fallback after live fail.
      * Deduped by padded bytes so leading-zero variants are tried once.
      */
     @NonNull
@@ -170,10 +177,56 @@ public class UniqueIdProvider {
         }
 
         LinkedHashMap<String, String> uniqueByBytes = new LinkedHashMap<>();
+        addDecryptCandidate(uniqueByBytes, getAndroidId(applicationContent));
         addDecryptCandidate(uniqueByBytes, loadDeviceUniqueId());
         addDecryptCandidate(uniqueByBytes, loadLastKnownAndroidId());
-        addDecryptCandidate(uniqueByBytes, getAndroidId(applicationContent));
         return new ArrayList<>(uniqueByBytes.values());
+    }
+
+    @Nullable
+    public synchronized String getLiveAndroidId() {
+        if (applicationContent == null) {
+            return null;
+        }
+        String live = getAndroidId(applicationContent);
+        return isUsableAndroidId(live) ? live : null;
+    }
+
+    public synchronized void clearLastUnlockReport() {
+        lastUnlockReport = null;
+    }
+
+    /**
+     * Record a successful Cipher V2 decrypt. fallbackUsed is true only when live id
+     * failed and a stored id then succeeded, and stored != live.
+     */
+    public synchronized void recordDecryptSuccess(
+            @NonNull final String winningDeviceId,
+            final boolean liveDecryptFailed
+    ) {
+        DeviceIdUnlockReport report = new DeviceIdUnlockReport();
+        byte[] liveBytes = toDeviceIdBytes(getLiveAndroidId());
+        byte[] storedBytes = toDeviceIdBytes(loadLastKnownAndroidId());
+        if (storedBytes == null) {
+            storedBytes = toDeviceIdBytes(loadDeviceUniqueId());
+        }
+        byte[] winningBytes = toDeviceIdBytes(winningDeviceId);
+        report.storedDifferedFromLive = liveBytes != null
+                && storedBytes != null
+                && !Arrays.equals(liveBytes, storedBytes);
+        report.fallbackUsed = liveDecryptFailed
+                && report.storedDifferedFromLive
+                && winningBytes != null
+                && liveBytes != null
+                && !Arrays.equals(winningBytes, liveBytes);
+        lastUnlockReport = report;
+    }
+
+    @Nullable
+    public synchronized DeviceIdUnlockReport consumeLastUnlockReport() {
+        DeviceIdUnlockReport report = lastUnlockReport;
+        lastUnlockReport = null;
+        return report;
     }
 
     private static void addDecryptCandidate(
