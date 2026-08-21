@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.xrpllabs.xumm.LaunchActivity;
 import com.xrpllabs.xumm.SafeAreaInsets;
 
 @ReactModule(name = DeviceUtilsModule.NAME)
@@ -54,6 +55,11 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             promise.reject(e);
         }
+    }
+
+    @ReactMethod
+    public void hideLaunchSplash() {
+        LaunchActivity.hideLaunchSplashIfPresent();
     }
 
     @ReactMethod

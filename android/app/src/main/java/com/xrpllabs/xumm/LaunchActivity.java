@@ -31,7 +31,14 @@ import android.view.Window;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
+import java.lang.ref.WeakReference;
+
 public class LaunchActivity extends NavigationActivity {
+
+    private static WeakReference<LaunchActivity> currentLaunch;
+
+    private View splashView;
+    private boolean splashHidden = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,11 +53,58 @@ public class LaunchActivity extends NavigationActivity {
             return;
         }
 
+        currentLaunch = new WeakReference<>(this);
+
         // initialise required modules
         BiometricModule.initialise();
 
         // set splash screen
         setSplashLayout();
+    }
+
+    @Override
+    public void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        keepSplashInFront();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (currentLaunch != null && currentLaunch.get() == this) {
+            currentLaunch.clear();
+        }
+        super.onDestroy();
+    }
+
+    public static void hideLaunchSplashIfPresent() {
+        LaunchActivity activity = currentLaunch != null ? currentLaunch.get() : null;
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        activity.runOnUiThread(activity::hideLaunchSplash);
+    }
+
+    /**
+     * Drop the boot image only after the first React Native screen has painted.
+     * RNN setRoot removes content child 0; a dummy view absorbs that so this
+     * layout can stay in front until JS calls hide.
+     */
+    public void hideLaunchSplash() {
+        if (splashHidden) {
+            return;
+        }
+        splashHidden = true;
+        if (splashView != null) {
+            ViewGroup parent = splashView.getParent() instanceof ViewGroup
+                    ? (ViewGroup) splashView.getParent()
+                    : null;
+            splashView.setVisibility(View.GONE);
+            if (parent != null) {
+                parent.removeView(splashView);
+            }
+            splashView = null;
+        }
+        applyNavigatorNavInset();
     }
 
     @Override
@@ -97,6 +151,17 @@ public class LaunchActivity extends NavigationActivity {
 
         seedInsetsFromResources();
         setContentView(R.layout.activity_splash);
+        ViewGroup content = findViewById(android.R.id.content);
+        splashView = findViewById(R.id.splash_root);
+        if (splashView != null) {
+            splashView.setElevation(1000f);
+            splashView.setTranslationZ(1000f);
+            // RNN setRoot removes content child 0. Keep a dummy there so the
+            // real splash is not deleted before the first screen paints.
+            View dummy = new View(this);
+            dummy.setVisibility(View.GONE);
+            content.addView(dummy, 0);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // Android 12+ keeps a solid-color system splash. Remove it so the
             // pattern + logo layout can show while React Native loads.
@@ -114,11 +179,31 @@ public class LaunchActivity extends NavigationActivity {
                     navigationBars.right,
                     displayCutout.top
             );
+            keepSplashInFront();
             applyNavigatorNavInset();
             return insets;
         });
         ViewCompat.requestApplyInsets(rootView);
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this::applyNavigatorNavInset);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            keepSplashInFront();
+            applyNavigatorNavInset();
+        });
+    }
+
+    private void keepSplashInFront() {
+        if (splashHidden || splashView == null) {
+            return;
+        }
+        ViewGroup parent = splashView.getParent() instanceof ViewGroup
+                ? (ViewGroup) splashView.getParent()
+                : null;
+        if (parent == null) {
+            return;
+        }
+        if (parent.getChildAt(parent.getChildCount() - 1) != splashView) {
+            splashView.bringToFront();
+        }
+        splashView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -144,7 +229,7 @@ public class LaunchActivity extends NavigationActivity {
             if (child.getPaddingBottom() != bottom) {
                 child.setPadding(child.getPaddingLeft(), child.getPaddingTop(), child.getPaddingRight(), bottom);
             }
-            if (hasLaidOutContent((ViewGroup) child) && background != Color.TRANSPARENT) {
+            if (splashHidden && hasLaidOutContent((ViewGroup) child) && background != Color.TRANSPARENT) {
                 painted = true;
                 child.setBackgroundColor(background);
             } else {
