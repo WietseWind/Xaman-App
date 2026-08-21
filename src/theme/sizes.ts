@@ -38,16 +38,14 @@ const statusBarHeight = topInset > 0 ? topInset : Platform.OS === 'ios' ? 20 : 0
 // this help's us to add extra padding if necessary
 let safeAreaBottomInset = 0;
 if (Platform.OS === 'android') {
-    safeAreaBottomInset = Math.floor(topInset + bottomInset - Math.floor(screenHeight - height));
-    if (safeAreaBottomInset < 0) {
-        safeAreaBottomInset = 0;
-    }
+    // Edge-to-edge: window height matches screen. Use the stored nav-bar inset.
+    safeAreaBottomInset = bottomInset > 0 ? bottomInset : 0;
 } else if (Platform.OS === 'ios') {
     safeAreaBottomInset = bottomInset;
 }
 
 let safeAreaTopInset = 0;
-if (Platform.OS === 'ios') {
+if (Platform.OS === 'ios' || Platform.OS === 'android') {
     safeAreaTopInset = statusBarHeight;
 }
 

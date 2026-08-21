@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     android:background="@color/splash_screen_background"
     >
   <ImageView
@@ -20,7 +20,7 @@
         android:layout_height="200dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="80dp"
         android:contentDescription="@string/splash_screen_foreground"
         android:scaleType="fitCenter"
         android:src="@drawable/formerly_logo" />

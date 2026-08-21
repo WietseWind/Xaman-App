@@ -1,9 +1,6 @@
 package libs.utils;
 
-import android.app.Activity;
 import android.os.Build;
-import android.view.View;
-import android.view.WindowInsets;
 
 import androidx.annotation.NonNull;
 
@@ -108,22 +105,9 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();
         final Map<String, Object> layoutInsets = new HashMap<>();
-        final Activity activity = getCurrentActivity();
 
-        layoutInsets.put("top", 0);
-        layoutInsets.put("bottom", 0);
-
-        if (activity != null) {
-            // final View decorView = activity.getWindow().getDecorView();
-            // if view is not isAttachedToWindow getSystemWindowInsetTop can return null
-            // if (decorView != null &&  decorView.isAttachedToWindow()) {
-            //     final WindowInsets insets = decorView.getRootWindowInsets();
-            //     layoutInsets.put("top", Math.round(PixelUtil.toDIPFromPixel(insets.getSystemWindowInsetTop())));
-            //     layoutInsets.put("bottom", Math.round(PixelUtil.toDIPFromPixel(insets.getSystemWindowInsetBottom())));
-            // }
-            layoutInsets.put("top", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaTop())));
-            layoutInsets.put("bottom", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaBottom())));
-        }
+        layoutInsets.put("top", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaTop())));
+        layoutInsets.put("bottom", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaBottom())));
 
         constants.put("osVersion", Build.VERSION.RELEASE);
         constants.put("brand", Build.BRAND);

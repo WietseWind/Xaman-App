@@ -130,7 +130,7 @@ class FinishView extends Component<Props, State> {
         const { isLoading, isTOSLoaded, TOSVersion } = this.state;
 
         return (
-            <SafeAreaView testID="agreement-setup-screen" style={styles.container}>
+            <SafeAreaView testID="agreement-setup-screen" style={[styles.container, AppStyles.androidSystemBarTop, AppStyles.androidSystemBarBottom]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.centerAligned]}>
                     <Image style={styles.logo} source={StyleService.getImage('XamanLogo')} />
                 </View>

@@ -41,16 +41,13 @@ const getDefaultOptions = (): Options => {
             visible: false,
         },
         navigationBar: {
-            backgroundColor: StyleService.value('$tint'),
+            backgroundColor: StyleService.value('$background'),
         },
         statusBar: {
             // @ts-ignore
-            style: Platform.select({
-                android: undefined,
-                // @ts-ignore
-                ios: StyleService.value(StyleService.select({ light: 'dark', dark: 'light' })),
-            }),
+            style: StyleService.value(StyleService.select({ light: 'dark', dark: 'light' })),
             drawBehind: true,
+            backgroundColor: Platform.select({ android: 'transparent', default: undefined }),
         },
         bottomTabs: {
             backgroundColor: StyleService.value('$background'),

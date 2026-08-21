@@ -43,7 +43,7 @@ class OnboardingView extends Component<Props, State> {
                 style={styles.backgroundImageStyle}
                 imageStyle={styles.backgroundImageStyle}
             >
-                <SafeAreaView style={[AppStyles.flex3, AppStyles.centerAligned, AppStyles.padding]}>
+                <SafeAreaView style={[AppStyles.flex3, AppStyles.centerAligned, AppStyles.padding, AppStyles.androidSystemBarTop]}>
                     <Image
                         style={styles.logo}
                         source={StyleService.getImageIfLightModeIfDarkMode('XamanLogo', 'XamanLogoLight')}
@@ -85,6 +85,7 @@ class OnboardingView extends Component<Props, State> {
                         <Footer style={[
                             AppStyles.paddingBottom,
                             AppStyles.paddingTopNone,
+                            AppStyles.androidSystemBarBottom,
                         ]}>
                             <Button
                                 testID="start-button"

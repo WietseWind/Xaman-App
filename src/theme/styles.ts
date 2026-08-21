@@ -2,6 +2,8 @@
  * App Styles
  */
 
+import { Platform } from 'react-native';
+
 import StyleService from '@services/StyleService';
 
 import Fonts from './fonts';
@@ -26,6 +28,13 @@ export default StyleService.create({
         alignContent: 'stretch',
         paddingTop: Sizes.safeAreaTopInset,
         backgroundColor: '$background',
+    },
+    // Android draws behind system bars. iOS SafeAreaView already insets.
+    androidSystemBarTop: {
+        paddingTop: Platform.OS === 'android' ? Sizes.statusBarHeight : 0,
+    },
+    androidSystemBarBottom: {
+        paddingBottom: Platform.OS === 'android' ? Sizes.safeAreaBottomInset : 0,
     },
     headerContainer: {
         backgroundColor: '$transparent',
