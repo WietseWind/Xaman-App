@@ -25,6 +25,15 @@ describe('Vault', () => {
                 expect(VaultManagerModule.openVault).toHaveBeenCalled();
             });
         });
+
+        it('should resolve undefined and keep native reason out of the return value', async () => {
+            VaultManagerModule.openVault.mockRejectedValueOnce({
+                code: 'WRONG_PASSPHRASE',
+                message: 'CipherV2AesGcm decryption failed after 2 device id(s)',
+            });
+
+            await expect(Vault.open(name, key)).resolves.toBeUndefined();
+        });
     });
 
     describe('Purge', () => {

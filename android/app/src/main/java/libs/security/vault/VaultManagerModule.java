@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import libs.security.crypto.Crypto;
 import libs.security.vault.cipher.Cipher;
+import libs.security.vault.exceptions.CryptoFailedException;
 import libs.security.vault.storage.Keychain;
 
 @ReactModule(name = libs.security.vault.VaultManagerModule.NAME)
@@ -52,13 +53,17 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
     }
 
     private static void rejectWithError(Promise promise, Exception exception) {
+        String code = "-1";
+        if (exception instanceof CryptoFailedException) {
+            code = ((CryptoFailedException) exception).getCode();
+        }
         StringBuilder error = new StringBuilder();
         error.append(exception.getMessage());
         if (exception.getCause() != null) {
             error.append(": ");
             error.append(exception.getCause().toString());
         }
-        promise.reject("-1", error.toString());
+        promise.reject(code, error.toString());
     }
 
     private static String getRecoveryVaultName(@NonNull final String vaultName) {

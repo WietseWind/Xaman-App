@@ -19,7 +19,9 @@ import java.util.Map;
 
 import extentions.PerformanceLogger;
 import libs.security.providers.UniqueIdProvider;
+import libs.security.vault.VaultErrorCodes;
 import libs.security.vault.cipher.Cipher;
+import libs.security.vault.exceptions.CryptoFailedException;
 import libs.security.vault.storage.Keychain;
 
 @RunWith(AndroidJUnit4.class)
@@ -112,6 +114,13 @@ public class VaultMangerTest {
                 false
         ));
         performanceLogger.end("OPEN_VAULT");
+
+        try {
+            vaultManager.openVault(VAULT_NAME, "WRONG_KEY", false);
+            Assert.fail("wrong key should not open vault");
+        } catch (CryptoFailedException e) {
+            Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
+        }
 
         // should return false for migration required as vault has been created with latest cipher
         performanceLogger.start("IS_MIGRATION_REQUIRED");

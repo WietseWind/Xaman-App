@@ -54,7 +54,9 @@ const Vault = {
                     resolve(clearText);
                 })
                 .catch((error) => {
-                    logger.error(`open [${name}]`, error);
+                    const code = typeof error?.code === 'string' ? error.code : '-1';
+                    const message = error?.message ? String(error.message) : String(error);
+                    logger.error(`open [${name}]`, { code, message });
                     resolve(undefined);
                 });
         });

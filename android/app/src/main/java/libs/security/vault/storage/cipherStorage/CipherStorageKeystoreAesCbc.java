@@ -11,6 +11,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import libs.security.vault.VaultErrorCodes;
 import libs.security.vault.storage.Keychain;
 import libs.security.vault.exceptions.CryptoFailedException;
 
@@ -112,17 +113,24 @@ public class CipherStorageKeystoreAesCbc extends CipherStorageBase {
                                     @NonNull final byte[] username,
                                     @NonNull final byte[] password)
             throws CryptoFailedException {
-        final AtomicInteger retries = new AtomicInteger(1);
-
         try {
-            final Key key = extractGeneratedKey(alias, retries);
+            final Key key = extractExistingKey(alias);
 
             return new DecryptionResult(decryptBytes(key, username), decryptBytes(key, password));
+        } catch (CryptoFailedException e) {
+            throw e;
         } catch (GeneralSecurityException e) {
-            throw new CryptoFailedException("Could not decrypt data with alias: " + alias, e);
+            throw new CryptoFailedException(
+                    VaultErrorCodes.KEYSTORE_DECRYPT,
+                    "Could not decrypt data with alias: " + alias,
+                    e
+            );
         } catch (Throwable fail) {
-            throw new CryptoFailedException("Unknown error with alias: " + alias +
-                    ", error: " + fail.getMessage(), fail);
+            throw new CryptoFailedException(
+                    classifyDecryptFailure(fail),
+                    "Unknown error with alias: " + alias + ", error: " + fail.getMessage(),
+                    fail
+            );
         }
     }
     //endregion

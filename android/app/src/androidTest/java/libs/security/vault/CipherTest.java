@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import java.util.Map;
 
 import libs.security.providers.UniqueIdProvider;
+import libs.security.vault.VaultErrorCodes;
 import libs.security.vault.cipher.Cipher;
 import libs.security.vault.exceptions.CryptoFailedException;
 
@@ -100,6 +101,13 @@ public class CipherTest {
         String decryptResultLongKey = Cipher.decrypt((String) cipherResultLong.get("cipher"), clearKeyLong, ((Cipher.DerivedKeys) cipherResultLong.get("derived_keys")).toJSONString());
         performanceLogger.end("CIPHER_DECRYPT_V2_LONG_KEY");
         Assert.assertEquals(clearText, decryptResultLongKey);
+
+        try {
+            Cipher.decrypt(cipher, "Wrong Key", derivedKeys.toJSONString());
+            Assert.fail("wrong key should not decrypt");
+        } catch (CryptoFailedException e) {
+            Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
+        }
     }
 
     @Test
@@ -113,6 +121,13 @@ public class CipherTest {
         String decryptResult = Cipher.decrypt(V1_Cipher, clearKey, V1_IV);
         performanceLogger.end("CIPHER_DECRYPT_V1");
         Assert.assertEquals(clearText, decryptResult);
+
+        try {
+            Cipher.decrypt(V1_Cipher, "Wrong Key", V1_IV);
+            Assert.fail("wrong key should not decrypt v1");
+        } catch (CryptoFailedException e) {
+            Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
+        }
     }
 
     @AfterClass
