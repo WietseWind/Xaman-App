@@ -21,8 +21,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.view.ViewGroup;
 import android.view.Window;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 public class LaunchActivity extends NavigationActivity {
 
@@ -81,27 +86,24 @@ public class LaunchActivity extends NavigationActivity {
                     navigationBars.right,
                     displayCutout.top
             );
-            applyBottomTabsNavInset();
+            applyNavigatorNavInset();
             return insets;
         });
         ViewCompat.requestApplyInsets(rootView);
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this::applyBottomTabsNavInset);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this::applyNavigatorNavInset);
     }
 
     /**
-     * RNN tab bar ignores navigation-bar insets on API 35+. Pad the tab bar so the
-     * virtual home control sits in the bar, like the iOS home indicator.
+     * RNN ignores navigation-bar insets on API 35+. Pad the navigator root so every
+     * screen (tabs, send, settings) sits above the virtual home control, like iOS.
+     * Do not pad the splash layout.
      */
-    private void applyBottomTabsNavInset() {
-        int tabsId = getResources().getIdentifier("bottomTabs", "id", getPackageName());
-        if (tabsId == 0) {
+    private void applyNavigatorNavInset() {
+        ViewGroup content = findViewById(android.R.id.content);
+        if (content == null) {
             return;
         }
-        View tabs = findViewById(tabsId);
-        if (tabs == null) {
-            return;
-        }
-        WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(tabs);
+        WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(content);
         int bottom = 0;
         if (windowInsets != null) {
             bottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
@@ -109,9 +111,35 @@ public class LaunchActivity extends NavigationActivity {
         if (bottom <= 0) {
             bottom = SafeAreaInsets.getSafeAreaBottom();
         }
-        if (tabs.getPaddingBottom() != bottom) {
-            tabs.setPadding(tabs.getPaddingLeft(), tabs.getPaddingTop(), tabs.getPaddingRight(), bottom);
+        int background = resolveNavigatorBackgroundColor();
+        for (int i = 0; i < content.getChildCount(); i++) {
+            View child = content.getChildAt(i);
+            if (!(child instanceof CoordinatorLayout)) {
+                continue;
+            }
+            if (child.getPaddingBottom() != bottom) {
+                child.setPadding(child.getPaddingLeft(), child.getPaddingTop(), child.getPaddingRight(), bottom);
+            }
+            child.setBackgroundColor(background);
         }
+        getWindow().setBackgroundDrawable(new ColorDrawable(background));
+    }
+
+    private int resolveNavigatorBackgroundColor() {
+        int tabsId = getResources().getIdentifier("bottomTabs", "id", getPackageName());
+        if (tabsId != 0) {
+            View tabs = findViewById(tabsId);
+            if (tabs != null) {
+                Drawable background = tabs.getBackground();
+                if (background instanceof ColorDrawable) {
+                    int color = ((ColorDrawable) background).getColor();
+                    if (Color.alpha(color) == 0xFF) {
+                        return color;
+                    }
+                }
+            }
+        }
+        return Color.WHITE;
     }
 
     private void seedInsetsFromResources() {
