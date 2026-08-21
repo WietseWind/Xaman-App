@@ -141,10 +141,10 @@ const Vault = {
                 .catch((error) => {
                     const code = typeof error?.code === 'string' ? error.code : '-1';
                     const message = error?.message ? String(error.message) : String(error);
-                    if (code === 'DEVICE_ID_CHANGED') {
+                    if (code === 'KEYSTORE_UNRECOVERABLE' || code === 'KEYSTORE_DECRYPT') {
                         logger.error(
-                            'WARNING: PASSPHRASE INVALID BECAUSE IT WAS ORIGINALLY CONFIGURED ON ANOTHER PHONE. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
-                            { code, message, deviceIdChanged: true },
+                            'WARNING: REALM KEYSTORE WRAP IS UNREADABLE. STORAGE CANNOT OPEN. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            { code, message },
                         );
                     } else {
                         logger.error('getStorageEncryptionKey', { code, message });

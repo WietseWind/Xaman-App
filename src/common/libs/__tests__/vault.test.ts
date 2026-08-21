@@ -85,6 +85,32 @@ describe('Vault', () => {
         });
     });
 
+    describe('Storage encryption key', () => {
+        it('should not log another-phone passphrase copy on Keystore wrap fail', async () => {
+            LoggerService.clearLogs();
+            VaultManagerModule.getStorageEncryptionKey.mockRejectedValueOnce({
+                code: 'KEYSTORE_UNRECOVERABLE',
+                message: 'Keystore key unrecoverable for alias: xumm-realm-key',
+            });
+
+            await expect(Vault.getStorageEncryptionKey()).rejects.toBeDefined();
+
+            const anotherPhone = LoggerService.getLogs().find(
+                (entry) =>
+                    entry.level === 'error' &&
+                    entry.message.includes('ORIGINALLY CONFIGURED ON ANOTHER PHONE'),
+            );
+            expect(anotherPhone).toBeUndefined();
+
+            const wrapLog = LoggerService.getLogs().find(
+                (entry) =>
+                    entry.level === 'error' &&
+                    entry.message.includes('REALM KEYSTORE WRAP IS UNREADABLE'),
+            );
+            expect(wrapLog).toBeDefined();
+        });
+    });
+
     describe('Purge', () => {
         it('should call purgeVault method on VaultModule', async () => {
             await Vault.purge(name).then(() => {

@@ -249,6 +249,41 @@ public class VaultMangerTest {
         }
     }
 
+    @Test
+    public void deviceIdChangedOverlayIsOnlyForWrongPassphrase() {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        android.content.SharedPreferences prefs =
+                InstrumentationRegistry.getInstrumentation()
+                        .getTargetContext()
+                        .getSharedPreferences("xaman_device_id", android.content.Context.MODE_PRIVATE);
+        String previous = prefs.getString("last_known_android_id", null);
+        try {
+            prefs.edit().putString("last_known_android_id", "ffffffffffffffff").commit();
+            Assert.assertTrue(provider.isLastKnownDeviceIdChanged());
+            Assert.assertTrue(
+                    VaultManagerModule.shouldMarkDeviceIdChanged(VaultErrorCodes.WRONG_PASSPHRASE)
+            );
+            Assert.assertFalse(
+                    VaultManagerModule.shouldMarkDeviceIdChanged(VaultErrorCodes.KEYSTORE_UNRECOVERABLE)
+            );
+            Assert.assertFalse(
+                    VaultManagerModule.shouldMarkDeviceIdChanged(VaultErrorCodes.KEYSTORE_DECRYPT)
+            );
+            Assert.assertFalse(
+                    VaultManagerModule.shouldMarkDeviceIdChanged(VaultErrorCodes.VAULT_CORRUPT)
+            );
+            Assert.assertFalse(
+                    VaultManagerModule.shouldMarkDeviceIdChanged(VaultErrorCodes.UNIQUE_ID_MISSING)
+            );
+        } finally {
+            if (previous != null) {
+                prefs.edit().putString("last_known_android_id", previous).commit();
+            } else {
+                prefs.edit().remove("last_known_android_id").commit();
+            }
+        }
+    }
+
 
     @Test
     public void StorageEncryptionKeyTest() throws Exception {

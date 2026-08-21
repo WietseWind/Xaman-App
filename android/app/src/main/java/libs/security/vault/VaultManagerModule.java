@@ -65,14 +65,23 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
             error.append(": ");
             error.append(exception.getCause().toString());
         }
-        if (exception instanceof CryptoFailedException
-                && UniqueIdProvider.sharedInstance().isLastKnownDeviceIdChanged()) {
+        // Extra Security cipher only. Realm/Keystore wrap is not bound to ANDROID_ID.
+        if (shouldMarkDeviceIdChanged(code)) {
             error.append("; last stored device id does not match current device id");
             error.append(" (possible data migration to another device); underlying=");
             error.append(code);
             code = VaultErrorCodes.DEVICE_ID_CHANGED;
         }
         promise.reject(code, error.toString());
+    }
+
+    /**
+     * DEVICE_ID_CHANGED is a support overlay for Extra Security decrypt (WRONG_PASSPHRASE)
+     * when last-known ANDROID_ID differs from live. Do not overlay Keystore wrap failures.
+     */
+    static boolean shouldMarkDeviceIdChanged(@NonNull final String code) {
+        return VaultErrorCodes.WRONG_PASSPHRASE.equals(code)
+                && UniqueIdProvider.sharedInstance().isLastKnownDeviceIdChanged();
     }
 
     private static String getRecoveryVaultName(@NonNull final String vaultName) {
