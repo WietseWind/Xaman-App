@@ -2,6 +2,7 @@ package com.xrpllabs.xumm;
 
 import com.reactnativenavigation.NavigationActivity;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class LaunchActivity extends NavigationActivity {
         System.setProperty("java.net.preferIPv4Stack", "true");
         System.setProperty("java.net.preferIPv6Addresses", "false");
 
-        // check only one root activity is running at the time
+        finishOtherXamanTasks();
         if (!isTaskRoot()) {
             finish();
             return;
@@ -54,6 +55,28 @@ public class LaunchActivity extends NavigationActivity {
     @Override
     public void invokeDefaultOnBackPressed() {
         navigator.handleBack(new CommandListenerAdapter());
+    }
+
+    /**
+     * Keep one recents entry. Empty taskAffinity plus a NEW_TASK start used
+     * to open a second Xaman next to the existing one.
+     */
+    private void finishOtherXamanTasks() {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager == null) {
+            return;
+        }
+        int current = getTaskId();
+        for (ActivityManager.AppTask task : manager.getAppTasks()) {
+            ActivityManager.RecentTaskInfo info = task.getTaskInfo();
+            if (info == null) {
+                continue;
+            }
+            int otherId = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? info.taskId : info.id;
+            if (otherId != current) {
+                task.finishAndRemoveTask();
+            }
+        }
     }
 
     private void setSplashLayout() {
