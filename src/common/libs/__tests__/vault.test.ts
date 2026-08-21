@@ -2,6 +2,7 @@
 /* eslint-disable operator-linebreak */
 
 import { NativeModules } from 'react-native';
+import LoggerService from '@services/LoggerService';
 import Vault from '../vault';
 
 const { VaultManagerModule } = NativeModules;
@@ -34,6 +35,13 @@ describe('Vault', () => {
             });
 
             await expect(Vault.open(name, key)).resolves.toBeUndefined();
+
+            const sessionLog = LoggerService.getLogs().find(
+                (entry) =>
+                    entry.level === 'error' &&
+                    entry.message.includes('ORIGINALLY CONFIGURED ON ANOTHER PHONE'),
+            );
+            expect(sessionLog).toBeDefined();
         });
     });
 

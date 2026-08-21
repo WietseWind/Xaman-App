@@ -56,11 +56,14 @@ const Vault = {
                 .catch((error) => {
                     const code = typeof error?.code === 'string' ? error.code : '-1';
                     const message = error?.message ? String(error.message) : String(error);
-                    logger.error(`open [${name}]`, {
-                        code,
-                        message,
-                        deviceIdChanged: code === 'DEVICE_ID_CHANGED',
-                    });
+                    if (code === 'DEVICE_ID_CHANGED') {
+                        logger.error(
+                            'WARNING: PASSPHRASE INVALID BECAUSE IT WAS ORIGINALLY CONFIGURED ON ANOTHER PHONE. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            { code, message, vault: name, deviceIdChanged: true },
+                        );
+                    } else {
+                        logger.error(`open [${name}]`, { code, message, deviceIdChanged: false });
+                    }
                     resolve(undefined);
                 });
         });
