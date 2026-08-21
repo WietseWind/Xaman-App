@@ -7,8 +7,8 @@ apply plugin: "com.google.firebase.crashlytics"
 
 import com.android.build.OutputFile
 
-def canonicalVersionName = "5.2.5"
-def canonicalVersionCode = 186
+def canonicalVersionName = "5.2.6"
+def canonicalVersionCode = 187
 
 // NOTE: DO NOT change postFixSize value, this is for handling legacy method for handling the versioning in android
 def postFixSize = 30_000
@@ -117,7 +117,6 @@ android {
         applicationId "com.xrpllabs.xumm"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        missingDimensionStrategy 'react-native-camera', 'mlkit'
         versionCode canonicalVersionCode + postFixSize
         versionName canonicalVersionName
         testBuildType System.getProperty('testBuildType', 'debug')
@@ -205,8 +204,43 @@ android {
     }
 
     packagingOptions {
+        // NDK 28 STL vs RN 0.74's r26 copy — pick one so the merge does not fail.
+        pickFirst '**/libc++_shared.so'
         jniLibs {
             useLegacyPackaging = false
+        }
+    }
+}
+
+// VisionCamera (NDK 28) needs __cxa_init_primary_exception. The vendored
+// ReactAndroid AAR still ships r26 libc++_shared, which does not export it.
+def ndk28LibcxxForAbi = { String abi ->
+    def triples = [
+        'arm64-v8a'  : 'aarch64-linux-android',
+        'armeabi-v7a': 'arm-linux-androideabi',
+        'x86'        : 'i686-linux-android',
+        'x86_64'     : 'x86_64-linux-android',
+    ]
+    def triple = triples[abi]
+    if (!triple) {
+        return null
+    }
+    def prebuilt = file("${android.ndkDirectory}/toolchains/llvm/prebuilt").listFiles()?.find { it.directory }
+    return prebuilt ? file("$prebuilt/sysroot/usr/lib/$triple/libc++_shared.so") : null
+}
+
+afterEvaluate {
+    tasks.matching { it.name ==~ /merge.*NativeLibs/ }.configureEach { task ->
+        task.doLast {
+            task.outputs.files.each { out ->
+                fileTree(out).matching { include '**/libc++_shared.so' }.each { dest ->
+                    def src = ndk28LibcxxForAbi(dest.parentFile.name)
+                    if (src == null || !src.exists()) {
+                        throw new GradleException("NDK 28 libc++_shared.so missing for ${dest.parentFile.name}")
+                    }
+                    dest.bytes = src.bytes
+                }
+            }
         }
     }
 }
@@ -291,31 +325,6 @@ dependencies {
     implementation 'com.google.android.gms:play-services-base:18.4.0'
     implementation 'com.google.android.material:material:1.12.0'
     
-    // ML Kit dependencies for react-native-camera
-    // Object detection feature with bundled default classifier
-    // implementation 'com.google.mlkit:barcode-scanning:17.3.0'
-    // implementation 'com.google.mlkit:object-detection:17.0.2'
-
-    // Object detection feature with custom classifier support
-    // implementation 'com.google.mlkit:object-detection-custom:17.0.2'
-
-    // Face features
-    // implementation 'com.google.mlkit:face-detection:16.1.7'
-
-    implementation 'com.google.mlkit:common:18.7.0'
-    implementation 'com.google.mlkit:barcode-scanning:17.1.0'
-    implementation 'com.google.mlkit:vision-common:17.3.0'
-
-    /// implementation 'com.google.mlkit:barcode-scanning:17.2.0'
-    implementation 'com.google.mlkit:text-recognition:16.0.0'
-
-    implementation 'com.google.mlkit:barcode-scanning-common:17.0.0'
-    implementation 'com.google.mlkit:text-recognition:16.0.0'
-    implementation 'com.google.mlkit:face-detection:16.1.5'
-
-    implementation 'com.google.mlkit:barcode-scanning:17.2.0'
-    // implementation 'com.google.mlkit:image-labeling:17.0.7'
-
     // Older coroutines so Tangem SDK works
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'

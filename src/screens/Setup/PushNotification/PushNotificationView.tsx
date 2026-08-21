@@ -128,6 +128,7 @@ class PushNotificationSetupView extends Component<Props, State> {
                         ]}>
                             <Button numberOfLines={1}
                                 light
+                                testID="maybe-later-button"
                                 label={Localize.t('global.maybeLater')}
                                 onPress={this.nextStep}
                             />
@@ -135,6 +136,7 @@ class PushNotificationSetupView extends Component<Props, State> {
                             <Button
                                 isLoading={isLoading}
                                 numberOfLines={1}
+                                testID="enable-notifications-button"
                                 label={Localize.t('global.yes')}
                                 onPress={this.requestPermission}
                             />

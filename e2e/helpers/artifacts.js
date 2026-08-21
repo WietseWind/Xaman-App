@@ -12,13 +12,19 @@ const SCREENSHOT_OPTIONS = {
 
 let screenshotIndex = 0;
 
+let deviceUdid = 'booted';
+
+const setDeviceUdid = (udid) => {
+    deviceUdid = udid;
+};
+
 const takeScreenshot = () => {
     if (!existsSync(ARTIFACTS_DIR)) {
         mkdirSync(ARTIFACTS_DIR);
     }
     const screenShotFileName = `${ARTIFACTS_DIR}/screenshot-${screenshotIndex++}.png`;
     try {
-        execSync(`xcrun simctl io booted screenshot ${screenShotFileName}`, SCREENSHOT_OPTIONS);
+        execSync(`xcrun simctl io ${deviceUdid} screenshot ${screenShotFileName}`, SCREENSHOT_OPTIONS);
     } catch (error) {
         console.error('error');
     }
@@ -35,7 +41,7 @@ const startRecordingVideo = () => {
     }
 
     try {
-        spawn('xcrun', ['simctl', 'io', 'booted', 'recordVideo', `${recordingFileName}`], {
+        spawn('xcrun', ['simctl', 'io', deviceUdid, 'recordVideo', `${recordingFileName}`], {
             timeout: 30 * 60 * 1000,
             maxBuffer: 1024 * 20 * 100,
         });
@@ -51,4 +57,4 @@ const stopRecordingVideo = () => {
     });
 };
 
-module.exports = { takeScreenshot, startRecordingVideo, stopRecordingVideo };
+module.exports = { setDeviceUdid, takeScreenshot, startRecordingVideo, stopRecordingVideo };

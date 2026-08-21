@@ -4,10 +4,15 @@ const { device } = require('detox');
 const { Before, BeforeAll, AfterAll, After } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
-const { startRecordingVideo, stopRecordingVideo } = require('../helpers/artifacts');
+const { setDeviceUdid, startRecordingVideo, stopRecordingVideo } = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
+const { checkNetwork, ensureLocalSimulator } = require('./preflight');
 
 BeforeAll(async () => {
+    // fail fast with a clear message when the suite cannot possibly pass
+    await checkNetwork();
+    ensureLocalSimulator();
+
     await detox.init({
         argv: {
             // reuse: false,
@@ -15,8 +20,11 @@ BeforeAll(async () => {
         },
     });
 
+    // target the detox-managed simulator, not whatever happens to be "booted"
+    setDeviceUdid(device.id);
+
     // start device log
-    startDeviceLogStream();
+    startDeviceLogStream(device.id);
 
     // start recording video
     startRecordingVideo();
@@ -27,7 +35,7 @@ BeforeAll(async () => {
         disableTouchIndicators: false,
     });
 
-    await device.setURLBlacklist(['.*xumm.app.*']);
+    await device.setURLBlacklist(['.*xumm.app.*', '.*xaman.app.*']);
 });
 
 Before(async (context) => {
