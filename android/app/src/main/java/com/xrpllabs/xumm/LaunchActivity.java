@@ -77,10 +77,9 @@ public class LaunchActivity extends NavigationActivity {
         View rootView = findViewById(android.R.id.content);
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
             Insets navigationBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
-            Insets statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars());
             Insets displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
             SafeAreaInsets.setInsets(
-                    statusBars.top,
+                    topContentInsetPx(),
                     navigationBars.bottom,
                     navigationBars.left,
                     navigationBars.right,
@@ -143,13 +142,31 @@ public class LaunchActivity extends NavigationActivity {
     }
 
     private void seedInsetsFromResources() {
+        int top = topContentInsetPx();
         SafeAreaInsets.setInsets(
-                systemDimensionPx("status_bar_height"),
+                top,
                 systemDimensionPx("navigation_bar_height"),
                 0,
                 0,
-                systemDimensionPx("status_bar_height")
+                top
         );
+    }
+
+    /**
+     * Punch-hole devices inflate status_bar_height / statusBars.top to the
+     * camera cutout (~52dp). Clock and wifi sit in the classic 24dp icon bar.
+     * Pad that bar plus 8dp so titles sit close to the status icons, like iOS.
+     */
+    private int topContentInsetPx() {
+        float density = getResources().getDisplayMetrics().density;
+        int classic = Math.round(24f * density);
+        int extra = Math.round(8f * density);
+        int resource = systemDimensionPx("status_bar_height");
+        int iconBar = resource;
+        if (iconBar <= 0 || iconBar > classic + extra) {
+            iconBar = classic;
+        }
+        return iconBar + extra;
     }
 
     private int systemDimensionPx(final String name) {
