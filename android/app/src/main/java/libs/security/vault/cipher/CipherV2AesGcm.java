@@ -23,6 +23,8 @@ public class CipherV2AesGcm {
     @NonNull
     public static Map<String, Object> encrypt(@NonNull final String input, @NonNull final String key) throws CryptoFailedException {
         try {
+            // Stored unique-id (then last-known). Never live ANDROID_ID while a stored id exists.
+            // Existing Extra Security vaults are bound to that stored id.
             final String deviceId = UniqueIdProvider.sharedInstance().getDeviceUniqueId();
             final byte[] uniqueDeviceId = UniqueIdProvider.toDeviceIdBytes(deviceId);
 

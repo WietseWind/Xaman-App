@@ -119,7 +119,9 @@ public class UniqueIdProvider {
     /**
      * Persist an ANDROID_ID that produced a successful vault encrypt or decrypt.
      * Plain prefs first (commit) so last-known survives if Keystore wrap write fails or the process dies.
-     * Skip writes when the stored bytes already match.
+     * Existing vaults were encrypted with the stored unique-id. Never change last-known to a
+     * different id. Unique-id may only be filled or healed to match last-known.
+     * Live ANDROID_ID is first-install only (both stores empty).
      */
     public synchronized void persistConfirmedDeviceUniqueId(@NonNull final String unique_id) {
         if (!isUsableAndroidId(unique_id)) {
@@ -129,11 +131,20 @@ public class UniqueIdProvider {
         if (incoming == null) {
             return;
         }
-        if (!Arrays.equals(incoming, toDeviceIdBytes(loadLastKnownAndroidId()))) {
-            saveLastKnownAndroidId(unique_id, true);
+        byte[] storedUnique = toDeviceIdBytes(loadDeviceUniqueId());
+        byte[] storedLast = toDeviceIdBytes(loadLastKnownAndroidId());
+
+        if (storedLast == null) {
+            if (storedUnique == null || Arrays.equals(incoming, storedUnique)) {
+                saveLastKnownAndroidId(unique_id, true);
+                storedLast = incoming;
+            }
         }
-        if (!Arrays.equals(incoming, toDeviceIdBytes(loadDeviceUniqueId()))) {
-            saveDeviceUniqueId(unique_id);
+
+        if (storedLast != null && Arrays.equals(incoming, storedLast)) {
+            if (storedUnique == null || !Arrays.equals(incoming, storedUnique)) {
+                saveDeviceUniqueId(unique_id);
+            }
         }
     }
 
@@ -188,8 +199,9 @@ public class UniqueIdProvider {
 
     /**
      * Candidate ANDROID_ID values for Cipher V2 decrypt, first match wins.
-     * Order: live ANDROID_ID, Keychain cache, last-known plain prefs.
-     * Live first so a stored-id success is a real fallback after live fail.
+     * Order: Keychain unique-id, last-known plain prefs, live ANDROID_ID last.
+     * Encrypt never uses this list. Existing vaults stay on the stored unique-id.
+     * Live is last-resort decrypt and first-install only.
      * Deduped by padded bytes so leading-zero variants are tried once.
      */
     @NonNull
@@ -199,9 +211,9 @@ public class UniqueIdProvider {
         }
 
         LinkedHashMap<String, String> uniqueByBytes = new LinkedHashMap<>();
-        addDecryptCandidate(uniqueByBytes, getAndroidId(applicationContent));
         addDecryptCandidate(uniqueByBytes, loadDeviceUniqueId());
         addDecryptCandidate(uniqueByBytes, loadLastKnownAndroidId());
+        addDecryptCandidate(uniqueByBytes, getAndroidId(applicationContent));
         return new ArrayList<>(uniqueByBytes.values());
     }
 
@@ -219,8 +231,9 @@ public class UniqueIdProvider {
     }
 
     /**
-     * Record a successful Cipher V2 decrypt. fallbackUsed is true only when live id
-     * failed and a stored id then succeeded, and stored != live.
+     * Record a successful Cipher V2 decrypt.
+     * fallbackUsed is true when the winning id is not live ANDROID_ID.
+     * Existing vaults stay on the stored unique-id. Live is not the encrypt id.
      */
     public synchronized void recordDecryptSuccess(
             @NonNull final String winningDeviceId,
@@ -228,17 +241,15 @@ public class UniqueIdProvider {
     ) {
         DeviceIdUnlockReport report = new DeviceIdUnlockReport();
         byte[] liveBytes = toDeviceIdBytes(getLiveAndroidId());
-        byte[] storedBytes = toDeviceIdBytes(loadLastKnownAndroidId());
-        if (storedBytes == null) {
-            storedBytes = toDeviceIdBytes(loadDeviceUniqueId());
-        }
+        byte[] storedUnique = toDeviceIdBytes(loadDeviceUniqueId());
+        byte[] storedLast = toDeviceIdBytes(loadLastKnownAndroidId());
         byte[] winningBytes = toDeviceIdBytes(winningDeviceId);
         report.storedDifferedFromLive = liveBytes != null
-                && storedBytes != null
-                && !Arrays.equals(liveBytes, storedBytes);
-        report.fallbackUsed = liveDecryptFailed
-                && report.storedDifferedFromLive
-                && winningBytes != null
+                && (
+                        (storedUnique != null && !Arrays.equals(liveBytes, storedUnique))
+                                || (storedLast != null && !Arrays.equals(liveBytes, storedLast))
+                );
+        report.fallbackUsed = winningBytes != null
                 && liveBytes != null
                 && !Arrays.equals(winningBytes, liveBytes);
         lastUnlockReport = report;
@@ -270,6 +281,11 @@ public class UniqueIdProvider {
         return toDeviceIdBytes(getDeviceUniqueId());
     }
 
+    /**
+     * Id used for encrypt, PIN HMAC, and as the stored unique-id.
+     * Existing vaults used this value. Never return live ANDROID_ID when a stored id exists.
+     * Live is first-install only. Do not save live on a cache miss.
+     */
     @SuppressLint("HardwareIds")
     @Nullable
     public synchronized String getDeviceUniqueId() {

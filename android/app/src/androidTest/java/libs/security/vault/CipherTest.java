@@ -18,6 +18,7 @@ import libs.security.providers.UniqueIdProvider;
 import libs.security.vault.VaultErrorCodes;
 import libs.security.vault.cipher.Cipher;
 import libs.security.vault.exceptions.CryptoFailedException;
+import libs.security.vault.storage.Keychain;
 
 import extentions.PerformanceLogger;
 
@@ -114,6 +115,70 @@ public class CipherTest {
             Assert.fail("malformed cipher should not decrypt");
         } catch (CryptoFailedException e) {
             Assert.assertEquals(VaultErrorCodes.VAULT_CORRUPT, e.getCode());
+        }
+    }
+
+    @Test
+    public void encryptDecryptUsesStoredUniqueIdNotLive() throws Exception {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        ReactApplicationContext context = new ReactApplicationContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()
+        );
+        Keychain keychain = new Keychain(context);
+        android.content.SharedPreferences prefs = context.getSharedPreferences(
+                "xaman_device_id",
+                android.content.Context.MODE_PRIVATE
+        );
+        String previousLast = prefs.getString("last_known_android_id", null);
+        java.util.Map<String, String> previousUnique = keychain.itemExist("device-unique-id")
+                ? keychain.getItem("device-unique-id")
+                : null;
+        final String storedId = "aaaaaaaaaaaaaaaa";
+        final String clearText = "stored-id-vault";
+        final String clearKey = "Secret Key";
+        try {
+            keychain.setItem("device-unique-id", "", storedId);
+            prefs.edit().putString("last_known_android_id", storedId).commit();
+
+            Map<String, Object> cipherResult = Cipher.encrypt(clearText, clearKey);
+            String cipher = (String) cipherResult.get("cipher");
+            Cipher.DerivedKeys derivedKeys = (Cipher.DerivedKeys) cipherResult.get("derived_keys");
+
+            Assert.assertEquals(
+                    clearText,
+                    Cipher.decrypt(cipher, clearKey, derivedKeys.toJSONString())
+            );
+
+            if (keychain.itemExist("device-unique-id")) {
+                keychain.deleteItem("device-unique-id");
+            }
+            prefs.edit().clear().commit();
+            try {
+                Cipher.decrypt(cipher, clearKey, derivedKeys.toJSONString());
+                Assert.fail("live ANDROID_ID must not decrypt a vault bound to the stored unique-id");
+            } catch (CryptoFailedException e) {
+                Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
+            }
+
+            keychain.setItem("device-unique-id", "", storedId);
+            prefs.edit().putString("last_known_android_id", storedId).commit();
+            Assert.assertEquals(
+                    clearText,
+                    Cipher.decrypt(cipher, clearKey, derivedKeys.toJSONString())
+            );
+        } finally {
+            if (previousLast != null) {
+                prefs.edit().putString("last_known_android_id", previousLast).commit();
+            } else {
+                prefs.edit().remove("last_known_android_id").commit();
+            }
+            if (previousUnique != null && previousUnique.get("password") != null) {
+                keychain.setItem("device-unique-id", "", previousUnique.get("password"));
+            } else if (keychain.itemExist("device-unique-id")) {
+                keychain.deleteItem("device-unique-id");
+            }
         }
     }
 
