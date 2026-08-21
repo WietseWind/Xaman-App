@@ -84,13 +84,26 @@ public class UniqueIdProvider {
     }
 
     void saveLastKnownAndroidId(@NonNull final String unique_id) {
+        saveLastKnownAndroidId(unique_id, false);
+    }
+
+    /**
+     * @param durable commit() so last-known is on disk before a following Keychain wrap write.
+     *                apply() is enough for opportunistic backfill.
+     */
+    private void saveLastKnownAndroidId(@NonNull final String unique_id, final boolean durable) {
         if (applicationContent == null) {
             return;
         }
-        applicationContent.getSharedPreferences(LAST_KNOWN_PREFS, Context.MODE_PRIVATE)
+        SharedPreferences.Editor editor = applicationContent
+                .getSharedPreferences(LAST_KNOWN_PREFS, Context.MODE_PRIVATE)
                 .edit()
-                .putString(LAST_KNOWN_ANDROID_ID, unique_id)
-                .commit();
+                .putString(LAST_KNOWN_ANDROID_ID, unique_id);
+        if (durable) {
+            editor.commit();
+        } else {
+            editor.apply();
+        }
     }
 
     @Nullable
@@ -105,14 +118,23 @@ public class UniqueIdProvider {
 
     /**
      * Persist an ANDROID_ID that produced a successful vault encrypt or decrypt.
-     * Plain prefs first so the value survives Keystore wrap-key loss.
+     * Plain prefs first (commit) so last-known survives if Keystore wrap write fails or the process dies.
+     * Skip writes when the stored bytes already match.
      */
     public synchronized void persistConfirmedDeviceUniqueId(@NonNull final String unique_id) {
         if (!isUsableAndroidId(unique_id)) {
             return;
         }
-        saveLastKnownAndroidId(unique_id);
-        saveDeviceUniqueId(unique_id);
+        byte[] incoming = toDeviceIdBytes(unique_id);
+        if (incoming == null) {
+            return;
+        }
+        if (!Arrays.equals(incoming, toDeviceIdBytes(loadLastKnownAndroidId()))) {
+            saveLastKnownAndroidId(unique_id, true);
+        }
+        if (!Arrays.equals(incoming, toDeviceIdBytes(loadDeviceUniqueId()))) {
+            saveDeviceUniqueId(unique_id);
+        }
     }
 
     /**
@@ -173,7 +195,7 @@ public class UniqueIdProvider {
     @NonNull
     public synchronized List<String> getDecryptCandidateIds() {
         if (applicationContent == null) {
-            throw new RuntimeException("Context is required");
+            return new ArrayList<>();
         }
 
         LinkedHashMap<String, String> uniqueByBytes = new LinkedHashMap<>();

@@ -68,6 +68,11 @@ const Vault = {
                             'WARNING: PASSPHRASE INVALID BECAUSE IT WAS ORIGINALLY CONFIGURED ON ANOTHER PHONE. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
                             { code, message, vault: name, deviceIdChanged: true },
                         );
+                    } else if (code === 'VAULT_CORRUPT' || code === 'UNIQUE_ID_MISSING') {
+                        logger.error(
+                            'WARNING: VAULT DATA IS CORRUPT OR DEVICE ID IS MISSING. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            { code, message, vault: name },
+                        );
                     } else {
                         logger.error(`open [${name}]`, { code, message, deviceIdChanged: false });
                     }

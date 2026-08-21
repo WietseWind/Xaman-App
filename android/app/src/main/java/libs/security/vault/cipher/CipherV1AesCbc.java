@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import libs.security.crypto.Crypto;
-import libs.security.vault.VaultErrorCodes;
 import libs.security.vault.exceptions.CryptoFailedException;
 
 public class CipherV1AesCbc {
@@ -48,7 +47,7 @@ public class CipherV1AesCbc {
             return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new CryptoFailedException(
-                    VaultErrorCodes.WRONG_PASSPHRASE,
+                    Cipher.classifyDecryptFailure(e),
                     "CipherV1AesCbc decryption error",
                     e
             );

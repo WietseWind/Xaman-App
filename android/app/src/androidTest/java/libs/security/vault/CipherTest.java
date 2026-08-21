@@ -108,6 +108,13 @@ public class CipherTest {
         } catch (CryptoFailedException e) {
             Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
         }
+
+        try {
+            Cipher.decrypt(cipher.substring(1), clearKey, derivedKeys.toJSONString());
+            Assert.fail("malformed cipher should not decrypt");
+        } catch (CryptoFailedException e) {
+            Assert.assertEquals(VaultErrorCodes.VAULT_CORRUPT, e.getCode());
+        }
     }
 
     @Test
@@ -127,6 +134,13 @@ public class CipherTest {
             Assert.fail("wrong key should not decrypt v1");
         } catch (CryptoFailedException e) {
             Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
+        }
+
+        try {
+            Cipher.decrypt(V1_Cipher, clearKey, "zzz");
+            Assert.fail("malformed iv should not decrypt v1");
+        } catch (CryptoFailedException e) {
+            Assert.assertEquals(VaultErrorCodes.VAULT_CORRUPT, e.getCode());
         }
     }
 

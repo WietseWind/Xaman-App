@@ -10,6 +10,7 @@ public final class VaultErrorCodes {
     public static final String KEYSTORE_DECRYPT = "KEYSTORE_DECRYPT";
     public static final String UNIQUE_ID_MISSING = "UNIQUE_ID_MISSING";
     public static final String DEVICE_ID_CHANGED = "DEVICE_ID_CHANGED";
+    public static final String VAULT_CORRUPT = "VAULT_CORRUPT";
 
     private VaultErrorCodes() {
     }

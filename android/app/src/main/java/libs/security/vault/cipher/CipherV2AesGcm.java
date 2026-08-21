@@ -109,6 +109,7 @@ public class CipherV2AesGcm {
         uniqueIdProvider.clearLastUnlockReport();
         byte[] liveBytes = UniqueIdProvider.toDeviceIdBytes(uniqueIdProvider.getLiveAndroidId());
         boolean liveDecryptFailed = false;
+        boolean authFailed = false;
         CryptoFailedException lastFailure = null;
 
         for (String deviceId : candidates) {
@@ -119,6 +120,9 @@ public class CipherV2AesGcm {
                 return clearText;
             } catch (CryptoFailedException e) {
                 lastFailure = e;
+                if (VaultErrorCodes.WRONG_PASSPHRASE.equals(e.getCode())) {
+                    authFailed = true;
+                }
                 byte[] tried = UniqueIdProvider.toDeviceIdBytes(deviceId);
                 if (liveBytes != null && tried != null && java.util.Arrays.equals(liveBytes, tried)) {
                     liveDecryptFailed = true;
@@ -126,8 +130,12 @@ public class CipherV2AesGcm {
             }
         }
 
+        String code = VaultErrorCodes.WRONG_PASSPHRASE;
+        if (!authFailed && lastFailure != null) {
+            code = lastFailure.getCode();
+        }
         throw new CryptoFailedException(
-                VaultErrorCodes.WRONG_PASSPHRASE,
+                code,
                 "CipherV2AesGcm decryption failed after " + candidates.size() + " device id(s)",
                 lastFailure
         );
@@ -188,7 +196,11 @@ public class CipherV2AesGcm {
         } catch (CryptoFailedException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoFailedException("CipherV2AesGcm decryption error", e);
+            throw new CryptoFailedException(
+                    Cipher.classifyDecryptFailure(e),
+                    "CipherV2AesGcm decryption error",
+                    e
+            );
         }
     }
 }
