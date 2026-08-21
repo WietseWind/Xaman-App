@@ -53,7 +53,16 @@ BeforeAll(async () => {
         await device.disableSynchronization();
     }
 
-    await device.setURLBlacklist(['.*xumm.app.*', '.*xaman.app.*']);
+    await device.setURLBlacklist([
+        '.*xumm.app.*',
+        '.*xaman.app.*',
+        // Fresh sim: Firebase checkin holds Detox iOS sync and misses agreement-setup-screen.
+        '.*device-provisioning.googleapis.com.*',
+        '.*firebaseinstallations.googleapis.com.*',
+        '.*firebase.googleapis.com.*',
+        '.*firebaselogging.googleapis.com.*',
+        '.*app-measurement.com.*',
+    ]);
 });
 
 // On fresh Android installs the app auto-opens the "What's new" release-notes
