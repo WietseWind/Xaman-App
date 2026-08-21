@@ -63,6 +63,25 @@ public class UniqueIdProviderTest {
     }
 
     @Test
+    public void lastKnownDeviceIdChangedOnlyWhenStoredAndLiveDiffer() {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getDeviceUniqueId();
+        Assert.assertNotNull(liveId);
+
+        provider.persistConfirmedDeviceUniqueId(liveId);
+        Assert.assertFalse(provider.isLastKnownDeviceIdChanged());
+
+        String previous = provider.loadLastKnownAndroidId();
+        try {
+            provider.saveLastKnownAndroidId("ffffffffffffffff");
+            Assert.assertTrue(provider.isLastKnownDeviceIdChanged());
+        } finally {
+            provider.saveLastKnownAndroidId(previous);
+        }
+        Assert.assertFalse(provider.isLastKnownDeviceIdChanged());
+    }
+
+    @Test
     public void decryptCandidatesDedupeByPaddedBytes() {
         UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
         String deviceId = provider.getDeviceUniqueId();

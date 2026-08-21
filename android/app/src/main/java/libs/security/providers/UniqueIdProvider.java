@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,14 +77,14 @@ public class UniqueIdProvider {
         }
     }
 
-    private void saveLastKnownAndroidId(@NonNull final String unique_id) {
+    void saveLastKnownAndroidId(@NonNull final String unique_id) {
         if (applicationContent == null) {
             return;
         }
         applicationContent.getSharedPreferences(LAST_KNOWN_PREFS, Context.MODE_PRIVATE)
                 .edit()
                 .putString(LAST_KNOWN_ANDROID_ID, unique_id)
-                .apply();
+                .commit();
     }
 
     @Nullable
@@ -106,6 +107,22 @@ public class UniqueIdProvider {
         }
         saveLastKnownAndroidId(unique_id);
         saveDeviceUniqueId(unique_id);
+    }
+
+    /**
+     * True only when a previous-boot last-known ANDROID_ID exists and live ANDROID_ID bytes differ.
+     * False when there is nothing stored to compare.
+     */
+    public synchronized boolean isLastKnownDeviceIdChanged() {
+        if (applicationContent == null) {
+            return false;
+        }
+        byte[] stored = toDeviceIdBytes(loadLastKnownAndroidId());
+        byte[] live = toDeviceIdBytes(getAndroidId(applicationContent));
+        if (stored == null || live == null) {
+            return false;
+        }
+        return !Arrays.equals(stored, live);
     }
 
     private static boolean isUsableAndroidId(@Nullable final String unique_id) {

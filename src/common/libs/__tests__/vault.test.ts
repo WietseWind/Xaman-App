@@ -28,8 +28,9 @@ describe('Vault', () => {
 
         it('should resolve undefined and keep native reason out of the return value', async () => {
             VaultManagerModule.openVault.mockRejectedValueOnce({
-                code: 'WRONG_PASSPHRASE',
-                message: 'CipherV2AesGcm decryption failed after 2 device id(s)',
+                code: 'DEVICE_ID_CHANGED',
+                message:
+                    'CipherV2AesGcm decryption failed after 2 device id(s); last stored device id does not match current device id (possible data migration to another device); underlying=WRONG_PASSPHRASE',
             });
 
             await expect(Vault.open(name, key)).resolves.toBeUndefined();

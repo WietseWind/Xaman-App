@@ -56,7 +56,11 @@ const Vault = {
                 .catch((error) => {
                     const code = typeof error?.code === 'string' ? error.code : '-1';
                     const message = error?.message ? String(error.message) : String(error);
-                    logger.error(`open [${name}]`, { code, message });
+                    logger.error(`open [${name}]`, {
+                        code,
+                        message,
+                        deviceIdChanged: code === 'DEVICE_ID_CHANGED',
+                    });
                     resolve(undefined);
                 });
         });

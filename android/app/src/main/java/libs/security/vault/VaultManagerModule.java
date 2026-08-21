@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import libs.security.crypto.Crypto;
+import libs.security.providers.UniqueIdProvider;
 import libs.security.vault.cipher.Cipher;
 import libs.security.vault.exceptions.CryptoFailedException;
 import libs.security.vault.storage.Keychain;
@@ -62,6 +63,13 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
         if (exception.getCause() != null) {
             error.append(": ");
             error.append(exception.getCause().toString());
+        }
+        if (exception instanceof CryptoFailedException
+                && UniqueIdProvider.sharedInstance().isLastKnownDeviceIdChanged()) {
+            error.append("; last stored device id does not match current device id");
+            error.append(" (possible data migration to another device); underlying=");
+            error.append(code);
+            code = VaultErrorCodes.DEVICE_ID_CHANGED;
         }
         promise.reject(code, error.toString());
     }
