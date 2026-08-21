@@ -73,6 +73,11 @@ public class LaunchActivity extends NavigationActivity {
 
         seedInsetsFromResources();
         setContentView(R.layout.activity_splash);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ keeps a solid-color system splash. Remove it so the
+            // pattern + logo layout can show while React Native loads.
+            getSplashScreen().setOnExitAnimationListener(splash -> splash.remove());
+        }
 
         View rootView = findViewById(android.R.id.content);
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
@@ -111,6 +116,7 @@ public class LaunchActivity extends NavigationActivity {
             bottom = SafeAreaInsets.getSafeAreaBottom();
         }
         int background = resolveNavigatorBackgroundColor();
+        boolean navigatorHasContent = false;
         for (int i = 0; i < content.getChildCount(); i++) {
             View child = content.getChildAt(i);
             if (!(child instanceof CoordinatorLayout)) {
@@ -119,9 +125,18 @@ public class LaunchActivity extends NavigationActivity {
             if (child.getPaddingBottom() != bottom) {
                 child.setPadding(child.getPaddingLeft(), child.getPaddingTop(), child.getPaddingRight(), bottom);
             }
-            child.setBackgroundColor(background);
+            // RNN stacks empty CoordinatorLayouts on top of the splash. White
+            // here hid the boot image. Keep them clear until app UI is attached.
+            if (child instanceof ViewGroup && ((ViewGroup) child).getChildCount() > 0) {
+                navigatorHasContent = true;
+                child.setBackgroundColor(background);
+            } else {
+                child.setBackgroundColor(Color.TRANSPARENT);
+            }
         }
-        getWindow().setBackgroundDrawable(new ColorDrawable(background));
+        if (navigatorHasContent) {
+            getWindow().setBackgroundDrawable(new ColorDrawable(background));
+        }
     }
 
     private int resolveNavigatorBackgroundColor() {
