@@ -29,6 +29,8 @@ GoogleService-Info.plist
 
 # Android/IntelliJ
 #
+# Manual migrate probe. Do not commit.
+android/app/src/androidTest/java/libs/security/vault/FlakyMigrateHarness.java
 build/
 .idea
 .gradle
