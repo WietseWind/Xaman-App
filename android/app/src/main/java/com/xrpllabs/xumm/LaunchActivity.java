@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -108,7 +109,7 @@ public class LaunchActivity extends NavigationActivity {
             Insets displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
             SafeAreaInsets.setInsets(
                     topContentInsetPx(),
-                    navigationBars.bottom,
+                    overlayNavInsetPx(view),
                     navigationBars.left,
                     navigationBars.right,
                     displayCutout.top
@@ -121,25 +122,20 @@ public class LaunchActivity extends NavigationActivity {
     }
 
     /**
-     * RNN ignores navigation-bar insets on API 35+. Pad the navigator root so every
-     * screen (tabs, send, settings) sits above the virtual home control, like iOS.
-     * Do not pad the splash layout.
+     * RNN ignores navigation-bar insets on API 35+. Pad the navigator root so
+     * screens sit above overlay nav (gesture pill). Classic 3-button bars already
+     * sit outside the app on older APIs — extra pad there made a gap.
+     * Keep navigator layers clear until React Native has painted, or a white
+     * page covers the boot image.
      */
     private void applyNavigatorNavInset() {
         ViewGroup content = findViewById(android.R.id.content);
         if (content == null) {
             return;
         }
-        WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(content);
-        int bottom = 0;
-        if (windowInsets != null) {
-            bottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-        }
-        if (bottom <= 0) {
-            bottom = SafeAreaInsets.getSafeAreaBottom();
-        }
+        int bottom = overlayNavInsetPx(content);
         int background = resolveNavigatorBackgroundColor();
-        boolean navigatorHasContent = false;
+        boolean painted = false;
         for (int i = 0; i < content.getChildCount(); i++) {
             View child = content.getChildAt(i);
             if (!(child instanceof CoordinatorLayout)) {
@@ -148,46 +144,96 @@ public class LaunchActivity extends NavigationActivity {
             if (child.getPaddingBottom() != bottom) {
                 child.setPadding(child.getPaddingLeft(), child.getPaddingTop(), child.getPaddingRight(), bottom);
             }
-            // RNN stacks empty CoordinatorLayouts on top of the splash. White
-            // here hid the boot image. Keep them clear until app UI is attached.
-            if (child instanceof ViewGroup && ((ViewGroup) child).getChildCount() > 0) {
-                navigatorHasContent = true;
+            if (hasLaidOutContent((ViewGroup) child) && background != Color.TRANSPARENT) {
+                painted = true;
                 child.setBackgroundColor(background);
             } else {
                 child.setBackgroundColor(Color.TRANSPARENT);
             }
         }
-        if (navigatorHasContent) {
+        if (painted) {
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }
     }
 
+    private int overlayNavInsetPx(View content) {
+        WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(content);
+        int nav = 0;
+        if (windowInsets != null) {
+            nav = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+        }
+        if (nav <= 0) {
+            nav = SafeAreaInsets.getSafeAreaBottom();
+        }
+        // 3-button nav on API 34 and older is a solid system bar, not an overlay.
+        if (Build.VERSION.SDK_INT < 35 && !usesGestureNavigation()) {
+            return 0;
+        }
+        return nav;
+    }
+
+    private boolean usesGestureNavigation() {
+        try {
+            return Settings.Secure.getInt(getContentResolver(), "navigation_mode", 0) == 2;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private boolean hasLaidOutContent(ViewGroup coordinator) {
+        for (int i = 0; i < coordinator.getChildCount(); i++) {
+            View child = coordinator.getChildAt(i);
+            if (child.getVisibility() == View.VISIBLE && child.getHeight() > 100) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int resolveNavigatorBackgroundColor() {
         int tabsId = getResources().getIdentifier("bottomTabs", "id", getPackageName());
-        if (tabsId != 0) {
-            View tabs = findViewById(tabsId);
-            if (tabs != null) {
-                Drawable background = tabs.getBackground();
-                if (background instanceof ColorDrawable) {
-                    int color = ((ColorDrawable) background).getColor();
-                    if (Color.alpha(color) == 0xFF) {
-                        return color;
-                    }
+        View tabs = tabsId != 0 ? findViewById(tabsId) : null;
+        int fromTabs = opaqueColorFrom(tabs);
+        if (fromTabs != Color.TRANSPARENT) {
+            return fromTabs;
+        }
+        if (tabs != null && tabs.getHeight() > 0) {
+            int night = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            return night == Configuration.UI_MODE_NIGHT_YES ? Color.BLACK : Color.WHITE;
+        }
+        return Color.TRANSPARENT;
+    }
+
+    private int opaqueColorFrom(View view) {
+        if (view == null) {
+            return Color.TRANSPARENT;
+        }
+        Drawable background = view.getBackground();
+        if (background instanceof ColorDrawable) {
+            int color = ((ColorDrawable) background).getColor();
+            if (Color.alpha(color) == 0xFF) {
+                return color;
+            }
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                int color = opaqueColorFrom(group.getChildAt(i));
+                if (color != Color.TRANSPARENT) {
+                    return color;
                 }
             }
         }
-        return Color.WHITE;
+        return Color.TRANSPARENT;
     }
 
     private void seedInsetsFromResources() {
         int top = topContentInsetPx();
-        SafeAreaInsets.setInsets(
-                top,
-                systemDimensionPx("navigation_bar_height"),
-                0,
-                0,
-                top
-        );
+        int bottom = systemDimensionPx("navigation_bar_height");
+        if (Build.VERSION.SDK_INT < 35 && !usesGestureNavigation()) {
+            bottom = 0;
+        }
+        SafeAreaInsets.setInsets(top, bottom, 0, 0, top);
     }
 
     /**
