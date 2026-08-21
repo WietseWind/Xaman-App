@@ -65,13 +65,14 @@ describe('Vault', () => {
     describe('Inspect health', () => {
         it('should log when account vault wrap is unreadable after Realm opened', async () => {
             VaultManagerModule.inspectVaultHealth.mockResolvedValueOnce({
-                lastKnownPresent: true,
+                lastKnownPresent: false,
                 livePresent: true,
                 lastKnownMatchesLive: false,
-                uniqueIdKeychainReadable: true,
+                uniqueIdKeychainReadable: false,
                 realmKeyReadable: true,
+                vaultsPresent: 1,
                 vaultsReadable: 0,
-                vaultsUnreadable: 1,
+                vaultsUnreadable: 0,
             });
 
             await Vault.inspectHealth();
@@ -79,7 +80,7 @@ describe('Vault', () => {
             const sessionLog = LoggerService.getLogs().find(
                 (entry) =>
                     entry.level === 'error' &&
-                    entry.message.includes('ACCOUNT VAULT KEYSTORE WRAP IS UNREADABLE'),
+                    entry.message.includes('DEVICE-UNIQUE-ID KEYCHAIN UNREADABLE AND NO LAST STORED DEVICE ID'),
             );
             expect(sessionLog).toBeDefined();
         });

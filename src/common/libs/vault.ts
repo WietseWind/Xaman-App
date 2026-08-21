@@ -226,9 +226,13 @@ const Vault = {
         try {
             const report = await VaultManagerModule.inspectVaultHealth();
             logger.debug('vault health', report);
-            if (report?.vaultsUnreadable > 0) {
+            if (
+                report?.uniqueIdKeychainReadable === false &&
+                report?.vaultsPresent > 0 &&
+                !report?.lastKnownPresent
+            ) {
                 logger.error(
-                    'WARNING: REALM OPENED BUT ACCOUNT VAULT KEYSTORE WRAP IS UNREADABLE. SIGNING WILL FAIL. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                    'WARNING: DEVICE-UNIQUE-ID KEYCHAIN UNREADABLE AND NO LAST STORED DEVICE ID. ACCOUNT VAULTS MAY NOT DECRYPT AFTER ANDROID_ID CHANGE.',
                     report,
                 );
             } else if (report?.uniqueIdKeychainReadable === false && report?.lastKnownPresent) {

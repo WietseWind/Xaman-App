@@ -313,6 +313,7 @@ interface VaultManagerModuleInterface extends NativeModule {
         lastKnownMatchesLive: boolean;
         uniqueIdKeychainReadable: boolean;
         realmKeyReadable: boolean;
+        vaultsPresent: number;
         vaultsReadable: number;
         vaultsUnreadable: number;
     }>;
@@ -334,11 +335,19 @@ interface VaultManagerModuleInterface extends NativeModule {
 
     /**
      * Opens and decrypts a vault.
-     * @param vaultName - The name of the vault to open.
-     * @param key - The key for the vault.
-     * @returns A Promise resolving to the clear text from the vault.
+     * Android resolves a map. iOS resolves the clear-text string.
      */
-    openVault(vaultName: string, key: string): Promise<string>;
+    openVault(
+        vaultName: string,
+        key: string,
+    ): Promise<
+        | string
+        | {
+              clearText: string;
+              fallbackUsed?: boolean;
+              storedDifferedFromLive?: boolean;
+          }
+    >;
 
     /**
      * Checks if a vault exists.

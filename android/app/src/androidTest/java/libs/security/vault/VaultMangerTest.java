@@ -122,9 +122,8 @@ public class VaultMangerTest {
             Assert.assertEquals(VaultErrorCodes.WRONG_PASSPHRASE, e.getCode());
         }
 
-        WritableMap health = vaultManager.inspectVaultHealth();
-        Assert.assertTrue(health.getInt("vaultsReadable") >= 1);
-        Assert.assertEquals(0, health.getInt("vaultsUnreadable"));
+        WritableMap health = vaultManager.buildVaultHealthReport();
+        Assert.assertTrue(health.getInt("vaultsPresent") >= 1);
 
         // should return false for migration required as vault has been created with latest cipher
         performanceLogger.start("IS_MIGRATION_REQUIRED");

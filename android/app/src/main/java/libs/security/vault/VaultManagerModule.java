@@ -477,11 +477,13 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
     }
 
     /**
-     * Probe Keystore wrap for Realm key, device-id cache, and account vaults.
+     * Probe Realm wrap and device-id cache. Does not unwrap account vaults.
      * Does not need the passphrase. Does not return device id values.
      */
-    public WritableMap inspectVaultHealth() {
-        UniqueIdProvider.BindingHealth binding = UniqueIdProvider.sharedInstance().inspectBinding();
+    public WritableMap buildVaultHealthReport() {
+        UniqueIdProvider uniqueIdProvider = UniqueIdProvider.sharedInstance();
+        uniqueIdProvider.backfillLastKnownFromReadableUniqueId();
+        UniqueIdProvider.BindingHealth binding = uniqueIdProvider.inspectBinding();
         WritableMap map = Arguments.createMap();
         map.putBoolean("lastKnownPresent", binding.lastKnownPresent);
         map.putBoolean("livePresent", binding.livePresent);
@@ -489,30 +491,28 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
         map.putBoolean("uniqueIdKeychainReadable", binding.uniqueIdKeychainReadable);
         map.putBoolean("realmKeyReadable", canUnwrapAlias(STORAGE_ENCRYPTION_KEY));
 
-        int vaultReadable = 0;
-        int vaultUnreadable = 0;
+        int vaultsPresent = 0;
         Set<String> aliases = keychain.getAllAliases();
         for (String alias : aliases) {
             if (STORAGE_ENCRYPTION_KEY.equals(alias)
-                    || "device-unique-id".equals(alias)
+                    || UniqueIdProvider.UNIQUE_DEVICE_ID_KEY.equals(alias)
                     || alias.endsWith(RECOVERY_SUFFIX)) {
                 continue;
             }
-            if (canUnwrapAlias(alias)) {
-                vaultReadable++;
-            } else if (keychain.itemExist(alias)) {
-                vaultUnreadable++;
+            if (keychain.itemExist(alias)) {
+                vaultsPresent++;
             }
         }
-        map.putInt("vaultsReadable", vaultReadable);
-        map.putInt("vaultsUnreadable", vaultUnreadable);
+        map.putInt("vaultsPresent", vaultsPresent);
+        map.putInt("vaultsReadable", 0);
+        map.putInt("vaultsUnreadable", 0);
         return map;
     }
 
     @ReactMethod
     public void inspectVaultHealth(Promise promise) {
         try {
-            promise.resolve(inspectVaultHealth());
+            promise.resolve(buildVaultHealthReport());
         } catch (Exception e) {
             rejectWithError(promise, e);
         }

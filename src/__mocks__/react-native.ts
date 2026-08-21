@@ -99,6 +99,7 @@ ReactNative.NativeModules.VaultManagerModule = {
             lastKnownMatchesLive: true,
             uniqueIdKeychainReadable: true,
             realmKeyReadable: true,
+            vaultsPresent: 0,
             vaultsReadable: 0,
             vaultsUnreadable: 0,
         }),

@@ -107,8 +107,7 @@ class Application {
                 message.indexOf('Could not decrypt data') > -1 ||
                 message.indexOf('Could not decrypt bytes') > -1 ||
                 message.indexOf('KEYSTORE_UNRECOVERABLE') > -1 ||
-                message.indexOf('Keystore alias missing') > -1 ||
-                message.indexOf('possible data migration') > -1
+                message.indexOf('Keystore alias missing') > -1
             ) {
                 Alert.alert('Error', ErrorMessages.storageDecryptionFailed, [
                     {

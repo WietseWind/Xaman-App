@@ -109,25 +109,19 @@ public class CipherV2AesGcm {
 
         UniqueIdProvider uniqueIdProvider = UniqueIdProvider.sharedInstance();
         uniqueIdProvider.clearLastUnlockReport();
-        byte[] liveBytes = UniqueIdProvider.toDeviceIdBytes(uniqueIdProvider.getLiveAndroidId());
-        boolean liveDecryptFailed = false;
         boolean authFailed = false;
         CryptoFailedException lastFailure = null;
 
         for (String deviceId : candidates) {
             try {
                 String clearText = decryptWithDeviceId(cipher, key, derivedKeys, deviceId);
-                uniqueIdProvider.recordDecryptSuccess(deviceId, liveDecryptFailed);
+                uniqueIdProvider.recordDecryptSuccess(deviceId);
                 uniqueIdProvider.persistConfirmedDeviceUniqueId(deviceId);
                 return clearText;
             } catch (CryptoFailedException e) {
                 lastFailure = e;
                 if (VaultErrorCodes.WRONG_PASSPHRASE.equals(e.getCode())) {
                     authFailed = true;
-                }
-                byte[] tried = UniqueIdProvider.toDeviceIdBytes(deviceId);
-                if (liveBytes != null && tried != null && java.util.Arrays.equals(liveBytes, tried)) {
-                    liveDecryptFailed = true;
                 }
             }
         }

@@ -22,7 +22,9 @@ import libs.security.crypto.Crypto;
 import libs.security.vault.storage.Keychain;
 
 public class UniqueIdProvider {
-    private static final String UNIQUE_DEVICE_ID_KEY = "device-unique-id";
+    public static final String UNIQUE_DEVICE_ID_KEY = "device-unique-id";
+    private static final String REALM_KEY_ALIAS = "xumm-realm-key";
+    private static final String RECOVERY_SUFFIX = "_RECOVER";
     private static final String LAST_KNOWN_PREFS = "xaman_device_id";
     private static final String LAST_KNOWN_ANDROID_ID = "last_known_android_id";
 
@@ -69,18 +71,60 @@ public class UniqueIdProvider {
         }
     }
 
-    @Nullable
-    private  String loadDeviceUniqueId() {
-        try{
-            Map<String, String> item = keychain.getItem(UNIQUE_DEVICE_ID_KEY);
+    /**
+     * Keychain unique-id load. Prefs-present + unwrap-fail is not the same as first install.
+     */
+    static final class DeviceIdLoad {
+        @Nullable
+        final String value;
+        final boolean present;
+        final boolean readable;
+        final boolean unreadable;
 
-            if (item != null) {
-                return Objects.requireNonNull(item.get("password"));
-            }
-            return null;
-        } catch (Exception e) {
-            return null;
+        private DeviceIdLoad(@Nullable final String value, final boolean present, final boolean readable) {
+            this.value = value;
+            this.present = present;
+            this.readable = readable;
+            this.unreadable = present && !readable;
         }
+
+        static DeviceIdLoad absent() {
+            return new DeviceIdLoad(null, false, false);
+        }
+
+        static DeviceIdLoad readable(@NonNull final String value) {
+            return new DeviceIdLoad(value, true, true);
+        }
+
+        static DeviceIdLoad unreadable() {
+            return new DeviceIdLoad(null, true, false);
+        }
+    }
+
+    @NonNull
+    private DeviceIdLoad loadDeviceUniqueIdDetailed() {
+        if (keychain == null || !keychain.itemExist(UNIQUE_DEVICE_ID_KEY)) {
+            return DeviceIdLoad.absent();
+        }
+        try {
+            Map<String, String> item = keychain.getItem(UNIQUE_DEVICE_ID_KEY);
+            if (item == null) {
+                return DeviceIdLoad.unreadable();
+            }
+            String value = Objects.requireNonNull(item.get("password"));
+            if (!isUsableAndroidId(value)) {
+                return DeviceIdLoad.unreadable();
+            }
+            return DeviceIdLoad.readable(value);
+        } catch (Exception e) {
+            return DeviceIdLoad.unreadable();
+        }
+    }
+
+    @Nullable
+    private String loadDeviceUniqueId() {
+        DeviceIdLoad load = loadDeviceUniqueIdDetailed();
+        return load.readable ? load.value : null;
     }
 
     void saveLastKnownAndroidId(@NonNull final String unique_id) {
@@ -118,10 +162,10 @@ public class UniqueIdProvider {
 
     /**
      * Persist an ANDROID_ID that produced a successful vault encrypt or decrypt.
-     * Plain prefs first (commit) so last-known survives if Keystore wrap write fails or the process dies.
-     * Existing vaults were encrypted with the stored unique-id. Never change last-known to a
-     * different id. Unique-id may only be filled or healed to match last-known.
-     * Live ANDROID_ID is first-install only (both stores empty).
+     * Never treat a failed unique-id unwrap as first install. That would cement live
+     * ANDROID_ID into last-known and block Extra Security recovery.
+     * Live ANDROID_ID bootstrap is only when unique-id is absent, last-known is empty,
+     * and no account vault ciphertext exists yet.
      */
     public synchronized void persistConfirmedDeviceUniqueId(@NonNull final String unique_id) {
         if (!isUsableAndroidId(unique_id)) {
@@ -131,11 +175,29 @@ public class UniqueIdProvider {
         if (incoming == null) {
             return;
         }
-        byte[] storedUnique = toDeviceIdBytes(loadDeviceUniqueId());
+        DeviceIdLoad uniqueLoad = loadDeviceUniqueIdDetailed();
+        byte[] storedUnique = uniqueLoad.readable ? toDeviceIdBytes(uniqueLoad.value) : null;
         byte[] storedLast = toDeviceIdBytes(loadLastKnownAndroidId());
 
+        if (uniqueLoad.unreadable) {
+            if (storedLast == null) {
+                return;
+            }
+            if (!Arrays.equals(incoming, storedLast)) {
+                return;
+            }
+            saveDeviceUniqueId(unique_id);
+            return;
+        }
+
         if (storedLast == null) {
-            if (storedUnique == null || Arrays.equals(incoming, storedUnique)) {
+            if (storedUnique == null) {
+                if (hasPreexistingAccountVaults()) {
+                    return;
+                }
+                saveLastKnownAndroidId(unique_id, true);
+                storedLast = incoming;
+            } else if (Arrays.equals(incoming, storedUnique)) {
                 saveLastKnownAndroidId(unique_id, true);
                 storedLast = incoming;
             }
@@ -145,6 +207,38 @@ public class UniqueIdProvider {
             if (storedUnique == null || !Arrays.equals(incoming, storedUnique)) {
                 saveDeviceUniqueId(unique_id);
             }
+        }
+    }
+
+    /**
+     * True when RN_KEYCHAIN already has an account vault blob.
+     * Unique-id and Realm key aliases are not account vaults.
+     */
+    boolean hasPreexistingAccountVaults() {
+        if (keychain == null) {
+            return false;
+        }
+        for (String alias : keychain.getAllAliases()) {
+            if (UNIQUE_DEVICE_ID_KEY.equals(alias)
+                    || REALM_KEY_ALIAS.equals(alias)
+                    || alias.endsWith(RECOVERY_SUFFIX)) {
+                continue;
+            }
+            if (keychain.itemExist(alias)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Startup only. Copy a readable unique-id into last-known before any encrypt.
+     * Never writes live ANDROID_ID.
+     */
+    public synchronized void backfillLastKnownFromReadableUniqueId() {
+        DeviceIdLoad load = loadDeviceUniqueIdDetailed();
+        if (load.readable && load.value != null) {
+            persistConfirmedDeviceUniqueId(load.value);
         }
     }
 
@@ -235,10 +329,7 @@ public class UniqueIdProvider {
      * fallbackUsed is true when the winning id is not live ANDROID_ID.
      * Existing vaults stay on the stored unique-id. Live is not the encrypt id.
      */
-    public synchronized void recordDecryptSuccess(
-            @NonNull final String winningDeviceId,
-            final boolean liveDecryptFailed
-    ) {
+    public synchronized void recordDecryptSuccess(@NonNull final String winningDeviceId) {
         DeviceIdUnlockReport report = new DeviceIdUnlockReport();
         byte[] liveBytes = toDeviceIdBytes(getLiveAndroidId());
         byte[] storedUnique = toDeviceIdBytes(loadDeviceUniqueId());
@@ -283,28 +374,31 @@ public class UniqueIdProvider {
 
     /**
      * Id used for encrypt, PIN HMAC, and as the stored unique-id.
-     * Existing vaults used this value. Never return live ANDROID_ID when a stored id exists.
-     * Live is first-install only. Do not save live on a cache miss.
+     * Never return live ANDROID_ID when unique-id wrap is unreadable.
+     * Live is first-install only (unique-id absent, last-known empty, no vault blobs).
      */
     @SuppressLint("HardwareIds")
     @Nullable
     public synchronized String getDeviceUniqueId() {
-        // check if context is already initiated
         if (applicationContent == null) {
             throw new RuntimeException("Context is required");
         }
 
-        String unique_id = loadDeviceUniqueId();
-        if (isUsableAndroidId(unique_id)) {
+        DeviceIdLoad uniqueLoad = loadDeviceUniqueIdDetailed();
+        if (uniqueLoad.readable && isUsableAndroidId(uniqueLoad.value)) {
             if (loadLastKnownAndroidId() == null) {
-                saveLastKnownAndroidId(unique_id);
+                saveLastKnownAndroidId(uniqueLoad.value);
             }
+            return uniqueLoad.value;
+        }
+
+        String unique_id = loadLastKnownAndroidId();
+        if (isUsableAndroidId(unique_id)) {
             return unique_id;
         }
 
-        unique_id = loadLastKnownAndroidId();
-        if (isUsableAndroidId(unique_id)) {
-            return unique_id;
+        if (uniqueLoad.unreadable || hasPreexistingAccountVaults()) {
+            return null;
         }
 
         unique_id = getAndroidId(applicationContent);
@@ -332,7 +426,7 @@ public class UniqueIdProvider {
         health.lastKnownMatchesLive = health.livePresent
                 && health.lastKnownPresent
                 && Arrays.equals(toDeviceIdBytes(live), toDeviceIdBytes(lastKnown));
-        health.uniqueIdKeychainReadable = isUsableAndroidId(loadDeviceUniqueId());
+        health.uniqueIdKeychainReadable = loadDeviceUniqueIdDetailed().readable;
         return health;
     }
 }
