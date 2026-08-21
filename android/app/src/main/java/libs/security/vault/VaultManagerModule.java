@@ -374,7 +374,13 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
     public void openVault(String vaultName, String key, Promise promise) {
         try {
             String clearText = openVault(vaultName, key, true);
-            promise.resolve(clearText);
+            UniqueIdProvider.DeviceIdUnlockReport report =
+                    UniqueIdProvider.sharedInstance().consumeLastUnlockReport();
+            WritableMap result = Arguments.createMap();
+            result.putString("clearText", clearText);
+            result.putBoolean("fallbackUsed", report != null && report.fallbackUsed);
+            result.putBoolean("storedDifferedFromLive", report != null && report.storedDifferedFromLive);
+            promise.resolve(result);
         } catch (Exception e) {
             rejectWithError(promise, e);
         }

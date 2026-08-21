@@ -45,17 +45,23 @@ const Vault = {
     open: async (name: string, key: string): Promise<string | undefined> => {
         return new Promise((resolve, reject) => {
             VaultManagerModule.openVault(name, key)
-                .then((clearText: string) => {
+                .then((result: string | { clearText?: string; fallbackUsed?: boolean; storedDifferedFromLive?: boolean }) => {
+                    const clearText = typeof result === 'string' ? result : result?.clearText;
+                    const fallbackUsed =
+                        typeof result === 'object'
+                            ? !!result?.fallbackUsed
+                            : !!UniqueIdProviderModule?.consumeLastDeviceIdUnlockReport?.()?.fallbackUsed;
+                    const storedDifferedFromLive =
+                        typeof result === 'object' ? !!result?.storedDifferedFromLive : false;
                     // this should never happen, just double-checking
                     if (!clearText) {
                         reject(new Error('Vault open, received empty clear text!'));
                         return;
                     }
-                    const report = UniqueIdProviderModule?.consumeLastDeviceIdUnlockReport?.();
-                    if (report?.fallbackUsed) {
+                    if (fallbackUsed) {
                         logger.warn(
                             'WARNING: LIVE DEVICE ID DID NOT DECRYPT. SIGNING SUCCEEDED WITH LAST STORED DEVICE ID.',
-                            { vault: name, storedDifferedFromLive: !!report.storedDifferedFromLive },
+                            { vault: name, storedDifferedFromLive },
                         );
                     }
                     resolve(clearText);
@@ -219,6 +225,7 @@ const Vault = {
         }
         try {
             const report = await VaultManagerModule.inspectVaultHealth();
+            logger.debug('vault health', report);
             if (report?.vaultsUnreadable > 0) {
                 logger.error(
                     'WARNING: REALM OPENED BUT ACCOUNT VAULT KEYSTORE WRAP IS UNREADABLE. SIGNING WILL FAIL. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',

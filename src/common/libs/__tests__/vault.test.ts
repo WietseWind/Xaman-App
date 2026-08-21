@@ -28,7 +28,8 @@ describe('Vault', () => {
         });
 
         it('should warn in session log when stored device id fallback succeeded', async () => {
-            UniqueIdProviderModule.consumeLastDeviceIdUnlockReport.mockReturnValueOnce({
+            VaultManagerModule.openVault.mockResolvedValueOnce({
+                clearText: 'clearText',
                 fallbackUsed: true,
                 storedDifferedFromLive: true,
             });
