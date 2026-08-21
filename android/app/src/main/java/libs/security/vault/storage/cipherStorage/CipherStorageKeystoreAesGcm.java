@@ -15,7 +15,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -94,10 +93,8 @@ public class CipherStorageKeystoreAesGcm extends CipherStorageBase {
                                     @NonNull final String password)
             throws CryptoFailedException {
 
-        final AtomicInteger retries = new AtomicInteger(1);
-
         try {
-            final Key key = extractGeneratedKey(alias, retries);
+            final Key key = extractGeneratedKey(alias);
 
             return new EncryptionResult(
                     encryptString(key, username),
