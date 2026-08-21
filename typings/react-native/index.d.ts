@@ -252,6 +252,11 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
         locale: string;
         separator: string;
     }>;
+
+    /**
+     * Android: hide the native boot splash after the first screen has painted.
+     */
+    hideLaunchSplash: () => void;
 }
 
 /**
