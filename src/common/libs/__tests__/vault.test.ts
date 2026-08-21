@@ -61,6 +61,29 @@ describe('Vault', () => {
         });
     });
 
+    describe('Inspect health', () => {
+        it('should log when account vault wrap is unreadable after Realm opened', async () => {
+            VaultManagerModule.inspectVaultHealth.mockResolvedValueOnce({
+                lastKnownPresent: true,
+                livePresent: true,
+                lastKnownMatchesLive: false,
+                uniqueIdKeychainReadable: true,
+                realmKeyReadable: true,
+                vaultsReadable: 0,
+                vaultsUnreadable: 1,
+            });
+
+            await Vault.inspectHealth();
+
+            const sessionLog = LoggerService.getLogs().find(
+                (entry) =>
+                    entry.level === 'error' &&
+                    entry.message.includes('ACCOUNT VAULT KEYSTORE WRAP IS UNREADABLE'),
+            );
+            expect(sessionLog).toBeDefined();
+        });
+    });
+
     describe('Purge', () => {
         it('should call purgeVault method on VaultModule', async () => {
             await Vault.purge(name).then(() => {

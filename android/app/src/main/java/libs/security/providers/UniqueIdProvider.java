@@ -274,7 +274,27 @@ public class UniqueIdProvider {
             return null;
         }
 
-        saveLastKnownAndroidId(unique_id);
         return unique_id;
+    }
+
+    public static class BindingHealth {
+        public boolean lastKnownPresent;
+        public boolean livePresent;
+        public boolean lastKnownMatchesLive;
+        public boolean uniqueIdKeychainReadable;
+    }
+
+    @NonNull
+    public synchronized BindingHealth inspectBinding() {
+        BindingHealth health = new BindingHealth();
+        String live = getLiveAndroidId();
+        String lastKnown = loadLastKnownAndroidId();
+        health.livePresent = isUsableAndroidId(live);
+        health.lastKnownPresent = isUsableAndroidId(lastKnown);
+        health.lastKnownMatchesLive = health.livePresent
+                && health.lastKnownPresent
+                && Arrays.equals(toDeviceIdBytes(live), toDeviceIdBytes(lastKnown));
+        health.uniqueIdKeychainReadable = isUsableAndroidId(loadDeviceUniqueId());
+        return health;
     }
 }

@@ -92,6 +92,17 @@ ReactNative.NativeModules.VaultManagerModule = {
         ),
     ),
     isStorageEncryptionKeyExist: jest.fn(() => Promise.resolve(true)),
+    inspectVaultHealth: jest.fn(() =>
+        Promise.resolve({
+            lastKnownPresent: true,
+            livePresent: true,
+            lastKnownMatchesLive: true,
+            uniqueIdKeychainReadable: true,
+            realmKeyReadable: true,
+            vaultsReadable: 0,
+            vaultsUnreadable: 0,
+        }),
+    ),
     createVault: jest.fn((vaultName: string, entry: string, key: string) => Promise.resolve(true)),
     openVault: jest.fn((vaultName: string, key: string) => Promise.resolve('clearText')),
     vaultExist: jest.fn((vaultName: string) => Promise.resolve(true)),

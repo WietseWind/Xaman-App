@@ -305,6 +305,19 @@ interface VaultManagerModuleInterface extends NativeModule {
     getStorageEncryptionKey(): Promise<string>;
 
     /**
+     * Probe Keystore wrap health without the passphrase.
+     */
+    inspectVaultHealth?: () => Promise<{
+        lastKnownPresent: boolean;
+        livePresent: boolean;
+        lastKnownMatchesLive: boolean;
+        uniqueIdKeychainReadable: boolean;
+        realmKeyReadable: boolean;
+        vaultsReadable: number;
+        vaultsUnreadable: number;
+    }>;
+
+    /**
      * Checks if the storage encryption key exists.
      * @returns A Promise resolving to true if the key exists, otherwise false.
      */

@@ -128,7 +128,16 @@ const Vault = {
                     resolve(keyBytes);
                 })
                 .catch((error) => {
-                    logger.error('getStorageEncryptionKey', error);
+                    const code = typeof error?.code === 'string' ? error.code : '-1';
+                    const message = error?.message ? String(error.message) : String(error);
+                    if (code === 'DEVICE_ID_CHANGED') {
+                        logger.error(
+                            'WARNING: PASSPHRASE INVALID BECAUSE IT WAS ORIGINALLY CONFIGURED ON ANOTHER PHONE. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            { code, message, deviceIdChanged: true },
+                        );
+                    } else {
+                        logger.error('getStorageEncryptionKey', { code, message });
+                    }
                     reject(error);
                 });
         });
@@ -193,6 +202,44 @@ const Vault = {
                     reject(error);
                 });
         });
+    },
+
+    /**
+     * Probe Realm wrap vs account-vault wrap vs device-id cache.
+     * Android only. Does not need the passphrase.
+     */
+    inspectHealth: async (): Promise<Record<string, unknown> | undefined> => {
+        if (typeof VaultManagerModule.inspectVaultHealth !== 'function') {
+            return undefined;
+        }
+        try {
+            const report = await VaultManagerModule.inspectVaultHealth();
+            if (report?.vaultsUnreadable > 0) {
+                logger.error(
+                    'WARNING: REALM OPENED BUT ACCOUNT VAULT KEYSTORE WRAP IS UNREADABLE. SIGNING WILL FAIL. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                    report,
+                );
+            } else if (report?.uniqueIdKeychainReadable === false && report?.lastKnownPresent) {
+                logger.warn(
+                    'WARNING: DEVICE-UNIQUE-ID KEYCHAIN UNREADABLE. USING LAST STORED DEVICE ID.',
+                    report,
+                );
+            } else if (report?.lastKnownPresent && report?.lastKnownMatchesLive === false) {
+                logger.warn('WARNING: LIVE DEVICE ID DIFFERS FROM LAST STORED DEVICE ID.', report);
+            } else if (
+                report?.uniqueIdKeychainReadable === false &&
+                report?.lastKnownPresent === false
+            ) {
+                logger.warn(
+                    'WARNING: NO STORED DEVICE ID. CANNOT DETECT ANDROID_ID CHANGE. SIGNING MAY FAIL AFTER DEVICE CHANGE.',
+                    report,
+                );
+            }
+            return report;
+        } catch (error) {
+            logger.error('inspectHealth', error);
+            return undefined;
+        }
     },
 
     // Purge All vaults in the keychain

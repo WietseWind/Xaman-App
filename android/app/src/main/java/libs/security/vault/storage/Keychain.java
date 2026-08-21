@@ -121,6 +121,11 @@ public class Keychain {
         return resultSet != null;
     }
 
+    @NonNull
+    public Set<String> getAllAliases() {
+        return prefsStorage.getAllEntries();
+    }
+
     /*
       Note: this will clear the entire keychain storage, including the generated keys
      */

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import libs.security.crypto.Crypto;
 import libs.security.providers.UniqueIdProvider;
@@ -457,6 +458,59 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
             promise.resolve(encryptionKey);
         } catch (Exception e) {
             rejectWithError(promise, e);
+        }
+    }
+
+    /**
+     * Probe Keystore wrap for Realm key, device-id cache, and account vaults.
+     * Does not need the passphrase. Does not return device id values.
+     */
+    public WritableMap inspectVaultHealth() {
+        UniqueIdProvider.BindingHealth binding = UniqueIdProvider.sharedInstance().inspectBinding();
+        WritableMap map = Arguments.createMap();
+        map.putBoolean("lastKnownPresent", binding.lastKnownPresent);
+        map.putBoolean("livePresent", binding.livePresent);
+        map.putBoolean("lastKnownMatchesLive", binding.lastKnownMatchesLive);
+        map.putBoolean("uniqueIdKeychainReadable", binding.uniqueIdKeychainReadable);
+        map.putBoolean("realmKeyReadable", canUnwrapAlias(STORAGE_ENCRYPTION_KEY));
+
+        int vaultReadable = 0;
+        int vaultUnreadable = 0;
+        Set<String> aliases = keychain.getAllAliases();
+        for (String alias : aliases) {
+            if (STORAGE_ENCRYPTION_KEY.equals(alias)
+                    || "device-unique-id".equals(alias)
+                    || alias.endsWith(RECOVERY_SUFFIX)) {
+                continue;
+            }
+            if (canUnwrapAlias(alias)) {
+                vaultReadable++;
+            } else if (keychain.itemExist(alias)) {
+                vaultUnreadable++;
+            }
+        }
+        map.putInt("vaultsReadable", vaultReadable);
+        map.putInt("vaultsUnreadable", vaultUnreadable);
+        return map;
+    }
+
+    @ReactMethod
+    public void inspectVaultHealth(Promise promise) {
+        try {
+            promise.resolve(inspectVaultHealth());
+        } catch (Exception e) {
+            rejectWithError(promise, e);
+        }
+    }
+
+    private boolean canUnwrapAlias(@NonNull final String alias) {
+        try {
+            if (!keychain.itemExist(alias)) {
+                return false;
+            }
+            return keychain.getItem(alias) != null;
+        } catch (Exception e) {
+            return false;
         }
     }
 
