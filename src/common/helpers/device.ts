@@ -149,6 +149,16 @@ const GetDeviceUniqueId = (): string => {
     return UniqueIdProviderModule.getDeviceUniqueId();
 };
 
+/**
+ * Android: hide the native boot image after the first screen has painted.
+ */
+const HideLaunchSplash = (): void => {
+    if (Platform.OS !== 'android' || typeof DeviceUtilsModule?.hideLaunchSplash !== 'function') {
+        return;
+    }
+    DeviceUtilsModule.hideLaunchSplash();
+};
+
 /* Export ==================================================================== */
 export {
     HasBottomNotch,
@@ -163,4 +173,5 @@ export {
     GetDeviceBrand,
     GetDeviceOSVersion,
     GetDeviceUniqueId,
+    HideLaunchSplash,
 };

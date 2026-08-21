@@ -59,6 +59,7 @@ ReactNative.NativeModules.DeviceUtilsModule = {
     getLocalSetting: jest.fn(() =>
         Promise.resolve({ delimiter: ',', languageCode: 'en', locale: 'en_US', separator: '.' }),
     ),
+    hideLaunchSplash: jest.fn(),
 };
 
 ReactNative.NativeModules.AppUtilsModule = {

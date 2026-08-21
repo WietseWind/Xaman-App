@@ -91,7 +91,7 @@ class PushNotificationSetupView extends Component<Props, State> {
                 style={onboardingStyles.backgroundImageStyle}
                 imageStyle={onboardingStyles.backgroundImageStyle}
             >
-                <SafeAreaView style={[AppStyles.flex1, AppStyles.centerAligned, AppStyles.padding]}>
+                <SafeAreaView style={[AppStyles.flex1, AppStyles.centerAligned, AppStyles.padding, AppStyles.androidSystemBarTop]}>
                     <Image
                         style={onboardingStyles.logo}
                         source={StyleService.getImageIfLightModeIfDarkMode('XamanLogo', 'XamanLogoLight')}
@@ -125,6 +125,7 @@ class PushNotificationSetupView extends Component<Props, State> {
                         <Footer style={[
                             AppStyles.paddingBottom,
                             AppStyles.paddingTopNone,
+                            AppStyles.androidSystemBarBottom,
                         ]}>
                             <Button numberOfLines={1}
                                 light

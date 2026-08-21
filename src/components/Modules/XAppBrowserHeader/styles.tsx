@@ -11,6 +11,8 @@ const styles = StyleService.create({
         zIndex: 2,
         borderBottomColor: '$tint',
         borderBottomWidth: 1,
+        // iOS SafeAreaView already insets. Android SafeAreaView is a no-op.
+        paddingTop: Platform.OS === 'android' ? AppSizes.statusBarHeight : 0,
     },
     headerContainer: {
         flexDirection: 'row',
