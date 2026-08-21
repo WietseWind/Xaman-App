@@ -81,9 +81,37 @@ public class LaunchActivity extends NavigationActivity {
                     navigationBars.right,
                     displayCutout.top
             );
+            applyBottomTabsNavInset();
             return insets;
         });
         ViewCompat.requestApplyInsets(rootView);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this::applyBottomTabsNavInset);
+    }
+
+    /**
+     * RNN tab bar ignores navigation-bar insets on API 35+. Pad the tab bar so the
+     * virtual home control sits in the bar, like the iOS home indicator.
+     */
+    private void applyBottomTabsNavInset() {
+        int tabsId = getResources().getIdentifier("bottomTabs", "id", getPackageName());
+        if (tabsId == 0) {
+            return;
+        }
+        View tabs = findViewById(tabsId);
+        if (tabs == null) {
+            return;
+        }
+        WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(tabs);
+        int bottom = 0;
+        if (windowInsets != null) {
+            bottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+        }
+        if (bottom <= 0) {
+            bottom = SafeAreaInsets.getSafeAreaBottom();
+        }
+        if (tabs.getPaddingBottom() != bottom) {
+            tabs.setPadding(tabs.getPaddingLeft(), tabs.getPaddingTop(), tabs.getPaddingRight(), bottom);
+        }
     }
 
     private void seedInsetsFromResources() {
