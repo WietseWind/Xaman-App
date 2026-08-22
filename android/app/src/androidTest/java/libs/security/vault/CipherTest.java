@@ -119,6 +119,64 @@ public class CipherTest {
     }
 
     @Test
+    public void decryptProofFillsLastKnownThenEncryptSucceeds() throws Exception {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        ReactApplicationContext context = new ReactApplicationContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()
+        );
+        Keychain keychain = new Keychain(context);
+        android.content.SharedPreferences prefs = context.getSharedPreferences(
+                "xaman_device_id",
+                android.content.Context.MODE_PRIVATE
+        );
+        String previousLast = prefs.getString("last_known_android_id", null);
+        java.util.Map<String, String> previousUnique = keychain.itemExist("device-unique-id")
+                ? keychain.getItem("device-unique-id")
+                : null;
+        final String dummyVault = "ff00112233445566778899aabbccddeeff00112233445566778899aabbccddee";
+        final String clearText = "decrypt-proof-vault";
+        final String clearKey = "Secret Key";
+        try {
+            keychain.setItem("device-unique-id", "", liveId);
+            prefs.edit().putString("last_known_android_id", liveId).commit();
+            Map<String, Object> cipherResult = Cipher.encrypt(clearText, clearKey);
+            String cipher = (String) cipherResult.get("cipher");
+            Cipher.DerivedKeys derivedKeys = (Cipher.DerivedKeys) cipherResult.get("derived_keys");
+
+            keychain.setItem("device-unique-id", "", "not-hex");
+            prefs.edit().clear().commit();
+            keychain.setItem(dummyVault, "", "placeholder");
+            Assert.assertNull(provider.getDeviceUniqueId());
+
+            Assert.assertEquals(clearText, Cipher.decrypt(cipher, clearKey, derivedKeys.toJSONString()));
+            Assert.assertArrayEquals(
+                    UniqueIdProvider.toDeviceIdBytes(liveId),
+                    UniqueIdProvider.toDeviceIdBytes(prefs.getString("last_known_android_id", null))
+            );
+            Assert.assertNotNull(provider.getDeviceUniqueId());
+
+            Map<String, Object> again = Cipher.encrypt(clearText, clearKey);
+            Assert.assertNotNull(again.get("cipher"));
+        } finally {
+            if (keychain.itemExist(dummyVault)) {
+                keychain.deleteItem(dummyVault);
+            }
+            if (previousLast != null) {
+                prefs.edit().putString("last_known_android_id", previousLast).commit();
+            } else {
+                prefs.edit().remove("last_known_android_id").commit();
+            }
+            if (previousUnique != null && previousUnique.get("password") != null) {
+                keychain.setItem("device-unique-id", "", previousUnique.get("password"));
+            } else if (keychain.itemExist("device-unique-id")) {
+                keychain.deleteItem("device-unique-id");
+            }
+        }
+    }
+
+    @Test
     public void encryptDecryptUsesStoredUniqueIdNotLive() throws Exception {
         UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
         String liveId = provider.getLiveAndroidId();

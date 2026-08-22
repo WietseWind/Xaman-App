@@ -181,8 +181,17 @@ public class UniqueIdProvider {
      * ANDROID_ID into last-known and block Extra Security recovery.
      * Live ANDROID_ID bootstrap is only when unique-id is absent, last-known is empty,
      * and no account vault ciphertext exists yet.
+     * provenByDecrypt: AES-GCM already opened a vault with this id. Write last-known
+     * even when unique-id wrap is dead and last-known is empty.
      */
     public synchronized void persistConfirmedDeviceUniqueId(@NonNull final String unique_id) {
+        persistConfirmedDeviceUniqueId(unique_id, false);
+    }
+
+    public synchronized void persistConfirmedDeviceUniqueId(
+            @NonNull final String unique_id,
+            final boolean provenByDecrypt
+    ) {
         if (!isUsableAndroidId(unique_id)) {
             return;
         }
@@ -193,6 +202,12 @@ public class UniqueIdProvider {
         DeviceIdLoad uniqueLoad = loadDeviceUniqueIdDetailed();
         byte[] storedUnique = uniqueLoad.readable ? toDeviceIdBytes(uniqueLoad.value) : null;
         byte[] storedLast = toDeviceIdBytes(loadLastKnownAndroidId());
+
+        if (provenByDecrypt) {
+            saveLastKnownAndroidId(unique_id, true);
+            saveDeviceUniqueId(unique_id);
+            return;
+        }
 
         if (uniqueLoad.unreadable) {
             if (storedLast == null) {

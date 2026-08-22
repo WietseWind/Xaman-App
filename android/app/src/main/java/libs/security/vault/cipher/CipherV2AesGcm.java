@@ -85,7 +85,7 @@ public class CipherV2AesGcm {
             result.put("cipher", Crypto.BytesToHex(encryptedBytes));
             result.put("derived_keys", derivedKeys);
 
-            UniqueIdProvider.sharedInstance().persistConfirmedDeviceUniqueId(deviceId);
+            UniqueIdProvider.sharedInstance().persistConfirmedDeviceUniqueId(deviceId, false);
 
             return result;
         } catch (CryptoFailedException e) {
@@ -116,7 +116,7 @@ public class CipherV2AesGcm {
             try {
                 String clearText = decryptWithDeviceId(cipher, key, derivedKeys, deviceId);
                 uniqueIdProvider.recordDecryptSuccess(deviceId);
-                uniqueIdProvider.persistConfirmedDeviceUniqueId(deviceId);
+                uniqueIdProvider.persistConfirmedDeviceUniqueId(deviceId, true);
                 return clearText;
             } catch (CryptoFailedException e) {
                 lastFailure = e;

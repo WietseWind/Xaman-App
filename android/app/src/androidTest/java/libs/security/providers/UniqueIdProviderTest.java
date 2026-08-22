@@ -426,6 +426,93 @@ public class UniqueIdProviderTest {
     }
 
     @Test
+    public void persistWithoutDecryptProofDoesNotFillLastKnownWhenUniqueIdUnreadable() throws Exception {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        ReactApplicationContext context = new ReactApplicationContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()
+        );
+        Keychain keychain = new Keychain(context);
+        String previousLast = provider.loadLastKnownAndroidId();
+        java.util.Map<String, String> previousUnique = keychain.itemExist("device-unique-id")
+                ? keychain.getItem("device-unique-id")
+                : null;
+        final String dummyVault = "ddeeff00112233445566778899aabbccddeeff00112233445566778899aabbcc";
+        try {
+            keychain.setItem("device-unique-id", "", "not-hex");
+            context.getSharedPreferences("xaman_device_id", android.content.Context.MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .commit();
+            keychain.setItem(dummyVault, "", "placeholder");
+            Assert.assertTrue(provider.hasPreexistingAccountVaults());
+            Assert.assertNull(provider.getDeviceUniqueId());
+            provider.persistConfirmedDeviceUniqueId(liveId, false);
+            Assert.assertNull(provider.loadLastKnownAndroidId());
+            Assert.assertNull(provider.getDeviceUniqueId());
+        } finally {
+            if (keychain.itemExist(dummyVault)) {
+                keychain.deleteItem(dummyVault);
+            }
+            if (previousLast != null) {
+                provider.saveLastKnownAndroidId(previousLast);
+            }
+            if (previousUnique != null && previousUnique.get("password") != null) {
+                keychain.setItem("device-unique-id", "", previousUnique.get("password"));
+            } else if (keychain.itemExist("device-unique-id")) {
+                keychain.deleteItem("device-unique-id");
+            }
+        }
+    }
+
+    @Test
+    public void persistProvenByDecryptFillsLastKnownWhenUniqueIdUnreadable() throws Exception {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        ReactApplicationContext context = new ReactApplicationContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()
+        );
+        Keychain keychain = new Keychain(context);
+        String previousLast = provider.loadLastKnownAndroidId();
+        java.util.Map<String, String> previousUnique = keychain.itemExist("device-unique-id")
+                ? keychain.getItem("device-unique-id")
+                : null;
+        final String dummyVault = "eeff00112233445566778899aabbccddeeff00112233445566778899aabbccdd";
+        try {
+            keychain.setItem("device-unique-id", "", "not-hex");
+            context.getSharedPreferences("xaman_device_id", android.content.Context.MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .commit();
+            keychain.setItem(dummyVault, "", "placeholder");
+            Assert.assertNull(provider.getDeviceUniqueId());
+            provider.persistConfirmedDeviceUniqueId(liveId, true);
+            Assert.assertArrayEquals(
+                    UniqueIdProvider.toDeviceIdBytes(liveId),
+                    UniqueIdProvider.toDeviceIdBytes(provider.loadLastKnownAndroidId())
+            );
+            Assert.assertArrayEquals(
+                    UniqueIdProvider.toDeviceIdBytes(liveId),
+                    UniqueIdProvider.toDeviceIdBytes(provider.getDeviceUniqueId())
+            );
+        } finally {
+            if (keychain.itemExist(dummyVault)) {
+                keychain.deleteItem(dummyVault);
+            }
+            if (previousLast != null) {
+                provider.saveLastKnownAndroidId(previousLast);
+            }
+            if (previousUnique != null && previousUnique.get("password") != null) {
+                keychain.setItem("device-unique-id", "", previousUnique.get("password"));
+            } else if (keychain.itemExist("device-unique-id")) {
+                keychain.deleteItem("device-unique-id");
+            }
+        }
+    }
+
+    @Test
     public void decryptCandidatesDedupeByPaddedBytes() {
         UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
         String deviceId = provider.getDeviceUniqueId();
