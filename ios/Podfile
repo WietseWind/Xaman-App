@@ -62,5 +62,43 @@ target 'Xaman' do
         end
       end
     end
+
+    # Xcode 26: CocoaPods copies pod headers into Headers/{Public,Private}
+    # with new inodes. Clang then loads the same header as a module and as a
+    # textual include (FIRApp, RuntimeScheduler, …). Hardlink each copy to
+    # that pod's own source file so #import / #pragma once see one inode.
+    require 'fileutils'
+    sandbox = installer.sandbox
+    %w[Public Private].each do |kind|
+      Dir.children(File.join(sandbox.root, 'Headers', kind)).each do |pod_name|
+        src_root = begin
+          sandbox.pod_dir(pod_name)
+        rescue StandardError
+          next
+        end
+        next unless src_root && File.directory?(src_root.to_s)
+
+        by_name = {}
+        dups = {}
+        Dir.glob(File.join(src_root.to_s, '**', '*.h')).each do |src|
+          base = File.basename(src)
+          if by_name.key?(base)
+            dups[base] = true
+          else
+            by_name[base] = src
+          end
+        end
+        dups.each_key { |b| by_name.delete(b) }
+
+        Dir.glob(File.join(sandbox.root, 'Headers', kind, pod_name, '**', '*.h')).each do |copied|
+          src = by_name[File.basename(copied)]
+          next unless src
+          next if File.stat(copied).ino == File.stat(src).ino
+          FileUtils.chmod('u+w', copied)
+          FileUtils.rm(copied)
+          File.link(src, copied)
+        end
+      end
+    end
   end
 end
