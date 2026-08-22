@@ -386,9 +386,11 @@ class Application {
 
                 /* ======================== FlagSecure & LayoutAnimationExperimental =============================== */
                 if (Platform.OS === 'android') {
-                    // Enable Flag Secure if developer mode is not active
-                    if (!coreSettings?.developerMode) {
+                    // Release: FLAG_SECURE unless developer mode. Debug APK never blocks screenshots.
+                    if (!IsDebugBuild() && !coreSettings?.developerMode) {
                         SetFlagSecure(true);
+                    } else {
+                        SetFlagSecure(false);
                     }
 
                     // enable layout animation
