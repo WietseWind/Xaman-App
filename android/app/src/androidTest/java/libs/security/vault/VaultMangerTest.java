@@ -14,6 +14,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -283,6 +285,38 @@ public class VaultMangerTest {
         }
     }
 
+
+    @Test
+    public void wipeLocalDatastoreRemovesUnreadableRealmWrapAndRealmFile() throws Exception {
+        Assert.assertNotNull(vaultManager.getStorageEncryptionKey());
+        Assert.assertTrue(vaultManager.isStorageEncryptionKeyExist());
+
+        File dir = InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir();
+        File realm = new File(dir, "xumm.realm");
+        FileOutputStream out = new FileOutputStream(realm);
+        out.write(new byte[] {1, 2, 3, 4});
+        out.close();
+        Assert.assertTrue(realm.exists());
+
+        android.content.SharedPreferences prefs =
+                InstrumentationRegistry.getInstrumentation()
+                        .getTargetContext()
+                        .getSharedPreferences("xaman_device_id", android.content.Context.MODE_PRIVATE);
+        prefs.edit().putString("last_known_android_id", "aaaaaaaaaaaaaaaa").commit();
+
+        java.security.KeyStore ks = java.security.KeyStore.getInstance("AndroidKeyStore");
+        ks.load(null);
+        if (ks.containsAlias(VaultManagerModule.STORAGE_ENCRYPTION_KEY)) {
+            ks.deleteEntry(VaultManagerModule.STORAGE_ENCRYPTION_KEY);
+        }
+        Assert.assertTrue(vaultManager.isStorageEncryptionKeyExist());
+
+        vaultManager.wipeLocalDatastore();
+
+        Assert.assertFalse(vaultManager.isStorageEncryptionKeyExist());
+        Assert.assertFalse(realm.exists());
+        Assert.assertNull(prefs.getString("last_known_android_id", null));
+    }
 
     @Test
     public void StorageEncryptionKeyTest() throws Exception {

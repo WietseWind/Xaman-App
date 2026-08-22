@@ -147,8 +147,22 @@ class Application {
                 {
                     text: 'Yes',
                     style: 'destructive',
-                    onPress: () => {
-                        DataStorage.wipe();
+                    onPress: async () => {
+                        try {
+                            await Vault.wipeLocalDatastore();
+                        } catch (error) {
+                            this.logger.error('wipeStorage', error);
+                            try {
+                                await Vault.clearStorage();
+                            } catch (clearError) {
+                                this.logger.error('wipeStorage clearStorage', clearError);
+                            }
+                        }
+                        try {
+                            DataStorage.wipe();
+                        } catch (error) {
+                            this.logger.error('wipeStorage realm', error);
+                        }
                         ExitApp();
                     },
                 },

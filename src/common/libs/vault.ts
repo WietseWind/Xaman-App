@@ -272,6 +272,26 @@ const Vault = {
                 });
         });
     },
+
+    /**
+     * User wipe. Clears keychain (and on Android Realm files + last-known id)
+     * even when the Keystore wrap is unreadable.
+     */
+    wipeLocalDatastore: (): Promise<boolean> => {
+        return new Promise((resolve, reject) => {
+            const nativeWipe = VaultManagerModule.wipeLocalDatastore;
+            const run =
+                typeof nativeWipe === 'function'
+                    ? nativeWipe.call(VaultManagerModule)
+                    : VaultManagerModule.clearStorage();
+            Promise.resolve(run)
+                .then(() => resolve(true))
+                .catch((error) => {
+                    logger.error('wipeLocalDatastore', error);
+                    reject(error);
+                });
+        });
+    },
 };
 
 export default Vault;

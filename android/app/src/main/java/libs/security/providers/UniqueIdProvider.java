@@ -165,6 +165,20 @@ public class UniqueIdProvider {
         }
     }
 
+    /**
+     * User wipe: drop last-known so the next install can bind to live ANDROID_ID.
+     */
+    public synchronized void clearLastKnownAndroidId() {
+        if (applicationContent == null) {
+            return;
+        }
+        applicationContent
+                .getSharedPreferences(LAST_KNOWN_PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .remove(LAST_KNOWN_ANDROID_ID)
+                .commit();
+    }
+
     @Nullable
     String loadLastKnownAndroidId() {
         if (applicationContent == null) {

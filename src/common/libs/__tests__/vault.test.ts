@@ -119,4 +119,11 @@ describe('Vault', () => {
             });
         });
     });
+
+    describe('Wipe local datastore', () => {
+        it('should call wipeLocalDatastore on VaultModule', async () => {
+            await Vault.wipeLocalDatastore();
+            expect(VaultManagerModule.wipeLocalDatastore).toHaveBeenCalled();
+        });
+    });
 });

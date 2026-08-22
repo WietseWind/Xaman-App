@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -298,8 +299,42 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
      Purge ALL vaults in the keychain
      NOTE: this action cannot be undo and is permanent, used with caution
     */
-    public void clearStorage() throws Exception {
+    public void clearStorage() {
         keychain.clear();
+    }
+
+    /**
+     * User wipe after Keystore loss. Remove keychain blobs (commit), last-known
+     * ANDROID_ID, and Realm files. JS Realm.deleteFile is not enough: the
+     * unreadable xumm-realm-key wrap keeps the next launch in the wipe dialog.
+     */
+    public void wipeLocalDatastore() {
+        clearStorage();
+        UniqueIdProvider.sharedInstance().init(getReactApplicationContext());
+        UniqueIdProvider.sharedInstance().clearLastKnownAndroidId();
+        File dir = getReactApplicationContext().getFilesDir();
+        if (dir != null) {
+            deleteQuietly(new File(dir, "xumm.realm"));
+            deleteQuietly(new File(dir, "xumm.realm.lock"));
+            deleteQuietly(new File(dir, "xumm.realm.note"));
+            deleteQuietly(new File(dir, "xumm.realm.management"));
+        }
+    }
+
+    private static void deleteQuietly(@NonNull final File file) {
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteQuietly(child);
+                }
+            }
+        }
+        //noinspection ResultOfMethodCallIgnored
+        file.delete();
     }
 
     /*
@@ -440,6 +475,16 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
     public void clearStorage(Promise promise) {
         try {
             clearStorage();
+            promise.resolve(true);
+        } catch (Exception e) {
+            rejectWithError(promise, e);
+        }
+    }
+
+    @ReactMethod
+    public void wipeLocalDatastore(Promise promise) {
+        try {
+            wipeLocalDatastore();
             promise.resolve(true);
         } catch (Exception e) {
             rejectWithError(promise, e);

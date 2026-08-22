@@ -39,6 +39,17 @@ public class UniqueIdProviderTest {
     }
 
     @Test
+    public void clearLastKnownAndroidIdRemovesPref() {
+        UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
+        String liveId = provider.getLiveAndroidId();
+        Assert.assertNotNull(liveId);
+        provider.saveLastKnownAndroidId(liveId);
+        Assert.assertNotNull(provider.loadLastKnownAndroidId());
+        provider.clearLastKnownAndroidId();
+        Assert.assertNull(provider.loadLastKnownAndroidId());
+    }
+
+    @Test
     public void persistConfirmedWritesLastKnownAndCandidatesIncludeIt() {
         UniqueIdProvider provider = UniqueIdProvider.sharedInstance();
         String deviceId = provider.getDeviceUniqueId();

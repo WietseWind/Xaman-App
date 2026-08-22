@@ -392,6 +392,11 @@ interface VaultManagerModuleInterface extends NativeModule {
     clearStorage(): Promise<boolean>;
 
     /**
+     * User wipe: clear keychain, Android last-known ANDROID_ID, and Realm files.
+     */
+    wipeLocalDatastore(): Promise<boolean>;
+
+    /**
      * Checks if migration is required for a vault.
      * @param vaultName - The name of the vault to check.
      * @returns A Promise resolving to an object containing migration information.

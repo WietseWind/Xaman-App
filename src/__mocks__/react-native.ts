@@ -111,6 +111,7 @@ ReactNative.NativeModules.VaultManagerModule = {
     reKeyVault: jest.fn((vaultName: string, oldKey: string, newKey: string) => Promise.resolve(true)),
     reKeyBatchVaults: jest.fn((vaultNames: string[], oldKey: string, newKey: string) => Promise.resolve(true)),
     clearStorage: jest.fn(() => Promise.resolve(true)),
+    wipeLocalDatastore: jest.fn(() => Promise.resolve(true)),
     isMigrationRequired: jest.fn((vaultName: string) =>
         Promise.resolve({
             vault: vaultName,
