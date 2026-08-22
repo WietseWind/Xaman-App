@@ -1,6 +1,7 @@
 const { Then } = require('@cucumber/cucumber');
 const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
+const { clickByTestId } = require('../helpers/tapById');
 
 let passcode = '167349';
 
@@ -13,7 +14,7 @@ Then('I enter my passcode', async () => {
     const passcodeArray = passcode.split('');
 
     for (let i = 0; i < passcodeArray.length; i++) {
-        await element(by.id(`${passcodeArray[i]}-key`)).tap();
+        await clickByTestId(`${passcodeArray[i]}-key`);
     }
 });
 
@@ -33,23 +34,22 @@ Then('I type my passcode', async () => {
             throw e;
         }
     }
-    await element(by.id(`${passcode[0]}-key`)).tap();
-    await element(by.id(`${passcode[1]}-key`)).tap();
-    await element(by.id(`${passcode[2]}-key`)).tap();
-    await element(by.id(`${passcode[3]}-key`)).tap();
-    await element(by.id(`${passcode[4]}-key`)).tap();
-    await element(by.id(`${passcode[5]}-key`)).tap();
+    await clickByTestId(`${passcode[0]}-key`);
+    await clickByTestId(`${passcode[1]}-key`);
+    await clickByTestId(`${passcode[2]}-key`);
+    await clickByTestId(`${passcode[3]}-key`);
+    await clickByTestId(`${passcode[4]}-key`);
+    await clickByTestId(`${passcode[5]}-key`);
 });
 
 Then('I type my new passcode', async () => {
     passcode = '958347';
-    // await element(by.id('pin-input')).typeText(`${passcode}\n`);
-    await element(by.id(`${passcode[0]}-key`)).tap();
-    await element(by.id(`${passcode[1]}-key`)).tap();
-    await element(by.id(`${passcode[2]}-key`)).tap();
-    await element(by.id(`${passcode[3]}-key`)).tap();
-    await element(by.id(`${passcode[4]}-key`)).tap();
-    await element(by.id(`${passcode[5]}-key`)).tap();
+    await clickByTestId(`${passcode[0]}-key`);
+    await clickByTestId(`${passcode[1]}-key`);
+    await clickByTestId(`${passcode[2]}-key`);
+    await clickByTestId(`${passcode[3]}-key`);
+    await clickByTestId(`${passcode[4]}-key`);
+    await clickByTestId(`${passcode[5]}-key`);
 });
 
 const typeIntoField = async (inputId, value) => {

@@ -3,6 +3,7 @@ const { Given, Then } = require('@cucumber/cucumber');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
+const { clickByTestId, tapByTestIdIfPresent, waitUntilAndroidTestId } = require('../helpers/tapById');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
 let androidAlertPending = false;
@@ -59,26 +60,11 @@ Then('I tap {string}', async (buttonId) => {
                 }
             };
             await clickFooter();
-            // ToS WebView can eat the first press. Keep clicking until Home is up.
+            // initUser + RNN setRoot. What's new WebView keeps the looper busy.
+            // Close it by testID (UiDevice dump, not Espresso waitFor).
             if (buttonId === 'confirm-button') {
-                for (let i = 0; i < 20; i += 1) {
-                    await new Promise((resolve) => { setTimeout(resolve, 1000); });
-                    try {
-                        await waitFor(element(by.id('home-tab-empty-view'))).toExist().withTimeout(400);
-                        return;
-                    } catch (e) {
-                        try {
-                            await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(200);
-                            return;
-                        } catch (homeErr) {
-                            try {
-                                await clickFooter();
-                            } catch (retryErr) {
-                                // Confirm can already be gone while Home is coming up.
-                            }
-                        }
-                    }
-                }
+                await new Promise((resolve) => { setTimeout(resolve, 3000); });
+                await tapByTestIdIfPresent('close-change-log-button', 8000);
             }
             return;
         }
@@ -95,7 +81,7 @@ Then('I tap {string}', async (buttonId) => {
             return;
         }
         try {
-            await btn.tap({ x: 24, y: 16 });
+            await clickByTestId(buttonId);
             return;
         } catch (e) {
             // Espresso's post-tap precision recheck is flaky on footer buttons
@@ -172,6 +158,10 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
 });
 
 Given('I should have {string}', async (elementId) => {
+    if (device.getPlatform() === 'android' && (elementId === 'home-tab-empty-view' || elementId === 'home-tab-view')) {
+        await waitUntilAndroidTestId(elementId, 30000);
+        return;
+    }
     const timeout =
         elementId === 'review-transaction-modal' ||
         elementId === 'account-settings-screen' ||
@@ -201,6 +191,11 @@ Given('I should see {string}', async (elementId) => {
     }
     // 10s: late screen commits on a loaded emulator (happy path resolves as
     // soon as the view is visible, so this only widens the failure window).
+    // Android 75% visibility + Choreographer idle loops on overlays/WebView.
+    if (device.getPlatform() === 'android') {
+        await waitFor(element(by.id(elementId))).toExist().withTimeout(10000);
+        return;
+    }
     await waitFor(element(by.id(elementId)))
         .toBeVisible()
         .withTimeout(10000);
@@ -213,8 +208,15 @@ Given('I should see {string} in {string}', async (value, elementId) => {
 });
 
 Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
+    if (
+        device.getPlatform() === 'android' &&
+        (elementId === 'home-tab-empty-view' || elementId === 'home-tab-view')
+    ) {
+        // Espresso waitFor waits up to 240s for MAIN_LOOPER idle after setRoot.
+        await waitUntilAndroidTestId(elementId, timeout * 1000);
+        return;
+    }
     const el = element(by.id(elementId));
-    // Android 75% visibility fails on tall AVD / overlay. Existence is enough.
     if (device.getPlatform() === 'android') {
         await waitFor(el).toExist().withTimeout(timeout * 1000);
         return;

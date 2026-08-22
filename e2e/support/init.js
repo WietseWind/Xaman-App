@@ -14,6 +14,7 @@ const {
 } = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
 const { checkNetwork, ensureLocalSimulator } = require('./preflight');
+const { tapByTestIdIfPresent } = require('../helpers/tapById');
 
 BeforeAll(async () => {
     // fail fast with a clear message when the suite cannot possibly pass
@@ -67,17 +68,16 @@ BeforeAll(async () => {
 
 // On fresh Android installs the app auto-opens the "What's new" release-notes
 // modal shortly after launch; its full-screen backdrop swallows taps on the
-// screen underneath (e.g. the developer-mode switch) and trips Detox's
-// 75% visibility check. Close it before every scenario if it is up.
+// screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
+    const closed = await tapByTestIdIfPresent('close-change-log-button', 1500);
+    if (!closed) {
+        return;
+    }
     try {
-        const overlay = element(by.id('change-log-overlay'));
-        await waitFor(overlay).toExist().withTimeout(1500);
-        await waitFor(element(by.id('close-change-log-button'))).toBeVisible().withTimeout(5000);
-        await element(by.id('close-change-log-button')).tap();
-        await waitFor(overlay).not.toExist().withTimeout(5000);
+        await waitFor(element(by.id('change-log-overlay'))).not.toExist().withTimeout(5000);
     } catch (e) {
-        // overlay was not shown; nothing to dismiss
+        // already gone
     }
 }
 
