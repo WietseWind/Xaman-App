@@ -105,7 +105,7 @@ const getTabBarIcons = (): {
         [AppScreens.TabBar.Actions]: {
             icon: StyleService.getImage('IconTabBarActions'),
             iconSelected: StyleService.getImage('IconTabBarActions'),
-            scale: GetBottomTabScale(0.65),
+            scale: GetBottomTabScale(HasBottomNotch() ? 0.65 : 0.8),
         },
         [AppScreens.TabBar.XApps]: {
             icon: StyleService.getImage('IconTabBarXapp'),
@@ -144,7 +144,7 @@ const Navigator = {
             selectedTextColor: '$textPrimary',
             fontFamily: AppFonts.base.familyExtraBold,
             iconInsets: {
-                top: HasBottomNotch() ? 4 : 1,
+                top: HasBottomNotch() ? 4 : 3,
             },
         });
 
@@ -569,7 +569,7 @@ const Navigator = {
             selectedTextColor: '$textPrimary',
             fontFamily: AppFonts.base.familyExtraBold,
             iconInsets: {
-                top: HasBottomNotch() ? 4 : 1,
+                top: HasBottomNotch() ? 4 : 3,
             },
         });
 
