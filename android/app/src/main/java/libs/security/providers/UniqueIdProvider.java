@@ -204,8 +204,12 @@ public class UniqueIdProvider {
         byte[] storedLast = toDeviceIdBytes(loadLastKnownAndroidId());
 
         if (provenByDecrypt) {
-            saveLastKnownAndroidId(unique_id, true);
-            saveDeviceUniqueId(unique_id);
+            if (storedLast == null || !Arrays.equals(incoming, storedLast)) {
+                saveLastKnownAndroidId(unique_id, true);
+            }
+            if (storedUnique == null || !Arrays.equals(incoming, storedUnique)) {
+                saveDeviceUniqueId(unique_id);
+            }
             return;
         }
 

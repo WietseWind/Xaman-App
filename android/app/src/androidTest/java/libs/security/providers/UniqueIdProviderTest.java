@@ -497,6 +497,15 @@ public class UniqueIdProviderTest {
                     UniqueIdProvider.toDeviceIdBytes(liveId),
                     UniqueIdProvider.toDeviceIdBytes(provider.getDeviceUniqueId())
             );
+            provider.persistConfirmedDeviceUniqueId(liveId, true);
+            Assert.assertArrayEquals(
+                    UniqueIdProvider.toDeviceIdBytes(liveId),
+                    UniqueIdProvider.toDeviceIdBytes(provider.loadLastKnownAndroidId())
+            );
+            Assert.assertArrayEquals(
+                    UniqueIdProvider.toDeviceIdBytes(liveId),
+                    UniqueIdProvider.toDeviceIdBytes(provider.getDeviceUniqueId())
+            );
         } finally {
             if (keychain.itemExist(dummyVault)) {
                 keychain.deleteItem(dummyVault);
