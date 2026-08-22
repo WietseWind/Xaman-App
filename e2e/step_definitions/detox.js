@@ -29,92 +29,21 @@ Then('I tap {string}', async (buttonId) => {
     }
 
     const btn = element(by.id(buttonId));
+    // Android: Espresso waitFor/getAttributes wait up to 240s for MAIN_LOOPER
+    // idle (What's new WebView / Home Choreographer). Use UiDevice dump only.
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId(buttonId, 10000);
+        await clickByTestId(buttonId);
+        if (buttonId === 'confirm-button') {
+            await new Promise((resolve) => { setTimeout(resolve, 3000); });
+            await tapByTestIdIfPresent('close-change-log-button', 8000);
+        }
+        return;
+    }
     // toExist: Next can be fully covered by the iOS keyboard and fail toBeVisible.
     // 10s: picker-modal items (e.g. 10080-item) mount a beat after the modal
     // container appears on a loaded emulator (observed >5s in full-suite runs).
     await waitFor(btn).toExist().withTimeout(10000);
-    if (device.getPlatform() === 'android') {
-        // RN's first layout pass can report pre-settle frames mid-navigation,
-        // tripping the 75% visibility check inside tap(). Wait for the settled frame.
-        // Soft: bottom rows (developer-mode-switch) clip under the nav bar by
-        // design and stay at ~49% visible forever; the tap below targets the part.
-        try {
-            await waitFor(btn).toBeVisible().withTimeout(5000);
-        } catch (visibilityErr) {
-            // proceed: tap below targets the visible portion
-        }
-    }
-    // Footer + ToS WebView: Espresso tap misses Confirm / add-and-sign.
-    // UiDevice.click at the top of the frame is above the 3-button nav.
-    // Do not use UiDevice for every tap: Continue is RN modal padding.
-    if (device.getPlatform() === 'android') {
-        if (buttonId === 'confirm-button' || buttonId === 'add-and-sign-button') {
-            const clickFooter = async () => {
-                try {
-                    const attrs = await btn.getAttributes();
-                    const frame = attrs.frame || {};
-                    const width = Number(frame.width || 975);
-                    const height = Number(frame.height || 139);
-                    // Label center. +24,+16 is the top-left padding and misses Confirm.
-                    const x = Math.round(Number(frame.x || 53) + width / 2);
-                    const y = Math.round(Number(frame.y || 2146) + Math.min(height / 2, 48));
-                    await device.getUiDevice().click(x, y);
-                } catch (e) {
-                    await btn.tap({ x: 24, y: 16 });
-                }
-            };
-            await clickFooter();
-            // initUser + RNN setRoot. What's new WebView keeps the looper busy.
-            // Close it by testID (UiDevice dump, not Espresso waitFor).
-            if (buttonId === 'confirm-button') {
-                await new Promise((resolve) => { setTimeout(resolve, 3000); });
-                await tapByTestIdIfPresent('close-change-log-button', 8000);
-            }
-            return;
-        }
-        // Last row of advanced settings: RN switch frame (y=1759, h=71 -> 1830)
-        // extends ~36px below the 1794px window, so it never reaches the 75%
-        // visible threshold and every Detox-level tap rejects it. Click the
-        // visible part of the track physically (same pattern as confirm-button).
-        if (buttonId === 'developer-mode-switch') {
-            const swAttrs = await btn.getAttributes();
-            const swFrame = swAttrs.frame || {};
-            const swX = Math.round(Number(swFrame.x || 906) + (Number(swFrame.width || 122) / 2));
-            const swY = Math.round(Number(swFrame.y || 1759) + 16);
-            await device.getUiDevice().click(swX, swY);
-            return;
-        }
-        try {
-            await clickByTestId(buttonId);
-            return;
-        } catch (e) {
-            // Espresso's post-tap precision recheck is flaky on footer buttons
-            // straight after IME text entry (03 family-seed-passphrase "next"
-            // failed 3x at the button's top-left corner in a full-suite run).
-            // The raw InputManager click skips that verification; target the
-            // label center (24,16 sits on the edge of the 16px precision box).
-            try {
-                // dismissKeyboard is a no-op on Android by design, so the soft
-                // keyboard may still cover the footer button; a raw click
-                // there would land on the IME. ESC hides the IME without
-                // delivering BACK to the app.
-                execFileSync('adb', ['-s', device.id, 'shell', 'input', 'keyevent', '111'], {
-                    timeout: 8000,
-                });
-                await new Promise((r) => { setTimeout(r, 350); });
-                const fbAttrs = await btn.getAttributes();
-                const fbFrame = fbAttrs.frame || {};
-                const fbX = Math.round(Number(fbFrame.x || 53) + Number(fbFrame.width || 975) / 2);
-                const fbY = Math.round(Number(fbFrame.y || 1629) + Math.min(Number(fbFrame.height || 64) / 2, 44));
-                await device.getUiDevice().click(fbX, fbY);
-            } catch (fbErr) {
-                // Fallback path unavailable (element gone or UiAutomation down):
-                // surface the original failure.
-                throw e;
-            }
-            return;
-        }
-    }
     try {
         await btn.tap();
     } catch (e) {
@@ -162,19 +91,20 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
 });
 
 Given('I should have {string}', async (elementId) => {
-    if (device.getPlatform() === 'android' && (elementId === 'home-tab-empty-view' || elementId === 'home-tab-view')) {
-        await waitUntilAndroidTestId(elementId, 30000);
-        return;
-    }
     const timeout =
         elementId === 'review-transaction-modal' ||
         elementId === 'account-settings-screen' ||
         elementId === 'account-import-show-address-view' ||
         elementId === 'account-import-secret-type-view' ||
         elementId === 'account-import-label-view' ||
-        elementId === 'home-tab-view'
+        elementId === 'home-tab-view' ||
+        elementId === 'home-tab-empty-view'
             ? 30000
             : 10000;
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId(elementId, timeout);
+        return;
+    }
     await waitFor(element(by.id(elementId)))
         .toExist()
         .withTimeout(timeout);
@@ -185,23 +115,16 @@ Given('I should not have {string}', async (screenId) => {
 });
 
 Given('I should see {string}', async (elementId) => {
-    if (device.getPlatform() === 'android' && (elementId === 'home-tab-empty-view' || elementId === 'home-tab-view')) {
-        await waitUntilAndroidTestId(elementId, 30000);
-        return;
-    }
     if (device.getPlatform() === 'android' && elementId === 'submitting-view') {
         try {
-            await waitFor(element(by.id('submitting-view'))).toExist().withTimeout(4000);
+            await waitUntilAndroidTestId('submitting-view', 4000);
         } catch (e) {
-            await waitFor(element(by.id('success-result-view'))).toExist().withTimeout(15000);
+            await waitUntilAndroidTestId('success-result-view', 15000);
         }
         return;
     }
-    // 10s: late screen commits on a loaded emulator (happy path resolves as
-    // soon as the view is visible, so this only widens the failure window).
-    // Android 75% visibility + Choreographer idle loops on overlays/WebView.
     if (device.getPlatform() === 'android') {
-        await waitFor(element(by.id(elementId))).toExist().withTimeout(10000);
+        await waitUntilAndroidTestId(elementId, 10000);
         return;
     }
     await waitFor(element(by.id(elementId)))
@@ -216,20 +139,13 @@ Given('I should see {string} in {string}', async (value, elementId) => {
 });
 
 Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
-    if (
-        device.getPlatform() === 'android' &&
-        (elementId === 'home-tab-empty-view' || elementId === 'home-tab-view')
-    ) {
-        // Espresso waitFor waits up to 240s for MAIN_LOOPER idle after setRoot.
+    if (device.getPlatform() === 'android') {
         await waitUntilAndroidTestId(elementId, timeout * 1000);
         return;
     }
-    const el = element(by.id(elementId));
-    if (device.getPlatform() === 'android') {
-        await waitFor(el).toExist().withTimeout(timeout * 1000);
-        return;
-    }
-    await waitFor(el).toBeVisible().withTimeout(timeout * 1000);
+    await waitFor(element(by.id(elementId)))
+        .toBeVisible()
+        .withTimeout(timeout * 1000);
 });
 
 Then('I scroll up {string}', async (elementId) => {

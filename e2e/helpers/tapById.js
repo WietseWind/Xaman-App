@@ -2,14 +2,11 @@ const { execFileSync } = require('child_process');
 const { element, by, waitFor, device } = require('detox');
 
 const APP_ID = 'com.xrpllabs.xumm';
-const TEST_ID = 'com.xrpllabs.xumm.test';
 const DUMP_NAME = 'xaman-detox-ui.xml';
 
 const DUMP_SPECS = [
     { abs: `/data/user/0/${APP_ID}/cache/${DUMP_NAME}`, pkg: APP_ID, rel: `cache/${DUMP_NAME}` },
     { abs: `/data/data/${APP_ID}/cache/${DUMP_NAME}`, pkg: APP_ID, rel: `cache/${DUMP_NAME}` },
-    { abs: `/data/user/0/${TEST_ID}/cache/${DUMP_NAME}`, pkg: TEST_ID, rel: `cache/${DUMP_NAME}` },
-    { abs: `/data/data/${TEST_ID}/cache/${DUMP_NAME}`, pkg: TEST_ID, rel: `cache/${DUMP_NAME}` },
 ];
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
@@ -63,26 +60,42 @@ const readDumpFile = (spec) => {
  * Write under the app/test cache: /data/local/tmp is not writable by the
  * instrumentation UID on API 36, so the file never appears.
  */
+let cachedXml = '';
+let cachedAt = 0;
+let dumpLock = Promise.resolve();
+
 const androidDumpXml = async () => {
-    await ensureUncompressedDump();
-    const ui = device.getUiDevice();
-    for (let i = 0; i < DUMP_SPECS.length; i += 1) {
-        const spec = DUMP_SPECS[i];
-        try {
-            await ui.dumpWindowHierarchy(spec.abs);
-        } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, String((e && e.message) || e).slice(0, 180));
-            continue;
-        }
-        const xml = readDumpFile(spec);
-        if (xml) {
-            return xml;
-        }
+    if (cachedXml && Date.now() - cachedAt < 400) {
+        return cachedXml;
     }
-    // eslint-disable-next-line no-console
-    console.error('[tapById] dumpWindowHierarchy produced no readable hierarchy');
-    return '';
+    const run = dumpLock.then(async () => {
+        if (cachedXml && Date.now() - cachedAt < 400) {
+            return cachedXml;
+        }
+        await ensureUncompressedDump();
+        const ui = device.getUiDevice();
+        for (let i = 0; i < DUMP_SPECS.length; i += 1) {
+            const spec = DUMP_SPECS[i];
+            try {
+                await ui.dumpWindowHierarchy(spec.abs);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, String((e && e.message) || e).slice(0, 180));
+                continue;
+            }
+            const xml = readDumpFile(spec);
+            if (xml) {
+                cachedXml = xml;
+                cachedAt = Date.now();
+                return xml;
+            }
+        }
+        // eslint-disable-next-line no-console
+        console.error('[tapById] dumpWindowHierarchy produced no readable hierarchy');
+        return '';
+    });
+    dumpLock = run.catch(() => '');
+    return run;
 };
 
 const attrValue = (attrs, name) => {
@@ -110,40 +123,95 @@ const boundsFromAttrs = (attrs) => {
     return { x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2) };
 };
 
+const aliasesForTestId = (testId) => {
+    const aliases = [testId];
+    if (testId.indexOf('tab-') === 0) {
+        const name = testId.slice(4);
+        aliases.push(name, name.toLowerCase());
+        if (name === 'XApps') {
+            aliases.push('xApps', 'xapps');
+        }
+    }
+    if (testId === 'close-change-log-button') {
+        aliases.push('Close', 'close');
+    }
+    return aliases;
+};
+
+const nodeHaystack = (attrs) => {
+    const resourceId = attrValue(attrs, 'resource-id');
+    return [
+        resourceIdTail(resourceId),
+        resourceId,
+        attrValue(attrs, 'content-desc'),
+        attrValue(attrs, 'text'),
+    ];
+};
+
+const nodeMatchesTestId = (attrs, testId) => {
+    const aliases = aliasesForTestId(testId);
+    const values = nodeHaystack(attrs);
+    for (let i = 0; i < aliases.length; i += 1) {
+        const alias = aliases[i];
+        for (let j = 0; j < values.length; j += 1) {
+            if (values[j] && values[j].toLowerCase() === alias.toLowerCase()) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
+const parseNodes = (xml) => {
+    const nodes = [];
+    const nodeRe = /<node\b([^>]*)\/?>/g;
+    let m = nodeRe.exec(xml);
+    while (m) {
+        const attrs = m[1];
+        const bounds = boundsFromAttrs(attrs);
+        if (bounds) {
+            nodes.push({
+                attrs,
+                bounds,
+                clickable: attrValue(attrs, 'clickable') === 'true',
+                text: attrValue(attrs, 'text'),
+                contentDesc: attrValue(attrs, 'content-desc'),
+                resourceId: attrValue(attrs, 'resource-id'),
+            });
+        }
+        m = nodeRe.exec(xml);
+    }
+    return nodes;
+};
+
 const androidBoundsByTestId = async (testId) => {
     const xml = await androidDumpXml();
     if (!xml) {
         return null;
     }
-    const nodeRe = /<node\b([^>]*)\/?>/g;
-    let m = nodeRe.exec(xml);
-    while (m) {
-        const attrs = m[1];
-        const resourceId = attrValue(attrs, 'resource-id');
-        const contentDesc = attrValue(attrs, 'content-desc');
-        if (resourceIdTail(resourceId) === testId || contentDesc === testId || resourceId === testId) {
-            const bounds = boundsFromAttrs(attrs);
-            if (bounds) {
-                return bounds;
-            }
-        }
-        m = nodeRe.exec(xml);
+    const nodes = parseNodes(xml);
+    const matches = nodes.filter((node) => nodeMatchesTestId(node.attrs, testId));
+    const clickable = matches.filter((node) => node.clickable);
+    const pick = clickable[0] || matches[0];
+    return pick ? pick.bounds : null;
+};
+
+const dumpSummary = (xml) => {
+    if (!xml) {
+        return 'no-xml';
     }
-    if (testId === 'close-change-log-button') {
-        nodeRe.lastIndex = 0;
-        m = nodeRe.exec(xml);
-        while (m) {
-            const attrs = m[1];
-            if (attrValue(attrs, 'text') === 'Close' || attrValue(attrs, 'content-desc') === 'Close') {
-                const bounds = boundsFromAttrs(attrs);
-                if (bounds) {
-                    return bounds;
-                }
-            }
-            m = nodeRe.exec(xml);
+    const labels = [];
+    const nodes = parseNodes(xml);
+    for (let i = 0; i < nodes.length; i += 1) {
+        const label = nodes[i].resourceId || nodes[i].contentDesc || nodes[i].text;
+        if (label && labels.indexOf(label) === -1) {
+            labels.push(label);
+        }
+        if (labels.length >= 25) {
+            break;
         }
     }
-    return null;
+    return labels.join('|') || `nodes=${nodes.length}`;
 };
 
 /**
@@ -156,22 +224,15 @@ const clickByTestId = async (testId) => {
         await el.tap();
         return;
     }
-    const bounds = await androidBoundsByTestId(testId);
-    if (bounds) {
-        await device.getUiDevice().click(bounds.x, bounds.y);
-        return;
+    let bounds = await androidBoundsByTestId(testId);
+    if (!bounds) {
+        await sleep(400);
+        bounds = await androidBoundsByTestId(testId);
     }
-    try {
-        const attrs = await el.getAttributes();
-        const frame = attrs.frame || {};
-        const width = Number(frame.width || 0);
-        const height = Number(frame.height || 0);
-        const x = Math.round(Number(frame.x || 0) + width / 2);
-        const y = Math.round(Number(frame.y || 0) + Math.min(height / 2, 48));
-        await device.getUiDevice().click(x, y);
-    } catch (e) {
-        await el.tap();
+    if (!bounds) {
+        throw new Error(`android hierarchy has no bounds for ${testId}`);
     }
+    await device.getUiDevice().click(bounds.x, bounds.y);
 };
 
 const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
@@ -198,15 +259,21 @@ const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
 
 const waitUntilAndroidTestId = async (testId, timeoutMs) => {
     const deadline = Date.now() + timeoutMs;
+    let lastXml = '';
     while (Date.now() < deadline) {
         await tapByTestIdIfPresent('close-change-log-button', 600);
-        const bounds = await androidBoundsByTestId(testId);
-        if (bounds) {
-            return;
+        lastXml = await androidDumpXml();
+        if (lastXml) {
+            const nodes = parseNodes(lastXml);
+            const matches = nodes.filter((node) => nodeMatchesTestId(node.attrs, testId));
+            const pick = matches.find((node) => node.clickable) || matches[0];
+            if (pick) {
+                return;
+            }
         }
         await sleep(800);
     }
-    throw new Error(`android hierarchy timed out waiting for ${testId}`);
+    throw new Error(`android hierarchy timed out waiting for ${testId} (${dumpSummary(lastXml)})`);
 };
 
 module.exports = {

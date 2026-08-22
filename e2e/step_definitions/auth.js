@@ -1,7 +1,7 @@
 const { Then } = require('@cucumber/cucumber');
 const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
-const { clickByTestId } = require('../helpers/tapById');
+const { clickByTestId, waitUntilAndroidTestId } = require('../helpers/tapById');
 
 let passcode = '167349';
 
@@ -9,7 +9,11 @@ const passphrase = '&uHCnPv4T=#~;Ca';
 const newPassphrase = '4b<8xu8HbP)%hzpgh';
 
 Then('I enter my passcode', async () => {
-    await expect(element(by.id('virtual-keyboard'))).toExist();
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('virtual-keyboard', 10000);
+    } else {
+        await expect(element(by.id('virtual-keyboard'))).toExist();
+    }
 
     const passcodeArray = passcode.split('');
 
@@ -20,9 +24,13 @@ Then('I enter my passcode', async () => {
 
 Then('I type my passcode', async () => {
     try {
-        await waitFor(element(by.id(`${passcode[0]}-key`)))
-            .toExist()
-            .withTimeout(10000);
+        if (device.getPlatform() === 'android') {
+            await waitUntilAndroidTestId(`${passcode[0]}-key`, 10000);
+        } else {
+            await waitFor(element(by.id(`${passcode[0]}-key`)))
+                .toExist()
+                .withTimeout(10000);
+        }
     } catch (e) {
         // Downgrade can already have applied with no pin overlay.
         try {

@@ -71,7 +71,7 @@ BeforeAll(async () => {
 // screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
     // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
-    await tapByTestIdIfPresent('close-change-log-button', 1500);
+    await tapByTestIdIfPresent('close-change-log-button', 8000);
 }
 
 Before(async (context) => {
