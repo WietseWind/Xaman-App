@@ -285,7 +285,10 @@ class Application {
                 Object.keys(screens).map((key) => {
                     // @ts-ignore
                     const Screen = screens[key];
-                    Navigation.registerComponent(Screen.screenName, () => Screen);
+                    // Screen.load defers require() until RNN first shows the screen
+                    // (used by Scan so vision-camera is not evaluated at startup).
+                    const provider = typeof Screen.load === 'function' ? Screen.load : () => Screen;
+                    Navigation.registerComponent(Screen.screenName, provider);
                     return true;
                 });
                 resolve();
