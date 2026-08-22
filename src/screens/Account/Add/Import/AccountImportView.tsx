@@ -412,7 +412,7 @@ class AccountImportView extends Component<Props, State> {
                         });
                 } else {
                     // include device UUID is signed transaction
-                    const { deviceUUID, uuid } = ProfileRepository.getProfile()!;
+                    const { deviceUUID, uuid } = ProfileRepository.requireProfile();
                     const { signedTransaction } = AccountLib.sign(
                         {
                             Account: account.address,

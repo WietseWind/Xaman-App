@@ -37,7 +37,7 @@ export interface Props {}
 
 export interface State {
     coreSettings: CoreModel;
-    profile: ProfileModel;
+    profile?: ProfileModel;
 }
 
 /* Component ==================================================================== */
@@ -55,7 +55,7 @@ class AdvancedSettingsView extends Component<Props, State> {
 
         this.state = {
             coreSettings: CoreRepository.getSettings(),
-            profile: ProfileRepository.getProfile()!,
+            profile: ProfileRepository.getProfile(),
         };
     }
 
@@ -385,7 +385,7 @@ class AdvancedSettingsView extends Component<Props, State> {
 
                         <View style={AppStyles.flex2}>
                             <Text selectable numberOfLines={1} adjustsFontSizeToFit style={styles.value}>
-                                {profile.deviceUUID.toUpperCase()}
+                                {profile?.deviceUUID ? profile.deviceUUID.toUpperCase() : '—'}
                             </Text>
                         </View>
                     </View>

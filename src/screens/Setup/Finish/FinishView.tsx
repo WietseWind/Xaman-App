@@ -70,9 +70,8 @@ class FinishView extends Component<Props, State> {
             // register the device in Xaman backend
             const accessToken = await BackendService.activateDevice(user, device);
 
-            // create empty profile and store access token
-            // save the signed TOS version and date
-            ProfileRepository.saveProfile({
+            // persist profile before marking the app initialized
+            await ProfileRepository.saveProfile({
                 uuid: user.uuid,
                 deviceUUID: device.uuid,
                 accessToken,
@@ -80,7 +79,6 @@ class FinishView extends Component<Props, State> {
                 signedTOSVersion: TOSVersion,
             });
 
-            // set the initialized flag to true
             CoreRepository.saveSettings({ initialized: true });
 
             // run post services after success auth

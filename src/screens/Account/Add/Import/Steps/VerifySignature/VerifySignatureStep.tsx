@@ -80,7 +80,7 @@ class VerifySignatureStep extends Component<Props, State> {
         const publicKey = GetWalletDerivedPublicKey(tangemCard);
 
         // include device UUID and user uuid is signed transaction
-        const { uuid, deviceUUID } = ProfileRepository.getProfile()!;
+        const { uuid, deviceUUID } = ProfileRepository.requireProfile();
 
         // prepare the transaction for signing
         const preparedTx = AccountLib.rawSigning.prepare(
