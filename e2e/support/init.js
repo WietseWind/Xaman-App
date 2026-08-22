@@ -1,6 +1,6 @@
 const detox = require('detox/internals');
 
-const { device, element, by, waitFor } = require('detox');
+const { device } = require('detox');
 const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
@@ -70,15 +70,8 @@ BeforeAll(async () => {
 // modal shortly after launch; its full-screen backdrop swallows taps on the
 // screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
-    const closed = await tapByTestIdIfPresent('close-change-log-button', 1500);
-    if (!closed) {
-        return;
-    }
-    try {
-        await waitFor(element(by.id('change-log-overlay'))).not.toExist().withTimeout(5000);
-    } catch (e) {
-        // already gone
-    }
+    // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
+    await tapByTestIdIfPresent('close-change-log-button', 1500);
 }
 
 Before(async (context) => {

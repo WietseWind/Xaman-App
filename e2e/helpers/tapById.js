@@ -1,21 +1,164 @@
 const { execFileSync } = require('child_process');
 const { element, by, waitFor, device } = require('detox');
 
-const HIERARCHY_PATH = '/data/local/tmp/xaman-detox-ui.xml';
+const APP_ID = 'com.xrpllabs.xumm';
+const TEST_ID = 'com.xrpllabs.xumm.test';
+const DUMP_NAME = 'xaman-detox-ui.xml';
+
+const DUMP_SPECS = [
+    { abs: `/data/user/0/${APP_ID}/cache/${DUMP_NAME}`, pkg: APP_ID, rel: `cache/${DUMP_NAME}` },
+    { abs: `/data/data/${APP_ID}/cache/${DUMP_NAME}`, pkg: APP_ID, rel: `cache/${DUMP_NAME}` },
+    { abs: `/data/user/0/${TEST_ID}/cache/${DUMP_NAME}`, pkg: TEST_ID, rel: `cache/${DUMP_NAME}` },
+    { abs: `/data/data/${TEST_ID}/cache/${DUMP_NAME}`, pkg: TEST_ID, rel: `cache/${DUMP_NAME}` },
+];
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
 const androidSerial = () => process.env.ANDROID_SERIAL || device.id;
 
+const adbOut = (args, timeout = 8000) =>
+    execFileSync('adb', ['-s', androidSerial(), ...args], {
+        encoding: 'utf8',
+        timeout,
+        maxBuffer: 12 * 1024 * 1024,
+    });
+
+let compressedOff = false;
+
+const ensureUncompressedDump = async () => {
+    if (compressedOff) {
+        return;
+    }
+    try {
+        await device.getUiDevice().setCompressedLayoutHeirarchy(false);
+        compressedOff = true;
+    } catch (e) {
+        compressedOff = true;
+    }
+};
+
+const readDumpFile = (spec) => {
+    const attempts = [
+        ['exec-out', 'run-as', spec.pkg, 'cat', spec.rel],
+        ['shell', 'run-as', spec.pkg, 'cat', spec.rel],
+        ['exec-out', 'cat', spec.abs],
+        ['shell', 'cat', spec.abs],
+    ];
+    for (let i = 0; i < attempts.length; i += 1) {
+        try {
+            const xml = adbOut(attempts[i]);
+            if (xml && xml.indexOf('<hierarchy') !== -1 && xml.length > 200) {
+                return xml;
+            }
+        } catch (e) {
+            // next reader
+        }
+    }
+    return '';
+};
+
 /**
- * Tap a control by testID. Android uses the element's own frame (getAttributes)
- * then UiDevice.click. Never use hardcoded pixels or `adb uiautomator dump`
- * (that dump steals Detox's UiAutomation slot).
+ * Dump via Detox UiDevice (same UiAutomation as the agent). Do not call
+ * `adb shell uiautomator dump` — that disconnects Detox.
+ * Write under the app/test cache: /data/local/tmp is not writable by the
+ * instrumentation UID on API 36, so the file never appears.
+ */
+const androidDumpXml = async () => {
+    await ensureUncompressedDump();
+    const ui = device.getUiDevice();
+    for (let i = 0; i < DUMP_SPECS.length; i += 1) {
+        const spec = DUMP_SPECS[i];
+        try {
+            await ui.dumpWindowHierarchy(spec.abs);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, String((e && e.message) || e).slice(0, 180));
+            continue;
+        }
+        const xml = readDumpFile(spec);
+        if (xml) {
+            return xml;
+        }
+    }
+    // eslint-disable-next-line no-console
+    console.error('[tapById] dumpWindowHierarchy produced no readable hierarchy');
+    return '';
+};
+
+const attrValue = (attrs, name) => {
+    const m = attrs.match(new RegExp(`\\b${name}="([^"]*)"`));
+    return m ? m[1] : '';
+};
+
+const resourceIdTail = (resourceId) => {
+    const idx = resourceId.lastIndexOf(':id/');
+    return idx >= 0 ? resourceId.slice(idx + 4) : resourceId;
+};
+
+const boundsFromAttrs = (attrs) => {
+    const m = attrs.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+    if (!m) {
+        return null;
+    }
+    const x1 = Number(m[1]);
+    const y1 = Number(m[2]);
+    const x2 = Number(m[3]);
+    const y2 = Number(m[4]);
+    if (x2 <= x1 || y2 <= y1) {
+        return null;
+    }
+    return { x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2) };
+};
+
+const androidBoundsByTestId = async (testId) => {
+    const xml = await androidDumpXml();
+    if (!xml) {
+        return null;
+    }
+    const nodeRe = /<node\b([^>]*)\/?>/g;
+    let m = nodeRe.exec(xml);
+    while (m) {
+        const attrs = m[1];
+        const resourceId = attrValue(attrs, 'resource-id');
+        const contentDesc = attrValue(attrs, 'content-desc');
+        if (resourceIdTail(resourceId) === testId || contentDesc === testId || resourceId === testId) {
+            const bounds = boundsFromAttrs(attrs);
+            if (bounds) {
+                return bounds;
+            }
+        }
+        m = nodeRe.exec(xml);
+    }
+    if (testId === 'close-change-log-button') {
+        nodeRe.lastIndex = 0;
+        m = nodeRe.exec(xml);
+        while (m) {
+            const attrs = m[1];
+            if (attrValue(attrs, 'text') === 'Close' || attrValue(attrs, 'content-desc') === 'Close') {
+                const bounds = boundsFromAttrs(attrs);
+                if (bounds) {
+                    return bounds;
+                }
+            }
+            m = nodeRe.exec(xml);
+        }
+    }
+    return null;
+};
+
+/**
+ * Tap a control by testID. Android uses UiDevice hierarchy (no Espresso idle).
+ * Never use hardcoded pixels or `adb uiautomator dump`.
  */
 const clickByTestId = async (testId) => {
     const el = element(by.id(testId));
     if (device.getPlatform() !== 'android') {
         await el.tap();
+        return;
+    }
+    const bounds = await androidBoundsByTestId(testId);
+    if (bounds) {
+        await device.getUiDevice().click(bounds.x, bounds.y);
         return;
     }
     try {
@@ -27,11 +170,6 @@ const clickByTestId = async (testId) => {
         const y = Math.round(Number(frame.y || 0) + Math.min(height / 2, 48));
         await device.getUiDevice().click(x, y);
     } catch (e) {
-        const bounds = await androidBoundsByTestId(testId);
-        if (bounds) {
-            await device.getUiDevice().click(bounds.x, bounds.y);
-            return;
-        }
         await el.tap();
     }
 };
@@ -56,54 +194,6 @@ const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
     } catch (e) {
         return false;
     }
-};
-
-/**
- * Dump via Detox's UiDevice (same UiAutomation as the agent). Do not call
- * `adb shell uiautomator dump` — that disconnects Detox.
- */
-const androidDumpXml = async () => {
-    const serial = androidSerial();
-    try {
-        execFileSync('adb', ['-s', serial, 'shell', 'rm', '-f', HIERARCHY_PATH], { timeout: 5000 });
-        await device.getUiDevice().dumpWindowHierarchy(HIERARCHY_PATH);
-        try {
-            return execFileSync('adb', ['-s', serial, 'shell', 'cat', HIERARCHY_PATH], {
-                encoding: 'utf8',
-                timeout: 8000,
-                maxBuffer: 12 * 1024 * 1024,
-            });
-        } catch (e) {
-            return execFileSync(
-                'adb',
-                ['-s', serial, 'shell', 'run-as', 'com.xrpllabs.xumm.test', 'cat', HIERARCHY_PATH],
-                { encoding: 'utf8', timeout: 8000, maxBuffer: 12 * 1024 * 1024 },
-            );
-        }
-    } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('[tapById] dumpWindowHierarchy failed:', String((e && e.message) || e).slice(0, 200));
-        return '';
-    }
-};
-
-const androidBoundsByTestId = async (testId) => {
-    const xml = await androidDumpXml();
-    if (!xml) {
-        return null;
-    }
-    const escaped = testId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(`resource-id="${escaped}"[^>]*bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`);
-    const re2 = new RegExp(`bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"[^>]*resource-id="${escaped}"`);
-    const m = xml.match(re) || xml.match(re2);
-    if (!m) {
-        return null;
-    }
-    const x1 = Number(m[1]);
-    const y1 = Number(m[2]);
-    const x2 = Number(m[3]);
-    const y2 = Number(m[4]);
-    return { x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2) };
 };
 
 const waitUntilAndroidTestId = async (testId, timeoutMs) => {

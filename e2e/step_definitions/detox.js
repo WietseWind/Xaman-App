@@ -17,6 +17,10 @@ Then('I tap {string}', async (buttonId) => {
     // 03_import secret-numbers already comments this step out.
     if (buttonId === 'tab-Home') {
         try {
+            if (device.getPlatform() === 'android') {
+                await waitUntilAndroidTestId('home-tab-view', 2000);
+                return;
+            }
             await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(1500);
             return;
         } catch (e) {
@@ -181,6 +185,10 @@ Given('I should not have {string}', async (screenId) => {
 });
 
 Given('I should see {string}', async (elementId) => {
+    if (device.getPlatform() === 'android' && (elementId === 'home-tab-empty-view' || elementId === 'home-tab-view')) {
+        await waitUntilAndroidTestId(elementId, 30000);
+        return;
+    }
     if (device.getPlatform() === 'android' && elementId === 'submitting-view') {
         try {
             await waitFor(element(by.id('submitting-view'))).toExist().withTimeout(4000);
