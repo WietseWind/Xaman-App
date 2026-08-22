@@ -273,6 +273,7 @@ export interface UniqueIdProviderModuleInterface extends NativeModule {
         fallbackUsed: boolean;
         storedDifferedFromLive: boolean;
     };
+    backfillLastKnownFromReadableUniqueId?: () => void;
 }
 
 /**
@@ -319,8 +320,6 @@ interface VaultManagerModuleInterface extends NativeModule {
         uniqueIdKeychainReadable: boolean;
         realmKeyReadable: boolean;
         vaultsPresent: number;
-        vaultsReadable: number;
-        vaultsUnreadable: number;
     }>;
 
     /**

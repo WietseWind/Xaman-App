@@ -224,6 +224,9 @@ const Vault = {
             return undefined;
         }
         try {
+            if (typeof UniqueIdProviderModule?.backfillLastKnownFromReadableUniqueId === 'function') {
+                UniqueIdProviderModule.backfillLastKnownFromReadableUniqueId();
+            }
             const report = await VaultManagerModule.inspectVaultHealth();
             logger.debug('vault health', report);
             if (

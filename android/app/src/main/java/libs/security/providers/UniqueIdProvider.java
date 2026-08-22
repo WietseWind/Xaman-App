@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import libs.security.crypto.Crypto;
+import libs.security.vault.VaultManagerModule;
 import libs.security.vault.storage.Keychain;
 
 public class UniqueIdProvider {
     public static final String UNIQUE_DEVICE_ID_KEY = "device-unique-id";
-    private static final String REALM_KEY_ALIAS = "xumm-realm-key";
     private static final String RECOVERY_SUFFIX = "_RECOVER";
     private static final String LAST_KNOWN_PREFS = "xaman_device_id";
     private static final String LAST_KNOWN_ANDROID_ID = "last_known_android_id";
@@ -63,11 +63,23 @@ public class UniqueIdProvider {
     }
 
 
+    /**
+     * Re-wrap device-unique-id only. Last-known prefs hold the same plaintext,
+     * so a new Keystore key loses nothing. Never use this path for account
+     * vaults or the Realm key.
+     */
     private void saveDeviceUniqueId(String unique_id) {
-        try{
+        try {
             keychain.setItem(UNIQUE_DEVICE_ID_KEY, "", unique_id);
-        } catch (Exception e) {
-            // ignore
+        } catch (Exception first) {
+            try {
+                if (keychain.itemExist(UNIQUE_DEVICE_ID_KEY)) {
+                    keychain.deleteItem(UNIQUE_DEVICE_ID_KEY);
+                }
+                keychain.setItem(UNIQUE_DEVICE_ID_KEY, "", unique_id);
+            } catch (Exception ignored) {
+                // unique-id wrap stays broken; last-known prefs still hold the plaintext
+            }
         }
     }
 
@@ -103,10 +115,13 @@ public class UniqueIdProvider {
 
     @NonNull
     private DeviceIdLoad loadDeviceUniqueIdDetailed() {
-        if (keychain == null || !keychain.itemExist(UNIQUE_DEVICE_ID_KEY)) {
+        if (keychain == null) {
             return DeviceIdLoad.absent();
         }
         try {
+            if (!keychain.itemExist(UNIQUE_DEVICE_ID_KEY)) {
+                return DeviceIdLoad.absent();
+            }
             Map<String, String> item = keychain.getItem(UNIQUE_DEVICE_ID_KEY);
             if (item == null) {
                 return DeviceIdLoad.unreadable();
@@ -220,7 +235,7 @@ public class UniqueIdProvider {
         }
         for (String alias : keychain.getAllAliases()) {
             if (UNIQUE_DEVICE_ID_KEY.equals(alias)
-                    || REALM_KEY_ALIAS.equals(alias)
+                    || VaultManagerModule.STORAGE_ENCRYPTION_KEY.equals(alias)
                     || alias.endsWith(RECOVERY_SUFFIX)) {
                 continue;
             }

@@ -33,6 +33,11 @@ public class UniqueIdProviderModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
+    public void backfillLastKnownFromReadableUniqueId() {
+        UniqueIdProvider.sharedInstance().backfillLastKnownFromReadableUniqueId();
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
     public WritableMap consumeLastDeviceIdUnlockReport() {
         UniqueIdProvider.DeviceIdUnlockReport report =
                 UniqueIdProvider.sharedInstance().consumeLastUnlockReport();

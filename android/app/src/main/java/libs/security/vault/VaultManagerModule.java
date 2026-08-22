@@ -482,7 +482,6 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
      */
     public WritableMap buildVaultHealthReport() {
         UniqueIdProvider uniqueIdProvider = UniqueIdProvider.sharedInstance();
-        uniqueIdProvider.backfillLastKnownFromReadableUniqueId();
         UniqueIdProvider.BindingHealth binding = uniqueIdProvider.inspectBinding();
         WritableMap map = Arguments.createMap();
         map.putBoolean("lastKnownPresent", binding.lastKnownPresent);
@@ -504,8 +503,6 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
             }
         }
         map.putInt("vaultsPresent", vaultsPresent);
-        map.putInt("vaultsReadable", 0);
-        map.putInt("vaultsUnreadable", 0);
         return map;
     }
 

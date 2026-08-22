@@ -79,6 +79,7 @@ ReactNative.NativeModules.UniqueIdProviderModule = {
         fallbackUsed: false,
         storedDifferedFromLive: false,
     })),
+    backfillLastKnownFromReadableUniqueId: jest.fn(),
 };
 
 ReactNative.NativeModules.HapticFeedbackModule = {
@@ -101,8 +102,6 @@ ReactNative.NativeModules.VaultManagerModule = {
             uniqueIdKeychainReadable: true,
             realmKeyReadable: true,
             vaultsPresent: 0,
-            vaultsReadable: 0,
-            vaultsUnreadable: 0,
         }),
     ),
     createVault: jest.fn((vaultName: string, entry: string, key: string) => Promise.resolve(true)),

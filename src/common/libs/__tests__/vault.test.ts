@@ -71,11 +71,11 @@ describe('Vault', () => {
                 uniqueIdKeychainReadable: false,
                 realmKeyReadable: true,
                 vaultsPresent: 1,
-                vaultsReadable: 0,
-                vaultsUnreadable: 0,
             });
 
             await Vault.inspectHealth();
+
+            expect(UniqueIdProviderModule.backfillLastKnownFromReadableUniqueId).toHaveBeenCalled();
 
             const sessionLog = LoggerService.getLogs().find(
                 (entry) =>

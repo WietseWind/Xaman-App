@@ -7,6 +7,8 @@ import android.util.Base64;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.xrpllabs.xumm.BuildConfig;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import org.json.JSONObject;
@@ -28,7 +30,14 @@ import libs.security.vault.exceptions.CryptoFailedException;
 import libs.security.vault.storage.Keychain;
 
 /**
- * Manual only: am instrument -e flaky_step export|import_flaky|import_fix|probe|restore_last_known
+ * Manual androidTest only. Never ships in the Play APK.
+ *
+ * RISK: export writes plaintext account secret and account password to
+ * flaky-export.json. The instrument argument account_password_b64 lands in
+ * shell history. Do not run on a production wallet. Delete the export file
+ * after the last step.
+ *
+ * Manual: am instrument -e flaky_step export|import_flaky|import_fix|probe|restore_last_known
  * -e account_password_b64 ...
  */
 @RunWith(AndroidJUnit4.class)
@@ -55,6 +64,7 @@ public class FlakyMigrateHarness {
                     StandardCharsets.UTF_8
             );
         }
+        Assume.assumeTrue(BuildConfig.DEBUG);
         Assume.assumeTrue(
                 "export".equals(step)
                         || "import_flaky".equals(step)
@@ -111,11 +121,11 @@ public class FlakyMigrateHarness {
         json.put("secret", secret);
         json.put("hashedKey", accountPassword);
 
-        writeUtf8(new File(reactContext.getCacheDir(), "flaky-export.json"), json.toString());
+        writeUtf8(exportFile(), json.toString());
     }
 
     private void importPlant(boolean breakDeviceId) throws Exception {
-        JSONObject json = new JSONObject(readUtf8(new File(reactContext.getFilesDir(), "flaky-export.json")));
+        JSONObject json = new JSONObject(readUtf8(exportFile()));
         String deviceId = json.getString("deviceId");
         String realmKey = json.getString("realmKey");
         String vaultName = json.getString("vaultName");
@@ -136,7 +146,7 @@ public class FlakyMigrateHarness {
     }
 
     private void restoreLastKnownOnly() throws Exception {
-        JSONObject json = new JSONObject(readUtf8(new File(reactContext.getFilesDir(), "flaky-export.json")));
+        JSONObject json = new JSONObject(readUtf8(exportFile()));
         String deviceId = json.getString("deviceId");
         UniqueIdProvider.sharedInstance().persistConfirmedDeviceUniqueId(deviceId);
         stripUniqueId();
@@ -155,11 +165,23 @@ public class FlakyMigrateHarness {
         if (health.lastKnownMatchesLive) {
             throw new IllegalStateException("last-known matches live; migrate fallback would not run");
         }
+        deleteExportFile();
+    }
+
+    private File exportFile() {
+        return new File(reactContext.getFilesDir(), "flaky-export.json");
+    }
+
+    private void deleteExportFile() {
+        File file = exportFile();
+        if (file.exists() && !file.delete()) {
+            logLine("WARN could not delete " + file.getAbsolutePath());
+        }
     }
 
     private void probePassphraseVault() throws Exception {
         Assume.assumeNotNull(accountPassword);
-        JSONObject json = new JSONObject(readUtf8(new File(reactContext.getFilesDir(), "flaky-export.json")));
+        JSONObject json = new JSONObject(readUtf8(exportFile()));
         String vaultName = json.getString("vaultName");
         UniqueIdProvider.BindingHealth health = UniqueIdProvider.sharedInstance().inspectBinding();
         com.facebook.react.bridge.WritableMap inspect = vaultManager.buildVaultHealthReport();
@@ -184,6 +206,8 @@ public class FlakyMigrateHarness {
             logLine("probe OPEN_FAIL code=" + e.getCode() + " message=" + e.getMessage());
         } catch (Exception e) {
             logLine("probe OPEN_FAIL code=untyped message=" + e.getMessage());
+        } finally {
+            deleteExportFile();
         }
     }
 
