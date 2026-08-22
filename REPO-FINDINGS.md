@@ -112,6 +112,7 @@ A recent example (`CronSet`) touches exactly these files:
 - `src/common/libs/vault.ts` + native `VaultManagerModule`
   - iOS: `ios/Xaman/Libs/Security/` — Vault (Cipher V1 AES-CBC legacy, V2 AES-GCM), Keychain storage, Crypto, Biometric, UniqueIdProvider
   - Android: `android/app/src/main/java/libs/security/` — mirror structure (vault, crypto, authentication, providers)
+  - Android last-known device id: plaintext `ANDROID_ID` in `shared_prefs/xaman_device_id.xml` (`last_known_android_id`). Cipher V2 Extra Security uses this when the Keystore unique-id wrap is unreadable. `android:allowBackup="false"` and `data_extraction_rules.xml` exclude sharedpref from backup and device transfer. Residual risk is root or forensic access on the device only.
 - `src/common/libs/crypto.ts`, `biometric.ts`
 - Signing: `mixin/Sign.mixin.ts` + xrpl-accountlib
 - Native also includes: IAP, LocalNotification, custom WebView (forked RNCWebView) for xApps, BlurView, HapticFeedback, QRCode, Toast, SharedPreferences, AppUpdate, DeviceUtils/AppUtils
