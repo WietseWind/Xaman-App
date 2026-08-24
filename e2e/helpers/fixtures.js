@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { XrplClient } = require('xrpl-client');
 const AccountLib = require('xrpl-accountlib');
 
-const CRED_FILE = '/tmp/xaman-e2e-testnet-creds.json';
+const CRED_FILE = process.env.E2E_CRED_FILE || '/tmp/xaman-e2e-testnet-creds.json';
 // 100 XAH payment + fee + 1 XAH account reserve
 const ACTIVATION_DROPS = 100000000;
 const ACTIVATION_FEE_DROPS = 1000;

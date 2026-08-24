@@ -51,6 +51,10 @@ module.exports = {
             type: 'ios.simulator',
             device: { name: 'iPhone 17 Pro' },
         },
+        'ios.simulator.se': {
+            type: 'ios.simulator',
+            device: { name: 'Xaman-se' },
+        },
         'android.emulator': {
             type: 'android.emulator',
             device: { avdName: 'Nexus_5X_API_28' },
@@ -66,6 +70,11 @@ module.exports = {
                 adbName: '.*',
             },
         },
+        // SM-M215F only — never let android.attached '.*' pick the emulator
+        'android.attached.usb': {
+            type: 'android.attached',
+            device: { adbName: 'R58NA2ZV7TK' },
+        },
     },
     configurations: {
         'ios.simulator+xaman.ios': {
@@ -79,6 +88,10 @@ module.exports = {
         'ios.simulator.dev+xaman.ios.debug': {
             device: 'ios.simulator.dev',
             app: 'xaman.ios.debug',
+        },
+        'ios.simulator.se+xaman.ios': {
+            device: 'ios.simulator.se',
+            app: 'xaman.ios',
         },
         'android.emulator+xaman.android': {
             device: 'android.emulator',
@@ -95,6 +108,10 @@ module.exports = {
         'android.attached+xaman.android': {
             device: 'android.attached',
             app: 'xaman.android',
+        },
+        'android.attached.usb+xaman.android.debug.arm64': {
+            device: 'android.attached.usb',
+            app: 'xaman.android.debug.arm64',
         },
     },
 };
