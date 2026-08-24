@@ -14,7 +14,13 @@ const {
 } = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
 const { checkNetwork, ensureLocalSimulator } = require('./preflight');
-const { tapByTestIdIfPresent } = require('../helpers/tapById');
+const {
+    tapByTestIdIfPresent,
+    unlockAndroidPasscodeIfPresent,
+    waitUntilAndroidRnReady,
+    disableAndroidStylusHandwriting,
+    clearAndroidBlockingDialogs,
+} = require('../helpers/tapById');
 
 BeforeAll(async () => {
     // fail fast with a clear message when the suite cannot possibly pass
@@ -52,6 +58,10 @@ BeforeAll(async () => {
 
     if (device.getPlatform() === 'android') {
         await device.disableSynchronization();
+        disableAndroidStylusHandwriting();
+        await waitUntilAndroidRnReady();
+        await clearAndroidBlockingDialogs();
+        await unlockAndroidPasscodeIfPresent();
     }
 
     await device.setURLBlacklist([
@@ -71,10 +81,11 @@ BeforeAll(async () => {
 // screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
     // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
-    await tapByTestIdIfPresent('close-change-log-button', 8000);
+    await tapByTestIdIfPresent('close-change-log-button', 1500);
 }
 
 Before(async (context) => {
+    await unlockAndroidPasscodeIfPresent();
     await dismissChangelogOverlay();
     await adapter.beforeEach(context);
 });
