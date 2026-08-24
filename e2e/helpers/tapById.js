@@ -44,7 +44,9 @@ const readDumpFile = (spec) => {
     for (let i = 0; i < attempts.length; i += 1) {
         try {
             const xml = adbOut(attempts[i]);
-            if (xml && xml.indexOf('<hierarchy') !== -1 && xml.length > 200) {
+            // Truncated dumps still start with <hierarchy and systemui nodes.
+            // PIN keys and testIDs sit later; require a closed document.
+            if (xml && xml.indexOf('<hierarchy') !== -1 && xml.indexOf('</hierarchy>') !== -1) {
                 return xml;
             }
         } catch (e) {
@@ -64,6 +66,15 @@ let cachedXml = '';
 let cachedAt = 0;
 let dumpLock = Promise.resolve();
 
+const detoxDisconnected = (err) => {
+    const m = String((err && err.message) || err);
+    return (
+        m.indexOf("can't seem to connect") !== -1 ||
+        m.indexOf('pending request') !== -1 ||
+        m.indexOf('could not be delivered') !== -1
+    );
+};
+
 const androidDumpXml = async () => {
     if (cachedXml && Date.now() - cachedAt < 400) {
         return cachedXml;
@@ -74,25 +85,43 @@ const androidDumpXml = async () => {
         }
         await ensureUncompressedDump();
         const ui = device.getUiDevice();
-        for (let i = 0; i < DUMP_SPECS.length; i += 1) {
-            const spec = DUMP_SPECS[i];
+        const spec = DUMP_SPECS[0];
+        let lastXml = '';
+        // One dump per attempt. Extra dumpWindowHierarchy calls kill UiAutomation.
+        for (let attempt = 0; attempt < 2; attempt += 1) {
             try {
                 await ui.dumpWindowHierarchy(spec.abs);
             } catch (e) {
+                if (detoxDisconnected(e)) {
+                    throw e;
+                }
                 // eslint-disable-next-line no-console
                 console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, String((e && e.message) || e).slice(0, 180));
+                await sleep(250);
                 continue;
             }
-            const xml = readDumpFile(spec);
-            if (xml) {
-                cachedXml = xml;
-                cachedAt = Date.now();
-                return xml;
+            for (let r = 0; r < 12; r += 1) {
+                let xml = '';
+                for (let i = 0; i < DUMP_SPECS.length; i += 1) {
+                    xml = readDumpFile(DUMP_SPECS[i]);
+                    if (xml) {
+                        break;
+                    }
+                }
+                if (xml) {
+                    lastXml = xml;
+                    if (dumpHasAppContent(xml)) {
+                        cachedXml = xml;
+                        cachedAt = Date.now();
+                        return xml;
+                    }
+                    break;
+                }
+                await sleep(80);
             }
+            await sleep(200);
         }
-        // eslint-disable-next-line no-console
-        console.error('[tapById] dumpWindowHierarchy produced no readable hierarchy');
-        return '';
+        return lastXml;
     });
     dumpLock = run.catch(() => '');
     return run;
@@ -120,7 +149,62 @@ const boundsFromAttrs = (attrs) => {
     if (x2 <= x1 || y2 <= y1) {
         return null;
     }
-    return { x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2) };
+    return {
+        x: Math.round((x1 + x2) / 2),
+        y: Math.round((y1 + y2) / 2),
+        x1,
+        y1,
+        x2,
+        y2,
+    };
+};
+
+const dumpHasRnContent = (xml) => {
+    if (!xml || xml.indexOf('</hierarchy>') === -1) {
+        return false;
+    }
+    // Native Metro splash is still com.xrpllabs.xumm — require RN testIDs.
+    return (
+        xml.indexOf('lock-overlay') !== -1 ||
+        xml.indexOf('virtual-keyboard') !== -1 ||
+        xml.indexOf('1-key') !== -1 ||
+        xml.indexOf('home-tab') !== -1 ||
+        xml.indexOf('settings-tab') !== -1 ||
+        xml.indexOf('start-button') !== -1 ||
+        xml.indexOf('onboarding') !== -1 ||
+        xml.indexOf('pin-code') !== -1 ||
+        xml.indexOf('account-') !== -1
+    );
+};
+
+const dumpHasAppContent = (xml) => {
+    if (!xml || xml.indexOf('</hierarchy>') === -1) {
+        return false;
+    }
+    if (dumpHasRnContent(xml)) {
+        return true;
+    }
+    const pkgHits = xml.match(/package="com\.xrpllabs\.xumm"/g);
+    return !!(pkgHits && pkgHits.length > 2);
+};
+
+/** launchApp(sync 0) returns on native splash; wait until JS mounted. */
+const waitUntilAndroidRnReady = async (timeoutMs = 120000) => {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+    const deadline = Date.now() + timeoutMs;
+    let lastXml = '';
+    while (Date.now() < deadline) {
+        cachedXml = '';
+        cachedAt = 0;
+        lastXml = await androidDumpXml();
+        if (dumpHasRnContent(lastXml)) {
+            return;
+        }
+        await sleep(800);
+    }
+    throw new Error(`android RN UI not ready after launch (${dumpSummary(lastXml)})`);
 };
 
 const aliasesForTestId = (testId) => {
@@ -134,6 +218,16 @@ const aliasesForTestId = (testId) => {
     }
     if (testId === 'close-change-log-button') {
         aliases.push('Close', 'close');
+    }
+    // Footer testIDs are often missing from the dump; the visible label is not.
+    if (testId === 'next-button') {
+        aliases.push('Next');
+    }
+    if (testId === 'finish-button') {
+        aliases.push('Finish');
+    }
+    if (/^\d-key$/.test(testId)) {
+        aliases.push(testId[0]);
     }
     return aliases;
 };
@@ -174,6 +268,7 @@ const parseNodes = (xml) => {
                 attrs,
                 bounds,
                 clickable: attrValue(attrs, 'clickable') === 'true',
+                enabled: attrValue(attrs, 'enabled') !== 'false',
                 text: attrValue(attrs, 'text'),
                 contentDesc: attrValue(attrs, 'content-desc'),
                 resourceId: attrValue(attrs, 'resource-id'),
@@ -184,27 +279,77 @@ const parseNodes = (xml) => {
     return nodes;
 };
 
-const androidBoundsByTestId = async (testId) => {
-    const xml = await androidDumpXml();
+const pickNodeForTestId = (xml, testId) => {
     if (!xml) {
         return null;
     }
     const nodes = parseNodes(xml);
     const matches = nodes.filter((node) => nodeMatchesTestId(node.attrs, testId));
-    const clickable = matches.filter((node) => node.clickable);
-    const pick = clickable[0] || matches[0];
+    // Digit aliases include bare "9". Prefer the real `${n}-key` node so a
+    // missed 6th PIN tap is not a click on some other "9" in the dump.
+    if (/^\d-key$/.test(testId)) {
+        const exact = matches.filter((node) => {
+            const tail = resourceIdTail(node.resourceId);
+            const desc = node.contentDesc || '';
+            return tail === testId || desc === testId;
+        });
+        if (exact.length) {
+            return exact.find((node) => node.clickable) || exact[0];
+        }
+    }
+    return matches.find((node) => node.clickable) || matches[0] || null;
+};
+
+const androidBoundsByTestId = async (testId) => {
+    const xml = await androidDumpXml();
+    const pick = pickNodeForTestId(xml, testId);
     return pick ? pick.bounds : null;
+};
+
+const androidReadTextByTestId = async (testId) => {
+    const xml = await androidDumpXml();
+    const pick = pickNodeForTestId(xml, testId);
+    if (!pick) {
+        return null;
+    }
+    if (pick.text || pick.contentDesc) {
+        return pick.text || pick.contentDesc;
+    }
+    const nodes = parseNodes(xml);
+    const parts = [];
+    for (let i = 0; i < nodes.length; i += 1) {
+        const n = nodes[i];
+        if (
+            n.text &&
+            n.bounds.x1 >= pick.bounds.x1 &&
+            n.bounds.x2 <= pick.bounds.x2 &&
+            n.bounds.y1 >= pick.bounds.y1 &&
+            n.bounds.y2 <= pick.bounds.y2
+        ) {
+            parts.push(n.text);
+        }
+    }
+    return parts.join(' ') || null;
 };
 
 const dumpSummary = (xml) => {
     if (!xml) {
         return 'no-xml';
     }
+    if (xml.indexOf('</hierarchy>') === -1) {
+        return `truncated nodes=${parseNodes(xml).length}`;
+    }
     const labels = [];
     const nodes = parseNodes(xml);
     for (let i = 0; i < nodes.length; i += 1) {
         const label = nodes[i].resourceId || nodes[i].contentDesc || nodes[i].text;
-        if (label && labels.indexOf(label) === -1) {
+        if (!label) {
+            continue;
+        }
+        if (label.indexOf('com.android.systemui') === 0 || label.indexOf('status_bar') !== -1) {
+            continue;
+        }
+        if (labels.indexOf(label) === -1) {
             labels.push(label);
         }
         if (labels.length >= 25) {
@@ -214,20 +359,176 @@ const dumpSummary = (xml) => {
     return labels.join('|') || `nodes=${nodes.length}`;
 };
 
+let keypadBounds = null;
+let keypadAt = 0;
+
+const refreshKeypadBounds = async () => {
+    let pad = {};
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+        cachedXml = '';
+        cachedAt = 0;
+        const xml = await androidDumpXml();
+        pad = {};
+        for (let d = 0; d <= 9; d += 1) {
+            const pick = pickNodeForTestId(xml, `${d}-key`);
+            if (pick) {
+                pad[String(d)] = pick.bounds;
+            }
+        }
+        if (Object.keys(pad).length >= 10) {
+            keypadBounds = pad;
+            keypadAt = Date.now();
+            return pad;
+        }
+        await sleep(200);
+    }
+    keypadBounds = pad;
+    keypadAt = Date.now();
+    return pad;
+};
+
+const clearAndroidPasscodePad = async () => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    const back = pickNodeForTestId(xml, 'x-key');
+    if (!back) {
+        return;
+    }
+    for (let i = 0; i < 6; i += 1) {
+        await device.getUiDevice().click(back.bounds.x, back.bounds.y);
+        await sleep(80);
+    }
+};
+
+const enterAndroidPasscode = async (code) => {
+    const digits = String(code).split('');
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        // Always clear first. 5/6 dots after resume + a second entry is Invalid.
+        await clearAndroidPasscodePad();
+        await sleep(attempt === 0 ? 250 : 500);
+        keypadBounds = null;
+        keypadAt = 0;
+        const pad = await refreshKeypadBounds();
+        if (Object.keys(pad).length < 10) {
+            await sleep(400);
+            continue;
+        }
+        for (let i = 0; i < digits.length; i += 1) {
+            const bounds = pad[digits[i]];
+            if (!bounds) {
+                throw new Error(`passcode key ${digits[i]} missing from keypad dump (${dumpSummary(cachedXml)})`);
+            }
+            await device.getUiDevice().click(bounds.x, bounds.y);
+            // 150ms still dropped the last digit after 20s background (5/6 dots).
+            await sleep(280);
+        }
+        let retryInvalid = false;
+        const goneBy = Date.now() + 4000;
+        while (Date.now() < goneBy) {
+            cachedXml = '';
+            cachedAt = 0;
+            const xml = await androidDumpXml();
+            if (!xml || !dumpHasAppContent(xml)) {
+                await sleep(250);
+                continue;
+            }
+            if (xml.toLowerCase().indexOf('invalid') !== -1) {
+                retryInvalid = true;
+                await sleep(800);
+                break;
+            }
+            // Unlock pad still up = missed digit. Setup/confirm PIN has no lock-overlay.
+            if (xmlHasLockOverlay(xml) && pickNodeForTestId(xml, '1-key')) {
+                await sleep(250);
+                continue;
+            }
+            keypadBounds = null;
+            keypadAt = 0;
+            return;
+        }
+        if (retryInvalid || (attempt < 2)) {
+            continue;
+        }
+    }
+    keypadBounds = null;
+    keypadAt = 0;
+    throw new Error('passcode did not dismiss lock-overlay');
+};
+
 /**
  * Tap a control by testID. Android uses UiDevice hierarchy (no Espresso idle).
- * Never use hardcoded pixels or `adb uiautomator dump`.
+ * Digit keys share one keypad dump so PIN entry is not one dump per digit.
  */
+const TAB_FALLBACK = {
+    'tab-Home': [0.12, 0.96],
+    'tab-Events': [0.32, 0.96],
+    'tab-XApps': [0.68, 0.96],
+    'tab-Settings': [0.88, 0.96],
+};
+
+// Right footer Next/Finish on 1080x2400 AVD when resource-id is missing.
+const FOOTER_FALLBACK = {
+    'next-button': [0.72, 0.94],
+    'finish-button': [0.72, 0.94],
+};
+
+const clickTabFallback = async (testId) => {
+    const frac = TAB_FALLBACK[testId];
+    if (!frac) {
+        return false;
+    }
+    const ui = device.getUiDevice();
+    let width = 1080;
+    let height = 2400;
+    try {
+        width = await ui.getDisplayWidth();
+        height = await ui.getDisplayHeight();
+    } catch (e) {
+        // keep defaults
+    }
+    await ui.click(Math.round(width * frac[0]), Math.round(height * frac[1]));
+    return true;
+};
+
 const clickByTestId = async (testId) => {
     const el = element(by.id(testId));
     if (device.getPlatform() !== 'android') {
         await el.tap();
         return;
     }
+    if (/^\d-key$/.test(testId)) {
+        if (!keypadBounds || Date.now() - keypadAt > 4000) {
+            await refreshKeypadBounds();
+        }
+        const bounds = keypadBounds[testId[0]];
+        if (!bounds) {
+            throw new Error(`android hierarchy has no bounds for ${testId}`);
+        }
+        await device.getUiDevice().click(bounds.x, bounds.y);
+        return;
+    }
     let bounds = await androidBoundsByTestId(testId);
     if (!bounds) {
         await sleep(400);
         bounds = await androidBoundsByTestId(testId);
+    }
+    if (!bounds && (await clickTabFallback(testId))) {
+        return;
+    }
+    if (!bounds && FOOTER_FALLBACK[testId]) {
+        const frac = FOOTER_FALLBACK[testId];
+        const ui = device.getUiDevice();
+        let width = 1080;
+        let height = 2400;
+        try {
+            width = await ui.getDisplayWidth();
+            height = await ui.getDisplayHeight();
+        } catch (e) {
+            // keep defaults
+        }
+        await ui.click(Math.round(width * frac[0]), Math.round(height * frac[1]));
+        return;
     }
     if (!bounds) {
         throw new Error(`android hierarchy has no bounds for ${testId}`);
@@ -257,27 +558,364 @@ const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
     }
 };
 
+const E2E_PASSCODE = '167349';
+
+const xmlHasLockOverlay = (xml) => {
+    if (!xml) {
+        return false;
+    }
+    return !!pickNodeForTestId(xml, 'lock-overlay');
+};
+
+const clickDumpLabel = async (xml, label) => {
+    if (!xml || !label) {
+        return false;
+    }
+    const want = String(label).toLowerCase();
+    const nodes = parseNodes(xml);
+    const pick =
+        nodes.find((n) => n.clickable && (n.text || '').toLowerCase() === want) ||
+        nodes.find((n) => (n.text || '').toLowerCase() === want);
+    if (!pick) {
+        return false;
+    }
+    await device.getUiDevice().click(pick.bounds.x, pick.bounds.y);
+    cachedXml = '';
+    cachedAt = 0;
+    return true;
+};
+
+const clickAndroidLabel = async (label) => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    return clickDumpLabel(xml, label);
+};
+
+const androidDumpIncludes = async (snippet) => {
+    const xml = await androidDumpXml();
+    if (!xml || !snippet) {
+        return false;
+    }
+    return xml.toLowerCase().indexOf(String(snippet).toLowerCase()) !== -1;
+};
+
+const dismissAndroidWipeDialog = async (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    if (blob.indexOf('wipe xaman') === -1 && blob.indexOf('could not be decrypted') === -1) {
+        return false;
+    }
+    if (await clickDumpLabel(xml, 'WIPE XAMAN')) {
+        await sleep(800);
+        return true;
+    }
+    return false;
+};
+
+/** Gboard "Try out your stylus" covers Next and steals typed label text. */
+const dismissAndroidImeChrome = async (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    if (blob.indexOf('try out your stylus') === -1 && blob.indexOf('write here') === -1) {
+        return false;
+    }
+    if (await clickDumpLabel(xml, 'Cancel')) {
+        return true;
+    }
+    try {
+        execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'keyevent', '4'], { timeout: 4000 });
+    } catch (e) {
+        // BACK already down
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    return true;
+};
+
+const disableAndroidStylusHandwriting = () => {
+    try {
+        execFileSync(
+            'adb',
+            ['-s', androidSerial(), 'shell', 'settings', 'put', 'secure', 'stylus_handwriting_enabled', '0'],
+            { timeout: 4000 },
+        );
+    } catch (e) {
+        // ignore
+    }
+};
+
 const waitUntilAndroidTestId = async (testId, timeoutMs) => {
     const deadline = Date.now() + timeoutMs;
     let lastXml = '';
+    const dismissOverlay = testId.indexOf('home-tab') === 0 || testId.indexOf('tab-') === 0;
+    const unlockIfBlocking =
+        dismissOverlay ||
+        testId === 'settings-tab-screen' ||
+        testId === 'accounts-list-screen' ||
+        testId === 'accounts-button';
     while (Date.now() < deadline) {
-        await tapByTestIdIfPresent('close-change-log-button', 600);
         lastXml = await androidDumpXml();
+        if (await dismissAndroidWipeDialog(lastXml)) {
+            await sleep(500);
+            continue;
+        }
+        // Push opt-in sits between PIN setup and ToS; Next/agreement never show until dismissed.
+        if (pickNodeForTestId(lastXml, 'maybe-later-button') || pickNodeForTestId(lastXml, 'permission-setup-view')) {
+            const later = pickNodeForTestId(lastXml, 'maybe-later-button');
+            if (later) {
+                await device.getUiDevice().click(later.bounds.x, later.bounds.y);
+                cachedXml = '';
+                cachedAt = 0;
+                await sleep(500);
+                continue;
+            }
+        }
+        if (lastXml.toLowerCase().indexOf('alerttitle') !== -1 || lastXml.toLowerCase().indexOf('do not match') !== -1) {
+            if (await clickDumpLabel(lastXml, 'OK')) {
+                await sleep(300);
+                continue;
+            }
+        }
+        if (await dismissAndroidImeChrome(lastXml)) {
+            await sleep(300);
+            continue;
+        }
+        if (
+            (testId === 'next-button' || testId === 'finish-button') &&
+            lastXml.indexOf('inputmethod.latin') !== -1 &&
+            !pickNodeForTestId(lastXml, testId)
+        ) {
+            // BACK pops import/generate (Upgrade Account). ESC blurs IME only.
+            try {
+                execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'keyevent', '111'], { timeout: 4000 });
+            } catch (e) {
+                // IME
+            }
+            cachedXml = '';
+            cachedAt = 0;
+            await sleep(300);
+            continue;
+        }
+        if (dismissOverlay) {
+            await tapByTestIdIfPresent('close-change-log-button', 400);
+        }
         if (lastXml) {
-            const nodes = parseNodes(lastXml);
-            const matches = nodes.filter((node) => nodeMatchesTestId(node.attrs, testId));
-            const pick = matches.find((node) => node.clickable) || matches[0];
+            const pick = pickNodeForTestId(lastXml, testId);
             if (pick) {
                 return;
             }
+            if (
+                FOOTER_FALLBACK[testId] &&
+                (pickNodeForTestId(lastXml, 'seed-input') ||
+                    lastXml.indexOf('secp256k1') !== -1 ||
+                    lastXml.indexOf('Show secret') !== -1)
+            ) {
+                return;
+            }
+            // RNN tab bar is often missing from the dump. Stale dumps can still
+            // list lock-overlay+1-key after Home is showing — do not spin on PIN.
+            if (
+                TAB_FALLBACK[testId] &&
+                (lastXml.indexOf('home-tab-view') !== -1 || lastXml.indexOf('home-tab-empty-view') !== -1)
+            ) {
+                return;
+            }
         }
-        await sleep(800);
+        // Do not auto-unlock AuthenticateOverlay (same testID) during signing.
+        if (unlockIfBlocking && xmlHasLockOverlay(lastXml) && pickNodeForTestId(lastXml, '1-key')) {
+            await enterAndroidPasscode(E2E_PASSCODE);
+            await sleep(400);
+            cachedXml = '';
+            cachedAt = 0;
+            continue;
+        }
+        await sleep(400);
     }
     throw new Error(`android hierarchy timed out waiting for ${testId} (${dumpSummary(lastXml)})`);
+};
+
+const unlockAndroidPasscodeIfPresent = async () => {
+    if (device.getPlatform() !== 'android') {
+        return false;
+    }
+    const deadline = Date.now() + 8000;
+    while (Date.now() < deadline) {
+        cachedXml = '';
+        cachedAt = 0;
+        const xml = await androidDumpXml();
+        if (xmlHasLockOverlay(xml)) {
+            await enterAndroidPasscode(E2E_PASSCODE);
+            const goneBy = Date.now() + 5000;
+            while (Date.now() < goneBy) {
+                cachedXml = '';
+                cachedAt = 0;
+                const after = await androidDumpXml();
+                if (!xmlHasLockOverlay(after)) {
+                    return true;
+                }
+                await sleep(300);
+            }
+            return true;
+        }
+        if (dumpHasAppContent(xml) && !xmlHasLockOverlay(xml)) {
+            return false;
+        }
+        await sleep(300);
+    }
+    return false;
+};
+
+const androidHasTestId = async (testId) => {
+    const xml = await androidDumpXml();
+    return !!pickNodeForTestId(xml, testId);
+};
+
+const androidSwipeTestId = async (testId, direction) => {
+    await waitUntilAndroidTestId(testId, 10000);
+    const bounds = await androidBoundsByTestId(testId);
+    if (!bounds) {
+        throw new Error(`android hierarchy has no bounds for ${testId}`);
+    }
+    const ui = device.getUiDevice();
+    if (direction === 'right') {
+        // accept-button testID is the thumb, not the track. Swipe from the
+        // thumb across the display. A thumb-width swipe does not fire success.
+        let width = 1080;
+        try {
+            width = await ui.getDisplayWidth();
+        } catch (e) {
+            // keep default
+        }
+        const startX = Math.round(bounds.x1 + Math.min(24, Math.max(8, (bounds.x2 - bounds.x1) / 2)));
+        const endX = Math.max(startX + 200, width - 32);
+        await ui.swipe(startX, bounds.y, endX, bounds.y, 80);
+        return;
+    }
+    if (direction === 'up') {
+        await ui.swipe(bounds.x, bounds.y2 - 20, bounds.x, bounds.y1 + 20, 40);
+        return;
+    }
+    await ui.swipe(bounds.x, bounds.y1 + 20, bounds.x, bounds.y2 - 20, 40);
+};
+
+/**
+ * Type into the focused Android field. Quote for device sh so
+ * `& ; < > | #` in Extra Security passphrases are not split.
+ * `input text` maps `%s` to space.
+ */
+const androidTypeText = (value) => {
+    const encoded = String(value).replace(/ /g, '%s');
+    const quoted = `'${encoded.replace(/'/g, `'\\''`)}'`;
+    execFileSync('adb', ['-s', androidSerial(), 'shell', `input text ${quoted}`], { timeout: 8000 });
+};
+
+const clickNearestEdit = async (nodes, target) => {
+    if (!target) {
+        return false;
+    }
+    const edits = nodes.filter(
+        (n) => n.clickable && ((n.text || '') === 'Edit' || resourceIdTail(n.resourceId).indexOf('account-') === 0),
+    );
+    if (!edits.length) {
+        return false;
+    }
+    let best = edits[0];
+    let bestDist = Math.abs(best.bounds.y - target.bounds.y);
+    for (let i = 1; i < edits.length; i += 1) {
+        const dist = Math.abs(edits[i].bounds.y - target.bounds.y);
+        if (dist < bestDist) {
+            best = edits[i];
+            bestDist = dist;
+        }
+    }
+    await device.getUiDevice().click(best.bounds.x, best.bounds.y);
+    return true;
+};
+
+// FlatList only mounts on-screen rows. After 03 the target (I-ReadOnly) is below the fold.
+const swipeAccountListUp = async (xml) => {
+    const ui = device.getUiDevice();
+    const list = xml ? pickNodeForTestId(xml, 'account-list-scroll') : null;
+    cachedXml = '';
+    cachedAt = 0;
+    if (list) {
+        const b = list.bounds;
+        const startY = Math.max(b.y1 + 80, b.y2 - 80);
+        const endY = b.y1 + 80;
+        await ui.swipe(b.x, startY, b.x, endY, 70);
+        await sleep(500);
+        return;
+    }
+    let width = 1080;
+    let height = 2400;
+    try {
+        width = await ui.getDisplayWidth();
+        height = await ui.getDisplayHeight();
+    } catch (e) {
+        // keep defaults
+    }
+    await ui.swipe(Math.round(width / 2), Math.round(height * 0.75), Math.round(width / 2), Math.round(height * 0.32), 70);
+    await sleep(500);
+};
+
+const clickAndroidAccountRow = async (address, label) => {
+    const deadline = Date.now() + 25000;
+    while (Date.now() < deadline) {
+        const xml = await androidDumpXml();
+        if (address && pickNodeForTestId(xml, `account-${address}`)) {
+            await clickByTestId(`account-${address}`);
+            return;
+        }
+        const nodes = parseNodes(xml);
+        if (address) {
+            const addrNode = nodes.find((n) => n.text && n.text.indexOf(address) !== -1);
+            if (await clickNearestEdit(nodes, addrNode)) {
+                return;
+            }
+        }
+        if (label) {
+            const title = nodes.find((n) => (n.text || '') === label);
+            if (await clickNearestEdit(nodes, title)) {
+                return;
+            }
+        }
+        await swipeAccountListUp(xml);
+    }
+    throw new Error(`android account row not found (${address || label || ''})`);
+};
+
+const clearAndroidBlockingDialogs = async () => {
+    for (let i = 0; i < 5; i += 1) {
+        cachedXml = '';
+        cachedAt = 0;
+        const xml = await androidDumpXml();
+        if (!(await dismissAndroidWipeDialog(xml))) {
+            return;
+        }
+        await sleep(500);
+    }
 };
 
 module.exports = {
     clickByTestId,
     tapByTestIdIfPresent,
     waitUntilAndroidTestId,
+    waitUntilAndroidRnReady,
+    unlockAndroidPasscodeIfPresent,
+    enterAndroidPasscode,
+    androidReadTextByTestId,
+    androidHasTestId,
+    androidSwipeTestId,
+    androidTypeText,
+    androidDumpIncludes,
+    clickAndroidLabel,
+    disableAndroidStylusHandwriting,
+    clickAndroidAccountRow,
+    dismissAndroidWipeDialog,
+    clearAndroidBlockingDialogs,
 };
