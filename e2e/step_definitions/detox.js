@@ -43,6 +43,16 @@ Then('I tap {string}', async (buttonId) => {
     if (device.getPlatform() === 'android') {
         await waitUntilAndroidTestId(buttonId, 10000);
         await clickByTestId(buttonId);
+        if (buttonId === 'tab-Settings') {
+            const deadline = Date.now() + 10000;
+            while (Date.now() < deadline) {
+                if (await androidHasTestId('settings-tab-screen')) {
+                    return;
+                }
+                await clickByTestId('tab-Settings');
+                await new Promise((resolve) => { setTimeout(resolve, 600); });
+            }
+        }
         if (buttonId === 'add-and-sign-button') {
             const deadline = Date.now() + 8000;
             while (Date.now() < deadline) {
@@ -187,6 +197,22 @@ Given('I should see {string}', async (elementId) => {
         await waitUntilAndroidTestId(elementId, timeout);
         return;
     }
+    if (elementId === 'accept-button') {
+        const btn = element(by.id('accept-button'));
+        const scroller = element(by.id('review-content-container'));
+        for (let i = 0; i < 6; i += 1) {
+            try {
+                await waitFor(btn).toBeVisible().withTimeout(2000);
+                return;
+            } catch (e) {
+                try {
+                    await scroller.swipe('up', 'slow', 0.7);
+                } catch (swipeErr) {
+                    // already at edge
+                }
+            }
+        }
+    }
     await waitFor(element(by.id(elementId)))
         .toBeVisible()
         .withTimeout(10000);
@@ -236,8 +262,7 @@ Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
 
 Then('I scroll up {string}', async (elementId) => {
     if (device.getPlatform() === 'android') {
-        const ui = device.getUiDevice();
-        await ui.swipe(540, 1600, 540, 500, 30);
+        await androidSwipeTestId(elementId, 'up');
         return;
     }
     const scroller = element(by.id(elementId));
@@ -247,6 +272,14 @@ Then('I scroll up {string}', async (elementId) => {
         return;
     }
     await scroller.swipe('up', 'slow', 0.5);
+    // iPhone SE: accept slider stays below one swipe on the review sheet.
+    if (elementId === 'review-content-container') {
+        try {
+            await waitFor(element(by.id('accept-button'))).toBeVisible().withTimeout(1200);
+        } catch (e) {
+            await scroller.swipe('up', 'slow', 0.75);
+        }
+    }
 });
 
 Then('I scroll down {string}', async (elementId) => {

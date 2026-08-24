@@ -275,7 +275,7 @@ Then('I enter my mnemonic', async () => {
 
 Then('I tap my account in the list', async () => {
     const rowId = `account-${this.address}`;
-    const row = element(by.id(rowId));
+    const row = element(by.id(rowId)).atIndex(0);
     const list = element(by.id('account-list-scroll'));
 
     if (device.getPlatform() === 'android') {
@@ -291,6 +291,7 @@ Then('I tap my account in the list', async () => {
     // Detox list.scroll() starts at the bottom edge. The tab bar swallows it
     // so the list does not move (I-ReadOnly stays below the fold). Swipe from
     // the middle of the list instead.
+    // Edit Button + inner native control share account-{address} (multiple match).
     for (let i = 0; i < 12; i += 1) {
         try {
             await waitFor(row).toBeVisible().withTimeout(400);
@@ -308,8 +309,8 @@ Then('I tap my account in the list', async () => {
     }
 
     try {
-        await row.tap({ x: 24, y: 24 });
-    } catch (e) {
         await row.tap();
+    } catch (e) {
+        await row.tap({ x: 24, y: 24 });
     }
 });

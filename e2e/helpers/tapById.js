@@ -272,6 +272,7 @@ const parseNodes = (xml) => {
                 text: attrValue(attrs, 'text'),
                 contentDesc: attrValue(attrs, 'content-desc'),
                 resourceId: attrValue(attrs, 'resource-id'),
+                package: attrValue(attrs, 'package'),
             });
         }
         m = nodeRe.exec(xml);
@@ -279,11 +280,23 @@ const parseNodes = (xml) => {
     return nodes;
 };
 
+const isSystemUiNode = (node) => {
+    const pkg = node.package || '';
+    const id = node.resourceId || '';
+    return (
+        pkg === 'com.android.systemui' ||
+        pkg.indexOf('systemui') !== -1 ||
+        id.indexOf('navigationbar') !== -1 ||
+        id.indexOf('navigationBar') !== -1 ||
+        id.indexOf('nav_bar') !== -1
+    );
+};
+
 const pickNodeForTestId = (xml, testId) => {
     if (!xml) {
         return null;
     }
-    const nodes = parseNodes(xml);
+    const nodes = parseNodes(xml).filter((node) => !isSystemUiNode(node));
     const matches = nodes.filter((node) => nodeMatchesTestId(node.attrs, testId));
     // Digit aliases include bare "9". Prefer the real `${n}-key` node so a
     // missed 6th PIN tap is not a click on some other "9" in the dump.
@@ -459,36 +472,151 @@ const enterAndroidPasscode = async (code) => {
 /**
  * Tap a control by testID. Android uses UiDevice hierarchy (no Espresso idle).
  * Digit keys share one keypad dump so PIN entry is not one dump per digit.
+ *
+ * Never click displayHeight fractions. On 3-button Samsung that is the OS
+ * Recents/Home/Back bar (LaunchActivity does not pad those bars). Resolve
+ * tabs and footers from the Xaman window dump.
  */
-const TAB_FALLBACK = {
-    'tab-Home': [0.12, 0.96],
-    'tab-Events': [0.32, 0.96],
-    'tab-XApps': [0.68, 0.96],
-    'tab-Settings': [0.88, 0.96],
+const TAB_LABELS = {
+    'tab-Home': ['Home'],
+    'tab-Events': ['Events'],
+    'tab-XApps': ['xApps', 'XApps', 'xapps'],
+    'tab-Settings': ['Settings'],
 };
 
-// Right footer Next/Finish on 1080x2400 AVD when resource-id is missing.
-const FOOTER_FALLBACK = {
-    'next-button': [0.72, 0.94],
-    'finish-button': [0.72, 0.94],
+const TAB_SLOT = {
+    'tab-Home': 0,
+    'tab-Events': 1,
+    'tab-XApps': 3,
+    'tab-Settings': 4,
 };
+const TAB_SLOT_COUNT = 5;
 
-const clickTabFallback = async (testId) => {
-    const frac = TAB_FALLBACK[testId];
-    if (!frac) {
+let lastStatusBarCollapse = 0;
+
+const collapseAndroidStatusBar = async (xml) => {
+    if (!xml) {
         return false;
     }
-    const ui = device.getUiDevice();
-    let width = 1080;
-    let height = 2400;
-    try {
-        width = await ui.getDisplayWidth();
-        height = await ui.getDisplayHeight();
-    } catch (e) {
-        // keep defaults
+    const blob = xml.toLowerCase();
+    if (
+        blob.indexOf('google play services notification') === -1 &&
+        blob.indexOf('expandablenotificationrow') === -1 &&
+        blob.indexOf('status_bar_latest_event_content') === -1
+    ) {
+        return false;
     }
-    await ui.click(Math.round(width * frac[0]), Math.round(height * frac[1]));
+    if (Date.now() - lastStatusBarCollapse < 5000) {
+        return false;
+    }
+    lastStatusBarCollapse = Date.now();
+    try {
+        execFileSync('adb', ['-s', androidSerial(), 'shell', 'cmd', 'statusbar', 'collapse'], { timeout: 3000 });
+    } catch (e) {
+        try {
+            execFileSync('adb', ['-s', androidSerial(), 'shell', 'service', 'call', 'statusbar', '2'], { timeout: 3000 });
+        } catch (e2) {
+            // no status bar service
+        }
+    }
+    cachedXml = '';
+    cachedAt = 0;
     return true;
+};
+
+const nodePlainLabel = (node) => {
+    const text = (node.text || '').trim();
+    if (text) {
+        return text;
+    }
+    return (node.contentDesc || '').trim();
+};
+
+const tabClickBounds = (bounds) => ({
+    ...bounds,
+    // Upper half of the tab item stays above the Samsung 3-button OS nav.
+    y: Math.round(bounds.y1 + (bounds.y2 - bounds.y1) * 0.4),
+});
+
+const pickTabBarContainer = (nodes) => {
+    // RNN `bottomTabs` is the whole window. Only the short nav strip is the bar.
+    const strip = (n) => {
+        const h = n.bounds.y2 - n.bounds.y1;
+        const w = n.bounds.x2 - n.bounds.x1;
+        return h >= 40 && h <= 280 && w >= 200;
+    };
+    const byId = (needles) =>
+        nodes.filter((n) => !isSystemUiNode(n) && strip(n) && needles.some((s) => (n.resourceId || '').indexOf(s) !== -1));
+    const containers = byId(['bottom_navigation_container']);
+    const bars = containers.length ? containers : byId(['bottomTabs', 'bottom_navigation']);
+    if (!bars.length) {
+        return null;
+    }
+    return bars.reduce((best, n) => (n.bounds.y1 >= best.bounds.y1 ? n : best));
+};
+
+const pickTabNode = (xml, testId) => {
+    const labels = TAB_LABELS[testId];
+    if (!labels) {
+        return pickNodeForTestId(xml, testId);
+    }
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const want = labels.map((label) => label.toLowerCase());
+    const labelHits = nodes.filter((n) => want.indexOf(nodePlainLabel(n).toLowerCase()) !== -1);
+    if (labelHits.length) {
+        const lowest = labelHits.reduce((best, n) => (n.bounds.y1 > best.bounds.y1 ? n : best));
+        const item = nodes.find(
+            (n) =>
+                n.clickable &&
+                n.bounds.x1 <= lowest.bounds.x1 &&
+                n.bounds.x2 >= lowest.bounds.x2 &&
+                n.bounds.y1 <= lowest.bounds.y1 &&
+                n.bounds.y2 >= lowest.bounds.y2 &&
+                n.bounds.y2 - n.bounds.y1 <= 280 &&
+                n.bounds.x2 - n.bounds.x1 <= 420,
+        );
+        const hit = item || lowest;
+        return { ...hit, bounds: tabClickBounds(hit.bounds) };
+    }
+    const byId = pickNodeForTestId(xml, testId);
+    if (byId && byId.bounds.y2 - byId.bounds.y1 <= 280) {
+        return { ...byId, bounds: tabClickBounds(byId.bounds) };
+    }
+    const bar = pickTabBarContainer(nodes);
+    if (!bar || TAB_SLOT[testId] === undefined) {
+        return null;
+    }
+    const slot = TAB_SLOT[testId];
+    const w = bar.bounds.x2 - bar.bounds.x1;
+    const x1 = bar.bounds.x1 + Math.round((slot * w) / TAB_SLOT_COUNT);
+    const x2 = bar.bounds.x1 + Math.round(((slot + 1) * w) / TAB_SLOT_COUNT);
+    return {
+        bounds: tabClickBounds({
+            x: Math.round((x1 + x2) / 2),
+            y: bar.bounds.y,
+            x1,
+            y1: bar.bounds.y1,
+            x2,
+            y2: bar.bounds.y2,
+        }),
+    };
+};
+
+const pickFooterNode = (xml, testId) => {
+    const byId = pickNodeForTestId(xml, testId);
+    if (byId) {
+        return byId;
+    }
+    const labels = testId === 'next-button' ? ['Next'] : testId === 'finish-button' ? ['Finish'] : [];
+    if (!labels.length) {
+        return null;
+    }
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n) && n.clickable);
+    const hits = nodes.filter((n) => labels.some((label) => (n.text || '') === label));
+    if (!hits.length) {
+        return null;
+    }
+    return hits.reduce((best, n) => (n.bounds.y > best.bounds.y ? n : best));
 };
 
 const clickByTestId = async (testId) => {
@@ -508,27 +636,29 @@ const clickByTestId = async (testId) => {
         await device.getUiDevice().click(bounds.x, bounds.y);
         return;
     }
+    let xml = await androidDumpXml();
+    if (TAB_LABELS[testId]) {
+        if (await collapseAndroidStatusBar(xml)) {
+            xml = await androidDumpXml();
+        }
+        const tab = pickTabNode(xml, testId);
+        if (!tab) {
+            throw new Error(`android hierarchy has no app tab for ${testId} (${dumpSummary(xml)})`);
+        }
+        await device.getUiDevice().click(tab.bounds.x, tab.bounds.y);
+        return;
+    }
+    if (testId === 'next-button' || testId === 'finish-button') {
+        const footer = pickFooterNode(xml, testId);
+        if (footer) {
+            await device.getUiDevice().click(footer.bounds.x, footer.bounds.y);
+            return;
+        }
+    }
     let bounds = await androidBoundsByTestId(testId);
     if (!bounds) {
         await sleep(400);
         bounds = await androidBoundsByTestId(testId);
-    }
-    if (!bounds && (await clickTabFallback(testId))) {
-        return;
-    }
-    if (!bounds && FOOTER_FALLBACK[testId]) {
-        const frac = FOOTER_FALLBACK[testId];
-        const ui = device.getUiDevice();
-        let width = 1080;
-        let height = 2400;
-        try {
-            width = await ui.getDisplayWidth();
-            height = await ui.getDisplayHeight();
-        } catch (e) {
-            // keep defaults
-        }
-        await ui.click(Math.round(width * frac[0]), Math.round(height * frac[1]));
-        return;
     }
     if (!bounds) {
         throw new Error(`android hierarchy has no bounds for ${testId}`);
@@ -664,11 +794,27 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             await sleep(500);
             continue;
         }
-        // Push opt-in sits between PIN setup and ToS; Next/agreement never show until dismissed.
-        if (pickNodeForTestId(lastXml, 'maybe-later-button') || pickNodeForTestId(lastXml, 'permission-setup-view')) {
-            const later = pickNodeForTestId(lastXml, 'maybe-later-button');
+        // Samsung keeps GMS rows in the dump after collapse; do not continue.
+        await collapseAndroidStatusBar(lastXml);
+        // Push opt-in and biometric setup sit between PIN and ToS.
+        // Physical devices use skip-button; emu used maybe-later-button.
+        if (
+            pickNodeForTestId(lastXml, 'maybe-later-button') ||
+            pickNodeForTestId(lastXml, 'permission-setup-view') ||
+            pickNodeForTestId(lastXml, 'biometric-setup-view') ||
+            pickNodeForTestId(lastXml, 'skip-button')
+        ) {
+            const later =
+                pickNodeForTestId(lastXml, 'maybe-later-button') ||
+                pickNodeForTestId(lastXml, 'skip-button');
             if (later) {
                 await device.getUiDevice().click(later.bounds.x, later.bounds.y);
+                cachedXml = '';
+                cachedAt = 0;
+                await sleep(500);
+                continue;
+            }
+            if (await clickDumpLabel(lastXml, 'Maybe later')) {
                 cachedXml = '';
                 cachedAt = 0;
                 await sleep(500);
@@ -709,20 +855,10 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             if (pick) {
                 return;
             }
-            if (
-                FOOTER_FALLBACK[testId] &&
-                (pickNodeForTestId(lastXml, 'seed-input') ||
-                    lastXml.indexOf('secp256k1') !== -1 ||
-                    lastXml.indexOf('Show secret') !== -1)
-            ) {
+            if (TAB_LABELS[testId] && pickTabNode(lastXml, testId)) {
                 return;
             }
-            // RNN tab bar is often missing from the dump. Stale dumps can still
-            // list lock-overlay+1-key after Home is showing — do not spin on PIN.
-            if (
-                TAB_FALLBACK[testId] &&
-                (lastXml.indexOf('home-tab-view') !== -1 || lastXml.indexOf('home-tab-empty-view') !== -1)
-            ) {
+            if ((testId === 'next-button' || testId === 'finish-button') && pickFooterNode(lastXml, testId)) {
                 return;
             }
         }
@@ -783,16 +919,16 @@ const androidSwipeTestId = async (testId, direction) => {
     }
     const ui = device.getUiDevice();
     if (direction === 'right') {
-        // accept-button testID is the thumb, not the track. Swipe from the
-        // thumb across the display. A thumb-width swipe does not fire success.
-        let width = 1080;
-        try {
-            width = await ui.getDisplayWidth();
-        } catch (e) {
-            // keep default
-        }
+        // accept-button testID is the thumb, not the track. Swipe across the
+        // review sheet, not the full display (OS nav sits to the right/bottom).
+        const xml = await androidDumpXml();
+        const sheet =
+            pickNodeForTestId(xml, 'review-transaction-modal') ||
+            pickNodeForTestId(xml, 'review-content-container');
         const startX = Math.round(bounds.x1 + Math.min(24, Math.max(8, (bounds.x2 - bounds.x1) / 2)));
-        const endX = Math.max(startX + 200, width - 32);
+        const endX = sheet
+            ? Math.max(startX + 200, sheet.bounds.x2 - 24)
+            : Math.max(startX + 200, bounds.x2 + (bounds.x2 - bounds.x1) * 6);
         await ui.swipe(startX, bounds.y, endX, bounds.y, 80);
         return;
     }
@@ -843,23 +979,18 @@ const swipeAccountListUp = async (xml) => {
     const list = xml ? pickNodeForTestId(xml, 'account-list-scroll') : null;
     cachedXml = '';
     cachedAt = 0;
-    if (list) {
-        const b = list.bounds;
-        const startY = Math.max(b.y1 + 80, b.y2 - 80);
-        const endY = b.y1 + 80;
-        await ui.swipe(b.x, startY, b.x, endY, 70);
+    const screen =
+        list ||
+        (xml && pickNodeForTestId(xml, 'accounts-list-screen')) ||
+        (xml && pickNodeForTestId(xml, 'home-tab-view'));
+    if (!screen) {
         await sleep(500);
         return;
     }
-    let width = 1080;
-    let height = 2400;
-    try {
-        width = await ui.getDisplayWidth();
-        height = await ui.getDisplayHeight();
-    } catch (e) {
-        // keep defaults
-    }
-    await ui.swipe(Math.round(width / 2), Math.round(height * 0.75), Math.round(width / 2), Math.round(height * 0.32), 70);
+    const b = screen.bounds;
+    const startY = Math.max(b.y1 + 80, b.y2 - 80);
+    const endY = b.y1 + 80;
+    await ui.swipe(b.x, startY, b.x, endY, 70);
     await sleep(500);
 };
 
