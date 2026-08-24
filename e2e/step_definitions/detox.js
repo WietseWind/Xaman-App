@@ -73,8 +73,18 @@ Then('I tap {string}', async (buttonId) => {
             return;
         }
         await dismissKeyboard();
-        await waitFor(btn).toExist().withTimeout(3000);
-        await btn.tap();
+        // iPhone SE: Developer mode sits below the Advanced fold.
+        try {
+            await element(by.id('advanced-settings-screen')).swipe('up', 'slow', 0.6);
+        } catch (swipeErr) {
+            // not that screen
+        }
+        try {
+            await waitFor(btn).toBeVisible().withTimeout(3000);
+            await btn.tap();
+        } catch (e2) {
+            await btn.tap({ x: 8, y: 8 });
+        }
     }
 });
 
