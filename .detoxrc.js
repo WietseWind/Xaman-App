@@ -1,4 +1,9 @@
 module.exports = {
+    behavior: {
+        init: {
+            reinstallApp: false,
+        },
+    },
     apps: {
         'xaman.ios': {
             type: 'ios.app',
