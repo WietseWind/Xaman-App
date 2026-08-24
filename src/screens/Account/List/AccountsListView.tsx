@@ -312,6 +312,7 @@ class AccountListView extends Component<Props, State> {
                                 iconSize={15}
                                 textStyle={styles.buttonEditText}
                                 label={Localize.t('global.edit')}
+                                testID={`account-${item.address}`}
                                 onPress={() => {
                                     this.onItemPress(item);
                                 }}
