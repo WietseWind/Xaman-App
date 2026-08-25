@@ -9,7 +9,7 @@ import { Image, ImageBackground, InteractionManager, Text, View } from 'react-na
 
 import { Navigation, EventSubscription } from 'react-native-navigation';
 
-import { CoreRepository } from '@store/repositories';
+import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel } from '@store/models';
 
 // Constants/Helpers
@@ -57,7 +57,7 @@ import { DataSourceItem, RowItemType } from '@components/Modules/EventsList/Even
 
 import { AppStyles } from '@theme';
 import styles from './styles';
-import { shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
+import { isRegularKeyForDestination, shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
 
 /* types ==================================================================== */
 export interface Props {
@@ -559,24 +559,25 @@ class EventsView extends Component<Props, State> {
                         canLoadMore = false;
                     }
 
+                    // Accounts we already imported that list this address as RegularKey.
+                    const regularKeyForAddresses = AccountRepository.getRegularKeys(account.address).map(
+                        (linked) => linked.address,
+                    );
+
                     // only success transactions
                     const tesSuccessTransactions: AccountTxTransaction[] = (await Promise.all(
                         txResp.map(async transaction => {
                             let blocked = false;
 
                             if (hideAdvisoryTransactions) {
-                                const finalFields = transaction.meta?.AffectedNodes
-                                    ?.filter(m => m?.ModifiedNode)
-                                    ?.map(m => m?.ModifiedNode)?.[0]
-                                    ?.FinalFields;
-                                
+                                const dest = transaction?.tx?.Destination;
                                 const isMyAccountThroughRegularKey =
-                                    transaction?.tx?.Destination &&
-                                    finalFields?.RegularKey &&
-                                    finalFields?.Account &&
-                                    // TODO: Below: this doesn't work if I'm at the regular key account, ticket #107146
-                                    finalFields.RegularKey === account.address &&
-                                    finalFields.Account === transaction.tx.Destination;
+                                    (typeof dest === 'string' && regularKeyForAddresses.includes(dest)) ||
+                                    isRegularKeyForDestination(
+                                        transaction?.tx,
+                                        account.address,
+                                        transaction.meta?.AffectedNodes,
+                                    );
 
                                 // Hide incoming Payment / CheckCreate / EscrowCreate from a
                                 // blocked sender, and Check/Escrow cancel or finish they submit.
@@ -585,7 +586,7 @@ class EventsView extends Component<Props, State> {
                                     shouldLookupAdvisorySender(
                                         transaction?.tx,
                                         account.address,
-                                        !!isMyAccountThroughRegularKey,
+                                        isMyAccountThroughRegularKey,
                                     )
                                 ) {
                                     const resolveAccount = String(transaction?.tx?.Account || '');
