@@ -2,7 +2,9 @@ const { spawn } = require('child_process');
 const { createWriteStream, existsSync, unlinkSync, mkdirSync } = require('fs');
 const path = require('path');
 
-const ARTIFACTS_DIR = path.resolve(__dirname, '../artifacts');
+const ARTIFACTS_DIR = process.env.E2E_ARTIFACTS_DIR
+    ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
+    : path.resolve(__dirname, '../artifacts');
 
 const startDeviceLogStream = (udid = 'booted') => {
     if (process.platform !== 'darwin') {

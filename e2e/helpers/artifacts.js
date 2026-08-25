@@ -2,7 +2,9 @@ const { execSync, execFileSync, spawn, exec } = require('child_process');
 const { existsSync, mkdirSync, unlinkSync, writeFileSync } = require('fs');
 const path = require('path');
 
-const ARTIFACTS_DIR = path.resolve(__dirname, '../artifacts');
+const ARTIFACTS_DIR = process.env.E2E_ARTIFACTS_DIR
+    ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
+    : path.resolve(__dirname, '../artifacts');
 const STEP_SHOT_DIR = path.join(ARTIFACTS_DIR, 'steps');
 
 const SCREENSHOT_OPTIONS = {

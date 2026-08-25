@@ -6,24 +6,49 @@ const { element, by, waitFor, device } = require('detox');
 const {
     activateAccount,
     generateTestnetAccount,
+    generateFreshTestnetAccount,
     generateSecretNumbers,
     generateFamilySeed,
     generateMnemonic,
 } = require('../helpers/fixtures');
 const { dismissKeyboard } = require('../helpers/keyboard');
+const {
+    clickByTestId,
+    waitUntilAndroidTestId,
+    androidReadTextByTestId,
+    androidHasTestId,
+    clickAndroidAccountRow,
+    androidReadSecretRow,
+    enterAndroidSecretNumbers,
+    androidTypeText,
+    androidBlurIme,
+    isAdbTimeout,
+    androidDumpIncludes,
+    clickAndroidLabel,
+} = require('../helpers/tapById');
 
-Then('I write down secret numbers', async () => {
+Then('I write down secret numbers', { timeout: 10 * 60 * 1000 }, async () => {
     this.numbers = [...Array(8)].map(() => Array(6));
-    // rows
     for (let r = 0; r < 8; r++) {
-        // get values for any column
-        for (let c = 0; c < 6; c++) {
-            const attributes = await element(by.id(`${r}.${c}`)).getAttributes();
-            this.numbers[r][c] = attributes.text;
-        }
-
-        if (r < 7) {
-            await element(by.id('next-button')).tap();
+        if (device.getPlatform() === 'android') {
+            this.numbers[r] = await androidReadSecretRow(r);
+            if (r < 7) {
+                await clickByTestId('next-button');
+                try {
+                    await waitUntilAndroidTestId(`${r + 1}.0`, 8000);
+                } catch (e) {
+                    await clickByTestId('next-button');
+                    await waitUntilAndroidTestId(`${r + 1}.0`, 10000);
+                }
+            }
+        } else {
+            for (let c = 0; c < 6; c++) {
+                const attributes = await element(by.id(`${r}.${c}`)).getAttributes();
+                this.numbers[r][c] = attributes.text;
+            }
+            if (r < 7) {
+                await element(by.id('next-button')).tap();
+            }
         }
     }
 });
@@ -33,19 +58,34 @@ Then('I generate new secret number', async () => {
 });
 
 Then('I enter my secret number', { timeout: 5 * 60 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        await enterAndroidSecretNumbers(this.numbers);
+        return;
+    }
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 6; c++) {
             await element(by.id(`${this.numbers[r][c]}-key`)).tap();
-        };
-    };
+        }
+    }
 });
 
 Then('I read my account address', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('account-address-text', 15000);
+        this.address = await androidReadTextByTestId('account-address-text');
+        return;
+    }
     const attributes = await element(by.id('account-address-text')).getAttributes();
     this.address = attributes.text;
 });
 
 Given('I should see same account address', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('account-address-text', 15000);
+        const text = await androidReadTextByTestId('account-address-text');
+        assert.equal(this.address, text);
+        return;
+    }
     const attributes = await element(by.id('account-address-text')).getAttributes();
     assert.equal(this.address, attributes.text);
 });
@@ -55,13 +95,59 @@ Then('I activate the account', async () => {
 });
 
 Then('I generate testnet account', async () => {
-    const testnetAccount = await generateTestnetAccount();
+    const testnetAccount = await generateFreshTestnetAccount();
 
     this.address = testnetAccount.address;
     this.seed = testnetAccount.secret;
+    if (!this.address || this.address[0] !== 'r') {
+        throw new Error(`testnet address expected r... got ${this.address}`);
+    }
 });
 
 Then('I enter the address in the input', async () => {
+    if (device.getPlatform() === 'android') {
+        const serial = process.env.ANDROID_SERIAL || device.id;
+        const want = String(this.address || '');
+        await waitUntilAndroidTestId('address-input', 10000);
+        await clickByTestId('address-input');
+        await new Promise((resolve) => { setTimeout(resolve, 400); });
+        androidTypeText(want);
+        await new Promise((resolve) => { setTimeout(resolve, 500); });
+        const readField = async () => {
+            const raw = String((await androidReadTextByTestId('address-input')) || '');
+            if (raw.indexOf('Please enter') !== -1) {
+                return '';
+            }
+            return raw.replace(/\s/g, '');
+        };
+        let got = await readField();
+        // IME often swallows the leading `r` (`rZZx…` → `ZZx…`), which leaves Next disabled.
+        if (got !== want && got.indexOf(want) === -1) {
+            if (want.endsWith(got) && got.length > 0) {
+                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '122'], { timeout: 3000 });
+                androidTypeText(want.slice(0, want.length - got.length));
+            } else {
+                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '123'], { timeout: 3000 });
+                const n = Math.max(40, got.length + 8);
+                for (let i = 0; i < n; i += 1) {
+                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '67'], { timeout: 2000 });
+                }
+                androidTypeText(want);
+            }
+            await new Promise((resolve) => { setTimeout(resolve, 400); });
+            got = await readField();
+        }
+        if (got !== want && got.indexOf(want) === -1) {
+            throw new Error(`address-input got ${JSON.stringify(got)} want ${want}`);
+        }
+        // BACK while focused can immediately reopen IME; ESC blurs.
+        try {
+            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 4000 });
+        } catch (e) {
+            // IME
+        }
+        return;
+    }
     const input = element(by.id('address-input'));
     await input.replaceText(this.address);
     try {
@@ -76,6 +162,93 @@ Then('I generate new family seed', async () => {
 });
 
 Then('I enter my seed in the input', async () => {
+    if (!this.seed) {
+        const acc = await generateTestnetAccount();
+        this.address = acc.address;
+        this.seed = acc.secret;
+    }
+    if (device.getPlatform() === 'android') {
+        const serial = process.env.ANDROID_SERIAL || device.id;
+        const want = String(this.seed || '');
+        const sleepMs = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+        const clearField = () => {
+            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '123'], { timeout: 3000 });
+            const n = Math.max(40, want.length + 8);
+            for (let i = 0; i < n; i += 1) {
+                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '67'], { timeout: 2000 });
+            }
+        };
+        const seedLooksValid = async () =>
+            (await androidDumpIncludes('secp256k1')) || (await androidDumpIncludes('Keypair type'));
+        const readVisibleSeed = async () => {
+            const raw = String((await androidReadTextByTestId('seed-input')) || '');
+            if (!raw || /please|provide|family seed|secret/i.test(raw) || /^[•·.●]+$/.test(raw)) {
+                return '';
+            }
+            return raw.replace(/\s/g, '');
+        };
+
+        await waitUntilAndroidTestId('seed-input', 10000);
+        await clickByTestId('seed-input');
+        await sleepMs(400);
+        try {
+            androidTypeText(want);
+        } catch (e) {
+            if (!isAdbTimeout(e)) {
+                throw e;
+            }
+        }
+        await sleepMs(400);
+        // Timeout often happens after the seed is already in the field
+        // (secp256k1 picker is up). Recover: dump, blur IME, do not Next here.
+        if (await seedLooksValid()) {
+            androidBlurIme();
+            return;
+        }
+
+        // IME often capitalizes/swallows the leading `s`, so Next alerts Invalid Family Seed.
+        if (!(await seedLooksValid())) {
+            await clickAndroidLabel('Show secret');
+            await sleepMs(300);
+            await clickByTestId('seed-input');
+            await sleepMs(200);
+            const got = await readVisibleSeed();
+            try {
+                if (want.endsWith(got) && got.length > 0 && got !== want) {
+                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '122'], { timeout: 3000 });
+                    androidTypeText(want.slice(0, want.length - got.length));
+                } else {
+                    clearField();
+                    androidTypeText(want);
+                }
+            } catch (e) {
+                if (!isAdbTimeout(e)) {
+                    throw e;
+                }
+            }
+            await sleepMs(400);
+        }
+
+        if (!(await seedLooksValid()) && !/^sed/i.test(want)) {
+            await clickByTestId('seed-input');
+            await sleepMs(200);
+            clearField();
+            try {
+                androidTypeText(want);
+            } catch (e) {
+                if (!isAdbTimeout(e)) {
+                    throw e;
+                }
+            }
+            await sleepMs(400);
+        }
+
+        if (!(await seedLooksValid()) && !/^sed/i.test(want)) {
+            throw new Error('seed-input did not produce a valid family seed (keypair picker hidden)');
+        }
+        androidBlurIme();
+        return;
+    }
     const input = element(by.id('seed-input'));
     await input.replaceText(this.seed);
     try {
@@ -89,7 +262,8 @@ Then('I generate new mnemonic', async () => {
     // 24 rows do not fit the 1080x2400 AVD. 12 words is a valid BIP39
     // strength-128 mnemonic and stays on screen.
     if (device.getPlatform() === 'android') {
-        await element(by.id('12-words-button')).tap({ x: 24, y: 16 });
+        await waitUntilAndroidTestId('12-words-button', 10000);
+        await clickByTestId('12-words-button');
         this.mnemonic = generateMnemonic(128);
         return;
     }
@@ -107,14 +281,10 @@ Then('I enter my mnemonic', async () => {
             // so onSubmitEditing advances. BIP39 words are a-z.
             const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
             if (i === 0) {
-                const attrs = await field.getAttributes();
-                const frame = attrs.frame || {};
-                await device.getUiDevice().click(
-                    Math.round(Number(frame.x || 180) + 40),
-                    Math.round(Number(frame.y || 900) + 20),
-                );
+                await waitUntilAndroidTestId('word-0-input', 10000);
+                await clickByTestId('word-0-input');
             }
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'text', this.mnemonic[i]], { timeout: 5000 });
+            androidTypeText(this.mnemonic[i]);
             execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
             await new Promise((resolve) => { setTimeout(resolve, 250); });
         } else {
@@ -125,29 +295,33 @@ Then('I enter my mnemonic', async () => {
 });
 
 Then('I tap my account in the list', async () => {
-    const row = element(by.id(`account-${this.address}`));
+    const rowId = `account-${this.address}`;
+    const row = element(by.id(rowId)).atIndex(0);
     const list = element(by.id('account-list-scroll'));
+
+    if (device.getPlatform() === 'android') {
+        if (!this.address) {
+            const acc = await generateTestnetAccount();
+            this.address = acc.address;
+            this.seed = acc.secret;
+        }
+        await clickAndroidAccountRow(this.address, 'I-ReadOnly');
+        return;
+    }
 
     // Detox list.scroll() starts at the bottom edge. The tab bar swallows it
     // so the list does not move (I-ReadOnly stays below the fold). Swipe from
     // the middle of the list instead.
+    // Edit Button + inner native control share account-{address} (multiple match).
     for (let i = 0; i < 12; i += 1) {
         try {
             await waitFor(row).toBeVisible().withTimeout(400);
             break;
         } catch (e) {
-            if (device.getPlatform() === 'android') {
-                try {
-                    await device.getUiDevice().swipe(540, 1400, 540, 1000, 40);
-                } catch (swipeErr) {
-                    break;
-                }
-            } else {
-                try {
-                    await list.swipe('up', 'slow', 0.55);
-                } catch (scrollErr) {
-                    break;
-                }
+            try {
+                await list.swipe('up', 'slow', 0.55);
+            } catch (scrollErr) {
+                break;
             }
             await new Promise((resolve) => {
                 setTimeout(resolve, 500);
@@ -155,22 +329,9 @@ Then('I tap my account in the list', async () => {
         }
     }
 
-    if (device.getPlatform() === 'android') {
-        try {
-            const attrs = await row.getAttributes();
-            const frame = attrs.frame || {};
-            const x = Math.round(Number(frame.x || 0) + 40);
-            const y = Math.round(Number(frame.y || 0) + 30);
-            await device.getUiDevice().click(x, y);
-        } catch (e) {
-            await row.tap({ x: 24, y: 24 });
-        }
-        return;
-    }
-
     try {
-        await row.tap({ x: 24, y: 24 });
-    } catch (e) {
         await row.tap();
+    } catch (e) {
+        await row.tap({ x: 24, y: 24 });
     }
 });
