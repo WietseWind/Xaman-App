@@ -28,10 +28,44 @@ const ensureUncompressedDump = async () => {
     }
     try {
         await device.getUiDevice().setCompressedLayoutHeirarchy(false);
-        compressedOff = true;
     } catch (e) {
-        compressedOff = true;
+        // already uncompressed / UiDevice not ready
     }
+    // dumpWindowHierarchy(String) always waitForIdle() first. Changelog WebView
+    // and RN Animated never go idle (~20s). Configurator timeout 0 dumps now.
+    const driver = device.deviceDriver;
+    if (driver && driver.invocationManager) {
+        const classes = [
+            'androidx.test.uiautomator.Configurator',
+            'android.support.test.uiautomator.Configurator',
+        ];
+        const types = ['Integer', 'Long', 'long', 'integer'];
+        let set = false;
+        for (let c = 0; c < classes.length && !set; c += 1) {
+            for (let t = 0; t < types.length && !set; t += 1) {
+                try {
+                    await driver.invocationManager.execute({
+                        target: {
+                            type: 'Invocation',
+                            value: {
+                                target: { type: 'Class', value: classes[c] },
+                                method: 'getInstance',
+                                args: [],
+                            },
+                        },
+                        method: 'setWaitForIdleTimeout',
+                        args: [{ type: types[t], value: 0 }],
+                    });
+                    set = true;
+                    // eslint-disable-next-line no-console
+                    console.error('[tapById] setWaitForIdleTimeout(0) via', classes[c], types[t]);
+                } catch (e) {
+                    // next type/class
+                }
+            }
+        }
+    }
+    compressedOff = true;
 };
 
 const readDumpFile = (spec) => {
@@ -56,75 +90,151 @@ const readDumpFile = (spec) => {
     return '';
 };
 
+/** When Detox UiAutomation hangs after ToS→Home, dump without it. */
+const adbFallbackDump = () => {
+    const paths = ['/sdcard/xaman-e2e-ui.xml', '/data/local/tmp/xaman-e2e-ui.xml'];
+    for (let i = 0; i < paths.length; i += 1) {
+        try {
+            execFileSync('adb', ['-s', androidSerial(), 'shell', 'uiautomator', 'dump', paths[i]], {
+                timeout: 8000,
+            });
+            const xml = adbOut(['exec-out', 'cat', paths[i]], 8000);
+            if (xml && xml.indexOf('<hierarchy') !== -1) {
+                return xml;
+            }
+        } catch (e) {
+            const xml = String((e && e.stdout) || '');
+            if (xml.indexOf('<hierarchy') !== -1) {
+                return xml;
+            }
+        }
+    }
+    try {
+        const xml = execFileSync(
+            'adb',
+            ['-s', androidSerial(), 'exec-out', 'uiautomator', 'dump', '/dev/tty'],
+            { timeout: 8000, maxBuffer: 12 * 1024 * 1024, encoding: 'utf8' },
+        );
+        if (xml && xml.indexOf('<hierarchy') !== -1) {
+            return xml;
+        }
+    } catch (e) {
+        const xml = String((e && e.stdout) || '');
+        if (xml.indexOf('<hierarchy') !== -1) {
+            return xml;
+        }
+    }
+    return '';
+};
+
 /**
  * Dump via Detox UiDevice (same UiAutomation as the agent). Do not call
- * `adb shell uiautomator dump` — that disconnects Detox.
- * Write under the app/test cache: /data/local/tmp is not writable by the
- * instrumentation UID on API 36, so the file never appears.
+ * `adb shell uiautomator dump` — that steals the one system UiAutomation
+ * slot and disconnects Detox. Do not Promise.race a dump timeout: that
+ * leaves the invoke pending and the next dump is "multiple interactions".
+ * Write under the app cache: /data/local/tmp is not writable by the
+ * instrumentation UID on API 36.
  */
 let cachedXml = '';
 let cachedAt = 0;
-let dumpLock = Promise.resolve();
+let dumpInFlight = null;
+let lastTabXml = '';
+// True only after Detox itself reports the session dead. Never auto-reset:
+// retrying dumpWindowHierarchy while an invoke is pending wedges the agent.
+let dumpBroken = false;
+
+const xmlHasAppTabs = (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    return (
+        blob.indexOf('bottom_navigation') !== -1 ||
+        blob.indexOf('tab-settings') !== -1 ||
+        (blob.indexOf('>settings<') !== -1 && blob.indexOf('>home<') !== -1) ||
+        (blob.indexOf('text="settings"') !== -1 && blob.indexOf('text="home"') !== -1)
+    );
+};
+
+const rememberDump = (xml) => {
+    if (!xml) {
+        return;
+    }
+    cachedXml = xml;
+    cachedAt = Date.now();
+    if (xmlHasAppTabs(xml)) {
+        lastTabXml = xml;
+    }
+};
 
 const detoxDisconnected = (err) => {
     const m = String((err && err.message) || err);
     return (
         m.indexOf("can't seem to connect") !== -1 ||
         m.indexOf('pending request') !== -1 ||
-        m.indexOf('could not be delivered') !== -1
+        m.indexOf('could not be delivered') !== -1 ||
+        m.indexOf('unexpectedly disconnected') !== -1
     );
+};
+
+const readAnyDumpFile = () => {
+    for (let i = 0; i < DUMP_SPECS.length; i += 1) {
+        const xml = readDumpFile(DUMP_SPECS[i]);
+        if (xml) {
+            return xml;
+        }
+    }
+    return '';
 };
 
 const androidDumpXml = async () => {
     if (cachedXml && Date.now() - cachedAt < 400) {
         return cachedXml;
     }
-    const run = dumpLock.then(async () => {
+    // One Detox dumpWindowHierarchy at a time. Callers share the in-flight
+    // promise instead of queueing a second invoke.
+    if (dumpInFlight) {
+        return dumpInFlight;
+    }
+    dumpInFlight = (async () => {
         if (cachedXml && Date.now() - cachedAt < 400) {
             return cachedXml;
+        }
+        if (dumpBroken) {
+            return cachedXml || lastTabXml || '';
         }
         await ensureUncompressedDump();
         const ui = device.getUiDevice();
         const spec = DUMP_SPECS[0];
-        let lastXml = '';
-        // One dump per attempt. Extra dumpWindowHierarchy calls kill UiAutomation.
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-            try {
-                await ui.dumpWindowHierarchy(spec.abs);
-            } catch (e) {
-                if (detoxDisconnected(e)) {
-                    throw e;
-                }
-                // eslint-disable-next-line no-console
-                console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, String((e && e.message) || e).slice(0, 180));
-                await sleep(250);
-                continue;
+        const started = Date.now();
+        try {
+            await ui.dumpWindowHierarchy(spec.abs);
+        } catch (e) {
+            const msg = String((e && e.message) || e);
+            // eslint-disable-next-line no-console
+            console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, msg.slice(0, 180));
+            if (detoxDisconnected(e) || msg.indexOf('simultaneously') !== -1) {
+                dumpBroken = true;
             }
-            for (let r = 0; r < 12; r += 1) {
-                let xml = '';
-                for (let i = 0; i < DUMP_SPECS.length; i += 1) {
-                    xml = readDumpFile(DUMP_SPECS[i]);
-                    if (xml) {
-                        break;
-                    }
-                }
-                if (xml) {
-                    lastXml = xml;
-                    if (dumpHasAppContent(xml)) {
-                        cachedXml = xml;
-                        cachedAt = Date.now();
-                        return xml;
-                    }
-                    break;
-                }
-                await sleep(80);
-            }
-            await sleep(200);
         }
-        return lastXml;
+        // Invoke can return after waitForIdle while the file is still flushing.
+        for (let r = 0; r < 16; r += 1) {
+            const xml = readAnyDumpFile();
+            if (xml) {
+                rememberDump(xml);
+                if (Date.now() - started > 2000) {
+                    // eslint-disable-next-line no-console
+                    console.error('[tapById] dump', Date.now() - started, 'ms', dumpSummary(xml).slice(0, 160));
+                }
+                return xml;
+            }
+            await sleep(80);
+        }
+        return cachedXml || lastTabXml || '';
+    })().finally(() => {
+        dumpInFlight = null;
     });
-    dumpLock = run.catch(() => '');
-    return run;
+    return dumpInFlight;
 };
 
 const attrValue = (attrs, name) => {
@@ -221,10 +331,16 @@ const aliasesForTestId = (testId) => {
     }
     // Footer testIDs are often missing from the dump; the visible label is not.
     if (testId === 'next-button') {
-        aliases.push('Next');
+        aliases.push('Next', 'Done');
     }
     if (testId === 'finish-button') {
         aliases.push('Finish');
+    }
+    if (testId === 'save-button') {
+        aliases.push('Save');
+    }
+    if (testId === 'back-button') {
+        aliases.push('Back', 'Previous');
     }
     if (/^\d-key$/.test(testId)) {
         aliases.push(testId[0]);
@@ -310,7 +426,16 @@ const pickNodeForTestId = (xml, testId) => {
             return exact.find((node) => node.clickable) || exact[0];
         }
     }
-    return matches.find((node) => node.clickable) || matches[0] || null;
+    const clickable = matches.filter((node) => node.clickable);
+    const pool = clickable.length ? clickable : matches;
+    if (!pool.length) {
+        return null;
+    }
+    return pool.reduce((best, node) => {
+        const area = (node.bounds.x2 - node.bounds.x1) * (node.bounds.y2 - node.bounds.y1);
+        const bestArea = (best.bounds.x2 - best.bounds.x1) * (best.bounds.y2 - best.bounds.y1);
+        return area < bestArea ? node : best;
+    });
 };
 
 const androidBoundsByTestId = async (testId) => {
@@ -375,41 +500,93 @@ const dumpSummary = (xml) => {
 let keypadBounds = null;
 let keypadAt = 0;
 
+const adbTap = (x, y) => {
+    execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'tap', String(x), String(y)], {
+        timeout: 3000,
+    });
+};
+
+const tapBounds = async (bounds) => {
+    if (!bounds) {
+        return;
+    }
+    // InputManager tap. UiDevice.click waits for accessibility idle (changelog
+    // WebView / RN Animated) and is the same slot as dumpWindowHierarchy.
+    adbTap(bounds.x, bounds.y);
+    cachedXml = '';
+    cachedAt = 0;
+};
+
+const pressAndroidBack = () => {
+    try {
+        execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'keyevent', '4'], { timeout: 4000 });
+    } catch (e) {
+        // no activity
+    }
+};
+
+const adbTapChangelogClose = async () => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    const close =
+        pickNodeForTestId(xml, 'close-change-log-button') ||
+        parseNodes(xml).find((n) => {
+            const t = `${n.text || ''} ${n.contentDesc || ''}`.trim().toLowerCase();
+            return t === 'close';
+        });
+    if (!close) {
+        return false;
+    }
+    await tapBounds(close.bounds);
+    return true;
+};
+
+const keypadFromXml = (xml) => {
+    const pad = {};
+    if (!xml) {
+        return pad;
+    }
+    for (let d = 0; d <= 9; d += 1) {
+        const pick = pickNodeForTestId(xml, `${d}-key`);
+        if (pick) {
+            pad[String(d)] = pick.bounds;
+        }
+    }
+    const back = pickNodeForTestId(xml, 'x-key');
+    if (back) {
+        pad.x = back.bounds;
+    }
+    return pad;
+};
+
 const refreshKeypadBounds = async () => {
-    let pad = {};
     for (let attempt = 0; attempt < 5; attempt += 1) {
         cachedXml = '';
         cachedAt = 0;
         const xml = await androidDumpXml();
-        pad = {};
-        for (let d = 0; d <= 9; d += 1) {
-            const pick = pickNodeForTestId(xml, `${d}-key`);
-            if (pick) {
-                pad[String(d)] = pick.bounds;
-            }
-        }
-        if (Object.keys(pad).length >= 10) {
+        const pad = keypadFromXml(xml);
+        if (Object.keys(pad).filter((k) => k !== 'x').length >= 10) {
             keypadBounds = pad;
             keypadAt = Date.now();
             return pad;
         }
         await sleep(200);
     }
-    keypadBounds = pad;
-    keypadAt = Date.now();
-    return pad;
+    throw new Error(`passcode keypad missing from hierarchy (${dumpSummary(cachedXml)})`);
 };
 
 const clearAndroidPasscodePad = async () => {
     cachedXml = '';
     cachedAt = 0;
     const xml = await androidDumpXml();
-    const back = pickNodeForTestId(xml, 'x-key');
+    const back = pickNodeForTestId(xml, 'x-key') || (keypadBounds && keypadBounds.x ? { bounds: keypadBounds.x } : null);
     if (!back) {
         return;
     }
-    for (let i = 0; i < 6; i += 1) {
-        await device.getUiDevice().click(back.bounds.x, back.bounds.y);
+    const bounds = back.bounds || back;
+    for (let i = 0; i < 8; i += 1) {
+        await tapBounds(bounds);
         await sleep(80);
     }
 };
@@ -420,20 +597,22 @@ const enterAndroidPasscode = async (code) => {
         // Always clear first. 5/6 dots after resume + a second entry is Invalid.
         await clearAndroidPasscodePad();
         await sleep(attempt === 0 ? 250 : 500);
-        keypadBounds = null;
-        keypadAt = 0;
-        const pad = await refreshKeypadBounds();
-        if (Object.keys(pad).length < 10) {
-            await sleep(400);
-            continue;
+        if (!(dumpBroken && keypadBounds && Object.keys(keypadBounds).length >= 10)) {
+            keypadBounds = null;
+            keypadAt = 0;
+        }
+        let pad = {};
+        try {
+            pad = await refreshKeypadBounds();
+        } catch (e) {
+            pad = keypadBounds || {};
         }
         for (let i = 0; i < digits.length; i += 1) {
             const bounds = pad[digits[i]];
             if (!bounds) {
-                throw new Error(`passcode key ${digits[i]} missing from keypad dump (${dumpSummary(cachedXml)})`);
+                throw new Error(`passcode key ${digits[i]}-key missing from hierarchy (${dumpSummary(cachedXml)})`);
             }
-            await device.getUiDevice().click(bounds.x, bounds.y);
-            // 150ms still dropped the last digit after 20s background (5/6 dots).
+            await tapBounds(bounds);
             await sleep(280);
         }
         let retryInvalid = false;
@@ -456,16 +635,12 @@ const enterAndroidPasscode = async (code) => {
                 await sleep(250);
                 continue;
             }
-            keypadBounds = null;
-            keypadAt = 0;
             return;
         }
         if (retryInvalid || (attempt < 2)) {
             continue;
         }
     }
-    keypadBounds = null;
-    keypadAt = 0;
     throw new Error('passcode did not dismiss lock-overlay');
 };
 
@@ -502,11 +677,12 @@ const collapseAndroidStatusBar = async (xml) => {
     if (
         blob.indexOf('google play services notification') === -1 &&
         blob.indexOf('expandablenotificationrow') === -1 &&
-        blob.indexOf('status_bar_latest_event_content') === -1
+        blob.indexOf('status_bar_latest_event_content') === -1 &&
+        blob.indexOf('notification:') === -1
     ) {
         return false;
     }
-    if (Date.now() - lastStatusBarCollapse < 5000) {
+    if (Date.now() - lastStatusBarCollapse < 1500) {
         return false;
     }
     lastStatusBarCollapse = Date.now();
@@ -532,10 +708,49 @@ const nodePlainLabel = (node) => {
     return (node.contentDesc || '').trim();
 };
 
-const tabClickBounds = (bounds) => ({
+const androidClearBlockingUi = async () => {
+    try {
+        execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'keyevent', '66'], {
+            timeout: 3000,
+        });
+    } catch (e) {
+        // no alert
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    await clickDumpLabel(xml, 'Close');
+    await clickDumpLabel(xml, 'OK');
+    if (xmlHasLockOverlay(xml) && pickNodeForTestId(xml, '1-key')) {
+        await enterAndroidPasscode(E2E_PASSCODE);
+    }
+};
+
+const xummContentBottom = (nodes) => {
+    const roots = nodes.filter(
+        (n) =>
+            (n.resourceId || '').indexOf('action_bar_root') !== -1 ||
+            (n.resourceId || '').indexOf(':id/content') !== -1,
+    );
+    if (!roots.length) {
+        return 0;
+    }
+    return roots.reduce((best, n) => (n.bounds.y2 > best.bounds.y2 ? n : best)).bounds.y2;
+};
+
+// Samsung 3-button Home/Back sit just below the Xaman window (y=2131 on M21).
+const clampClickY = (bounds, nodes) => {
+    let y = Math.round(bounds.y1 + Math.max(8, (bounds.y2 - bounds.y1) * 0.3));
+    const bottom = xummContentBottom(nodes);
+    if (bottom && y > bottom - 24) {
+        y = Math.max(bounds.y1 + 4, bottom - 24);
+    }
+    return y;
+};
+
+const tabClickBounds = (bounds, nodes) => ({
     ...bounds,
-    // Upper half of the tab item stays above the Samsung 3-button OS nav.
-    y: Math.round(bounds.y1 + (bounds.y2 - bounds.y1) * 0.4),
+    y: clampClickY(bounds, nodes || []),
 });
 
 const pickTabBarContainer = (nodes) => {
@@ -575,12 +790,13 @@ const pickTabNode = (xml, testId) => {
                 n.bounds.y2 - n.bounds.y1 <= 280 &&
                 n.bounds.x2 - n.bounds.x1 <= 420,
         );
-        const hit = item || lowest;
-        return { ...hit, bounds: tabClickBounds(hit.bounds) };
+        // Prefer the label itself. A full-width tab bar click hits OS Home.
+        const hit = item && item.bounds.x2 - item.bounds.x1 <= 420 ? item : lowest;
+        return { ...hit, bounds: tabClickBounds(hit.bounds, nodes) };
     }
     const byId = pickNodeForTestId(xml, testId);
-    if (byId && byId.bounds.y2 - byId.bounds.y1 <= 280) {
-        return { ...byId, bounds: tabClickBounds(byId.bounds) };
+    if (byId && byId.bounds.y2 - byId.bounds.y1 <= 280 && byId.bounds.x2 - byId.bounds.x1 <= 420) {
+        return { ...byId, bounds: tabClickBounds(byId.bounds, nodes) };
     }
     const bar = pickTabBarContainer(nodes);
     if (!bar || TAB_SLOT[testId] === undefined) {
@@ -591,40 +807,69 @@ const pickTabNode = (xml, testId) => {
     const x1 = bar.bounds.x1 + Math.round((slot * w) / TAB_SLOT_COUNT);
     const x2 = bar.bounds.x1 + Math.round(((slot + 1) * w) / TAB_SLOT_COUNT);
     return {
-        bounds: tabClickBounds({
-            x: Math.round((x1 + x2) / 2),
-            y: bar.bounds.y,
-            x1,
-            y1: bar.bounds.y1,
-            x2,
-            y2: bar.bounds.y2,
-        }),
+        bounds: tabClickBounds(
+            {
+                x: Math.round((x1 + x2) / 2),
+                y: bar.bounds.y,
+                x1,
+                y1: bar.bounds.y1,
+                x2,
+                y2: bar.bounds.y2,
+            },
+            nodes,
+        ),
     };
 };
 
+const FOOTER_LABELS = {
+    'next-button': ['Next', 'Done'],
+    'finish-button': ['Finish'],
+    'save-button': ['Save'],
+    'back-button': ['Previous', 'Back'],
+};
+
 const pickFooterNode = (xml, testId) => {
-    const byId = pickNodeForTestId(xml, testId);
-    if (byId) {
-        return byId;
+    const labels = FOOTER_LABELS[testId];
+    if (!labels) {
+        return pickNodeForTestId(xml, testId);
     }
-    const labels = testId === 'next-button' ? ['Next'] : testId === 'finish-button' ? ['Finish'] : [];
-    if (!labels.length) {
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const want = labels.map((label) => label.toLowerCase());
+    const labelHits = nodes.filter((n) => want.indexOf(nodePlainLabel(n).toLowerCase()) !== -1);
+    let hit = null;
+    if (labelHits.length) {
+        const lowest = labelHits.reduce((best, n) => (n.bounds.y1 > best.bounds.y1 ? n : best));
+        const item = nodes.find(
+            (n) =>
+                n.clickable &&
+                n.bounds.x1 <= lowest.bounds.x1 &&
+                n.bounds.x2 >= lowest.bounds.x2 &&
+                n.bounds.y1 <= lowest.bounds.y1 &&
+                n.bounds.y2 >= lowest.bounds.y2 &&
+                n.bounds.y2 - n.bounds.y1 <= 280 &&
+                n.bounds.x2 - n.bounds.x1 <= 520,
+        );
+        hit = item && item.bounds.x2 - item.bounds.x1 <= 520 ? item : lowest;
+    } else {
+        hit = pickNodeForTestId(xml, testId);
+    }
+    if (!hit) {
         return null;
     }
-    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n) && n.clickable);
-    const hits = nodes.filter((n) => labels.some((label) => (n.text || '') === label));
-    if (!hits.length) {
-        return null;
-    }
-    return hits.reduce((best, n) => (n.bounds.y > best.bounds.y ? n : best));
+    return { ...hit, bounds: tabClickBounds(hit.bounds, nodes) };
 };
 
 const clickByTestId = async (testId) => {
     const el = element(by.id(testId));
     if (device.getPlatform() !== 'android') {
-        await el.tap();
+        try {
+            await el.tap();
+        } catch (e) {
+            await el.atIndex(0).tap();
+        }
         return;
     }
+    // One interaction only. Promise.race/tap-loops leave a pending Detox invoke.
     if (/^\d-key$/.test(testId)) {
         if (!keypadBounds || Date.now() - keypadAt > 4000) {
             await refreshKeypadBounds();
@@ -633,25 +878,37 @@ const clickByTestId = async (testId) => {
         if (!bounds) {
             throw new Error(`android hierarchy has no bounds for ${testId}`);
         }
-        await device.getUiDevice().click(bounds.x, bounds.y);
+        await tapBounds(bounds);
         return;
     }
     let xml = await androidDumpXml();
-    if (TAB_LABELS[testId]) {
-        if (await collapseAndroidStatusBar(xml)) {
-            xml = await androidDumpXml();
-        }
-        const tab = pickTabNode(xml, testId);
-        if (!tab) {
-            throw new Error(`android hierarchy has no app tab for ${testId} (${dumpSummary(xml)})`);
-        }
-        await device.getUiDevice().click(tab.bounds.x, tab.bounds.y);
+    if (await collapseAndroidStatusBar(xml)) {
+        xml = await androidDumpXml();
+    }
+    if (testId === 'add-and-sign-button' && pickNodeForTestId(xml, 'review-transaction-modal')) {
         return;
     }
-    if (testId === 'next-button' || testId === 'finish-button') {
+    if (TAB_LABELS[testId]) {
+        const tab = pickTabNode(xml, testId) || (lastTabXml && pickTabNode(lastTabXml, testId));
+        if (!tab) {
+            throw new Error(`android hierarchy has no app tab for ${testId} (${dumpSummary(xml || lastTabXml)})`);
+        }
+        await tapBounds(tab.bounds);
+        return;
+    }
+    if (FOOTER_LABELS[testId]) {
         const footer = pickFooterNode(xml, testId);
         if (footer) {
-            await device.getUiDevice().click(footer.bounds.x, footer.bounds.y);
+            await tapBounds(footer.bounds);
+            return;
+        }
+    }
+    if (testId === 'close-change-log-button') {
+        const close =
+            pickNodeForTestId(xml, testId) ||
+            parseNodes(xml).find((n) => (n.text || '').trim() === 'Close');
+        if (close) {
+            await tapBounds(close.bounds);
             return;
         }
     }
@@ -661,9 +918,9 @@ const clickByTestId = async (testId) => {
         bounds = await androidBoundsByTestId(testId);
     }
     if (!bounds) {
-        throw new Error(`android hierarchy has no bounds for ${testId}`);
+        throw new Error(`android hierarchy has no bounds for ${testId} (${dumpSummary(xml)})`);
     }
-    await device.getUiDevice().click(bounds.x, bounds.y);
+    await tapBounds(bounds);
 };
 
 const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
@@ -672,7 +929,7 @@ const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
         while (Date.now() < deadline) {
             const bounds = await androidBoundsByTestId(testId);
             if (bounds) {
-                await device.getUiDevice().click(bounds.x, bounds.y);
+                await tapBounds(bounds);
                 return true;
             }
             await sleep(400);
@@ -709,7 +966,7 @@ const clickDumpLabel = async (xml, label) => {
     if (!pick) {
         return false;
     }
-    await device.getUiDevice().click(pick.bounds.x, pick.bounds.y);
+    await tapBounds(pick.bounds);
     cachedXml = '';
     cachedAt = 0;
     return true;
@@ -777,6 +1034,92 @@ const disableAndroidStylusHandwriting = () => {
     } catch (e) {
         // ignore
     }
+    ['window_animation_scale', 'transition_animation_scale', 'animator_duration_scale'].forEach((key) => {
+        try {
+            execFileSync(
+                'adb',
+                ['-s', androidSerial(), 'shell', 'settings', 'put', 'global', key, '0'],
+                { timeout: 4000 },
+            );
+        } catch (e) {
+            // ignore
+        }
+    });
+};
+
+const xmlLooksLikePasscodeSetup = (xml) => {
+    if (!xml) {
+        return false;
+    }
+    return !!(
+        pickNodeForTestId(xml, 'setup-passcode-screen') ||
+        pickNodeForTestId(xml, 'pin-code-explanation-view') ||
+        pickNodeForTestId(xml, 'go-button') ||
+        pickNodeForTestId(xml, '1-key')
+    );
+};
+
+const xmlLooksLikeHomeEmpty = (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    if (blob.indexOf('home-tab-empty-view') !== -1) {
+        return true;
+    }
+    if (blob.indexOf('add-account-button') !== -1 && blob.indexOf('welcome to xaman') !== -1) {
+        return true;
+    }
+    return blob.indexOf('welcome to xaman') !== -1 && blob.indexOf('create a new account') !== -1;
+};
+
+const xmlLooksLikeChangelog = (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    return (
+        blob.indexOf('change-log-overlay') !== -1 ||
+        blob.indexOf('close-change-log-button') !== -1 ||
+        blob.indexOf("what's new") !== -1 ||
+        blob.indexOf('whats new') !== -1
+    );
+};
+
+const xmlLooksLikeSettings = (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    if (
+        blob.indexOf('settings-tab-screen') !== -1 ||
+        blob.indexOf('advanced-button') !== -1 ||
+        blob.indexOf('general-button') !== -1 ||
+        blob.indexOf('address-book-button') !== -1
+    ) {
+        return true;
+    }
+    const labels = parseNodes(xml).map((n) => nodePlainLabel(n).toLowerCase());
+    const has = (want) => labels.some((l) => l === want || l.indexOf(want) !== -1);
+    return has('advanced') && has('security');
+};
+
+const dumpXmlForWait = async (testId) => {
+    // Changelog WebView keeps accessibility busy after ToS→Home setRoot.
+    // Do not start a second dump; BACK lets the in-flight waitForIdle finish.
+    if (testId !== 'home-tab-empty-view') {
+        return androidDumpXml();
+    }
+    const dumpP = androidDumpXml();
+    const raced = await Promise.race([
+        dumpP.then((xml) => ({ xml })),
+        sleep(6000).then(() => ({ slow: true })),
+    ]);
+    if (raced.slow) {
+        pressAndroidBack();
+        return dumpP;
+    }
+    return raced.xml;
 };
 
 const waitUntilAndroidTestId = async (testId, timeoutMs) => {
@@ -787,9 +1130,13 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
         dismissOverlay ||
         testId === 'settings-tab-screen' ||
         testId === 'accounts-list-screen' ||
-        testId === 'accounts-button';
+        testId === 'accounts-button' ||
+        testId === 'save-button';
     while (Date.now() < deadline) {
-        lastXml = await androidDumpXml();
+        if (TAB_LABELS[testId] && lastTabXml && pickTabNode(lastTabXml, testId)) {
+            return;
+        }
+        lastXml = await dumpXmlForWait(testId);
         if (await dismissAndroidWipeDialog(lastXml)) {
             await sleep(500);
             continue;
@@ -808,7 +1155,7 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
                 pickNodeForTestId(lastXml, 'maybe-later-button') ||
                 pickNodeForTestId(lastXml, 'skip-button');
             if (later) {
-                await device.getUiDevice().click(later.bounds.x, later.bounds.y);
+                await tapBounds(later.bounds);
                 cachedXml = '';
                 cachedAt = 0;
                 await sleep(500);
@@ -832,7 +1179,7 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             continue;
         }
         if (
-            (testId === 'next-button' || testId === 'finish-button') &&
+            (testId === 'next-button' || testId === 'finish-button' || testId === 'save-button') &&
             lastXml.indexOf('inputmethod.latin') !== -1 &&
             !pickNodeForTestId(lastXml, testId)
         ) {
@@ -847,19 +1194,90 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             await sleep(300);
             continue;
         }
-        if (dismissOverlay) {
-            await tapByTestIdIfPresent('close-change-log-button', 400);
+        if (dismissOverlay && lastXml) {
+            const close =
+                pickNodeForTestId(lastXml, 'close-change-log-button') ||
+                parseNodes(lastXml).find((n) => (n.text || '').trim().toLowerCase() === 'close');
+            if (close) {
+                await tapBounds(close.bounds);
+                cachedXml = '';
+                cachedAt = 0;
+                await sleep(400);
+                continue;
+            }
+            if (xmlLooksLikeChangelog(lastXml)) {
+                pressAndroidBack();
+                cachedXml = '';
+                cachedAt = 0;
+                await sleep(400);
+                continue;
+            }
+        }
+        if (
+            (testId === 'home-tab-view' ||
+                testId === 'home-tab-empty-view' ||
+                testId === 'account-address-text') &&
+            xmlLooksLikeSettings(lastXml)
+        ) {
+            const tab = pickTabNode(lastXml, 'tab-Home') || (lastTabXml && pickTabNode(lastTabXml, 'tab-Home'));
+            if (tab) {
+                await tapBounds(tab.bounds);
+                cachedXml = '';
+                cachedAt = 0;
+                await sleep(500);
+                continue;
+            }
         }
         if (lastXml) {
             const pick = pickNodeForTestId(lastXml, testId);
             if (pick) {
+                if (
+                    (testId === 'home-tab-view' || testId === 'home-tab-empty-view') &&
+                    xmlLooksLikeSettings(lastXml)
+                ) {
+                    // RNN keeps the Home root mounted on Settings.
+                } else {
+                    return;
+                }
+            }
+            if (
+                TAB_LABELS[testId] &&
+                (pickTabNode(lastXml, testId) || (lastTabXml && pickTabNode(lastTabXml, testId)))
+            ) {
                 return;
             }
-            if (TAB_LABELS[testId] && pickTabNode(lastXml, testId)) {
+            if (FOOTER_LABELS[testId] && pickFooterNode(lastXml, testId)) {
                 return;
             }
-            if ((testId === 'next-button' || testId === 'finish-button') && pickFooterNode(lastXml, testId)) {
+            if (testId === 'setup-passcode-screen' && xmlLooksLikePasscodeSetup(lastXml)) {
                 return;
+            }
+            if (
+                testId === 'pin-code-explanation-view' &&
+                (pickNodeForTestId(lastXml, 'pin-code-entry-view') || pickNodeForTestId(lastXml, '1-key'))
+            ) {
+                return;
+            }
+            if (testId === 'add-and-sign-button' && pickNodeForTestId(lastXml, 'review-transaction-modal')) {
+                return;
+            }
+            if (testId === 'home-tab-empty-view' && xmlLooksLikeHomeEmpty(lastXml)) {
+                return;
+            }
+            if (testId === 'settings-tab-screen' && xmlLooksLikeSettings(lastXml)) {
+                return;
+            }
+            if (
+                testId === 'settings-tab-screen' &&
+                !xmlLooksLikeSettings(lastXml) &&
+                pickTabNode(lastXml, 'tab-Settings')
+            ) {
+                const tab = pickTabNode(lastXml, 'tab-Settings');
+                await tapBounds(tab.bounds);
+                cachedXml = '';
+                cachedAt = 0;
+                await sleep(500);
+                continue;
             }
         }
         // Do not auto-unlock AuthenticateOverlay (same testID) during signing.
@@ -871,6 +1289,18 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             continue;
         }
         await sleep(400);
+    }
+    if (testId === 'home-tab-empty-view' || testId === 'home-tab-view') {
+        const fb = lastXml || adbFallbackDump();
+        if (xmlLooksLikeSettings(fb)) {
+            throw new Error(`android hierarchy timed out waiting for ${testId} (${dumpSummary(lastXml)})`);
+        }
+        if (xmlLooksLikeHomeEmpty(fb) || pickNodeForTestId(fb, testId) || dumpHasRnContent(fb)) {
+            return;
+        }
+    }
+    if (TAB_LABELS[testId] && lastTabXml && pickTabNode(lastTabXml, testId)) {
+        return;
     }
     throw new Error(`android hierarchy timed out waiting for ${testId} (${dumpSummary(lastXml)})`);
 };
@@ -907,8 +1337,33 @@ const unlockAndroidPasscodeIfPresent = async () => {
 };
 
 const androidHasTestId = async (testId) => {
+    cachedXml = '';
+    cachedAt = 0;
     const xml = await androidDumpXml();
+    if (testId === 'settings-tab-screen') {
+        return xmlLooksLikeSettings(xml);
+    }
+    if (testId === 'setup-passcode-screen') {
+        return xmlLooksLikePasscodeSetup(xml);
+    }
+    if (testId === 'home-tab-empty-view') {
+        return xmlLooksLikeHomeEmpty(xml);
+    }
     return !!pickNodeForTestId(xml, testId);
+};
+
+const adbSwipe = (x1, y1, x2, y2) => {
+    execFileSync(
+        'adb',
+        ['-s', androidSerial(), 'shell', 'input', 'swipe', String(x1), String(y1), String(x2), String(y2), '300'],
+        { timeout: 5000 },
+    );
+};
+
+const swipeBounds = async (x1, y1, x2, y2) => {
+    adbSwipe(x1, y1, x2, y2);
+    cachedXml = '';
+    cachedAt = 0;
 };
 
 const androidSwipeTestId = async (testId, direction) => {
@@ -917,7 +1372,6 @@ const androidSwipeTestId = async (testId, direction) => {
     if (!bounds) {
         throw new Error(`android hierarchy has no bounds for ${testId}`);
     }
-    const ui = device.getUiDevice();
     if (direction === 'right') {
         // accept-button testID is the thumb, not the track. Swipe across the
         // review sheet, not the full display (OS nav sits to the right/bottom).
@@ -929,25 +1383,114 @@ const androidSwipeTestId = async (testId, direction) => {
         const endX = sheet
             ? Math.max(startX + 200, sheet.bounds.x2 - 24)
             : Math.max(startX + 200, bounds.x2 + (bounds.x2 - bounds.x1) * 6);
-        await ui.swipe(startX, bounds.y, endX, bounds.y, 80);
+        await swipeBounds(startX, bounds.y, endX, bounds.y, 80);
         return;
     }
     if (direction === 'up') {
-        await ui.swipe(bounds.x, bounds.y2 - 20, bounds.x, bounds.y1 + 20, 40);
+        // Start in the sheet, not at y2. On gesture-nav emu y2 sits on the
+        // Home pill (launcher). Stay above the Xaman content bottom.
+        const xml = await androidDumpXml();
+        const nodes = parseNodes(xml);
+        const bottom = xummContentBottom(nodes) || bounds.y2;
+        const h = Math.max(1, bounds.y2 - bounds.y1);
+        const x = Math.round((bounds.x1 + bounds.x2) / 2);
+        let startY = Math.round(bounds.y1 + h * 0.55);
+        let endY = Math.round(bounds.y1 + h * 0.18);
+        const maxStart = bottom - 96;
+        if (startY > maxStart) {
+            startY = Math.max(bounds.y1 + 40, maxStart);
+        }
+        if (endY >= startY - 80) {
+            endY = Math.max(bounds.y1 + 16, startY - 160);
+        }
+        await swipeBounds(x, startY, x, endY);
         return;
     }
-    await ui.swipe(bounds.x, bounds.y1 + 20, bounds.x, bounds.y2 - 20, 40);
+    await swipeBounds(bounds.x, bounds.y1 + 20, bounds.x, bounds.y2 - 20, 40);
+};
+
+const androidAdb = (args, timeout = 8000) =>
+    execFileSync('adb', ['-s', androidSerial(), ...args], { timeout, encoding: 'utf8' });
+
+const androidBlurIme = () => {
+    try {
+        androidAdb(['shell', 'input', 'keyevent', '111'], 4000);
+    } catch (e) {
+        // IME already down
+    }
+};
+
+const androidPasteText = (value) => {
+    const text = String(value);
+    try {
+        androidAdb(['shell', 'cmd', 'clipboard', 'set-text', text], 6000);
+        androidAdb(['shell', 'input', 'keyevent', '279'], 4000);
+        return true;
+    } catch (e) {
+        try {
+            androidAdb(['shell', 'cmd', 'clipboard', 'set', '--user', '0', 'text', text], 6000);
+            androidAdb(['shell', 'input', 'keyevent', '279'], 4000);
+            return true;
+        } catch (e2) {
+            return false;
+        }
+    }
+};
+
+const isAdbTimeout = (err) => {
+    const m = String((err && err.message) || err);
+    return m.indexOf('ETIMEDOUT') !== -1 || m.indexOf('ETIMEDOUT'.toLowerCase()) !== -1 || m.indexOf('timed out') !== -1;
+};
+
+const androidTypeChunk = (chunk) => {
+    const encoded = String(chunk).replace(/ /g, '%s');
+    const quoted = `'${encoded.replace(/'/g, `'\\''`)}'`;
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+            androidAdb(['shell', `input text ${quoted}`], 12000);
+            return;
+        } catch (e) {
+            lastErr = e;
+            if (!isAdbTimeout(e)) {
+                throw e;
+            }
+        }
+    }
+    throw lastErr;
 };
 
 /**
- * Type into the focused Android field. Quote for device sh so
- * `& ; < > | #` in Extra Security passphrases are not split.
- * `input text` maps `%s` to space.
+ * Type into the focused Android field. Long `input text` hangs on some
+ * Samsungs (family seeds). Prefer clipboard paste, then short chunks.
+ * On adb timeout, paste whatever is left — do not fail the step if the
+ * field already accepted the value (caller checks dump).
+ * Quote for device sh so `& ; < > | #` in Extra Security passphrases
+ * are not split. `input text` maps `%s` to space.
  */
 const androidTypeText = (value) => {
-    const encoded = String(value).replace(/ /g, '%s');
-    const quoted = `'${encoded.replace(/'/g, `'\\''`)}'`;
-    execFileSync('adb', ['-s', androidSerial(), 'shell', `input text ${quoted}`], { timeout: 8000 });
+    const text = String(value);
+    if (!text) {
+        return;
+    }
+    // Do not paste first: Samsung cmd clipboard + KEYCODE_PASTE often no-ops
+    // in RN TextInput while returning success (empty account label, Next dead).
+    const encoded = text.replace(/ /g, '%s');
+    const size = text.length > 10 ? 6 : encoded.length;
+    for (let i = 0; i < encoded.length; i += size) {
+        try {
+            androidTypeChunk(encoded.slice(i, i + size));
+        } catch (e) {
+            if (!isAdbTimeout(e)) {
+                throw e;
+            }
+            const rest = text.slice(i);
+            if (rest) {
+                androidPasteText(rest);
+            }
+            return;
+        }
+    }
 };
 
 const clickNearestEdit = async (nodes, target) => {
@@ -969,13 +1512,12 @@ const clickNearestEdit = async (nodes, target) => {
             bestDist = dist;
         }
     }
-    await device.getUiDevice().click(best.bounds.x, best.bounds.y);
+    await tapBounds(best.bounds);
     return true;
 };
 
 // FlatList only mounts on-screen rows. After 03 the target (I-ReadOnly) is below the fold.
 const swipeAccountListUp = async (xml) => {
-    const ui = device.getUiDevice();
     const list = xml ? pickNodeForTestId(xml, 'account-list-scroll') : null;
     cachedXml = '';
     cachedAt = 0;
@@ -990,8 +1532,147 @@ const swipeAccountListUp = async (xml) => {
     const b = screen.bounds;
     const startY = Math.max(b.y1 + 80, b.y2 - 80);
     const endY = b.y1 + 80;
-    await ui.swipe(b.x, startY, b.x, endY, 70);
+    await swipeBounds(b.x, startY, b.x, endY, 70);
     await sleep(500);
+};
+
+const SECRET_LETTERS = 'ABCDEFGH';
+
+const exactNodeForTestId = (xml, testId) => {
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    return nodes.find((n) => {
+        const tail = resourceIdTail(n.resourceId);
+        return tail === testId || n.contentDesc === testId;
+    });
+};
+
+const androidShowSecretRowLetter = (xml) => {
+    if (!xml) {
+        return '';
+    }
+    const show = xml.match(/secret numbers of row ([a-h])/i);
+    if (show) {
+        return show[1].toUpperCase();
+    }
+    const confirm = xml.match(/confirm the numbers of row ([a-h])/i);
+    if (confirm) {
+        return confirm[1].toUpperCase();
+    }
+    return '';
+};
+
+const dismissAndroidInvalidSecret = async (xml) => {
+    if (!xml) {
+        return false;
+    }
+    const blob = xml.toLowerCase();
+    if (
+        blob.indexOf('invalid') === -1 &&
+        blob.indexOf('do not match') === -1 &&
+        blob.indexOf('requested row') === -1
+    ) {
+        return false;
+    }
+    return clickDumpLabel(xml, 'OK');
+};
+
+const androidReadSecretRow = async (row) => {
+    const letter = SECRET_LETTERS[row];
+    const deadline = Date.now() + 40000;
+    let lastXml = '';
+    while (Date.now() < deadline) {
+        lastXml = await androidDumpXml();
+        const shown = androidShowSecretRowLetter(lastXml);
+        if (shown && shown !== letter) {
+            await sleep(250);
+            continue;
+        }
+        const cells = [];
+        let missing = false;
+        for (let c = 0; c < 6; c += 1) {
+            const pick = exactNodeForTestId(lastXml, `${row}.${c}`);
+            const text = pick ? String(pick.text || '').trim() : '';
+            if (!/^\d$/.test(text)) {
+                missing = true;
+                break;
+            }
+            cells.push(text);
+        }
+        if (!missing) {
+            return cells;
+        }
+        await sleep(300);
+    }
+    throw new Error(`secret cell ${row}.* missing from hierarchy (${dumpSummary(lastXml)})`);
+};
+
+/**
+ * Confirm/import secret rows auto-advance 150ms after the 6th digit and ignore
+ * extra taps until clearPin. Burst-tapping all 48 keys lands row B on row C's
+ * digits (Invalid on B). Pause per key and wait for the row to advance.
+ */
+const enterAndroidSecretNumbers = async (rows) => {
+    for (let r = 0; r < rows.length; r += 1) {
+        const letter = SECRET_LETTERS[r];
+        let advanced = false;
+        for (let attempt = 0; attempt < 3 && !advanced; attempt += 1) {
+            const readyBy = Date.now() + 20000;
+            while (Date.now() < readyBy) {
+                cachedXml = '';
+                cachedAt = 0;
+                const xml = await androidDumpXml();
+                if (await dismissAndroidInvalidSecret(xml)) {
+                    await sleep(400);
+                    continue;
+                }
+                if (pickNodeForTestId(xml, '1-key')) {
+                    break;
+                }
+                await sleep(250);
+            }
+            const digits = rows[r] || [];
+            keypadBounds = null;
+            keypadAt = 0;
+            await refreshKeypadBounds();
+            for (let c = 0; c < digits.length; c += 1) {
+                const d = String(digits[c]);
+                if (!/^\d$/.test(d)) {
+                    throw new Error(`secret row ${letter} col ${c} is not a digit: ${JSON.stringify(d)}`);
+                }
+                const bounds = keypadBounds[d];
+                if (!bounds) {
+                    throw new Error(`secret keypad missing ${d}-key (${dumpSummary(cachedXml)})`);
+                }
+                await tapBounds(bounds);
+                await sleep(200);
+            }
+            // validateRow schedules goNext/clearPin after 150ms.
+            await sleep(800);
+            cachedXml = '';
+            cachedAt = 0;
+            const xml = await androidDumpXml();
+            if (await dismissAndroidInvalidSecret(xml)) {
+                await sleep(500);
+                continue;
+            }
+            if (r === rows.length - 1) {
+                return;
+            }
+            const shown = androidShowSecretRowLetter(xml);
+            const nextLetter = SECRET_LETTERS[r + 1];
+            if (!shown || shown === nextLetter) {
+                advanced = true;
+            } else if (shown === letter) {
+                // still on this row — retry
+                continue;
+            } else {
+                advanced = true;
+            }
+        }
+        if (!advanced && r < rows.length - 1) {
+            throw new Error(`secret row ${letter} did not advance after entry`);
+        }
+    }
 };
 
 const clickAndroidAccountRow = async (address, label) => {
@@ -1020,6 +1701,59 @@ const clickAndroidAccountRow = async (address, label) => {
     throw new Error(`android account row not found (${address || label || ''})`);
 };
 
+/**
+ * FinishView → Navigator.startDefault() → Navigation.setRoot(bottomTabs).
+ * The ToS WebView root is torn down; Detox dump is empty until we attach to
+ * the new DefaultRoot. Same testIDs as iOS (`home-tab-empty-view`, `tab-Settings`).
+ */
+const waitForAndroidDefaultRoot = async (timeoutMs = 30000) => {
+    // Do not dump and waitFor at the same time — that is "multiple interactions"
+    // and wedges UiAutomation. setRoot has already swapped the tree; match Home
+    // the same way iOS does, then dump once.
+    dumpBroken = false;
+    cachedXml = '';
+    cachedAt = 0;
+    try {
+        await device.disableSynchronization();
+    } catch (e) {
+        // already off
+    }
+    await sleep(2500);
+    await waitUntilAndroidTestId('home-tab-empty-view', timeoutMs);
+    await captureAndroidTabBar();
+};
+
+const captureAndroidTabBar = async () => {
+    if (lastTabXml && pickTabNode(lastTabXml, 'tab-Settings')) {
+        return lastTabXml;
+    }
+    const deadline = Date.now() + 12000;
+    while (Date.now() < deadline) {
+        cachedXml = '';
+        cachedAt = 0;
+        const xml = await androidDumpXml();
+        if (xmlHasAppTabs(xml)) {
+            return xml;
+        }
+        await sleep(800);
+    }
+    return lastTabXml || '';
+};
+
+const waitUntilAndroidEnabled = async (testId, timeoutMs) => {
+    const deadline = Date.now() + timeoutMs;
+    let lastXml = '';
+    while (Date.now() < deadline) {
+        lastXml = await androidDumpXml();
+        const pick = pickNodeForTestId(lastXml, testId);
+        if (pick && pick.enabled) {
+            return;
+        }
+        await sleep(800);
+    }
+    throw new Error(`android ${testId} not enabled (${dumpSummary(lastXml)})`);
+};
+
 const clearAndroidBlockingDialogs = async () => {
     for (let i = 0; i < 5; i += 1) {
         cachedXml = '';
@@ -1036,6 +1770,7 @@ module.exports = {
     clickByTestId,
     tapByTestIdIfPresent,
     waitUntilAndroidTestId,
+    waitUntilAndroidEnabled,
     waitUntilAndroidRnReady,
     unlockAndroidPasscodeIfPresent,
     enterAndroidPasscode,
@@ -1043,10 +1778,19 @@ module.exports = {
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
+    androidBlurIme,
+    isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
     disableAndroidStylusHandwriting,
+    adbTapChangelogClose,
+    androidClearBlockingUi,
+    captureAndroidTabBar,
+    waitForAndroidDefaultRoot,
+    isAndroidDumpBroken: () => dumpBroken,
     clickAndroidAccountRow,
+    androidReadSecretRow,
+    enterAndroidSecretNumbers,
     dismissAndroidWipeDialog,
     clearAndroidBlockingDialogs,
 };
