@@ -57,6 +57,7 @@ import { DataSourceItem, RowItemType } from '@components/Modules/EventsList/Even
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import { shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
 
 /* types ==================================================================== */
 export interface Props {
@@ -577,18 +578,16 @@ class EventsView extends Component<Props, State> {
                                     finalFields.RegularKey === account.address &&
                                     finalFields.Account === transaction.tx.Destination;
 
+                                // Hide incoming Payment / CheckCreate / EscrowCreate from a
+                                // blocked sender, and Check/Escrow cancel or finish they submit.
+                                // Dimmed rows (opacity 0.3) stay when this setting is off.
                                 if (
-                                    transaction?.tx?.TransactionType === 'Payment' &&
-                                    transaction?.tx?.Account !== account.address && // I'm not the sender
-                                    (
-                                        transaction?.tx?.Destination === account.address || // But I am the receipient
-                                        isMyAccountThroughRegularKey // Or the Regular Key is me so I'm the receipient
+                                    shouldLookupAdvisorySender(
+                                        transaction?.tx,
+                                        account.address,
+                                        !!isMyAccountThroughRegularKey,
                                     )
-                                    // &&
-                                    // typeof transaction?.meta?.delivered_amount === 'string' &&
-                                    // Number(transaction?.meta.delivered_amount) < AppConfig.belowDropsTxIsSpam
                                 ) {
-                                    // Only Acount (sender) counts, only hide if <SENT> to me
                                     const resolveAccount = String(transaction?.tx?.Account || '');
                                     const accountResolver = await ResolverService.getAccountName(resolveAccount);
 
