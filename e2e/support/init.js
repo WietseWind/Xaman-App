@@ -1,3 +1,11 @@
+try {
+    if (process.stdout._handle && typeof process.stdout._handle.setBlocking === 'function') {
+        process.stdout._handle.setBlocking(true);
+    }
+} catch (e) {
+    // keep going if stdout is not a handle
+}
+
 const detox = require('detox/internals');
 
 const { device } = require('detox');
@@ -20,6 +28,7 @@ const {
     waitUntilAndroidRnReady,
     disableAndroidStylusHandwriting,
     clearAndroidBlockingDialogs,
+    adbTapChangelogClose,
 } = require('../helpers/tapById');
 
 BeforeAll(async () => {
@@ -62,6 +71,9 @@ BeforeAll(async () => {
         await waitUntilAndroidRnReady();
         await clearAndroidBlockingDialogs();
         await unlockAndroidPasscodeIfPresent();
+    } else {
+        // iPhone SE: Firebase/main-queue idling hides onboarding-screen for 90s.
+        await device.disableSynchronization();
     }
 
     await device.setURLBlacklist([
@@ -82,6 +94,9 @@ BeforeAll(async () => {
 async function dismissChangelogOverlay() {
     // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
     await tapByTestIdIfPresent('close-change-log-button', 1500);
+    if (device.getPlatform() === 'android') {
+        await adbTapChangelogClose();
+    }
 }
 
 Before(async (context) => {

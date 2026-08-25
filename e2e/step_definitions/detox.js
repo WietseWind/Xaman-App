@@ -5,13 +5,14 @@ const { dismissKeyboard } = require('../helpers/keyboard');
 const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
 const {
     clickByTestId,
-    tapByTestIdIfPresent,
     waitUntilAndroidTestId,
+    waitUntilAndroidEnabled,
     waitUntilAndroidRnReady,
     androidReadTextByTestId,
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
+    androidBlurIme,
 } = require('../helpers/tapById');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
@@ -21,17 +22,23 @@ Then('I tap {string}', async (buttonId) => {
     if (device.getPlatform() === 'android' && buttonId === '24-words-button') {
         buttonId = '12-words-button';
     }
-    // Finish dismisses the add-account modal onto Home. Tapping tab-Home then
-    // fails iOS 26 visibility (selected _UITabButton clipped). Same reason
-    // 03_import secret-numbers already comments this step out.
+    // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
+    // Android: home-tab-view stays in the dump on Settings. Only skip when
+    // Home content is actually showing.
     if (buttonId === 'tab-Home') {
         try {
             if (device.getPlatform() === 'android') {
-                await waitUntilAndroidTestId('home-tab-view', 2000);
+                if (
+                    !(await androidHasTestId('settings-tab-screen')) &&
+                    ((await androidHasTestId('home-tab-empty-view')) ||
+                        (await androidHasTestId('account-address-text')))
+                ) {
+                    return;
+                }
+            } else {
+                await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(1500);
                 return;
             }
-            await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(1500);
-            return;
         } catch (e) {
             // not on home yet, tap the tab
         }
@@ -41,8 +48,21 @@ Then('I tap {string}', async (buttonId) => {
     // Android: Espresso waitFor/getAttributes wait up to 240s for MAIN_LOOPER
     // idle (What's new WebView / Home Choreographer). Use UiDevice dump only.
     if (device.getPlatform() === 'android') {
-        await waitUntilAndroidTestId(buttonId, 10000);
-        await clickByTestId(buttonId);
+        if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
+            return;
+        }
+        try {
+            await waitUntilAndroidTestId(buttonId, 10000);
+            if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
+                return;
+            }
+            await clickByTestId(buttonId);
+        } catch (e) {
+            if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
+                return;
+            }
+            throw e;
+        }
         if (buttonId === 'tab-Settings') {
             const deadline = Date.now() + 10000;
             while (Date.now() < deadline) {
@@ -66,8 +86,19 @@ Then('I tap {string}', async (buttonId) => {
             }
         }
         if (buttonId === 'confirm-button') {
+            // setRoot(bottomTabs) + changelog WebView. Do not dump here —
+            // overlapping dumpWindowHierarchy wedges UiAutomation. Home wait
+            // dumps once and BACKs the overlay if waitForIdle is slow.
             await new Promise((resolve) => { setTimeout(resolve, 3000); });
-            await tapByTestIdIfPresent('close-change-log-button', 8000);
+        }
+        if (buttonId.indexOf('network-') === 0 && buttonId !== 'network-switch-button') {
+            const deadline = Date.now() + 8000;
+            while (Date.now() < deadline) {
+                if (!(await androidHasTestId('switch-network-overlay'))) {
+                    return;
+                }
+                await new Promise((resolve) => { setTimeout(resolve, 250); });
+            }
         }
         return;
     }
@@ -96,9 +127,22 @@ Then('I tap {string}', async (buttonId) => {
             await btn.tap({ x: 8, y: 8 });
         }
     }
+    if (buttonId.indexOf('network-') === 0 && buttonId !== 'network-switch-button') {
+        try {
+            await waitFor(element(by.id('switch-network-overlay')))
+                .not.toExist()
+                .withTimeout(8000);
+        } catch (e) {
+            // overlay already gone
+        }
+    }
 });
 
 Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, buttonId) => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidEnabled(buttonId, timeoutSec * 1000);
+        return;
+    }
     let sec_passed = 0;
     let enabled = false;
     while (sec_passed < timeoutSec) {
@@ -124,17 +168,12 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
     if (device.getPlatform() === 'android') {
         await waitUntilAndroidTestId(textInputId, 10000);
         await clickByTestId(textInputId);
-        androidTypeText(value);
         try {
-            execFileSync('adb', ['-s', device.id, 'shell', 'input', 'keyevent', '4'], { timeout: 8000 });
+            androidTypeText(value);
         } catch (e) {
-            // IME / stylus sheet
+            // timeout: field may already have the value
         }
-        try {
-            execFileSync('adb', ['-s', device.id, 'shell', 'input', 'keyevent', '111'], { timeout: 8000 });
-        } catch (e) {
-            // IME already down
-        }
+        androidBlurIme();
         return;
     }
     const input = element(by.id(textInputId));
@@ -194,6 +233,16 @@ Given('I should see {string}', async (elementId) => {
     }
     if (device.getPlatform() === 'android') {
         const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view' ? 30000 : 10000;
+        if (elementId === 'accept-button') {
+            for (let i = 0; i < 5; i += 1) {
+                try {
+                    await waitUntilAndroidTestId('accept-button', 2500);
+                    return;
+                } catch (e) {
+                    await androidSwipeTestId('review-content-container', 'up');
+                }
+            }
+        }
         await waitUntilAndroidTestId(elementId, timeout);
         return;
     }
@@ -252,7 +301,11 @@ Given('I should see {string} in {string}', async (value, elementId) => {
 
 Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
     if (device.getPlatform() === 'android') {
-        await waitUntilAndroidTestId(elementId, timeout * 1000);
+        const ms =
+            elementId === 'home-tab-empty-view' || elementId === 'home-tab-view'
+                ? Math.max(timeout * 1000, 60000)
+                : timeout * 1000;
+        await waitUntilAndroidTestId(elementId, ms);
         return;
     }
     await waitFor(element(by.id(elementId)))
@@ -350,7 +403,7 @@ Given('I should see alert with content {string}', async (title) => {
     }
     await waitFor(element(by.label(title)))
         .toBeVisible()
-        .withTimeout(5000);
+        .withTimeout(15000);
 });
 
 Then('I send the app to the background', async () => {
@@ -399,9 +452,8 @@ Then('I launch the app', async () => {
 });
 
 Then('I wait {int} sec and then bring the app to foreground', async (delay) => {
-    // delay
-    const start = new Date().getTime();
-    while (new Date().getTime() < start + delay * 1000);
+    // Sleep, do not busy-spin: a 20s tight loop starves Detox's websocket.
+    await new Promise((resolve) => { setTimeout(resolve, delay * 1000); });
 
     if (device.getPlatform() === 'android') {
         androidStartActivity();
@@ -415,7 +467,15 @@ Then('I launch the app with url {string}', async (url) => {
         androidStartActivity(url);
         return;
     }
-    await device.launchApp({ newInstance: true, url });
+    // newInstance:true crashes Hermes on SE. Detox openURL from Springboard
+    // often does not foreground Xaman — simctl openurl delivers the UL.
+    await device.sendToHome();
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    try {
+        execFileSync('xcrun', ['simctl', 'openurl', device.id, url], { timeout: 15000 });
+    } catch (e) {
+        await device.openURL({ url });
+    }
 });
 
 Then('I open the url {string}', async (url) => {

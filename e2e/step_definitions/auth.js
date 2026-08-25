@@ -39,7 +39,7 @@ Then('I type my passcode', async () => {
         }
     }
     try {
-        await waitFor(element(by.id(`${passcode[0]}-key`)))
+        await waitFor(element(by.id(`${passcode[0]}-key`)).atIndex(0))
             .toExist()
             .withTimeout(10000);
     } catch (e) {
@@ -52,12 +52,19 @@ Then('I type my passcode', async () => {
             throw e;
         }
     }
-    await clickByTestId(`${passcode[0]}-key`);
-    await clickByTestId(`${passcode[1]}-key`);
-    await clickByTestId(`${passcode[2]}-key`);
-    await clickByTestId(`${passcode[3]}-key`);
-    await clickByTestId(`${passcode[4]}-key`);
-    await clickByTestId(`${passcode[5]}-key`);
+    await device.disableSynchronization();
+    try {
+        const digits = passcode.split('');
+        for (let i = 0; i < digits.length; i += 1) {
+            await element(by.id(`${digits[i]}-key`)).atIndex(0).tap();
+        }
+    } finally {
+        try {
+            await device.enableSynchronization();
+        } catch (e) {
+            // overlay already gone
+        }
+    }
 });
 
 Then('I type my new passcode', async () => {

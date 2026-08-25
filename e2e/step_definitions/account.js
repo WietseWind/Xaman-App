@@ -18,25 +18,28 @@ const {
     androidReadTextByTestId,
     androidHasTestId,
     clickAndroidAccountRow,
+    androidReadSecretRow,
+    enterAndroidSecretNumbers,
     androidTypeText,
+    androidBlurIme,
+    isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
 } = require('../helpers/tapById');
 
-Then('I write down secret numbers', async () => {
+Then('I write down secret numbers', { timeout: 10 * 60 * 1000 }, async () => {
     this.numbers = [...Array(8)].map(() => Array(6));
     for (let r = 0; r < 8; r++) {
         if (device.getPlatform() === 'android') {
-            await waitUntilAndroidTestId(`${r}.0`, 15000);
-            for (let c = 0; c < 6; c++) {
-                const text = await androidReadTextByTestId(`${r}.${c}`);
-                if (!text) {
-                    throw new Error(`secret cell ${r}.${c} missing from hierarchy`);
-                }
-                this.numbers[r][c] = text;
-            }
+            this.numbers[r] = await androidReadSecretRow(r);
             if (r < 7) {
                 await clickByTestId('next-button');
+                try {
+                    await waitUntilAndroidTestId(`${r + 1}.0`, 8000);
+                } catch (e) {
+                    await clickByTestId('next-button');
+                    await waitUntilAndroidTestId(`${r + 1}.0`, 10000);
+                }
             }
         } else {
             for (let c = 0; c < 6; c++) {
@@ -55,13 +58,13 @@ Then('I generate new secret number', async () => {
 });
 
 Then('I enter my secret number', { timeout: 5 * 60 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        await enterAndroidSecretNumbers(this.numbers);
+        return;
+    }
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 6; c++) {
-            if (device.getPlatform() === 'android') {
-                await clickByTestId(`${this.numbers[r][c]}-key`);
-            } else {
-                await element(by.id(`${this.numbers[r][c]}-key`)).tap();
-            }
+            await element(by.id(`${this.numbers[r][c]}-key`)).tap();
         }
     }
 });
@@ -188,8 +191,20 @@ Then('I enter my seed in the input', async () => {
         await waitUntilAndroidTestId('seed-input', 10000);
         await clickByTestId('seed-input');
         await sleepMs(400);
-        androidTypeText(want);
-        await sleepMs(500);
+        try {
+            androidTypeText(want);
+        } catch (e) {
+            if (!isAdbTimeout(e)) {
+                throw e;
+            }
+        }
+        await sleepMs(400);
+        // Timeout often happens after the seed is already in the field
+        // (secp256k1 picker is up). Recover: dump, blur IME, do not Next here.
+        if (await seedLooksValid()) {
+            androidBlurIme();
+            return;
+        }
 
         // IME often capitalizes/swallows the leading `s`, so Next alerts Invalid Family Seed.
         if (!(await seedLooksValid())) {
@@ -198,22 +213,32 @@ Then('I enter my seed in the input', async () => {
             await clickByTestId('seed-input');
             await sleepMs(200);
             const got = await readVisibleSeed();
-            if (want.endsWith(got) && got.length > 0 && got !== want) {
-                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '122'], { timeout: 3000 });
-                androidTypeText(want.slice(0, want.length - got.length));
-            } else {
-                clearField();
-                androidTypeText(want);
+            try {
+                if (want.endsWith(got) && got.length > 0 && got !== want) {
+                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '122'], { timeout: 3000 });
+                    androidTypeText(want.slice(0, want.length - got.length));
+                } else {
+                    clearField();
+                    androidTypeText(want);
+                }
+            } catch (e) {
+                if (!isAdbTimeout(e)) {
+                    throw e;
+                }
             }
-            await sleepMs(500);
+            await sleepMs(400);
         }
 
         if (!(await seedLooksValid()) && !/^sed/i.test(want)) {
             await clickByTestId('seed-input');
             await sleepMs(200);
             clearField();
-            for (let i = 0; i < want.length; i += 1) {
-                androidTypeText(want[i]);
+            try {
+                androidTypeText(want);
+            } catch (e) {
+                if (!isAdbTimeout(e)) {
+                    throw e;
+                }
             }
             await sleepMs(400);
         }
@@ -221,11 +246,7 @@ Then('I enter my seed in the input', async () => {
         if (!(await seedLooksValid()) && !/^sed/i.test(want)) {
             throw new Error('seed-input did not produce a valid family seed (keypair picker hidden)');
         }
-        try {
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 4000 });
-        } catch (e) {
-            // IME
-        }
+        androidBlurIme();
         return;
     }
     const input = element(by.id('seed-input'));
