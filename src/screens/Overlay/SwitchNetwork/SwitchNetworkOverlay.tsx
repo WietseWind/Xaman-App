@@ -123,8 +123,12 @@ class SwitchNetworkOverlay extends Component<Props, State> {
             }
         }
 
-        // slide down the panel
+        // slideDown's onSlideDown can be dropped when switchNetwork remounts
+        // Home under this overlay — the sheet then sits on an empty root.
         this.actionPanelRef?.current?.slideDown();
+        Navigator.dismissOverlay(AppScreens.Overlay.SwitchNetwork).catch(() => {
+            // already dismissed
+        });
     };
 
     onPanelSlideDown = () => {
