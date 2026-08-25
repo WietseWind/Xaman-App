@@ -212,6 +212,10 @@ public class LaunchActivity extends NavigationActivity {
      * sit outside the app on older APIs — extra pad there made a gap.
      * Keep navigator layers clear until React Native has painted, or a white
      * page covers the boot image.
+     *
+     * RNN stacks three CoordinatorLayouts in content: root, modals, overlays.
+     * Only the root should be opaque. Painting overlays/modals hides the
+     * screen behind ActionPanel (iOS keeps a dimmed scrim).
      */
     private void applyNavigatorNavInset() {
         ViewGroup content = findViewById(android.R.id.content);
@@ -220,7 +224,8 @@ public class LaunchActivity extends NavigationActivity {
         }
         int bottom = overlayNavInsetPx(content);
         int background = resolveNavigatorBackgroundColor();
-        boolean painted = false;
+        boolean paintedRoot = false;
+        boolean sawRoot = false;
         for (int i = 0; i < content.getChildCount(); i++) {
             View child = content.getChildAt(i);
             if (!(child instanceof CoordinatorLayout)) {
@@ -229,14 +234,19 @@ public class LaunchActivity extends NavigationActivity {
             if (child.getPaddingBottom() != bottom) {
                 child.setPadding(child.getPaddingLeft(), child.getPaddingTop(), child.getPaddingRight(), bottom);
             }
-            if (splashHidden && hasLaidOutContent((ViewGroup) child) && background != Color.TRANSPARENT) {
-                painted = true;
-                child.setBackgroundColor(background);
+            if (!sawRoot) {
+                sawRoot = true;
+                if (splashHidden && hasLaidOutContent((ViewGroup) child) && background != Color.TRANSPARENT) {
+                    paintedRoot = true;
+                    child.setBackgroundColor(background);
+                } else {
+                    child.setBackgroundColor(Color.TRANSPARENT);
+                }
             } else {
                 child.setBackgroundColor(Color.TRANSPARENT);
             }
         }
-        if (painted) {
+        if (paintedRoot) {
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }
     }
