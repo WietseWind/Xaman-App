@@ -22,11 +22,11 @@ const GetBottomTabScale = (factor?: number): number => {
             scale = ratio * 2;
     }
 
-    // Home-button / SE tab bar is ~50pt vs ~83pt with a home indicator.
-    // Larger scale → smaller point size. 1.4 was too small; 1.1 is a bit
-    // larger than 1.2 without overlapping the 50pt bar.
-    if (!HasBottomNotch()) {
-        scale *= 1.1;
+    // Home-button / SE is @2x (base 4.5). Notched phones are @3x (base 6).
+    // RNN scale is inverse of point size — lift SE to the @3x base so icons
+    // match Xaman-e2e (same 0.9 / 0.65 factors).
+    if (!HasBottomNotch() && ratio === 2) {
+        scale *= 6 / 4.5;
     }
 
     if (factor) {

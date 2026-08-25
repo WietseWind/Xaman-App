@@ -105,7 +105,7 @@ const getTabBarIcons = (): {
         [AppScreens.TabBar.Actions]: {
             icon: StyleService.getImage('IconTabBarActions'),
             iconSelected: StyleService.getImage('IconTabBarActions'),
-            scale: GetBottomTabScale(HasBottomNotch() ? 0.65 : 0.74),
+            scale: GetBottomTabScale(0.65),
         },
         [AppScreens.TabBar.XApps]: {
             icon: StyleService.getImage('IconTabBarXapp'),
@@ -121,14 +121,12 @@ const getTabBarIcons = (): {
 };
 
 const getBottomTabStyles = () => {
-    const compact = !HasBottomNotch();
     return StyleService.applyTheme({
         textColor: '$grey',
         selectedTextColor: '$textPrimary',
         fontFamily: AppFonts.base.familyExtraBold,
-        ...(compact ? { fontSize: 9, selectedFontSize: 9 } : {}),
         iconInsets: {
-            top: compact ? 2 : 4,
+            top: HasBottomNotch() ? 4 : 2,
         },
     });
 };
