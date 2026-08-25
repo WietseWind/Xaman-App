@@ -105,7 +105,7 @@ const getTabBarIcons = (): {
         [AppScreens.TabBar.Actions]: {
             icon: StyleService.getImage('IconTabBarActions'),
             iconSelected: StyleService.getImage('IconTabBarActions'),
-            scale: GetBottomTabScale(HasBottomNotch() ? 0.65 : 0.8),
+            scale: GetBottomTabScale(HasBottomNotch() ? 0.65 : 0.74),
         },
         [AppScreens.TabBar.XApps]: {
             icon: StyleService.getImage('IconTabBarXapp'),
