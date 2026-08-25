@@ -1054,9 +1054,6 @@ const disableAndroidStylusHandwriting = () => {
     } catch (e) {
         // ignore
     }
-    // ProgressBar/ActivityIndicator freezes as a static reload icon when
-    // animator_duration_scale is 0. Zero only for the run; restore in AfterAll.
-    putAndroidAnimationScale(0);
 };
 
 const restoreAndroidAnimationScale = () => {
