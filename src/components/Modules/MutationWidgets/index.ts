@@ -17,4 +17,5 @@ export { default as WarningsWidget } from './Warnings';
 export { default as AssetsMutationsWidget } from './AssetsMutations';
 export { default as AdvisoryAlertWidget } from './AdvisoryAlert';
 export { default as BatchTransactions } from './BatchTransactions';
+export { default as RemitOutputs } from './RemitOutputs';
 export { default as VaultAssetWidget } from './VaultAsset';

@@ -232,7 +232,11 @@ class AssetsMutations extends PureComponent<Props, State> {
                             AppStyles.paddingTopSml,
                             AppStyles.textCenterAligned,
                             AppStyles.colorOrange,
-                        ]}>{Localize.t('events.thirdPartyTxExplain')}</Text>
+                        ]}>{Localize.t(
+                            (item as any)?.MetaData?.ParentRemitID
+                                ? 'events.remitInnerTxExplain'
+                                : 'events.thirdPartyTxExplain',
+                        )}</Text>
                     </View>
                 )}
                 {hasNoMutations && !noMutation && hasEitherFactors && (
