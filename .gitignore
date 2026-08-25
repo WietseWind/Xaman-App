@@ -71,7 +71,7 @@ coverage
 src/.vscode/settings.json
 
 #others
-e2e/artifacts/*
+e2e/artifacts*/
 
 # local agent / session notes
 **/.claude/

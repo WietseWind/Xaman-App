@@ -1,6 +1,14 @@
+try {
+    if (process.stdout._handle && typeof process.stdout._handle.setBlocking === 'function') {
+        process.stdout._handle.setBlocking(true);
+    }
+} catch (e) {
+    // keep going if stdout is not a handle
+}
+
 const detox = require('detox/internals');
 
-const { device, element, by, waitFor } = require('detox');
+const { device } = require('detox');
 const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
@@ -14,6 +22,14 @@ const {
 } = require('../helpers/artifacts');
 const { startDeviceLogStream } = require('../helpers/simulator');
 const { checkNetwork, ensureLocalSimulator } = require('./preflight');
+const {
+    tapByTestIdIfPresent,
+    unlockAndroidPasscodeIfPresent,
+    waitUntilAndroidRnReady,
+    disableAndroidStylusHandwriting,
+    clearAndroidBlockingDialogs,
+    adbTapChangelogClose,
+} = require('../helpers/tapById');
 
 BeforeAll(async () => {
     // fail fast with a clear message when the suite cannot possibly pass
@@ -51,28 +67,40 @@ BeforeAll(async () => {
 
     if (device.getPlatform() === 'android') {
         await device.disableSynchronization();
+        disableAndroidStylusHandwriting();
+        await waitUntilAndroidRnReady();
+        await clearAndroidBlockingDialogs();
+        await unlockAndroidPasscodeIfPresent();
+    } else {
+        // iPhone SE: Firebase/main-queue idling hides onboarding-screen for 90s.
+        await device.disableSynchronization();
     }
 
-    await device.setURLBlacklist(['.*xumm.app.*', '.*xaman.app.*']);
+    await device.setURLBlacklist([
+        '.*xumm.app.*',
+        '.*xaman.app.*',
+        // Fresh sim: Firebase checkin holds Detox iOS sync and misses agreement-setup-screen.
+        '.*device-provisioning.googleapis.com.*',
+        '.*firebaseinstallations.googleapis.com.*',
+        '.*firebase.googleapis.com.*',
+        '.*firebaselogging.googleapis.com.*',
+        '.*app-measurement.com.*',
+    ]);
 });
 
 // On fresh Android installs the app auto-opens the "What's new" release-notes
 // modal shortly after launch; its full-screen backdrop swallows taps on the
-// screen underneath (e.g. the developer-mode switch) and trips Detox's
-// 75% visibility check. Close it before every scenario if it is up.
+// screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
-    try {
-        const overlay = element(by.id('change-log-overlay'));
-        await waitFor(overlay).toExist().withTimeout(1500);
-        await waitFor(element(by.id('close-change-log-button'))).toBeVisible().withTimeout(5000);
-        await element(by.id('close-change-log-button')).tap();
-        await waitFor(overlay).not.toExist().withTimeout(5000);
-    } catch (e) {
-        // overlay was not shown; nothing to dismiss
+    // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
+    await tapByTestIdIfPresent('close-change-log-button', 1500);
+    if (device.getPlatform() === 'android') {
+        await adbTapChangelogClose();
     }
 }
 
 Before(async (context) => {
+    await unlockAndroidPasscodeIfPresent();
     await dismissChangelogOverlay();
     await adapter.beforeEach(context);
 });

@@ -105,7 +105,9 @@ class Application {
             if (
                 message.indexOf('Realm file decryption failed') > -1 ||
                 message.indexOf('Could not decrypt data') > -1 ||
-                message.indexOf('Could not decrypt bytes') > -1
+                message.indexOf('Could not decrypt bytes') > -1 ||
+                message.indexOf('KEYSTORE_UNRECOVERABLE') > -1 ||
+                message.indexOf('Keystore alias missing') > -1
             ) {
                 Alert.alert('Error', ErrorMessages.storageDecryptionFailed, [
                     {
@@ -145,8 +147,22 @@ class Application {
                 {
                     text: 'Yes',
                     style: 'destructive',
-                    onPress: () => {
-                        DataStorage.wipe();
+                    onPress: async () => {
+                        try {
+                            await Vault.wipeLocalDatastore();
+                        } catch (error) {
+                            this.logger.error('wipeStorage', error);
+                            try {
+                                await Vault.clearStorage();
+                            } catch (clearError) {
+                                this.logger.error('wipeStorage clearStorage', clearError);
+                            }
+                        }
+                        try {
+                            DataStorage.wipe();
+                        } catch (error) {
+                            this.logger.error('wipeStorage realm', error);
+                        }
                         ExitApp();
                     },
                 },
@@ -220,7 +236,9 @@ class Application {
 
     // initialize the storage
     initializeStorage = () => {
-        return this.storage.initialize();
+        return this.storage.initialize().then(() => {
+            return Vault.inspectHealth().then(() => undefined);
+        });
     };
 
     // initialize all the services
@@ -385,9 +403,11 @@ class Application {
 
                 /* ======================== FlagSecure & LayoutAnimationExperimental =============================== */
                 if (Platform.OS === 'android') {
-                    // Enable Flag Secure if developer mode is not active
-                    if (!coreSettings?.developerMode) {
+                    // Release: FLAG_SECURE unless developer mode. Debug APK never blocks screenshots.
+                    if (!IsDebugBuild() && !coreSettings?.developerMode) {
                         SetFlagSecure(true);
+                    } else {
+                        SetFlagSecure(false);
                     }
 
                     // enable layout animation

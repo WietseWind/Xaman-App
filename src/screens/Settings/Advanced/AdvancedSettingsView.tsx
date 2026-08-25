@@ -145,7 +145,6 @@ class AdvancedSettingsView extends Component<Props, State> {
                 CoreRepository.saveSettings({ developerMode: true });
                 BackendService.action('developermode', 'on');
 
-                // enable blocking screenshots on android
                 if (Platform.OS === 'android') {
                     SetFlagSecure(false);
                 }
@@ -168,7 +167,6 @@ class AdvancedSettingsView extends Component<Props, State> {
         CoreRepository.saveSettings({ developerMode: false });
         BackendService.action('developermode', 'off');
 
-        // enable blocking screenshots on android
         if (Platform.OS === 'android') {
             SetFlagSecure(true);
         }

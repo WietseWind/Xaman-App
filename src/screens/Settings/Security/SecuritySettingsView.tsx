@@ -14,7 +14,7 @@ import { BiometryType } from '@store/types';
 import { Biometric, BiometricErrors } from '@common/libs/biometric';
 
 import { Navigator } from '@common/helpers/navigator';
-import { IsFlagSecure, SetFlagSecure } from '@common/helpers/app';
+import { IsDebugBuild, IsFlagSecure, SetFlagSecure } from '@common/helpers/app';
 
 import { TouchableDebounce, Header, Switch, Icon, InfoMessage } from '@components/General';
 
@@ -57,7 +57,7 @@ class SecuritySettingsView extends Component<Props, State> {
             coreSettings,
             biometricEnabled: coreSettings.biometricMethod !== BiometryType.None,
             biometricAvailable: false,
-            isFlagSecure: true,
+            isFlagSecure: !IsDebugBuild(),
             timeItems: [
                 { value: 0, title: `0 ${Localize.t('global.seconds')}` },
                 { value: 1, title: `1 ${Localize.t('global.minutes')}` },
@@ -349,7 +349,7 @@ class SecuritySettingsView extends Component<Props, State> {
                                 </View>
                                 <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
                                     <Switch
-                                        isDisabled={coreSettings.developerMode}
+                                        isDisabled={coreSettings.developerMode || IsDebugBuild()}
                                         checked={isFlagSecure}
                                         onChange={this.onFlagSecureToggle}
                                     />
