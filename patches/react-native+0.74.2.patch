@@ -27,7 +27,7 @@ index 3fd7238..2268e5e 100644
  #import "CoreModulesPlugins.h"
  
 +// Define the allowed endpoints
-+static NSSet *allowedEndpoints = [NSSet setWithObjects:@"xrplcluster.com", @"xahau.network", @"xahau-test.net", @"xrpl.link", @"s2.ripple.com", @"testnet.xrpl-labs.com", @"s.altnet.rippletest.net", @"s.devnet.rippletest.net", @"custom-node.xrpl-labs.com", nil];
++static NSSet *allowedEndpoints = [NSSet setWithObjects:@"xrplcluster.com", @"xahau.network", @"xahau-test.net", @"xrpl.link", @"s2.ripple.com", @"testnet.xrpl-labs.com", @"s.altnet.rippletest.net", @"s.devnet.rippletest.net", @"custom-node.xrpl-labs.com", @"rpc.xrpl-labs.com", @"rpc.xahau.network", @"rpc.xahau-test.net", @"mainnet.xrpl-rpc.com", @"testnet.xrpl-rpc.com", nil];
 +
  @implementation SRWebSocket (React)
  

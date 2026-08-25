@@ -91,6 +91,18 @@ export default {
     // custom node url endpoint
     customNodeProxy: 'wss://custom-node.xrpl-labs.com',
 
+    // Extra WSS RPC hosts that may connect directly (skip the custom-node proxy).
+    // Keep in sync with:
+    // - patches/react-native+VERSION.patch (iOS RCTWebSocketModule allowedEndpoints)
+    // - android HTTPClientFactory trustedHosts
+    directRpcEndpoints: [
+        'wss://rpc.xrpl-labs.com',
+        'wss://rpc.xahau.network',
+        'wss://rpc.xahau-test.net',
+        'wss://mainnet.xrpl-rpc.com',
+        'wss://testnet.xrpl-rpc.com',
+    ],
+
     // cluster endpoints
     clusterEndpoints: ['wss://xrplcluster.com', 'wss://xahau.network'],
 

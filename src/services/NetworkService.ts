@@ -779,7 +779,9 @@ class NetworkService extends EventEmitter {
         }
 
         // if endpoint is not in the default white listed network list then use custom proxy for it
-        if (!find(NetworkConfig.networks, (network) => network.nodes.includes(endpoint))) {
+        const isDefaultNode = !!find(NetworkConfig.networks, (network) => network.nodes.includes(endpoint));
+        const isDirectRpc = NetworkConfig.directRpcEndpoints.includes(endpoint);
+        if (!isDefaultNode && !isDirectRpc) {
             // remove 'ws://' and 'wss://' from custom endpoint and add user id
             return `${NetworkConfig.customNodeProxy}/${endpoint.replace(/^wss?:\/\//, '')}${this.userId ? `?user_id=${this.userId}` : ''}`;
         }
