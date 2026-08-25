@@ -120,6 +120,19 @@ const getTabBarIcons = (): {
     };
 };
 
+const getBottomTabStyles = () => {
+    const compact = !HasBottomNotch();
+    return StyleService.applyTheme({
+        textColor: '$grey',
+        selectedTextColor: '$textPrimary',
+        fontFamily: AppFonts.base.familyExtraBold,
+        ...(compact ? { fontSize: 9, selectedFontSize: 9 } : {}),
+        iconInsets: {
+            top: compact ? 2 : 4,
+        },
+    });
+};
+
 const bottomTabsChildren: LayoutTabsChildren[] = [];
 
 /* Lib ==================================================================== */
@@ -139,14 +152,7 @@ const Navigator = {
         const defaultOptions = getDefaultOptions();
         Navigation.setDefaultOptions(defaultOptions);
 
-        const bottomTabStyles = StyleService.applyTheme({
-            textColor: '$grey',
-            selectedTextColor: '$textPrimary',
-            fontFamily: AppFonts.base.familyExtraBold,
-            iconInsets: {
-                top: HasBottomNotch() ? 4 : 3,
-            },
-        });
+        const bottomTabStyles = getBottomTabStyles();
 
         const TabBarIcons = getTabBarIcons();
 
@@ -564,14 +570,7 @@ const Navigator = {
         const defaultOptions = getDefaultOptions();
         Navigation.setDefaultOptions(defaultOptions);
 
-        const bottomTabStyles = StyleService.applyTheme({
-            textColor: '$grey',
-            selectedTextColor: '$textPrimary',
-            fontFamily: AppFonts.base.familyExtraBold,
-            iconInsets: {
-                top: HasBottomNotch() ? 4 : 3,
-            },
-        });
+        const bottomTabStyles = getBottomTabStyles();
 
         // Update ALL active screens/stacks
         (allScreens as unknown as string[]).forEach((allScreenIterator) => {

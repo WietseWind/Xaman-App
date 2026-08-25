@@ -23,9 +23,10 @@ const GetBottomTabScale = (factor?: number): number => {
     }
 
     // Home-button / SE tab bar is ~50pt vs ~83pt with a home indicator.
-    // Larger scale → smaller point size, so icons keep a similar ratio to the bar.
+    // Larger scale → smaller point size. 1.4 made SE icons too small vs the
+    // bar; 1.2 keeps them from overlapping while matching large-screen ratio.
     if (!HasBottomNotch()) {
-        scale *= 1.4;
+        scale *= 1.2;
     }
 
     if (factor) {
