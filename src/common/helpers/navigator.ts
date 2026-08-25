@@ -105,7 +105,8 @@ const getTabBarIcons = (): {
         [AppScreens.TabBar.Actions]: {
             icon: StyleService.getImage('IconTabBarActions'),
             iconSelected: StyleService.getImage('IconTabBarActions'),
-            scale: GetBottomTabScale(0.65),
+            // Notch (e2e): 0.67 is ~3% smaller than 0.65. Compact SE keeps 0.65.
+            scale: GetBottomTabScale(HasBottomNotch() ? 0.67 : 0.65),
         },
         [AppScreens.TabBar.XApps]: {
             icon: StyleService.getImage('IconTabBarXapp'),
@@ -193,6 +194,11 @@ const Navigator = {
                                 ...TabBarIcons[get(AppScreens.TabBar, tab)].iconSelected,
                             },
                             testID: `tab-${tab}`,
+                            // Android ignores iOS icon.scale; default 24dp makes the
+                            // center dock match the other tabs. 36dp is ~iOS visual.
+                            ...(tab === 'Actions' && Platform.OS === 'android'
+                                ? { iconWidth: 36, iconHeight: 36 }
+                                : {}),
                             ...bottomTabStyles,
                         },
                     },
@@ -606,6 +612,9 @@ const Navigator = {
                             scale: TabBarIcons[getTab].scale,
                             ...TabBarIcons[getTab].iconSelected,
                         },
+                        ...(tab === 'Actions' && Platform.OS === 'android'
+                            ? { iconWidth: 36, iconHeight: 36 }
+                            : {}),
                         ...bottomTabStyles,
                     },
                     // ...defaultOptions,

@@ -1,4 +1,4 @@
-import { Platform, PixelRatio, NativeModules } from 'react-native';
+import { Platform, PixelRatio, NativeModules, Dimensions } from 'react-native';
 
 const { DeviceUtilsModule, UniqueIdProviderModule } = NativeModules;
 
@@ -22,11 +22,13 @@ const GetBottomTabScale = (factor?: number): number => {
             scale = ratio * 2;
     }
 
-    // Home-button / SE is @2x (base 4.5). Notched phones are @3x (base 6).
-    // RNN scale is inverse of point size — lift SE to the @3x base so icons
-    // match Xaman-e2e (same 0.9 / 0.65 factors).
-    if (!HasBottomNotch() && ratio === 2) {
-        scale *= 6 / 4.5;
+    // SE / home-button only (@2x, width <= 375 or no home indicator).
+    // RNN scale is inverse of point size. 1.333 matches e2e @3x; 1.22 is a
+    // little larger. Xaman-e2e is @3x + notch and never hits this.
+    const { width } = Dimensions.get('window');
+    const compactIos = width <= 375 || !HasBottomNotch();
+    if (compactIos && ratio === 2) {
+        scale *= 1.22;
     }
 
     if (factor) {
