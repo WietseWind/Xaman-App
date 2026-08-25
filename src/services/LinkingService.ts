@@ -18,7 +18,7 @@ import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
 
 import Localize from '@locale';
-import { Payment, PaymentValidation, TrustSet } from '@common/libs/ledger/transactions';
+import { AccountSet, Payment, PaymentValidation, TrustSet } from '@common/libs/ledger/transactions';
 import NetworkService from './NetworkService';
 import { CoreRepository, NetworkRepository } from '@store/repositories';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
@@ -467,6 +467,31 @@ class LinkingService {
 
                 if (templateNetwork) {
                     // review flow will offer switching if not connected to the declared network
+                    payload.meta.force_network = templateNetwork.key;
+                }
+
+                setTimeout(() => {
+                    Navigator.showModal(
+                        AppScreens.Modal.ReviewTransaction,
+                        {
+                            payload,
+                        },
+                        { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                    );
+                }, 800);
+
+                return;
+            }
+
+            // AccountSet templates: Debug/dev-client only AND developer mode.
+            // Never ship this path in Release — a tricked user could enable
+            // developer mode and scan a hostile AccountSet QR.
+            if (json?.TransactionType === 'AccountSet' && __DEV__ && CoreRepository.isDeveloperModeEnabled()) {
+                const accountSet = new AccountSet(json);
+
+                const payload = Payload.build(accountSet.JsonForSigning);
+
+                if (templateNetwork) {
                     payload.meta.force_network = templateNetwork.key;
                 }
 

@@ -40,7 +40,7 @@ import styles from './styles';
 /* types ==================================================================== */
 import { Props, State } from './types';
 import CameraScanner from './CameraScanner';
-import { TrustSet } from '@common/libs/ledger/transactions';
+import { AccountSet, TrustSet } from '@common/libs/ledger/transactions';
 import { ReviewTransactionModalProps } from '../ReviewTransaction';
 
 /* Component ==================================================================== */
@@ -282,6 +282,35 @@ class ScanModal extends Component<Props, State> {
 
                 setTimeout(() => {
                     Navigator.showModal<ReviewTransactionModalProps<TrustSet>>(
+                        AppScreens.Modal.ReviewTransaction,
+                        {
+                            payload,
+                        },
+                        { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                    );
+                }, 800);
+
+                this.onClose();
+
+                return;
+            }
+
+            // AccountSet templates: Debug/dev-client only AND developer mode.
+            // Never ship this path in Release — a tricked user could enable
+            // developer mode and scan a hostile AccountSet QR.
+            if (json?.TransactionType === 'AccountSet' && __DEV__ && CoreRepository.isDeveloperModeEnabled()) {
+                const accountSet = new AccountSet(json);
+
+                const payload = Payload.build(accountSet.JsonForSigning);
+
+                if (templateNetwork) {
+                    payload.meta.force_network = templateNetwork.key;
+                }
+
+                this.setShouldRead(false);
+
+                setTimeout(() => {
+                    Navigator.showModal<ReviewTransactionModalProps<AccountSet>>(
                         AppScreens.Modal.ReviewTransaction,
                         {
                             payload,
