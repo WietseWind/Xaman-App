@@ -25,6 +25,30 @@ const THIRD_PARTY_LIFECYCLE_TYPES: string[] = [
     TransactionTypes.EscrowFinish,
 ];
 
+const nodeFields = (node: any): Record<string, any> => {
+    const entry = node?.ModifiedNode || node?.CreatedNode || node?.DeletedNode;
+    return entry?.FinalFields || entry?.NewFields || {};
+};
+
+/**
+ * True when this tx is in our account_tx because we are RegularKey of the
+ * destination — visible on the destination AccountRoot in meta, no extra lookup.
+ */
+export const isRegularKeyForDestination = (
+    tx: TxSlice | undefined,
+    myAddress: string,
+    affectedNodes?: any[],
+): boolean => {
+    if (!tx?.Destination || !myAddress || tx.Destination === myAddress) {
+        return false;
+    }
+
+    return (affectedNodes || []).some((node) => {
+        const fields = nodeFields(node);
+        return fields.RegularKey === myAddress && fields.Account === tx.Destination;
+    });
+};
+
 export const shouldLookupAdvisorySender = (
     tx: TxSlice | undefined,
     myAddress: string,
