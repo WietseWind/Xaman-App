@@ -292,7 +292,10 @@ public class LaunchActivity extends NavigationActivity {
         if (fromTabs != Color.TRANSPARENT) {
             return fromTabs;
         }
-        if (tabs != null && tabs.getHeight() > 0) {
+        // Onboarding has no bottomTabs. After splash hide, still paint the
+        // nav inset with the OS light/dark color so the blue splash window
+        // does not show through. Splash itself stays blue until hidden.
+        if (splashHidden) {
             int night = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
             return night == Configuration.UI_MODE_NIGHT_YES ? Color.BLACK : Color.WHITE;
         }
