@@ -202,6 +202,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             'IdentifierWidget',
             'ExplainWidget',
             'BatchTransactions',
+            'RemitOutputs',
             'MPTWidget',
             'ActorArrayWidget',
             'FlagsWidget',

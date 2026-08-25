@@ -29,7 +29,7 @@ export interface MutationsMixinType {
     EmitDetails: any;
     Date: string | undefined;
     TransactionResult: TransactionResult;
-    CTID: string;
+    CTID: string | undefined;
     LedgerIndex: number;
     TransactionIndex: number;
 }

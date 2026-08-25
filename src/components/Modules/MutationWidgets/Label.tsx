@@ -58,10 +58,11 @@ class Label extends PureComponent<Props, State> {
             !item.Type.match(/Cron/) &&
             !item.Type.match(/Vault/)
         ) {
+            const remitInner = !!(item as any)?.MetaData?.ParentRemitID;
             return <Text style={[
                 AppStyles.h4,
                 styles.noBold,
-                ]}>{Localize.t('events.thirdPartyTx')}</Text>;
+                ]}>{Localize.t(remitInner ? 'events.remitInnerTx' : 'events.thirdPartyTx')}</Text>;
         }
 
         return <Text style={[
