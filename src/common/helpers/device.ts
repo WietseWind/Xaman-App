@@ -1,39 +1,6 @@
-import { Platform, PixelRatio, NativeModules } from 'react-native';
+import { Platform, PixelRatio, NativeModules, Dimensions } from 'react-native';
 
 const { DeviceUtilsModule, UniqueIdProviderModule } = NativeModules;
-
-/**
- * IOS: Get bottom tab scale base on pixel ratio
- * @returns number
- */
-const GetBottomTabScale = (factor?: number): number => {
-    if (Platform.OS !== 'ios') return 0;
-    const ratio = PixelRatio.get();
-
-    let scale;
-    switch (ratio) {
-        case 2:
-            scale = 4.5;
-            break;
-        case 3:
-            scale = 6;
-            break;
-        default:
-            scale = ratio * 2;
-    }
-
-    // Home-button / SE tab bar is ~50pt vs ~83pt with a home indicator.
-    // Larger scale → smaller point size, so icons keep a similar ratio to the bar.
-    if (!HasBottomNotch()) {
-        scale *= 1.4;
-    }
-
-    if (factor) {
-        return scale * factor;
-    }
-
-    return scale;
-};
 
 /**
  * Get window layout insets
@@ -131,6 +98,88 @@ const GetDeviceOSVersion = (): string => {
     return `${DeviceUtilsModule.osVersion}`;
 };
 
+const TAB_COUNT = 5;
+const TAB_ASSET_PT = 64;
+const IOS_ITEM_ROW = 49;
+// Center dock on iPhone SE (375pt, 49pt item row). 24 was a hair small.
+const SE_CENTER_PT = 25.2;
+const SE_WIDTH = 375;
+const TAB_CHROME_EXPONENT = 0.22;
+
+const tabOsMajor = (): number => {
+    const raw = GetDeviceOSVersion();
+    const n = parseInt(String(raw).split(/[^\d]/)[0], 10);
+    return Number.isFinite(n) ? n : 99;
+};
+
+/**
+ * Displayed center-dock size (points/dp). Same 0.65/0.9 factors as the tab icons.
+ *
+ * - Grows with slot width (SE 375 → Pro ~402).
+ * - Extra tab-bar chrome (home indicator) uses a damped curve, not bar/49,
+ *   so large phones don’t look empty and don’t overflow.
+ * - iOS UITabBar does not paint UIImage.pointSize 1:1: @3x+notch ~0.57 of
+ *   requested (measured), iOS 16 @2x a bit under the iOS 26 SE sim.
+ */
+const getTabIconDisplayPt = (factor?: number): number => {
+    const { width } = Dimensions.get('window');
+    const inset = GetLayoutInsets()?.bottom || 0;
+    const slot = width / TAB_COUNT;
+    const bar = IOS_ITEM_ROW + (Platform.OS === 'ios' ? inset : 0);
+    const f = factor || 1;
+    const fromSlot = SE_CENTER_PT * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
+    const chrome = Math.pow(Math.max(bar, IOS_ITEM_ROW) / IOS_ITEM_ROW, TAB_CHROME_EXPONENT);
+    return fromSlot * chrome;
+};
+
+const tabBarPaintEfficiency = (): number => {
+    if (Platform.OS !== 'ios') {
+        return 1;
+    }
+    const ratio = PixelRatio.get() || 2;
+    const notched = (GetLayoutInsets()?.bottom || 0) > 0;
+    if (ratio >= 3) {
+        return notched ? 0.61 : 0.72;
+    }
+    // iPhone 8 (iOS 16, @2x, 375pt) vs SE sim (iOS 26): same points, smaller paint.
+    if (tabOsMajor() < 18) {
+        return 0.68;
+    }
+    return 1;
+};
+
+/**
+ * iOS RNN `icon.scale` (UIImage.scale). Point size = 64pt * PixelRatio / scale.
+ */
+const GetBottomTabScale = (factor?: number): number => {
+    if (Platform.OS !== 'ios') return 0;
+    const displayPt = getTabIconDisplayPt(factor);
+    const requested = displayPt / tabBarPaintEfficiency();
+    const ratio = PixelRatio.get() || 2;
+    return (TAB_ASSET_PT * ratio) / requested;
+};
+
+/**
+ * Android RNN `iconWidth` / `iconHeight` in dp (AHBottomNavigation dpToPx, 1:1).
+ * Independent of iOS 25pt target — 20–28dp looked tiny next to the iOS dock.
+ */
+const ANDROID_CENTER_DP = 44;
+const ANDROID_CENTER_CAP = 52;
+const ANDROID_SIDE_CAP = 34;
+
+const GetBottomTabIconDp = (factor?: number): number => {
+    const isCenter = (factor || 1) < 0.8;
+    if (Platform.OS !== 'android') {
+        const displayPt = getTabIconDisplayPt(factor);
+        return Math.round(Math.min(displayPt, isCenter ? 36 : 26));
+    }
+    const { width } = Dimensions.get('window');
+    const slot = width / TAB_COUNT;
+    const f = factor || 1;
+    const fromSlot = ANDROID_CENTER_DP * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
+    return Math.round(Math.min(fromSlot, isCenter ? ANDROID_CENTER_CAP : ANDROID_SIDE_CAP));
+};
+
 /**
  * Get the latest real time base on device CPU ticks
  * @returns Promise<number>
@@ -170,6 +219,7 @@ export {
     HasBottomNotch,
     HasTopNotch,
     GetBottomTabScale,
+    GetBottomTabIconDp,
     GetLayoutInsets,
     IsDeviceJailBroken,
     IsDeviceRooted,
