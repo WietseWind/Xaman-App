@@ -27,6 +27,7 @@ const {
     unlockAndroidPasscodeIfPresent,
     waitUntilAndroidRnReady,
     disableAndroidStylusHandwriting,
+    restoreAndroidAnimationScale,
     clearAndroidBlockingDialogs,
     adbTapChangelogClose,
 } = require('../helpers/tapById');
@@ -123,6 +124,10 @@ After(async (context) => {
 });
 
 AfterAll(async () => {
+    if (device.getPlatform() === 'android') {
+        restoreAndroidAnimationScale();
+    }
+
     // clean up
     await detox.cleanup();
 

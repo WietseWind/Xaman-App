@@ -1024,6 +1024,26 @@ const dismissAndroidImeChrome = async (xml) => {
     return true;
 };
 
+const ANDROID_ANIMATION_SCALES = [
+    'window_animation_scale',
+    'transition_animation_scale',
+    'animator_duration_scale',
+];
+
+const putAndroidAnimationScale = (value) => {
+    ANDROID_ANIMATION_SCALES.forEach((key) => {
+        try {
+            execFileSync(
+                'adb',
+                ['-s', androidSerial(), 'shell', 'settings', 'put', 'global', key, String(value)],
+                { timeout: 4000 },
+            );
+        } catch (e) {
+            // ignore
+        }
+    });
+};
+
 const disableAndroidStylusHandwriting = () => {
     try {
         execFileSync(
@@ -1034,17 +1054,13 @@ const disableAndroidStylusHandwriting = () => {
     } catch (e) {
         // ignore
     }
-    ['window_animation_scale', 'transition_animation_scale', 'animator_duration_scale'].forEach((key) => {
-        try {
-            execFileSync(
-                'adb',
-                ['-s', androidSerial(), 'shell', 'settings', 'put', 'global', key, '0'],
-                { timeout: 4000 },
-            );
-        } catch (e) {
-            // ignore
-        }
-    });
+    // ProgressBar/ActivityIndicator freezes as a static reload icon when
+    // animator_duration_scale is 0. Zero only for the run; restore in AfterAll.
+    putAndroidAnimationScale(0);
+};
+
+const restoreAndroidAnimationScale = () => {
+    putAndroidAnimationScale(1);
 };
 
 const xmlLooksLikePasscodeSetup = (xml) => {
@@ -1783,6 +1799,7 @@ module.exports = {
     androidDumpIncludes,
     clickAndroidLabel,
     disableAndroidStylusHandwriting,
+    restoreAndroidAnimationScale,
     adbTapChangelogClose,
     androidClearBlockingUi,
     captureAndroidTabBar,
