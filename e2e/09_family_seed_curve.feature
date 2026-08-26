@@ -12,6 +12,13 @@ Feature: Family seed curve import on Xahau testnet
         Given I should have 'switch-network-overlay'
         Then I tap 'network-XAHAUTESTNET'
 
+    Scenario: Family seed curve picker is available
+        Then I open the family seed import screen
+        Then I generate new family seed
+        Then I enter my seed in the input
+        Given I should see 'keypair-curve-row'
+        Given I should see family seed curve "secp256k1"
+
     Scenario: Family seed curve picker defaults to secp256k1
         Then I open the family seed import screen
         Then I generate new family seed
@@ -30,6 +37,17 @@ Feature: Family seed curve import on Xahau testnet
         Then I choose family seed curve "ed25519"
         Then I tap 'next-button'
         Then I should confirm expected family seed address
+
+    Scenario: Entering another family seed resets the curve to secp256k1
+        Then I open the family seed import screen
+        Then I generate new family seed
+        Then I enter my seed in the input
+        Given I should see family seed curve "secp256k1"
+        Then I choose family seed curve "ed25519"
+        Given I should see family seed curve "ed25519"
+        Then I generate new family seed
+        Then I enter my seed in the input
+        Given I should see family seed curve "secp256k1"
 
     Scenario: Autodetect selects ed25519 when only that account is activated
         Then I open the family seed import screen

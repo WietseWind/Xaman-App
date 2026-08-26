@@ -426,6 +426,7 @@ Then('I remember family seed address for curve {string}', async (curve) => {
 });
 
 Then('I should see family seed curve {string}', { timeout: 30 * 1000 }, async (curve) => {
+    await dismissKeyboard();
     const value = element(by.id('keypair-curve-value'));
     await waitFor(value).toExist().withTimeout(15000);
     await waitFor(value).toHaveText(curve).withTimeout(20000);
