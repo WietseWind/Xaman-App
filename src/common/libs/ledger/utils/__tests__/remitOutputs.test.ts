@@ -1,4 +1,7 @@
+import Localize from '@locale';
+
 import { Remit } from '@common/libs/ledger/transactions';
+import { URITokenMintInfo } from '../../transactions/genuine/URITokenMint';
 import { buildRemitOutputTransactions } from '../remitOutputs';
 
 jest.mock('@services/NetworkService', () => ({
@@ -48,6 +51,14 @@ describe('buildRemitOutputTransactions', () => {
         expect((outputs[0] as any).URI).toBe(URI);
         expect((outputs[0] as any).Destination).toBe(DESTINATION);
         expect((outputs[0] as any).URITokenID).toBe(TOKEN_ID);
+        expect((outputs[0] as any).Amount).toBeUndefined();
+        expect((outputs[0] as any).MetaData.ParentRemitID).toBe(HASH);
+        expect(
+            new URITokenMintInfo(outputs[0] as any, { address: DESTINATION } as any).getEventsLabel(),
+        ).toEqual(Localize.t('events.uriTokenSentToYou'));
+        expect(
+            new URITokenMintInfo(outputs[0] as any, { address: ACCOUNT } as any).getEventsLabel(),
+        ).toEqual(Localize.t('events.uriTokenSent'));
     });
 
     it('builds Payment rows from Amounts', () => {
