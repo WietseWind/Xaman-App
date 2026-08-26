@@ -61,6 +61,9 @@ const styles = StyleService.create({
         fontFamily: AppFonts.base.familyBold,
         color: '$white',
     },
+    optionsButtonSelectedIcon: {
+        tintColor: '$white',
+    },
 });
 
 export default styles;

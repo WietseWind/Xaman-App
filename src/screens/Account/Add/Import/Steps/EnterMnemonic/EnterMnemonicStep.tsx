@@ -9,11 +9,11 @@ import { get, set, isEmpty } from 'lodash';
 import React, { Component } from 'react';
 import { SafeAreaView, View, Text, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
 
-import { derive } from 'xrpl-accountlib';
-
 import { StringType, XrplSecret } from 'xumm-string-decode';
 
 import { Navigator } from '@common/helpers/navigator';
+import { Prompt } from '@common/helpers/interface';
+import { MnemonicAlgorithm, pickMnemonicImport } from '@common/utils/mnemonicImport';
 
 import { AppScreens } from '@common/constants';
 
@@ -32,6 +32,8 @@ import Localize from '@locale';
 
 import { ScanModalProps } from '@screens/Modal/Scan';
 
+import LedgerService from '@services/LedgerService';
+
 import { AppStyles } from '@theme';
 import styles from './styles';
 
@@ -45,6 +47,8 @@ export interface State {
     length: number;
     usePassphrase: boolean;
     useAlternativePath: boolean;
+    useCurve: boolean;
+    curve: MnemonicAlgorithm;
     passphrase: string;
     derivationPath: any;
     activeRow: number;
@@ -69,6 +73,8 @@ class EnterMnemonicStep extends Component<Props, State> {
             length: 16,
             usePassphrase: false,
             useAlternativePath: false,
+            useCurve: false,
+            curve: 'secp256k1',
             passphrase: '',
             derivationPath: undefined,
             activeRow: -1,
@@ -84,9 +90,16 @@ class EnterMnemonicStep extends Component<Props, State> {
         this.inputs = [];
     }
 
-    goNext = () => {
+    finishImport = (account: any) => {
         const { goNext, setImportedAccount } = this.context;
-        const { words, usePassphrase, passphrase, useAlternativePath, derivationPath } = this.state;
+
+        setImportedAccount(account, () => {
+            goNext('ConfirmPublicKey');
+        });
+    };
+
+    goNext = async () => {
+        const { words, usePassphrase, passphrase, useAlternativePath, derivationPath, useCurve, curve } = this.state;
 
         if (words.filter(Boolean).length < 6) {
             Alert.alert('Error', Localize.t('account.pleaseEnterAllWords'));
@@ -97,25 +110,58 @@ class EnterMnemonicStep extends Component<Props, State> {
             isLoading: true,
         });
 
-        let options = {};
+        const deriveOptions: {
+            passphrase?: string;
+            accountPath?: string;
+            changePath?: string;
+            addressIndex?: string;
+        } = {};
 
         if (usePassphrase && passphrase) {
-            options = Object.assign(options, { passphrase });
+            deriveOptions.passphrase = passphrase;
         }
 
         if (useAlternativePath && derivationPath) {
-            options = Object.assign(options, derivationPath);
+            Object.assign(deriveOptions, derivationPath);
         }
 
         try {
             const mnemonic = words.filter(Boolean).join(' ');
-            const account = derive.mnemonic(mnemonic, options);
-
-            // set imported account
-            setImportedAccount(account, () => {
-                // go to next step
-                goNext('ConfirmPublicKey');
+            const picked = await pickMnemonicImport({
+                mnemonic,
+                deriveOptions,
+                explicitAlgorithm: useCurve ? curve : undefined,
+                getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
+
+            if (picked.status === 'conflict') {
+                Prompt(
+                    Localize.t('account.chooseMnemonicCurve'),
+                    Localize.t('account.bothMnemonicCurvesActivated'),
+                    [
+                        {
+                            text: Localize.t('account.mnemonicCurveSecp'),
+                            onPress: () => this.finishImport(picked.secp),
+                        },
+                        {
+                            text: Localize.t('account.mnemonicCurveEd'),
+                            onPress: () => this.finishImport(picked.ed),
+                        },
+                        {
+                            text: Localize.t('global.cancel'),
+                            style: 'cancel',
+                            onPress: () => {
+                                this.setState({
+                                    isLoading: false,
+                                });
+                            },
+                        },
+                    ],
+                );
+                return;
+            }
+
+            this.finishImport(picked.account);
         } catch (e) {
             this.setState({
                 isLoading: false,
@@ -342,6 +388,72 @@ class EnterMnemonicStep extends Component<Props, State> {
         );
     };
 
+    renderCurve = () => {
+        const { useCurve, curve } = this.state;
+
+        return (
+            <View style={[AppStyles.flex1, AppStyles.paddingBottomSml]}>
+                <View style={AppStyles.hr} />
+
+                <View style={[AppStyles.row, AppStyles.paddingVerticalSml]}>
+                    <View style={AppStyles.leftAligned}>
+                        <Switch
+                            testID="choose-curve-switch"
+                            onChange={(enabled) => {
+                                this.setState({ useCurve: enabled }, this.scrollToBottom);
+                            }}
+                            checked={useCurve}
+                        />
+                    </View>
+                    <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.centerContent]}>
+                        <Text style={[AppStyles.subtext, AppStyles.bold]}>
+                            {Localize.t('account.chooseMnemonicCurve')}
+                        </Text>
+                    </View>
+                </View>
+
+                {useCurve && (
+                    <View style={AppStyles.row}>
+                        <Button
+                            testID="curve-secp256k1-button"
+                            light
+                            onPress={() => {
+                                this.setState({ curve: 'secp256k1' });
+                            }}
+                            roundedSmall
+                            icon={curve === 'secp256k1' ? 'IconCheck' : undefined}
+                            iconSize={14}
+                            style={[styles.optionsButton, curve === 'secp256k1' ? styles.optionsButtonSelected : {}]}
+                            textStyle={[
+                                styles.optionsButtonText,
+                                curve === 'secp256k1' && styles.optionsButtonSelectedText,
+                            ]}
+                            iconStyle={curve === 'secp256k1' ? styles.optionsButtonSelectedIcon : undefined}
+                            label={Localize.t('account.mnemonicCurveSecp')}
+                        />
+                        <Button
+                            testID="curve-ed25519-button"
+                            light
+                            onPress={() => {
+                                this.setState({ curve: 'ed25519' });
+                            }}
+                            roundedSmall
+                            icon={curve === 'ed25519' ? 'IconCheck' : undefined}
+                            iconSize={14}
+                            style={[styles.optionsButton, curve === 'ed25519' ? styles.optionsButtonSelected : {}]}
+                            textStyle={[
+                                styles.optionsButtonText,
+                                curve === 'ed25519' && styles.optionsButtonSelectedText,
+                            ]}
+                            iconStyle={curve === 'ed25519' ? styles.optionsButtonSelectedIcon : undefined}
+                            label={Localize.t('account.mnemonicCurveEd')}
+                        />
+                    </View>
+                )}
+            </View>
+        );
+    };
+
     render() {
         const { goBack } = this.context;
         const { length, isLoading } = this.state;
@@ -424,6 +536,7 @@ class EnterMnemonicStep extends Component<Props, State> {
                     {this.renderRows()}
                     {this.renderPassphrase()}
                     {this.renderDerivationPath()}
+                    {this.renderCurve()}
                 </KeyboardAwareScrollView>
 
                 <Footer style={[AppStyles.centerAligned, AppStyles.row]}>
