@@ -56,7 +56,7 @@ class Application {
         this.initialized = false;
     }
 
-    run() {     
+    run() {
         // Listen for app launched event
         Navigation.events().registerAppLaunchedListener(() => {
             // start the app

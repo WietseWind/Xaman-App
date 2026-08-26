@@ -367,6 +367,7 @@ class AccountAddView extends Component<Props, State> {
                 <Header
                     leftComponent={{
                         icon: 'IconChevronLeft',
+                        testID: 'back-button',
                         onPress: Navigator.pop,
                     }}
                     centerComponent={{ text: Localize.t('account.addAccount') }}

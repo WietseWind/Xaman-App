@@ -10,8 +10,11 @@ const {
     generateSecretNumbers,
     generateFamilySeed,
     generateMnemonic,
+    deriveMnemonicAddress,
+    SAMPLE_24_WORD_MNEMONIC,
 } = require('../helpers/fixtures');
 const { dismissKeyboard } = require('../helpers/keyboard');
+const { waitForAndroidAlertText } = require('../helpers/androidAlert');
 const {
     clickByTestId,
     waitUntilAndroidTestId,
@@ -270,25 +273,330 @@ Then('I generate new mnemonic', async () => {
     this.mnemonic = generateMnemonic();
 });
 
-Then('I enter my mnemonic', async () => {
+Then('I generate new mnemonic with ed25519', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('12-words-button', 10000);
+        await clickByTestId('12-words-button');
+        this.mnemonic = generateMnemonic(128, 'ed25519');
+        return;
+    }
+    this.mnemonic = generateMnemonic(256, 'ed25519');
+});
+
+const sleepMs = (ms) =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+
+const tapTestId = async (id, timeout = 10000) => {
+    const btn = element(by.id(id));
+    try {
+        await waitFor(btn).toBeVisible().withTimeout(timeout);
+    } catch (e) {
+        await waitFor(btn).toExist().withTimeout(timeout);
+    }
+    await sleepMs(250);
+    try {
+        await btn.tap();
+    } catch (e) {
+        await btn.tap({ x: 8, y: 8 });
+    }
+};
+
+const tapUntilScreen = async (buttonId, screenId, timeout = 15000) => {
+    const deadline = Date.now() + timeout;
+    let lastErr;
+    while (Date.now() < deadline) {
+        try {
+            await waitFor(element(by.id(screenId)))
+                .toExist()
+                .withTimeout(800);
+            await sleepMs(300);
+            return;
+        } catch (e) {
+            lastErr = e;
+        }
+        try {
+            await tapTestId(buttonId, 4000);
+        } catch (tapErr) {
+            lastErr = tapErr;
+        }
+        await sleepMs(400);
+    }
+    throw lastErr || new Error(`screen ${screenId} did not appear after tapping ${buttonId}`);
+};
+
+const tryTapAlertLabel = async (label) => {
+    const alertBtn = element(by.label(label).and(by.type('_UIAlertControllerActionView')));
+    try {
+        await waitFor(alertBtn).toExist().withTimeout(200);
+        await alertBtn.tap();
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
+Then('I leave account import if open', async () => {
+    await dismissKeyboard();
+    try {
+        await waitFor(element(by.id('lock-overlay')))
+            .toExist()
+            .withTimeout(400);
+        const pin = String(process.env.E2E_PASSCODE || '958347');
+        for (let i = 0; i < pin.length; i += 1) {
+            await element(by.id(`${pin[i]}-key`)).tap();
+        }
+        await waitFor(element(by.id('lock-overlay')))
+            .not.toExist()
+            .withTimeout(10000);
+    } catch (lockErr) {
+        // already unlocked
+    }
+
+    // Only treat tab-hosting screens as done. accounts-list and add-account hide
+    // the tab bar, so later scenarios cannot tap tab-Settings from there.
+    const doneIds = ['network-switch-button', 'home-tab-view', 'settings-tab-screen'];
+    const alertLabels = ['Go back', 'Cancel', 'OK'];
+
+    leaveLoop: for (let i = 0; i < 20; i += 1) {
+        for (let d = 0; d < doneIds.length; d += 1) {
+            try {
+                await waitFor(element(by.id(doneIds[d])))
+                    .toBeVisible()
+                    .withTimeout(350);
+                return;
+            } catch (e) {
+                // not on this screen
+            }
+        }
+
+        for (let a = 0; a < alertLabels.length; a += 1) {
+            if (await tryTapAlertLabel(alertLabels[a])) {
+                await sleepMs(250);
+                continue leaveLoop;
+            }
+        }
+
+        try {
+            await element(by.id('back-button')).tap();
+            await sleepMs(250);
+            continue;
+        } catch (backErr) {
+            // no footer/header back
+        }
+
+        try {
+            await waitFor(element(by.id('account-add-screen')))
+                .toExist()
+                .withTimeout(250);
+            await element(by.id('account-add-screen')).tap({ x: 24, y: 80 });
+            await sleepMs(250);
+            continue;
+        } catch (addErr) {
+            // not on add-account
+        }
+
+        try {
+            await element(by.id('tab-Home')).tap();
+        } catch (homeErr) {
+            // keep trying
+        }
+    }
+
+    throw new Error('still inside account import after leave attempts');
+});
+
+Then('I open the mnemonic import screen', async () => {
+    await tapUntilScreen('tab-Settings', 'settings-tab-screen');
+    await tapUntilScreen('accounts-button', 'accounts-list-screen');
+    await tapUntilScreen('add-account-button', 'account-add-screen');
+    await tapUntilScreen('account-import-button', 'account-import-access-level-view');
+    await tapUntilScreen('next-button', 'account-import-secret-type-view');
+    await tapTestId('mnemonic-radio-button');
+    await tapUntilScreen('next-button', 'account-import-mnemonic-alert-view');
+    await tapUntilScreen('next-button', 'account-import-enter-mnemonic-view');
+});
+
+Then('I use the sample 24-word mnemonic', async () => {
+    this.mnemonic = SAMPLE_24_WORD_MNEMONIC.split(' ');
+});
+
+Then('I choose mnemonic curve {string}', async (curve) => {
+    const id = curve === 'ed25519' ? 'curve-ed25519-button' : 'curve-secp256k1-button';
+    const btn = element(by.id(id));
+    const scroller = element(by.id('mnemonic-words-scroll'));
+    for (let attempt = 0; attempt < 8; attempt++) {
+        try {
+            await waitFor(btn).toBeVisible().withTimeout(800);
+            break;
+        } catch (e) {
+            try {
+                await scroller.swipe('up', 'slow', 0.45);
+            } catch (swipeErr) {
+                // already at edge
+            }
+        }
+    }
+    try {
+        await waitFor(btn).toBeVisible().withTimeout(2500);
+    } catch (e) {
+        await waitFor(btn).toExist().withTimeout(4000);
+    }
+    try {
+        await btn.tap();
+    } catch (e) {
+        await btn.tap({ x: 12, y: 12 });
+    }
+    await sleepMs(350);
+    try {
+        await btn.tap();
+    } catch (e) {
+        await btn.tap({ x: 12, y: 12 });
+    }
+    await sleepMs(200);
+});
+
+Then('I reveal mnemonic import options', async () => {
+    await dismissKeyboard();
+    const scroller = element(by.id('mnemonic-words-scroll'));
+    const sw = element(by.id('choose-curve-switch'));
+    for (let i = 0; i < 12; i += 1) {
+        try {
+            await waitFor(sw).toBeVisible().withTimeout(800);
+            return;
+        } catch (e) {
+            try {
+                await scroller.swipe('up', 'slow', 0.7);
+            } catch (swipeErr) {
+                // already at edge
+            }
+        }
+    }
+    await waitFor(sw).toBeVisible().withTimeout(5000);
+});
+
+Then('I remember mnemonic address for curve {string}', async (curve) => {
+    this.expectedMnemonicAddress = deriveMnemonicAddress(this.mnemonic, curve);
+    if (Array.isArray(this.mnemonic) && this.mnemonic.join(' ') === SAMPLE_24_WORD_MNEMONIC) {
+        const expected =
+            curve === 'ed25519' ? 'r4wtygUBUyzLiibEwwKsA1YA9CKoWjUujS' : 'r9w2RvKA6rYyBsN3WWFBuEKB7XM83jVqbU';
+        assert.equal(this.expectedMnemonicAddress, expected);
+    }
+});
+
+Then('I should see expected mnemonic address', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('account-address-text', 15000);
+        this.address = await androidReadTextByTestId('account-address-text');
+    } else {
+        const attributes = await element(by.id('account-address-text')).getAttributes();
+        this.address = attributes.text;
+    }
+    assert.equal(this.address, this.expectedMnemonicAddress);
+});
+
+Then('I should see both mnemonic curves activated prompt', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitForAndroidAlertText('secp256k1', device.id);
+        return;
+    }
+    await waitFor(element(by.label('secp256k1')))
+        .toExist()
+        .withTimeout(20000);
+    await waitFor(element(by.label('ed25519')))
+        .toExist()
+        .withTimeout(5000);
+});
+
+Then('I should confirm expected mnemonic address', async () => {
+    const expected = this.expectedMnemonicAddress;
+    try {
+        if (device.getPlatform() === 'android') {
+            await waitUntilAndroidTestId('account-address-text', 20000);
+        } else {
+            await waitFor(element(by.id('account-import-show-address-view')))
+                .toExist()
+                .withTimeout(20000);
+        }
+    } catch (e) {
+        if (device.getPlatform() === 'android') {
+            await waitForAndroidAlertText(expected, device.id);
+            return;
+        }
+        await waitFor(element(by.label(expected)))
+            .toExist()
+            .withTimeout(8000);
+        return;
+    }
+
+    if (device.getPlatform() === 'android') {
+        this.address = await androidReadTextByTestId('account-address-text');
+    } else {
+        const attributes = await element(by.id('account-address-text')).getAttributes();
+        this.address = attributes.text;
+    }
+    assert.equal(this.address, expected);
+});
+
+Then('I activate expected mnemonic address', { timeout: 5 * 60 * 1000 }, async () => {
+    await activateAccount(this.expectedMnemonicAddress);
+});
+
+Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
+    const words = this.mnemonic;
+    if (!Array.isArray(words) || words.length < 12) {
+        throw new Error(`mnemonic not ready: ${JSON.stringify(words)}`);
+    }
+
     // typeText + return advances to the next word field on iOS. Android
     // later rows are under 75% visible. Do not tap (IME covers the list).
-    for (let i = 0; i < this.mnemonic.length; i++) {
-        const field = element(by.id(`word-${i}-input`));
-        if (device.getPlatform() === 'android') {
-            // Click-per-row missed later fields; adb typed into word 3
-            // (concatenated blob). Focus word 0 once, then type + ENTER
-            // so onSubmitEditing advances. BIP39 words are a-z.
+    if (device.getPlatform() === 'android') {
+        for (let i = 0; i < words.length; i++) {
             const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
             if (i === 0) {
                 await waitUntilAndroidTestId('word-0-input', 10000);
                 await clickByTestId('word-0-input');
             }
-            androidTypeText(this.mnemonic[i]);
+            androidTypeText(words[i]);
             execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
             await new Promise((resolve) => { setTimeout(resolve, 250); });
-        } else {
-            await field.typeText(`${this.mnemonic[i]}\n`);
+        }
+        return;
+    }
+
+    const scroller = element(by.id('mnemonic-words-scroll'));
+    try {
+        await scroller.scrollTo('top');
+    } catch (e) {
+        // already at top
+    }
+
+    for (let i = 0; i < words.length; i++) {
+        const field = element(by.id(`word-${i}-input`));
+        let visible = false;
+        for (let attempt = 0; attempt < 12; attempt++) {
+            try {
+                await waitFor(field).toBeVisible().withTimeout(700);
+                visible = true;
+                break;
+            } catch (e) {
+                try {
+                    await scroller.swipe('up', 'slow', 0.35);
+                } catch (swipeErr) {
+                    // already at edge
+                }
+            }
+        }
+        if (!visible) {
+            throw new Error(
+                `word-${i}-input never visible; need ${words.length} fields. Is 24-words selected?`,
+            );
+        }
+        try {
+            await field.replaceText(words[i]);
+        } catch (e) {
+            await field.typeText(`${words[i]}\n`);
         }
     }
     await dismissKeyboard();

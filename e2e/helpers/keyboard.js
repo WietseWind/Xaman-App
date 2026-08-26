@@ -45,7 +45,10 @@ const dismissKeyboard = async () => {
         try {
             await waitFor(element(by.id(id))).toExist().withTimeout(150);
             // Title area, well above the field and the keyboard.
-            await element(by.id(id)).tap({ x: 200, y: 70 });
+            // Enter mnemonic: y:70 is the 12/16/24 row (center = 16), which
+            // truncates a 24-word mnemonic to the first 16 words.
+            const y = id === 'account-import-enter-mnemonic-view' ? 16 : 70;
+            await element(by.id(id)).tap({ x: 200, y });
             await sleep(300);
             return;
         } catch (e) {

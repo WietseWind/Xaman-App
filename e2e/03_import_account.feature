@@ -125,10 +125,12 @@ Feature: Import Account
         Given I should have 'account-import-enter-mnemonic-view'
         Then I tap '24-words-button'
         Then I generate new mnemonic
+        Then I remember mnemonic address for curve "secp256k1"
         Then I enter my mnemonic
         Then I tap 'next-button'
         Given I should have 'account-import-show-address-view'
         Then I read my account address
+        Then I should see expected mnemonic address
         Then I tap 'next-button'
         Given I should see 'account-import-explain-activation-view'
         Then I tap 'next-button'
@@ -164,6 +166,115 @@ Feature: Import Account
         Then I tap 'close-button'
         Given I should not have 'tokens-list-empty-view'
 
+    Scenario: Import mnemonic with curve toggle stays secp256k1
+        Then I tap 'tab-Settings'
+        Given I should have 'settings-tab-screen'
+        Then I tap 'accounts-button'
+        Given I should have 'accounts-list-screen'
+        Then I tap 'add-account-button'
+        Given I should see 'account-add-screen'
+        Then I tap 'account-import-button'
+        Given I should see 'account-import-access-level-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-secret-type-view'
+        Then I tap 'mnemonic-radio-button'
+        Then I tap 'next-button'
+        Given I should have 'account-import-mnemonic-alert-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-enter-mnemonic-view'
+        Then I tap '24-words-button'
+        Then I generate new mnemonic
+        Then I remember mnemonic address for curve "secp256k1"
+        Then I enter my mnemonic
+        Then I scroll 'mnemonic-words-scroll' to bottom
+        Then I tap 'choose-curve-switch'
+        Then I tap 'curve-secp256k1-button'
+        Then I tap 'next-button'
+        Given I should have 'account-import-show-address-view'
+        Then I should see expected mnemonic address
+        Then I tap 'next-button'
+        Given I should see 'account-import-explain-activation-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-security-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-label-view'
+        Then I enter 'I-MN-Secp' in 'label-input'
+        Then I tap 'next-button'
+        Given I should have 'account-import-finish-view'
+        Then I tap 'finish-button'
+        Given I should have 'home-tab-view'
+
+    Scenario: Import mnemonic with curve toggle ed25519
+        Then I tap 'tab-Settings'
+        Given I should have 'settings-tab-screen'
+        Then I tap 'accounts-button'
+        Given I should have 'accounts-list-screen'
+        Then I tap 'add-account-button'
+        Given I should see 'account-add-screen'
+        Then I tap 'account-import-button'
+        Given I should see 'account-import-access-level-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-secret-type-view'
+        Then I tap 'mnemonic-radio-button'
+        Then I tap 'next-button'
+        Given I should have 'account-import-mnemonic-alert-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-enter-mnemonic-view'
+        Then I tap '24-words-button'
+        Then I generate new mnemonic
+        Then I remember mnemonic address for curve "ed25519"
+        Then I enter my mnemonic
+        Then I scroll 'mnemonic-words-scroll' to bottom
+        Then I tap 'choose-curve-switch'
+        Then I tap 'curve-ed25519-button'
+        Then I tap 'next-button'
+        Given I should have 'account-import-show-address-view'
+        Then I should see expected mnemonic address
+        Then I tap 'next-button'
+        Given I should see 'account-import-explain-activation-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-security-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-label-view'
+        Then I enter 'I-MN-Ed' in 'label-input'
+        Then I tap 'next-button'
+        Given I should have 'account-import-finish-view'
+        Then I tap 'finish-button'
+        Given I should have 'home-tab-view'
+
+    Scenario: Import mnemonic autodetects activated ed25519 account
+        Then I tap 'tab-Settings'
+        Given I should have 'settings-tab-screen'
+        Then I tap 'accounts-button'
+        Given I should have 'accounts-list-screen'
+        Then I tap 'add-account-button'
+        Given I should see 'account-add-screen'
+        Then I tap 'account-import-button'
+        Given I should see 'account-import-access-level-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-secret-type-view'
+        Then I tap 'mnemonic-radio-button'
+        Then I tap 'next-button'
+        Given I should have 'account-import-mnemonic-alert-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-enter-mnemonic-view'
+        Then I tap '24-words-button'
+        Then I generate new mnemonic with ed25519
+        Then I remember mnemonic address for curve "ed25519"
+        Then I activate expected mnemonic address
+        Then I enter my mnemonic
+        Then I tap 'next-button'
+        Given I should have 'account-import-show-address-view'
+        Then I should see expected mnemonic address
+        Then I tap 'next-button'
+        Given I should have 'account-import-security-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-label-view'
+        Then I enter 'I-MN-Ed-Auto' in 'label-input'
+        Then I tap 'next-button'
+        Given I should have 'account-import-finish-view'
+        Then I tap 'finish-button'
+        Given I should have 'home-tab-view'
 
     # Family Seed + passphrase
     Scenario: Import account with family seed with passphrase as security
