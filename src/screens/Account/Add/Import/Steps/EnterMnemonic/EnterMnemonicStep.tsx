@@ -33,11 +33,39 @@ import Localize from '@locale';
 import { ScanModalProps } from '@screens/Modal/Scan';
 
 import LedgerService from '@services/LedgerService';
+import { CoreRepository } from '@store/repositories';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
 
 import { StepsContext } from '../../Context';
+
+const DEBUG_ED25519_MNEMONIC = [
+    'lamp',
+    'elevator',
+    'orchard',
+    'music',
+    'glare',
+    'night',
+    'upper',
+    'race',
+    'mixture',
+    'bullet',
+    'property',
+    'nasty',
+    'agent',
+    'sword',
+    'blind',
+    'dynamic',
+    'gossip',
+    'life',
+    'series',
+    'shrug',
+    'day',
+    'ice',
+    'control',
+    'reunion',
+];
 
 /* types ==================================================================== */
 export interface Props {}
@@ -90,6 +118,20 @@ class EnterMnemonicStep extends Component<Props, State> {
         this.inputs = [];
     }
 
+    canPrefillDebugEdMnemonic = (overrides: Partial<State> = {}) => {
+        const { length, words, useCurve, curve } = { ...this.state, ...overrides };
+        return (
+            __DEV__ &&
+            CoreRepository.isDeveloperModeEnabled() &&
+            length === 24 &&
+            useCurve &&
+            curve === 'ed25519' &&
+            words.filter(Boolean).length === 0
+        );
+    };
+
+    debugEdMnemonicWords = () => DEBUG_ED25519_MNEMONIC.slice();
+
     finishImport = (account: any) => {
         const { goNext, setImportedAccount } = this.context;
 
@@ -99,7 +141,12 @@ class EnterMnemonicStep extends Component<Props, State> {
     };
 
     goNext = async () => {
-        const { words, usePassphrase, passphrase, useAlternativePath, derivationPath, useCurve, curve } = this.state;
+        let { words, usePassphrase, passphrase, useAlternativePath, derivationPath, useCurve, curve } = this.state;
+
+        if (this.canPrefillDebugEdMnemonic()) {
+            words = this.debugEdMnemonicWords();
+            this.setState({ words });
+        }
 
         if (words.filter(Boolean).length < 6) {
             Alert.alert('Error', Localize.t('account.pleaseEnterAllWords'));
@@ -225,17 +272,13 @@ class EnterMnemonicStep extends Component<Props, State> {
         const { length, words } = this.state;
 
         if (newLength !== length) {
-            if (newLength > length) {
-                this.setState({
-                    words: words.concat(Array(newLength - length)),
-                    length: newLength,
-                });
-            } else {
-                this.setState({
-                    words: words.slice(0, newLength),
-                    length: newLength,
-                });
+            const nextWords =
+                newLength > length ? words.concat(Array(newLength - length)) : words.slice(0, newLength);
+            const nextState = { words: nextWords, length: newLength };
+            if (this.canPrefillDebugEdMnemonic(nextState)) {
+                nextState.words = this.debugEdMnemonicWords();
             }
+            this.setState(nextState);
         }
     };
 
@@ -398,7 +441,17 @@ class EnterMnemonicStep extends Component<Props, State> {
                         <Switch
                             testID="choose-curve-switch"
                             onChange={(enabled) => {
-                                this.setState({ useCurve: enabled }, this.scrollToBottom);
+                                const next = { useCurve: enabled };
+                                this.setState(
+                                    {
+                                        useCurve: enabled,
+                                        words:
+                                            enabled && this.canPrefillDebugEdMnemonic(next)
+                                                ? this.debugEdMnemonicWords()
+                                                : this.state.words,
+                                    },
+                                    this.scrollToBottom,
+                                );
                             }}
                             checked={useCurve}
                         />
@@ -433,7 +486,13 @@ class EnterMnemonicStep extends Component<Props, State> {
                             testID="curve-ed25519-button"
                             light
                             onPress={() => {
-                                this.setState({ curve: 'ed25519' });
+                                const next = { curve: 'ed25519' as MnemonicAlgorithm };
+                                this.setState({
+                                    ...next,
+                                    words: this.canPrefillDebugEdMnemonic(next)
+                                        ? this.debugEdMnemonicWords()
+                                        : this.state.words,
+                                });
                             }}
                             roundedSmall
                             icon={curve === 'ed25519' ? 'IconCheck' : undefined}

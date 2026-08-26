@@ -4,6 +4,35 @@
  */
 import { derive, XRPL_Account } from 'xrpl-accountlib';
 
+export const getMnemonicAlgorithm = (account: {
+    keypair?: { algorithm?: string | null; publicKey?: string | null };
+}): MnemonicAlgorithm => {
+    if (account.keypair?.algorithm === 'ed25519' || account.keypair?.publicKey?.startsWith('ED')) {
+        return 'ed25519';
+    }
+    return 'secp256k1';
+};
+
+export const createSignableAccount = (imported: {
+    address?: string | null;
+    keypair?: { publicKey?: string | null; privateKey?: string | null; algorithm?: string | null };
+}): XRPL_Account => {
+    const publicKey = imported.keypair?.publicKey;
+    const privateKey = imported.keypair?.privateKey;
+    if (!imported.address || !publicKey || !privateKey) {
+        throw new Error('Imported account is missing address or keypair');
+    }
+
+    return new XRPL_Account({
+        address: imported.address,
+        algorithm: getMnemonicAlgorithm(imported),
+        keypair: {
+            publicKey,
+            privateKey,
+        },
+    });
+};
+
 export type MnemonicAlgorithm = 'secp256k1' | 'ed25519';
 
 export type MnemonicDeriveOptions = {

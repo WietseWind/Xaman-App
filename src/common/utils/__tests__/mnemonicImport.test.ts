@@ -1,7 +1,9 @@
-import { derive } from 'xrpl-accountlib';
+import { derive, sign } from 'xrpl-accountlib';
 
 import {
+    createSignableAccount,
     deriveMnemonicAccount,
+    getMnemonicAlgorithm,
     isLedgerAccountActivated,
     pickMnemonicImport,
 } from '../mnemonicImport';
@@ -41,6 +43,24 @@ describe('mnemonicImport', () => {
             expect(account.address).not.toBe(SECP_ADDRESS);
             expect(account.secret.path).toBe("m/44'/144'/0'/0'/0'");
             expect(account.keypair.publicKey?.startsWith('ED')).toBe(true);
+        });
+
+        it('rebuilds a signable ed25519 account from the keypair', () => {
+            const derived = deriveMnemonicAccount(SAMPLE, { algorithm: 'ed25519' });
+            const signable = createSignableAccount(derived);
+
+            expect(getMnemonicAlgorithm(signable)).toBe('ed25519');
+            expect(signable.address).toBe(ED_ADDRESS);
+
+            const signed = sign(
+                {
+                    Account: signable.address,
+                    InvoiceID: 'aa'.repeat(32),
+                },
+                signable,
+            );
+
+            expect(signed.signedTransaction).toBeTruthy();
         });
     });
 
