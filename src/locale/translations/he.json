@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "תוקף הערוץ פג ב-%{expiration}.",
     "theChannelIdIs": "מזהה הערוץ הוא %{channel}",
     "theChannelAmountIs": "סכום הערוץ הוא %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "תגית מקור: %{tag}",
     "theDestinationTagIs": "תגית יעד: %{tag}",
     "theChannelHasASettlementDelay": "לערוץ יש עיכוב הסדרה של %{delay} שניות",

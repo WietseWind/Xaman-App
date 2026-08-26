@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "The channel expires at %{expiration}.",
     "theChannelIdIs": "Kanal kimliği %{channel}",
     "theChannelAmountIs": "Kanal tutarı %{amount} %{currency} ' dir",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Kaynak etiket: %{tag}",
     "theDestinationTagIs": "Hedef etiket: %{tag}",
     "theChannelHasASettlementDelay": "Kanalda %{delay} saniye yerleşim gecikmesi var",

@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "சேனல் %{expiration} இல் காலாவதியாகிறது.",
     "theChannelIdIs": "சேனல் ID %{channel}",
     "theChannelAmountIs": "சேனல் தொகை %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Source Tag: %{tag}",
     "theDestinationTagIs": "Destination Tag: %{tag}",
     "theChannelHasASettlementDelay": "சேனலுக்கு %{delay} வினாடிகள் தீர்வு தாமதம் உள்ளது",

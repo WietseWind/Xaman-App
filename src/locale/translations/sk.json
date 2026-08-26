@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanál vyprší %{expiration}.",
     "theChannelIdIs": "ID kanála je %{channel}",
     "theChannelAmountIs": "Suma kanála je %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Source Tag: %{tag}",
     "theDestinationTagIs": "Destination Tag: %{tag}",
     "theChannelHasASettlementDelay": "Kanál má vyrovnavacie oneskorenie %{delay} sekúnd",

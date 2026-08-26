@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "The channel expires at %{expiration}.",
     "theChannelIdIs": "O ID do canle é Variable%{channel}",
     "theChannelAmountIs": "A cantidade do canle é Variable%{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Fonte da etiqueta: Variable%{tag}",
     "theDestinationTagIs": "Destino da etiqueta: Variable%{tag}",
     "theChannelHasASettlementDelay": "A canle ten un retraso na liquidación de Variable%{delay} segundos",

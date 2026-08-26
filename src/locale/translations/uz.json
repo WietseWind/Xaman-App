@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanal %{expiration} da tugaydi.",
     "theChannelIdIs": "Kanal identifikatori %{channel}",
     "theChannelAmountIs": "Kanal miqdori %{amount}  %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Manba yorlig'i(Tag): %{tag}",
     "theDestinationTagIs": "Belgilangan yorliq(Tag): %{tag}",
     "theChannelHasASettlementDelay": "Kanalda hisob-kitobning kechikishi bor %{delay} sekundlar",

@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "El canal caduca a %{expiration}.",
     "theChannelIdIs": "L'ID del canal és %{channel}",
     "theChannelAmountIs": "La quantitat del canal és %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "L'etiqueta de la font d'origen és: %{tag}",
     "theDestinationTagIs": "Etiqueta de destinació:  %{tag}",
     "theChannelHasASettlementDelay": "El canal té un endarreriment en els assentaments de  %{delay} segons",

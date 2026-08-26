@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Der Kanal läuft ab am %{expiration}.",
     "theChannelIdIs": "Die Kanal-ID ist %{channel}",
     "theChannelAmountIs": "Der Kanalbetrag ist %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "Der verbleibende Betrag ist %{amount} %{currency}",
     "theASourceTagIs": "Der Quellentag lautet wie folgt: %{tag}",
     "theDestinationTagIs": "Der Zieltag lautet wie folgt: %{tag}",
     "theChannelHasASettlementDelay": "Der Kanal hat eine Abrechnungsverzögerung von %{delay} Sekunden",

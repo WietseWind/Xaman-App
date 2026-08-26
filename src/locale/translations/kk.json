@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Арна %{expiration} уақытында жарамдылығын жояды.",
     "theChannelIdIs": "Арна ID %{channel}",
     "theChannelAmountIs": "Арна сомасы %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Көз тегі: %{tag}",
     "theDestinationTagIs": "Тағайындау тегі: %{tag}",
     "theChannelHasASettlementDelay": "Арнаның есеп айырысу кешігуі %{delay} секунд",

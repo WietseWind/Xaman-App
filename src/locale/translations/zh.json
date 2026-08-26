@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "通道将于 %{expiration} 到期。",
     "theChannelIdIs": "通道 ID 为 %{channel}",
     "theChannelAmountIs": "通道金额为 %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "剩余金额为 %{amount} %{currency}",
     "theASourceTagIs": "来源标签： %{tag}",
     "theDestinationTagIs": "目标标签： %{tag}",
     "theChannelHasASettlementDelay": "通道有 %{delay} 秒的结算延迟",

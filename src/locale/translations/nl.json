@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Het channel vervalt op %{expiration}.",
     "theChannelIdIs": "Het channel ID is %{channel}",
     "theChannelAmountIs": "Het channel bedrag is %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "Het resterende bedrag is %{amount} %{currency}",
     "theASourceTagIs": "Source Tag: %{tag}",
     "theDestinationTagIs": "Destination Tag: %{tag}",
     "theChannelHasASettlementDelay": "Het channel heeft een settlement vertraging van %{delay} seconden",

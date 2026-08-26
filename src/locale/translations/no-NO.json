@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanalen utløper %{expiration}.",
     "theChannelIdIs": "Kanal-ID er %{channel}",
     "theChannelAmountIs": "Saldo på kanal er %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Kilde Tag: %{tag}",
     "theDestinationTagIs": "Destinasjons Tag: %{tag}",
     "theChannelHasASettlementDelay": "Kanalen har en oppgjørsforsinkelse på %{delay} sekunder",

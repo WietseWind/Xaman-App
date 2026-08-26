@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanāls beidzas %{expiration}.",
     "theChannelIdIs": "Kanāla ID ir %{channel}",
     "theChannelAmountIs": "Kanāla summa ir %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Izcelsmes Tag: %{tag}",
     "theDestinationTagIs": "Galamērķa Tag: %{tag}",
     "theChannelHasASettlementDelay": "Kanālam ir norēķinu kavējums %{delay} sekundes",

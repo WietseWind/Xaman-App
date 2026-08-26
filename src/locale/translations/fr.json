@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Le canal expire le %{expiration}.",
     "theChannelIdIs": "L'ID canal est %{channel}",
     "theChannelAmountIs": "Le montant du canal est %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "Le montant restant est %{amount} %{currency}",
     "theASourceTagIs": "La balise source est la suivante: %{tag}",
     "theDestinationTagIs": "La balise de destination est la suivante: %{tag}",
     "theChannelHasASettlementDelay": "Le délai de règlement du canal est de %{delay} secondes",

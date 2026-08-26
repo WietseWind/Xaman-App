@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanalas baigiasi %{expiration}.",
     "theChannelIdIs": "Kanalo ID yra %{channel}",
     "theChannelAmountIs": "Kanalo suma yra %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Šaltinio žyma: %{tag}",
     "theDestinationTagIs": "Paskirties žyma: %{tag}",
     "theChannelHasASettlementDelay": "Kanalas turi atsiskaitymo vėlavimą %{delay} sekundžių",

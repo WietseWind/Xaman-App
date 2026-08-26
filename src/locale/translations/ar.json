@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "تنتهي صلاحية القناة في %{expiration}.",
     "theChannelIdIs": "معرّف القناة هو %{channel}",
     "theChannelAmountIs": "مبلغ القناة هو %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "علامة المصدر: %{tag}",
     "theDestinationTagIs": "علامة الوجهة: %{tag}",
     "theChannelHasASettlementDelay": "للقناة تأخير تسوية مدته %{delay} ثانية",

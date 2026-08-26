@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanál vyprší v %{expiration}.",
     "theChannelIdIs": "ID kanálu je %{channel}",
     "theChannelAmountIs": "Tento kanál obsahuje %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Zdrojová značka je: %{tag}",
     "theDestinationTagIs": "Cílová značka je: %{tag}",
     "theChannelHasASettlementDelay": "Kanál má zpoždění vypořádání %{delay} sekund",

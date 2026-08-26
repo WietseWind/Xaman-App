@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "The channel expires at %{expiration}.",
     "theChannelIdIs": "Η ταυτότητα καναλιού είναι %{channel}",
     "theChannelAmountIs": "Το ποσό καναλιού είναι %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Το προσδιοριστικό προέλευσης είναι: %{tag}",
     "theDestinationTagIs": "Το προσδιοριστικό προορισμού είναι: %{tag}",
     "theChannelHasASettlementDelay": "Το κανάλι έχει καθυστέρηση διακανονισμού %{delay} δευτερόλεπτα",

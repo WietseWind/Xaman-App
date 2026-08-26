@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanalen upphör vid %{expiration}.",
     "theChannelIdIs": "Kanal-IDt är %{channel}",
     "theChannelAmountIs": "Kanalbeloppet är %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Källtaggen är: %{tag}",
     "theDestinationTagIs": "Måltaggen är: %{tag}",
     "theChannelHasASettlementDelay": "Kanalen har en avvecklingsförskjutning på %{delay} sekunder",

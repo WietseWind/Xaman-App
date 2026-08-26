@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanala %{expiration}(e)n iraungitzen da.",
     "theChannelIdIs": "Kanalaren IDa %{channel} da",
     "theChannelAmountIs": "Kanalaren zenbatekoa %{amount} %{currency} da",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Iturriko etiketa: %{tag}",
     "theDestinationTagIs": "Helmugako etiketa: %{tag}",
     "theChannelHasASettlementDelay": "Kanalak %{delay} segunduko likidazio atzerapena dauka",

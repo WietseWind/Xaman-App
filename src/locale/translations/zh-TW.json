@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "通道將於 %{expiration} 到期。",
     "theChannelIdIs": "通道 ID 為 %{channel}",
     "theChannelAmountIs": "通道金額為 %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "剩餘金額為 %{amount} %{currency}",
     "theASourceTagIs": "來源標籤:%{tag}",
     "theDestinationTagIs": "目標標籤:%{tag}",
     "theChannelHasASettlementDelay": "通道有 %{delay} 秒的結算延遲",

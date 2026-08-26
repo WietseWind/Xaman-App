@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanał wygasa %{expiration}.",
     "theChannelIdIs": "Identyfikator kanału to %{channel}",
     "theChannelAmountIs": "Kwota kanału to %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Tag źródłowy to: %{tag}",
     "theDestinationTagIs": "Tag docelowy to: %{tag}",
     "theChannelHasASettlementDelay": "Kanał ma opóźnienie rozrachunkowe %{delay} sekund",

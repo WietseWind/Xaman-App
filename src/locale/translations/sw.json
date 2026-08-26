@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Ile channel expires at%{expiration}.",
     "theChannelIdIs": "Ile channel ID ni%{channel}",
     "theChannelAmountIs": "Ile channel kiasi ni%{amount}%{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Source Tag:%{tag}",
     "theDestinationTagIs": "Destination Tag:%{tag}",
     "theChannelHasASettlementDelay": "The channel has a settlement delay of %{delay}seconds",

@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "チャネルは %{expiration} に期限切れになります。",
     "theChannelIdIs": "チャンネルIDは %{channel} です。",
     "theChannelAmountIs": "チャンネル量は %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "残額は %{amount} %{currency} です",
     "theASourceTagIs": "ソースタグ： %{tag}",
     "theDestinationTagIs": "宛先タグ： %{tag}",
     "theChannelHasASettlementDelay": "チャネルの決済遅延時間は %{delay} 秒です。",

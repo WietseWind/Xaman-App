@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "The channel expires at %{expiration}.",
     "theChannelIdIs": "ID kanala je %{channel}",
     "theChannelAmountIs": "Količina kanala je %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Izvorna oznaka je: %{tag}",
     "theDestinationTagIs": "Oznaka cilja je: %{tag}",
     "theChannelHasASettlementDelay": "Kanal ima zakasnitev poravnave v %{delay} sekundah",

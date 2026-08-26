@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Die kanaal verval op %{expiration}.",
     "theChannelIdIs": "Die kanaal ID is %{channel}",
     "theChannelAmountIs": "Die kanaal bedrag is %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Bron Etiket: %{tag}",
     "theDestinationTagIs": "Bestemming Etiket: %{tag}",
     "theChannelHasASettlementDelay": "Die kanaal het 'n skikking vertraging van %{delay} sekondes",

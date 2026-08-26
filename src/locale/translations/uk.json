@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Канал закінчується %{expiration}.",
     "theChannelIdIs": "Ідентифікатор каналу: %{channel}",
     "theChannelAmountIs": "Сума в каналі становить %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Теґ джерела: %{tag}",
     "theDestinationTagIs": "Тег призначення: %{tag}",
     "theChannelHasASettlementDelay": "Канал має затримку розрахунку в %{delay} секунд",

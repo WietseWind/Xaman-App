@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "ચેનલ %{expiration} પર સમાપ્ત થાય છે.",
     "theChannelIdIs": "ચેનલ ID છે %{channel}",
     "theChannelAmountIs": "ચેનલ રકમ છે %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "સ્રોત ટેગ: %{tag}",
     "theDestinationTagIs": "લક્ષ્ય ટેગ: %{tag}",
     "theChannelHasASettlementDelay": "ચેનલમાં %{delay} સેકંડનો સેટલમેન્ટ વિલંબ છે",

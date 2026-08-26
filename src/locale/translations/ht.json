@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanal la ap ekspirasyon nan %{expiration}.",
     "theChannelIdIs": "ID kanal la se %{channel}",
     "theChannelAmountIs": "Montan kanal la se %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Etikèt Sous: %{tag}",
     "theDestinationTagIs": "Etikèt Destinasyon: %{tag}",
     "theChannelHasASettlementDelay": "Kanal la gen yon reta règleman de %{delay} segond",

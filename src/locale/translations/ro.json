@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Canalul expiră la %{expiration}.",
     "theChannelIdIs": "ID-ul canalului este %{channel}",
     "theChannelAmountIs": "Suma canalului este %{amount}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Tagul sursă este: %{tag}",
     "theDestinationTagIs": "Eticheta destinației (Destination Tag) este: %{tag}",
     "theChannelHasASettlementDelay": "Canalul are o întârziere de decontare de %{delay} secunde",

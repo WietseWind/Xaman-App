@@ -9,6 +9,7 @@ import PayChannel from '@common/libs/ledger/objects/PayChannel/PayChannel.class'
 /* Types ==================================================================== */
 import { ExplainerAbstract, MonetaryStatus } from '@common/libs/ledger/factory/types';
 import { OperationActions } from '@common/libs/ledger/parser/types';
+import { remainingPayChannelAmount } from '@common/libs/ledger/utils/payChannelAmounts';
 
 /* Descriptor ==================================================================== */
 class PayChannelInfo extends ExplainerAbstract<PayChannel> {
@@ -45,6 +46,16 @@ class PayChannelInfo extends ExplainerAbstract<PayChannel> {
                 currency: Amount!.currency,
             }),
         );
+
+        const remaining = remainingPayChannelAmount(Amount, this.item.Balance);
+        if (remaining) {
+            content.push(
+                Localize.t('events.theChannelRemainingAmountIs', {
+                    amount: remaining.value,
+                    currency: remaining.currency,
+                }),
+            );
+        }
         if (SourceTag !== undefined) {
             content.push(Localize.t('events.theASourceTagIs', { tag: SourceTag }));
         }
@@ -80,19 +91,31 @@ class PayChannelInfo extends ExplainerAbstract<PayChannel> {
     }
 
     getMonetaryDetails() {
+        const remaining = remainingPayChannelAmount(this.item.Amount, this.item.Balance);
+        const action = OperationActions[this.item.Destination === this.account.address ? 'INC' : 'DEC'];
+        const factor = [];
+
+        if (remaining) {
+            factor.push({
+                ...remaining,
+                effect: MonetaryStatus.IMMEDIATE_EFFECT,
+                action,
+            });
+        }
+
+        if (this.item.Amount) {
+            factor.push({
+                ...this.item.Amount,
+                effect: MonetaryStatus.NO_EFFECT,
+            });
+        }
+
         return {
             mutate: {
                 [OperationActions.INC]: [],
                 [OperationActions.DEC]: [],
             },
-            factor: [
-                {
-                    currency: this.item.Amount!.currency,
-                    value: this.item.Amount!.value,
-                    effect: MonetaryStatus.IMMEDIATE_EFFECT,
-                    action: OperationActions[this.item.Destination === this.account.address ? 'INC' : 'DEC'],
-                },
-            ],
+            factor,
         };
     }
 }

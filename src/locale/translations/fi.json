@@ -717,6 +717,7 @@
     "theChannelExpiresAt": "Kanava vanhenee %{expiration}.",
     "theChannelIdIs": "Kanavan ID on %{channel}",
     "theChannelAmountIs": "Kanavan määrä on %{amount} %{currency}",
+    "theChannelRemainingAmountIs": "The remaining amount is %{amount} %{currency}",
     "theASourceTagIs": "Lähde-tag: %{tag}",
     "theDestinationTagIs": "Kohde-tag: %{tag}",
     "theChannelHasASettlementDelay": "Kanavalla on %{delay} sekunnin selvitysviive",
