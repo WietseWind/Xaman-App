@@ -12,10 +12,20 @@ const MIN_FUND_BALANCE = ACTIVATION_DROPS + ACTIVATION_FEE_DROPS + ACTIVATION_RE
 let testNetCredits;
 
 // generate family seed
-const generateMnemonic = (strength = 256) => {
-    const generatedAccount = AccountLib.generate.mnemonic({ strength });
+const generateMnemonic = (strength = 256, algorithm) => {
+    const options = { strength };
+    if (algorithm) {
+        options.algorithm = algorithm;
+    }
+    const generatedAccount = AccountLib.generate.mnemonic(options);
 
     return generatedAccount.secret.mnemonic.split(' ');
+};
+
+const deriveMnemonicAddress = (words, algorithm) => {
+    const mnemonic = Array.isArray(words) ? words.join(' ') : words;
+    const options = algorithm && algorithm !== 'secp256k1' ? { algorithm } : undefined;
+    return AccountLib.derive.mnemonic(mnemonic, options).address;
 };
 
 // generate family seed
@@ -185,4 +195,5 @@ module.exports = {
     generateSecretNumbers,
     generateFamilySeed,
     generateMnemonic,
+    deriveMnemonicAddress,
 };

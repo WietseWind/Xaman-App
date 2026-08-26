@@ -10,6 +10,7 @@ const {
     generateSecretNumbers,
     generateFamilySeed,
     generateMnemonic,
+    deriveMnemonicAddress,
 } = require('../helpers/fixtures');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const {
@@ -268,6 +269,35 @@ Then('I generate new mnemonic', async () => {
         return;
     }
     this.mnemonic = generateMnemonic();
+});
+
+Then('I generate new mnemonic with ed25519', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('12-words-button', 10000);
+        await clickByTestId('12-words-button');
+        this.mnemonic = generateMnemonic(128, 'ed25519');
+        return;
+    }
+    this.mnemonic = generateMnemonic(256, 'ed25519');
+});
+
+Then('I remember mnemonic address for curve {string}', async (curve) => {
+    this.expectedMnemonicAddress = deriveMnemonicAddress(this.mnemonic, curve);
+});
+
+Then('I should see expected mnemonic address', async () => {
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('account-address-text', 15000);
+        this.address = await androidReadTextByTestId('account-address-text');
+    } else {
+        const attributes = await element(by.id('account-address-text')).getAttributes();
+        this.address = attributes.text;
+    }
+    assert.equal(this.address, this.expectedMnemonicAddress);
+});
+
+Then('I activate expected mnemonic address', { timeout: 5 * 60 * 1000 }, async () => {
+    await activateAccount(this.expectedMnemonicAddress);
 });
 
 Then('I enter my mnemonic', async () => {
