@@ -31,7 +31,8 @@ const styles = StyleService.create({
     },
     panelHeader: {
         alignItems: 'center',
-        marginBottom: 20,
+        paddingVertical: 10,
+        marginBottom: 10,
     },
     panelHandle: {
         width: 40,

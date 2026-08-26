@@ -309,10 +309,9 @@ class ActionPanel extends Component<Props, State> {
                             transform: [{ translateY: this.translateY }],
                         },
                     ]}
-                    {...this.panResponder.panHandlers}
                 >
                     <View style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}>
-                        <View style={styles.panelHeader}>
+                        <View style={styles.panelHeader} {...this.panResponder.panHandlers}>
                             <View style={styles.panelHandle} />
                         </View>
                         {children}
