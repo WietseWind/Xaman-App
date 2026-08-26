@@ -98,7 +98,7 @@ class SwitchNetworkOverlay extends Component<Props, State> {
 
         if (contentHeight > AppSizes.screen.height * 0.9) {
             contentHeight = AppSizes.screen.height * 0.9;
-            paddingBottom = ROW_ITEM_HEIGHT;
+            paddingBottom = ROW_ITEM_HEIGHT + AppSizes.safeAreaBottomInset;
         }
 
         this.setState({
@@ -192,7 +192,11 @@ class SwitchNetworkOverlay extends Component<Props, State> {
                         {Localize.t('global.networks')}
                     </Text>
                 </View>
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }}>
+                <ScrollView
+                    style={AppStyles.flex1}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom }}
+                >
                     {Object.keys(networks).map((type: string) => {
                         return (
                             <Fragment key={type}>

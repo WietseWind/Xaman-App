@@ -78,7 +78,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
 
         if (contentHeight > AppSizes.screen.height * 0.9) {
             contentHeight = AppSizes.screen.height * 0.9;
-            paddingBottom = ROW_ITEM_HEIGHT;
+            paddingBottom = ROW_ITEM_HEIGHT + AppSizes.safeAreaBottomInset;
         }
 
         this.setState({
@@ -285,7 +285,11 @@ class SwitchAccountOverlay extends Component<Props, State> {
                         </View>
                     )}
                 </View>
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }}>
+                <ScrollView
+                    style={AppStyles.flex1}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom }}
+                >
                     {this.renderContent()}
                 </ScrollView>
             </ActionPanel>
