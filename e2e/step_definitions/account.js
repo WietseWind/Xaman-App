@@ -13,6 +13,9 @@ const {
     deriveMnemonicAddress,
     deriveFamilySeedAddress,
     SAMPLE_24_WORD_MNEMONIC,
+    SAMPLE_FAMILY_SEED_ED_XAHAU,
+    SAMPLE_FAMILY_SEED_ED_ADDRESS,
+    SAMPLE_FAMILY_SEED_SECP_ADDRESS,
 } = require('../helpers/fixtures');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { waitForAndroidAlertText } = require('../helpers/androidAlert');
@@ -361,7 +364,7 @@ Then('I leave account import if open', async () => {
     // Only treat tab-hosting screens as done. accounts-list and add-account hide
     // the tab bar, so later scenarios cannot tap tab-Settings from there.
     const doneIds = ['network-switch-button', 'home-tab-view', 'settings-tab-screen'];
-    const alertLabels = ['Go back', 'Cancel', 'OK'];
+    const alertLabels = ['Go back', 'Cancel', 'OK', 'No'];
 
     leaveLoop: for (let i = 0; i < 20; i += 1) {
         for (let d = 0; d < doneIds.length; d += 1) {
@@ -499,6 +502,28 @@ Then('I should confirm expected family seed address', async () => {
 
 Then('I activate expected family seed address', { timeout: 5 * 60 * 1000 }, async () => {
     await activateAccount(this.expectedFamilySeedAddress);
+});
+
+Then('I use the xahau testnet ed25519 family seed', async () => {
+    this.seed = SAMPLE_FAMILY_SEED_ED_XAHAU;
+    this.expectedFamilySeedAddress = SAMPLE_FAMILY_SEED_ED_ADDRESS;
+    this.expectedFamilySeedSecpAddress = SAMPLE_FAMILY_SEED_SECP_ADDRESS;
+});
+
+Then('I should see the family seed different curve prompt', { timeout: 30 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        await waitForAndroidAlertText('Yes', device.id);
+        return;
+    }
+    await waitFor(element(by.label('Different curve')))
+        .toExist()
+        .withTimeout(20000);
+    await waitFor(element(by.label('Yes').and(by.type('_UIAlertControllerActionView'))))
+        .toExist()
+        .withTimeout(5000);
+    await waitFor(element(by.label('No').and(by.type('_UIAlertControllerActionView'))))
+        .toExist()
+        .withTimeout(5000);
 });
 
 Then('I open the mnemonic import screen', async () => {

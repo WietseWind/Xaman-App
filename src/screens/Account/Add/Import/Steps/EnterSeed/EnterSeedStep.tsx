@@ -6,6 +6,7 @@ import React, { Component } from 'react';
 import { SafeAreaView, View, Text, Alert, KeyboardTypeOptions, Platform } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
+import { Prompt } from '@common/helpers/interface';
 import { AppScreens } from '@common/constants';
 
 import { derive } from 'xrpl-accountlib';
@@ -35,6 +36,7 @@ import {
 } from '@common/utils/familySeedImport';
 
 import LedgerService from '@services/LedgerService';
+import NetworkService from '@services/NetworkService';
 
 // style
 import { AppStyles } from '@theme';
@@ -98,22 +100,70 @@ class EnterSeedStep extends Component<Props, State> {
         return xrplSecret;
     };
 
+    confirmDifferentCurve = (curve: FamilySeedAlgorithm, address: string): Promise<boolean> => {
+        let network = '';
+        try {
+            network = NetworkService.getNetwork().name;
+        } catch {
+            network = '';
+        }
+
+        return new Promise((resolve) => {
+            Prompt(
+                Localize.t('account.familySeedDifferentCurveTitle'),
+                Localize.t('account.familySeedDifferentCurveMessage', {
+                    network,
+                    curve,
+                    address,
+                }),
+                [
+                    {
+                        text: Localize.t('global.no'),
+                        style: 'cancel',
+                        onPress: () => resolve(false),
+                    },
+                    {
+                        text: Localize.t('global.yes'),
+                        onPress: () => resolve(true),
+                    },
+                ],
+            );
+        });
+    };
+
     runCurveAutodetect = async (token: number, secret?: string): Promise<FamilySeedAlgorithm> => {
         if (!isFamilySeedCurvePickerEligible(secret) || this.userSelectedCurve || token !== this.curveDetectToken) {
-            return 'secp256k1';
+            return this.getSecretType();
         }
 
         try {
-            const algorithm = await pickFamilySeedCurve({
+            const picked = await pickFamilySeedCurve({
                 secret: this.resolveFamilySeed(secret as string),
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
 
-            if (token === this.curveDetectToken && !this.userSelectedCurve) {
-                this.setState({ secretType: algorithm });
+            if (token !== this.curveDetectToken || this.userSelectedCurve) {
+                return this.getSecretType();
             }
 
-            return algorithm;
+            if (!picked.confirm) {
+                return picked.algorithm;
+            }
+
+            const accepted = await this.confirmDifferentCurve(picked.confirm.algorithm, picked.confirm.address);
+
+            if (token !== this.curveDetectToken) {
+                return this.getSecretType();
+            }
+
+            this.userSelectedCurve = true;
+
+            if (accepted) {
+                this.setState({ secretType: picked.confirm.algorithm });
+                return picked.confirm.algorithm;
+            }
+
+            return 'secp256k1';
         } catch {
             return 'secp256k1';
         }

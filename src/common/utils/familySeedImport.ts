@@ -1,12 +1,21 @@
 /**
  * Family seed import: secp256k1 (default, omit algorithm) vs ed25519.
- * Autoselects ed25519 only when that account is activated and secp is not.
+ * Suggests ed25519 only when that account is activated and secp is not.
  */
 import { derive, XRPL_Account } from 'xrpl-accountlib';
 
 import { isLedgerAccountActivated } from './mnemonicImport';
 
 export type FamilySeedAlgorithm = 'secp256k1' | 'ed25519';
+
+export type FamilySeedCurvePick = {
+    algorithm: FamilySeedAlgorithm;
+    address: string;
+    confirm?: {
+        algorithm: FamilySeedAlgorithm;
+        address: string;
+    };
+};
 
 export const isFamilySeedCurvePickerEligible = (secret?: string): boolean => {
     if (typeof secret !== 'string') {
@@ -31,21 +40,33 @@ export const pickFamilySeedCurve = async ({
 }: {
     secret: string;
     getAccountInfo: (address: string) => Promise<any>;
-}): Promise<FamilySeedAlgorithm> => {
+}): Promise<FamilySeedCurvePick> => {
     const secp = deriveFamilySeedAccount(secret);
     const ed = deriveFamilySeedAccount(secret, 'ed25519');
+    const secpAddress = secp.address as string;
+    const edAddress = ed.address as string;
 
     const [secpInfo, edInfo] = await Promise.all([
-        getAccountInfo(secp.address as string).catch(() => undefined),
-        getAccountInfo(ed.address as string).catch(() => undefined),
+        getAccountInfo(secpAddress).catch(() => undefined),
+        getAccountInfo(edAddress).catch(() => undefined),
     ]);
 
     const secpOn = isLedgerAccountActivated(secpInfo);
     const edOn = isLedgerAccountActivated(edInfo);
 
     if (edOn && !secpOn) {
-        return 'ed25519';
+        return {
+            algorithm: 'ed25519',
+            address: edAddress,
+            confirm: {
+                algorithm: 'ed25519',
+                address: edAddress,
+            },
+        };
     }
 
-    return 'secp256k1';
+    return {
+        algorithm: 'secp256k1',
+        address: secpAddress,
+    };
 };

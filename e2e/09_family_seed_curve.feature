@@ -1,6 +1,6 @@
 Feature: Family seed curve import on Xahau testnet
-    # Isolated checks for family seed secp256k1 vs ed25519. Autodetect only
-    # moves the picker to ed25519 when that account is activated and secp is
+    # Isolated checks for family seed secp256k1 vs ed25519. Autodetect prompts
+    # before switching to ed25519 when that account is activated and secp is
     # not. Next still has to be pressed.
 
     Background:
@@ -49,12 +49,23 @@ Feature: Family seed curve import on Xahau testnet
         Then I enter my seed in the input
         Given I should see family seed curve "secp256k1"
 
-    Scenario: Autodetect selects ed25519 when only that account is activated
+    Scenario: Autodetect prompts to use the activated ed25519 account
         Then I open the family seed import screen
-        Then I generate new family seed
-        Then I remember family seed address for curve "ed25519"
-        Then I activate expected family seed address
+        Then I use the xahau testnet ed25519 family seed
         Then I enter my seed in the input
+        Then I should see the family seed different curve prompt
+        Then I tap alert button with label "Yes"
         Given I should see family seed curve "ed25519"
+        Then I tap 'next-button'
+        Then I should confirm expected family seed address
+
+    Scenario: Autodetect prompt No keeps secp256k1
+        Then I open the family seed import screen
+        Then I use the xahau testnet ed25519 family seed
+        Then I remember family seed address for curve "secp256k1"
+        Then I enter my seed in the input
+        Then I should see the family seed different curve prompt
+        Then I tap alert button with label "No"
+        Given I should see family seed curve "secp256k1"
         Then I tap 'next-button'
         Then I should confirm expected family seed address

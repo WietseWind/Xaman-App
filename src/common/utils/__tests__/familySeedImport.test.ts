@@ -59,12 +59,15 @@ describe('familySeedImport', () => {
             const getAccountInfo = jest.fn().mockResolvedValue({ error: 'actNotFound' });
             const picked = await pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo });
 
-            expect(picked).toBe('secp256k1');
+            expect(picked).toEqual({
+                algorithm: 'secp256k1',
+                address: SECP_ADDRESS,
+            });
             expect(getAccountInfo).toHaveBeenCalledWith(SECP_ADDRESS);
             expect(getAccountInfo).toHaveBeenCalledWith(ED_ADDRESS);
         });
 
-        it('autoselects ed25519 when only that account is activated', async () => {
+        it('asks to confirm ed25519 when only that account is activated', async () => {
             const getAccountInfo = jest.fn(async (address: string) => {
                 if (address === ED_ADDRESS) {
                     return { account_data: { Account: ED_ADDRESS, Balance: '1000000' } };
@@ -72,7 +75,14 @@ describe('familySeedImport', () => {
                 return { error: 'actNotFound' };
             });
 
-            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toBe('ed25519');
+            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                algorithm: 'ed25519',
+                address: ED_ADDRESS,
+                confirm: {
+                    algorithm: 'ed25519',
+                    address: ED_ADDRESS,
+                },
+            });
         });
 
         it('keeps secp when only secp is activated', async () => {
@@ -83,7 +93,10 @@ describe('familySeedImport', () => {
                 return { error: 'actNotFound' };
             });
 
-            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toBe('secp256k1');
+            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                algorithm: 'secp256k1',
+                address: SECP_ADDRESS,
+            });
         });
 
         it('keeps secp when both accounts are activated', async () => {
@@ -91,13 +104,19 @@ describe('familySeedImport', () => {
                 return { account_data: { Account: address, Balance: '1000000' } };
             });
 
-            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toBe('secp256k1');
+            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                algorithm: 'secp256k1',
+                address: SECP_ADDRESS,
+            });
         });
 
         it('treats getAccountInfo failures as not activated and defaults to secp', async () => {
             const getAccountInfo = jest.fn().mockRejectedValue(new Error('offline'));
 
-            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toBe('secp256k1');
+            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                algorithm: 'secp256k1',
+                address: SECP_ADDRESS,
+            });
         });
     });
 });
