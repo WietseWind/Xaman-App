@@ -161,7 +161,7 @@ class ResultStep extends Component<Props, State> {
                     </Text>
                 </View>
 
-                <View style={[AppStyles.flex2, styles.detailsCard, AppStyles.marginBottom]}>
+                <View style={[AppStyles.flex2, styles.detailsCard, AppStyles.marginBottom, { minHeight: 0 }]}>
                     <Text style={[AppStyles.subtext, AppStyles.bold]}>{Localize.t('global.code')}:</Text>
                     <Spacer />
                     <Text style={[AppStyles.p, AppStyles.monoBold]}>{transaction!.FinalResult?.code}</Text>
@@ -172,11 +172,11 @@ class ResultStep extends Component<Props, State> {
                     <Text style={[AppStyles.subtext, AppStyles.bold]}>{Localize.t('global.description')}:</Text>
                     <Spacer />
 
-                    <ScrollView>
+                    <ScrollView style={AppStyles.flex1} nestedScrollEnabled>
                         <Text style={AppStyles.subtext}>{this.getNormalizedErrorMessage()}</Text>
                     </ScrollView>
 
-                    <Spacer size={50} />
+                    <Spacer />
 
                     <Button
                         light
@@ -184,7 +184,11 @@ class ResultStep extends Component<Props, State> {
                         label={Localize.t('global.copy')}
                         style={AppStyles.stretchSelf}
                         onPress={() => {
-                            Clipboard.setString(transaction!.FinalResult?.message || transaction!.FinalResult?.code);
+                            Clipboard.setString(
+                                this.getNormalizedErrorMessage() ||
+                                    transaction!.FinalResult?.message ||
+                                    transaction!.FinalResult?.code,
+                            );
                             Toast(Localize.t('send.resultCopiedToClipboard'));
                         }}
                     />

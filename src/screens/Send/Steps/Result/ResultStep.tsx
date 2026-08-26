@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { SafeAreaView, View, Text, Image, TouchableWithoutFeedback, LayoutAnimation } from 'react-native';
+import { SafeAreaView, View, Text, Image, TouchableWithoutFeedback, LayoutAnimation, ScrollView } from 'react-native';
 
 import NetworkService from '@services/NetworkService';
 
@@ -217,12 +217,11 @@ class ResultStep extends Component<Props, State> {
                     </Text>
                 </View>
 
-                <View style={AppStyles.flex2}>
-                    <View style={styles.detailsCard}>
+                <View style={[AppStyles.flex2, { minHeight: 0 }]}>
+                    <View style={[styles.detailsCard, AppStyles.flex1, { minHeight: 0 }]}>
                         <Text style={[AppStyles.subtext, AppStyles.bold]}>{Localize.t('global.code')}:</Text>
                         <Spacer />
                         <Text style={[AppStyles.p, AppStyles.monoBold]}>
-                            {/* {_tx.SubmitResult?.engineResult || 'Error'} */}
                             {
                                 _tx?.MetaData?.TransactionResult ||
                                 _tx?.FinalResult?.code ||
@@ -236,10 +235,11 @@ class ResultStep extends Component<Props, State> {
                         <Spacer />
                         <Text style={[AppStyles.subtext, AppStyles.bold]}>{Localize.t('global.description')}:</Text>
                         <Spacer />
-                        <Text style={AppStyles.subtext}>{errorMsg}</Text>
-                        {/* <Text style={AppStyles.subtext}>{JSON.stringify(_tx.SubmitResult, null, 2)}</Text> */}
+                        <ScrollView style={AppStyles.flex1} nestedScrollEnabled>
+                            <Text style={AppStyles.subtext}>{errorMsg}</Text>
+                        </ScrollView>
 
-                        <Spacer size={50} />
+                        <Spacer />
 
                         <Button
                             secondary
@@ -248,7 +248,7 @@ class ResultStep extends Component<Props, State> {
                             style={AppStyles.stretchSelf}
                             onPress={() => {
                                 Clipboard.setString(
-                                    _tx.FinalResult?.message || _tx.FinalResult?.code || 'Unexpected Error',
+                                    errorMsg || _tx.FinalResult?.message || _tx.FinalResult?.code || 'Unexpected Error',
                                 );
                                 Toast(Localize.t('send.resultCopiedToClipboard'));
                             }}
