@@ -54,6 +54,7 @@ class ActionPanel extends Component<Props, State> {
     private isOpening: boolean;
     private isDragging: boolean;
     private dismissed: boolean;
+    private startedOnHeader: boolean;
     private slideTimeout?: ReturnType<typeof setTimeout>;
 
     constructor(props: Props) {
@@ -74,6 +75,7 @@ class ActionPanel extends Component<Props, State> {
         this.isOpening = true;
         this.isDragging = false;
         this.dismissed = false;
+        this.startedOnHeader = false;
 
         this.translateY.addListener(({ value }) => {
             this.currentY = value;
@@ -86,7 +88,8 @@ class ActionPanel extends Component<Props, State> {
             onPanResponderMove: this.onPanResponderMove,
             onPanResponderRelease: this.onPanResponderRelease,
             onPanResponderTerminate: this.onPanResponderRelease,
-            onPanResponderTerminationRequest: () => false,
+            onPanResponderTerminationRequest: this.onPanResponderTerminationRequest,
+            onShouldBlockNativeResponder: () => false,
         });
     }
 
@@ -153,14 +156,22 @@ class ActionPanel extends Component<Props, State> {
     };
 
     private onStartShouldSetPanResponder = (event: GestureResponderEvent) => {
-        return event.nativeEvent.locationY <= HEADER_CAPTURE_HEIGHT;
+        this.startedOnHeader = event.nativeEvent.locationY <= HEADER_CAPTURE_HEIGHT;
+        return this.startedOnHeader;
     };
 
     private onMoveShouldSetPanResponder = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        // Do not steal vertical pans from nested ScrollViews.
+        if (!this.startedOnHeader) {
+            return false;
+        }
+
         const { dy, dx } = gestureState;
 
         return Math.abs(dy) > MOVE_CAPTURE_THRESHOLD && Math.abs(dy) > Math.abs(dx);
     };
+
+    private onPanResponderTerminationRequest = () => !this.startedOnHeader;
 
     private onPanResponderGrant = () => {
         this.translateY.stopAnimation();
@@ -187,6 +198,7 @@ class ActionPanel extends Component<Props, State> {
 
     private onPanResponderRelease = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
         this.isDragging = false;
+        this.startedOnHeader = false;
         this.animateToIndex(this.getTargetIndex(this.currentY, gestureState.vy));
     };
 
@@ -297,10 +309,9 @@ class ActionPanel extends Component<Props, State> {
                             transform: [{ translateY: this.translateY }],
                         },
                     ]}
-                    {...this.panResponder.panHandlers}
                 >
                     <View style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}>
-                        <View style={styles.panelHeader}>
+                        <View style={styles.panelHeader} {...this.panResponder.panHandlers}>
                             <View style={styles.panelHandle} />
                         </View>
                         {children}
