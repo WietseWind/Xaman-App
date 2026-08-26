@@ -20,6 +20,8 @@ import { Button, Footer, AmountText, Spacer } from '@components/General';
 import Localize from '@locale';
 import { AddContactViewProps } from '@screens/Settings/AddressBook/Add';
 
+import { formatHookReturnMessages } from '@common/libs/ledger/utils/hookReturnMessages';
+
 import { AppStyles, AppColors } from '@theme';
 import styles from './styles';
 
@@ -195,25 +197,10 @@ class ResultStep extends Component<Props, State> {
         const _tx = txType === 'remit' ? remit : txType === 'check' ? check : payment;
 
 
-        const c = _tx?.MetaData?.HookExecutions
-            ?.filter(h =>
-                typeof h?.HookExecution?.HookReturnCode === 'string' &&
-                typeof h?.HookExecution?.HookReturnString === 'string',
-            )
-            ?.map(h => [
-                ((val) => val >> 63n ? -(val & ~(1n << 63n)) : val)(BigInt(`0x${String(h.HookExecution.HookReturnCode)}`)),
-                Buffer.from(
-                    String(h.HookExecution?.HookReturnString || '').replace(/00$/, ''),
-                    'hex',
-                ).toString('utf-8').trim(),
-            ])
-            ?.filter((h: any) =>
-                h?.[0] !== 0 &&
-                String(h?.[1] || '').trim().match(/[a-zA-Z0-9_\-+*^.()[\]:,;!?\s ]+$/msi),
-            );  
-        
-        const errorMsg = c && c.length > 0
-            ? c.map(h => `${h[1]} (#${h[0]})`).join(', ')
+        const hookMessages = formatHookReturnMessages(_tx?.MetaData?.HookExecutions);
+
+        const errorMsg = hookMessages
+            ? hookMessages
             : _tx?.FinalResult?.message ||
             _tx?.SubmitResult?.message ||
             _tx.SubmitResult?.message ||

@@ -1,7 +1,6 @@
 /**
  * Payload Result Screen
  */
-import { get } from 'lodash';
 import React, { Component, Fragment } from 'react';
 import { Image, SafeAreaView, ScrollView, Text, View } from 'react-native';
 
@@ -20,8 +19,8 @@ import { AppColors, AppStyles } from '@theme';
 import styles from './styles';
 
 import { StepsContext } from '../../Context';
-import { HexEncoding } from '@common/utils/string';
 import { ExplainerFactory } from '@common/libs/ledger/factory';
+import { formatHookReturnMessages } from '@common/libs/ledger/utils/hookReturnMessages';
 
 /* types ==================================================================== */
 export interface Props {}
@@ -57,9 +56,11 @@ class ResultStep extends Component<Props, State> {
             case 'tecPATH_DRY':
                 return Localize.t('errors.tecPATH_DRY');
             case 'tecHOOK_REJECTED': {
-                const returnStringHex = get(transaction!.HookExecution(), '[0].HookReturnString', '');
+                const hookMessages = formatHookReturnMessages(
+                    transaction!.HookExecution() || transaction!.MetaData?.HookExecutions,
+                );
                 return Localize.t('errors.tecHOOK_REJECTED', {
-                    hookReturnString: returnStringHex ? HexEncoding.toString(returnStringHex) : '',
+                    hookReturnString: hookMessages,
                 });
             }
             default:

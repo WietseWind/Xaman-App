@@ -18,7 +18,7 @@ import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
 
 import Localize from '@locale';
-import { AccountSet, Payment, PaymentValidation, TrustSet } from '@common/libs/ledger/transactions';
+import { AccountSet, Invoke, Payment, PaymentValidation, TrustSet } from '@common/libs/ledger/transactions';
 import NetworkService from './NetworkService';
 import { CoreRepository, NetworkRepository } from '@store/repositories';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
@@ -483,13 +483,18 @@ class LinkingService {
                 return;
             }
 
-            // AccountSet templates: Debug/dev-client only AND developer mode.
-            // Never ship this path in Release — a tricked user could enable
-            // developer mode and scan a hostile AccountSet QR.
-            if (json?.TransactionType === 'AccountSet' && __DEV__ && CoreRepository.isDeveloperModeEnabled()) {
-                const accountSet = new AccountSet(json);
+            // AccountSet / Invoke templates: Debug/dev-client only AND developer
+            // mode. Never ship this path in Release — a tricked user could enable
+            // developer mode and scan a hostile QR.
+            if (
+                (json?.TransactionType === 'AccountSet' || json?.TransactionType === 'Invoke') &&
+                __DEV__ &&
+                CoreRepository.isDeveloperModeEnabled()
+            ) {
+                const transaction =
+                    json.TransactionType === 'Invoke' ? new Invoke(json) : new AccountSet(json);
 
-                const payload = Payload.build(accountSet.JsonForSigning);
+                const payload = Payload.build(transaction.JsonForSigning);
 
                 if (templateNetwork) {
                     payload.meta.force_network = templateNetwork.key;
