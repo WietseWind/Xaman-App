@@ -60,6 +60,20 @@ describe('PaymentChannelClaim tx', () => {
         });
 
         describe('getMonetaryDetails()', () => {
+            it('falls back to empty mutate when BalanceChange is missing', () => {
+                const unmixed = new PaymentChannelClaim(tx, meta);
+                const unmixedInfo = new PaymentChannelClaimInfo(unmixed as any, {} as any);
+                const details = unmixedInfo.getMonetaryDetails();
+
+                expect(details?.mutate).toEqual({
+                    DEC: [],
+                    INC: [],
+                });
+                expect(details?.factor?.some((entry) => entry.label === Localize.t('events.payChannelOriginalAmount'))).toBe(
+                    true,
+                );
+            });
+
             it('should return the expected monetary details', () => {
                 expect(info.getMonetaryDetails()).toStrictEqual({
                     factor: [
@@ -77,7 +91,7 @@ describe('PaymentChannelClaim tx', () => {
                         {
                             action: 'DEC',
                             currency: 'XRP',
-                            effect: 'IMMEDIATE_EFFECT',
+                            effect: 'POTENTIAL_EFFECT',
                             label: Localize.t('events.payChannelClaimedSoFar'),
                             value: '0.34',
                         },

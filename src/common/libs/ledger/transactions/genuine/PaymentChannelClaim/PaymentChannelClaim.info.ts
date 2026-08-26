@@ -80,7 +80,7 @@ class PaymentChannelClaimInfo extends ExplainerAbstract<PaymentChannelClaim, Mut
         if (channel.balance) {
             factor.push({
                 ...channel.balance,
-                effect: MonetaryStatus.IMMEDIATE_EFFECT,
+                effect: MonetaryStatus.POTENTIAL_EFFECT,
                 action: OperationActions.DEC,
                 label: Localize.t('events.payChannelClaimedSoFar'),
             });
@@ -95,8 +95,20 @@ class PaymentChannelClaimInfo extends ExplainerAbstract<PaymentChannelClaim, Mut
             });
         }
 
+        const emptyMutate = {
+            [OperationActions.INC]: [],
+            [OperationActions.DEC]: [],
+        };
+
+        let mutate = emptyMutate;
+        try {
+            mutate = this.item.BalanceChange?.(this.account?.address) ?? emptyMutate;
+        } catch {
+            mutate = emptyMutate;
+        }
+
         return {
-            mutate: this.item.BalanceChange(this.account.address),
+            mutate,
             factor,
         };
     }

@@ -101,7 +101,7 @@ class Monetary extends PureComponent<IProps, State> {
             factor
                 .filter((entry) => entry !== primary)
                 .forEach((entry) => {
-                    if (entry.label && entry.effect === MonetaryStatus.IMMEDIATE_EFFECT) {
+                    if (entry.label && entry.effect !== MonetaryStatus.NO_EFFECT) {
                         return;
                     }
                     pushFactor(

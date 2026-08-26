@@ -88,6 +88,23 @@ const styles = StyleService.create({
         marginBottom: 0,
         color: '$textPrimary',
     },
+    amountRow: {
+        alignSelf: 'stretch',
+        width: '100%',
+        alignItems: 'center',
+    },
+    amountFactorLabel: {
+        alignSelf: 'stretch',
+        width: '100%',
+        fontFamily: AppFonts.base.familyBold,
+        fontSize: AppFonts.base.size * 0.9,
+        marginBottom: 8,
+        color: '$textPrimary',
+        textAlign: 'center',
+    },
+    amountIcon: {
+        marginRight: AppSizes.paddingSml,
+    },
     detailsValueText: {
         fontFamily: AppFonts.base.family,
         lineHeight: 20,
