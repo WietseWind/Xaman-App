@@ -43,6 +43,15 @@ const styles = StyleService.create({
         borderColor: '$transparent',
         marginVertical: 5,
     },
+    optionSection: {
+        flexGrow: 0,
+        flexShrink: 0,
+    },
+    optionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: AppSizes.paddingExtraSml,
+    },
     optionsButton: {
         flex: 1,
         borderRadius: 20,

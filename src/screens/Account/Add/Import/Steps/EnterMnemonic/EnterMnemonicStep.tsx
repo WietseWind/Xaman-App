@@ -321,9 +321,9 @@ class EnterMnemonicStep extends Component<Props, State> {
         const { usePassphrase } = this.state;
 
         return (
-            <View style={AppStyles.flex1}>
+            <View style={styles.optionSection}>
                 <View style={AppStyles.hr} />
-                <View style={[AppStyles.row, AppStyles.paddingVerticalSml]}>
+                <View style={styles.optionRow}>
                     <View style={AppStyles.leftAligned}>
                         <Switch
                             onChange={(enabled) => {
@@ -358,11 +358,10 @@ class EnterMnemonicStep extends Component<Props, State> {
         const { useAlternativePath } = this.state;
 
         return (
-            <View style={[AppStyles.flex1, AppStyles.paddingBottomSml]}>
+            <View style={styles.optionSection}>
                 <View style={AppStyles.hr} />
-
-                <View style={[AppStyles.row, AppStyles.paddingVerticalSml]}>
-                    <View style={[AppStyles.leftAligned]}>
+                <View style={styles.optionRow}>
+                    <View style={AppStyles.leftAligned}>
                         <Switch
                             onChange={(enabled) => {
                                 this.setState({ useAlternativePath: enabled }, this.scrollToBottom);
@@ -392,10 +391,9 @@ class EnterMnemonicStep extends Component<Props, State> {
         const { useCurve, curve } = this.state;
 
         return (
-            <View style={[AppStyles.flex1, AppStyles.paddingBottomSml]}>
+            <View style={styles.optionSection}>
                 <View style={AppStyles.hr} />
-
-                <View style={[AppStyles.row, AppStyles.paddingVerticalSml]}>
+                <View style={styles.optionRow}>
                     <View style={AppStyles.leftAligned}>
                         <Switch
                             testID="choose-curve-switch"
