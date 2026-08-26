@@ -434,7 +434,6 @@ class AccountImportView extends Component<Props, State> {
                         {
                             Account: account.address,
                             InvoiceID: await SHA256(`${uuid}.${deviceUUID}.${account.address}`),
-                            NetworkID: NetworkService.getNetworkId(),
                         },
                         signableAccount,
                     );
