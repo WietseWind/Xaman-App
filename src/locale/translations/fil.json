@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Sigurado ka bang gusto mong bumalik?\r\n(kailangan mong punan muli ang lahat ng mga input para sa mga kadahilanang panseguridad)",
     "accountType": "Uri ng Account",
     "secretType": "Uri ng Secret",
-    "keypairType": "Keypair type",
+    "keypairType": "Keypair curve",
     "pleaseSelectAccountType": "Mangyaring piliin ang uri ng iyong account",
     "pleaseSelectAccountSecretType": "Mangyaring piliin ang iyong lihim na uri ng account",
     "fullAccess": "Full Access",

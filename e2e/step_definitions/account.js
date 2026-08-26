@@ -11,6 +11,7 @@ const {
     generateFamilySeed,
     generateMnemonic,
     deriveMnemonicAddress,
+    deriveFamilySeedAddress,
     SAMPLE_24_WORD_MNEMONIC,
 } = require('../helpers/fixtures');
 const { dismissKeyboard } = require('../helpers/keyboard');
@@ -182,7 +183,10 @@ Then('I enter my seed in the input', async () => {
             }
         };
         const seedLooksValid = async () =>
-            (await androidDumpIncludes('secp256k1')) || (await androidDumpIncludes('Keypair type'));
+            (await androidDumpIncludes('secp256k1')) ||
+            (await androidDumpIncludes('ed25519')) ||
+            (await androidDumpIncludes('Keypair curve')) ||
+            (await androidDumpIncludes('Keypair type'));
         const readVisibleSeed = async () => {
             const raw = String((await androidReadTextByTestId('seed-input')) || '');
             if (!raw || /please|provide|family seed|secret/i.test(raw) || /^[•·.●]+$/.test(raw)) {
@@ -405,6 +409,54 @@ Then('I leave account import if open', async () => {
     }
 
     throw new Error('still inside account import after leave attempts');
+});
+
+Then('I open the family seed import screen', async () => {
+    await tapUntilScreen('tab-Settings', 'settings-tab-screen');
+    await tapUntilScreen('accounts-button', 'accounts-list-screen');
+    await tapUntilScreen('add-account-button', 'account-add-screen');
+    await tapUntilScreen('account-import-button', 'account-import-access-level-view');
+    await tapUntilScreen('next-button', 'account-import-secret-type-view');
+    await tapTestId('family-seed-radio-button');
+    await tapUntilScreen('next-button', 'account-import-enter-family-seed-view');
+});
+
+Then('I remember family seed address for curve {string}', async (curve) => {
+    this.expectedFamilySeedAddress = deriveFamilySeedAddress(this.seed, curve);
+});
+
+Then('I should see family seed curve {string}', { timeout: 30 * 1000 }, async (curve) => {
+    const value = element(by.id('keypair-curve-value'));
+    await waitFor(value).toExist().withTimeout(15000);
+    await waitFor(value).toHaveText(curve).withTimeout(20000);
+});
+
+Then('I choose family seed curve {string}', async (curve) => {
+    await tapTestId('keypair-curve-row');
+    await waitFor(element(by.id('picker-modal')))
+        .toExist()
+        .withTimeout(10000);
+    await tapTestId(`${curve}-item`);
+    await waitFor(element(by.id('account-import-enter-family-seed-view')))
+        .toExist()
+        .withTimeout(10000);
+    await waitFor(element(by.id('keypair-curve-value')))
+        .toHaveText(curve)
+        .withTimeout(5000);
+});
+
+Then('I should confirm expected family seed address', async () => {
+    const expected = this.expectedFamilySeedAddress;
+    await waitFor(element(by.id('account-import-show-address-view')))
+        .toExist()
+        .withTimeout(20000);
+    const attributes = await element(by.id('account-address-text')).getAttributes();
+    this.address = attributes.text;
+    assert.equal(this.address, expected);
+});
+
+Then('I activate expected family seed address', { timeout: 5 * 60 * 1000 }, async () => {
+    await activateAccount(this.expectedFamilySeedAddress);
 });
 
 Then('I open the mnemonic import screen', async () => {

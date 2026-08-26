@@ -31,6 +31,11 @@ const deriveMnemonicAddress = (words, algorithm) => {
     return AccountLib.derive.mnemonic(mnemonic, options).address;
 };
 
+const deriveFamilySeedAddress = (seed, algorithm) => {
+    const options = algorithm && algorithm !== 'secp256k1' ? { algorithm } : undefined;
+    return AccountLib.derive.familySeed(seed, options).address;
+};
+
 // generate family seed
 const generateFamilySeed = () => {
     const generatedAccount = AccountLib.generate.familySeed();
@@ -199,5 +204,6 @@ module.exports = {
     generateFamilySeed,
     generateMnemonic,
     deriveMnemonicAddress,
+    deriveFamilySeedAddress,
     SAMPLE_24_WORD_MNEMONIC,
 };

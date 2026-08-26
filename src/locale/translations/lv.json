@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Vai esi drošs, ka gribi atgriezties? \r\n (Jums ir atkārtoti jāaizpilda ievadāmie lauki drošības apsvērumu dēļ)",
     "accountType": "Konta veids",
     "secretType": "Slepens tips",
-    "keypairType": "Atslēgu pāra veids",
+    "keypairType": "Atslēgu pāra līkne",
     "pleaseSelectAccountType": "Lūdzu, izvēlieties sava konta tipu",
     "pleaseSelectAccountSecretType": "Lūdzu, izvēlieties sava konta slepeno tipu",
     "fullAccess": "Pilnīga piekļuve",

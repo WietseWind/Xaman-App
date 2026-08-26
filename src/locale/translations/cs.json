@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Jste si jistí, že se chcete vrátit zpět? (Z bezpečnostních důvodů budete muset vše znovu vyplnit)",
     "accountType": "Typ účtu",
     "secretType": "Typ tajemství",
-    "keypairType": "Keypair type",
+    "keypairType": "Keypair curve",
     "pleaseSelectAccountType": "Prosíme vyberte typ vašeho účtu",
     "pleaseSelectAccountSecretType": "Prosíme vyberte typ tajného klíče k vašemu účtu",
     "fullAccess": "Plný přístup",

@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "האם אתה בטוח שאתה רוצה לחזור?\r\n(עליך למלא מחדש את כל התשומות מטעמי אבטחה)",
     "accountType": "סוג החשבון",
     "secretType": "טיפוס סודי",
-    "keypairType": "סוג צמד מפתחות",
+    "keypairType": "עקומת צמד מפתחות",
     "pleaseSelectAccountType": "אנא בחר את סוג החשבון שלך",
     "pleaseSelectAccountSecretType": "אנא בחר את סוג סוד החשבון שלך",
     "fullAccess": "גישה מלאה",

@@ -27,6 +27,14 @@ import {
 } from '@components/General';
 
 import { ConvertCodecAlphabet } from '@common/utils/codec';
+import {
+    FamilySeedAlgorithm,
+    deriveFamilySeedAccount,
+    isFamilySeedCurvePickerEligible,
+    pickFamilySeedCurve,
+} from '@common/utils/familySeedImport';
+
+import LedgerService from '@services/LedgerService';
 
 // style
 import { AppStyles } from '@theme';
@@ -39,15 +47,22 @@ export interface Props {}
 
 export interface State {
     secret?: string;
-    secretType?: string;
+    secretType?: FamilySeedAlgorithm;
     showSecret: boolean;
     keyboardType: KeyboardTypeOptions;
+    isLoading: boolean;
 }
 
 /* Component ==================================================================== */
 class EnterSeedStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
+
+    private curveDetectToken = 0;
+    private curveDetectTimer: ReturnType<typeof setTimeout> | null = null;
+    private curveDetectPromise: Promise<FamilySeedAlgorithm> | null = null;
+    private userSelectedCurve = false;
+    private pendingSecret?: string;
 
     constructor(props: Props) {
         super(props);
@@ -57,38 +72,119 @@ class EnterSeedStep extends Component<Props, State> {
             secretType: 'secp256k1',
             showSecret: false,
             keyboardType: 'default',
+            isLoading: false,
         };
     }
 
-    driveFamilySeed = () => {
+    componentWillUnmount() {
+        this.curveDetectToken += 1;
+        if (this.curveDetectTimer) {
+            clearTimeout(this.curveDetectTimer);
+            this.curveDetectTimer = null;
+        }
+    }
+
+    resolveFamilySeed = (secret: string) => {
         const { alternativeSeedAlphabet } = this.context;
-        const { secret, secretType } = this.state;
+        let xrplSecret = secret;
+
+        if (alternativeSeedAlphabet) {
+            const { alphabet } = alternativeSeedAlphabet;
+            if (typeof alphabet === 'string') {
+                xrplSecret = ConvertCodecAlphabet(secret, alphabet);
+            }
+        }
+
+        return xrplSecret;
+    };
+
+    runCurveAutodetect = async (token: number, secret?: string): Promise<FamilySeedAlgorithm> => {
+        if (!isFamilySeedCurvePickerEligible(secret) || this.userSelectedCurve || token !== this.curveDetectToken) {
+            return 'secp256k1';
+        }
+
+        try {
+            const algorithm = await pickFamilySeedCurve({
+                secret: this.resolveFamilySeed(secret as string),
+                getAccountInfo: (address) => LedgerService.getAccountInfo(address),
+            });
+
+            if (token === this.curveDetectToken && !this.userSelectedCurve) {
+                this.setState({ secretType: algorithm });
+            }
+
+            return algorithm;
+        } catch {
+            return 'secp256k1';
+        }
+    };
+
+    scheduleCurveAutodetect = (secret?: string) => {
+        const token = this.curveDetectToken;
+
+        if (this.curveDetectTimer) {
+            clearTimeout(this.curveDetectTimer);
+        }
+
+        this.curveDetectPromise = null;
+        this.curveDetectTimer = setTimeout(() => {
+            this.curveDetectTimer = null;
+            this.curveDetectPromise = this.runCurveAutodetect(token, secret);
+        }, 350);
+    };
+
+    applySecret = (secret?: string) => {
+        this.userSelectedCurve = false;
+        this.curveDetectToken += 1;
+        this.pendingSecret = secret;
+
+        this.setState({ secret, secretType: 'secp256k1' });
+        this.scheduleCurveAutodetect(secret);
+    };
+
+    ensureCurveAutodetect = async (): Promise<FamilySeedAlgorithm> => {
+        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+
+        if (this.curveDetectTimer) {
+            clearTimeout(this.curveDetectTimer);
+            this.curveDetectTimer = null;
+            this.curveDetectPromise = this.runCurveAutodetect(this.curveDetectToken, secret);
+        }
+
+        if (this.curveDetectPromise) {
+            try {
+                return await this.curveDetectPromise;
+            } catch {
+                return 'secp256k1';
+            }
+        }
+
+        return this.getSecretType();
+    };
+
+    driveFamilySeed = async () => {
+        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
 
         try {
             if (!secret) {
                 throw new Error('Secret is required!');
             }
 
-            let xrplSecret = secret;
-            // if alternative alphabet set then change
-            if (alternativeSeedAlphabet) {
-                const { alphabet } = alternativeSeedAlphabet;
-                if (typeof alphabet === 'string') {
-                    xrplSecret = ConvertCodecAlphabet(secret, alphabet);
-                }
-            }
-            const account = derive.familySeed(xrplSecret, secretType === 'ed25519' ? {
-                algorithm: secretType,
-            } : undefined);
+            this.setState({ isLoading: true });
+
+            const xrplSecret = this.resolveFamilySeed(secret);
+            const secretType = this.userSelectedCurve ? this.getSecretType() : await this.ensureCurveAutodetect();
+            const account = deriveFamilySeedAccount(xrplSecret, secretType);
 
             this.goNext(account);
         } catch (error) {
+            this.setState({ isLoading: false });
             Alert.alert(Localize.t('global.error'), Localize.t('account.invalidFamilySeed'));
         }
     };
 
     derivePrivateKey = () => {
-        const { secret } = this.state;
+        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
         try {
             if (!secret) {
                 throw new Error('Private key is required!');
@@ -127,7 +223,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     onNextPress = () => {
-        const { secret } = this.state;
+        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
 
         try {
             // normal family seed
@@ -146,34 +242,21 @@ class EnterSeedStep extends Component<Props, State> {
 
     onQRCodeRead = (result: XrplSecret) => {
         if (result?.familySeed || result?.hexPrivateKey) {
-            this.setState({
-                secret: result.familySeed || result.hexPrivateKey,
-            });
+            this.applySecret(result.familySeed || result.hexPrivateKey);
         }
     };
 
     onTextChange = (value: string) => {
-        this.setState({ secret: value.replace(/[^a-z0-9]/gi, '') });
+        this.applySecret(value.replace(/[^a-z0-9]/gi, ''));
     };
 
-    getSecretType = (): string => {
+    getSecretType = (): FamilySeedAlgorithm => {
         const { secretType } = this.state;
         return secretType || 'secp256k1';
     };
 
     showKeypairTypePicker = () => {
         const { secretType } = this.state;
-
-        // let normalizedLocales = [];
-
-        // for (const locale of locales) {
-        //     normalizedLocales.push({
-        //         value: locale.code,
-        //         title: locale.nameLocal,
-        //     });
-        // }
-
-        // normalizedLocales = sortBy(uniqBy(normalizedLocales, 'title'), 'title');
 
         Navigator.push<PickerModalProps>(AppScreens.Global.Picker, {
             title: Localize.t('global.curve'),
@@ -183,9 +266,10 @@ class EnterSeedStep extends Component<Props, State> {
                 { value: 'ed25519', title: 'ed25519' },
             ],
             selected: secretType || 'secp256k1',
-            onSelect: v => {
+            onSelect: (v) => {
+                this.userSelectedCurve = true;
                 this.setState({
-                    secretType: v.value,
+                    secretType: v.value as FamilySeedAlgorithm,
                 });
             },
         });
@@ -193,12 +277,9 @@ class EnterSeedStep extends Component<Props, State> {
 
     render() {
         const { goBack, alternativeSeedAlphabet } = this.context;
-        const { secret, showSecret, keyboardType } = this.state;
+        const { secret, showSecret, keyboardType, isLoading } = this.state;
 
-        const isEligibleForKeyTypePicker = typeof secret === 'string' &&
-            secret.trim().length > 15 &&
-            secret.trim().match(/^s/) &&
-            !secret.trim().match(/^sed/i);
+        const isEligibleForKeyTypePicker = isFamilySeedCurvePickerEligible(secret);
 
         return (
             <SafeAreaView testID="account-import-enter-family-seed-view" style={AppStyles.container}>
@@ -244,19 +325,25 @@ class EnterSeedStep extends Component<Props, State> {
                         onPress={this.toggleShowSecret}
                     />
                     <Spacer size={20} />
-                    { isEligibleForKeyTypePicker && 
-                        <TouchableDebounce style={styles.row} onPress={this.showKeypairTypePicker}>
+                    {isEligibleForKeyTypePicker && (
+                        <TouchableDebounce
+                            testID="keypair-curve-row"
+                            style={styles.row}
+                            onPress={this.showKeypairTypePicker}
+                        >
                             <View style={AppStyles.flex3}>
                                 <Text numberOfLines={1} style={styles.label}>
                                     {Localize.t('account.keypairType')}
                                 </Text>
                             </View>
                             <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                                <Text style={styles.value}>{this.getSecretType()}</Text>
+                                <Text testID="keypair-curve-value" style={styles.value}>
+                                    {this.getSecretType()}
+                                </Text>
                                 <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
                             </View>
                         </TouchableDebounce>
-                    }
+                    )}
                 </KeyboardAwareScrollView>
 
                 <Footer style={[AppStyles.centerAligned, AppStyles.row]}>
@@ -272,6 +359,7 @@ class EnterSeedStep extends Component<Props, State> {
                     <View style={AppStyles.flex5}>
                         <Button
                             testID="next-button"
+                            isLoading={isLoading}
                             textStyle={AppStyles.strong}
                             label={Localize.t('global.next')}
                             onPress={this.onNextPress}

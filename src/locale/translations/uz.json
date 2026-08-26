@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Orqaga qaytishni xohlaysizmi?\r\n(xavfsizlik uchun barcha yozuvlarni qayta to'ldirishingiz kerak)",
     "accountType": "Hisob turi",
     "secretType": "Yashirin turi",
-    "keypairType": "Kalit juftligi turi",
+    "keypairType": "Kalit juftligi egri chizigʻi",
     "pleaseSelectAccountType": "Iltimos, hisob turini tanlang",
     "pleaseSelectAccountSecretType": "Iltimos, hisobingizning sir turini tanlang",
     "fullAccess": "To'liq kirish",

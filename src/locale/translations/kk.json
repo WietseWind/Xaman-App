@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Сіз шынымен оралғыңыз келе ме? (қауіпсіздік мақсатында барлық кірістерді қайтадан толтырыңыз)",
     "accountType": "Шот түрі",
     "secretType": "Құпия түрі",
-    "keypairType": "Кілт жұбы түрі",
+    "keypairType": "Кілт жұбы қисығы",
     "pleaseSelectAccountType": "Есептік жазба түрін таңдаңыз",
     "pleaseSelectAccountSecretType": "Есептік жазбаңыздың құпия түрін таңдаңыз",
     "fullAccess": "Толық қол жеткізу",

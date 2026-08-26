@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Are you sure you want to go back? \r\n (you have to re-fill all the inputs for security reasons)",
     "accountType": "Aina ya Akaunti",
     "secretType": "Aina ya Siri",
-    "keypairType": "Keypair aina",
+    "keypairType": "Keypair curve",
     "pleaseSelectAccountType": "Tafadhali chagua yako akaunti aina",
     "pleaseSelectAccountSecretType": "Please select your account secret type",
     "fullAccess": "Ufikiaji Kamili",

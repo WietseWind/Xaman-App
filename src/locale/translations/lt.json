@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Ar tikrai norite grįžti? \r\n (turėsite iš naujo užpildyti visus įvedimus saugumo sumetimais)",
     "accountType": "Sąskaitos tipas",
     "secretType": "Slapto rakto tipas",
-    "keypairType": "Raktų poros tipas",
+    "keypairType": "Raktų poros kreivė",
     "pleaseSelectAccountType": "Pasirinkite sąskaitos tipą",
     "pleaseSelectAccountSecretType": "Pasirinkite sąskaitos slapto rakto tipą",
     "fullAccess": "Pilna prieiga",

@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Ziur zaude atzera egin nahi duzula?\r\n(segurtasun arrazoiengatik sarrera guztiak berriro bete behar dituzu)",
     "accountType": "Kontu mota",
     "secretType": "Mota sekretua",
-    "keypairType": "Gako-bikote mota",
+    "keypairType": "Gako-bikote kurba",
     "pleaseSelectAccountType": "Mesedez hautatu zure kontu mota",
     "pleaseSelectAccountSecretType": "Mesedez hautatu zure kontu sekretu mota",
     "fullAccess": "Sarbide osoa",

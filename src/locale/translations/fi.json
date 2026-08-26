@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Oletko varma, että haluat palata? \n (kaikki syötteet on täytettävä uudelleen turvallisuussyistä)",
     "accountType": "Tilityyppi",
     "secretType": "Salainen tyyppi",
-    "keypairType": "Avainparin tyyppi",
+    "keypairType": "Avainparin käyrä",
     "pleaseSelectAccountType": "Valitse tilin laji",
     "pleaseSelectAccountSecretType": "Valitse tilin salainen laji",
     "fullAccess": "Täysi pääsy",

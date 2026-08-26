@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "আপনি কি ফিরে যেতে চান?\r\n(সুরক্ষার কারণে আপনাকে সমস্ত ইনপুট পুনরায় পূরণ করতে হবে)",
     "accountType": "অ্যাকাউন্ট টাইপ",
     "secretType": "গোপন প্রকার",
-    "keypairType": "কীপেয়ার টাইপ",
+    "keypairType": "কীপেয়ার কার্ভ",
     "pleaseSelectAccountType": "আপনার অ্যাকাউন্টের ধরণটি নির্বাচন করুন",
     "pleaseSelectAccountSecretType": "আপনার অ্যাকাউন্ট গোপনীয়তা নির্বাচন করুন",
     "fullAccess": "সম্পূর্ণ অ্যাক্সেস",

@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Geri dönmek istediğinize emin misin? \r\n(Güvenlik nedeniyle tüm girişleri yeniden yapmanız gerekecek)",
     "accountType": "Hesap tipi",
     "secretType": "Gizlilik tipi",
-    "keypairType": "Keypair type",
+    "keypairType": "Keypair curve",
     "pleaseSelectAccountType": "Lütfen hesap tipinizi seçin",
     "pleaseSelectAccountSecretType": "Lütfen hesabınızın gizli anahtar tipini seçin",
     "fullAccess": "Tam erişim",

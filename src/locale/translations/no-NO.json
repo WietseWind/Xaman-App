@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Er du sikker på at du vil gå tilbake?\r\n(du må da fylle inn alle data på nytt igjen av sikkerhetsgrunner)",
     "accountType": "Kontotype",
     "secretType": "Hemmelig type",
-    "keypairType": "Nøkkelpartype",
+    "keypairType": "Nøkkelparkurve",
     "pleaseSelectAccountType": "Vennligst velg kontotype",
     "pleaseSelectAccountSecretType": "Vennligst velg type hemmelighet for din konto",
     "fullAccess": "Full tilgang",

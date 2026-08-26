@@ -995,7 +995,7 @@
     "goBackRefillTheInput": "Jeste li sigurni da se želite vratiti? \r\n(morati ćete ponovno unositi sva polja zbog sigurnosnih razloga)",
     "accountType": "Vrsta računa",
     "secretType": "Vrsta tajne",
-    "keypairType": "Vrsta para ključeva",
+    "keypairType": "Krivulja para ključeva",
     "pleaseSelectAccountType": "Molimo vas odaberite tip računa",
     "pleaseSelectAccountSecretType": "Molimo vas izaberite vrstu tajne za vaš račun",
     "fullAccess": "Puni pristup",
