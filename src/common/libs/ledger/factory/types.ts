@@ -48,6 +48,7 @@ export enum AssetTypes {
 export type MonetaryFactorType = AmountType & {
     effect: MonetaryStatus;
     action?: OperationActions;
+    label?: string;
 };
 
 /**

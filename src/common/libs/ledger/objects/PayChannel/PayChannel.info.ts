@@ -22,7 +22,7 @@ class PayChannelInfo extends ExplainerAbstract<PayChannel> {
     }
 
     generateDescription(): string {
-        const { Expiration, Account, Destination, Index, Amount, SourceTag, DestinationTag, SettleDelay, CancelAfter } =
+        const { Expiration, Account, Destination, Index, SourceTag, DestinationTag, SettleDelay, CancelAfter } =
             this.item;
 
         const content: string[] = [];
@@ -40,22 +40,6 @@ class PayChannelInfo extends ExplainerAbstract<PayChannel> {
             }),
         );
 
-        content.push(
-            Localize.t('events.theChannelAmountIs', {
-                amount: Amount!.value,
-                currency: Amount!.currency,
-            }),
-        );
-
-        const remaining = remainingPayChannelAmount(Amount, this.item.Balance);
-        if (remaining) {
-            content.push(
-                Localize.t('events.theChannelRemainingAmountIs', {
-                    amount: remaining.value,
-                    currency: remaining.currency,
-                }),
-            );
-        }
         if (SourceTag !== undefined) {
             content.push(Localize.t('events.theASourceTagIs', { tag: SourceTag }));
         }
@@ -107,6 +91,16 @@ class PayChannelInfo extends ExplainerAbstract<PayChannel> {
             factor.push({
                 ...this.item.Amount,
                 effect: MonetaryStatus.NO_EFFECT,
+                label: Localize.t('events.payChannelOriginalAmount'),
+            });
+        }
+
+        if (this.item.Balance) {
+            factor.push({
+                ...this.item.Balance,
+                effect: MonetaryStatus.IMMEDIATE_EFFECT,
+                action: OperationActions.DEC,
+                label: Localize.t('events.payChannelClaimedSoFar'),
             });
         }
 

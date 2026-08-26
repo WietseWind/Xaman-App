@@ -76,7 +76,6 @@ class Monetary extends PureComponent<IProps, State> {
             const mutateSent = mutate[OperationActions.DEC].at(0);
 
             if (mutateReceived || mutateSent) {
-                pushFactor(remainingFactor, styles.pendingIncColor);
                 pushFactor(originalFactor, styles.notEffectedColor);
 
                 if (mutateReceived) {
@@ -98,10 +97,13 @@ class Monetary extends PureComponent<IProps, State> {
         }
 
         if (factor && factor.length > 0) {
-            const primary = factor.find((entry) => entry.effect !== MonetaryStatus.NO_EFFECT) || factor[0];
+            const primary = factor.find((entry) => !entry.label && entry.effect !== MonetaryStatus.NO_EFFECT) || factor[0];
             factor
                 .filter((entry) => entry !== primary)
                 .forEach((entry) => {
+                    if (entry.label && entry.effect === MonetaryStatus.IMMEDIATE_EFFECT) {
+                        return;
+                    }
                     pushFactor(
                         entry,
                         entry.effect === MonetaryStatus.NO_EFFECT ? styles.notEffectedColor : styles.pendingIncColor,

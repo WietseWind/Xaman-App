@@ -7,6 +7,7 @@ import PaymentChannelClaim from './PaymentChannelClaim.class';
 /* Types ==================================================================== */
 import { MutationsMixinType } from '@common/libs/ledger/mixin/types';
 import { ExplainerAbstract, MonetaryStatus } from '@common/libs/ledger/factory/types';
+import { OperationActions } from '@common/libs/ledger/parser/types';
 import { payChannelAmountsFromMeta, remainingPayChannelAmount } from '@common/libs/ledger/utils/payChannelAmounts';
 
 /* Descriptor ==================================================================== */
@@ -35,25 +36,6 @@ class PaymentChannelClaimInfo extends ExplainerAbstract<PaymentChannelClaim, Mut
             );
         }
 
-        const channel = payChannelAmountsFromMeta(this.item.MetaData, this.item.Channel);
-        if (channel.amount) {
-            content.push(
-                Localize.t('events.theChannelAmountIs', {
-                    amount: channel.amount.value,
-                    currency: channel.amount.currency,
-                }),
-            );
-        }
-        const remaining = remainingPayChannelAmount(channel.amount, channel.balance);
-        if (remaining) {
-            content.push(
-                Localize.t('events.theChannelRemainingAmountIs', {
-                    amount: remaining.value,
-                    currency: remaining.currency,
-                }),
-            );
-        }
-
         if (IsChannelClosed) {
             content.push(Localize.t('events.thePaymentChannelWillBeClosed'));
         }
@@ -77,13 +59,8 @@ class PaymentChannelClaimInfo extends ExplainerAbstract<PaymentChannelClaim, Mut
     getMonetaryDetails() {
         const channel = payChannelAmountsFromMeta(this.item.MetaData, this.item.Channel);
         const remaining = remainingPayChannelAmount(channel.amount, channel.balance);
-        const factor = [
-            {
-                currency: (this.item.Amount ?? this.item.Balance)?.currency || remaining?.currency || '',
-                value: (this.item.Amount ?? this.item.Balance)?.value || '0',
-                effect: MonetaryStatus.IMMEDIATE_EFFECT,
-            },
-        ];
+        const claimedThisTx = remainingPayChannelAmount(channel.balance, channel.previousBalance);
+        const factor = [];
 
         if (remaining) {
             factor.push({
@@ -96,6 +73,25 @@ class PaymentChannelClaimInfo extends ExplainerAbstract<PaymentChannelClaim, Mut
             factor.push({
                 ...channel.amount,
                 effect: MonetaryStatus.NO_EFFECT,
+                label: Localize.t('events.payChannelOriginalAmount'),
+            });
+        }
+
+        if (channel.balance) {
+            factor.push({
+                ...channel.balance,
+                effect: MonetaryStatus.IMMEDIATE_EFFECT,
+                action: OperationActions.DEC,
+                label: Localize.t('events.payChannelClaimedSoFar'),
+            });
+        }
+
+        if (channel.previousBalance && claimedThisTx && claimedThisTx.value !== '0') {
+            factor.push({
+                ...claimedThisTx,
+                effect: MonetaryStatus.IMMEDIATE_EFFECT,
+                action: OperationActions.DEC,
+                label: Localize.t('events.payChannelClaimedThisTx'),
             });
         }
 

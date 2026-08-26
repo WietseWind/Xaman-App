@@ -70,7 +70,7 @@ export const remainingPayChannelAmount = (
 export const payChannelAmountsFromMeta = (
     meta?: TransactionMetadata,
     channelId?: string,
-): { amount?: AmountType; balance?: AmountType } => {
+): { amount?: AmountType; balance?: AmountType; previousBalance?: AmountType } => {
     const nodes = meta?.AffectedNodes || [];
 
     for (const node of nodes) {
@@ -84,9 +84,11 @@ export const payChannelAmountsFromMeta = (
         }
 
         const fields = wrapped.FinalFields || wrapped.NewFields || {};
+        const previous = wrapped.PreviousFields || {};
         return {
-            amount: parsePayChannelAmount(fields.Amount),
+            amount: parsePayChannelAmount(fields.Amount ?? previous.Amount),
             balance: parsePayChannelAmount(fields.Balance),
+            previousBalance: parsePayChannelAmount(previous.Balance),
         };
     }
 

@@ -85,46 +85,55 @@ class AssetsMutations extends PureComponent<Props, State> {
             return null;
         }
 
+        const label = 'label' in change ? change.label : undefined;
+
         return (
-            <View key={`monetary-${change.action}-${change.value}-${change.currency}`} style={styles.amountContainer}>
-                {effect === MonetaryStatus.IMMEDIATE_EFFECT && (
-                    <Icon
-                        name={change.action === OperationActions.DEC ? 'IconCornerRightUp' : 'IconCornerRightDown'}
-                        size={22}
+            <View key={`monetary-${label || ''}-${change.action}-${change.value}-${change.currency}`}>
+                {!!label && (
+                    <Text style={[styles.detailsLabelSubText, AppStyles.textCenterAligned, AppStyles.paddingBottomSml]}>
+                        {label}
+                    </Text>
+                )}
+                <View style={styles.amountContainer}>
+                    {effect === MonetaryStatus.IMMEDIATE_EFFECT && (
+                        <Icon
+                            name={change.action === OperationActions.DEC ? 'IconCornerRightUp' : 'IconCornerRightDown'}
+                            size={22}
+                            style={[
+                                {
+                                    tintColor:
+                                        effect === MonetaryStatus.IMMEDIATE_EFFECT
+                                            ? change.action === OperationActions.DEC
+                                                ? styles.outgoingColor.tintColor
+                                                : styles.incomingColor.tintColor
+                                            : change.action === OperationActions.DEC
+                                              ? styles.orangeColor.tintColor
+                                              : styles.naturalColor.tintColor,
+                                },
+                                AppStyles.marginRightSml,
+                            ]}
+                        />
+                    )}
+                    <AmountText
+                        value={change.value}
+                        currency={change.currency}
+                        prefix={change.action === OperationActions.DEC && '-'}
+                        truncateLp
                         style={[
+                            styles.amountText,
                             {
-                                tintColor:
+                                color:
                                     effect === MonetaryStatus.IMMEDIATE_EFFECT
                                         ? change.action === OperationActions.DEC
-                                            ? styles.outgoingColor.tintColor
-                                            : styles.incomingColor.tintColor
+                                            ? styles.outgoingColor.color
+                                            : styles.incomingColor.color
                                         : change.action === OperationActions.DEC
-                                          ? styles.orangeColor.tintColor
-                                          : styles.naturalColor.tintColor,
+                                          ? styles.orangeColor.color
+                                          : styles.naturalColor.color,
                             },
-                            AppStyles.marginRightSml,
                         ]}
                     />
-                )}
-                <AmountText
-                    value={change.value}
-                    currency={change.currency}
-                    prefix={change.action === OperationActions.DEC && '-'}
-                    truncateLp
-                    style={[
-                        styles.amountText,
-                        {
-                            color:
-                                effect === MonetaryStatus.IMMEDIATE_EFFECT
-                                    ? change.action === OperationActions.DEC
-                                        ? styles.outgoingColor.color
-                                        : styles.incomingColor.color
-                                    : change.action === OperationActions.DEC
-                                      ? styles.orangeColor.color
-                                      : styles.naturalColor.color,
-                        },
-                    ]}
-                />
+                </View>
             </View>
         );
     };
@@ -152,12 +161,14 @@ class AssetsMutations extends PureComponent<Props, State> {
         const hasBothMutation = hasMutatedDec && hasMutatedInc;
         const hasNoMutations = !hasMutatedDec && !hasMutatedInc;
 
-        const factorDec = factor?.filter((f) => f.action === OperationActions.DEC);
-        const factorInc = factor?.filter((f) => f.action === OperationActions.INC);
-        const notEffected = factor?.filter((f) => !f.action);
-        const hasNotEffected = notEffected?.length > 0;
-        const hasEitherFactors = !!factorInc?.length || !!factorDec?.length;
-        const hasBothFactors = factorInc?.length > 0 && factorDec?.length > 0;
+        const labeled = factor?.filter((f) => !!f.label) || [];
+        const unlabeled = factor?.filter((f) => !f.label) || [];
+        const factorDec = unlabeled.filter((f) => f.action === OperationActions.DEC);
+        const factorInc = unlabeled.filter((f) => f.action === OperationActions.INC);
+        const notEffected = unlabeled.filter((f) => !f.action);
+        const hasNotEffected = notEffected.length > 0;
+        const hasEitherFactors = factorInc.length > 0 || factorDec.length > 0;
+        const hasBothFactors = factorInc.length > 0 && factorDec.length > 0;
 
         const noMutation = hasNoMutations &&
             account.address !== ((item as any)?.Account || (item as any)?.Subject || (item as any)?.Issuer) &&
@@ -194,13 +205,17 @@ class AssetsMutations extends PureComponent<Props, State> {
         return (
             <View style={[styles.itemContainer, styles.itemContainerGap]}>
                 {assets?.map(this.renderAssetElement)}
-                {assets?.length > 0 &&
+                {labeled.length > 0 &&
+                    labeled.map((f) => this.renderMonetaryElement(f, f.effect))}
+                {labeled.length === 0 && assets?.length > 0 &&
                     (hasEitherMutation || (hasNoMutations && hasEitherFactors)) &&
                     this.renderSwitchIcon()}
-                {mutatedDec?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
-                {hasBothMutation && this.renderSwitchIcon()}
-                {mutatedInc?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
-                {specificAmount && specificAmount.value > 0 && (
+                {labeled.length === 0 &&
+                    mutatedDec?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
+                {labeled.length === 0 && hasBothMutation && this.renderSwitchIcon()}
+                {labeled.length === 0 &&
+                    mutatedInc?.map((m) => this.renderMonetaryElement(m, MonetaryStatus.IMMEDIATE_EFFECT))}
+                {labeled.length === 0 && specificAmount && specificAmount.value > 0 && (
                     <View style={styles.amountContainer}>
                         <AmountText
                             value={specificAmount.value}
@@ -216,7 +231,7 @@ class AssetsMutations extends PureComponent<Props, State> {
                         />
                     </View>
                 )}
-                {noMutation && (
+                {labeled.length === 0 && noMutation && (
                     // #45 - https://github.com/WietseWind/Xaman-App/issues/45
                     <View key='monetary-hasNoMutations' style={[
                         styles.amountContainer,
@@ -239,14 +254,15 @@ class AssetsMutations extends PureComponent<Props, State> {
                         )}</Text>
                     </View>
                 )}
-                {hasNoMutations && !noMutation && hasEitherFactors && (
+                {labeled.length === 0 && hasNoMutations && !noMutation && hasEitherFactors && (
                     <>
                         {factorDec?.map((f) => this.renderMonetaryElement(f, f?.effect))}
                         {hasBothFactors && this.renderSwitchIcon()}
                         {factorInc?.map((f) => this.renderMonetaryElement(f, f?.effect))}
                     </>
                 )}
-                {hasNoMutations &&
+                {labeled.length === 0 &&
+                    hasNoMutations &&
                     hasNotEffected &&
                     notEffected?.map((f) => this.renderMonetaryElement(f, MonetaryStatus.NO_EFFECT))}
             </View>

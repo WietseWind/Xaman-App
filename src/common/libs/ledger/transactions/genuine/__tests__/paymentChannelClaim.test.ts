@@ -40,7 +40,7 @@ describe('PaymentChannelClaim tx', () => {
 
         describe('generateDescription()', () => {
             it('should return the expected description', () => {
-                const expectedDescription = `It will update the payment channel 3BDB4F92432BCEB2385D3BAA60E8AAEC9B552890A240AEE4AA9E88C9E6C517E8${'\n'}The channel balance claimed is 49.65716 XRP${'\n'}The channel amount is 10 XRP${'\n'}The remaining amount is 9.66 XRP${'\n'}The payment channel will be closed. Any remaining funds will be returned to the source account.`;
+                const expectedDescription = `It will update the payment channel 3BDB4F92432BCEB2385D3BAA60E8AAEC9B552890A240AEE4AA9E88C9E6C517E8${'\n'}The channel balance claimed is 49.65716 XRP${'\n'}The payment channel will be closed. Any remaining funds will be returned to the source account.`;
                 expect(info.generateDescription()).toEqual(expectedDescription);
             });
         });
@@ -65,18 +65,21 @@ describe('PaymentChannelClaim tx', () => {
                     factor: [
                         {
                             currency: 'XRP',
-                            effect: 'IMMEDIATE_EFFECT',
-                            value: '1',
-                        },
-                        {
-                            currency: 'XRP',
                             effect: 'POTENTIAL_EFFECT',
                             value: '9.66',
                         },
                         {
                             currency: 'XRP',
                             effect: 'NO_EFFECT',
+                            label: Localize.t('events.payChannelOriginalAmount'),
                             value: '10',
+                        },
+                        {
+                            action: 'DEC',
+                            currency: 'XRP',
+                            effect: 'IMMEDIATE_EFFECT',
+                            label: Localize.t('events.payChannelClaimedSoFar'),
+                            value: '0.34',
                         },
                     ],
                     mutate: {

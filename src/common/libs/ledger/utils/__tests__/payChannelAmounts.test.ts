@@ -42,6 +42,9 @@ describe('payChannelAmounts', () => {
                             Amount: '41000000',
                             Balance: '31194298',
                         },
+                        PreviousFields: {
+                            Balance: '20000000',
+                        },
                     },
                 },
             ],
@@ -50,7 +53,14 @@ describe('payChannelAmounts', () => {
         expect(payChannelAmountsFromMeta(meta, 'AABB')).toEqual({
             amount: { currency: 'XRP', value: '41' },
             balance: { currency: 'XRP', value: '31.194298' },
+            previousBalance: { currency: 'XRP', value: '20' },
         });
+        expect(
+            remainingPayChannelAmount(
+                { currency: 'XRP', value: '31.194298' },
+                { currency: 'XRP', value: '20' },
+            ),
+        ).toEqual({ currency: 'XRP', value: '11.194298' });
         expect(remainingPayChannelAmount(
             parsePayChannelAmount('41000000'),
             parsePayChannelAmount('31194298'),
