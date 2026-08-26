@@ -51,10 +51,10 @@ describe('URITokenMint tx', () => {
             const minter = tx.Account;
             const destination = tx.Destination;
 
-            const remitInstance = () => {
+            const remitInstance = (extraMeta: Record<string, unknown> = {}) => {
                 const remitTx = { ...tx };
                 delete remitTx.Amount;
-                return new Mixed(remitTx, meta);
+                return new Mixed(remitTx, { ...meta, ParentRemitID: tx.hash, ...extraMeta });
             };
 
             it('returns mint when the viewer is unknown', () => {
@@ -88,9 +88,16 @@ describe('URITokenMint tx', () => {
             it('returns sent not to you when the minter remits to self', () => {
                 const selfTx = { ...tx, Destination: minter };
                 delete selfTx.Amount;
-                const selfMint = new Mixed(selfTx, meta);
+                const selfMint = new Mixed(selfTx, { ...meta, ParentRemitID: tx.hash });
                 expect(new URITokenMintInfo(selfMint, { address: minter } as any).getEventsLabel()).toEqual(
                     Localize.t('events.uriTokenSent'),
+                );
+            });
+
+            it('returns sent to you for a Remit output even if Amount is present', () => {
+                const remit = new Mixed(tx, { ...meta, ParentRemitID: tx.hash });
+                expect(new URITokenMintInfo(remit, { address: destination } as any).getEventsLabel()).toEqual(
+                    Localize.t('events.uriTokenSentToYou'),
                 );
             });
         });

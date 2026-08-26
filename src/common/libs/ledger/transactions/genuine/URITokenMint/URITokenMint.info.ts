@@ -22,6 +22,15 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
         const isDestination = !!viewer && this.item.Destination === viewer;
         const hasAmount = typeof this.item.Amount !== 'undefined';
         const hasDestination = typeof this.item.Destination !== 'undefined';
+        const isRemitOutput = !!this.item.MetaData?.ParentRemitID;
+
+        // Remit delivers the token; it is never an offer
+        if (isRemitOutput) {
+            if (isDestination && !isMinter) {
+                return Localize.t('events.uriTokenSentToYou');
+            }
+            return Localize.t('events.uriTokenSent');
+        }
 
         // Sender/minter, including self-destination: never "to you"
         if (isMinter) {
@@ -32,7 +41,7 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
         }
 
         if (isDestination) {
-            // Mint with Amount is a sell offer; Remit/no Amount is a delivery
+            // Mint with Amount is a sell offer; no Amount is a delivery
             if (hasAmount) {
                 return Localize.t('events.uriTokenOfferedToYou');
             }
@@ -48,8 +57,10 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
 
     generateDescription() {
         const content: string[] = [];
+        const isRemitOutput = !!this.item.MetaData?.ParentRemitID;
+        const hasAmount = typeof this.item.Amount !== 'undefined';
 
-        if (typeof this.item.Amount !== 'undefined') {
+        if (hasAmount && !isRemitOutput) {
             content.push(
                 Localize.t('events.uriTokenMintAmount', {
                     value: this.item.Amount.value,
@@ -60,9 +71,9 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
 
         if (typeof this.item.Destination !== 'undefined') {
             const explainKey =
-                typeof this.item.Amount !== 'undefined'
-                    ? 'events.uriTokenDestinationExplain'
-                    : 'events.uriTokenSentExplain';
+                isRemitOutput || !hasAmount
+                    ? 'events.uriTokenSentExplain'
+                    : 'events.uriTokenDestinationExplain';
             content.push(
                 Localize.t(explainKey, {
                     address: this.item.Destination,
