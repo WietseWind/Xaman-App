@@ -19,6 +19,7 @@ import { SHA256 } from '@common/libs/crypto';
 import Vault from '@common/libs/vault';
 
 import { GetCardId, GetWalletDerivedPublicKey } from '@common/utils/tangem';
+import { ensureAccountLibNativeAsset } from '@common/utils/accountLibCompat';
 import { AppScreens } from '@common/constants';
 
 import BackendService from '@services/BackendService';
@@ -430,6 +431,7 @@ class AccountImportView extends Component<Props, State> {
                             privateKey: imported.keypair.privateKey,
                         },
                     });
+                    ensureAccountLibNativeAsset();
                     const { signedTransaction } = AccountLib.sign(
                         {
                             Account: account.address,

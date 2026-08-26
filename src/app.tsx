@@ -38,6 +38,7 @@ import * as services from '@services';
 // Textencoder/decoder polyfill TextEncoder TextDecoder
 // Needed for ripple-binary-codec/... isomorphic
 import '@common/helpers/textencoder';
+import { ensureAccountLibNativeAsset } from '@common/utils/accountLibCompat';
 
 messaging().setBackgroundMessageHandler(async () => {
     // FIXME: temporary fix for error
@@ -56,7 +57,10 @@ class Application {
         this.initialized = false;
     }
 
-    run() {     
+    run() {
+        // Metro CJS interop can hide codec.nativeAsset; accountlib 9.3.0 sign() needs it.
+        ensureAccountLibNativeAsset();
+
         // Listen for app launched event
         Navigation.events().registerAppLaunchedListener(() => {
             // start the app
