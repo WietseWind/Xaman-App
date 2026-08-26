@@ -85,6 +85,10 @@ module.exports = {
             device: 'ios.simulator.local',
             app: 'xaman.ios',
         },
+        'ios.simulator.local+xaman.ios.debug': {
+            device: 'ios.simulator.local',
+            app: 'xaman.ios.debug',
+        },
         'ios.simulator.dev+xaman.ios.debug': {
             device: 'ios.simulator.dev',
             app: 'xaman.ios.debug',

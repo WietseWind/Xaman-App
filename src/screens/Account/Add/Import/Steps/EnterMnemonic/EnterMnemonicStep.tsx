@@ -587,7 +587,7 @@ class EnterMnemonicStep extends Component<Props, State> {
                     ref={this.scrollViewRef}
                     testID="mnemonic-words-scroll"
                     style={[AppStyles.flex1, AppStyles.stretchSelf]}
-                    contentContainerStyle={AppStyles.paddingHorizontal}
+                    contentContainerStyle={[AppStyles.paddingHorizontal, styles.mnemonicScrollContent]}
                     onContentSizeChange={this.onContentSizeChange}
                 >
                     {this.renderRows()}

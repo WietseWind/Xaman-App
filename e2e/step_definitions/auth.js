@@ -4,7 +4,7 @@ const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { clickByTestId, waitUntilAndroidTestId, enterAndroidPasscode, androidTypeText } = require('../helpers/tapById');
 
-let passcode = '167349';
+let passcode = process.env.E2E_PASSCODE || '167349';
 
 const passphrase = '&uHCnPv4T=#~;Ca';
 const newPassphrase = '4b<8xu8HbP)%hzpgh';

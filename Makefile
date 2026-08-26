@@ -132,6 +132,10 @@ test-e2e-local: ## Full cucumber e2e on the Xaman-e2e simulator
 test-e2e-smoke: ## Onboarding + account-generate e2e on Xaman-e2e (needs a prior detox Release build)
 	@DETOX_CONFIGURATION=ios.simulator.local+xaman.ios npx cucumber-js ./e2e/01_setup.feature ./e2e/02_generate_account.feature;
 
+test-e2e-mnemonic-curve: ## Isolated sample-mnemonic curve import on live Xaman-e2e Debug
+	@DETOX_CONFIGURATION=ios.simulator.local+xaman.ios.debug DETOX_REUSE=yes DETOX_CONTINUE_ON_FAIL=yes E2E_PASSCODE=958347 \
+		node node_modules/@cucumber/cucumber/bin/cucumber.js ./e2e/08_mnemonic_curve.feature --require ./e2e/support --require ./e2e/step_definitions
+
 retest-e2e:  ## Runs e2e tests
 	@DETOX_LOGLEVEL=trace DETOX_REUSE=yes npx cucumber-js ./e2e test;
 

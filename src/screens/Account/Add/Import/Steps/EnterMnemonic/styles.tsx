@@ -47,6 +47,9 @@ const styles = StyleService.create({
         flexGrow: 0,
         flexShrink: 0,
     },
+    mnemonicScrollContent: {
+        paddingBottom: 120,
+    },
     optionRow: {
         flexDirection: 'row',
         alignItems: 'center',

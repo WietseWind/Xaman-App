@@ -37,10 +37,11 @@ BeforeAll(async () => {
     await checkNetwork();
     ensureLocalSimulator();
 
+    const reuse = String(process.env?.DETOX_REUSE || 'no').toLowerCase() === 'yes';
+
     await detox.init({
         argv: {
-            // reuse: false,
-            reuse: String(process.env?.DETOX_REUSE || 'no').toLowerCase() === 'yes',
+            reuse,
         },
     });
 
@@ -55,7 +56,7 @@ BeforeAll(async () => {
     startRecordingVideo();
 
     await device.launchApp({
-        newInstance: true,
+        newInstance: !reuse,
         permissions: { notifications: 'YES', camera: 'YES' },
         disableTouchIndicators: false,
         // Must be set at launch. Android RN Animated (Toast) trips
