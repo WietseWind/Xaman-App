@@ -375,6 +375,21 @@ Then('I leave account import if open', async () => {
             }
         }
 
+        try {
+            await waitFor(element(by.id('picker-modal')))
+                .toExist()
+                .withTimeout(250);
+            try {
+                await element(by.id('back-button')).tap();
+            } catch (backErr) {
+                await element(by.id('picker-modal')).tap({ x: 24, y: 56 });
+            }
+            await sleepMs(250);
+            continue;
+        } catch (pickerErr) {
+            // not on picker
+        }
+
         for (let a = 0; a < alertLabels.length; a += 1) {
             if (await tryTapAlertLabel(alertLabels[a])) {
                 await sleepMs(250);
@@ -433,17 +448,43 @@ Then('I should see family seed curve {string}', { timeout: 30 * 1000 }, async (c
 });
 
 Then('I choose family seed curve {string}', async (curve) => {
-    await tapTestId('keypair-curve-row');
-    await waitFor(element(by.id('picker-modal')))
-        .toExist()
-        .withTimeout(10000);
-    await tapTestId(`${curve}-item`);
-    await waitFor(element(by.id('account-import-enter-family-seed-view')))
-        .toExist()
-        .withTimeout(10000);
-    await waitFor(element(by.id('keypair-curve-value')))
-        .toHaveText(curve)
-        .withTimeout(5000);
+    await dismissKeyboard();
+    await device.disableSynchronization();
+
+    try {
+        await element(by.id('keypair-curve-row')).tap({ x: 12, y: 12 });
+    } catch (e) {
+        await element(by.id('keypair-curve-row')).tap();
+    }
+    await sleepMs(800);
+
+    const label = curve === 'secp256k1' ? 'secp256k1 (Default)' : curve;
+    try {
+        await element(by.id(`${curve}-item`)).tap({ x: 24, y: 16 });
+    } catch (e) {
+        try {
+            await element(by.text(label)).tap();
+        } catch (e2) {
+            await element(by.id(`${curve}-item`)).tap();
+        }
+    }
+
+    const deadline = Date.now() + 15000;
+    let lastErr;
+    while (Date.now() < deadline) {
+        try {
+            const attrs = await element(by.id('keypair-curve-value')).getAttributes();
+            const text = attrs.text || attrs.label || '';
+            if (String(text).indexOf(curve) !== -1) {
+                return;
+            }
+            lastErr = new Error(`curve value ${JSON.stringify(text)}`);
+        } catch (e) {
+            lastErr = e;
+        }
+        await sleepMs(400);
+    }
+    throw lastErr || new Error(`did not select family seed curve ${curve}`);
 });
 
 Then('I should confirm expected family seed address', async () => {

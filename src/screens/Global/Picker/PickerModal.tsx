@@ -77,6 +77,7 @@ class PickerModal extends Component<Props, State> {
             <View testID="picker-modal" style={styles.container}>
                 <Header
                     leftComponent={{
+                        testID: 'back-button',
                         icon: 'IconChevronLeft',
                         onPress: Navigator.pop,
                     }}
