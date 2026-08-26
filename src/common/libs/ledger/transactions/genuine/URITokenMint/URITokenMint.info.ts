@@ -17,12 +17,32 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
     }
 
     getEventsLabel() {
-        // minted uri token offered to owner
-        if (this.item.Destination === this.account.address) {
-            return Localize.t('events.uriTokenOfferedToYou');
+        const viewer = this.account?.address;
+        const isMinter = !!viewer && this.item.Account === viewer;
+        const isDestination = !!viewer && this.item.Destination === viewer;
+        const hasAmount = typeof this.item.Amount !== 'undefined';
+        const hasDestination = typeof this.item.Destination !== 'undefined';
+
+        // Sender/minter, including self-destination: never "to you"
+        if (isMinter) {
+            if (hasDestination && !hasAmount) {
+                return Localize.t('events.uriTokenSent');
+            }
+            return Localize.t('events.mintURIToken');
         }
 
-        // owner minted uri token
+        if (isDestination) {
+            // Mint with Amount is a sell offer; Remit/no Amount is a delivery
+            if (hasAmount) {
+                return Localize.t('events.uriTokenOfferedToYou');
+            }
+            return Localize.t('events.uriTokenSentToYou');
+        }
+
+        if (hasDestination && !hasAmount) {
+            return Localize.t('events.uriTokenSent');
+        }
+
         return Localize.t('events.mintURIToken');
     }
 
@@ -39,8 +59,12 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
         }
 
         if (typeof this.item.Destination !== 'undefined') {
+            const explainKey =
+                typeof this.item.Amount !== 'undefined'
+                    ? 'events.uriTokenDestinationExplain'
+                    : 'events.uriTokenSentExplain';
             content.push(
-                Localize.t('events.uriTokenDestinationExplain', {
+                Localize.t(explainKey, {
                     address: this.item.Destination,
                 }),
             );
