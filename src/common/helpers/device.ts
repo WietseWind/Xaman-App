@@ -106,12 +106,6 @@ const TAB_CHROME_EXPONENT = 0.22;
 // Center dock occupies this fraction of the compact 49pt item row (~25.2pt).
 const CENTER_OF_ITEM_ROW = 0.514;
 
-const tabOsMajor = (): number => {
-    const raw = GetDeviceOSVersion();
-    const n = parseInt(String(raw).split(/[^\d]/)[0], 10);
-    return Number.isFinite(n) ? n : 99;
-};
-
 const tabBarItemRow = (): number => {
     const h = Number(DeviceUtilsModule.tabBarMetrics?.itemHeight);
     return Number.isFinite(h) && h > 0 ? h : DEFAULT_ITEM_ROW;
@@ -123,10 +117,11 @@ const tabBarItemRow = (): number => {
  * Sized from the compact tab-bar *item row* (49pt) plus a damped extra for
  * home-indicator chrome. Slot width still grows SE 375 → Pro ~402.
  *
- * iOS UITabBar paint is not 1:1 with UIImage.pointSize. That tracks screen
- * scale, not the home indicator: iPhone SE (3rd gen) is @3x like 17 Pro
- * (375pt, no notch) — treating “no notch” as iPhone 8 (@2x) made SE icons
- * too small.
+ * iOS UITabBar paint is not 1:1 with UIImage.pointSize. That tracks the
+ * loaded asset's pixel buffer (PixelRatio), not notch / iOS version:
+ * iPhone SE 3rd gen is the same 375×667 @2x panel as iPhone 8 (750×1334),
+ * not @3x like 17 Pro. Treating “iOS 26 @2x” as 1:1 paint made Xaman-se
+ * tiny next to the USB iPhone 8.
  */
 const getTabIconDisplayPt = (factor?: number): number => {
     const { width } = Dimensions.get('window');
@@ -145,15 +140,8 @@ const tabBarPaintEfficiency = (): number => {
     if (Platform.OS !== 'ios') {
         return 1;
     }
-    const ratio = PixelRatio.get() || 2;
-    if (ratio >= 3) {
-        return 0.61;
-    }
-    // iPhone 8 (iOS 16, @2x, 375pt) paints a bit under the iOS 26 @2x sim.
-    if (tabOsMajor() < 18) {
-        return 0.68;
-    }
-    return 1;
+    // @3x catalog is 192px; @2x is 128px. SE 3rd gen and iPhone 8 are both @2x.
+    return (PixelRatio.get() || 2) >= 3 ? 0.61 : 0.68;
 };
 
 /**
