@@ -100,35 +100,39 @@ const GetDeviceOSVersion = (): string => {
 
 const TAB_COUNT = 5;
 const TAB_ASSET_PT = 64;
-const IOS_ITEM_ROW = 49;
-// Center dock on iPhone SE (375pt, 49pt item row). 24 was a hair small.
-const SE_CENTER_PT = 25.2;
+const DEFAULT_ITEM_ROW = 49;
 const SE_WIDTH = 375;
 const TAB_CHROME_EXPONENT = 0.22;
+// Center dock occupies this fraction of the compact 49pt item row (~25.2pt).
+const CENTER_OF_ITEM_ROW = 0.514;
 
-const tabOsMajor = (): number => {
-    const raw = GetDeviceOSVersion();
-    const n = parseInt(String(raw).split(/[^\d]/)[0], 10);
-    return Number.isFinite(n) ? n : 99;
+const tabBarItemRow = (): number => {
+    const h = Number(DeviceUtilsModule.tabBarMetrics?.itemHeight);
+    return Number.isFinite(h) && h > 0 ? h : DEFAULT_ITEM_ROW;
 };
 
 /**
  * Displayed center-dock size (points/dp). Same 0.65/0.9 factors as the tab icons.
  *
- * - Grows with slot width (SE 375 → Pro ~402).
- * - Extra tab-bar chrome (home indicator) uses a damped curve, not bar/49,
- *   so large phones don’t look empty and don’t overflow.
- * - iOS UITabBar does not paint UIImage.pointSize 1:1: @3x+notch ~0.57 of
- *   requested (measured), iOS 16 @2x a bit under the iOS 26 SE sim.
+ * Sized from the compact tab-bar *item row* (49pt) plus a damped extra for
+ * home-indicator chrome. Slot width still grows SE 375 → Pro ~402.
+ *
+ * iOS UITabBar paint is not 1:1 with UIImage.pointSize. That tracks the
+ * loaded asset's pixel buffer (PixelRatio), not notch / iOS version:
+ * iPhone SE 3rd gen is the same 375×667 @2x panel as iPhone 8 (750×1334),
+ * not @3x like 17 Pro. Treating “iOS 26 @2x” as 1:1 paint made Xaman-se
+ * tiny next to the USB iPhone 8.
  */
 const getTabIconDisplayPt = (factor?: number): number => {
     const { width } = Dimensions.get('window');
     const inset = GetLayoutInsets()?.bottom || 0;
+    const itemRow = tabBarItemRow();
     const slot = width / TAB_COUNT;
-    const bar = IOS_ITEM_ROW + (Platform.OS === 'ios' ? inset : 0);
+    const bar = itemRow + (Platform.OS === 'ios' ? inset : 0);
     const f = factor || 1;
-    const fromSlot = SE_CENTER_PT * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
-    const chrome = Math.pow(Math.max(bar, IOS_ITEM_ROW) / IOS_ITEM_ROW, TAB_CHROME_EXPONENT);
+    const seCenter = itemRow * CENTER_OF_ITEM_ROW;
+    const fromSlot = seCenter * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
+    const chrome = Math.pow(Math.max(bar, itemRow) / itemRow, TAB_CHROME_EXPONENT);
     return fromSlot * chrome;
 };
 
@@ -136,16 +140,8 @@ const tabBarPaintEfficiency = (): number => {
     if (Platform.OS !== 'ios') {
         return 1;
     }
-    const ratio = PixelRatio.get() || 2;
-    const notched = (GetLayoutInsets()?.bottom || 0) > 0;
-    if (ratio >= 3) {
-        return notched ? 0.61 : 0.72;
-    }
-    // iPhone 8 (iOS 16, @2x, 375pt) vs SE sim (iOS 26): same points, smaller paint.
-    if (tabOsMajor() < 18) {
-        return 0.68;
-    }
-    return 1;
+    // @3x catalog is 192px; @2x is 128px. SE 3rd gen and iPhone 8 are both @2x.
+    return (PixelRatio.get() || 2) >= 3 ? 0.61 : 0.68;
 };
 
 /**

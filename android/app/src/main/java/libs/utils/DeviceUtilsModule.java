@@ -115,10 +115,16 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         layoutInsets.put("top", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaTop())));
         layoutInsets.put("bottom", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaBottom())));
 
+        final Map<String, Object> tabBarMetrics = new HashMap<>();
+        // AHBottomNavigation default bar is 56dp; home-control inset is separate.
+        tabBarMetrics.put("itemHeight", 56);
+        tabBarMetrics.put("height", 56 + Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaBottom())));
+
         constants.put("osVersion", Build.VERSION.RELEASE);
         constants.put("brand", Build.BRAND);
         constants.put("model", Build.MODEL);
         constants.put("layoutInsets", layoutInsets);
+        constants.put("tabBarMetrics", tabBarMetrics);
 
         return constants;
     }
