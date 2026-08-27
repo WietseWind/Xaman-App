@@ -575,6 +575,7 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				A275AAF3297057150055DFD6 /* ShellScript */,
 				F6C165A363F1EDD2BC963F73 /* [CP] Embed Pods Frameworks */,
+				A2DSYMCOPY18900000000001 /* Copy vendor dSYMs */,
 				8030B10F1904690935898C47 /* [CP] Copy Pods Resources */,
 				590E29A235634955291A8083 /* [CP-User] [RNFB] Core Configuration */,
 				68E666D63B2C268BFFA9D1D9 /* [CP-User] [RNFB] Crashlytics Configuration */,
@@ -763,6 +764,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#Disables ATS in debug builds.\nINFOPLIST=\"${TARGET_BUILD_DIR}\"/\"${INFOPLIST_PATH}\"\ncase \"${CONFIGURATION}\" in\n\"Release\"|\"Adhoc\")\n/usr/libexec/PlistBuddy -c \"Delete :NSAppTransportSecurity\" \"${INFOPLIST}\" || true\n;;\n\"Debug\")\n/usr/libexec/PlistBuddy -c \"Add :NSAppTransportSecurity:NSExceptionDomains:localhost dict\" \"${INFOPLIST}\" || true\n/usr/libexec/PlistBuddy -c \"Add :NSAppTransportSecurity:NSExceptionDomains:localhost:NSExceptionAllowsInsecureHTTPLoads bool true\" \"${INFOPLIST}\" || true\n;; \nesac\n";
+		};
+		A2DSYMCOPY18900000000001 /* Copy vendor dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/vendor-dSYMs/hermes-extract/iphoneos/hermes.framework.dSYM",
+			);
+			name = "Copy vendor dSYMs";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEST=\"${DWARF_DSYM_FOLDER_PATH}\"\nif [ -z \"${DEST}\" ] || [ ! -d \"${DEST}\" ]; then\n  echo \"info: no dSYM dest, skip vendor dSYMs\"\n  exit 0\nfi\nHERMES=\"${SRCROOT}/vendor-dSYMs/hermes-extract/iphoneos/hermes.framework.dSYM\"\nif [ -d \"${HERMES}\" ]; then\n  echo \"info: copying Hermes dSYM into ${DEST}\"\n  rsync -a \"${HERMES}\" \"${DEST}/\"\nfi\nVERIFF=\"${SRCROOT}/vendor-dSYMs/veriff/Veriff.framework.dSYM\"\nif [ -d \"${VERIFF}\" ]; then\n  echo \"info: copying Veriff dSYM into ${DEST}\"\n  rsync -a \"${VERIFF}\" \"${DEST}/\"\nfi\n";
 		};
 		A3F03C47283A8EFCD65408F9 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1046,7 +1063,7 @@
 					"$CONFIGURATION_TEMP_DIR/Xaman.build/DerivedSources",
 				);
 				INFOPLIST_FILE = XamanTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -1131,7 +1148,7 @@
 					"$CONFIGURATION_TEMP_DIR/Xaman.build/DerivedSources",
 				);
 				INFOPLIST_FILE = XamanTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -1156,7 +1173,7 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 188;
+				CURRENT_PROJECT_VERSION = 189;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -1165,7 +1182,7 @@
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = Xaman/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 5.3.0;
 				OTHER_LDFLAGS = (
@@ -1192,11 +1209,11 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 188;
+				CURRENT_PROJECT_VERSION = 189;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				INFOPLIST_FILE = Xaman/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 5.3.0;
 				OTHER_LDFLAGS = (
@@ -1288,7 +1305,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
@@ -1385,7 +1402,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
