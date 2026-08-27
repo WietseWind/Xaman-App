@@ -28,6 +28,7 @@ RCT_EXPORT_MODULE();
     @"brand": @"Apple",
     @"model": [self getModel],
     @"layoutInsets": [self getLayoutInsets],
+    @"tabBarMetrics": [self getTabBarMetrics],
   };
 }
 
@@ -49,6 +50,23 @@ RCT_EXPORT_MODULE();
 }
 
 - (NSDictionary *) getLayoutInsets
+{
+  UIWindow *window = [self keyWindow];
+
+  UIEdgeInsets insets = window.safeAreaInsets;
+  // Non-notch phones still have a 20pt status bar. keyWindow is often nil
+  // at constantsToExport time on iOS 13+, which would report top=0.
+  if (insets.top < 1.0 && !UIApplication.sharedApplication.isStatusBarHidden) {
+    insets.top = 20.0;
+  }
+
+  return @{
+    @"top": @(insets.top),
+    @"bottom": @(insets.bottom)
+  };
+}
+
+- (UIWindow *)keyWindow
 {
   UIWindow *window = nil;
   if (@available(iOS 13.0, *)) {
@@ -77,17 +95,39 @@ RCT_EXPORT_MODULE();
   if (!window) {
     window = UIApplication.sharedApplication.keyWindow;
   }
+  return window;
+}
 
-  UIEdgeInsets insets = window.safeAreaInsets;
-  // Non-notch phones still have a 20pt status bar. keyWindow is often nil
-  // at constantsToExport time on iOS 13+, which would report top=0.
-  if (insets.top < 1.0 && !UIApplication.sharedApplication.isStatusBarHidden) {
-    insets.top = 20.0;
+- (NSDictionary *)getTabBarMetrics
+{
+  // Compact UITabBar item row is 49pt. Home indicator is extra chrome below it.
+  CGFloat itemHeight = 49.0;
+  UIWindow *window = [self keyWindow];
+  if (!window) {
+    return @{
+      @"itemHeight": @(itemHeight),
+      @"height": @(itemHeight),
+    };
   }
-
+  CGFloat bottom = window.safeAreaInsets.bottom;
+  UIViewController *root = window.rootViewController;
+  while (root.presentedViewController) {
+    root = root.presentedViewController;
+  }
+  UITabBar *tabBar = nil;
+  if ([root isKindOfClass:[UITabBarController class]]) {
+    tabBar = [(UITabBarController *)root tabBar];
+  } else if (root.tabBarController) {
+    tabBar = root.tabBarController.tabBar;
+  }
+  CGFloat height = itemHeight + bottom;
+  if (tabBar && tabBar.bounds.size.height > 1.0) {
+    height = tabBar.bounds.size.height;
+    itemHeight = MAX(49.0, height - bottom);
+  }
   return @{
-    @"top": @(insets.top),
-    @"bottom": @(insets.bottom)
+    @"itemHeight": @(itemHeight),
+    @"height": @(height),
   };
 }
 

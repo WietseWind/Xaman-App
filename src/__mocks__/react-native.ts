@@ -49,6 +49,7 @@ ReactNative.NativeModules.Toast = {
 
 ReactNative.NativeModules.DeviceUtilsModule = {
     layoutInsets: { top: 0, bottom: 0 },
+    tabBarMetrics: { itemHeight: 49, height: 49 },
     brand: 'Apple',
     model: 'iPhone13,4',
     osVersion: '15,5',

@@ -201,6 +201,14 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
     };
 
     /**
+     * Compact tab-bar item row and full bar height (item row + home indicator).
+     */
+    tabBarMetrics?: {
+        itemHeight: number;
+        height: number;
+    };
+
+    /**
      * The brand of the device (e.g., 'Apple').
      */
     brand: string;
