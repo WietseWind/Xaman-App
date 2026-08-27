@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Eri käyrä",
     "familySeedDifferentCurveMessage": "Tämä tili on aktivoitu verkossa %{network} eri käyrällä (%{curve}) osoitteena %{address}. Käytetäänkö tätä käyrää ja osoitetta?",
     "mnemonicLargeAmountAlert": "Jos harkitset muistitilisi tuontia, vaikka tililläsi on merkittävä arvo (esim. Säästösi, suuremmat XRP-määrät tai muut tunnukset), harkitse uuden tilin luomista Xaman: ään pitämään muistitilisi offline-tilassa.",

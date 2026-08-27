@@ -55,5 +55,5 @@ Feature: Mnemonic curve import on Xahau testnet
         Then I remember mnemonic address for curve "secp256k1"
         Then I tap 'next-button'
         Then I should see both mnemonic curves activated prompt
-        Then I tap alert button with label "secp256k1"
+        Then I tap alert button with label "secp256k1 r9w2Rv…"
         Then I should confirm expected mnemonic address

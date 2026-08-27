@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "该助记词派生的 secp256k1 和 ed25519 账户均已激活。请选择要导入的曲线。",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "不同曲线",
     "familySeedDifferentCurveMessage": "该账户已在 %{network} 上以不同曲线 (%{curve}) 激活为 %{address}。要使用此曲线和地址吗？",
     "mnemonicLargeAmountAlert": "如果您考虑在您的帐户具有重大价值时（例如，您的余额，大量XRP或其他货币）导入助记词帐户，请考虑在Xaman中创建一个新帐户以使助记词帐户保持脱机状态。",

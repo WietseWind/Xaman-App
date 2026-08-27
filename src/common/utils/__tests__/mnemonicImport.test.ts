@@ -1,7 +1,9 @@
 import { derive, sign } from 'xrpl-accountlib';
 
 import {
+    classifyLedgerAccount,
     createSignableAccount,
+    curveChoiceButtonLabel,
     deriveMnemonicAccount,
     getMnemonicAlgorithm,
     isLedgerAccountActivated,
@@ -61,6 +63,35 @@ describe('mnemonicImport', () => {
             );
 
             expect(signed.signedTransaction).toBeTruthy();
+        });
+    });
+
+    describe('curveChoiceButtonLabel', () => {
+        it('pairs the curve with a short r-address', () => {
+            expect(curveChoiceButtonLabel('secp256k1', SECP_ADDRESS)).toBe('secp256k1 r9w2Rv…');
+            expect(curveChoiceButtonLabel('ed25519', ED_ADDRESS)).toBe('ed25519 r4wtyg…');
+            expect(curveChoiceButtonLabel('ed25519', 'rN1SEYxWyG7En8acdjcxQBjWio9ZSs6u99')).toBe('ed25519 rN1SEY…');
+            expect(curveChoiceButtonLabel('secp256k1', 'rE1b4ih4MtLuAcr4sPD4oTS2riyammzAkt')).toBe(
+                'secp256k1 rE1b4i…',
+            );
+        });
+    });
+
+    describe('classifyLedgerAccount', () => {
+        it('treats actNotFound as absent and other failures as unknown', () => {
+            expect(classifyLedgerAccount({ error: 'actNotFound' })).toBe('absent');
+            expect(classifyLedgerAccount(undefined)).toBe('unknown');
+            expect(classifyLedgerAccount({ error: 'tooBusy' })).toBe('unknown');
+            expect(classifyLedgerAccount({})).toBe('unknown');
+        });
+
+        it('treats account_data as activated even if the master key is disabled', () => {
+            expect(
+                classifyLedgerAccount({
+                    account_data: { Account: ED_ADDRESS, RegularKey: 'rRegular' },
+                    account_flags: { disableMasterKey: true },
+                }),
+            ).toBe('activated');
         });
     });
 
@@ -181,18 +212,47 @@ describe('mnemonicImport', () => {
             }
         });
 
-        it('treats getAccountInfo failures as not activated and defaults to secp', async () => {
+        it('is inconclusive when a lookup throws instead of actNotFound', async () => {
             const getAccountInfo = jest.fn().mockRejectedValue(new Error('offline'));
             const picked = await pickMnemonicImport({
                 mnemonic: SAMPLE,
                 getAccountInfo,
             });
 
-            expect(picked.status).toBe('ready');
-            if (picked.status === 'ready') {
-                expect(picked.algorithm).toBe('secp256k1');
-                expect(picked.account.address).toBe(SECP_ADDRESS);
+            expect(picked.status).toBe('inconclusive');
+            if (picked.status === 'inconclusive') {
+                expect(picked.secp.address).toBe(SECP_ADDRESS);
+                expect(picked.ed.address).toBe(ED_ADDRESS);
             }
+        });
+
+        it('is inconclusive when only the ed25519 lookup fails', async () => {
+            const getAccountInfo = jest.fn(async (address: string) => {
+                if (address === ED_ADDRESS) {
+                    throw new Error('timeout');
+                }
+                return { error: 'actNotFound' };
+            });
+
+            const picked = await pickMnemonicImport({
+                mnemonic: SAMPLE,
+                getAccountInfo,
+            });
+
+            expect(picked.status).toBe('inconclusive');
+            if (picked.status === 'inconclusive') {
+                expect(picked.ed.address).toBe(ED_ADDRESS);
+            }
+        });
+
+        it('is inconclusive for other RPC errors, not only throws', async () => {
+            const getAccountInfo = jest.fn().mockResolvedValue({ error: 'noNetwork' });
+            const picked = await pickMnemonicImport({
+                mnemonic: SAMPLE,
+                getAccountInfo,
+            });
+
+            expect(picked.status).toBe('inconclusive');
         });
     });
 });

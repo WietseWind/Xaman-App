@@ -13,7 +13,7 @@ import { StringType, XrplSecret } from 'xumm-string-decode';
 
 import { Navigator } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
-import { MnemonicAlgorithm, pickMnemonicImport } from '@common/utils/mnemonicImport';
+import { curveChoiceButtonLabel, MnemonicAlgorithm, pickMnemonicImport } from '@common/utils/mnemonicImport';
 
 import { AppScreens } from '@common/constants';
 
@@ -181,17 +181,27 @@ class EnterMnemonicStep extends Component<Props, State> {
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
 
-            if (picked.status === 'conflict') {
+            if (picked.status === 'conflict' || picked.status === 'inconclusive') {
                 Prompt(
                     Localize.t('account.chooseMnemonicCurve'),
-                    Localize.t('account.bothMnemonicCurvesActivated'),
+                    `${Localize.t(
+                        picked.status === 'conflict'
+                            ? 'account.bothMnemonicCurvesActivated'
+                            : 'account.curveDetectionInconclusive',
+                    )}\n\n${Localize.t('account.curveChoiceAddresses', {
+                        secp: picked.secp.address,
+                        ed: picked.ed.address,
+                    })}`,
                     [
                         {
-                            text: Localize.t('account.mnemonicCurveSecp'),
+                            text: curveChoiceButtonLabel(
+                                Localize.t('account.mnemonicCurveSecp'),
+                                picked.secp.address,
+                            ),
                             onPress: () => this.finishImport(picked.secp),
                         },
                         {
-                            text: Localize.t('account.mnemonicCurveEd'),
+                            text: curveChoiceButtonLabel(Localize.t('account.mnemonicCurveEd'), picked.ed.address),
                             onPress: () => this.finishImport(picked.ed),
                         },
                         {

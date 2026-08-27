@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Different curve",
     "familySeedDifferentCurveMessage": "This account is activated on %{network} on a different curve (%{curve}) as %{address}. Do you want to use this curve & address?",
     "mnemonicLargeAmountAlert": "আপনি আপনার স্মৃতিসম্বন্ধীয় অ্যাকাউন্ট আমদানি বিবেচনা করে যখন আপনার অ্যাকাউন্টে উল্লেখযোগ্য মান (যেমন। আপনার সঞ্চয়, XRP বড় পরিমাণে বা অন্যান্য টোকেন) ঝুলিতে\r\n\r\nআপনার স্মৃতিভিত্তিক অ্যাকাউন্টটি অফলাইনে রাখতে দয়া করে Xaman এ একটি নতুন অ্যাকাউন্ট তৈরি করার বিষয়টি বিবেচনা করুন।\r\nঅনুগ্রহ করে Xaman-এ একটি নতুন অ্যাকাউন্ট তৈরি করে আপনার mnemonic অ্যাকাউন্ট অফলাইন রাখার জন্য বিবেচনা করুন.",

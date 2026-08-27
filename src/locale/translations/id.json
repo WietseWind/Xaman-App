@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Kurva berbeda",
     "familySeedDifferentCurveMessage": "Akun ini diaktifkan di %{network} pada kurva berbeda (%{curve}) sebagai %{address}. Gunakan kurva dan alamat ini?",
     "mnemonicLargeAmountAlert": "Jika Anda mempertimbangkan untuk mengimpor akun mnemonik Anda sementara akun Anda memiliki nilai yang signifikan (mis. Tabungan Anda, jumlah XRP yang lebih besar atau token lainnya), harap pertimbangkan untuk membuat akun baru di Xaman agar akun mnemonik Anda tetap offline.\r\nMohon pertimbangkan untuk membuat akun baru di Xaman untuk menjaga akun mnemonic anda secara offline.",

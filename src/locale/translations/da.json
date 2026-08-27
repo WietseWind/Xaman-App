@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Anden kurve",
     "familySeedDifferentCurveMessage": "Denne konto er aktiveret på %{network} med en anden kurve (%{curve}) som %{address}. Vil du bruge denne kurve og adresse?",
     "mnemonicLargeAmountAlert": "Du bør overveje, om du vil importere en eksisterende konto, hvis der på kontoen står midler af betydelig værdi (f.eks. en konto med din opsparing eller med større mængder af XRP eller andre tokens).\r\n\r\nOvervej i så fald venligst at oprette en ny konto i Xaman i stedet , så du kan holde kontoen med dine hemmelige huskeord offline.",

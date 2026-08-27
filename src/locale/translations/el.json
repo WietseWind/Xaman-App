@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Διαφορετική καμπύλη",
     "familySeedDifferentCurveMessage": "Αυτός ο λογαριασμός είναι ενεργός στο %{network} με διαφορετική καμπύλη (%{curve}) ως %{address}. Θέλετε να χρησιμοποιήσετε αυτή την καμπύλη και διεύθυνση;",
     "mnemonicLargeAmountAlert": "Εάν σκέφτεστε να εισαγάγετε τη μυστική φράση στο λογαριασμό σας ενώ ο λογαριασμός σας έχει σημαντική αξία (π.χ. τις αποταμιεύσεις σας, μεγαλύτερα ποσά XRP ή άλλα διακριτικά)\r\n\r\nΕξετάστε το ενδεχόμενο να δημιουργήσετε έναν νέο λογαριασμό Xaman για να διατηρήσετε τη μυστική σας φράση εκτός σύνδεσης.",

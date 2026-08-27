@@ -54,7 +54,7 @@ Feature: Family seed curve import on Xahau testnet
         Then I use the xahau testnet ed25519 family seed
         Then I enter my seed in the input
         Then I should see the family seed different curve prompt
-        Then I tap alert button with label "Yes"
+        Then I tap alert button with label "ed25519 rN1SEY…"
         Given I should see family seed curve "ed25519"
         Then I tap 'next-button'
         Then I should confirm expected family seed address
@@ -65,7 +65,7 @@ Feature: Family seed curve import on Xahau testnet
         Then I remember family seed address for curve "secp256k1"
         Then I enter my seed in the input
         Then I should see the family seed different curve prompt
-        Then I tap alert button with label "No"
+        Then I tap alert button with label "secp256k1 rE1b4i…"
         Given I should see family seed curve "secp256k1"
         Then I tap 'next-button'
         Then I should confirm expected family seed address

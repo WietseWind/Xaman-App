@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Druga kriva",
     "familySeedDifferentCurveMessage": "Ovaj nalog je aktiviran na %{network} sa drugom krivom (%{curve}) kao %{address}. Želite li da koristite tu krivu i adresu?",
     "mnemonicLargeAmountAlert": "Ако размислите о увозу мнемотехничког рачуна док ваш рачун има значајну вредност (нпр. Ваша уштеда, већи износи XRP или других токена)\r\n\r\nМолимо размислите о стварању новог налога у Xaman да бисте одржали свој мнемотехнички рачун ван мреже.",

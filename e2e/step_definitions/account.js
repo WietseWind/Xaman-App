@@ -512,16 +512,16 @@ Then('I use the xahau testnet ed25519 family seed', async () => {
 
 Then('I should see the family seed different curve prompt', { timeout: 30 * 1000 }, async () => {
     if (device.getPlatform() === 'android') {
-        await waitForAndroidAlertText('Yes', device.id);
+        await waitForAndroidAlertText('ed25519', device.id);
         return;
     }
     await waitFor(element(by.label('Different curve')))
         .toExist()
         .withTimeout(20000);
-    await waitFor(element(by.label('Yes').and(by.type('_UIAlertControllerActionView'))))
+    await waitFor(element(by.label('ed25519 rN1SEY…').and(by.type('_UIAlertControllerActionView'))))
         .toExist()
         .withTimeout(5000);
-    await waitFor(element(by.label('No').and(by.type('_UIAlertControllerActionView'))))
+    await waitFor(element(by.label('secp256k1 rE1b4i…').and(by.type('_UIAlertControllerActionView'))))
         .toExist()
         .withTimeout(5000);
 });
@@ -620,10 +620,10 @@ Then('I should see both mnemonic curves activated prompt', async () => {
         await waitForAndroidAlertText('secp256k1', device.id);
         return;
     }
-    await waitFor(element(by.label('secp256k1')))
+    await waitFor(element(by.label('secp256k1 r9w2Rv…')))
         .toExist()
         .withTimeout(20000);
-    await waitFor(element(by.label('ed25519')))
+    await waitFor(element(by.label('ed25519 r4wtyg…')))
         .toExist()
         .withTimeout(5000);
 });

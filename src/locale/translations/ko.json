@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "다른 곡선",
     "familySeedDifferentCurveMessage": "이 계정은 %{network}에서 다른 곡선(%{curve})으로 %{address}가 활성화되어 있습니다. 이 곡선과 주소를 사용할까요?",
     "mnemonicLargeAmountAlert": "가치가 높은 백업 계좌(XRP와 그 외 다른 자산)을 [가져오기]할 경우, 백업 계좌를 오프라인 상태로 유지하기 위해 Xaman에서 새로운 계좌를 만드는 것을 고려해  주세요",

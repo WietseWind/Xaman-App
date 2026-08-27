@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "このニーモニックから導出した secp256k1 と ed25519 の両方のアカウントが有効です。インポートする曲線を選んでください。",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "異なる曲線",
     "familySeedDifferentCurveMessage": "このアカウントは %{network} で別の曲線 (%{curve}) の %{address} として有効です。この曲線とアドレスを使いますか？",
     "mnemonicLargeAmountAlert": "アカウントの残高が多い（大量のXRPまたはその他のトークン）状態でニーモニックアカウントをインポートする場合、ニーモニックアカウントをオフラインに保つために、Xamanで新しいアカウントを作成することを検討してください。",

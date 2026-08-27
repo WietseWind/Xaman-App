@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Інша крива",
     "familySeedDifferentCurveMessage": "Цей рахунок активовано в мережі %{network} з іншою кривою (%{curve}) як %{address}. Використати цю криву та адресу?",
     "mnemonicLargeAmountAlert": "Якщо Ви розглядаєте можливість імпорту акаунта за фразою відновлення, в той час коли цей акаунт має значну вартість (наприклад, Ваші заощадження, велика сума XRP або інших активів)\r\n\r\nБудь ласка, розгляньте можливість створення нового акаунта в Xaman, щоб зберігати Ваш акаунт з фразою відновлення у режимі офлайн.",

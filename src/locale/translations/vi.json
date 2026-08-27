@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Đường cong khác",
     "familySeedDifferentCurveMessage": "Tài khoản này đã kích hoạt trên %{network} với đường cong khác (%{curve}) là %{address}. Dùng đường cong và địa chỉ này?",
     "mnemonicLargeAmountAlert": "Nếu bạn cân nhắc việc nhập tài khoản ghi nhớ của mình trong khi tài khoản của bạn có giá trị đáng kể (ví dụ: khoản tiết kiệm của bạn, số lượng lớn hơn XRP hoặc các mã thông báo khác), vui lòng xem xét tạo một tài khoản mới trong Xaman để giữ tài khoản ghi nhớ của bạn ngoại tuyến.",
