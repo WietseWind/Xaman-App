@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Different curve",
     "familySeedDifferentCurveMessage": "This account is activated on %{network} on a different curve (%{curve}) as %{address}. Do you want to use this curve & address?",
     "mnemonicLargeAmountAlert": "اگر آپ اپنا میمونیک اکاؤنٹ درآمد کرنے پر غور کرتے ہیں جبکہ آپ کے اکاؤنٹ میں نمایاں قدر ہوتی ہے (جیسے آپ کی بچت ، زیادہ مقدار میں XRP یا دیگر ٹوکن)\r\n\r\nبرائے مہربانی اپنے میمونیک اکاؤنٹ کو آف لائن رکھنے کے لئے Xaman میں نیا اکاؤنٹ بنانے پر غور کریں۔",

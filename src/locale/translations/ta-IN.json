@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Different curve",
     "familySeedDifferentCurveMessage": "This account is activated on %{network} on a different curve (%{curve}) as %{address}. Do you want to use this curve & address?",
     "mnemonicLargeAmountAlert": "உங்கள் கணக்கு குறிப்பிடத்தக்க மதிப்பைக் கொண்டிருக்கும்போது உங்கள் நினைவுக் கணக்கை இறக்குமதி செய்வதை நீங்கள் கருத்தில் கொண்டால் (எ.கா. உங்கள் சேமிப்பு, பெரிய அளவு எக்ஸ்ஆர்பி அல்லது பிற டோக்கன்கள்)\r\n\r\nஉங்கள் நினைவூட்டல் கணக்கை ஆஃப்லைனில் வைத்திருக்க Xaman இல் புதிய கணக்கை உருவாக்குவதைக் கருத்தில் கொள்ளுங்கள்.\r\nதயவு செய்து Xaman இல் ஒரு புதிய கணக்கை உருவாக்கவும் உங்கள் கணினி கணக்கை தவறாக வைத்துக் கொள்ளவும்.",

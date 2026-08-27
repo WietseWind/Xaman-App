@@ -8,7 +8,7 @@ try {
 
 const detox = require('detox/internals');
 
-const { device } = require('detox');
+const { device, element, by, waitFor } = require('detox');
 const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
 
@@ -103,8 +103,29 @@ async function dismissChangelogOverlay() {
     }
 }
 
+async function dismissIosLockIfPresent() {
+    if (device.getPlatform() !== 'ios') {
+        return;
+    }
+    try {
+        await waitFor(element(by.id('lock-overlay')))
+            .toExist()
+            .withTimeout(800);
+    } catch (e) {
+        return;
+    }
+    const pin = String(process.env.E2E_PASSCODE || '167349');
+    for (let i = 0; i < pin.length; i += 1) {
+        await element(by.id(`${pin[i]}-key`)).tap();
+    }
+    await waitFor(element(by.id('lock-overlay')))
+        .not.toExist()
+        .withTimeout(10000);
+}
+
 Before(async (context) => {
     await unlockAndroidPasscodeIfPresent();
+    await dismissIosLockIfPresent();
     await dismissChangelogOverlay();
     await adapter.beforeEach(context);
 });

@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "منحنى مختلف",
     "familySeedDifferentCurveMessage": "هذا الحساب مفعّل على %{network} بمنحنى مختلف (%{curve}) باسم %{address}. هل تريد استخدام هذا المنحنى وهذا العنوان؟",
     "mnemonicLargeAmountAlert": "إذا كنت تفكر في استيراد حساب ذاكري الخاص بك بينما يحتفظ حسابك بقيمة كبيرة (على سبيل المثال ، مدخراتك ، أو مبالغ أكبر من XRP أو الرموز المميزة الأخرى) ، فيرجى التفكير في إنشاء حساب جديد في Xaman للحفاظ على حسابك في وضع عدم الاتصال.\r\n",

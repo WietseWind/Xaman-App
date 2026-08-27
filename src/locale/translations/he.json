@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "עקומה שונה",
     "familySeedDifferentCurveMessage": "חשבון זה מופעל ב-%{network} על עקומה שונה (%{curve}) בשם %{address}. להשתמש בעקומה ובכתובת האלה?",
     "mnemonicLargeAmountAlert": "אם אתה שוקל לייבא את חשבון המנמוניק שלך בזמן שחשבונך מחזיק בערך משמעותי (למשל, החיסכון שלך, כמויות גדולות יותר של XRP או אסימונים אחרים), שקול ליצור חשבון חדש ב- Xaman כדי לשמור על חשבון המנמוניק שלך במצב לא מקוון במקום זאת.",

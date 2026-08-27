@@ -1,7 +1,8 @@
 Feature: Family seed curve import on Xahau testnet
     # Isolated checks for family seed secp256k1 vs ed25519. Autodetect prompts
     # before switching to ed25519 when that account is activated and secp is
-    # not. Next still has to be pressed.
+    # not. Earlier scenarios stop on the confirm-address screen. The last
+    # scenario finishes import so the app is left on Home.
 
     Background:
         Then I leave account import if open
@@ -54,7 +55,7 @@ Feature: Family seed curve import on Xahau testnet
         Then I use the xahau testnet ed25519 family seed
         Then I enter my seed in the input
         Then I should see the family seed different curve prompt
-        Then I tap alert button with label "Yes"
+        Then I tap alert button with label "ed25519 rN1SEY…"
         Given I should see family seed curve "ed25519"
         Then I tap 'next-button'
         Then I should confirm expected family seed address
@@ -65,7 +66,19 @@ Feature: Family seed curve import on Xahau testnet
         Then I remember family seed address for curve "secp256k1"
         Then I enter my seed in the input
         Then I should see the family seed different curve prompt
-        Then I tap alert button with label "No"
+        Then I tap alert button with label "secp256k1 rE1b4i…"
         Given I should see family seed curve "secp256k1"
         Then I tap 'next-button'
         Then I should confirm expected family seed address
+        Then I tap 'next-button'
+        Given I should see 'account-import-explain-activation-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-security-view'
+        Then I tap 'next-button'
+        Given I should have 'account-import-label-view'
+        Then I enter 'E2E-FS-Secp' in 'label-input'
+        Then I tap 'next-button'
+        Given I should have 'account-import-finish-view'
+        Then I tap 'finish-button'
+        Then I tap 'tab-Home'
+        Given I should have 'home-tab-view'

@@ -34,6 +34,7 @@ import {
     isFamilySeedCurvePickerEligible,
     pickFamilySeedCurve,
 } from '@common/utils/familySeedImport';
+import { curveChoiceButtonLabel } from '@common/utils/mnemonicImport';
 
 import LedgerService from '@services/LedgerService';
 import NetworkService from '@services/NetworkService';
@@ -100,7 +101,11 @@ class EnterSeedStep extends Component<Props, State> {
         return xrplSecret;
     };
 
-    confirmDifferentCurve = (curve: FamilySeedAlgorithm, address: string): Promise<boolean> => {
+    confirmDifferentCurve = (
+        curve: FamilySeedAlgorithm,
+        address: string,
+        secpAddress: string,
+    ): Promise<FamilySeedAlgorithm | undefined> => {
         let network = '';
         try {
             network = NetworkService.getNetwork().name;
@@ -111,22 +116,27 @@ class EnterSeedStep extends Component<Props, State> {
         return new Promise((resolve) => {
             Prompt(
                 Localize.t('account.familySeedDifferentCurveTitle'),
-                Localize.t('account.familySeedDifferentCurveMessage', {
+                `${Localize.t('account.familySeedDifferentCurveMessage', {
                     network,
                     curve,
                     address,
-                }),
+                })}\n\n${Localize.t('account.curveChoiceAddresses', {
+                    secp: secpAddress,
+                    ed: address,
+                })}`,
                 [
                     {
-                        text: Localize.t('global.no'),
-                        style: 'cancel',
-                        onPress: () => resolve(false),
+                        text: curveChoiceButtonLabel(Localize.t('account.mnemonicCurveSecp'), secpAddress),
+                        onPress: () => resolve('secp256k1'),
                     },
                     {
-                        text: Localize.t('global.yes'),
-                        style: 'default',
-                        isPreferred: true,
-                        onPress: () => resolve(true),
+                        text: curveChoiceButtonLabel(Localize.t('account.mnemonicCurveEd'), address),
+                        onPress: () => resolve('ed25519'),
+                    },
+                    {
+                        text: Localize.t('global.cancel'),
+                        style: 'cancel',
+                        onPress: () => resolve(undefined),
                     },
                 ],
             );
@@ -148,26 +158,30 @@ class EnterSeedStep extends Component<Props, State> {
                 return this.getSecretType();
             }
 
-            if (!picked.confirm) {
-                return picked.algorithm;
+            // Typing must not prompt on node errors; Next re-checks and surfaces.
+            if (picked.status === 'inconclusive' || !picked.confirm) {
+                return picked.status === 'inconclusive' ? this.getSecretType() : picked.algorithm;
             }
 
-            const accepted = await this.confirmDifferentCurve(picked.confirm.algorithm, picked.confirm.address);
+            const chosen = await this.confirmDifferentCurve(
+                picked.confirm.algorithm,
+                picked.confirm.address,
+                picked.confirm.secpAddress,
+            );
 
             if (token !== this.curveDetectToken) {
                 return this.getSecretType();
             }
 
-            this.userSelectedCurve = true;
-
-            if (accepted) {
-                this.setState({ secretType: picked.confirm.algorithm });
-                return picked.confirm.algorithm;
+            if (!chosen) {
+                return this.getSecretType();
             }
 
-            return 'secp256k1';
+            this.userSelectedCurve = true;
+            this.setState({ secretType: chosen });
+            return chosen;
         } catch {
-            return 'secp256k1';
+            return this.getSecretType();
         }
     };
 
@@ -214,6 +228,33 @@ class EnterSeedStep extends Component<Props, State> {
         return this.getSecretType();
     };
 
+    chooseCurveWhenInconclusive = (secp: string, ed: string): Promise<FamilySeedAlgorithm | undefined> => {
+        return new Promise((resolve) => {
+            Prompt(
+                Localize.t('account.chooseMnemonicCurve'),
+                `${Localize.t('account.curveDetectionInconclusive')}\n\n${Localize.t('account.curveChoiceAddresses', {
+                    secp,
+                    ed,
+                })}`,
+                [
+                    {
+                        text: curveChoiceButtonLabel(Localize.t('account.mnemonicCurveSecp'), secp),
+                        onPress: () => resolve('secp256k1'),
+                    },
+                    {
+                        text: curveChoiceButtonLabel(Localize.t('account.mnemonicCurveEd'), ed),
+                        onPress: () => resolve('ed25519'),
+                    },
+                    {
+                        text: Localize.t('global.cancel'),
+                        style: 'cancel',
+                        onPress: () => resolve(undefined),
+                    },
+                ],
+            );
+        });
+    };
+
     driveFamilySeed = async () => {
         const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
 
@@ -225,10 +266,50 @@ class EnterSeedStep extends Component<Props, State> {
             this.setState({ isLoading: true });
 
             const xrplSecret = this.resolveFamilySeed(secret);
-            const secretType = this.userSelectedCurve ? this.getSecretType() : await this.ensureCurveAutodetect();
-            const account = deriveFamilySeedAccount(xrplSecret, secretType);
 
-            this.goNext(account);
+            if (!this.userSelectedCurve) {
+                await this.ensureCurveAutodetect();
+            }
+
+            if (this.userSelectedCurve) {
+                this.goNext(deriveFamilySeedAccount(xrplSecret, this.getSecretType()));
+                return;
+            }
+
+            const picked = await pickFamilySeedCurve({
+                secret: xrplSecret,
+                getAccountInfo: (address) => LedgerService.getAccountInfo(address),
+            });
+
+            if (picked.status === 'inconclusive') {
+                const chosen = await this.chooseCurveWhenInconclusive(picked.secp.address, picked.ed.address);
+                if (!chosen) {
+                    this.setState({ isLoading: false });
+                    return;
+                }
+                this.userSelectedCurve = true;
+                this.setState({ secretType: chosen });
+                this.goNext(deriveFamilySeedAccount(xrplSecret, chosen));
+                return;
+            }
+
+            if (picked.confirm) {
+                const chosen = await this.confirmDifferentCurve(
+                    picked.confirm.algorithm,
+                    picked.confirm.address,
+                    picked.confirm.secpAddress,
+                );
+                if (!chosen) {
+                    this.setState({ isLoading: false });
+                    return;
+                }
+                this.userSelectedCurve = true;
+                this.setState({ secretType: chosen });
+                this.goNext(deriveFamilySeedAccount(xrplSecret, chosen));
+                return;
+            }
+
+            this.goNext(deriveFamilySeedAccount(xrplSecret, picked.algorithm));
         } catch (error) {
             this.setState({ isLoading: false });
             Alert.alert(Localize.t('global.error'), Localize.t('account.invalidFamilySeed'));

@@ -512,16 +512,16 @@ Then('I use the xahau testnet ed25519 family seed', async () => {
 
 Then('I should see the family seed different curve prompt', { timeout: 30 * 1000 }, async () => {
     if (device.getPlatform() === 'android') {
-        await waitForAndroidAlertText('Yes', device.id);
+        await waitForAndroidAlertText('ed25519', device.id);
         return;
     }
     await waitFor(element(by.label('Different curve')))
         .toExist()
         .withTimeout(20000);
-    await waitFor(element(by.label('Yes').and(by.type('_UIAlertControllerActionView'))))
+    await waitFor(element(by.label('ed25519 rN1SEY…').and(by.type('_UIAlertControllerActionView'))))
         .toExist()
         .withTimeout(5000);
-    await waitFor(element(by.label('No').and(by.type('_UIAlertControllerActionView'))))
+    await waitFor(element(by.label('secp256k1 rE1b4i…').and(by.type('_UIAlertControllerActionView'))))
         .toExist()
         .withTimeout(5000);
 });
@@ -620,10 +620,10 @@ Then('I should see both mnemonic curves activated prompt', async () => {
         await waitForAndroidAlertText('secp256k1', device.id);
         return;
     }
-    await waitFor(element(by.label('secp256k1')))
+    await waitFor(element(by.label('secp256k1 r9w2Rv…')))
         .toExist()
         .withTimeout(20000);
-    await waitFor(element(by.label('ed25519')))
+    await waitFor(element(by.label('ed25519 r4wtyg…')))
         .toExist()
         .withTimeout(5000);
 });
@@ -693,29 +693,30 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
 
     for (let i = 0; i < words.length; i++) {
         const field = element(by.id(`word-${i}-input`));
-        let visible = false;
-        for (let attempt = 0; attempt < 12; attempt++) {
+        await waitFor(field).toExist().withTimeout(8000);
+        if (i > 2) {
+            await dismissKeyboard();
             try {
-                await waitFor(field).toBeVisible().withTimeout(700);
-                visible = true;
-                break;
+                await waitFor(field)
+                    .toBeVisible()
+                    .whileElement(by.id('mnemonic-words-scroll'))
+                    .scroll(70, 'down');
             } catch (e) {
-                try {
-                    await scroller.swipe('up', 'slow', 0.35);
-                } catch (swipeErr) {
-                    // already at edge
-                }
+                // already visible or at edge
             }
         }
-        if (!visible) {
-            throw new Error(
-                `word-${i}-input never visible; need ${words.length} fields. Is 24-words selected?`,
-            );
-        }
         try {
+            await field.tap();
             await field.replaceText(words[i]);
         } catch (e) {
-            await field.typeText(`${words[i]}\n`);
+            await dismissKeyboard();
+            try {
+                await scroller.scroll(70, 'down');
+            } catch (scrollErr) {
+                // at edge
+            }
+            await field.tap();
+            await field.replaceText(words[i]);
         }
     }
     await dismissKeyboard();

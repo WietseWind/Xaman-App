@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Farklı eğri",
     "familySeedDifferentCurveMessage": "Bu hesap %{network} üzerinde farklı bir eğri (%{curve}) ile %{address} olarak etkin. Bu eğriyi ve adresi kullanmak ister misiniz?",
     "mnemonicLargeAmountAlert": "Hesabınızda önemli bir değer tutarken anımsatıcı hesabınızı içe aktarmayı düşünseniz (örn. birikimleriniz, daha büyük miktarlarda XRP veya diğer tokenlar)\r\n\r\nLütfen anımsatıcı hesabınızı çevrimdışı tutmak için Xaman'da yeni bir hesap oluşturmayı düşünün.",

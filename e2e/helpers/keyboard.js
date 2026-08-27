@@ -44,11 +44,10 @@ const dismissKeyboard = async () => {
     for (const id of CHROME_IDS) {
         try {
             await waitFor(element(by.id(id))).toExist().withTimeout(150);
-            // Title area, well above the field and the keyboard.
-            // Enter mnemonic: y:70 is the 12/16/24 row (center = 16), which
-            // truncates a 24-word mnemonic to the first 16 words.
-            const y = id === 'account-import-enter-mnemonic-view' ? 16 : 70;
-            await element(by.id(id)).tap({ x: 200, y });
+            // Far left of the title. Center taps hit 16-word or Scan QR.
+            const x = id === 'account-import-enter-mnemonic-view' ? 12 : 200;
+            const y = id === 'account-import-enter-mnemonic-view' ? 4 : 70;
+            await element(by.id(id)).tap({ x, y });
             await sleep(300);
             return;
         } catch (e) {

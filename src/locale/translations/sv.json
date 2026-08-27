@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Annan kurva",
     "familySeedDifferentCurveMessage": "Det här kontot är aktiverat på %{network} med en annan kurva (%{curve}) som %{address}. Vill du använda den här kurvan och adressen?",
     "mnemonicLargeAmountAlert": "Om du anser att du importerar ditt mnemoniska konto medan ditt konto har ett betydande värde (t. ex. dina besparingar, större mängder XRP eller andra token)\n\nTänk på att skapa ett nytt konto i Xaman för att behålla ditt mnemoniska konto offline.",

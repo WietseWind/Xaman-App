@@ -44,7 +44,49 @@ export type MnemonicDeriveOptions = {
 
 export type MnemonicImportPick =
     | { status: 'ready'; algorithm: MnemonicAlgorithm; account: XRPL_Account }
-    | { status: 'conflict'; secp: XRPL_Account; ed: XRPL_Account };
+    | { status: 'conflict'; secp: XRPL_Account; ed: XRPL_Account }
+    | { status: 'inconclusive'; secp: XRPL_Account; ed: XRPL_Account };
+
+/**
+ * Ledger account_info result. `actNotFound` is a definitive negative.
+ * Throws, empty payloads, and other RPC errors are unknown — not "unfunded".
+ *
+ * `activated` only means account_data exists. It does not prove the derived
+ * master key still signs (RegularKey + lsfDisableMaster).
+ */
+export type LedgerAccountPresence = 'activated' | 'absent' | 'unknown';
+
+export const curveChoiceButtonLabel = (curve: string, address?: string | null): string => {
+    if (!address) {
+        return curve;
+    }
+    const short = address.length > 6 ? `${address.slice(0, 6)}…` : address;
+    return `${curve} ${short}`;
+};
+
+export const classifyLedgerAccount = (accountInfo: any): LedgerAccountPresence => {
+    if (!accountInfo || typeof accountInfo !== 'object') {
+        return 'unknown';
+    }
+    if (accountInfo.error === 'actNotFound') {
+        return 'absent';
+    }
+    if (accountInfo.account_data) {
+        return 'activated';
+    }
+    return 'unknown';
+};
+
+export const lookupLedgerAccount = async (
+    getAccountInfo: (address: string) => Promise<any>,
+    address: string,
+): Promise<LedgerAccountPresence> => {
+    try {
+        return classifyLedgerAccount(await getAccountInfo(address));
+    } catch {
+        return 'unknown';
+    }
+};
 
 const compactOptions = (
     options?: MnemonicDeriveOptions & { algorithm?: MnemonicAlgorithm },
@@ -86,13 +128,7 @@ export const deriveMnemonicAccount = (
 };
 
 export const isLedgerAccountActivated = (accountInfo: any): boolean => {
-    if (!accountInfo || typeof accountInfo !== 'object') {
-        return false;
-    }
-    if (accountInfo.error === 'actNotFound') {
-        return false;
-    }
-    return !!accountInfo.account_data;
+    return classifyLedgerAccount(accountInfo) === 'activated';
 };
 
 export const pickMnemonicImport = async ({
@@ -117,21 +153,25 @@ export const pickMnemonicImport = async ({
     const secp = deriveMnemonicAccount(mnemonic, deriveOptions);
     const ed = deriveMnemonicAccount(mnemonic, { ...deriveOptions, algorithm: 'ed25519' });
 
-    const [secpInfo, edInfo] = await Promise.all([
-        getAccountInfo(secp.address as string).catch(() => undefined),
-        getAccountInfo(ed.address as string).catch(() => undefined),
+    const [secpState, edState] = await Promise.all([
+        lookupLedgerAccount(getAccountInfo, secp.address as string),
+        lookupLedgerAccount(getAccountInfo, ed.address as string),
     ]);
 
-    const secpOn = isLedgerAccountActivated(secpInfo);
-    const edOn = isLedgerAccountActivated(edInfo);
+    if (secpState === 'unknown' || edState === 'unknown') {
+        return { status: 'inconclusive', secp, ed };
+    }
 
-    if (secpOn && edOn) {
+    if (secpState === 'activated' && edState === 'activated') {
         return { status: 'conflict', secp, ed };
     }
 
-    if (edOn && !secpOn) {
+    if (edState === 'activated' && secpState === 'absent') {
         return { status: 'ready', algorithm: 'ed25519', account: ed };
     }
 
+    // Both absent (new / unfunded) or only secp activated → default secp.
+    // Unfunded ed25519 is indistinguishable from a new secp account; use the
+    // curve switch if that is the intended key.
     return { status: 'ready', algorithm: 'secp256k1', account: secp };
 };

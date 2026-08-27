@@ -60,6 +60,7 @@ describe('familySeedImport', () => {
             const picked = await pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo });
 
             expect(picked).toEqual({
+                status: 'ready',
                 algorithm: 'secp256k1',
                 address: SECP_ADDRESS,
             });
@@ -76,11 +77,13 @@ describe('familySeedImport', () => {
             });
 
             await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                status: 'ready',
                 algorithm: 'ed25519',
                 address: ED_ADDRESS,
                 confirm: {
                     algorithm: 'ed25519',
                     address: ED_ADDRESS,
+                    secpAddress: SECP_ADDRESS,
                 },
             });
         });
@@ -94,6 +97,7 @@ describe('familySeedImport', () => {
             });
 
             await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                status: 'ready',
                 algorithm: 'secp256k1',
                 address: SECP_ADDRESS,
             });
@@ -105,17 +109,34 @@ describe('familySeedImport', () => {
             });
 
             await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                status: 'ready',
                 algorithm: 'secp256k1',
                 address: SECP_ADDRESS,
             });
         });
 
-        it('treats getAccountInfo failures as not activated and defaults to secp', async () => {
+        it('is inconclusive when a lookup throws instead of actNotFound', async () => {
             const getAccountInfo = jest.fn().mockRejectedValue(new Error('offline'));
 
             await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
-                algorithm: 'secp256k1',
-                address: SECP_ADDRESS,
+                status: 'inconclusive',
+                secp: { algorithm: 'secp256k1', address: SECP_ADDRESS },
+                ed: { algorithm: 'ed25519', address: ED_ADDRESS },
+            });
+        });
+
+        it('is inconclusive when only the ed25519 lookup fails', async () => {
+            const getAccountInfo = jest.fn(async (address: string) => {
+                if (address === ED_ADDRESS) {
+                    throw new Error('timeout');
+                }
+                return { error: 'actNotFound' };
+            });
+
+            await expect(pickFamilySeedCurve({ secret: SAMPLE, getAccountInfo })).resolves.toEqual({
+                status: 'inconclusive',
+                secp: { algorithm: 'secp256k1', address: SECP_ADDRESS },
+                ed: { algorithm: 'ed25519', address: ED_ADDRESS },
             });
         });
     });

@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Druga krivulja",
     "familySeedDifferentCurveMessage": "Ta račun je aktiviran na %{network} z drugo krivuljo (%{curve}) kot %{address}. Želite uporabiti to krivuljo in naslov?",
     "mnemonicLargeAmountAlert": "Če razmišljate o uvozu mnemoničnega računa, medtem ko ima vaš račun precejšnjo vrednost (npr. prihranki, večje količine XRP-jev ali drugih žetonov) \r\n\r\nProsimo, razmislite o kreiranju novega računa v Xaman-u. S tem boste zagotovili, da vaš mnemonični račun še naprej ostane brez povezave s spletom.",

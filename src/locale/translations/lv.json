@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Both the secp256k1 and ed25519 accounts derived from this mnemonic are activated. Choose which curve to import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Cita līkne",
     "familySeedDifferentCurveMessage": "Šis konts ir aktivizēts tīklā %{network} ar citu līkni (%{curve}) kā %{address}. Vai izmantot šo līkni un adresi?",
     "mnemonicLargeAmountAlert": "Ja jūs uzskatāt, importējot savu mnemonic kontu, kamēr jūsu konts tur ievērojamu vērtību (piemēram,. ietaupījums, lielāks daudzums XRP vai citu žetonu)\n\nLūdzu, apsveriet iespēju izveidot jaunu kontu Xaman, lai saglabātu savu mnemonic kontu bezsaistē.",

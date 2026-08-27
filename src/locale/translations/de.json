@@ -1091,6 +1091,8 @@
     "mnemonicCurveSecp": "secp256k1",
     "mnemonicCurveEd": "ed25519",
     "bothMnemonicCurvesActivated": "Sowohl das secp256k1- als auch das ed25519-Konto dieser Mnemonic sind aktiviert. Wähle die Kurve zum Import.",
+    "curveDetectionInconclusive": "We couldn't confirm which curve is active on the network. Choose the account you expect.",
+    "curveChoiceAddresses": "secp256k1: %{secp}\ned25519: %{ed}",
     "familySeedDifferentCurveTitle": "Andere Kurve",
     "familySeedDifferentCurveMessage": "Dieses Konto ist auf %{network} mit einer anderen Kurve (%{curve}) als %{address} aktiviert. Möchtest du diese Kurve und diese Adresse verwenden?",
     "mnemonicLargeAmountAlert": "Wenn Sie überlegen, Ihr Mcemonic-Konto zu importieren, solange Ihr Konto noch einen signifikanten Wert aufweist (z. B. Ihre Ersparnisse, größere XRP-Beträge oder andere Token), dann ziehen Sie bitte in Betracht ein neues Konto mittels Xaman zu erstellen, um so Ihr Mnemonic-Konto offline zu behalten. ",
