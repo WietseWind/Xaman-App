@@ -25,10 +25,20 @@ const generateMnemonic = (strength = 256, algorithm) => {
 const SAMPLE_24_WORD_MNEMONIC =
     'lamp elevator orchard music glare night upper race mixture bullet property nasty agent sword blind dynamic gossip life series shrug day ice control reunion';
 
+// secp-encoded family seed whose ed25519 r-address is activated on Xahau Testnet
+const SAMPLE_FAMILY_SEED_ED_XAHAU = 'shk74ZM1V25arF1EnKvRnXNUCtSay';
+const SAMPLE_FAMILY_SEED_ED_ADDRESS = 'rN1SEYxWyG7En8acdjcxQBjWio9ZSs6u99';
+const SAMPLE_FAMILY_SEED_SECP_ADDRESS = 'rE1b4ih4MtLuAcr4sPD4oTS2riyammzAkt';
+
 const deriveMnemonicAddress = (words, algorithm) => {
     const mnemonic = Array.isArray(words) ? words.join(' ') : words;
     const options = algorithm && algorithm !== 'secp256k1' ? { algorithm } : undefined;
     return AccountLib.derive.mnemonic(mnemonic, options).address;
+};
+
+const deriveFamilySeedAddress = (seed, algorithm) => {
+    const options = algorithm && algorithm !== 'secp256k1' ? { algorithm } : undefined;
+    return AccountLib.derive.familySeed(seed, options).address;
 };
 
 // generate family seed
@@ -199,5 +209,9 @@ module.exports = {
     generateFamilySeed,
     generateMnemonic,
     deriveMnemonicAddress,
+    deriveFamilySeedAddress,
     SAMPLE_24_WORD_MNEMONIC,
+    SAMPLE_FAMILY_SEED_ED_XAHAU,
+    SAMPLE_FAMILY_SEED_ED_ADDRESS,
+    SAMPLE_FAMILY_SEED_SECP_ADDRESS,
 };

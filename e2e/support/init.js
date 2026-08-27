@@ -38,6 +38,8 @@ BeforeAll(async () => {
     ensureLocalSimulator();
 
     const reuse = String(process.env?.DETOX_REUSE || 'no').toLowerCase() === 'yes';
+    const newInstance =
+        String(process.env?.DETOX_NEW_INSTANCE || '').toLowerCase() === 'yes' ? true : !reuse;
 
     await detox.init({
         argv: {
@@ -56,7 +58,7 @@ BeforeAll(async () => {
     startRecordingVideo();
 
     await device.launchApp({
-        newInstance: !reuse,
+        newInstance,
         permissions: { notifications: 'YES', camera: 'YES' },
         disableTouchIndicators: false,
         // Must be set at launch. Android RN Animated (Toast) trips
