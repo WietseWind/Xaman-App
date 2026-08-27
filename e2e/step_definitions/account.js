@@ -693,29 +693,30 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
 
     for (let i = 0; i < words.length; i++) {
         const field = element(by.id(`word-${i}-input`));
-        let visible = false;
-        for (let attempt = 0; attempt < 12; attempt++) {
+        await waitFor(field).toExist().withTimeout(8000);
+        if (i > 2) {
+            await dismissKeyboard();
             try {
-                await waitFor(field).toBeVisible().withTimeout(700);
-                visible = true;
-                break;
+                await waitFor(field)
+                    .toBeVisible()
+                    .whileElement(by.id('mnemonic-words-scroll'))
+                    .scroll(70, 'down');
             } catch (e) {
-                try {
-                    await scroller.swipe('up', 'slow', 0.35);
-                } catch (swipeErr) {
-                    // already at edge
-                }
+                // already visible or at edge
             }
         }
-        if (!visible) {
-            throw new Error(
-                `word-${i}-input never visible; need ${words.length} fields. Is 24-words selected?`,
-            );
-        }
         try {
+            await field.tap();
             await field.replaceText(words[i]);
         } catch (e) {
-            await field.typeText(`${words[i]}\n`);
+            await dismissKeyboard();
+            try {
+                await scroller.scroll(70, 'down');
+            } catch (scrollErr) {
+                // at edge
+            }
+            await field.tap();
+            await field.replaceText(words[i]);
         }
     }
     await dismissKeyboard();
