@@ -124,6 +124,8 @@ class EnterSeedStep extends Component<Props, State> {
                     },
                     {
                         text: Localize.t('global.yes'),
+                        style: 'default',
+                        isPreferred: true,
                         onPress: () => resolve(true),
                     },
                 ],
