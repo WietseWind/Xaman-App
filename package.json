@@ -5,8 +5,8 @@
   "scripts": {
     "start": "node node_modules/react-native/cli.js start",
     "prettier": "prettier --write `find -E src -regex \".*.(ts|tsx)\"`",
-    "validate": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . && npm run tsc",
-    "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
+    "validate": "node ./node_modules/eslint/bin/eslint.js --ignore-path .gitignore --ignore-pattern node_modules --quiet . && npm run tsc",
+    "tsc": "NODE_OPTIONS=--max_old_space_size=12000 node ./node_modules/typescript/bin/tsc --noEmit",
     "test": "jest --forceExit --detectOpenHandles",
     "sync-locals": "node scripts/locales.js --sync",
     "update-snapshots": "jest --updateSnapshot",
