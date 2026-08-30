@@ -104,7 +104,13 @@ export default {
     ],
 
     // cluster endpoints
-    clusterEndpoints: ['wss://xrplcluster.com', 'wss://xahau.network'],
+    clusterEndpoints: [
+        'wss://xrplcluster.com',
+        'wss://xahau.network',
+        'wss://rpc.xrpl-labs.com',
+        'wss://rpc.xahau.network',
+        'wss://rpc.xahau-test.net',
+    ],
 
     // legacy config
     legacy: {
