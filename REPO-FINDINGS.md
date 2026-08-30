@@ -220,3 +220,14 @@ feature/fix branch off main → PR on WietseWind fork targeting `update/5.2.6` �
 - Branch protection on `main`: required check `check-production-endpoints`, `enforce_admins: true` → direct pushes to main are blocked for everyone; everything lands via PR with the green check. Version bumps go on the update branch.
 - The five heavy workflows (validate/unit/ios/android/e2e) need self-hosted macOS ARM64 runners; temp-disabled repo-level (`gh workflow disable`) until runners exist — issue #105 has the re-enable runbook. Do NOT globally disable Actions: it would kill the required guard check and deadlock main merges.
 - Locale gotcha: `Localize.t` renders missing keys as broken text — `theQRIsNotWhatWeExpect` lives under `scan.`, not `global.` (fixed in #104). When touching error strings, verify the key path in `src/locale/en.json`.
+
+## Release notes live in xaman-api, not this repo
+
+The in-app ChangeLog overlay (`src/screens/Overlay/ChangeLog/ChangeLogOverlay.tsx`) only renders a
+WebView pointed at `WebLinks.ChangeLogURL/<locale>/?update=<version>`. The actual per-version HTML
+is in the sibling **xaman-api** repo (`~/Desktop/Xaman/xaman-api`, branch `master`) at:
+
+    src/web/template/webviews/update/releasenotes/<version>.html
+
+Structure: a `<style>` block, then `<h4>🚀 New</h4>` and `<h4>⭐️ Improved</h4>` sections with
+`<ul><li>` items. Searching this repo for release notes finds nothing — go to xaman-api directly.
