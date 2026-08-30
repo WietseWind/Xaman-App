@@ -306,8 +306,24 @@ describe('NetworkService', () => {
             expect(networkService.normalizeEndpoint(endpoint)).toBe(endpoint);
         });
 
+        test('Should append ORIGIN and userId for RPC hosts listed as cluster endpoints', () => {
+            const rpcClusterEndpoints = [
+                'wss://rpc.xrpl-labs.com',
+                'wss://rpc.xahau.network',
+                'wss://rpc.xahau-test.net',
+            ];
+            for (const endpoint of rpcClusterEndpoints) {
+                expect(networkService.normalizeEndpoint(endpoint)).toBe(
+                    `${endpoint}${networkService.Origin}?user_id=${profile.deviceUUID}`,
+                );
+            }
+        });
+
         test('Should return the endpoint if it is a direct RPC URL', () => {
             for (const endpoint of NetworkConfig.directRpcEndpoints) {
+                if (NetworkConfig.clusterEndpoints.includes(endpoint)) {
+                    continue;
+                }
                 expect(networkService.normalizeEndpoint(endpoint)).toBe(endpoint);
             }
         });
