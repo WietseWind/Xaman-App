@@ -161,9 +161,9 @@ const styles = StyleService.create({
         color: '$textPrimary',
     },
     amountValueContainer: {
-        flex: 1,
         flexDirection: 'column',
         alignItems: 'flex-end',
+        justifyContent: 'center',
     },
     currency: {
         fontFamily: AppFonts.base.familyMono,

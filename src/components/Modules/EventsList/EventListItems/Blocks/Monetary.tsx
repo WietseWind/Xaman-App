@@ -17,6 +17,7 @@ interface AmountLine {
     currency: string;
     prefix?: string;
     style?: TextStyle;
+    prominent?: boolean;
 }
 
 interface State {
@@ -71,12 +72,33 @@ class Monetary extends PureComponent<IProps, State> {
             });
         };
 
+        const pushMutate = (entry: { value: string; currency: string }, prefix?: string, style?: TextStyle) => {
+            extra.push({
+                value: entry.value,
+                currency: entry.currency,
+                prefix,
+                style,
+                prominent: true,
+            });
+        };
+
         if (mutate) {
             const mutateReceived = mutate[OperationActions.INC].at(0);
             const mutateSent = mutate[OperationActions.DEC].at(0);
 
             if (mutateReceived || mutateSent) {
                 pushFactor(originalFactor, styles.notEffectedColor);
+
+                // Swap / partial transfer: both legs from meta (not the offer max).
+                if (mutateReceived && mutateSent) {
+                    pushMutate(mutateSent, '-', styles.outgoingColor);
+                    return {
+                        ...mutateReceived,
+                        prefix: undefined,
+                        style: undefined,
+                        extra,
+                    };
+                }
 
                 if (mutateReceived) {
                     return {
@@ -142,7 +164,6 @@ class Monetary extends PureComponent<IProps, State> {
                     prefix={prefix}
                     style={[styles.amountText, style ?? {}]}
                     currencyStyle={styles.currencyText}
-                    valueContainerStyle={styles.amountValueContainer}
                     truncateCurrency
                 />
                 {extra?.map((line, index) => (
@@ -151,9 +172,11 @@ class Monetary extends PureComponent<IProps, State> {
                         value={line.value}
                         currency={line.currency}
                         prefix={line.prefix}
-                        style={[styles.currencyText, line.style ?? styles.notEffectedColor]}
+                        style={[
+                            line.prominent ? styles.amountText : styles.currencyText,
+                            line.style ?? styles.notEffectedColor,
+                        ]}
                         currencyStyle={styles.currencyText}
-                        valueContainerStyle={styles.amountValueContainer}
                         truncateCurrency
                     />
                 ))}

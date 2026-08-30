@@ -15,9 +15,9 @@ const styles = StyleService.create({
         height: AppSizes.scale(40),
     },
     amountValueContainer: {
-        flex: 1,
         flexDirection: 'column',
         alignItems: 'flex-end',
+        justifyContent: 'center',
     },
 
     labelText: {
