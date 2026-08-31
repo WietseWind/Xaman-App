@@ -8,6 +8,7 @@ export default StyleService.create({
         alignItems: 'center',
         borderRadius: 10,
         paddingHorizontal: AppSizes.paddingSml,
+        backgroundColor: '$tint',
     },
     tokenImageContainer: {
         marginRight: 10,

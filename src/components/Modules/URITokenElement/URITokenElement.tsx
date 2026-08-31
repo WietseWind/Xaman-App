@@ -7,7 +7,6 @@ import StyleService from '@services/StyleService';
 
 import { Avatar, InfoMessage } from '@components/General';
 
-import { Images } from '@common/helpers/images';
 import { Truncate } from '@common/utils/string';
 
 import { URIToken } from '@common/libs/ledger/objects';
@@ -183,7 +182,7 @@ class URITokenElement extends PureComponent<Props, State> {
         return (
             <View style={styles.container}>
                 <Animated.View style={[styles.tokenImageContainer, { opacity: this.animatedPlaceholder }]}>
-                    <Avatar source={Images.ImageBlankNFTLight} border size={35} />
+                    <Avatar source={StyleService.getImage('ImageBlankNFT')} border size={35} />
                 </Animated.View>
                 <View style={[AppStyles.flex4, AppStyles.leftAligned]}>
                     <Animated.Text
