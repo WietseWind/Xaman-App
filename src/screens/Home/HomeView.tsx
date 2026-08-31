@@ -22,7 +22,8 @@ import {
     OptionsModalPresentationStyle,
     OptionsModalTransitionStyle,
 } from 'react-native-navigation';
-import { AccountService, BackendService, NetworkService, StyleService } from '@services';
+import { AccountService, BackendService, StyleService } from '@services';
+import NetworkService from '@services/NetworkService';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
@@ -105,7 +106,7 @@ class HomeView extends Component<Props, State> {
             isSpendable: false,
             isSignable: false,
             selectedNetwork: coreSettings.network,
-            connectedNode: NetworkService.getConnectedEndpoint() || coreSettings.network?.defaultNode?.endpoint || '',
+            connectedNode: coreSettings.network?.defaultNode?.endpoint || '',
             developerMode: coreSettings.developerMode,
             discreetMode: coreSettings.discreetMode,
             experimentalUI: undefined,
@@ -121,6 +122,7 @@ class HomeView extends Component<Props, State> {
         CoreRepository.on('updateSettings', this.onCoreSettingsUpdate);
         // live socket node (failover) for the developer-mode "Connected to" label
         NetworkService.on('connect', this.onNetworkConnect);
+        this.onNetworkConnect();
 
         // listen for screen appear event
         this.navigationListener = Navigation.events().bindComponent(this);
@@ -227,7 +229,9 @@ class HomeView extends Component<Props, State> {
                     developerMode: coreSettings.developerMode,
                     selectedNetwork: coreSettings.network,
                     connectedNode:
-                        NetworkService.getConnectedEndpoint() || coreSettings.network?.defaultNode?.endpoint || '',
+                        NetworkService.getConnectedEndpoint() ||
+                        coreSettings.network?.defaultNode?.endpoint ||
+                        '',
                 },
                 this.updateAccountStatus,
             );
