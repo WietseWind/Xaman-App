@@ -901,8 +901,8 @@ class NetworkService extends EventEmitter {
 
         this.connection = new XrplClient(endpoints, {
             maxConnectionAttempts: 3,
-            assumeOfflineAfterSeconds: 9,
-            connectAttemptTimeoutSeconds: 3,
+            assumeOfflineAfterSeconds: 10,
+            connectAttemptTimeoutSeconds: 4,
         });
 
         this.logger.debug('Connection created');
