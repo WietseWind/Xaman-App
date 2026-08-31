@@ -90,7 +90,7 @@ const styles = StyleService.create({
     uriTokenContainer: {
         paddingHorizontal: 5,
         paddingVertical: AppSizes.paddingExtraSml,
-        backgroundColor: '$light',
+        backgroundColor: '$tint',
     },
     nfTokenContainer: {
         paddingHorizontal: 0,

@@ -8,6 +8,7 @@ export default StyleService.create({
         alignItems: 'center',
         borderRadius: 10,
         paddingHorizontal: AppSizes.paddingSml,
+        backgroundColor: '$tint',
     },
     tokenImageContainer: {
         marginRight: 10,
@@ -21,18 +22,18 @@ export default StyleService.create({
         marginBottom: 3,
     },
     labelPlaceholder: {
-        color: StyleService.isDarkMode() ? '$grey' : '$silver',
-        backgroundColor: StyleService.isDarkMode() ? '$grey' : '$silver',
+        color: StyleService.select({ light: '$silver', dark: '$grey' }),
+        backgroundColor: StyleService.select({ light: '$silver', dark: '$grey' }),
     },
     description: {
         flexWrap: 'wrap',
         flexShrink: 1,
         fontFamily: AppFonts.base.familyMonoBold,
         fontSize: AppFonts.small.size,
-        color: '$silver',
+        color: '$textSecondary',
     },
     descriptionPlaceholder: {
-        color: StyleService.isDarkMode() ? '$grey' : '$silver',
-        backgroundColor: StyleService.isDarkMode() ? '$grey' : '$silver',
+        color: StyleService.select({ light: '$silver', dark: '$grey' }),
+        backgroundColor: StyleService.select({ light: '$silver', dark: '$grey' }),
     },
 });
