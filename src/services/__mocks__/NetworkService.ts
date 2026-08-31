@@ -38,6 +38,27 @@ class NetworkService {
     public getNetwork(): any {
         return this.network;
     }
+
+    public getConnectedEndpoint() {
+        return this.network?.defaultNode?.endpoint || '';
+    }
+
+    public getConnectionDetails() {
+        return {
+            networkKey: this.network?.key,
+            networkId: this.network?.networkId,
+            node: this.getConnectedEndpoint(),
+            type: this.network?.type,
+        };
+    }
+
+    public on() {
+        return this;
+    }
+
+    public off() {
+        return this;
+    }
 }
 
 export default new NetworkService();

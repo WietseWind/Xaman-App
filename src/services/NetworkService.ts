@@ -76,6 +76,7 @@ class NetworkService extends EventEmitter {
     private status: NetworkStateStatus;
     private networkReserve?: { base: number; owner: number };
     private lastNetworkErrorId?: Realm.BSON.ObjectId;
+    private connectedEndpoint?: string;
 
     private static _ORIGIN = `/xaman/${GetAppVersionCode()}/${Platform.OS}`;
     private static _TIMEOUT_SECONDS = 40;
@@ -94,6 +95,7 @@ class NetworkService extends EventEmitter {
         this.networkReserve = undefined;
         this.userId = undefined;
         this.lastNetworkErrorId = undefined;
+        this.connectedEndpoint = undefined;
 
         this.logger = LoggerService.createLogger('Network');
 
@@ -433,6 +435,24 @@ class NetworkService extends EventEmitter {
     };
 
     /**
+     * Strip proxy / origin / user_id so a live socket URI matches the stored node address.
+     */
+    displayEndpoint = (uri: string): string => {
+        return uri
+            .replace(`${NetworkConfig.customNodeProxy}/`, '')
+            .replace(NetworkService._ORIGIN, '')
+            .replace(`?user_id=${this.userId}`, '');
+    };
+
+    /**
+     * Node the socket is actually on. Falls back to the network default before the first
+     * successful connect (and after the connection is destroyed).
+     */
+    getConnectedEndpoint = (): string => {
+        return this.connectedEndpoint || this.network?.defaultNode?.endpoint || '';
+    };
+
+    /**
      * Get connection details
      * @returns {object}
      */
@@ -440,7 +460,7 @@ class NetworkService extends EventEmitter {
         return {
             networkKey: this.getNetwork().key,
             networkId: this.getNetwork().networkId,
-            node: this.getNetwork().defaultNode.endpoint,
+            node: this.getConnectedEndpoint(),
             type: this.getNetwork().type,
         };
     };
@@ -462,6 +482,7 @@ class NetworkService extends EventEmitter {
                 );
 
                 // change network
+                this.connectedEndpoint = undefined;
                 this.network = network;
 
                 // update cached reserve
@@ -506,6 +527,8 @@ class NetworkService extends EventEmitter {
             if (this.connection) {
                 this.connection.destroy();
             }
+
+            this.connectedEndpoint = undefined;
 
             // set the new connection status
             this.setConnectionStatus(NetworkStateStatus.Disconnected);
@@ -807,6 +830,14 @@ class NetworkService extends EventEmitter {
     };
 
     /**
+     * xrpl-client moved to the next node in the network's endpoint list.
+     * The label updates on `online` (onConnect) once that uplink is actually up.
+     */
+    onNodeSwitch = (endpoint: string) => {
+        this.logger.debug(`Switching uplink to ${this.displayEndpoint(endpoint)}`);
+    };
+
+    /**
      * Triggers when socket connected
      */
     onConnect = () => {
@@ -814,10 +845,8 @@ class NetworkService extends EventEmitter {
         const { uri, publicKey } = this.connection!.getState().server;
 
         // clean up before print
-        const connectedNode = uri
-            .replace(`${NetworkConfig.customNodeProxy}/`, '')
-            .replace(NetworkService._ORIGIN, '')
-            .replace(`?user_id=${this.userId}`, '');
+        const connectedNode = this.displayEndpoint(uri);
+        this.connectedEndpoint = connectedNode;
 
         // change network status
         this.setConnectionStatus(NetworkStateStatus.Connected);
@@ -857,6 +886,7 @@ class NetworkService extends EventEmitter {
      */
     connect = () => {
         // set the connection status to connecting
+        this.connectedEndpoint = undefined;
         this.setConnectionStatus(NetworkStateStatus.Connecting);
 
         // get default node for selected network
@@ -871,8 +901,8 @@ class NetworkService extends EventEmitter {
 
         this.connection = new XrplClient(endpoints, {
             maxConnectionAttempts: 3,
-            assumeOfflineAfterSeconds: 9,
-            connectAttemptTimeoutSeconds: 3,
+            assumeOfflineAfterSeconds: 10,
+            connectAttemptTimeoutSeconds: 4,
         });
 
         this.logger.debug('Connection created');
@@ -884,6 +914,7 @@ class NetworkService extends EventEmitter {
         this.connection.on('offline', this.onClose);
         this.connection.on('error', this.onError);
         this.connection.on('round', this.onError);
+        this.connection.on('nodeswitch', this.onNodeSwitch);
     };
 }
 

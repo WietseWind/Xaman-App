@@ -22,7 +22,8 @@ import {
     OptionsModalPresentationStyle,
     OptionsModalTransitionStyle,
 } from 'react-native-navigation';
-import { AccountService, BackendService, NetworkService, StyleService } from '@services';
+import { AccountService, BackendService, StyleService } from '@services';
+import NetworkService from '@services/NetworkService';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
@@ -72,6 +73,7 @@ export interface State {
     isSpendable: boolean;
     isSignable: boolean;
     selectedNetwork: NetworkModel;
+    connectedNode: string;
     developerMode: boolean;
     discreetMode: boolean;
     experimentalUI?: boolean;
@@ -104,6 +106,7 @@ class HomeView extends Component<Props, State> {
             isSpendable: false,
             isSignable: false,
             selectedNetwork: coreSettings.network,
+            connectedNode: coreSettings.network?.defaultNode?.endpoint || '',
             developerMode: coreSettings.developerMode,
             discreetMode: coreSettings.discreetMode,
             experimentalUI: undefined,
@@ -117,6 +120,9 @@ class HomeView extends Component<Props, State> {
         AccountRepository.on('accountUpdate', this.onAccountUpdate);
         // update discreetMode and developerMode on change
         CoreRepository.on('updateSettings', this.onCoreSettingsUpdate);
+        // live socket node (failover) for the developer-mode "Connected to" label
+        NetworkService.on('connect', this.onNetworkConnect);
+        this.onNetworkConnect();
 
         // listen for screen appear event
         this.navigationListener = Navigation.events().bindComponent(this);
@@ -168,6 +174,7 @@ class HomeView extends Component<Props, State> {
 
         AccountRepository.off('accountUpdate', this.onAccountUpdate);
         CoreRepository.off('updateSettings', this.onCoreSettingsUpdate);
+        NetworkService.off('connect', this.onNetworkConnect);
 
         if (this.nfcChangeListener) {
             this.nfcChangeListener.remove();
@@ -221,10 +228,27 @@ class HomeView extends Component<Props, State> {
                 {
                     developerMode: coreSettings.developerMode,
                     selectedNetwork: coreSettings.network,
+                    connectedNode:
+                        NetworkService.getConnectedEndpoint() ||
+                        coreSettings.network?.defaultNode?.endpoint ||
+                        '',
                 },
                 this.updateAccountStatus,
             );
         }
+    };
+
+    onNetworkConnect = () => {
+        const { connectedNode } = this.state;
+        const nextNode = NetworkService.getConnectedEndpoint();
+
+        if (!nextNode || nextNode === connectedNode) {
+            return;
+        }
+
+        this.setState({
+            connectedNode: nextNode,
+        });
     };
 
     onAccountUpdate = (updatedAccount: AccountModel) => {
@@ -608,7 +632,7 @@ class HomeView extends Component<Props, State> {
     };
 
     renderNetworkDetails = () => {
-        const { developerMode, selectedNetwork, experimentalUI } = this.state;
+        const { developerMode, selectedNetwork, connectedNode, experimentalUI } = this.state;
 
         if (!developerMode || !selectedNetwork || typeof experimentalUI === 'undefined' || experimentalUI) {
             return null;
@@ -618,7 +642,7 @@ class HomeView extends Component<Props, State> {
             <View style={styles.networkDetailsContainer}>
                 <Text style={styles.networkTextLabel}>{Localize.t('global.connectedTo')} </Text>
                 <Text adjustsFontSizeToFit numberOfLines={1} style={styles.networkTextContent}>
-                    {selectedNetwork.defaultNode.endpoint}
+                    {connectedNode || selectedNetwork.defaultNode.endpoint}
                 </Text>
             </View>
         );

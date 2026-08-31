@@ -328,4 +328,53 @@ describe('NetworkService', () => {
             }
         });
     });
+
+    describe('connected endpoint', () => {
+        const defaultEndpoint = 'wss://xrplcluster.com';
+        const fallbackEndpoint = 'wss://rpc.xrpl-labs.com';
+
+        beforeEach(() => {
+            jest.replaceProperty(networkService, 'network', {
+                key: 'MAINNET',
+                networkId: 0,
+                type: 'Mainnet',
+                defaultNode: { endpoint: defaultEndpoint },
+            } as any);
+            (networkService as any).connectedEndpoint = undefined;
+        });
+
+        test('Should fall back to the network default node before a live socket exists', () => {
+            expect(networkService.getConnectedEndpoint()).toBe(defaultEndpoint);
+            expect(networkService.getConnectionDetails().node).toBe(defaultEndpoint);
+        });
+
+        test('Should store the live socket URI on connect, including after uplink failover', () => {
+            const origin = networkService.Origin;
+            const liveUri = `${fallbackEndpoint}${origin}?user_id=${profile.deviceUUID}`;
+
+            jest.replaceProperty(networkService, 'connection', {
+                getState: () => ({
+                    server: { uri: liveUri, publicKey: 'NODE_PUBKEY' },
+                }),
+            } as any);
+
+            const reserveSpy = jest.spyOn(networkService, 'updateNetworkReserve').mockImplementation(jest.fn());
+            const definitionsSpy = jest
+                .spyOn(networkService, 'updateNetworkDefinitions')
+                .mockImplementation(jest.fn());
+            const featuresSpy = jest.spyOn(networkService, 'updateNetworkFeatures').mockImplementation(jest.fn());
+            const statusSpy = jest.spyOn(networkService, 'setConnectionStatus').mockImplementation(jest.fn());
+
+            networkService.onConnect();
+
+            expect(networkService.getConnectedEndpoint()).toBe(fallbackEndpoint);
+            expect(networkService.getConnectionDetails().node).toBe(fallbackEndpoint);
+            expect(networkService.displayEndpoint(liveUri)).toBe(fallbackEndpoint);
+
+            reserveSpy.mockRestore();
+            definitionsSpy.mockRestore();
+            featuresSpy.mockRestore();
+            statusSpy.mockRestore();
+        });
+    });
 });
