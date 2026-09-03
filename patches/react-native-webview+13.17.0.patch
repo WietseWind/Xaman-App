@@ -299,10 +299,139 @@ index f83033b..630c519 100644
      }
  
 diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
-index 3890426..62f0530 100644
+index 38904266..9aa43cd7 100644
 --- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 +++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
-@@ -1216,6 +1216,10 @@ RCTAutoInsetsProtocol>
+@@ -25,6 +25,23 @@ static NSDictionary* customCertificatesForHost;
+ 
+ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
+ 
++// When incognito is off, iOS uses the app default data store so localStorage /
++// IndexedDB work (Android incognito still has those). Cookies and service
++// workers are stripped separately and are not written to that store.
++static NSString *const RNCXamanCookieBlockListId = @"XamanBlockCookies";
++static NSString *const RNCXamanStorageLockdownScript =
++    @"(function(){"
++    "try{Object.defineProperty(document,'cookie',{configurable:true,enumerable:true,get:function(){return '';},set:function(){}});}catch(e){}"
++    "try{if(navigator.serviceWorker){"
++    "var nope=function(){return Promise.reject(new TypeError('disabled'));};"
++    "var empty=function(){return Promise.resolve(undefined);};"
++    "var none=function(){return Promise.resolve([]);};"
++    "try{navigator.serviceWorker.register=nope;}catch(e1){}"
++    "try{navigator.serviceWorker.getRegistration=empty;}catch(e2){}"
++    "try{navigator.serviceWorker.getRegistrations=none;}catch(e3){}"
++    "}}catch(e){}"
++    "})();";
++
+ #if TARGET_OS_IOS
+ // runtime trick to remove WKWebView keyboard default toolbar
+ // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
+@@ -420,6 +437,63 @@ RCTAutoInsetsProtocol>
+ }
+ #endif //Target_OS_OSX
+ 
++- (BOOL)xamanAllowScriptStorageOnly
++{
++  return !_incognito;
++}
++
++- (void)xamanStripCookiesAndServiceWorkersFromStore:(WKWebsiteDataStore *)store
++{
++  if (store == nil) {
++    return;
++  }
++  NSMutableSet *types = [NSMutableSet setWithObject:WKWebsiteDataTypeCookies];
++  if (@available(iOS 16.0, *)) {
++    [types addObject:WKWebsiteDataTypeServiceWorkerRegistrations];
++  }
++  [store removeDataOfTypes:types
++             modifiedSince:[NSDate dateWithTimeIntervalSince1970:0]
++         completionHandler:^{}];
++}
++
++- (void)xamanAttachCookieBlockListToController:(WKUserContentController *)controller
++{
++  if (controller == nil) {
++    return;
++  }
++  static WKContentRuleList *cachedList;
++  static NSMutableArray<WKUserContentController *> *pendingControllers;
++  static BOOL compiling;
++  if (cachedList != nil) {
++    [controller addContentRuleList:cachedList];
++    return;
++  }
++  if (pendingControllers == nil) {
++    pendingControllers = [NSMutableArray new];
++  }
++  [pendingControllers addObject:controller];
++  if (compiling) {
++    return;
++  }
++  compiling = YES;
++  NSString *json = @"[{\"trigger\":{\"url-filter\":\".*\"},\"action\":{\"type\":\"block-cookies\"}}]";
++  [[WKContentRuleListStore defaultStore]
++      compileContentRuleListForIdentifier:RNCXamanCookieBlockListId
++                    encodedContentRuleList:json
++                       completionHandler:^(WKContentRuleList *list, NSError *error) {
++                         compiling = NO;
++                         if (list == nil) {
++                           [pendingControllers removeAllObjects];
++                           return;
++                         }
++                         cachedList = list;
++                         for (WKUserContentController *pending in pendingControllers) {
++                           [pending addContentRuleList:list];
++                         }
++                         [pendingControllers removeAllObjects];
++                       }];
++}
++
+ - (WKWebViewConfiguration *)setUpWkWebViewConfig
+ {
+   WKWebViewConfiguration *wkWebViewConfig = [WKWebViewConfiguration new];
+@@ -461,13 +535,19 @@ RCTAutoInsetsProtocol>
+   }
+   if (_incognito) {
+     wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore nonPersistentDataStore];
+-  } else if (_cacheEnabled) {
++  } else {
++    // Persistent app-sandbox store so localStorage / IndexedDB work. Cookies and
++    // service workers are stripped below (not Safari; sharedCookiesEnabled is off).
+     wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
++    [self xamanStripCookiesAndServiceWorkersFromStore:wkWebViewConfig.websiteDataStore];
+   }
+   if(self.useSharedProcessPool) {
+     wkWebViewConfig.processPool = [[RNCWKProcessPoolManager sharedManager] sharedProcessPool];
+   }
+   wkWebViewConfig.userContentController = [WKUserContentController new];
++  if ([self xamanAllowScriptStorageOnly]) {
++    [self xamanAttachCookieBlockListToController:wkWebViewConfig.userContentController];
++  }
+ 
+ #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 /* iOS 13 */
+   if (@available(iOS 13.0, *)) {
+@@ -588,6 +668,9 @@ RCTAutoInsetsProtocol>
+     [self addSubview:_webView];
+     [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
+     [self setKeyboardDisplayRequiresUserAction: _savedKeyboardDisplayRequiresUserAction];
++    if ([self xamanAllowScriptStorageOnly]) {
++      [self xamanStripCookiesAndServiceWorkersFromStore:_webView.configuration.websiteDataStore];
++    }
+     [self visitSource];
+   }
+ 
+@@ -628,6 +711,9 @@ RCTAutoInsetsProtocol>
+ #endif
+ {
+   if (_webView) {
++    if ([self xamanAllowScriptStorageOnly]) {
++      [self xamanStripCookiesAndServiceWorkersFromStore:_webView.configuration.websiteDataStore];
++    }
+     [_webView.configuration.userContentController removeScriptMessageHandlerForName:HistoryShimName];
+     [_webView.configuration.userContentController removeScriptMessageHandlerForName:MessageHandlerName];
+     [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
+@@ -1216,6 +1302,10 @@ RCTAutoInsetsProtocol>
  - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
  {
  #if !TARGET_OS_OSX
@@ -313,7 +442,7 @@ index 3890426..62f0530 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler();
-@@ -1235,6 +1239,10 @@ RCTAutoInsetsProtocol>
+@@ -1235,6 +1325,10 @@ RCTAutoInsetsProtocol>
   */
  - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler{
  #if !TARGET_OS_OSX
@@ -324,7 +453,7 @@ index 3890426..62f0530 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler(YES);
-@@ -1260,6 +1268,10 @@ RCTAutoInsetsProtocol>
+@@ -1260,6 +1354,10 @@ RCTAutoInsetsProtocol>
   */
  - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler{
  #if !TARGET_OS_OSX
@@ -335,3 +464,31 @@ index 3890426..62f0530 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
      textField.text = defaultText;
+@@ -1594,6 +1692,14 @@ didFinishNavigation:(WKNavigation *)navigation
+ - (void)cookiesDidChangeInCookieStore:(WKHTTPCookieStore *)cookieStore
+ {
+   if (@available(iOS 11.0, *)) {
++    if ([self xamanAllowScriptStorageOnly]) {
++      [cookieStore getAllCookies:^(NSArray* cookies) {
++        for (NSHTTPCookie *cookie in cookies) {
++          [cookieStore deleteCookie:cookie completionHandler:nil];
++        }
++      }];
++      return;
++    }
+     if(_sharedCookiesEnabled) {
+       // Write all cookies from WKWebView back to sharedHTTPCookieStorage
+       [cookieStore getAllCookies:^(NSArray* cookies) {
+@@ -1875,6 +1981,12 @@ didFinishNavigation:(WKNavigation *)navigation
+   ];
+   WKUserScript *userScript = [[WKUserScript alloc] initWithSource:html5HistoryAPIShimSource injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+   [wkWebViewConfig.userContentController addUserScript:userScript];
++  if ([self xamanAllowScriptStorageOnly]) {
++    WKUserScript *lockdownScript = [[WKUserScript alloc] initWithSource:RNCXamanStorageLockdownScript
++                                                          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
++                                                       forMainFrameOnly:NO];
++    [wkWebViewConfig.userContentController addUserScript:lockdownScript];
++  }
+ 
+   if(_sharedCookiesEnabled) {
+     // More info to sending cookies with WKWebView

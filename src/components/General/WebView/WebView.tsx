@@ -90,8 +90,8 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             saveFormDataDisabled
             setDisplayZoomControls={false}
             // Android incognito still has localStorage/IndexedDB. iOS incognito uses a
-            // non-persistent WKWebsiteDataStore, which drops both. Keep Android
-            // cookie/cache wipe; on iOS use the app-sandbox default store (not Safari).
+            // non-persistent store that drops both. iOS uses the app-sandbox default
+            // store instead; the webview patch strips cookies and service workers.
             incognito={Platform.OS === 'android'}
             thirdPartyCookiesEnabled
             cacheEnabled={false}
