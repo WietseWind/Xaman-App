@@ -55,12 +55,13 @@ describe('GetBottomTabScale', () => {
 
         // Larger scale → smaller painted icon. SE iOS 18+ @2x only.
         expect(eightCenter).toBeCloseTo(3.46, 1);
-        expect(seCenter).toBeCloseTo(3.76, 1);
+        expect(seCenter).toBeCloseTo(4.32, 1);
         expect(seCenter).toBeGreaterThan(eightCenter);
         expect(seSide).toBeGreaterThan(eightSide);
         expect(seCenter / eightCenter).toBeGreaterThan(seSide / eightSide);
         expect(pro).toBeCloseTo(3.88, 1);
-        expect(seCenter).toBeLessThan(4.2);
+        // Stay below the old iOS 26 paint=1 scale (~5.08) that made SE tiny.
+        expect(seCenter).toBeLessThan(5.0);
     });
 
     it('keeps the iPhone 8 @2x compensation', () => {

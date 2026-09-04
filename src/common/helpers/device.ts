@@ -105,10 +105,11 @@ const SE_WIDTH = 375;
 const TAB_CHROME_EXPONENT = 0.22;
 // Center dock occupies this fraction of the compact 49pt item row (~25.2pt).
 const CENTER_OF_ITEM_ROW = 0.514;
-// Xaman-se (SE 2/3, iOS 18+, 375 @2x) paints a touch hotter than the USB
-// iPhone 8 at the same point size. Shrink SE only; 8 cannot run iOS 18.
-const SE_IOS18_CENTER_PT = 0.92;
-const SE_IOS18_SIDE_PT = 0.96;
+// Xaman-se (SE 2/3, iOS 18+, 375 @2x) paints hotter than the USB iPhone 8
+// at the same point size — icons sat flush with the 49pt row. Shrink SE
+// only (center more than sides); 8 cannot run iOS 18.
+const SE_IOS18_CENTER_PT = 0.8;
+const SE_IOS18_SIDE_PT = 0.86;
 
 const tabOsMajor = (): number => {
     const raw = GetDeviceOSVersion();
@@ -139,8 +140,8 @@ const tabBarItemRow = (): number => {
  * loaded asset's pixel buffer (PixelRatio), not notch / iOS version:
  * iPhone SE 3rd gen is the same 375×667 @2x panel as iPhone 8 (750×1334),
  * not @3x like 17 Pro. Treating “iOS 26 @2x” as 1:1 paint made Xaman-se
- * tiny next to the USB iPhone 8. Matching the 8 exactly then made the
- * SE sim dock (especially the center icon) a touch large — nudge SE
+ * tiny next to the USB iPhone 8. Matching the 8 exactly then filled the
+ * SE 49pt row with no padding (center dock especially). Nudge SE
  * iOS 18+ @2x only.
  */
 const getTabIconDisplayPt = (factor?: number): number => {
