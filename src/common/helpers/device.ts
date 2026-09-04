@@ -105,6 +105,24 @@ const SE_WIDTH = 375;
 const TAB_CHROME_EXPONENT = 0.22;
 // Center dock occupies this fraction of the compact 49pt item row (~25.2pt).
 const CENTER_OF_ITEM_ROW = 0.514;
+// Xaman-se (SE 2/3, iOS 18+, 375 @2x) paints a touch hotter than the USB
+// iPhone 8 at the same point size. Shrink SE only; 8 cannot run iOS 18.
+const SE_IOS18_CENTER_PT = 0.92;
+const SE_IOS18_SIDE_PT = 0.96;
+
+const tabOsMajor = (): number => {
+    const raw = GetDeviceOSVersion();
+    const n = parseInt(String(raw).split(/[^\d]/)[0], 10);
+    return Number.isFinite(n) ? n : 99;
+};
+
+const isCompactIos18At2x = (): boolean => {
+    if (Platform.OS !== 'ios') {
+        return false;
+    }
+    const { width } = Dimensions.get('window');
+    return tabOsMajor() >= 18 && (PixelRatio.get() || 2) < 3 && width <= SE_WIDTH;
+};
 
 const tabBarItemRow = (): number => {
     const h = Number(DeviceUtilsModule.tabBarMetrics?.itemHeight);
@@ -121,7 +139,9 @@ const tabBarItemRow = (): number => {
  * loaded asset's pixel buffer (PixelRatio), not notch / iOS version:
  * iPhone SE 3rd gen is the same 375×667 @2x panel as iPhone 8 (750×1334),
  * not @3x like 17 Pro. Treating “iOS 26 @2x” as 1:1 paint made Xaman-se
- * tiny next to the USB iPhone 8.
+ * tiny next to the USB iPhone 8. Matching the 8 exactly then made the
+ * SE sim dock (especially the center icon) a touch large — nudge SE
+ * iOS 18+ @2x only.
  */
 const getTabIconDisplayPt = (factor?: number): number => {
     const { width } = Dimensions.get('window');
@@ -133,7 +153,12 @@ const getTabIconDisplayPt = (factor?: number): number => {
     const seCenter = itemRow * CENTER_OF_ITEM_ROW;
     const fromSlot = seCenter * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
     const chrome = Math.pow(Math.max(bar, itemRow) / itemRow, TAB_CHROME_EXPONENT);
-    return fromSlot * chrome;
+    let pt = fromSlot * chrome;
+    if (isCompactIos18At2x()) {
+        const isCenter = (factor || 1) < 0.8;
+        pt *= isCenter ? SE_IOS18_CENTER_PT : SE_IOS18_SIDE_PT;
+    }
+    return pt;
 };
 
 const tabBarPaintEfficiency = (): number => {

@@ -41,24 +41,26 @@ describe('GetBottomTabScale', () => {
         jest.restoreAllMocks();
     });
 
-    it('uses the same @2x scale on SE 3rd gen (iOS 26) as on iPhone 8', () => {
+    it('shrinks SE 3rd gen (iOS 26) a touch vs iPhone 8, leaves Pro alone', () => {
         apply({ width: 375, ratio: 2, bottom: 0, os: '26.5' });
-        const se = GetBottomTabScale(0.65);
+        const seCenter = GetBottomTabScale(0.65);
+        const seSide = GetBottomTabScale(0.9);
 
         apply({ width: 375, ratio: 2, bottom: 0, os: '16.7.1' });
-        const eight = GetBottomTabScale(0.65);
+        const eightCenter = GetBottomTabScale(0.65);
+        const eightSide = GetBottomTabScale(0.9);
 
         apply({ width: 402, ratio: 3, bottom: 34, os: '26.5' });
         const pro = GetBottomTabScale(0.65);
 
-        // SE 3rd gen is 375×667 @2x (750×1334), same panel as iPhone 8 — not @3x.
-        // Larger scale → smaller painted icon. Do not use paint=1 on iOS 26 @2x
-        // (that was scale ~5.08 and made Xaman-se tiny vs the USB 8).
-        expect(se).toBeCloseTo(3.46, 1);
-        expect(eight).toBeCloseTo(3.46, 1);
-        expect(se).toBeCloseTo(eight, 2);
+        // Larger scale → smaller painted icon. SE iOS 18+ @2x only.
+        expect(eightCenter).toBeCloseTo(3.46, 1);
+        expect(seCenter).toBeCloseTo(3.76, 1);
+        expect(seCenter).toBeGreaterThan(eightCenter);
+        expect(seSide).toBeGreaterThan(eightSide);
+        expect(seCenter / eightCenter).toBeGreaterThan(seSide / eightSide);
         expect(pro).toBeCloseTo(3.88, 1);
-        expect(se).toBeLessThan(4.2);
+        expect(seCenter).toBeLessThan(4.2);
     });
 
     it('keeps the iPhone 8 @2x compensation', () => {
