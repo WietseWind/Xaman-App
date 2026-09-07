@@ -31,6 +31,7 @@ import {
     Spacer,
     Switch,
     Footer,
+    noAutofillProps,
 } from '@components/General';
 
 import Localize from '@locale';
@@ -392,8 +393,8 @@ class EnterMnemonicStep extends Component<Props, State> {
                             this.inputs[i] = r;
                         }}
                         autoCapitalize="none"
-                        autoCorrect={false}
                         keyboardType={Platform.OS === 'android' ? 'visible-password' : 'default'}
+                        {...noAutofillProps}
                         value={value}
                         style={[styles.input, isActive && styles.inputActive]}
                         returnKeyType={i + 1 === length ? 'done' : 'next'}

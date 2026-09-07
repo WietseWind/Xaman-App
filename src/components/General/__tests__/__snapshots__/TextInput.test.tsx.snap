@@ -38,11 +38,14 @@ exports[`[TextInput] renders correctly 1`] = `
   >
     <TextInput
       autoCapitalize="none"
+      autoComplete="off"
       autoCorrect={false}
+      importantForAutofill="no"
       multiline={false}
       onBlur={[Function]}
       onFocus={[Function]}
       placeholderTextColor="#606885"
+      spellCheck={false}
       style={
         [
           {
@@ -59,6 +62,7 @@ exports[`[TextInput] renders correctly 1`] = `
           undefined,
         ]
       }
+      textContentType="none"
     />
   </View>
 </View>
