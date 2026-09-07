@@ -127,6 +127,20 @@ export const deriveMnemonicAccount = (
     return compacted ? derive.mnemonic(mnemonic, compacted as any) : derive.mnemonic(mnemonic);
 };
 
+export const deriveMnemonicAddresses = (
+    mnemonic: string,
+    options?: MnemonicDeriveOptions,
+): { secp: string; ed: string } | undefined => {
+    try {
+        return {
+            secp: deriveMnemonicAccount(mnemonic, options).address as string,
+            ed: deriveMnemonicAccount(mnemonic, { ...options, algorithm: 'ed25519' }).address as string,
+        };
+    } catch {
+        return undefined;
+    }
+};
+
 export const isLedgerAccountActivated = (accountInfo: any): boolean => {
     return classifyLedgerAccount(accountInfo) === 'activated';
 };

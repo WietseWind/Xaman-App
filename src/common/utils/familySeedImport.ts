@@ -43,6 +43,20 @@ export const deriveFamilySeedAccount = (secret: string, algorithm?: FamilySeedAl
     return derive.familySeed(secret);
 };
 
+export const deriveFamilySeedAddresses = (
+    secret: string,
+): { secp: string; ed: string } | undefined => {
+    try {
+        const xrplSecret = secret.trim();
+        return {
+            secp: deriveFamilySeedAccount(xrplSecret).address as string,
+            ed: deriveFamilySeedAccount(xrplSecret, 'ed25519').address as string,
+        };
+    } catch {
+        return undefined;
+    }
+};
+
 export const pickFamilySeedCurve = async ({
     secret,
     getAccountInfo,

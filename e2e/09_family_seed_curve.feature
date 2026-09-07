@@ -82,3 +82,20 @@ Feature: Family seed curve import on Xahau testnet
         Then I tap 'finish-button'
         Then I tap 'tab-Home'
         Given I should have 'home-tab-view'
+
+    Scenario: Re-importing the same family seed does not stick Next
+        Then I open the family seed import screen
+        Then I use the xahau testnet ed25519 family seed
+        Then I enter my seed in the input
+        Then I should see the family seed different curve prompt
+        Then I tap alert button with label "secp256k1 rE1b4i…"
+        Given I should see family seed curve "secp256k1"
+        Then I tap 'next-button'
+        Then I should see the already imported secret alert
+        Then I tap alert button with label 'OK'
+        Given I should have 'account-import-enter-family-seed-view'
+        Then I tap 'next-button'
+        Then I should see the already imported secret alert
+        Then I tap alert button with label 'OK'
+        Then I tap 'back-button'
+        Then I leave account import if open
