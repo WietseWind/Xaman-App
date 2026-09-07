@@ -17,6 +17,7 @@ import StyleService from '@services/StyleService';
 
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { Icon } from '@components/General/Icon';
+import { noAutofillProps } from '@components/General/TextInput';
 
 import Localize from '@locale';
 
@@ -319,8 +320,8 @@ export default class PasswordInput extends Component<Props, State> {
                     placeholderTextColor={StyleService.value('$grey')}
                     secureTextEntry={hidePassword}
                     autoCapitalize="none"
-                    autoCorrect={false}
                     multiline={false}
+                    {...noAutofillProps}
                     style={[styles.input, inputStyle]}
                     onChangeText={(text) => this.onChangeText(text)}
                     placeholder={placeholder}

@@ -23,6 +23,7 @@ import { Props as ScanModalProps } from '@screens/Modal/Scan/types';
 
 import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
+import { noAutofillProps } from './noAutofill';
 
 /* Types ==================================================================== */
 interface Props extends TextInputProps {
@@ -150,7 +151,6 @@ class Input extends Component<Props, State> {
                     onBlur={this.onBlur}
                     placeholderTextColor={StyleService.value('$textSecondary')}
                     autoCapitalize={autoCapitalize || 'none'}
-                    autoCorrect={false}
                     multiline={!!multiline}
                     style={[
                         styles.input,
@@ -160,6 +160,7 @@ class Input extends Component<Props, State> {
                         !multiline && secureTextEntry ? styles.nonMultilineSecureInput : undefined,
                     ]}
                     {...filteredProps}
+                    {...noAutofillProps}
                 />
             </View>
         );
