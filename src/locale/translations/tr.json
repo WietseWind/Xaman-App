@@ -997,6 +997,7 @@
     "accountType": "Hesap tipi",
     "secretType": "Gizlilik tipi",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Lütfen hesap tipinizi seçin",
     "pleaseSelectAccountSecretType": "Lütfen hesabınızın gizli anahtar tipini seçin",
     "fullAccess": "Tam erişim",

@@ -64,6 +64,14 @@ export const curveChoiceButtonLabel = (curve: string, address?: string | null): 
     return `${curve} ${short}`;
 };
 
+/** Picker row: full r-address, no ellipsis. `secp256k1 (r…)` */
+export const curvePickerItemTitle = (curve: string, address?: string | null): string => {
+    if (!address) {
+        return curve;
+    }
+    return `${curve} (${address})`;
+};
+
 export const classifyLedgerAccount = (accountInfo: any): LedgerAccountPresence => {
     if (!accountInfo || typeof accountInfo !== 'object') {
         return 'unknown';

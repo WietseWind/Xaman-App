@@ -443,6 +443,20 @@ Then('I remember family seed address for curve {string}', async (curve) => {
     this.expectedFamilySeedAddress = deriveFamilySeedAddress(this.seed, curve);
 });
 
+Then('I should see the derived family seed address', { timeout: 20 * 1000 }, async () => {
+    const expected = this.expectedFamilySeedAddress;
+    const node = element(by.id('derived-curve-address'));
+    await waitFor(node).toExist().withTimeout(15000);
+    if (device.getPlatform() === 'android') {
+        await waitUntilAndroidTestId('derived-curve-address', 10000);
+        const text = await androidReadTextByTestId('derived-curve-address');
+        assert.equal(text, expected);
+        return;
+    }
+    const attributes = await node.getAttributes();
+    assert.equal(attributes.text, expected);
+});
+
 Then('I should see family seed curve {string}', { timeout: 30 * 1000 }, async (curve) => {
     await dismissKeyboard();
     const value = element(by.id('keypair-curve-value'));
@@ -475,7 +489,7 @@ Then('I choose family seed curve {string}', async (curve) => {
     }
     await sleepMs(800);
 
-    const label = curve === 'secp256k1' ? 'secp256k1 (Default)' : curve;
+    const label = curve;
     try {
         await element(by.id(`${curve}-item`)).tap({ x: 24, y: 16 });
     } catch (e) {

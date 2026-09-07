@@ -997,6 +997,7 @@
     "accountType": "Jenis akun",
     "secretType": "Jenis rahasia",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Pilih jenis akun Anda",
     "pleaseSelectAccountSecretType": "Silakan pilih jenis rahasia akun Anda",
     "fullAccess": "Akses penuh",

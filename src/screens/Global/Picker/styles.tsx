@@ -11,11 +11,18 @@ const styles = StyleService.create({
         paddingHorizontal: AppSizes.paddingSml,
         paddingVertical: AppSizes.paddingSml,
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         backgroundColor: '$background',
         borderBottomWidth: StyleSheet.hairlineWidth,
         borderTopWidth: StyleSheet.hairlineWidth,
         borderColor: '$tint',
+    },
+    itemTitleWrap: {
+        flexShrink: 1,
+        paddingRight: AppSizes.paddingSml,
+    },
+    itemTitle: {
+        flexWrap: 'wrap',
     },
     checkIcon: {
         tintColor: '$blue',

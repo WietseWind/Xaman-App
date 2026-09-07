@@ -997,6 +997,7 @@
     "accountType": "Tip cont",
     "secretType": "Tipul cheii secrete  ",
     "keypairType": "Curbă pereche de chei",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Vă rugăm să selectaţi tipul contului.",
     "pleaseSelectAccountSecretType": "Vă rugăm să selectați tipul de cheie secretă a contului.",
     "fullAccess": "Acces complet",

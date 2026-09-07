@@ -997,6 +997,7 @@
     "accountType": "アカウントの種類",
     "secretType": "シークレットタイプ",
     "keypairType": "キーペア曲線",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "アカウントの種類を選択してください",
     "pleaseSelectAccountSecretType": "アカウントのシークレットタイプを選択してください",
     "fullAccess": "全権アクセス",

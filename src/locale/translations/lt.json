@@ -997,6 +997,7 @@
     "accountType": "Sąskaitos tipas",
     "secretType": "Slapto rakto tipas",
     "keypairType": "Raktų poros kreivė",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Pasirinkite sąskaitos tipą",
     "pleaseSelectAccountSecretType": "Pasirinkite sąskaitos slapto rakto tipą",
     "fullAccess": "Pilna prieiga",

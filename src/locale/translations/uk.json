@@ -997,6 +997,7 @@
     "accountType": "Тип акаунта",
     "secretType": "Тип секретного ключа",
     "keypairType": "Крива ключової пари",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Будь ласка, виберіть тип Вашого акаунта",
     "pleaseSelectAccountSecretType": "Будь ласка, оберіть тип секретного ключа Вашого акаунта",
     "fullAccess": "Повний доступ",

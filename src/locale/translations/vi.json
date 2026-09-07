@@ -997,6 +997,7 @@
     "accountType": "Loại tài khoản",
     "secretType": "Loại bí mật",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Vui lòng chọn loại tài khoản của bạn",
     "pleaseSelectAccountSecretType": "Vui lòng chọn loại bí mật tài khoản của bạn",
     "fullAccess": "Toàn quyền truy cập",

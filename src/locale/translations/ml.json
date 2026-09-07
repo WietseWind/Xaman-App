@@ -997,6 +997,7 @@
     "accountType": "അക്കൌണ്ട് തരം",
     "secretType": "രഹസ്യ തരം",
     "keypairType": "കീപെയർ കർവ്",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "നിങ്ങളുടെ അക്കൗണ്ട് തരം തിരഞ്ഞെടുക്കുക",
     "pleaseSelectAccountSecretType": "നിങ്ങളുടെ അക്കൗണ്ട് രഹസ്യ തരം തിരഞ്ഞെടുക്കുക",
     "fullAccess": "പൂർണ്ണ ആക്സസ്",

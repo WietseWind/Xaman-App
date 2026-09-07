@@ -997,6 +997,7 @@
     "accountType": "ანგარიშის ტიპი",
     "secretType": "სეკრეტის ტიპი",
     "keypairType": "გასაღების წყვილის მრუდი",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "გთხოვთ აირჩიოთ თქვენი ანგარიშის ტიპი",
     "pleaseSelectAccountSecretType": "გთხოვთ აირჩიოთ თქვენი ანგარიშის საიდუმლო ტიპი",
     "fullAccess": "სრული წვდომა",

@@ -997,6 +997,7 @@
     "accountType": "کاتي جو قسم",
     "secretType": "راز جو قسم",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "مهرباني ڪري پنهنجي کاتي جو قسم چونڊيو",
     "pleaseSelectAccountSecretType": "مهرباني ڪري پنهنجي کاتي جي راز قسم چونڊيو",
     "fullAccess": "مڪمل رسائي",

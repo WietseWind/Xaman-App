@@ -997,6 +997,7 @@
     "accountType": "Тип сметка",
     "secretType": "Таен тип",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Моля, изберете типа на вашия акаунт",
     "pleaseSelectAccountSecretType": "Моля, изберете тайния тип на акаунта си",
     "fullAccess": "Пълен достъп",

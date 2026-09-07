@@ -997,6 +997,7 @@
     "accountType": "Konto tüüp",
     "secretType": "Salajane tüüp",
     "keypairType": "Võtmepaari kõver",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Palun vali oma konto tüüp",
     "pleaseSelectAccountSecretType": "Palun vali oma konto salajane tüüp",
     "fullAccess": "Täielik juurdepääs",

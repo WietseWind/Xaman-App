@@ -997,6 +997,7 @@
     "accountType": "Шот түрі",
     "secretType": "Құпия түрі",
     "keypairType": "Кілт жұбы қисығы",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Есептік жазба түрін таңдаңыз",
     "pleaseSelectAccountSecretType": "Есептік жазбаңыздың құпия түрін таңдаңыз",
     "fullAccess": "Толық қол жеткізу",

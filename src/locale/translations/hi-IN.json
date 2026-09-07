@@ -997,6 +997,7 @@
     "accountType": "खाता प्रकार",
     "secretType": "गुप्त प्रकार",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "कृपया अपना खाता प्रकार चुनें",
     "pleaseSelectAccountSecretType": "कृपया अपना खाता गुप्त प्रकार चुनें",
     "fullAccess": "पूर्ण पहुंच",

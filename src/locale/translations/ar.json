@@ -997,6 +997,7 @@
     "accountType": "نوع الحساب",
     "secretType": "النوع السري",
     "keypairType": "منحنى زوج المفاتيح",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "يرجى تحديد نوع حسابك",
     "pleaseSelectAccountSecretType": "يرجى تحديد نوع سر حسابك",
     "fullAccess": "الوصول الكامل",

@@ -26,6 +26,7 @@ Feature: Family seed curve import on Xahau testnet
         Then I enter my seed in the input
         Then I remember family seed address for curve "secp256k1"
         Given I should see family seed curve "secp256k1"
+        Then I should see the derived family seed address
         Then I tap 'next-button'
         Then I should confirm expected family seed address
 
@@ -36,6 +37,8 @@ Feature: Family seed curve import on Xahau testnet
         Then I remember family seed address for curve "ed25519"
         Given I should see family seed curve "secp256k1"
         Then I choose family seed curve "ed25519"
+        Given I should see family seed curve "ed25519"
+        Then I should see the derived family seed address
         Then I tap 'next-button'
         Then I should confirm expected family seed address
 

@@ -997,6 +997,7 @@
     "accountType": "Konta veids",
     "secretType": "Slepens tips",
     "keypairType": "Atslēgu pāra līkne",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Lūdzu, izvēlieties sava konta tipu",
     "pleaseSelectAccountSecretType": "Lūdzu, izvēlieties sava konta slepeno tipu",
     "fullAccess": "Pilnīga piekļuve",

@@ -35,7 +35,7 @@ import {
     isFamilySeedCurvePickerEligible,
     pickFamilySeedCurve,
 } from '@common/utils/familySeedImport';
-import { curveChoiceButtonLabel } from '@common/utils/mnemonicImport';
+import { curveChoiceButtonLabel, curvePickerItemTitle } from '@common/utils/mnemonicImport';
 
 import LedgerService from '@services/LedgerService';
 import NetworkService from '@services/NetworkService';
@@ -417,6 +417,11 @@ class EnterSeedStep extends Component<Props, State> {
         return secretType || 'secp256k1';
     };
 
+    derivedAddressForSelectedCurve = (): string | undefined => {
+        const { secpAddress, edAddress } = this.state;
+        return this.getSecretType() === 'ed25519' ? edAddress : secpAddress;
+    };
+
     showKeypairTypePicker = () => {
         const { secretType, secpAddress, edAddress } = this.state;
 
@@ -424,11 +429,8 @@ class EnterSeedStep extends Component<Props, State> {
             title: Localize.t('global.curve'),
             description: Localize.t('global.selectCurve'),
             items: [
-                {
-                    value: 'secp256k1',
-                    title: curveChoiceButtonLabel(`secp256k1 (${Localize.t('global.default')})`, secpAddress),
-                },
-                { value: 'ed25519', title: curveChoiceButtonLabel('ed25519', edAddress) },
+                { value: 'secp256k1', title: curvePickerItemTitle('secp256k1', secpAddress) },
+                { value: 'ed25519', title: curvePickerItemTitle('ed25519', edAddress) },
             ],
             selected: secretType || 'secp256k1',
             onSelect: (v) => {
@@ -442,7 +444,7 @@ class EnterSeedStep extends Component<Props, State> {
 
     render() {
         const { goBack, alternativeSeedAlphabet } = this.context;
-        const { secret, showSecret, keyboardType, isLoading, secpAddress, edAddress } = this.state;
+        const { secret, showSecret, keyboardType, isLoading } = this.state;
 
         const isEligibleForKeyTypePicker = isFamilySeedCurvePickerEligible(secret);
 
@@ -491,26 +493,41 @@ class EnterSeedStep extends Component<Props, State> {
                     />
                     <Spacer size={20} />
                     {isEligibleForKeyTypePicker && (
-                        <TouchableDebounce
-                            testID="keypair-curve-row"
-                            style={styles.row}
-                            onPress={this.showKeypairTypePicker}
-                        >
-                            <View style={AppStyles.flex3}>
-                                <Text numberOfLines={1} style={styles.label}>
-                                    {Localize.t('account.keypairType')}
-                                </Text>
-                            </View>
-                            <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                                <Text testID="keypair-curve-value" style={styles.value}>
-                                    {curveChoiceButtonLabel(
-                                        this.getSecretType(),
-                                        this.getSecretType() === 'ed25519' ? edAddress : secpAddress,
-                                    )}
-                                </Text>
-                                <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                            </View>
-                        </TouchableDebounce>
+                        <>
+                            <TouchableDebounce
+                                testID="keypair-curve-row"
+                                style={styles.row}
+                                onPress={this.showKeypairTypePicker}
+                            >
+                                <View style={AppStyles.flex3}>
+                                    <Text numberOfLines={1} style={styles.label}>
+                                        {Localize.t('account.keypairType')}
+                                    </Text>
+                                </View>
+                                <View style={[AppStyles.centerAligned, AppStyles.row]}>
+                                    <Text testID="keypair-curve-value" style={styles.value}>
+                                        {this.getSecretType()}
+                                    </Text>
+                                    <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
+                                </View>
+                            </TouchableDebounce>
+                            {!!this.derivedAddressForSelectedCurve() && (
+                                <View testID="derived-address-section" style={styles.derivedAddressSection}>
+                                    <Text style={styles.derivedAddressLabel}>
+                                        {Localize.t('account.derivedAddressForCurve', {
+                                            curve: this.getSecretType(),
+                                        })}
+                                    </Text>
+                                    <Text
+                                        testID="derived-curve-address"
+                                        selectable
+                                        style={styles.derivedAddressValue}
+                                    >
+                                        {this.derivedAddressForSelectedCurve()}
+                                    </Text>
+                                </View>
+                            )}
+                        </>
                     )}
                 </KeyboardAwareScrollView>
 

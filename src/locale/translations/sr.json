@@ -997,6 +997,7 @@
     "accountType": "Тип налога",
     "secretType": "Тајни тип",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Молимо вас одаберите врсту рачуна",
     "pleaseSelectAccountSecretType": "Молимо вас одаберите тајну врсту свог рачуна",
     "fullAccess": "Потпуни приступ \r\n",
