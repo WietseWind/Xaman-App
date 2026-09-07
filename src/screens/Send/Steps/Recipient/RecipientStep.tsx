@@ -19,7 +19,7 @@ import { Toast } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
-import { NormalizeDestination } from '@common/utils/codec';
+import { tryNormalizeDestination } from '@common/utils/codec';
 
 import { BackendService, LedgerService, NetworkService, StyleService, ResolverService } from '@services';
 
@@ -125,7 +125,9 @@ class RecipientStep extends Component<Props, State> {
 
         // console.log('lookup')
 
-        const { to, tag } = NormalizeDestination(result);
+        const normalized = tryNormalizeDestination(result);
+        const to = normalized?.to;
+        const tag = normalized?.tag;
 
         if (to) {
             // console.log('ifto')
@@ -204,7 +206,8 @@ class RecipientStep extends Component<Props, State> {
             // select as destination
             setDestination({ name: accountInfo.name || '', address: to, tag: toNumber(tag) || undefined });
         } else {
-            // console.log('notif-to')
+            // Incomplete / invalid r-string, URL without a checksum-valid
+            // address, extra spaces: fall through to handle-lookup.
             this.doLookUp(result.to);
         }
     };
@@ -356,17 +359,11 @@ class RecipientStep extends Component<Props, State> {
         // console.log('onsearch')
 
         if (searchText && searchText?.length > 0) {
-            // check if it's a valid address
-            // eslint-disable-next-line prefer-regex-literals
-            const possibleAccountAddress = new RegExp(
-                /[rX][rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz]{23,50}/,
-            );
-
-            if (possibleAccountAddress.test(searchText)) {
-                // console.log('accountlookup')
-                this.doAccountLookUp({ to: searchText });
+            const normalized = tryNormalizeDestination({ to: searchText });
+            if (normalized?.to) {
+                this.doAccountLookUp({ to: normalized.to, tag: normalized.tag });
             } else {
-                this.doLookUp(searchText);
+                this.doLookUp(searchText.trim() || searchText);
             }
         } else {
             clearTimeout(this.lookupTimeout);
@@ -1170,6 +1167,7 @@ class RecipientStep extends Component<Props, State> {
                         styles.restoreMarginRight,
                     ]}>
                         <Button
+                            testID="clear-search-button"
                             onPress={this.resetResult}
                             style={styles.clearSearchButton}
                             roundedMini
@@ -1247,6 +1245,7 @@ class RecipientStep extends Component<Props, State> {
                         styles.restoreMarginRight,
                     ]}>
                         <Button
+                            testID="clear-search-button"
                             onPress={() => {
                                 // clear search text
                                 this.setState({
@@ -1264,7 +1263,9 @@ class RecipientStep extends Component<Props, State> {
                         />
                     </View>
                 </View>
-                <View style={[
+                <View
+                    testID="recipient-no-search-result"
+                    style={[
                     AppStyles.paddingVerticalSml,
                 ]}>
                     <InfoMessage type="warning" label={Localize.t('send.noSearchResult')} />
@@ -1284,6 +1285,7 @@ class RecipientStep extends Component<Props, State> {
                 <View style={[AppStyles.contentContainer, styles.paddingHorizontal]}>
                     <View style={AppStyles.row}>
                         <TextInput
+                            testID="recipient-search-input"
                             placeholder={Localize.t('send.enterANameOrAddress')}
                             // containerStyle={styles.searchContainer}
                             autoComplete="off"
