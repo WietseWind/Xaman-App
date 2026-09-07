@@ -997,6 +997,7 @@
     "accountType": "Tipo de cuenta",
     "secretType": "Tipo secreto",
     "keypairType": "Curva de par de claves",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Por favor seleccione su tipo de cuenta",
     "pleaseSelectAccountSecretType": "Seleccione el tipo de secreto de su cuenta",
     "fullAccess": "Acceso completo",

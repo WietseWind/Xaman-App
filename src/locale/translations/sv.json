@@ -997,6 +997,7 @@
     "accountType": "Kontotyp",
     "secretType": "Hemlig typ",
     "keypairType": "Nyckelparkurva",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Välj kontotyp",
     "pleaseSelectAccountSecretType": "Välj kontohemlig typ",
     "fullAccess": "Fullständig åtkomst",

@@ -997,6 +997,7 @@
     "accountType": "Uri ng Account",
     "secretType": "Uri ng Secret",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Mangyaring piliin ang uri ng iyong account",
     "pleaseSelectAccountSecretType": "Mangyaring piliin ang iyong lihim na uri ng account",
     "fullAccess": "Full Access",

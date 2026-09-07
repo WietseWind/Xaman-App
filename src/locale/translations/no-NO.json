@@ -997,6 +997,7 @@
     "accountType": "Kontotype",
     "secretType": "Hemmelig type",
     "keypairType": "Nøkkelparkurve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Vennligst velg kontotype",
     "pleaseSelectAccountSecretType": "Vennligst velg type hemmelighet for din konto",
     "fullAccess": "Full tilgang",

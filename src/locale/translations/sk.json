@@ -997,6 +997,7 @@
     "accountType": "Typ účtu",
     "secretType": "Typ tajných čísel",
     "keypairType": "Krivka kľúčového páru",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Vyberte typ účtu",
     "pleaseSelectAccountSecretType": "Prosím vyberte typ tajných čísel vášho účtu",
     "fullAccess": "Úplný prístup",

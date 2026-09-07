@@ -997,6 +997,7 @@
     "accountType": "Kontotype",
     "secretType": "Hemmelighedstype",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Vælg venligst type af konto",
     "pleaseSelectAccountSecretType": "Vælg venligst type af konto-hemmelighed",
     "fullAccess": "Fuld adgang",

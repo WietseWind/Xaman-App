@@ -997,6 +997,7 @@
     "accountType": "கணக்கு வகை",
     "secretType": "ரகசிய வகை",
     "keypairType": "விசைஜோடி வளைவு",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "உங்கள் கணக்கு வகையைத் தேர்ந்தெடுக்கவும்",
     "pleaseSelectAccountSecretType": "உங்கள் கணக்கு ரகசிய வகையைத் தேர்ந்தெடுக்கவும்",
     "fullAccess": "முழு அணுகல்",

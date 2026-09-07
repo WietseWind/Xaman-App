@@ -997,6 +997,7 @@
     "accountType": "Tipus de compte",
     "secretType": "Tipus de clau privada",
     "keypairType": "Corba de parell de claus",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Si us plau, selecciona el tipus de compte",
     "pleaseSelectAccountSecretType": "Si us plau, selecciona el tipus de clau privada",
     "fullAccess": "Accés total",

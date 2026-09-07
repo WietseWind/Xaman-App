@@ -997,6 +997,7 @@
     "accountType": "Account type",
     "secretType": "Geheim type",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Selecteer uw account type",
     "pleaseSelectAccountSecretType": "Selecteer uw account geheim type",
     "fullAccess": "Volledige toegang",

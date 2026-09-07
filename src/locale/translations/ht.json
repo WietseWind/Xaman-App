@@ -997,6 +997,7 @@
     "accountType": "Kalite Kont",
     "secretType": "Kalite sekrè",
     "keypairType": "Koub pè kle",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Tanpri chwazi kalite kont ou",
     "pleaseSelectAccountSecretType": "Tanpri chwazi kont sekrè ou",
     "fullAccess": "Aksè konplè",

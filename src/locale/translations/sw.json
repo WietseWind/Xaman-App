@@ -997,6 +997,7 @@
     "accountType": "Aina ya Akaunti",
     "secretType": "Aina ya Siri",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Tafadhali chagua yako akaunti aina",
     "pleaseSelectAccountSecretType": "Please select your account secret type",
     "fullAccess": "Ufikiaji Kamili",

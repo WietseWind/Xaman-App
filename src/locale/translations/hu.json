@@ -997,6 +997,7 @@
     "accountType": "Fiók típus",
     "secretType": "Secret type",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Kérem, válassza ki fiók típusát",
     "pleaseSelectAccountSecretType": "Please select your account secret type",
     "fullAccess": "Teljes hozzáférés",

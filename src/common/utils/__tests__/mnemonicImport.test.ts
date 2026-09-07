@@ -4,6 +4,7 @@ import {
     classifyLedgerAccount,
     createSignableAccount,
     curveChoiceButtonLabel,
+    curvePickerItemTitle,
     deriveMnemonicAccount,
     deriveMnemonicAddresses,
     getMnemonicAlgorithm,
@@ -81,6 +82,14 @@ describe('mnemonicImport', () => {
             expect(curveChoiceButtonLabel('secp256k1', 'rE1b4ih4MtLuAcr4sPD4oTS2riyammzAkt')).toBe(
                 'secp256k1 rE1b4i…',
             );
+        });
+    });
+
+    describe('curvePickerItemTitle', () => {
+        it('shows the full r-address in parentheses, without truncating', () => {
+            expect(curvePickerItemTitle('secp256k1', SECP_ADDRESS)).toBe(`secp256k1 (${SECP_ADDRESS})`);
+            expect(curvePickerItemTitle('ed25519', ED_ADDRESS)).toBe(`ed25519 (${ED_ADDRESS})`);
+            expect(curvePickerItemTitle('secp256k1')).toBe('secp256k1');
         });
     });
 

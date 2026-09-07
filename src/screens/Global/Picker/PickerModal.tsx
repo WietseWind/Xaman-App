@@ -58,8 +58,8 @@ class PickerModal extends Component<Props, State> {
                     this.onSelect(item);
                 }}
             >
-                <View style={[AppStyles.flex4, AppStyles.leftAligned]}>
-                    <Text style={AppStyles.subtext}>{item.title}</Text>
+                <View style={[AppStyles.flex4, AppStyles.leftAligned, styles.itemTitleWrap]}>
+                    <Text style={[AppStyles.subtext, styles.itemTitle]}>{item.title}</Text>
                 </View>
                 {selected === item.value && (
                     <View style={[AppStyles.flex1, AppStyles.rightAligned]}>

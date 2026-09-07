@@ -997,6 +997,7 @@
     "accountType": "帳戶類型",
     "secretType": "私鑰類型",
     "keypairType": "金鑰對曲線",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "請選擇您的帳戶類型",
     "pleaseSelectAccountSecretType": "請選擇您的帳戶私鑰類型",
     "fullAccess": "完整存取",

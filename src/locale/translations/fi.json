@@ -997,6 +997,7 @@
     "accountType": "Tilityyppi",
     "secretType": "Salainen tyyppi",
     "keypairType": "Avainparin käyrä",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Valitse tilin laji",
     "pleaseSelectAccountSecretType": "Valitse tilin salainen laji",
     "fullAccess": "Täysi pääsy",

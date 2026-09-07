@@ -997,6 +997,7 @@
     "accountType": "Vrsta računa",
     "secretType": "Tip skrivnosti",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Prosimo, izberite vrsto računa",
     "pleaseSelectAccountSecretType": "Izberite tip skrivnosti svojega računa",
     "fullAccess": "Polni dostop",

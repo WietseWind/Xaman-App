@@ -997,6 +997,7 @@
     "accountType": "Είδος λογαριασμού",
     "secretType": "Τύπος μυστικού",
     "keypairType": "Καμπύλη ζεύγους κλειδιών",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Επιλέξτε το είδος λογαριασμού",
     "pleaseSelectAccountSecretType": "Επιλέξτε τον μυστικό τύπο του λογαριασμού σας",
     "fullAccess": "Πλήρης πρόσβαση",

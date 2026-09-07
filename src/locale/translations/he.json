@@ -997,6 +997,7 @@
     "accountType": "סוג החשבון",
     "secretType": "טיפוס סודי",
     "keypairType": "עקומת צמד מפתחות",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "אנא בחר את סוג החשבון שלך",
     "pleaseSelectAccountSecretType": "אנא בחר את סוג סוד החשבון שלך",
     "fullAccess": "גישה מלאה",

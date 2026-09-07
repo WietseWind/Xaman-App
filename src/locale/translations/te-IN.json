@@ -997,6 +997,7 @@
     "accountType": "ఖాతా రకం\r\n",
     "secretType": "రహస్య రకం",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "దయచేసి మీ ఖాతా రకాన్ని ఎంచుకోండి\r\n",
     "pleaseSelectAccountSecretType": "దయచేసి మీ ఖాతా రహస్య రకాన్ని ఎంచుకోండి\r\n",
     "fullAccess": "పూర్తి ప్రాప్యత",

@@ -997,6 +997,7 @@
     "accountType": "계정 유형",
     "secretType": "비밀 유형",
     "keypairType": "키페어 곡선",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "계정 유형을 선택하십시오",
     "pleaseSelectAccountSecretType": "계정 비밀 유형을 선택하십시오",
     "fullAccess": "전체 액세스",

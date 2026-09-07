@@ -997,6 +997,7 @@
     "accountType": "اکاؤنٹ کی اقسام",
     "secretType": "خفیہ قسم",
     "keypairType": "Keypair curve",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "براہ کرم اپنے اکاؤنٹ کی قسم منتخب کریں",
     "pleaseSelectAccountSecretType": "براہ کرم اپنے اکاؤنٹ کی خفیہ قسم منتخب کریں",
     "fullAccess": "پوری اجازت",

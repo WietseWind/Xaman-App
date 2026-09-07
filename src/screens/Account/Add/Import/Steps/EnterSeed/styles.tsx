@@ -44,6 +44,23 @@ const styles = StyleService.create({
         tintColor: '$grey',
         marginRight: -10,
     },
+    derivedAddressSection: {
+        width: '100%',
+        paddingHorizontal: 5,
+        paddingBottom: AppSizes.paddingSml,
+    },
+    derivedAddressLabel: {
+        fontFamily: AppFonts.base.family,
+        fontSize: AppFonts.small.size,
+        color: '$grey',
+        marginBottom: 6,
+    },
+    derivedAddressValue: {
+        fontFamily: AppStyles.mono.fontFamily,
+        fontSize: AppFonts.subtext.size,
+        color: '$textPrimary',
+        lineHeight: AppFonts.subtext.size * 1.35,
+    },
 });
 
 export default styles;

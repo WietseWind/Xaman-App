@@ -997,6 +997,7 @@
     "accountType": "Kontu mota",
     "secretType": "Mota sekretua",
     "keypairType": "Gako-bikote kurba",
+    "derivedAddressForCurve": "Derived address for %{curve}",
     "pleaseSelectAccountType": "Mesedez hautatu zure kontu mota",
     "pleaseSelectAccountSecretType": "Mesedez hautatu zure kontu sekretu mota",
     "fullAccess": "Sarbide osoa",
