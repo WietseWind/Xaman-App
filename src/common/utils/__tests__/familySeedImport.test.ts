@@ -2,6 +2,7 @@ import { derive } from 'xrpl-accountlib';
 
 import {
     deriveFamilySeedAccount,
+    deriveFamilySeedAddresses,
     isFamilySeedCurvePickerEligible,
     pickFamilySeedCurve,
 } from '../familySeedImport';
@@ -51,6 +52,16 @@ describe('familySeedImport', () => {
             expect(account.address).toBe(ED_ADDRESS);
             expect(account.address).not.toBe(SECP_ADDRESS);
             expect(account.keypair.publicKey?.startsWith('ED')).toBe(true);
+        });
+    });
+
+    describe('deriveFamilySeedAddresses', () => {
+        it('returns both curve r-addresses', () => {
+            expect(deriveFamilySeedAddresses(SAMPLE)).toEqual({ secp: SECP_ADDRESS, ed: ED_ADDRESS });
+        });
+
+        it('returns undefined for an invalid seed', () => {
+            expect(deriveFamilySeedAddresses('not-a-seed')).toBeUndefined();
         });
     });
 

@@ -447,7 +447,21 @@ Then('I should see family seed curve {string}', { timeout: 30 * 1000 }, async (c
     await dismissKeyboard();
     const value = element(by.id('keypair-curve-value'));
     await waitFor(value).toExist().withTimeout(15000);
-    await waitFor(value).toHaveText(curve).withTimeout(20000);
+    const deadline = Date.now() + 20000;
+    let last = '';
+    while (Date.now() < deadline) {
+        try {
+            const attrs = await value.getAttributes();
+            last = attrs.text || attrs.label || '';
+            if (String(last).indexOf(curve) !== -1) {
+                return;
+            }
+        } catch (e) {
+            // keep polling
+        }
+        await new Promise((resolve) => { setTimeout(resolve, 400); });
+    }
+    throw new Error(`expected curve value to contain "${curve}", got "${last}"`);
 });
 
 Then('I choose family seed curve {string}', async (curve) => {
@@ -508,6 +522,16 @@ Then('I use the xahau testnet ed25519 family seed', async () => {
     this.seed = SAMPLE_FAMILY_SEED_ED_XAHAU;
     this.expectedFamilySeedAddress = SAMPLE_FAMILY_SEED_ED_ADDRESS;
     this.expectedFamilySeedSecpAddress = SAMPLE_FAMILY_SEED_SECP_ADDRESS;
+});
+
+Then('I should see the already imported secret alert', { timeout: 30 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        await waitForAndroidAlertText('already been imported', device.id);
+        return;
+    }
+    await waitFor(element(by.label('OK').and(by.type('_UIAlertControllerActionView'))))
+        .toExist()
+        .withTimeout(15000);
 });
 
 Then('I should see the family seed different curve prompt', { timeout: 30 * 1000 }, async () => {

@@ -5,6 +5,7 @@ import {
     createSignableAccount,
     curveChoiceButtonLabel,
     deriveMnemonicAccount,
+    deriveMnemonicAddresses,
     getMnemonicAlgorithm,
     isLedgerAccountActivated,
     pickMnemonicImport,
@@ -63,6 +64,12 @@ describe('mnemonicImport', () => {
             );
 
             expect(signed.signedTransaction).toBeTruthy();
+        });
+    });
+
+    describe('deriveMnemonicAddresses', () => {
+        it('returns both curve r-addresses', () => {
+            expect(deriveMnemonicAddresses(SAMPLE)).toEqual({ secp: SECP_ADDRESS, ed: ED_ADDRESS });
         });
     });
 
