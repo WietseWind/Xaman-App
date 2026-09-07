@@ -179,6 +179,38 @@ const ConvertCodecAlphabet = (value: string, alphabet: string, toXRPL = true) =>
         .join('');
 };
 
+// Looks like a classic r-address or X-address. Checksum is validated separately.
+const ACCOUNT_ADDRESS_RE = /[rX][rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz]{23,50}/g;
+
+/**
+ * Pull a checksum-valid classic or X-address out of pasted text.
+ * Trims whitespace, accepts a bare address, or the first valid address in a URL.
+ * Incomplete / bad-checksum r-strings return undefined so handle-lookup can run.
+ */
+const extractAccountAddress = (input?: string): string | undefined => {
+    if (typeof input !== 'string' || !input) {
+        return undefined;
+    }
+
+    const trimmed = input.trim();
+    if (!trimmed) {
+        return undefined;
+    }
+
+    if (AccountLibUtils.isValidAddress(trimmed)) {
+        return trimmed;
+    }
+
+    const matches = trimmed.match(ACCOUNT_ADDRESS_RE) || [];
+    for (let i = 0; i < matches.length; i++) {
+        if (AccountLibUtils.isValidAddress(matches[i])) {
+            return matches[i];
+        }
+    }
+
+    return undefined;
+};
+
 /**
  * normalize XRPL destination
  * @param destination XrplDestination
@@ -220,10 +252,35 @@ const NormalizeDestination = (destination: XrplDestination): XrplDestination & {
     };
 };
 
+/**
+ * Normalize when the input is a real address; otherwise null (no throw).
+ * Use this from search fields so a failed codec check can fall through to lookup.
+ */
+const tryNormalizeDestination = (
+    destination: XrplDestination,
+): (XrplDestination & { xAddress?: string }) | null => {
+    const extracted = extractAccountAddress(destination.to);
+    if (!extracted) {
+        return null;
+    }
+
+    try {
+        return NormalizeDestination({
+            ...destination,
+            to: extracted,
+            tag: destination.tag,
+        });
+    } catch {
+        return null;
+    }
+};
+
 /* Export ==================================================================== */
 export {
     ConvertCodecAlphabet,
     NormalizeDestination,
+    extractAccountAddress,
+    tryNormalizeDestination,
     EncodeLedgerIndex,
     EncodeNFTokenID,
     DecodeNFTokenID,

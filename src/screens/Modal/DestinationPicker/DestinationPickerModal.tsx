@@ -19,7 +19,7 @@ import { Destination } from '@common/libs/ledger/parser/types';
 import { Toast } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
 
-import { NormalizeDestination } from '@common/utils/codec';
+import { tryNormalizeDestination } from '@common/utils/codec';
 
 import BackendService from '@services/BackendService';
 import ResolverService, { AccountAdvisoryResolveType } from '@services/ResolverService';
@@ -99,7 +99,9 @@ class DestinationPickerModal extends Component<Props, State> {
             isSearching: true,
         });
 
-        const { to, tag } = NormalizeDestination(result);
+        const normalized = tryNormalizeDestination(result);
+        const to = normalized?.to;
+        const tag = normalized?.tag;
 
         if (to) {
             const accountInfo = await ResolverService.getAccountName(to, tag);
@@ -261,16 +263,11 @@ class DestinationPickerModal extends Component<Props, State> {
         });
 
         if (searchText && searchText.length > 0) {
-            // check if it's a xrp address
-            // eslint-disable-next-line prefer-regex-literals
-            const possibleAccountAddress = new RegExp(
-                /[rX][rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz]{23,50}/,
-            );
-
-            if (possibleAccountAddress.test(searchText)) {
-                this.doAccountLookUp({ to: searchText });
+            const normalized = tryNormalizeDestination({ to: searchText });
+            if (normalized?.to) {
+                this.doAccountLookUp({ to: normalized.to, tag: normalized.tag });
             } else {
-                this.doLookUp(searchText);
+                this.doLookUp(searchText.trim() || searchText);
             }
         } else {
             clearTimeout(this.lookupTimeout);

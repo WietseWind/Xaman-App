@@ -196,7 +196,10 @@ Given('I should have {string}', async (elementId) => {
         elementId === 'home-tab-view' ||
         elementId === 'home-tab-empty-view' ||
         elementId === 'lock-overlay' ||
-        elementId === 'onboarding-screen'
+        elementId === 'onboarding-screen' ||
+        elementId === 'send-recipient-view' ||
+        elementId === 'recipient-no-search-result' ||
+        elementId.indexOf('recipient-r') === 0
             ? 90000
             : 10000;
     if (device.getPlatform() === 'android') {
