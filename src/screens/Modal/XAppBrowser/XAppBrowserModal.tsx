@@ -115,7 +115,7 @@ class XAppBrowserModal extends Component<Props, State> {
                 __ott: undefined,
             },
             account: props.account ?? CoreRepository.getDefaultAccount(),
-            network: coreSettings.network,
+            network: props.network ?? coreSettings.network,
             error: undefined,
             isLaunchingApp: true,
             isLoadingApp: false,

@@ -11,7 +11,8 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 import { utils as AccountLibUtils } from 'xrpl-accountlib';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 
-import { AccountRepository, NetworkRepository } from '@store/repositories';
+import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
+import { AccountModel, NetworkModel } from '@store/models';
 
 import { AppScreenKeys, Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
@@ -20,6 +21,7 @@ import { Payload, PayloadOrigin, XAppOrigin } from '@common/libs/payload';
 
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 import NavigationService, { ComponentTypes } from '@services/NavigationService';
+import NetworkService from '@services/NetworkService';
 
 import { StringTypeCheck } from '@common/utils/string';
 
@@ -334,6 +336,74 @@ class PushNotificationsService extends EventEmitter {
     };
 
     /**
+     * Resolve account and network from a push payload using the TXPUSH field names
+     * (`data.account`, `data.network`). Missing, invalid, or unknown values stay undefined
+     * so callers can abort (tx) or skip the switch (xApp).
+     */
+    resolvePushAccountAndNetwork = (
+        notification: FirebaseMessagingTypes.RemoteMessage,
+    ): {
+        address?: string;
+        networkKey?: string;
+        account?: AccountModel;
+        network?: NetworkModel;
+    } => {
+        const address = get(notification, ['data', 'account']);
+        const networkKeyRaw = get(notification, ['data', 'network']);
+        const networkKey = typeof networkKeyRaw === 'string' && networkKeyRaw ? networkKeyRaw : undefined;
+
+        const account =
+            typeof address === 'string' && AccountLibUtils.isValidAddress(address)
+                ? AccountRepository.findOne({ address })
+                : undefined;
+
+        const network = networkKey ? NetworkRepository.findOne({ key: networkKey }) : undefined;
+
+        return {
+            address: typeof address === 'string' ? address : undefined,
+            networkKey,
+            account,
+            network,
+        };
+    };
+
+    /**
+     * Switch the app to the account/network on a push, when those fields are present
+     * and resolve to a local account / known network. No-ops when already selected.
+     * Unknown or missing values are skipped so the destination screen can still open.
+     */
+    applyPushAccountAndNetwork = async (
+        notification: FirebaseMessagingTypes.RemoteMessage,
+    ): Promise<{ account?: AccountModel; network?: NetworkModel }> => {
+        const { account, network } = this.resolvePushAccountAndNetwork(notification);
+
+        if (account) {
+            try {
+                const currentAccount = CoreRepository.getDefaultAccount();
+                if (!currentAccount || currentAccount.address !== account.address) {
+                    CoreRepository.setDefaultAccount(account);
+                }
+            } catch (error) {
+                this.logger.warn('unable to switch account for push', error);
+            }
+        }
+
+        if (network) {
+            try {
+                const currentNetwork = NetworkService.getNetwork();
+                // switchNetwork never resolves when the network is already selected
+                if (!currentNetwork || currentNetwork.key !== network.key) {
+                    await NetworkService.switchNetwork(network);
+                }
+            } catch (error) {
+                this.logger.warn('unable to switch network for push', error);
+            }
+        }
+
+        return { account, network };
+    };
+
+    /**
      * Handle opening xApp notification
      * @param notification
      */
@@ -350,6 +420,9 @@ class PushNotificationsService extends EventEmitter {
             return;
         }
 
+        // same account/network fields as TXPUSH: switch when present and available
+        const { account, network } = await this.applyPushAccountAndNetwork(notification);
+
         let delay = 0;
 
         // if already in xapp try to load the xApp from notification and close the current one
@@ -360,7 +433,6 @@ class PushNotificationsService extends EventEmitter {
         }
 
         setTimeout(() => {
-            // show review transaction screen
             this.routeUser(
                 AppScreens.Modal.XAppBrowser,
                 {
@@ -368,6 +440,8 @@ class PushNotificationsService extends EventEmitter {
                     title: xappTitle,
                     origin: XAppOrigin.PUSH_NOTIFICATION,
                     originData: get(notification, 'data'),
+                    ...(account ? { account } : {}),
+                    ...(network ? { network } : {}),
                 },
                 {
                     modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
@@ -384,8 +458,7 @@ class PushNotificationsService extends EventEmitter {
      */
     handleOpenTx = async (notification: FirebaseMessagingTypes.RemoteMessage) => {
         const hash = get(notification, ['data', 'tx']);
-        const address = get(notification, ['data', 'account']);
-        const networkKey = get(notification, ['data', 'network']);
+        const { address, networkKey, account, network } = this.resolvePushAccountAndNetwork(notification);
 
         // validate inputs
         if (
@@ -397,8 +470,6 @@ class PushNotificationsService extends EventEmitter {
             return;
         }
 
-        const account = AccountRepository.findOne({ address });
-
         // check if account exist in the app
         if (!account) {
             // account is not present in the app, just return
@@ -406,8 +477,6 @@ class PushNotificationsService extends EventEmitter {
         }
 
         // forced network, check if we support this network
-        const network = NetworkRepository.findOne({ key: networkKey });
-
         if (networkKey && !network) {
             // we couldn't find the network object, just return
             return;
