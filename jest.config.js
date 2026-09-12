@@ -4,7 +4,16 @@ module.exports = {
     ...tsJestConfig,
     preset: 'react-native',
     transformIgnorePatterns: [
-        'node_modules/(?!react-native|@react-native|@react-native-community|realm|@react-native-firebase|i18n-js)',
+        `node_modules/(?!${[
+            'react-native',
+            '@react-native',
+            '@react-native-community',
+            'realm',
+            '@react-native-firebase',
+            'i18n-js',
+            '@scure',
+            '@noble',
+        ].join('|')})`,
     ],
     setupFiles: ['./jest.setup.js'],
     collectCoverage: true,

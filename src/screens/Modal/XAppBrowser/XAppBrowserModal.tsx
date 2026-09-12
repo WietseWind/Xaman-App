@@ -34,6 +34,8 @@ import { GetAppVersionCode } from '@common/helpers/app';
 
 import { Payload, PayloadOrigin } from '@common/libs/payload';
 import { Destination } from '@common/libs/ledger/parser/types';
+import { deriveEntropy } from '@common/libs/entropy';
+import Vault from '@common/libs/vault';
 
 import { StringTypeCheck } from '@common/utils/string';
 
@@ -44,7 +46,7 @@ import NetworkService from '@services/NetworkService';
 import { AccountRepository, CoreRepository, NetworkRepository, ProfileRepository } from '@store/repositories';
 import { AccountModel, NetworkModel } from '@store/models';
 // import { AccessLevels, Themes } from '@store/types';
-import { AccessLevels } from '@store/types';
+import { AccessLevels, EncryptionLevels } from '@store/types';
 
 import { BackendService, NavigationService, PushNotificationsService, StyleService } from '@services';
 import { ApiError } from '@services/ApiService';
@@ -73,6 +75,8 @@ import { ScanModalProps } from '@screens/Modal/Scan';
 import { DestinationPickerModalProps } from '@screens/Modal/DestinationPicker';
 import { ReviewTransactionModalProps } from '@screens/Modal/ReviewTransaction';
 import { PurchaseProductModalProps } from '@screens/Modal/PurchaseProduct';
+import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
+import { PassphraseAuthenticationOverlayProps } from '@screens/Overlay/PassphraseAuthentication';
 
 import LoggerService from '@services/LoggerService';
 
@@ -496,6 +500,51 @@ class XAppBrowserModal extends Component<Props, State> {
         });
     };
 
+    getEntropy = async (data: { salt: string }) => {
+        const { account, app } = this.state;
+        const salt = get(data, 'salt', '');
+
+        if (typeof salt !== 'string') {
+            return;
+        }
+        if (!app || !app.appid) {
+            return;
+        }
+        // only full-access regular accounts hold a private key
+        if (account.accessLevel !== AccessLevels.Full) {
+            this.sendEvent({ method: XAppMethods.GetEntropy, result: undefined, reason: 'NO_PRIV_KEY' });
+            return;
+        }
+
+        const openAndReturnEntropy = async (encryptionKey: string) => {
+            const privateKey = await Vault.open(account.publicKey, encryptionKey);
+            if (!privateKey) {
+                this.sendEvent({ method: XAppMethods.GetEntropy, result: undefined, reason: 'NO_PRIV_KEY' });
+                return;
+            }
+            const entropy = await deriveEntropy(privateKey, app.appid!, salt);
+            this.sendEvent({ method: XAppMethods.GetEntropy, result: entropy });
+        };
+
+        if (account.encryptionLevel === EncryptionLevels.Passcode) {
+            Navigator.showOverlay<AuthenticateOverlayProps>(AppScreens.Overlay.Auth, {
+                canAuthorizeBiometrics: false,
+                onSuccess: () => openAndReturnEntropy(CoreRepository.getSettings().passcode!),
+                onDismissed: () => {
+                    this.sendEvent({ method: XAppMethods.GetEntropy, result: undefined, reason: 'USER_CANCEL' });
+                },
+            });
+        } else if (account.encryptionLevel === EncryptionLevels.Passphrase) {
+            Navigator.showOverlay<PassphraseAuthenticationOverlayProps>(AppScreens.Overlay.PassphraseAuthentication, {
+                account,
+                onSuccess: (passphrase: string) => openAndReturnEntropy(passphrase),
+                onDismissed: () => {
+                    this.sendEvent({ method: XAppMethods.GetEntropy, result: undefined, reason: 'USER_CANCEL' });
+                },
+            });
+        }
+    };
+
     handleCommand = (command: XAppMethods, parsedData: any) => {
         const { app, isAppReady, coreSettings } = this.state;
 
@@ -575,6 +624,9 @@ class XAppBrowserModal extends Component<Props, State> {
                 break;
             case XAppMethods.RequestInAppPurchase:
                 this.requestInAppPurchase(parsedData);
+                break;
+            case XAppMethods.GetEntropy:
+                this.getEntropy(parsedData);
                 break;
             default:
                 break;
@@ -742,6 +794,14 @@ class XAppBrowserModal extends Component<Props, State> {
                 throw new Error('Provided ott is not valid from response!');
             }
 
+            // TODO(willem) remove this once backend returns GetEntropy in the list of supported commands
+            const resolvedPermissions = coreSettings.developerMode
+                ? {
+                      special: permissions?.special ?? [],
+                      commands: [...(permissions?.commands ?? []), toUpper(XAppMethods.GetEntropy)],
+                  }
+                : permissions;
+
             // everything is fine
             this.setState({
                 ott,
@@ -751,7 +811,7 @@ class XAppBrowserModal extends Component<Props, State> {
                     appid: appid || app?.appid,
                     supportUrl: xappSupportUrl,
                     icon,
-                    permissions,
+                    permissions: resolvedPermissions,
                     networks,
                     __ott: app?.__ott || ott,
                 },
