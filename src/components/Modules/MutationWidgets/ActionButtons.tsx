@@ -25,6 +25,7 @@ import { Props as ReviewTransactionModalProps } from '@screens/Modal/ReviewTrans
 import Localize from '@locale';
 
 import styles from './styles';
+import { filterActionsForScamAdvisory } from './scamActionFilter';
 /* Types ==================================================================== */
 import { Props } from './types';
 import { AppStyles } from '@theme/index';
@@ -711,13 +712,15 @@ class ActionButtons extends PureComponent<Props, State> {
 
     renderActionButtons = () => {
         const { availableActions } = this.state;
-        const { item } = this.props;
+        const { item, advisory } = this.props;
 
         if (!availableActions) {
             return null;
         }
 
-        return availableActions.map((type, index) => {
+        const visibleActions = filterActionsForScamAdvisory(availableActions, advisory);
+
+        return visibleActions.map((type, index) => {
             const key = `action-button-${index}-${(item as any)?.hash}`;
 
             return (
@@ -733,10 +736,12 @@ class ActionButtons extends PureComponent<Props, State> {
     };
 
     render() {
-        const { componentType } = this.props;
+        const { componentType, advisory } = this.props;
         const { availableActions } = this.state;
 
-        if (!availableActions || availableActions.length === 0 || componentType === ComponentTypes.Modal) {
+        const visibleActions = filterActionsForScamAdvisory(availableActions || [], advisory);
+
+        if (!availableActions || visibleActions.length === 0 || componentType === ComponentTypes.Modal) {
             return null;
         }
 
