@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Неможливо перевірити підпис payload",
     "payloadAlreadyResolved": "Цей payload вже підписано або відхилено. Будь ласка, повторіть процес, який створив запит, і відскануйте його.",
     "payloadCouldNotBeUpdated": "Payload не може бути оновлено",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Термін дії цього payload закінчився. Будь ласка, повторіть процес, який створив запит, і відскануйте його.\r\n",
     "payloadAlreadySigned": "Payload вже підписано",
     "invalidOrMissingSignedTransactionBlob": "Недійсний або відсутній підписаний блок транзакції",

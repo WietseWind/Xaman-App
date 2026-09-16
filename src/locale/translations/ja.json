@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "ペイロード署名を検証できません",
     "payloadAlreadyResolved": "このペイロードはすでに署名または拒否されています。リクエストを生成したプロセスを繰り返し、新しいリクエストをスキャンしてください。",
     "payloadCouldNotBeUpdated": "ペイロードを更新できませんでした",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "このペイロードは有効期限が切れています。リクエストを生成したプロセスを繰り返し、新しいリクエストをスキャンしてください。",
     "payloadAlreadySigned": "ペイロードはすでに署名されています",
     "invalidOrMissingSignedTransactionBlob": "無効または欠落している署名済みトランザクションBLOB",

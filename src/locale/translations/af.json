@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Kan nie die loonvraghandtekening verifieer nie",
     "payloadAlreadyResolved": "Hierdie loonvrag is reeds onderteken of afgekeur. Herhaal die proses wat die versoek gegenereer het, en skandeer die nuwe versoek.",
     "payloadCouldNotBeUpdated": "Loonvrag kon nie opgedateer word nie",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Hierdie loonvrag het verval. Herhaal die proses wat die versoek gegenereer het, en skandeer die nuwe versoek.",
     "payloadAlreadySigned": "The loonvrag is reeds onderteken",
     "invalidOrMissingSignedTransactionBlob": "Ongeldige of ontbrekende onderteken transaksie blob",

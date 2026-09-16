@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Nie można zweryfikować załadowanego podpisu",
     "payloadAlreadyResolved": "Ta zawartość została już podpisana lub odrzucona. Powtórz proces generujący rządanie i zeskanuj ponownie.",
     "payloadCouldNotBeUpdated": "Zawartość nie może być zaktualizowana",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Zawartość wygasła. Powtórz proces generujący żądanie i zeskanuj ponownie.",
     "payloadAlreadySigned": "Zawartośc już podpisana",
     "invalidOrMissingSignedTransactionBlob": "Nieprawidłowa lub nie podpisana transakcja BLOB",

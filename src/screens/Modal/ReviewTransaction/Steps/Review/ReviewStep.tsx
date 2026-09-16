@@ -5,11 +5,17 @@
 import { get } from 'lodash';
 import React, { Component } from 'react';
 import { ImageBackground, Text, View } from 'react-native';
+import { OptionsModalPresentationStyle } from 'react-native-navigation';
 
-import { BackendService, StyleService } from '@services';
+import { BackendService, LedgerService, PushNotificationsService, ResolverService, StyleService } from '@services';
+
+import { AppScreens } from '@common/constants';
+import { Navigator } from '@common/helpers/navigator';
+import { Payload } from '@common/libs/payload';
+import { TransactionJson } from '@common/libs/ledger/types/transaction';
 
 // components
-import { Button, InfoMessage, JsonTree, KeyboardAwareScrollView, SwipeButton } from '@components/General';
+import { Button, InfoMessage, JsonTree, KeyboardAwareScrollView, Spacer, SwipeButton } from '@components/General';
 import { AccountPicker } from '@components/Modules';
 
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
@@ -21,6 +27,14 @@ import Localize from '@locale';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import {
+    CancelCraft,
+    canCancelNFTokenOffer,
+    collectSignRequestCounterparties,
+    craftCancelFromSignRequest,
+    isScamDanger,
+    isScamImageUrl,
+} from '../../scamRejectAction';
 
 // transaction templates
 import * as GenuineTransactionTemplates from './Templates/genuine';
@@ -39,12 +53,16 @@ export interface State {
     riskMustWarnUser: boolean;
     riskUserWarnedAccepted?: boolean;
     riskQuestionStage?: number;
+    isScamCounterpart: boolean;
+    cancelCraft?: CancelCraft;
 }
 
 /* Component ==================================================================== */
 class ReviewStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
+
+    private mounted = false;
 
     constructor(props: Props) {
         super(props);
@@ -55,12 +73,15 @@ class ReviewStep extends Component<Props, State> {
             canScroll: true,
             canSendFee: true,
             riskMustWarnUser: false,
+            isScamCounterpart: false,
         };
     }
 
     componentDidMount(): void {
         const { payload, coreSettings } = this.context;
         const { riskUserWarnedAccepted } = this.state;
+
+        this.mounted = true;
 
         try {
             const isDevBuildingMode = String(process?.env?.NODE_ENV || '').toLowerCase() === 'development';
@@ -78,7 +99,127 @@ class ReviewStep extends Component<Props, State> {
         } catch (error) {
             // ignore
         }
+
+        this.detectScamAndCancel();
     }
+
+    componentWillUnmount(): void {
+        this.mounted = false;
+    }
+
+    detectScamAndCancel = async () => {
+        const { transaction, source, payload } = this.context;
+
+        if (!transaction) {
+            return;
+        }
+
+        const cancelCraft = craftCancelFromSignRequest(transaction);
+        let canCancel = !!cancelCraft;
+        let isScam = !!payload?.risk?.__warn_user;
+
+        if (cancelCraft?.labelKey === 'cancelOffer') {
+            canCancel = false;
+            try {
+                const offerId = (transaction as any).NFTokenSellOffer || (transaction as any).NFTokenBuyOffer;
+                const res: any = await LedgerService.getLedgerEntry({ index: offerId });
+                const node = res?.node;
+                canCancel = canCancelNFTokenOffer(node, source?.address);
+
+                if (node?.NFTokenID && source?.address) {
+                    const details = await BackendService.getNFTDetails(source.address, [node.NFTokenID]);
+                    const image = details?.tokenData?.[node.NFTokenID]?.image;
+                    if (isScamImageUrl(image)) {
+                        isScam = true;
+                    }
+                }
+            } catch {
+                canCancel = false;
+            }
+        }
+        const addresses = collectSignRequestCounterparties(transaction, source?.address);
+
+        await Promise.all(
+            addresses.map(async (address) => {
+                try {
+                    const advisory = await BackendService.getAccountAdvisory(address);
+                    if (isScamDanger(advisory?.danger)) {
+                        isScam = true;
+                    }
+                } catch {
+                    // ignore lookup failures
+                }
+                try {
+                    const name = await ResolverService.getAccountName(address);
+                    if (name?.blocked) {
+                        isScam = true;
+                    }
+                } catch {
+                    // ignore lookup failures
+                }
+            }),
+        );
+
+        if (!this.mounted) {
+            return;
+        }
+
+        this.setState({
+            isScamCounterpart: isScam,
+            cancelCraft: isScam && canCancel ? cancelCraft : undefined,
+        });
+    };
+
+    onScamAcceptSwipe = () => {
+        const { onAccept } = this.context;
+
+        Navigator.showAlertModal({
+            type: 'warning',
+            title: Localize.t('global.alertDanger'),
+            text: Localize.t('payload.scamAcceptConfirm'),
+            buttons: [
+                {
+                    text: Localize.t('global.cancel'),
+                    type: 'dismiss',
+                    light: true,
+                },
+                {
+                    text: Localize.t('global.continue'),
+                    onPress: onAccept,
+                    light: false,
+                },
+            ],
+        });
+    };
+
+    onScamCancelPress = () => {
+        const { payload, source } = this.context;
+        const { cancelCraft } = this.state;
+
+        if (!cancelCraft || !source) {
+            return;
+        }
+
+        payload.reject('USER');
+        setTimeout(() => {
+            PushNotificationsService.emit('signRequestUpdate');
+        }, 1000);
+
+        Navigator.dismissModal().then(() => {
+            const craftedTxJson = {
+                ...cancelCraft.txJson,
+                Account: source.address,
+            } as TransactionJson;
+
+            Navigator.showModal(
+                AppScreens.Modal.ReviewTransaction,
+                {
+                    payload: Payload.build(craftedTxJson),
+                },
+                { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+            );
+        });
+    };
 
     toggleCanScroll = () => {
         this.setState({ canScroll: true });
@@ -202,6 +343,8 @@ class ReviewStep extends Component<Props, State> {
             riskMustWarnUser,
             riskUserWarnedAccepted,
             riskQuestionStage,
+            isScamCounterpart,
+            cancelCraft,
         } = this.state;
 
         // waiting for accounts / transaction to be initiated
@@ -450,12 +593,25 @@ class ReviewStep extends Component<Props, State> {
                                         {/* accept button */}
                                         {canSendFee && (
                                             <View style={styles.acceptButtonContainer}>
+                                                {isScamCounterpart && cancelCraft && (
+                                                    <>
+                                                        <Button
+                                                            testID="scam-cancel-object-button"
+                                                            secondary
+                                                            label={Localize.t(`events.${cancelCraft.labelKey}`)}
+                                                            onPress={this.onScamCancelPress}
+                                                        />
+                                                        <Spacer size={15} />
+                                                    </>
+                                                )}
                                                 <SwipeButton
                                                     testID="accept-button"
                                                     color={this.getSwipeButtonColor()}
                                                     isLoading={isLoading}
                                                     isDisabled={!isReady}
-                                                    onSwipeSuccess={onAccept}
+                                                    onSwipeSuccess={
+                                                        isScamCounterpart ? this.onScamAcceptSwipe : onAccept
+                                                    }
                                                     label={Localize.t('global.slideToAccept')}
                                                     accessibilityLabel={Localize.t('global.accept')}
                                                     onPanResponderGrant={this.toggleCannotScroll}

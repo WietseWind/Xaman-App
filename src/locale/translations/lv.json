@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Nav iespējams pārbaudīt datu ievades uzsākšanas pierakstu",
     "payloadAlreadyResolved": "Šie dati jau parakstīti vai noraidīti. Lūdzu atkārtojiet pieprasīto procesu un skenējiet jaunu pieprasījumu.",
     "payloadCouldNotBeUpdated": "Datus nevarēja atjaunināt",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Datu ievadīšanas laiks ir beidzies. Lūdzu atkārtojiet šo pieprasījumu un skenējiet jaunu pieprasījumu.",
     "payloadAlreadySigned": "Datu ievade jau bijusi parakstīta",
     "invalidOrMissingSignedTransactionBlob": "Nederīgi vai trūkstoši pierakstīšanās dati",

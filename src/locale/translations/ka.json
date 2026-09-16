@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "გადაცემული მონაცემების დამოწმების ვერიფიკაცია შეუძლებელია",
     "payloadAlreadyResolved": "აღნიშნული გადაცემული მონაცემები უკვე დამოწმდა ან გაუქმდა. გთხოვთ გაიმეოროთ მოთხოვნის დაგენერირების პროცესი და დაასკანეროთ ახალი მოთხოვნა. ",
     "payloadCouldNotBeUpdated": "გადაცემული მონაცემების აღდგენა შეუძლებელია",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "გადაცემული მონაცემები ვადაგასულია. გთხოვთ გაიმეოროთ მოთხოვნის დაგენერირების პროცესი და შემდეგ დაასკანეროთ.",
     "payloadAlreadySigned": "გადაცემული მონაცემები უკვე დამოწმებულია",
     "invalidOrMissingSignedTransactionBlob": "დამოწმებული ტრანზაქციის ბინარული მონაცემები არასწორი ან დაკარგულია",

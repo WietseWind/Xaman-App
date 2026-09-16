@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "غير قادر على التحقق من صحة التوقيع الحمولة",
     "payloadAlreadyResolved": "تم بالفعل توقيع هذه الحمولة أو رفضها. يرجى تكرار هذه العملية التي ولدت الطلب، وفحص طلب جديد.",
     "payloadCouldNotBeUpdated": "تعذر تحديث الحمولة",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "هذه الحمولة انتهت صلاحيتها. يرجى تكرار هذه العملية التي ولدت الطلب، وفحص طلب جديد.",
     "payloadAlreadySigned": "تم توقيع الحمولة بالفعل",
     "invalidOrMissingSignedTransactionBlob": "نقطة تحويل موقعة غير صالحة أو مفقودة",

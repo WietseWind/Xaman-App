@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "پے لوڈ دستخط کی توثیق کرنے سے قاصر",
     "payloadAlreadyResolved": "یہ پے لوڈ پہلے ہی دستخط شدہ یا مسترد کردیا جاچکا ہے۔ براہ کرم اس عمل کو دہرائیں جس نے درخواست پیدا کی اور نئی درخواست کو اسکین کریں۔",
     "payloadCouldNotBeUpdated": "پے لوڈ کو اپ ڈیٹ نہیں کیا جاسکا",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "اس پے لوڈ کی میعاد ختم ہوگئی ہے۔ براہ کرم اس عمل کو دہرائیں جس نے درخواست پیدا کی اور نئی درخواست کو اسکین کریں۔",
     "payloadAlreadySigned": "پے لوڈ پر پہلے ہی دستخط ہوچکے ہیں",
     "invalidOrMissingSignedTransactionBlob": "غلط یا لاپتہ دستخط شدہ ٹرانزیکشن بلاب",

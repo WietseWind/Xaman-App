@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Ödemenin imzası doğrulanamıyor",
     "payloadAlreadyResolved": "Bu ödeme yöntemi önceden imzalanmış ya da reddedilmiş. Lütfen işlemi yineleyin ve yeni isteği tarayın.",
     "payloadCouldNotBeUpdated": "Ödeme yöntemi güncellenemedi",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Bu ödeme yönteminin süresi doldu. Lütfen işlemi yineleyin ve yeni isteği tarayın.",
     "payloadAlreadySigned": "Ödeme yöntemi zaten imzalandı",
     "invalidOrMissingSignedTransactionBlob": "Geçersiz ya da eksik imzalı işlem",

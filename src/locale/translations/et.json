@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Veokoormuse signatuuri pole võimalik kontrollida",
     "payloadAlreadyResolved": "See palgakoormus on juba allkirjastatud või tagasi lükatud. Palun korrake taotluse esitanud protsessi ja skaneerige uus taotlus.",
     "payloadCouldNotBeUpdated": "Väljamakse pole võimalik uuendada",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "See palgakoorem on aegunud. Palun korrake taotluse esitanud protsessi ja skaneerige uus taotlus.",
     "payloadAlreadySigned": "Palgakoormus on juba allkirjastatud",
     "invalidOrMissingSignedTransactionBlob": "Vigane või puudub allakirjutatud tehingu blob",

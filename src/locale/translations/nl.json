@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Kan de payload handtekening niet verifiëren",
     "payloadAlreadyResolved": "Deze payload is al ondertekend of afgewezen. Herhaal het proces dat het verzoek genereerde en scan het nieuwe verzoek.",
     "payloadCouldNotBeUpdated": "Payload kon niet worden bijgewerkt",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Deze payload is verlopen. Herhaal het proces dat het verzoek genereerde en scan het nieuwe verzoek.",
     "payloadAlreadySigned": "De payload is al ondertekend",
     "invalidOrMissingSignedTransactionBlob": "Ongeldige of ontbrekende ondertekende transactie blob",

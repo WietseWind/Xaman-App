@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "無法驗證載荷簽章",
     "payloadAlreadyResolved": "此載荷已被簽署或拒絕。請向發送載荷的服務/人員請求新的載荷。",
     "payloadCouldNotBeUpdated": "Payload couldn't be updated",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "載荷已過期",
     "payloadAlreadySigned": "The payload has already been signed",
     "invalidOrMissingSignedTransactionBlob": "Invalid or missing signed transaction blob",

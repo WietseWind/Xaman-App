@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Podpisa vsebine ni mogoče preveriti",
     "payloadAlreadyResolved": "Ta vsebina je bila že podpisana ali zavrnjena. Prosimo ponovite postopek, ki je ustvaril zahtevo in jo ponovno skenirajte.",
     "payloadCouldNotBeUpdated": "Vsebine ni bilo mogoče posodobiti",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Ta vsebina je potekla. Prosimo, ponovite postopek, ki je generiral zahtevo in jo ponovno skenirajte.",
     "payloadAlreadySigned": "Vsebina je že podpisana",
     "invalidOrMissingSignedTransactionBlob": "Neveljaven ali mankajoč podpisni objekt transakcije",

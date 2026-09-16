@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "无法验证支付签名",
     "payloadAlreadyResolved": "该有效负载已被签名或拒绝。请重复生成请求的过程，然后扫描新请求。",
     "payloadCouldNotBeUpdated": "支付数据无法更新",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "该支付数据已过期。请重复步骤生成支付请求，并扫描新请求。",
     "payloadAlreadySigned": "支付已签名",
     "invalidOrMissingSignedTransactionBlob": "无效或丢失的已签名交易Blob",

@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Impossível verificar a assinatura do payload",
     "payloadAlreadyResolved": "Este payload já foi assinado ou rejeitado. Por favor, repita o processo que gerou a solicitação e efetue a leitura do novo pedido.",
     "payloadCouldNotBeUpdated": "Não foi possível atualizar o Payload",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Este payload expirou. Por favor, repita o processo que gerou o pedido e efetue a leitura do novo pedido.",
     "payloadAlreadySigned": "Payload já assinado",
     "invalidOrMissingSignedTransactionBlob": "O blob de transação assinado é inválido ou inexistente",

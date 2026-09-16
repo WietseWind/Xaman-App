@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Tidak dapat memverifikasi tanda tangan payload",
     "payloadAlreadyResolved": "Payload ini telah ditandatangani atau ditolak. Ulangi proses yang menghasilkan permintaan, dan pindai permintaan baru.",
     "payloadCouldNotBeUpdated": "Muatan tidak dapat diperbarui",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Muatan ini telah kedaluwarsa. Ulangi proses yang menghasilkan permintaan, dan pindai permintaan baru.",
     "payloadAlreadySigned": "Muatan telah ditandatangani",
     "invalidOrMissingSignedTransactionBlob": "Blob transaksi yang ditandatangani tidak valid atau tidak ada",

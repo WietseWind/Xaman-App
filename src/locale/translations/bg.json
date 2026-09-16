@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Не може да се провери подписът на payload",
     "payloadAlreadyResolved": "Този payload вече е подписан или отхвърлен. Моля, повторете процеса, генерирал заявката, и сканирайте новата заявка.",
     "payloadCouldNotBeUpdated": "Payload не може да бъде актуализиран",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Този payload е изтекъл. Моля, повторете процеса, генерирал заявката, и сканирайте новата заявка.",
     "payloadAlreadySigned": "Вече е подписан този Payload",
     "invalidOrMissingSignedTransactionBlob": "Невалидна или липсваща подписана blob транзакция",

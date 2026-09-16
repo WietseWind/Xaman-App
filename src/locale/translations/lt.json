@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Nepavyko patikrinti naudingosios apkrovos parašo",
     "payloadAlreadyResolved": "Ši naudingoji apkrova jau pasirašyta arba atmesta. Pakartokite procesą, kuris sugeneravo prašymą, ir nuskaitykite naują prašymą.",
     "payloadCouldNotBeUpdated": "Naudingoji apkrova negalėjo būti atnaujinta",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Šios naudingosios apkrovos galiojimas baigėsi. Pakartokite procesą, kuris sugeneravo prašymą, ir nuskaitykite naują prašymą.",
     "payloadAlreadySigned": "Naudingoji apkrova jau pasirašyta",
     "invalidOrMissingSignedTransactionBlob": "Neteisingas arba trūkstamas pasirašytos operacijos blob",

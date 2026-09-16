@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Nem sikerült ellenőrizni az adattartalom aláírást",
     "payloadAlreadyResolved": "This payload has already been signed or rejected. Please repeat the process that generated the request, and scan the new request.",
     "payloadCouldNotBeUpdated": "Adattartalom nem frissíthető",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "This payload has expired. Please repeat the process that generated the request, and scan the new request.",
     "payloadAlreadySigned": "Az adattartalom már alá lett írva",
     "invalidOrMissingSignedTransactionBlob": "Érvénytelen vagy hiányzó aláírt tranzakció blob",

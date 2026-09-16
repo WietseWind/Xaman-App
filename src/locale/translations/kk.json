@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Жүктеме қолтаңбасын тексеру мүмкін емес",
     "payloadAlreadyResolved": "Бұл жүктеме қазірдің өзінде қол қойылған немесе қабылданбаған. Сұрау жасаған процесті қайталаңыз және жаңа сұранысты сканерлеңіз.",
     "payloadCouldNotBeUpdated": "Ақылы жүктемені жаңарту мүмкін емес",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Бұл ақылы жүктеме мерзімі аяқталды. Сұрау жасаған процесті қайталаңыз және жаңа сұранысты сканерлеңіз.",
     "payloadAlreadySigned": "Ақылы жүктемеге қол қойылды",
     "invalidOrMissingSignedTransactionBlob": "ББО-мәміле объектісінің қолы дұрыс емес немесе жоқ",

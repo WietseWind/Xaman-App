@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "Không thể xác minh chữ ký tải trọng",
     "payloadAlreadyResolved": "Trọng tải này đã được ký hoặc bị từ chối. Vui lòng lặp lại quy trình đã tạo yêu cầu và quét yêu cầu mới.",
     "payloadCouldNotBeUpdated": "Không thể cập nhật tải trọng",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "Trọng tải này đã hết hạn. Vui lòng lặp lại quy trình đã tạo yêu cầu và quét yêu cầu mới.",
     "payloadAlreadySigned": "Tải trọng đã được ký",
     "invalidOrMissingSignedTransactionBlob": "Khối giao dịch đã ký không hợp lệ hoặc bị thiếu",

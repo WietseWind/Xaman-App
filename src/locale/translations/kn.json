@@ -1298,6 +1298,7 @@
     "UnableVerifyPayload": "ಪೇಲೋಡ್ ಸಹಿಯನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ",
     "payloadAlreadyResolved": "ಈ ಪೇಲೋಡ್ ಅನ್ನು ಈಗಾಗಲೇ ಸಹಿ ಮಾಡಲಾಗಿದೆ ಅಥವಾ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ವಿನಂತಿಯನ್ನು ರಚಿಸಿದ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪುನರಾವರ್ತಿಸಿ ಮತ್ತು ಹೊಸ ವಿನಂತಿಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.",
     "payloadCouldNotBeUpdated": "ಪೇಲೋಡ್ ಅನ್ನು ನವೀಕರಿಸಲಾಗುವುದಿಲ್ಲ",
+    "scamAcceptConfirm": "This request involves an account or object reported as a possible scam. Are you sure you want to accept it?",
     "payloadExpired": "ಈ ಪೇಲೋಡ್ ಅವಧಿ ಮೀರಿದೆ. ದಯವಿಟ್ಟು ವಿನಂತಿಯನ್ನು ರಚಿಸಿದ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪುನರಾವರ್ತಿಸಿ ಮತ್ತು ಹೊಸ ವಿನಂತಿಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.",
     "payloadAlreadySigned": "ಪೇಲೋಡ್ ಈಗಾಗಲೇ ಸಹಿ ಮಾಡಲಾಗಿದೆ",
     "invalidOrMissingSignedTransactionBlob": "ಅಮಾನ್ಯ ಅಥವಾ ಕಾಣೆಯಾದ ಸಹಿ ಮಾಡಿದ ವಹಿವಾಟು ಆಕೃತಿಯಿಂದ",
