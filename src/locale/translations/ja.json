@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "無効なクリップボードデータです！",
     "invalidQRTryNewOneOrTryAgain": "無効なQRコードです。新しいQRコードを試すか、もう一度やり直してください",
     "invalidClipboardDateTryNewOneOrTryAgain": "無効なクリップボードデータ（Xamanの場合）です。新しいものを試すか、もう一度やり直してください。",
-    "importFromClipboard": "クリップボードからインポート"
+    "importFromClipboard": "クリップボードからインポート",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "別のクライアントによって処理されるペイロード",

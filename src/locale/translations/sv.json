@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Klippbordets data är inte vad vi förväntar oss!",
     "invalidQRTryNewOneOrTryAgain": "Ogiltig QR-kod (för Xaman), försök med ett nytt försök eller försök igen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ogiltiga data från Urklipp (för Xaman), försök med ett nytt försök eller försök igen",
-    "importFromClipboard": "Importera från Urklipp"
+    "importFromClipboard": "Importera från Urklipp",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Nyttolast hanteras av en annan klient",

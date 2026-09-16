@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Batili clipboard data!",
     "invalidQRTryNewOneOrTryAgain": "Invalid QR code (for Xaman), try a new one or try again",
     "invalidClipboardDateTryNewOneOrTryAgain": "Invalid clipboard data (for Xaman). Try a new one or try again.",
-    "importFromClipboard": "Leta from Clipboard"
+    "importFromClipboard": "Leta from Clipboard",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload handled by another client",

@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Bufer ma'lumotlari biz kutgan narsa emas!",
     "invalidQRTryNewOneOrTryAgain": "QR kod yaroqsiz (Xaman uchun), yangisini sinab ko'ring yoki qaytadan urining",
     "invalidClipboardDateTryNewOneOrTryAgain": "Bufer ma'lumotlari yaroqsiz (Xaman uchun). Yangisini sinab ko'ring yoki qaytadan urining.",
-    "importFromClipboard": "Buferdan import qilish"
+    "importFromClipboard": "Buferdan import qilish",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Boshqa mijoz tomonidan boshqariladigan tulov yuki",

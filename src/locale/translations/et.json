@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Lõikepuhvri andmed ei ole see, mida me ootame!",
     "invalidQRTryNewOneOrTryAgain": "Vigane QR-kood (Xaman-i jaoks), proovi uut või proovi uuesti",
     "invalidClipboardDateTryNewOneOrTryAgain": "Vigased lõikepuhvri andmed (Xaman-i jaoks), proovi uut või proovi uuesti",
-    "importFromClipboard": "Impordi lõikepuhvrist"
+    "importFromClipboard": "Impordi lõikepuhvrist",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Tasuline koormus teise kliendi poolt",

@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Die klipbord data is nie wat ons verwag!",
     "invalidQRTryNewOneOrTryAgain": "Ongeldige QR-kode (vir Xaman), probeer 'n nuwe of probeer weer",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ongeldige knipborddata (vir Xaman), probeer 'n nuwe of probeer weer",
-    "importFromClipboard": "Invoer vanaf knipbord"
+    "importFromClipboard": "Invoer vanaf knipbord",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Loonvrag hanteer deur 'n ander kliënt",

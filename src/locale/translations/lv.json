@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Starpliktuves dati nav tie, ko gaidām!",
     "invalidQRTryNewOneOrTryAgain": "Nederīgs QR kods (priekš Xaman aplikācijas), mēģiniet jaunu vai mēģiniet vēlreiz",
     "invalidClipboardDateTryNewOneOrTryAgain": "Nederīgi starpliktuves dati (priekš Xaman aplikācijas). Mēģiniet jaunu vai mēģiniet vēlreiz.",
-    "importFromClipboard": "Migrēt no Starpliktuves"
+    "importFromClipboard": "Migrēt no Starpliktuves",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Datu ievades pieprasījums ",

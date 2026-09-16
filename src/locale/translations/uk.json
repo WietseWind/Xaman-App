@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Буфер обміну містить дані не ті, що ми очікуємо!",
     "invalidQRTryNewOneOrTryAgain": "Недійсний QR-код (для Xaman). Спробуйте новий або повторіть ще раз",
     "invalidClipboardDateTryNewOneOrTryAgain": "Недійсні дані буфера обміну (для Xaman), спробуйте нові або повторіть спробу",
-    "importFromClipboard": "Імпорт з буфера обміну"
+    "importFromClipboard": "Імпорт з буфера обміну",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload обробляється іншим клієнтом",

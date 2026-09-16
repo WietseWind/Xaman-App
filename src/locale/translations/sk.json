@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Údaje schránky nie sú to čo očakávame!",
     "invalidQRTryNewOneOrTryAgain": "Neplatný QR kód (pre Xaman), skúste nový alebo skúste znova",
     "invalidClipboardDateTryNewOneOrTryAgain": "Neplatné údaje schránky (pre Xaman), skúste nový alebo skúste znova",
-    "importFromClipboard": "Dovoz zo schránky"
+    "importFromClipboard": "Dovoz zo schránky",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Užitočné zaťaženie vybavuje iný klient",

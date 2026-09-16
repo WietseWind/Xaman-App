@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Данните от клипборда не са това, което очакваме!",
     "invalidQRTryNewOneOrTryAgain": "Невалиден QR код (за Xaman), опитайте нов или опитайте отново",
     "invalidClipboardDateTryNewOneOrTryAgain": "Невалидни данни за клипборда (за Xaman), опитайте нов или опитайте отново",
-    "importFromClipboard": "Импортиране от Клипборда"
+    "importFromClipboard": "Импортиране от Клипборда",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload, обработен от друг клиент",

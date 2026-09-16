@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Invalid clipboard data!",
     "invalidQRTryNewOneOrTryAgain": "Invalid QR code (for Xaman), try a new one or try again",
     "invalidClipboardDateTryNewOneOrTryAgain": "Invalid clipboard data (for Xaman). Try a new one or try again.",
-    "importFromClipboard": "Import from Clipboard"
+    "importFromClipboard": "Import from Clipboard",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "載荷由另一個客戶端處理",

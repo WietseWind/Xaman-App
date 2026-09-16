@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Podaci o clipboarda nisu ono što očekujemo!",
     "invalidQRTryNewOneOrTryAgain": "Nevažeći QR kod (za Xaman), pokušajte s drugim ili pokušajte ponovno",
     "invalidClipboardDateTryNewOneOrTryAgain": "Nevažeći podaci iz međuspremnika (za Xaman), pokušajte s drugim ili pokušajte ponovno",
-    "importFromClipboard": "Uvoz iz međuspremnika"
+    "importFromClipboard": "Uvoz iz međuspremnika",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload je rukovan od strane drugog klijenta",

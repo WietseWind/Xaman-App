@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "بيانات الحافظة ليست ما نتوقعه!",
     "invalidQRTryNewOneOrTryAgain": "رمز QR غير صالح (لـ Xaman) ، جرب رمزًا جديدًا أو حاول مرة أخرى",
     "invalidClipboardDateTryNewOneOrTryAgain": "بيانات الحافظة غير صالحة (لـ Xaman). جرب واحدة جديدة أو حاول مرة أخرى.",
-    "importFromClipboard": "الاستيراد من الحافظة"
+    "importFromClipboard": "الاستيراد من الحافظة",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "تم التعامل مع الحمولة من قبل عميل آخر",

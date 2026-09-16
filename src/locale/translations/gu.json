@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "ક્લિપબોર્ડ ડેટા તે નથી જેની આપણે અપેક્ષા રાખીએ છીએ!",
     "invalidQRTryNewOneOrTryAgain": "અમાન્ય ક્યૂઆર કોડ (Xaman માટે), નવો પ્રયાસ કરો અથવા ફરીથી પ્રયાસ કરો",
     "invalidClipboardDateTryNewOneOrTryAgain": "અમાન્ય ક્લિપબોર્ડ ડેટા (Xaman માટે), નવો પ્રયાસ કરો અથવા ફરીથી પ્રયાસ કરો",
-    "importFromClipboard": "ક્લિપબોર્ડથી આયાત કરો"
+    "importFromClipboard": "ક્લિપબોર્ડથી આયાત કરો",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "પેલોડ બીજા ક્લાયંટ દ્વારા સંચાલિત",
