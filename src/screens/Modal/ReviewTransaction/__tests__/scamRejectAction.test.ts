@@ -2,11 +2,61 @@ import { TransactionTypes } from '@common/libs/ledger/types/enums';
 
 import {
     canCancelNFTokenOffer,
+    collectLedgerOfferCounterparties,
     collectSignRequestCounterparties,
     craftCancelFromSignRequest,
     isScamDanger,
     isScamImageUrl,
+    resolveScamSignRequest,
+    ScamSignRequestLookup,
 } from '../scamRejectAction';
+
+/**
+ * Captured 2026-09-17 from https://api.xrpl.to/api/nft/scam topScammers
+ * (rKWQGG9…, 101 drains) + s1.ripple.com account_objects type=nft_offer.
+ * 83 outstanding Destination-private sell offers, 0 public.
+ * Do not ship this as an in-app dummy; tests only.
+ */
+const LIVE_SCAM_OFFER = {
+    index: '0B90C84916FA3629EC353804F253B44AD8BC38160B777AE609E68F62D961ADC7',
+    LedgerEntryType: 'NFTokenOffer',
+    Flags: 1,
+    Owner: 'rKWQGG9LsPNxEf49LoCxeALwbfoua3MaTp',
+    Destination: 'rDABcXDrzf4wrk9RzP7AQPrnzKUnE9Cib8',
+    NFTokenID: '00090000CB01BEFEDE61809ECDFD3DE747C87DDCD95BA0DBE732249F0613D704',
+    Amount: {
+        currency: '524C555344000000000000000000000000000000',
+        issuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
+        value: '42.083958',
+    },
+};
+
+const UNRELATED_ACCOUNT = 'ranPYbmjQ15Voee1QFCkBJBzjYoWiVpae';
+
+const lookupFor = (
+    overrides: Partial<ScamSignRequestLookup> & {
+        advisoryByAddress?: Record<string, string>;
+        blocked?: string[];
+        nftImage?: string;
+    } = {},
+): ScamSignRequestLookup => {
+    const { advisoryByAddress = {}, blocked = [], nftImage, ...rest } = overrides;
+    return {
+        getLedgerEntry: async () => ({ node: LIVE_SCAM_OFFER }),
+        getNFTDetails: async (_account, tokens) => ({
+            tokenData: {
+                [tokens[0]]: nftImage ? { image: nftImage } : {},
+            },
+        }),
+        getAccountAdvisory: async (address) => ({
+            danger: advisoryByAddress[address] || 'NONE',
+        }),
+        getAccountName: async (address) => ({
+            blocked: blocked.includes(address),
+        }),
+        ...rest,
+    };
+};
 
 describe('scamRejectAction', () => {
     describe('isScamDanger', () => {
@@ -107,6 +157,78 @@ describe('scamRejectAction', () => {
             expect(
                 craftCancelFromSignRequest({ Type: TransactionTypes.EscrowFinish, Owner: 'rOwner' }),
             ).toBeUndefined();
+        });
+    });
+
+    describe('live xrpl.to scam offer fixture', () => {
+        const acceptTx = {
+            Type: TransactionTypes.NFTokenAcceptOffer,
+            Account: LIVE_SCAM_OFFER.Destination,
+            NFTokenSellOffer: LIVE_SCAM_OFFER.index,
+        };
+
+        it('lets only the private destination or owner cancel', () => {
+            expect(canCancelNFTokenOffer(LIVE_SCAM_OFFER, LIVE_SCAM_OFFER.Destination)).toBe(true);
+            expect(canCancelNFTokenOffer(LIVE_SCAM_OFFER, LIVE_SCAM_OFFER.Owner)).toBe(true);
+            expect(canCancelNFTokenOffer(LIVE_SCAM_OFFER, UNRELATED_ACCOUNT)).toBe(false);
+        });
+
+        it('treats the scammer owner as a counterparty even though accept-offer json has no Owner', () => {
+            expect(collectSignRequestCounterparties(acceptTx, LIVE_SCAM_OFFER.Destination)).toEqual([]);
+            expect(collectLedgerOfferCounterparties(LIVE_SCAM_OFFER, LIVE_SCAM_OFFER.Destination)).toEqual([
+                LIVE_SCAM_OFFER.Owner,
+            ]);
+        });
+
+        it('shows the cancel CTA when the destination signs and the owner is flagged', async () => {
+            const result = await resolveScamSignRequest(
+                acceptTx,
+                LIVE_SCAM_OFFER.Destination,
+                false,
+                lookupFor({
+                    advisoryByAddress: { [LIVE_SCAM_OFFER.Owner]: 'CONFIRMED' },
+                }),
+            );
+
+            expect(result.isScam).toBe(true);
+            expect(result.cancelCraft).toEqual({
+                txJson: {
+                    TransactionType: TransactionTypes.NFTokenCancelOffer,
+                    NFTokenOffers: [LIVE_SCAM_OFFER.index],
+                },
+                labelKey: 'cancelOffer',
+            });
+        });
+
+        it('flags the offer as scam for an unrelated signer but does not offer cancel', async () => {
+            const result = await resolveScamSignRequest(
+                {
+                    ...acceptTx,
+                    Account: UNRELATED_ACCOUNT,
+                },
+                UNRELATED_ACCOUNT,
+                false,
+                lookupFor({
+                    advisoryByAddress: { [LIVE_SCAM_OFFER.Owner]: 'CONFIRMED' },
+                }),
+            );
+
+            expect(result.isScam).toBe(true);
+            expect(result.cancelCraft).toBeUndefined();
+        });
+
+        it('also flags via a scam NFT image URL from backend details', async () => {
+            const result = await resolveScamSignRequest(
+                acceptTx,
+                LIVE_SCAM_OFFER.Destination,
+                false,
+                lookupFor({
+                    nftImage: 'https://cdn.xaman.app/scam-nft.png',
+                }),
+            );
+
+            expect(result.isScam).toBe(true);
+            expect(result.cancelCraft?.labelKey).toBe('cancelOffer');
         });
     });
 });

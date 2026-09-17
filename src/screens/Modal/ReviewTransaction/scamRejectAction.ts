@@ -55,6 +55,32 @@ export const collectSignRequestCounterparties = (
     return [...new Set(addresses)];
 };
 
+export type LedgerOfferNode = {
+    Owner?: string;
+    Destination?: string;
+    NFTokenID?: string;
+};
+
+export const collectLedgerOfferCounterparties = (
+    node: LedgerOfferNode | undefined,
+    sourceAddress?: string,
+): string[] => {
+    const addresses: string[] = [];
+    pushAddress(addresses, node?.Owner);
+    pushAddress(addresses, node?.Destination);
+    return [...new Set(addresses.filter((address) => address !== sourceAddress))];
+};
+
+export type ScamSignRequestLookup = {
+    getLedgerEntry: (index: string) => Promise<{ node?: LedgerOfferNode } | undefined>;
+    getNFTDetails: (
+        account: string,
+        tokens: string[],
+    ) => Promise<{ tokenData?: Record<string, { image?: string }> } | undefined>;
+    getAccountAdvisory: (address: string) => Promise<{ danger?: string } | undefined>;
+    getAccountName: (address: string) => Promise<{ blocked?: boolean } | undefined>;
+};
+
 export const craftCancelFromSignRequest = (transaction: any): CancelCraft | undefined => {
     const type = transaction?.Type || transaction?.TransactionType;
 
@@ -108,4 +134,69 @@ export const craftCancelFromSignRequest = (transaction: any): CancelCraft | unde
     }
 
     return undefined;
+};
+
+export const resolveScamSignRequest = async (
+    transaction: any,
+    sourceAddress: string | undefined,
+    payloadRiskWarn: boolean,
+    lookup: ScamSignRequestLookup,
+): Promise<{ isScam: boolean; cancelCraft?: CancelCraft }> => {
+    const cancelCraft = craftCancelFromSignRequest(transaction);
+    let canCancel = !!cancelCraft;
+    let isScam = !!payloadRiskWarn;
+    let offerNode: LedgerOfferNode | undefined;
+
+    if (cancelCraft?.labelKey === 'cancelOffer') {
+        canCancel = false;
+        try {
+            const offerId = transaction?.NFTokenSellOffer || transaction?.NFTokenBuyOffer;
+            if (typeof offerId === 'string' && offerId) {
+                const res = await lookup.getLedgerEntry(offerId);
+                offerNode = res?.node;
+                canCancel = canCancelNFTokenOffer(offerNode, sourceAddress);
+
+                if (offerNode?.NFTokenID && sourceAddress) {
+                    const details = await lookup.getNFTDetails(sourceAddress, [offerNode.NFTokenID]);
+                    const image = details?.tokenData?.[offerNode.NFTokenID]?.image;
+                    if (isScamImageUrl(image)) {
+                        isScam = true;
+                    }
+                }
+            }
+        } catch {
+            canCancel = false;
+        }
+    }
+
+    const addresses = [
+        ...collectSignRequestCounterparties(transaction, sourceAddress),
+        ...collectLedgerOfferCounterparties(offerNode, sourceAddress),
+    ].filter((address, index, all) => address && address !== sourceAddress && all.indexOf(address) === index);
+
+    await Promise.all(
+        addresses.map(async (address) => {
+            try {
+                const advisory = await lookup.getAccountAdvisory(address);
+                if (isScamDanger(advisory?.danger)) {
+                    isScam = true;
+                }
+            } catch {
+                // ignore lookup failures
+            }
+            try {
+                const name = await lookup.getAccountName(address);
+                if (name?.blocked) {
+                    isScam = true;
+                }
+            } catch {
+                // ignore lookup failures
+            }
+        }),
+    );
+
+    return {
+        isScam,
+        cancelCraft: isScam && canCancel ? cancelCraft : undefined,
+    };
 };
