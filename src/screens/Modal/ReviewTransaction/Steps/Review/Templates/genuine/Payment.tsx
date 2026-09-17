@@ -65,16 +65,7 @@ class PaymentTemplate extends Component<Props, State> {
 
         // console.log('transactiontransaction', transaction)
 
-        if (transaction.Amount?.currency && transaction.Amount?.issuer) {
-            this.currentCurrency = (source?.lines || [])
-                .filter(l => {
-                    return l.currency.currencyCode === transaction.Amount?.currency &&
-                        l.currency.issuer === transaction.Amount?.issuer;
-                })?.[0];
-
-            // console.log(this.currentCurrency?.balance);
-            // console.log(this.currentCurrency?.getFormattedCurrency());
-        };
+        this.bindCurrentCurrency(source, transaction);
 
         this.state = {
             account: undefined,
@@ -119,6 +110,26 @@ class PaymentTemplate extends Component<Props, State> {
         return null;
     }
 
+    bindCurrentCurrency = (source: Props['source'], transaction: Props['transaction']) => {
+        if (transaction.Amount?.currency && transaction.Amount?.issuer) {
+            this.currentCurrency = (source?.lines || []).filter((l) => {
+                return (
+                    l.currency.currencyCode === transaction.Amount?.currency &&
+                    l.currency.issuer === transaction.Amount?.issuer
+                );
+            })?.[0];
+        } else {
+            this.currentCurrency = undefined;
+        }
+    };
+
+    componentDidUpdate(prevProps: Props) {
+        const { source, transaction } = this.props;
+        if (prevProps.source?.address !== source?.address) {
+            this.bindCurrentCurrency(source, transaction);
+        }
+    }
+
     isMPTAmount = () => {
         const { transaction } = this.props;
         return transaction?.Amount &&
@@ -132,6 +143,7 @@ class PaymentTemplate extends Component<Props, State> {
         const { account } = this.state;
 
         if (this.isMPTAmount()) {
+          try {
             const [issuance, mpt] = await Promise.all([
                 LedgerService.getLedgerEntry({
                     command: 'ledger_entry',
@@ -163,6 +175,14 @@ class PaymentTemplate extends Component<Props, State> {
             }
 
             this.setIsReady();
+          } catch {
+            this.setState(
+                {
+                    mptIssuanceError: { error: 'fetch_failed' },
+                },
+                this.setIsReady,
+            );
+          }
         }
     };
 
