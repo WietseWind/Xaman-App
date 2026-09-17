@@ -753,6 +753,7 @@ class LedgerService extends EventEmitter {
                 success: true,
                 engineResult: engine_result,
                 message: engine_result_message,
+                hash: txHash || submitResponse.tx_json?.hash,
             });
         } catch (error: any) {
             // something wrong happened
