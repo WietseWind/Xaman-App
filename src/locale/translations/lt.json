@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Neteisingi iškarpinės duomenys!",
     "invalidQRTryNewOneOrTryAgain": "Neteisingas QR kodas (Xaman), bandykite naują arba bandykite dar kartą",
     "invalidClipboardDateTryNewOneOrTryAgain": "Neteisingi iškarpinės duomenys (Xaman). Bandykite naują arba bandykite dar kartą.",
-    "importFromClipboard": "Importuoti iš iškarpinės"
+    "importFromClipboard": "Importuoti iš iškarpinės",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Naudingąją apkrovą tvarkė kitas klientas",

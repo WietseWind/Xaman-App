@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Leikepöydän tiedot eivät ole sitä mitä odotimme!",
     "invalidQRTryNewOneOrTryAgain": "Virheellinen QR-koodi (Xaman), yritä toista koodia tai yritä uudelleen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Virheelliset leikepöydän tiedot (Xaman: lle). Kokeile uutta tai yritä uudelleen.",
-    "importFromClipboard": "Tuo leikepöydältä"
+    "importFromClipboard": "Tuo leikepöydältä",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Toisen asiakkaan käsittelemä hyötykuorma",

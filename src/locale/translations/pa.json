@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "ਕਲਿੱਪਬੋਰਡ ਡੇਟਾ ਉਹ ਨਹੀਂ ਜੋ ਅਸੀਂ ਆਸ ਕਰਦੇ ਹਾਂ!",
     "invalidQRTryNewOneOrTryAgain": "ਅਵੈਧ QR ਕੋਡ (Xaman ਲਈ), ਨਵਾਂ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
     "invalidClipboardDateTryNewOneOrTryAgain": "ਗਲਤ ਕਲਿੱਪਬੋਰਡ ਡੇਟਾ (Xaman ਲਈ), ਇੱਕ ਨਵਾਂ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
-    "importFromClipboard": "ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਆਯਾਤ ਕਰੋ"
+    "importFromClipboard": "ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਆਯਾਤ ਕਰੋ",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "ਪੇਲੋਡ ਹੋਰ ਕਲਾਇੰਟ ਦੁਆਰਾ ਪਰਬੰਧਿਤ",

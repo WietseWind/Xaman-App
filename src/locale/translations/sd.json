@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "ڪلپ بورڊ ڊيٽا اھو نه آھي جيڪو اسان اميد ڪريون!",
     "invalidQRTryNewOneOrTryAgain": "غلط QR ڪوڊ (Xaman لاءِ) ، نئون آزمايو يا ٻيهر ڪوشش ڪريو",
     "invalidClipboardDateTryNewOneOrTryAgain": "غلط ڪلپ بورڊ ڊيٽا (Xaman لاءِ) هڪ نئون يا ٻيهر ڪوشش ڪريو.",
-    "importFromClipboard": "ڪلپ بورڊ مان درآمد ڪريو"
+    "importFromClipboard": "ڪلپ بورڊ مان درآمد ڪريو",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "پيڪي لوڊ ٻئي گراهڪ طرفان ترتيب ڏنل آهي",

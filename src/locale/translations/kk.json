@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Алмасу буферінің деректері біз күткен нәрсе емес!",
     "invalidQRTryNewOneOrTryAgain": "QR коды дұрыс емес (Xaman үшін), жаңасын қолданып көріңіз немесе қайталап көріңіз",
     "invalidClipboardDateTryNewOneOrTryAgain": "Алмасу буферінің жарамсыз деректері (Xaman үшін). Жаңа көріңіз немесе қайталап көріңіз.",
-    "importFromClipboard": "Алмасу буферінен импорттау"
+    "importFromClipboard": "Алмасу буферінен импорттау",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Ақылы жүктеме басқа клиентпен өңделеді",

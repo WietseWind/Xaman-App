@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Le informazioni ricavate dagli appunti non sono quelle attese!",
     "invalidQRTryNewOneOrTryAgain": "Codice QR non valido (per Xaman), provane uno nuovo o riprova",
     "invalidClipboardDateTryNewOneOrTryAgain": "Dati degli appunti non validi (per Xaman), provane uno nuovo o riprova",
-    "importFromClipboard": "Importa dagli Appunti"
+    "importFromClipboard": "Importa dagli Appunti",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Pacchetto di dati da firmare gestito da un altro cliente",

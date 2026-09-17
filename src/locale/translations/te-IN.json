@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "క్లిప్‌బోర్డ్ డేటా మనం ఆశించేది కాదు!",
     "invalidQRTryNewOneOrTryAgain": "చెల్లని QR కోడ్ (Xaman కోసం), క్రొత్తదాన్ని ప్రయత్నించండి లేదా మళ్లీ ప్రయత్నించండి",
     "invalidClipboardDateTryNewOneOrTryAgain": "క్లిప్‌బోర్డ్ డేటా చెల్లదు (Xaman కోసం), క్రొత్తదాన్ని ప్రయత్నించండి లేదా మళ్లీ ప్రయత్నించండి",
-    "importFromClipboard": "క్లిప్‌బోర్డ్ నుండి దిగుమతి చేయండి"
+    "importFromClipboard": "క్లిప్‌బోర్డ్ నుండి దిగుమతి చేయండి",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "పేలోడ్ మరొక క్లయింట్ చేత నిర్వహించబడుతుంది",

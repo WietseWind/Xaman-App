@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "剪贴板数据无效！",
     "invalidQRTryNewOneOrTryAgain": "无效的二维码，尝试新的或再试一次",
     "invalidClipboardDateTryNewOneOrTryAgain": "剪贴板数据无效（对于 Xaman）。尝试新的或再试一次。",
-    "importFromClipboard": "从剪贴板导入"
+    "importFromClipboard": "从剪贴板导入",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "其他客户处理的有效负载",

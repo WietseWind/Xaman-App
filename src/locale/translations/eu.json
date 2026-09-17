@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Arbelaren datuak ez dira espero ditugunak!",
     "invalidQRTryNewOneOrTryAgain": "Baliogabea QR kodea (rentzat Xaman), saiatu beste bat edo saiatu berriro",
     "invalidClipboardDateTryNewOneOrTryAgain": "Arbeleko datu baliogabeak (Xaman-entzat), saiatu berri bat edo saiatu berriro",
-    "importFromClipboard": "Inportatu arbeletik"
+    "importFromClipboard": "Inportatu arbeletik",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Beste bezero batek kudeatzen duen karga",

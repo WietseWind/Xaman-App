@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "क्लिपबोर्ड डेटा आपल्या अपेक्षेप्रमाणे नसतो!",
     "invalidQRTryNewOneOrTryAgain": "अवैध क्यूआर कोड (Xaman साठी), एक नवीन वापरून पहा किंवा पुन्हा प्रयत्न करा",
     "invalidClipboardDateTryNewOneOrTryAgain": "अवैध क्लिपबोर्ड डेटा (Xaman साठी). नवीन वापरून पहा किंवा पुन्हा प्रयत्न करा.",
-    "importFromClipboard": "क्लिपबोर्डवरून आयात करा"
+    "importFromClipboard": "क्लिपबोर्डवरून आयात करा",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "दुसर्‍या क्लायंटद्वारे हाताळलेला पेलोड",

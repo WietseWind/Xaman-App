@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Pano verileri beklediğimiz gibi değil!",
     "invalidQRTryNewOneOrTryAgain": "Geçersiz QR kodu (Xaman için), yeni bir kod deneyin ya da yeniden deneyin",
     "invalidClipboardDateTryNewOneOrTryAgain": "Geçersiz kopyalanmış pano verisi (Xaman için), yeni bir tane deneyin ya da yeniden deneyin",
-    "importFromClipboard": "Panodan İçe Aktar"
+    "importFromClipboard": "Panodan İçe Aktar",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Başka bir istemci tarafından işlenen ödeme yöntemi",

@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "क्लिपबोर्ड डेटा वह नहीं है जिसकी हम अपेक्षा करते हैं!",
     "invalidQRTryNewOneOrTryAgain": "अमान्य QR कोड (Xaman के लिए), एक नया प्रयास करें या फिर से प्रयास करें",
     "invalidClipboardDateTryNewOneOrTryAgain": "अमान्य क्लिपबोर्ड डेटा (Xaman के लिए), एक नया प्रयास करें या फिर से प्रयास करें",
-    "importFromClipboard": "क्लिपबोर्ड से आयात करें"
+    "importFromClipboard": "क्लिपबोर्ड से आयात करें",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "पेलोड एक और ग्राहक द्वारा संभाला",

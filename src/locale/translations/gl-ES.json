@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Os datos do portapapeis no son os esperados!",
     "invalidQRTryNewOneOrTryAgain": "Código QR non válido (para Xaman), probe un novo ou inténteo outra vez",
     "invalidClipboardDateTryNewOneOrTryAgain": "Datos do portapapeis non válidos (para Xaman), probe un novo ou inténteo outra vez",
-    "importFromClipboard": "Importar do Portapapeis"
+    "importFromClipboard": "Importar do Portapapeis",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Carga manexada por outro cliente",

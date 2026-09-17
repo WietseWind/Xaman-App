@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Data fra udklipsholder er ikke, hvad vi forventer!",
     "invalidQRTryNewOneOrTryAgain": "Ugyldig QR-kode (for Xaman), prøv en ny, eller prøv igen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ugyldig data fra udklipsholder (til Xaman), prøv et nyt, eller prøv igen",
-    "importFromClipboard": "Importér fra udklipsholder"
+    "importFromClipboard": "Importér fra udklipsholder",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload håndteres af en anden klient",

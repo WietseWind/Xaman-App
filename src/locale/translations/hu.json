@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Érvénytelen vágólap adat!",
     "invalidQRTryNewOneOrTryAgain": "Érvénytelen QR kód (Xaman számára), próbáljon újat vagy próbálja újra",
     "invalidClipboardDateTryNewOneOrTryAgain": "Invalid clipboard data (for Xaman). Try a new one or try again.",
-    "importFromClipboard": "Importálás vágólapról"
+    "importFromClipboard": "Importálás vágólapról",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Adattartalom másik kliens által kezelve",

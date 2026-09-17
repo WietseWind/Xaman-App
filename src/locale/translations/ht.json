@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Done yo presse-papiers se pa sa nou espere!",
     "invalidQRTryNewOneOrTryAgain": "Kòd QR ki pa valab (pou Xaman), eseye yon nouvo oswa eseye ankò",
     "invalidClipboardDateTryNewOneOrTryAgain": "Done presse-papiers ki pa valab (pou Xaman), eseye yon nouvo oswa eseye ankò",
-    "importFromClipboard": "Enpòte soti nan presse-papiers"
+    "importFromClipboard": "Enpòte soti nan presse-papiers",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Chaj manyen pa yon lòt kliyan",

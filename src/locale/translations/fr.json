@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Les données du presse-papiers ne sont pas ce que nous attendons !",
     "invalidQRTryNewOneOrTryAgain": "Code QR non valide (pour Xaman), essayez un nouveau code ou essayez à nouveau",
     "invalidClipboardDateTryNewOneOrTryAgain": "Données du presse-papier non valides (pour Xaman), essayez-en un nouveau ou réessayez",
-    "importFromClipboard": "Importer à partir du presse-papiers"
+    "importFromClipboard": "Importer à partir du presse-papiers",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Charge utile gérée par un autre client",

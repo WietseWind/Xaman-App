@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "கிளிப்போர்டு தரவு நாம் எதிர்பார்ப்பது அல்ல!",
     "invalidQRTryNewOneOrTryAgain": "தவறான QR குறியீடு (Xaman க்கு), புதியதை முயற்சிக்கவும் அல்லது மீண்டும் முயற்சிக்கவும்",
     "invalidClipboardDateTryNewOneOrTryAgain": "தவறான கிளிப்போர்டு தரவு (Xaman க்கு), புதியதை முயற்சிக்கவும் அல்லது மீண்டும் முயற்சிக்கவும்",
-    "importFromClipboard": "கிளிப்போர்டிலிருந்து இறக்குமதி செய்க"
+    "importFromClipboard": "கிளிப்போர்டிலிருந்து இறக்குமதி செய்க",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "பேலோட் மற்றொரு வாடிக்கையாளரால் கையாளப்படுகிறது",

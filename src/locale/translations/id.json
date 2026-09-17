@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Data clipboard tidak seperti yang kami harapkan!",
     "invalidQRTryNewOneOrTryAgain": "Kode QR tidak valid (untuk Xaman), coba yang baru atau coba lagi",
     "invalidClipboardDateTryNewOneOrTryAgain": "Data papan klip tidak valid (untuk Xaman). Coba yang baru atau coba lagi.",
-    "importFromClipboard": "Impor dari Clipboard"
+    "importFromClipboard": "Impor dari Clipboard",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Muatan ditangani oleh klien lain",

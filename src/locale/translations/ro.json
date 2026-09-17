@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Datele din clipboard nu sunt bune !",
     "invalidQRTryNewOneOrTryAgain": "Cod QR invalid (pentru Xaman), încercaţi unul nou sau încercaţi din nou.",
     "invalidClipboardDateTryNewOneOrTryAgain": "Datele din clipboard sunt invalide (pentru Xaman), încercaţi altele sau încercaţi din nou.",
-    "importFromClipboard": "Import din clipboard"
+    "importFromClipboard": "Import din clipboard",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Conținut manipulat de un alt client.",

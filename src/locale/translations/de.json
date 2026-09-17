@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Die Daten in der Zwischenablage entsprechen nicht unseren Erwartungen!",
     "invalidQRTryNewOneOrTryAgain": "Ungültiger QR-Code (für Xaman), versuchen Sie es erneut oder probieren Sie einen neuen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ungültige Zwischenablagedaten (für Xaman), versuchen Sie es mit einer neuen oder versuchen Sie es erneut",
-    "importFromClipboard": "Aus Zwischenablage einfügen"
+    "importFromClipboard": "Aus Zwischenablage einfügen",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Nutzdaten von anderem Clienten abgewickelt",

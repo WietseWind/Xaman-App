@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Podatki odložišča niso tisto, kar pričakujemo!",
     "invalidQRTryNewOneOrTryAgain": "Neveljavna QR koda (za Xaman), poskusite z novo ali poskusite znova",
     "invalidClipboardDateTryNewOneOrTryAgain": "Neveljavni podatki odložišča (za Xaman), poskusite novega ali poskusite znova",
-    "importFromClipboard": "Uvozi iz odložišča"
+    "importFromClipboard": "Uvozi iz odložišča",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Vsebino obravnava drug klient",

@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Innholdet på utklippstavla er ikke det vi forventet!",
     "invalidQRTryNewOneOrTryAgain": "Ugyldig QR kode (for Xaman), prøv en ny eller prøv igjen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ugyldige utklippstavle-data (for Xaman), prøv en ny en eller prøv igjen",
-    "importFromClipboard": "Importer fra utklippstavla"
+    "importFromClipboard": "Importer fra utklippstavla",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Data blir håndtert av en annen klient",

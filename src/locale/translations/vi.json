@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Dữ liệu clipboard không phải là những gì chúng tôi mong đợi!",
     "invalidQRTryNewOneOrTryAgain": "Mã QR không hợp lệ (đối với Xaman), hãy thử một mã mới hoặc thử lại",
     "invalidClipboardDateTryNewOneOrTryAgain": "Dữ liệu khay nhớ tạm không hợp lệ (đối với Xaman). Hãy thử một cái mới hoặc thử lại.",
-    "importFromClipboard": "Nhập từ bộ nhớ tạm"
+    "importFromClipboard": "Nhập từ bộ nhớ tạm",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Tải trọng do khách hàng khác xử lý",

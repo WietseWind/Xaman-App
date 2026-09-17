@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "Подаци из привремене меморије (клипборда) нису оно што очекујемо!",
     "invalidQRTryNewOneOrTryAgain": "Неважећи QR код (за Xaman), покушајте нови или покушајте поново ",
     "invalidClipboardDateTryNewOneOrTryAgain": "Неважећи подаци из привремене меморије (клипборда) (за Xaman), испробајте нову или покушајте поново",
-    "importFromClipboard": "Унети из првремене меморије (клипборд)"
+    "importFromClipboard": "Унети из првремене меморије (клипборд)",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Уплатом управља други клијент",

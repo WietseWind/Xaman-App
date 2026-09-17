@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "کلپ بورڈ ڈیٹا وہی نہیں جس کی ہم توقع کرتے ہیں!",
     "invalidQRTryNewOneOrTryAgain": "غلط QR کوڈ (Xaman کیلئے) ، کوئی نیا آزمائیں یا دوبارہ کوشش کریں",
     "invalidClipboardDateTryNewOneOrTryAgain": "غلط کلپ بورڈ ڈیٹا (Xaman کیلئے) ایک نیا آزمائیں یا دوبارہ کوشش کریں۔",
-    "importFromClipboard": "کلپ بورڈ سے درآمد کریں"
+    "importFromClipboard": "کلپ بورڈ سے درآمد کریں",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "پے لوڈ دوسرے کلائنٹ کے زیر انتظام",

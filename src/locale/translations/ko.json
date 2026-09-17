@@ -1289,7 +1289,9 @@
     "theClipboardDataIsNotWhatWeExpect": "잘못된 클립보드 데이터입니다!",
     "invalidQRTryNewOneOrTryAgain": "잘못된 QR 코드 (Xaman 용), 새 코드를 시도하거나 다시 시도하십시오.",
     "invalidClipboardDateTryNewOneOrTryAgain": "클립보드에 복사된 데이터(Xaman 용)가 올바르지 않습니다. 새 데이터를 시도하거나 다시 시도하십시오",
-    "importFromClipboard": "클립보드에서 가져오기"
+    "importFromClipboard": "클립보드에서 가져오기",
+    "flashlightOff": "Flashlight",
+    "flashlightOn": "Flashlight on"
   },
   "payload": {
     "payloadHandledByAnotherClient": "다른 클라이언트가 처리하는 페이로드",

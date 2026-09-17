@@ -12,4 +12,6 @@ export interface Props {
 export interface State {
     isLoading: boolean;
     coreSettings: CoreModel;
+    torchEnabled: boolean;
+    hasTorch: boolean;
 }
