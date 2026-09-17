@@ -111,6 +111,12 @@ class TransactionLoaderModal extends Component<Props, State> {
             this.setState({
                 isLoading: true,
                 error: false,
+                requiresSwitchNetwork: false,
+            });
+        } else {
+            this.setState({
+                error: false,
+                requiresSwitchNetwork: false,
             });
         }
 
@@ -142,6 +148,7 @@ class TransactionLoaderModal extends Component<Props, State> {
                     error: true,
                     isLoading: false,
                     errorMessage: String(resp?.error_message || resp?.error || ''),
+                    requiresSwitchNetwork: false,
                 });
                 return;
             }
@@ -195,6 +202,7 @@ class TransactionLoaderModal extends Component<Props, State> {
             this.setState({
                 isLoading: false,
                 error: true,
+                requiresSwitchNetwork: false,
             });
         }
     };
