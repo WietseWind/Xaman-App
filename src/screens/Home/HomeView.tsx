@@ -254,7 +254,7 @@ class HomeView extends Component<Props, State> {
     onAccountUpdate = (updatedAccount: AccountModel) => {
         const { account } = this.state;
 
-        if (updatedAccount?.isValid() && updatedAccount.address === account.address) {
+        if (updatedAccount?.isValid() && updatedAccount.address === account?.address) {
             // update the UI
             this.setState(
                 {
