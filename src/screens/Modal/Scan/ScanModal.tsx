@@ -40,6 +40,7 @@ import styles from './styles';
 /* types ==================================================================== */
 import { Props, State } from './types';
 import CameraScanner from './CameraScanner';
+import { isTrustedXamanUrl, isXamanTangemUrl } from './trustedUrl';
 import { AccountSet, Invoke, TrustSet } from '@common/libs/ledger/transactions';
 import { ReviewTransactionModalProps } from '../ReviewTransaction';
 
@@ -576,22 +577,16 @@ class ScanModal extends Component<Props, State> {
 
     handleUndetectedType = (content?: string, clipboard?: boolean) => {
         // some users scan QR on tangem card, navigate them to the account add screen
-        if (content && ['https://xumm.app/tangem', 'https://xaman.app/tangem'].some((url) => content.startsWith(url))) {
+        if (content && isXamanTangemUrl(content)) {
             this.routeUser(AppScreens.Account.Add);
             return;
         }
 
-        // To make sure users scanning our Knowledge Base / etc QRs with Xumm instead of OS (regular URLs)
-        if (
-            content &&
-            ['https://xumm.app', 'https://help.xumm.app', 'https://xaman.app', 'https://help.xaman.app'].some((url) =>
-                content.startsWith(url),
-            )
-        ) {
-            if (StringTypeCheck.isValidURL(content)) {
-                Linking.openURL(content);
-                return;
-            }
+        // Knowledge Base / site QRs: match hostname, not a URL prefix
+        // (https://xaman.app.evil.example/ must not pass)
+        if (content && isTrustedXamanUrl(content) && StringTypeCheck.isValidURL(content)) {
+            Linking.openURL(content);
+            return;
         }
 
         // show error message base on origin
