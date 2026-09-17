@@ -162,9 +162,10 @@ class ChangePasscodeView extends Component<Props, State> {
                     isReKeyFailed = true;
                 }
 
-                // in case of vaults reKey failed, rollback the passcode to old one
+                // in case of vaults reKey failed, rollback the passcode to old one.
+                // `passcode` from settings is already hashed; setPasscode() would hash it again.
                 if (isReKeyFailed) {
-                    await CoreRepository.setPasscode(passcode);
+                    CoreRepository.saveSettings({ passcode });
                 }
 
                 resolve();
