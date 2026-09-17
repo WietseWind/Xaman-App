@@ -46,17 +46,21 @@ class ClawbackTemplate extends Component<Props, State> {
         const { transaction } = this.props;
 
         if (this.isMPTAmount()) {
-            const [issuance] = await Promise.all([
-                LedgerService.getLedgerEntry({
-                    command: 'ledger_entry',
-                    mpt_issuance: transaction?.Amount?.mpt_issuance_id,
-                }),
-            ]);
+            try {
+                const [issuance] = await Promise.all([
+                    LedgerService.getLedgerEntry({
+                        command: 'ledger_entry',
+                        mpt_issuance: transaction?.Amount?.mpt_issuance_id,
+                    }),
+                ]);
 
-            if ((issuance as any)?.node) {
-                this.setState({
-                    mptIssuanceDetails: (issuance as any).node as MPTokenIssuance,
-                });
+                if ((issuance as any)?.node) {
+                    this.setState({
+                        mptIssuanceDetails: (issuance as any).node as MPTokenIssuance,
+                    });
+                }
+            } catch {
+                // leave issuance details unset; review can still continue
             }
         }
     };
