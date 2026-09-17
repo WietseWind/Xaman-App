@@ -27,7 +27,7 @@ import Localize from '@locale';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
-import { CancelCraft, resolveScamSignRequest } from '../../scamRejectAction';
+import { CancelCraft, resolveScamSignRequest, SCAM_ACCEPT_CONFIRM_BUTTONS } from '../../scamRejectAction';
 
 // transaction templates
 import * as GenuineTransactionTemplates from './Templates/genuine';
@@ -136,18 +136,21 @@ class ReviewStep extends Component<Props, State> {
             type: 'warning',
             title: Localize.t('global.alertDanger'),
             text: Localize.t('payload.scamAcceptConfirm'),
-            buttons: [
-                {
-                    text: Localize.t('global.cancel'),
-                    type: 'dismiss',
-                    light: true,
-                },
-                {
-                    text: Localize.t('global.continue'),
-                    onPress: onAccept,
-                    light: false,
-                },
-            ],
+            buttons: SCAM_ACCEPT_CONFIRM_BUTTONS.map((button) =>
+                button.action === 'continue'
+                    ? {
+                          testID: button.testID,
+                          text: Localize.t('global.continue'),
+                          onPress: onAccept,
+                          light: button.light,
+                      }
+                    : {
+                          testID: button.testID,
+                          text: Localize.t('global.cancel'),
+                          type: 'dismiss' as const,
+                          light: button.light,
+                      },
+            ),
         });
     };
 

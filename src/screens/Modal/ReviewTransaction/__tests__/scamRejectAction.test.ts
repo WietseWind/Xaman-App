@@ -8,6 +8,7 @@ import {
     isScamDanger,
     isScamImageUrl,
     resolveScamSignRequest,
+    SCAM_ACCEPT_CONFIRM_BUTTONS,
     ScamSignRequestLookup,
 } from '../scamRejectAction';
 
@@ -59,6 +60,15 @@ const lookupFor = (
 };
 
 describe('scamRejectAction', () => {
+    describe('scam accept confirm buttons', () => {
+        it('puts light Continue on the left and solid Cancel on the right', () => {
+            expect(SCAM_ACCEPT_CONFIRM_BUTTONS.map(({ action, light }) => ({ action, light }))).toEqual([
+                { action: 'continue', light: true },
+                { action: 'dismiss', light: false },
+            ]);
+        });
+    });
+
     describe('isScamDanger', () => {
         it('treats probable and confirmed advisory as scam', () => {
             expect(isScamDanger('CONFIRMED')).toBe(true);
@@ -215,6 +225,35 @@ describe('scamRejectAction', () => {
 
             expect(result.isScam).toBe(true);
             expect(result.cancelCraft).toBeUndefined();
+        });
+
+        it('does not flag a clean payment or a clean accept-offer', async () => {
+            const payment = await resolveScamSignRequest(
+                {
+                    Type: TransactionTypes.Payment,
+                    Account: UNRELATED_ACCOUNT,
+                    Destination: 'rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY',
+                },
+                UNRELATED_ACCOUNT,
+                false,
+                lookupFor({
+                    advisoryByAddress: { rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY: 'NONE' },
+                }),
+            );
+            expect(payment.isScam).toBe(false);
+            expect(payment.cancelCraft).toBeUndefined();
+
+            const accept = await resolveScamSignRequest(
+                acceptTx,
+                LIVE_SCAM_OFFER.Destination,
+                false,
+                lookupFor({
+                    advisoryByAddress: { [LIVE_SCAM_OFFER.Owner]: 'NONE' },
+                    nftImage: 'https://cdn.xaman.app/normal.png',
+                }),
+            );
+            expect(accept.isScam).toBe(false);
+            expect(accept.cancelCraft).toBeUndefined();
         });
 
         it('also flags via a scam NFT image URL from backend details', async () => {

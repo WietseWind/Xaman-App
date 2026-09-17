@@ -3,6 +3,12 @@ import { TransactionJson } from '@common/libs/ledger/types/transaction';
 
 export const SCAM_DANGER_LEVELS = ['PROBABLE', 'HIGH_PROBABILITY', 'CONFIRMED'];
 
+// Continue is left/light, Cancel is right/solid so a habitual right-tap backs out.
+export const SCAM_ACCEPT_CONFIRM_BUTTONS = [
+    { action: 'continue', light: true, testID: 'scam-accept-continue-button' },
+    { action: 'dismiss', light: false, testID: 'scam-accept-cancel-button' },
+] as const;
+
 export type CancelCraft = {
     txJson: TransactionJson;
     labelKey: 'cancelOffer' | 'cancelCheck' | 'cancelEscrow';
