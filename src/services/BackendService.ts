@@ -582,11 +582,13 @@ class BackendService {
 
         this.logger.warn(`Fetching service fee for ${txJson?.Account} @ ${payloadUuid}`);
 
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
         try {
             const pr = await Promise.race([
                 ApiService.fetch(Endpoints.ServiceFee, 'POST', null, body),
                 new Promise((resolve) => {
-                    setTimeout(() => {
+                    timeoutId = setTimeout(() => {
                         resolve({});
                     }, 6_000);
                 }),
@@ -597,6 +599,10 @@ class BackendService {
             }
         } catch (error) {
             // No fee
+        } finally {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
         }
 
         // Default, so we know if we get a 0 drop Fee payment there has been a timeout on
