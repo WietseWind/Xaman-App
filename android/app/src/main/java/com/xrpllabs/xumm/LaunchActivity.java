@@ -42,6 +42,10 @@ public class LaunchActivity extends NavigationActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // DeviceUtilsModule.getConstants() snapshots layout insets once, and
+        // NavigationActivity starts React Native inside super.onCreate. Seed
+        // before that or some phones keep a 0 top inset for the whole session.
+        seedInsetsFromResources();
         super.onCreate(savedInstanceState);
 
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -335,20 +339,17 @@ public class LaunchActivity extends NavigationActivity {
     }
 
     /**
-     * Punch-hole devices inflate status_bar_height / statusBars.top to the
-     * camera cutout (~52dp). Clock and wifi sit in the classic 24dp icon bar.
-     * Pad that bar plus 8dp so titles sit close to the status icons, like iOS.
+     * Full-screen pages draw behind the status bar. Use the device status bar
+     * height, including punch-hole phones where that bar is taller than 24dp.
+     * Capping it put header titles under the clock and status icons.
      */
     private int topContentInsetPx() {
-        float density = getResources().getDisplayMetrics().density;
-        int classic = Math.round(24f * density);
-        int extra = Math.round(8f * density);
         int resource = systemDimensionPx("status_bar_height");
-        int iconBar = resource;
-        if (iconBar <= 0 || iconBar > classic + extra) {
-            iconBar = classic;
+        if (resource > 0) {
+            return resource;
         }
-        return iconBar + extra;
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(32f * density);
     }
 
     private int systemDimensionPx(final String name) {
