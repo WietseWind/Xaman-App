@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Jūs pazeminājāt savu piekļuves līmeni. Vai esat pārliecināts?",
     "removeTrustLineWarning": "Jūs izņemsiet šo aktīvu no sava konta. Šī rīcība nebūs atceļama. Vai esiet droši?",
     "unavailableChangeSecurityLevel": "Drošības līmeņa mainīšana šobrīd nav pieejama",
-    "accountRemoveWarning": "Jūsu konts tiks dzēsts no Xaman aplikācijas, vai Jūs esat pārliecināti?",
+    "accountRemoveWarning": "Jūsu konts tiks noņemts no šīs ierīces. Jūs to varat jebkurā laikā atkārtoti importēt, izmantojot konta slepeno. Vai Jūs esat pārliecināti?",
     "accountMaxLabelLengthError": "Konta etiķetei jābūt mazākai par 16 simboliem!",
     "accountLabelCannotBeMoreThan": "Konta etiķete nedrīkst būt garāka par 64 rakstzīmēm!",
     "accountTrustLines": "TrustLines konts",

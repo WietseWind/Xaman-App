@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "U verlaagt uw toegangsniveau. Weet u dit zeker?",
     "removeTrustLineWarning": "Je verwijdert dit token van je %{network} account. Weet je dit zeker?",
     "unavailableChangeSecurityLevel": "Beveiligingsniveau wijzigen is momenteel niet beschikbaar",
-    "accountRemoveWarning": "Uw account wordt permanent verwijderd uit Xaman. Weet u dit zeker?",
+    "accountRemoveWarning": "Uw account wordt van dit apparaat verwijderd. U kunt het op elk moment opnieuw importeren met uw accountgeheim. Weet u dit zeker?",
     "accountMaxLabelLengthError": "Account label moet korter zijn dan 64 tekens!",
     "accountLabelCannotBeMoreThan": "Account label mag niet langer zijn dan 64 tekens!",
     "accountTrustLines": "Account TrustLines",

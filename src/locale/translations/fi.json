@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Laitat käyttötasosi alaspäin. Oletko varma?",
     "removeTrustLineWarning": "Poistat tämän omaisuuserän tililtäsi. Tätä toimintoa ei voi poistaa. Oletko varma?",
     "unavailableChangeSecurityLevel": "Suojaustason vaihto ei ole käytettävissä juuri nyt",
-    "accountRemoveWarning": "Tilisi poistetaan pysyvästi Xaman:sta, oletko varma?",
+    "accountRemoveWarning": "Tilisi poistetaan tästä laitteesta. Voit tuoda sen uudelleen milloin tahansa tilisi salaisuudella. Oletko varma?",
     "accountMaxLabelLengthError": "Tilin tunnuksen on oltava vähemmän kuin 16 merkkiä!",
     "accountLabelCannotBeMoreThan": "Tilin nimi ei voi olla yli 64 merkkiä!",
     "accountTrustLines": "Tilin Trustlines",

@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "أنت تقوم بخفض مستوى الوصول الخاص بك. هل أنت واثق؟",
     "removeTrustLineWarning": "أنت تقوم بإزالة هذا الرمز المميز من حساب XRP دفتر الأستاذ الخاص بك. هل أنت متأكد؟",
     "unavailableChangeSecurityLevel": "تغيير مستوى الأمان غير متوفر الآن",
-    "accountRemoveWarning": "سيتم حذف حسابك نهائيًا من Xaman. هل أنت واثق؟",
+    "accountRemoveWarning": "ستتم إزالة حسابك من هذا الجهاز. يمكنك إعادة استيراده في أي وقت باستخدام سر حسابك. هل أنت متأكد؟",
     "accountMaxLabelLengthError": "يجب أن يكون تسمية الحساب أقل من 16 حرفًا!",
     "accountLabelCannotBeMoreThan": "لا يمكن أن تكون تسمية الحساب أكثر من 64 حرفاً!",
     "accountTrustLines": "خطوط ثقة الحساب",

@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Anda menurunkan tingkat akses Anda. Apakah kamu yakin?",
     "removeTrustLineWarning": "Anda menghapus token ini dari akun Buku Besar XRP Anda. Apakah kamu yakin",
     "unavailableChangeSecurityLevel": "Mengubah tingkat Keamanan tidak tersedia saat ini",
-    "accountRemoveWarning": "Akun Anda akan dihapus secara permanen dari Xaman. Apakah kamu yakin?",
+    "accountRemoveWarning": "Akun Anda akan dihapus dari perangkat ini. Anda dapat mengimpornya kembali kapan saja dengan rahasia akun Anda. Apakah Anda yakin?",
     "accountMaxLabelLengthError": "Label akun harus kurang dari 16 karakter!",
     "accountLabelCannotBeMoreThan": "Label akun tidak boleh lebih dari 64 karakter!",
     "accountTrustLines": "Akun TrustLines",

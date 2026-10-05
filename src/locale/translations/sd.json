@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "توهان پنهنجي پهچ جي سطح کي گهٽائي رهيا آهيو. ڇا توهان کي پڪ آهي؟",
     "removeTrustLineWarning": "توهان پنهنجي اڪائونٽ مان هي اثاثو ختم ڪري رهيا آهيو. اهو عمل ناقابل واپسي آهي. ڇا توهان کي پڪ آهي؟",
     "unavailableChangeSecurityLevel": "سيڪيورٽي ليول بدلائڻ في الحال دستياب ناهي",
-    "accountRemoveWarning": "توهان جو کاتو مستقل طور تي ختم ٿي ويندو Xaman. ڇا توهان کي پڪ آهي؟",
+    "accountRemoveWarning": "توهان جو کاتو هن ڊوائيس تان هٽايو ويندو. توهان ڪنهن به وقت پنهنجي اڪائونٽ راز سان ان کي ٻيهر درآمد ڪري سگهو ٿا. ڇا توهان کي پڪ آهي؟",
     "accountMaxLabelLengthError": "کاتي جو ليبل 16 اکرن کان گهٽ هجڻ گهرجي!",
     "accountLabelCannotBeMoreThan": "اڪائونٽ ليبل %{max} اکرن کان وڌيڪ نٿو ٿي سگھي",
     "accountTrustLines": "اڪائونٽ ٽرسٽ لائنز",

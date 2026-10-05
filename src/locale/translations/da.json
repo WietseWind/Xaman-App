@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Du nedgraderer dit adgangsniveau. Er du sikker?",
     "removeTrustLineWarning": "Du er ved at fjerne dette aktiv fra din konto. Handlingen kan ikke fortrydes. Er du sikker?",
     "unavailableChangeSecurityLevel": "Ændring af sikkerhedsniveau er ikke tilgængeligt lige nu",
-    "accountRemoveWarning": "Din konto vil blive slettet permanent fra Xaman, er du sikker?",
+    "accountRemoveWarning": "Din konto fjernes fra denne enhed. Du kan til enhver tid importere den igen med din kontohemmelighed. Er du sikker?",
     "accountMaxLabelLengthError": "Kontonavnet skal være mindre end 16 tegn!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "Kontoens TrustLines",

@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Сіз кіру деңгейін төмендетесіз. Сен сенімді?",
     "removeTrustLineWarning": "Сіз бұл активті өз шотыңыздан алып тастайсыз. Бұл әрекет қайтымсыз. Сіз сенімдіміз?",
     "unavailableChangeSecurityLevel": "Қауіпсіздік деңгейінің өзгеруі қазір қол жетімді емес",
-    "accountRemoveWarning": "Сіздің есептік жазбаңыз Xaman-ден біржола жойылады. Сіз сенімдіміз?",
+    "accountRemoveWarning": "Шотыңыз осы құрылғыдан алынып тасталады. Оны шот құпиясы арқылы кез келген уақытта қайта импорттай аласыз. Сенімдісіз бе?",
     "accountMaxLabelLengthError": "Есептік жазба белгісі 16 таңбадан аз болуы керек!",
     "accountLabelCannotBeMoreThan": "Шот атауы 64 таңбадан көп болмауы керек!",
     "accountTrustLines": "Шот TrustLines",
