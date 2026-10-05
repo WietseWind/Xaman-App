@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "તમે તમારા accessક્સેસ સ્તરને ડાઉનગ્રેડ કરી રહ્યાં છો. શું તમને ખાતરી છે?",
     "removeTrustLineWarning": "તમે આ સંપત્તિ તમારા એકાઉન્ટમાંથી દૂર કરી રહ્યા છો. આ ક્રિયા પૂર્વવત્ કરી શકાતી નથી. શું તમને ખાતરી છે?",
     "unavailableChangeSecurityLevel": "સુરક્ષા સ્તર બદલવાનું હમણાં ઉપલબ્ધ નથી",
-    "accountRemoveWarning": "તમારું એકાઉન્ટ આ ઉપકરણમાંથી દૂર કરવામાં આવશે. તમે તમારા એકાઉન્ટ સિક્રેટનો ઉપયોગ કરીને તેને ગમે ત્યારે ફરીથી આયાત કરી શકો છો. શું તમને ખાતરી છે?",
+    "accountRemoveWarning": "તમારું એકાઉન્ટ આ ઉપકરણમાંથી દૂર કરવામાં આવશે. તમે તમારી ગુપ્ત એકાઉન્ટ કીનો ઉપયોગ કરીને તેને ગમે ત્યારે ફરીથી આયાત કરી શકો છો. શું તમને ખાતરી છે?",
     "accountMaxLabelLengthError": "એકાઉન્ટ લેબલ 16 અક્ષરોથી ઓછું હોવું જોઈએ!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "એકાઉન્ટ ટ્રસ્ટલાઈન્સ",
