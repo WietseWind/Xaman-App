@@ -15,8 +15,8 @@ import { Navigator } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
 import {
     curveChoiceButtonLabel,
-    deriveMnemonicAddresses,
     MnemonicAlgorithm,
+    MnemonicDeriveOptions,
     pickMnemonicImport,
 } from '@common/utils/mnemonicImport';
 
@@ -87,8 +87,6 @@ export interface State {
     derivationPath: any;
     activeRow: number;
     isLoading: boolean;
-    secpAddress?: string;
-    edAddress?: string;
 }
 
 /* Component ==================================================================== */
@@ -101,6 +99,7 @@ class EnterMnemonicStep extends Component<Props, State> {
     private derivationPathInputRef: React.RefObject<DerivationPathInput>;
     private scrollToBottomY: number;
     private unmounted = false;
+    private submitting = false;
 
     constructor(props: Props) {
         super(props);
@@ -116,8 +115,6 @@ class EnterMnemonicStep extends Component<Props, State> {
             derivationPath: undefined,
             activeRow: -1,
             isLoading: false,
-            secpAddress: undefined,
-            edAddress: undefined,
         };
 
         this.scrollViewRef = React.createRef();
@@ -134,30 +131,21 @@ class EnterMnemonicStep extends Component<Props, State> {
     }
 
     clearLoading = () => {
+        this.submitting = false;
         if (!this.unmounted) {
             this.setState({ isLoading: false });
         }
     };
 
-    refreshDerivedAddresses = (words: string[], extra?: MnemonicDeriveOptions) => {
-        if (words.filter(Boolean).length < 6) {
-            this.setState({ secpAddress: undefined, edAddress: undefined });
-            return;
-        }
-
-        const mnemonic = words.filter(Boolean).join(' ');
-        const addresses = deriveMnemonicAddresses(mnemonic, extra);
-        this.setState({
-            secpAddress: addresses?.secp,
-            edAddress: addresses?.ed,
-        });
-    };
-
     canPrefillDebugEdMnemonic = (overrides: Partial<State> = {}) => {
         const { length, words, useCurve, curve } = { ...this.state, ...overrides };
+        // The repositories barrel can still be unset while this screen module
+        // is first evaluated. Debug prefill must not take down Next.
+        const developerMode =
+            typeof CoreRepository?.isDeveloperModeEnabled === 'function' && CoreRepository.isDeveloperModeEnabled();
         return (
             __DEV__ &&
-            CoreRepository.isDeveloperModeEnabled() &&
+            developerMode &&
             length === 24 &&
             useCurve &&
             curve === 'ed25519' &&
@@ -182,29 +170,13 @@ class EnterMnemonicStep extends Component<Props, State> {
         });
     };
 
-    goNext = async () => {
-        let { words, usePassphrase, passphrase, useAlternativePath, derivationPath, useCurve, curve } = this.state;
-
-        if (this.canPrefillDebugEdMnemonic()) {
-            words = this.debugEdMnemonicWords();
-            this.setState({ words });
-        }
-
-        if (words.filter(Boolean).length < 6) {
-            Alert.alert('Error', Localize.t('account.pleaseEnterAllWords'));
-            return;
-        }
-
-        this.setState({
-            isLoading: true,
-        });
-
-        const deriveOptions: {
-            passphrase?: string;
-            accountPath?: string;
-            changePath?: string;
-            addressIndex?: string;
-        } = {};
+    deriveOptionsFromState = (
+        usePassphrase: boolean,
+        passphrase: string,
+        useAlternativePath: boolean,
+        derivationPath: any,
+    ): MnemonicDeriveOptions => {
+        const deriveOptions: MnemonicDeriveOptions = {};
 
         if (usePassphrase && passphrase) {
             deriveOptions.passphrase = passphrase;
@@ -214,20 +186,34 @@ class EnterMnemonicStep extends Component<Props, State> {
             Object.assign(deriveOptions, derivationPath);
         }
 
+        return deriveOptions;
+    };
+
+    // Curve and address are resolved only here. Deriving while typing runs
+    // PBKDF2 on every character and freezes entry from the 6th word.
+    deriveAndContinue = async (
+        words: string[],
+        deriveOptions: MnemonicDeriveOptions,
+        explicitAlgorithm?: MnemonicAlgorithm,
+    ) => {
+        if (this.unmounted) {
+            return;
+        }
+
         try {
             const mnemonic = words.filter(Boolean).join(' ');
             const picked = await pickMnemonicImport({
                 mnemonic,
                 deriveOptions,
-                explicitAlgorithm: useCurve ? curve : undefined,
+                explicitAlgorithm,
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
 
+            if (this.unmounted) {
+                return;
+            }
+
             if (picked.status === 'conflict' || picked.status === 'inconclusive') {
-                this.setState({
-                    secpAddress: picked.secp.address,
-                    edAddress: picked.ed.address,
-                });
                 Prompt(
                     Localize.t('account.chooseMnemonicCurve'),
                     `${Localize.t(
@@ -262,16 +248,58 @@ class EnterMnemonicStep extends Component<Props, State> {
                 return;
             }
 
-            const addresses = deriveMnemonicAddresses(mnemonic, deriveOptions);
-            this.setState({
-                secpAddress: addresses?.secp,
-                edAddress: addresses?.ed,
-            });
             await this.finishImport(picked.account);
         } catch (e) {
             this.clearLoading();
-            Alert.alert('Error', Localize.t('account.invalidMnemonic'));
+            if (!this.unmounted) {
+                Alert.alert('Error', Localize.t('account.invalidMnemonic'));
+            }
         }
+    };
+
+    goNext = () => {
+        if (this.submitting) {
+            return;
+        }
+
+        let { words } = this.state;
+
+        if (this.canPrefillDebugEdMnemonic()) {
+            words = this.debugEdMnemonicWords();
+            this.setState({ words });
+        }
+
+        if (words.filter(Boolean).length < 6) {
+            Alert.alert('Error', Localize.t('account.pleaseEnterAllWords'));
+            return;
+        }
+
+        this.submitting = true;
+        this.setState({ isLoading: true }, () => {
+            // Paint the Next spinner before PBKDF2 blocks the JS thread.
+            // Re-read here so passphrase, path, and curve match the form.
+            requestAnimationFrame(() => {
+                if (this.unmounted) {
+                    return;
+                }
+
+                const {
+                    words: latestWords,
+                    usePassphrase,
+                    passphrase,
+                    useAlternativePath,
+                    derivationPath,
+                    useCurve,
+                    curve,
+                } = this.state;
+
+                this.deriveAndContinue(
+                    latestWords.filter(Boolean).length >= 6 ? latestWords : words,
+                    this.deriveOptionsFromState(usePassphrase, passphrase, useAlternativePath, derivationPath),
+                    useCurve ? curve : undefined,
+                );
+            });
+        });
     };
 
     onScannerRead = (decoded: XrplSecret) => {
@@ -304,7 +332,7 @@ class EnterMnemonicStep extends Component<Props, State> {
             this.setState({
                 words,
                 length,
-            }, () => this.refreshDerivedAddresses(words));
+            });
         }
     };
 
@@ -320,14 +348,7 @@ class EnterMnemonicStep extends Component<Props, State> {
 
         const cleanValue = value.replace(/\s/g, '');
 
-        const nextWords = set(words, `[${col}]`, cleanValue);
-        this.setState({ words: nextWords }, () => {
-            const { usePassphrase, passphrase, useAlternativePath, derivationPath } = this.state;
-            this.refreshDerivedAddresses(nextWords, {
-                passphrase: usePassphrase ? passphrase : undefined,
-                ...(useAlternativePath ? derivationPath : {}),
-            });
-        });
+        this.setState({ words: set(words, `[${col}]`, cleanValue) });
     };
 
     onLengthChange = (newLength: number) => {
@@ -493,7 +514,7 @@ class EnterMnemonicStep extends Component<Props, State> {
     };
 
     renderCurve = () => {
-        const { useCurve, curve, secpAddress, edAddress } = this.state;
+        const { useCurve, curve } = this.state;
 
         return (
             <View style={styles.optionSection}>
@@ -542,7 +563,7 @@ class EnterMnemonicStep extends Component<Props, State> {
                                 curve === 'secp256k1' && styles.optionsButtonSelectedText,
                             ]}
                             iconStyle={curve === 'secp256k1' ? styles.optionsButtonSelectedIcon : undefined}
-                            label={curveChoiceButtonLabel(Localize.t('account.mnemonicCurveSecp'), secpAddress)}
+                            label={Localize.t('account.mnemonicCurveSecp')}
                         />
                         <Button
                             testID="curve-ed25519-button"
@@ -565,7 +586,7 @@ class EnterMnemonicStep extends Component<Props, State> {
                                 curve === 'ed25519' && styles.optionsButtonSelectedText,
                             ]}
                             iconStyle={curve === 'ed25519' ? styles.optionsButtonSelectedIcon : undefined}
-                            label={curveChoiceButtonLabel(Localize.t('account.mnemonicCurveEd'), edAddress)}
+                            label={Localize.t('account.mnemonicCurveEd')}
                         />
                     </View>
                 )}
