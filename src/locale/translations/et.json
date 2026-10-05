@@ -1200,7 +1200,7 @@
     "selectedAccountDoNotSupportAsset": "Valitud konto ei toeta valitud vara.",
     "memoPublicWarning": "Memo info on kõigile avalik",
     "destinationNotExistTooLittleToCreate": "Sihtkontot pole varem kasutatud ja sellel kontol ei ole saldot. Selleks, et aktiveerida konto XRP Ledgeris, on nõutav vähemalt %{baseReserve} %{nativeAsset} deposiiti.",
-    "destinationNotExistCreationWarning": "Antud sihtkontole saatmine võib olla riskantne: seda ei ole kunagi kasutatud ja sellel on null saldo, mida nähakse sageli petuskeemides. Soovitame kontrollida omaniku autentsust, et kaitsta oma varasid. Kui oled kindel selle turvalisuses, kuid teadlik riskidest.\n\nKui jätkad saatmist sellele kontole, kasutatakse %{baseReserve} %{nativeAsset} summast %{amount} %{nativeAsset} konto aktiveerimiseks XRP Ledgeris.",
+    "destinationNotExistCreationWarning": "Sa hakkad saatma %{nativeAsset} kontole, mis ei ole praegu ledgeris aktiivne. Sellel ei ole saldot.\n\nPalun veendu, et see on õige aadress ja et tunned saajat. Aktiveerimata kontosid seostatakse mõnikord pettusega, seega tasub kontrollimiseks hetk aega võtta.\n\nKui jätkad, kasutatakse %{baseReserve} %{nativeAsset} summast %{amount} %{nativeAsset} konto aktiveerimiseks ledgeris. Ülejäänud summa on saajale kättesaadav.",
     "destinationCannotActivateWithIOU": "Sihtkontot pole varem kasutatud ja sel kontol ei ole saldot. Konto aktiveerimiseks XRP Ledgeris on vajalik %{baseReserve} %{nativeAsset} deposiidi saatmine antud kontole. Mitte %{nativeAsset} varasid ei saa kasutada algseks hoiustamiseks.",
     "destinationTagIsRequired": "Selle makse saatmiseks on vaja sihtmärgisilti.",
     "unableGetRecipientAccountInfoPleaseTryAgain": "Ei ole võimalik saada vastuvõtja konto infot. Proovi uuesti.",
