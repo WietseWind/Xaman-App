@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Snižavate razinu pristupa. Jesi li siguran?",
     "removeTrustLineWarning": "Uklonit ćete sredstvo s vašeg računa. Ova akcija se ne može poništiti. Jeste li sigurni?",
     "unavailableChangeSecurityLevel": "Promjena razine sigurnosti trenutno nije raspoloživa",
-    "accountRemoveWarning": "Vaš račun bit će trajno izbrisan iz Xaman aplikacije, jeste li sigurni?",
+    "accountRemoveWarning": "Vaš račun bit će uklonjen s ovog uređaja. Možete ga ponovno uvesti u bilo kojem trenutku pomoću tajne računa. Jeste li sigurni?",
     "accountMaxLabelLengthError": "Oznaka računa može imati maksimalno 16 znakova!",
     "accountLabelCannotBeMoreThan": "Oznaka računa ne može biti duža od 64 znaka!",
     "accountTrustLines": "Linije povjerenje (TrustLines)",

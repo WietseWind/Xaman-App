@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Ви знижуєте свій рівень доступу. Ви впевнені?",
     "removeTrustLineWarning": "Ви вилучаєте цей актив з Вашого акаунта. Цю дію не можна скасувати. Ви впевнені?",
     "unavailableChangeSecurityLevel": "Зміна рівня безпеки зараз недоступна",
-    "accountRemoveWarning": "Ваш акаунт буде вилучено назавжди з Xaman, Ви впевнені?",
+    "accountRemoveWarning": "Ваш акаунт буде вилучено з цього пристрою. Ви можете будь-коли знову імпортувати його за допомогою секрету акаунта. Ви впевнені?",
     "accountMaxLabelLengthError": "Ярлик акаунта має бути менший за 16 символів!",
     "accountLabelCannotBeMoreThan": "Мітка акаунта не може бути більше 64 символів!",
     "accountTrustLines": "Лінії довіри акаунта",

@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Estàs rebaixant el teu nivell d'accés.  N'estàs segur?",
     "removeTrustLineWarning": "Estàs eliminant aquest actiu del compte XRPL. N'estàs segur?",
     "unavailableChangeSecurityLevel": "El canvi de nivell de seguretat no està disponible ara mateix",
-    "accountRemoveWarning": "El teu compte s'eliminarà permanentment de Xaman, n'estàs segur?",
+    "accountRemoveWarning": "El teu compte s'eliminarà d'aquest dispositiu. Pots tornar a importar-lo en qualsevol moment amb la clau privada del compte. N'estàs segur?",
     "accountMaxLabelLengthError": "L'etiqueta del compte ha de tenir menys de 16 caràcters.",
     "accountLabelCannotBeMoreThan": "L'etiqueta del compte no pot tenir més de 64 caràcters!",
     "accountTrustLines": "Línies de confiança (TrustLines) del compte",

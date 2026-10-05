@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Estás a baixar o teu nivel de acceso. ¿Estás seguro?",
     "removeTrustLineWarning": "Vai eliminar éste activo da súa conta. Ésta acción non se pode desfacer. ¿Está seguro?",
     "unavailableChangeSecurityLevel": "O cambio de nivel de seguridade non está dispoñible agora mesmo",
-    "accountRemoveWarning": "A túa conta eliminarase permanentemente de Xaman. Está vostede seguro?",
+    "accountRemoveWarning": "A súa conta quitarase deste dispositivo. Pode importala de novo en calquera momento co segredo da súa conta. ¿Está seguro?",
     "accountMaxLabelLengthError": "¡A etiqueta da conta debe ter menos de 16 caracteres!",
     "accountLabelCannotBeMoreThan": "A etiqueta da conta non pode ter máis de 64 caracteres!",
     "accountTrustLines": "Liñas de Confianza da conta",

@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Siz foidalanish huquqi darajasini pasaytirmoqdasiz. Ishonchingiz komilmi?",
     "removeTrustLineWarning": "Siz ushbu aktivni hisobingizdan olib tashlamoqdasiz. Ushbu harakatni qaytarib bo'lmaydi. Ishonchingiz komilmi?",
     "unavailableChangeSecurityLevel": "Xavfsizlik darajasini o'zgartirish hozirda mumkin emas",
-    "accountRemoveWarning": "Sizning hisob qaydnomangiz Xaman-dan butunlay o'chiriladi. Ishonchingiz komilmi?",
+    "accountRemoveWarning": "Hisobingiz bu qurilmadan olib tashlanadi. Uni istalgan vaqtda hisob siringiz yordamida qayta import qilishingiz mumkin. Ishonchingiz komilmi?",
     "accountMaxLabelLengthError": "Hisob qaydnomasi yorlig'i 16 belgidan kam bo'lishi kerak!",
     "accountLabelCannotBeMoreThan": "Hisob yorlig'i 64 ta belgidan ko'p bo'lishi mumkin emas!",
     "accountTrustLines": "Hisob qaydnomalari",

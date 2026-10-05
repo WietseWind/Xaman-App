@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Stai abbassando la sicurezza del tuo livello di accesso. Sei sicuro?",
     "removeTrustLineWarning": "Stai per rimuovere questa risorsa digitale dal tuo account. Questa azione non può essere annullata. Sei sicuro?",
     "unavailableChangeSecurityLevel": "La modifica del livello di sicurezza non è disponibile al momento",
-    "accountRemoveWarning": "Il tuo account verrà eliminato definitivamente da Xaman. Ne sei sicuro?",
+    "accountRemoveWarning": "Il tuo account verrà rimosso da questo dispositivo. Puoi reimportarlo in qualsiasi momento con la chiave segreta del tuo account. Sei sicuro?",
     "accountMaxLabelLengthError": "L'etichetta dell'account deve contenere meno di 16 caratteri!",
     "accountLabelCannotBeMoreThan": "L'etichetta dell'account non può contenere più di 64 caratteri!",
     "accountTrustLines": "Account TrustLines",

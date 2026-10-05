@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "आप अपने पहुँच स्तर को अपग्रेड कर रहे हैं। क्या आपको यकीन है?",
     "removeTrustLineWarning": "आप इस संपत्ति को अपने खाते से निकाल रहे हैं। इस क्रिया को पूर्ववत नहीं किया जा सकता है। क्या आपको यकीन है?",
     "unavailableChangeSecurityLevel": "सुरक्षा स्तर बदलना अभी उपलब्ध नहीं है",
-    "accountRemoveWarning": "आपका खाता Xaman से स्थायी रूप से हटा दिया जाएगा। क्या आपको यकीन है?",
+    "accountRemoveWarning": "आपका खाता इस डिवाइस से हटा दिया जाएगा। आप इसे अपनी गुप्त खाता कुंजी से कभी भी फिर से आयात कर सकते हैं। क्या आपको यकीन है?",
     "accountMaxLabelLengthError": "खाता लेबल 16 वर्णों से कम होना चाहिए!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "खाता ट्रस्टलाइन्स",

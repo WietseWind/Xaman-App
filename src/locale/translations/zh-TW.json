@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "You are downgrading your access level. Are you sure?",
     "removeTrustLineWarning": "You are removing this token from your XRP Ledger account. Are you sure?",
     "unavailableChangeSecurityLevel": "Changing Security level is not available right now",
-    "accountRemoveWarning": "Your account will be deleted permanently from Xaman. Are you sure?",
+    "accountRemoveWarning": "您的帳戶將從此裝置移除。您可以隨時使用帳戶私鑰重新匯入。您確定嗎?",
     "accountMaxLabelLengthError": "Account label should be less than 16 characters!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "Account TrustLines",

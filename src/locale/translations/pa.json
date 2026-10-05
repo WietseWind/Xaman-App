@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "ਤੁਸੀਂ ਆਪਣੇ ਐਕਸੈਸ ਲੈਵਲ ਨੂੰ ਡਾngਨਗਰੇਡ ਕਰ ਰਹੇ ਹੋ. ਕੀ ਤੁਹਾਨੂੰ ਯਕੀਨ ਹੈ?",
     "removeTrustLineWarning": "ਤੁਸੀਂ ਇਸ ਜਾਇਦਾਦ ਨੂੰ ਆਪਣੇ ਖਾਤੇ ਤੋਂ ਹਟਾ ਰਹੇ ਹੋ. ਇਸ ਕਿਰਿਆ ਨੂੰ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ ਹੈ. ਤੁਹਾਨੂੰ ਪੂਰਾ ਵਿਸ਼ਵਾਸ ਹੈ?",
     "unavailableChangeSecurityLevel": "ਸੁਰੱਖਿਆ ਪੱਧਰ ਨੂੰ ਬਦਲਣਾ ਇਸ ਸਮੇਂ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
-    "accountRemoveWarning": "ਤੁਹਾਡਾ ਖਾਤਾ Xaman ਤੋਂ ਪੱਕੇ ਤੌਰ 'ਤੇ ਮਿਟਾ ਦਿੱਤਾ ਜਾਏਗਾ. ਤੁਹਾਨੂੰ ਪੂਰਾ ਵਿਸ਼ਵਾਸ ਹੈ?",
+    "accountRemoveWarning": "ਤੁਹਾਡਾ ਖਾਤਾ ਇਸ ਡਿਵਾਈਸ ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਤੁਸੀਂ ਆਪਣੇ ਖਾਤੇ ਦੀ ਗੁਪਤ ਕੁੰਜੀ ਨਾਲ ਇਸਨੂੰ ਕਿਸੇ ਵੀ ਸਮੇਂ ਦੁਬਾਰਾ ਆਯਾਤ ਕਰ ਸਕਦੇ ਹੋ। ਕੀ ਤੁਹਾਨੂੰ ਪੂਰਾ ਵਿਸ਼ਵਾਸ ਹੈ?",
     "accountMaxLabelLengthError": "ਖਾਤਾ ਲੇਬਲ 16 ਅੱਖਰਾਂ ਤੋਂ ਘੱਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "ਖਾਤਾ ਟਰੱਸਟਲਾਈਨਜ਼",

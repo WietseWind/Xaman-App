@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Du nedgraderar din åtkomstnivå. Är du säker på det?",
     "removeTrustLineWarning": "Du tar bort inventarien från ditt konto. Den här åtgärden kan inte ångras. Är du säker på det?",
     "unavailableChangeSecurityLevel": "Ändring av behörighetsnivå är inte tillgänglig just nu",
-    "accountRemoveWarning": "Ditt konto kommer att tas bort permanent från Xaman, är du säker?",
+    "accountRemoveWarning": "Ditt konto kommer att tas bort från den här enheten. Du kan när som helst importera det igen med din kontohemlighet. Är du säker?",
     "accountMaxLabelLengthError": "Kontoetiketten ska vara mindre än 16 tecken.",
     "accountLabelCannotBeMoreThan": "Kontoetiketten kan inte vara mer än 64 tecken!",
     "accountTrustLines": "Konto TrustLines",

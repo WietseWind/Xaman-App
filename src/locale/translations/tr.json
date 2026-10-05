@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Erişim seviyenizi düşürüyorsunuz. Emin misiniz?",
     "removeTrustLineWarning": "Bu varlığı hesabınızdan kaldırıyorsunuz. Bu işlem geri alınamaz. Emin misin?",
     "unavailableChangeSecurityLevel": "Güvenlik düzeyi değiştirme şu anda kullanılamıyor",
-    "accountRemoveWarning": "Hesabınız Xaman'dan kalıcı olarak silinecektir, emin misiniz?",
+    "accountRemoveWarning": "Hesabınız bu cihazdan kaldırılacaktır. Hesap sırrınızla istediğiniz zaman yeniden içe aktarabilirsiniz. Emin misiniz?",
     "accountMaxLabelLengthError": "Hesap etiketi 16 karakterden kısa olmalıdır!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "Güvenilir Hat Hesabı",

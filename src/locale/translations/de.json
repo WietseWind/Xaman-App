@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Sie möchten Ihre Zugriffsebene herunterstufen. Sind Sie sicher?",
     "removeTrustLineWarning": "Sie entfernen diese Währung von Ihrem Konto, dies kann nicht rückgängig gemacht werden, sind Sie sicher?",
     "unavailableChangeSecurityLevel": "Das Ändern der Sicherheitsstufe ist derzeit nicht möglich",
-    "accountRemoveWarning": "Ihr Account wird dauerhaft von Xaman gelöscht, sind Sie sicher?",
+    "accountRemoveWarning": "Ihr Konto wird von diesem Gerät entfernt. Sie können es jederzeit mit Ihrem Kontoschlüssel erneut importieren. Sind Sie sicher?",
     "accountMaxLabelLengthError": "Die Kontobezeichnung sollte weniger als 16 Zeichen lang sein! ",
     "accountLabelCannotBeMoreThan": "Kontobezeichnung darf nicht mehr als 64 Zeichen haben!",
     "accountTrustLines": "Konto-TrustLines",
