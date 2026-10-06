@@ -60,6 +60,8 @@ class SummaryStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
 
+    currencyRateRequest: number;
+
     constructor(props: Props) {
         super(props);
 
@@ -72,18 +74,36 @@ class SummaryStep extends Component<Props, State> {
             canSendFee: true,
             canScroll: true,
         };
+
+        this.currencyRateRequest = 0;
     }
 
     componentDidMount() {
+        NetworkService.on('networkChange', this.onNetworkChange);
         InteractionManager.runAfterInteractions(this.fetchCurrencyRate);
     }
+
+    componentWillUnmount() {
+        NetworkService.off('networkChange', this.onNetworkChange);
+    }
+
+    onNetworkChange = () => {
+        this.currencyRateRequest += 1;
+        this.setState({ currencyRate: undefined }, () => {
+            InteractionManager.runAfterInteractions(this.fetchCurrencyRate);
+        });
+    };
 
     fetchCurrencyRate = () => {
         const { coreSettings } = this.context;
         const { currency } = coreSettings;
+        const requestId = this.currencyRateRequest;
 
         BackendService.getCurrencyRate(currency)
             .then((resp) => {
+                if (requestId !== this.currencyRateRequest) {
+                    return;
+                }
                 this.setState({
                     currencyRate: resp,
                 });
