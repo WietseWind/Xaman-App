@@ -4,7 +4,7 @@
 
 // TODO: refactor this code for better ref handling and anon functions
 
-import { get, set, isEmpty } from 'lodash';
+import { get, isEmpty } from 'lodash';
 
 import React, { Component } from 'react';
 import { SafeAreaView, View, Text, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
@@ -17,7 +17,7 @@ import {
     curveChoiceButtonLabel,
     MnemonicAlgorithm,
     MnemonicDeriveOptions,
-    nextMnemonicWord,
+    mnemonicWordFromChange,
     pickMnemonicImport,
 } from '@common/utils/mnemonicImport';
 
@@ -345,15 +345,19 @@ class EnterMnemonicStep extends Component<Props, State> {
     };
 
     setValue = (col: number, value: string) => {
-        const { words } = this.state;
-        const current = get(words, `[${col}]`, '') || '';
-        const next = nextMnemonicWord(current, value);
+        this.setState((prev) => {
+            const words = prev.words || [];
+            const current = get(words, `[${col}]`, '') || '';
+            const next = mnemonicWordFromChange(current, value, col === prev.activeRow);
 
-        if (next === current) {
-            return;
-        }
+            if (next === current) {
+                return null;
+            }
 
-        this.setState({ words: set(words, `[${col}]`, next) });
+            const nextWords = words.slice();
+            nextWords[col] = next;
+            return { words: nextWords };
+        });
     };
 
     onLengthChange = (newLength: number) => {

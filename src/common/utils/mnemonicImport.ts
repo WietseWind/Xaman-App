@@ -128,14 +128,26 @@ const compactOptions = (
 };
 
 /**
- * Inactive word rows are shown as bullets. Android writes that mask back through
- * onChangeText. Keep the typed word so Next derives the mnemonic the user entered.
+ * Inactive rows are shown as bullets. Android writes that mask, or an empty
+ * string, back through onChangeText when focus moves or the list scrolls.
+ * A focused row can still be cleared by the person typing.
  */
-export const nextMnemonicWord = (current: string, incoming: string): string => {
-    if (/^•+$/.test(incoming)) {
+export const mnemonicWordFromChange = (current: string, incoming: string, editing: boolean): string => {
+    const trimmed = String(incoming || '').replace(/\s/g, '');
+
+    if (/^•+$/.test(trimmed)) {
         return current;
     }
-    return incoming.replace(/\s/g, '');
+
+    if (!editing && trimmed === '') {
+        return current;
+    }
+
+    return trimmed;
+};
+
+export const nextMnemonicWord = (current: string, incoming: string): string => {
+    return mnemonicWordFromChange(current, incoming, true);
 };
 
 export const deriveMnemonicAccount = (
