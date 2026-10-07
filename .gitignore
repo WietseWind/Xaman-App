@@ -2,6 +2,10 @@
 #
 .DS_Store
 
+# Screenshots used only in pull request and issue writeups.
+# They stay on the fix branches so those links keep working.
+repro/
+
 # Xcode
 #
 build/
