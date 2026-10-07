@@ -24,6 +24,8 @@ import { Props as ReviewTransactionModalProps } from '@screens/Modal/ReviewTrans
 
 import Localize from '@locale';
 
+import { nftOfferActions } from './nftOfferActions';
+
 import styles from './styles';
 import { filterActionsForScamAdvisory } from './scamActionFilter';
 /* Types ==================================================================== */
@@ -264,18 +266,9 @@ class ActionButtons extends PureComponent<Props, State> {
                 availableActions.push(ActionTypes.REMOVE_DELEGATION);
                 break;
             case LedgerEntryTypes.NFTokenOffer:
-                if (item.Owner === account.address) {
-                    availableActions.push(ActionTypes.CANCEL_OFFER);
-                } else if (!item.Destination || item.Destination === account.address) {
-                    if (item.Flags?.lsfSellNFToken) {
-                        if (item.Destination === account.address) {
-                            availableActions.push(ActionTypes.CANCEL_NFTOKEN_OFFER);
-                        }
-                        availableActions.push(ActionTypes.ACCEPT_NFTOKEN_OFFER);
-                    } else {
-                        availableActions.push(ActionTypes.SELL_NFTOKEN);
-                    }
-                }
+                nftOfferActions(item, account.address).forEach((action) => {
+                    availableActions.push(ActionTypes[action]);
+                });
                 break;
             case LedgerEntryTypes.URIToken:
             case TransactionTypes.URITokenMint:
