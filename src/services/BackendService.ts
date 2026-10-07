@@ -73,6 +73,8 @@ class BackendService {
                 // listen for ledger transaction submit
                 LedgerService.on('submitTransaction', this.onLedgerTransactionSubmit);
                 NetworkService.on('preSubmitTxEvent', this.addSignedTxBlob);
+                NetworkService.off('networkChange', this.onNetworkChange);
+                NetworkService.on('networkChange', this.onNetworkChange);
 
                 // resolve
                 resolve();
@@ -716,46 +718,51 @@ class BackendService {
     };
 
     /**
-     * Gets the exchange rate for a currency.
+     * Drop cached fiat rates. A network switch must not keep another native asset's price.
+     */
+    onNetworkChange = () => {
+        this.rates.clear();
+    };
+
+    /**
+     * Gets the exchange rate for a currency against the current native asset.
      * @param {string} currencyCode - The currency code.
      * @returns {Promise} A promise that resolves with the exchange rate data.
      */
     getCurrencyRate = (currencyCode: string): Promise<RatesType> => {
-        return new Promise((resolve, reject) => {
-            // get current network asset
-            const nativeAsset = NetworkService.getNativeAsset();
+        // Captured once. ApiService reads X-Xaman-Net after an await, and the response can
+        // arrive after a switch. The cache entry and the field we read must stay this asset.
+        const nativeAsset = NetworkService.getNativeAsset();
+        const networkKey = NetworkService.getNetwork()?.key ?? '';
+        const cacheKey = `${currencyCode}-${networkKey}-${nativeAsset}`;
 
-            // get cache key
-            const cacheKey = `${currencyCode}-${nativeAsset}`;
-
-            // check the cached version before requesting from backend
-            if (this.rates.has(cacheKey)) {
-                // calculate passed seconds from the latest sync
-                const passedSeconds = moment().diff(moment.unix(this.rates.get(cacheKey)!.lastSync), 'second');
-
-                // if the latest rate fetch is already less than 60 second return cached value
-                if (passedSeconds <= 60) {
-                    resolve(this.rates.get(cacheKey)!);
-                    return;
-                }
+        const cached = this.rates.get(cacheKey);
+        if (cached) {
+            const passedSeconds = moment().diff(moment.unix(cached.lastSync), 'second');
+            if (passedSeconds <= 60) {
+                return Promise.resolve(cached);
             }
+        }
 
-            // fetch/update the rate from backend
-            ApiService.fetch(Endpoints.Rates, 'GET', {
-                currency: currencyCode,
-            })
-                .then((response: XamanBackend.CurrencyRateResponse) => {
-                    const rate = {
-                        rate: get(response, NetworkService.getNativeAsset(), 0),
-                        code: currencyCode,
-                        symbol: get(response, '__meta.currency.symbol'),
-                        lastSync: moment().unix(),
-                    };
-                    this.rates.set(cacheKey, rate);
-                    resolve(rate);
-                })
-                .catch(reject);
-        });
+        const headers: { [key: string]: string } = {
+            'Cache-Control': 'no-cache',
+        };
+        if (networkKey) {
+            headers['X-Xaman-Net'] = networkKey;
+        }
+
+        return ApiService.fetch(Endpoints.Rates, 'GET', { currency: currencyCode }, undefined, headers).then(
+            (response: XamanBackend.CurrencyRateResponse) => {
+                const rate = {
+                    rate: get(response, nativeAsset, 0),
+                    code: currencyCode,
+                    symbol: get(response, '__meta.currency.symbol'),
+                    lastSync: moment().unix(),
+                };
+                this.rates.set(cacheKey, rate);
+                return rate;
+            },
+        );
     };
 
     /**
