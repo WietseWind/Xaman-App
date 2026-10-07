@@ -276,6 +276,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                 },
             );
         } catch (e) {
+            this.setState({ isRemoving: false });
             Alert.alert(Localize.t('global.error'), Localize.t('asset.failedRemove'));
         }
     };
@@ -466,6 +467,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                 },
             );
         } catch (e: any) {
+            this.setState({ isRemoving: false });
             if (e) {
                 InteractionManager.runAfterInteractions(() => {
                     Alert.alert(Localize.t('global.error'), e.message);
