@@ -706,18 +706,20 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
         throw new Error(`mnemonic not ready: ${JSON.stringify(words)}`);
     }
 
-    // typeText + return advances to the next word field on iOS. Android
-    // later rows are under 75% visible. Do not tap (IME covers the list).
+    // iOS typeText + return advances to the next word field.
+    // Android must focus each row. Enter moves focus on a timer, and the
+    // next word otherwise lands in the previous row.
     if (device.getPlatform() === 'android') {
+        const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
         for (let i = 0; i < words.length; i++) {
-            const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
-            if (i === 0) {
-                await waitUntilAndroidTestId('word-0-input', 10000);
-                await clickByTestId('word-0-input');
-            }
+            // Enter moves focus on a timer. Typing the next word before that
+            // lands it in the previous row, and Next derives a different address.
+            await waitUntilAndroidTestId(`word-${i}-input`, 10000);
+            await clickByTestId(`word-${i}-input`);
+            await new Promise((resolve) => { setTimeout(resolve, 200); });
             androidTypeText(words[i]);
             execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-            await new Promise((resolve) => { setTimeout(resolve, 250); });
+            await new Promise((resolve) => { setTimeout(resolve, 350); });
         }
         return;
     }
