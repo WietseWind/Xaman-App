@@ -7,6 +7,7 @@ import {
     curvePickerItemTitle,
     deriveMnemonicAccount,
     deriveMnemonicAddresses,
+    mnemonicWordFromChange,
     nextMnemonicWord,
     getMnemonicAlgorithm,
     isLedgerAccountActivated,
@@ -66,6 +67,39 @@ describe('mnemonicImport', () => {
             );
 
             expect(signed.signedTransaction).toBeTruthy();
+        });
+    });
+
+    describe('mnemonicWordFromChange', () => {
+        it('keeps the typed word when an inactive row is cleared or masked', () => {
+            expect(mnemonicWordFromChange('voyage', '', false)).toBe('voyage');
+            expect(mnemonicWordFromChange('voyage', '      ', false)).toBe('voyage');
+            expect(mnemonicWordFromChange('voyage', '••••••', false)).toBe('voyage');
+            expect(mnemonicWordFromChange('voyage', '', true)).toBe('');
+        });
+
+        it('keeps an explicit secp256k1 choice when only the ed25519 account exists', async () => {
+            const getAccountInfo = jest.fn(async (address: string) => {
+                if (address === ED_ADDRESS) {
+                    return { account_data: { Account: ED_ADDRESS, Balance: '1000000' } };
+                }
+                return { error: 'actNotFound' };
+            });
+            const words = SAMPLE.split(' ');
+            const kept = words.map((word) => mnemonicWordFromChange(word, '', false));
+            const picked = await pickMnemonicImport({
+                mnemonic: kept.join(' '),
+                explicitAlgorithm: 'secp256k1',
+                getAccountInfo,
+            });
+
+            expect(kept).toEqual(words);
+            expect(picked).toEqual({
+                status: 'ready',
+                algorithm: 'secp256k1',
+                account: expect.objectContaining({ address: SECP_ADDRESS }),
+            });
+            expect(getAccountInfo).not.toHaveBeenCalled();
         });
     });
 
@@ -142,6 +176,27 @@ describe('mnemonicImport', () => {
     });
 
     describe('pickMnemonicImport', () => {
+        it('keeps explicit secp256k1 even when the ed25519 account is the one that exists', async () => {
+            const getAccountInfo = jest.fn(async (address: string) => {
+                if (address === ED_ADDRESS) {
+                    return { account_data: { Account: ED_ADDRESS, Balance: '1000000' } };
+                }
+                return { error: 'actNotFound' };
+            });
+            const picked = await pickMnemonicImport({
+                mnemonic: SAMPLE,
+                explicitAlgorithm: 'secp256k1',
+                getAccountInfo,
+            });
+
+            expect(picked).toEqual({
+                status: 'ready',
+                algorithm: 'secp256k1',
+                account: expect.objectContaining({ address: SECP_ADDRESS }),
+            });
+            expect(getAccountInfo).not.toHaveBeenCalled();
+        });
+
         it('uses explicit secp without fetching account info', async () => {
             const getAccountInfo = jest.fn();
             const picked = await pickMnemonicImport({
