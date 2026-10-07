@@ -33,6 +33,10 @@ import { Props, State, WidgetComponents, WidgetKey } from './types';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
 // import { Credential } from '@common/libs/ledger/objects';
 
+// iOS modals already sit below the status bar. Android full-screen modals draw
+// behind it, so they keep Header's status-bar margin.
+const iosModalHeaderStyle = { marginTop: 0 };
+
 /* Component ==================================================================== */
 class TransactionDetailsView extends Component<Props & { componentType: ComponentTypes }, State> {
     static screenName = AppScreens.Transaction.Details;
@@ -227,8 +231,11 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                             ? { icon: 'IconMoreHorizontal', onPress: this.showMenu }
                             : undefined
                     }
-                    // eslint-disable-next-line react-native/no-inline-styles
-                    containerStyle={componentType === ComponentTypes.Modal ? { marginTop: 0 } : {}}
+                    containerStyle={
+                        componentType === ComponentTypes.Modal && Platform.OS !== 'android'
+                            ? iosModalHeaderStyle
+                            : undefined
+                    }
                 />
 
                 <MutationWidgets.AdvisoryAlertWidget
