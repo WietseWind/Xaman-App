@@ -58,7 +58,7 @@ describe('submit recovery after a lost reply', () => {
         expect(lookup).toHaveBeenCalledWith(HASH);
     });
 
-    it('reports telFAILED with the node when the hash is not on the ledger', async () => {
+    it('reports terQUEUED with the node when the hash is not in a closed ledger yet', async () => {
         const result = await recoverSubmitAfterSendError({
             hash: HASH,
             error: new Error('Class (connection) hard close requested'),
@@ -67,9 +67,23 @@ describe('submit recovery after a lost reply', () => {
             wait: async () => undefined,
         });
 
+        expect(result.success).toBe(true);
+        expect(result.engineResult).toBe('terQUEUED');
+        expect(result.message).toBe('The transaction was not in a closed ledger yet.');
+        expect(result.network).toEqual(network);
+    });
+
+    it('keeps telFAILED when the blob was never sent', async () => {
+        const result = await recoverSubmitAfterSendError({
+            hash: undefined,
+            error: new Error('connection instance is not initiated in NetworkService class.'),
+            network,
+            lookup: jest.fn(),
+            wait: async () => undefined,
+        });
+
         expect(result.success).toBe(false);
         expect(result.engineResult).toBe('telFAILED');
-        expect(result.message).toBe('Class (connection) hard close requested');
         expect(result.network).toEqual(network);
     });
 

@@ -1,6 +1,11 @@
 /**
  * A submit reply can be lost when the socket dies after the node accepted the
  * blob. The catch used to report that as telFAILED and drop the node.
+ *
+ * Not being in a closed ledger yet is not that failure. `tx` only returns a
+ * validated transaction, so a delay before the ledger closes looks like
+ * txnNotFound. The preliminary result is then terQUEUED. telFAILED is only
+ * for a blob that was never sent.
  */
 
 export type SubmitNetworkDetails = {
@@ -64,6 +69,14 @@ export const engineResultFromTxLookup = (response: any): string | undefined => {
 
 const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
+/** The blob never left the device. A missing hash, or no socket to send on. */
+export const submitWasNotSent = (error: { message?: string }, hash?: string): boolean => {
+    if (!hash) {
+        return true;
+    }
+    return /not initiated/i.test(error?.message || '');
+};
+
 export const recoverSubmitAfterSendError = async ({
     hash,
     error,
@@ -116,10 +129,23 @@ export const recoverSubmitAfterSendError = async ({
         }
     }
 
+    if (submitWasNotSent(error, hash)) {
+        return {
+            ...carried,
+            success: false,
+            engineResult: 'telFAILED',
+            message: error?.message,
+        };
+    }
+
+    // The blob was handed to a node. It is not in a closed ledger yet, which
+    // is the queued state. The original submit result (tesSUCCESS, terQUEUED,
+    // …) was lost with the socket, so this is the preliminary result we still
+    // know. A later verify can replace it once a ledger closes.
     return {
         ...carried,
-        success: false,
-        engineResult: 'telFAILED',
-        message: error?.message,
+        success: true,
+        engineResult: 'terQUEUED',
+        message: 'The transaction was not in a closed ledger yet.',
     };
 };
