@@ -230,8 +230,13 @@ class ResolverService {
 
         const resultPromise = (async () => {
             const result = await this.resolveAccountName(address, tag, internal);
-            this.accountNameCache.set(key, { ...result, address, tag });
-            return { ...result, address, tag };
+            const resolved = { ...result, address, tag };
+            // A contact change deletes this entry while the lookup is still running.
+            // Writing the old result back would put the stale name in front of the new contact.
+            if (this.accountNameCache.get(key) === resultPromise) {
+                this.accountNameCache.set(key, resolved);
+            }
+            return resolved;
         })();
 
         this.accountNameCache.set(key, resultPromise); // save the promise itself for subsequent calls
