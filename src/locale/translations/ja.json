@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "アクセスレベルをダウングレードしようとしています。本当によろしいですか？",
     "removeTrustLineWarning": "この通貨をアカウントから削除します。この操作は元に戻せません。よろしいですか？",
     "unavailableChangeSecurityLevel": "現在、セキュリティレベルの変更はできません",
-    "accountRemoveWarning": "ご使用のアカウントはXamanから完全に削除されます。よろしいですか?",
+    "accountRemoveWarning": "ご使用のアカウントはこのデバイスから削除されます。アカウントシークレットを使って、いつでも再インポートできます。よろしいですか？",
     "accountMaxLabelLengthError": "アカウント名は64文字未満にしてください！",
     "accountLabelCannotBeMoreThan": "アカウントラベルは64文字以上にはできません！",
     "accountTrustLines": "アカウントトラストライン",

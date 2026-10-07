@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Jy afgradering jou toegang vlak. Is jy seker?",
     "removeTrustLineWarning": "U verwyder hierdie token uit u XRP Grootboekrekening. Is jy seker?",
     "unavailableChangeSecurityLevel": "Verandering van sekuriteitsvlak is nie tans beskikbaar nie",
-    "accountRemoveWarning": "U rekening sal permanent uit Xaman verwyder word. Is jy seker?",
+    "accountRemoveWarning": "Jou rekening sal van hierdie toestel verwyder word. Jy kan dit enige tyd weer invoer met jou rekeninggeheim. Is jy seker?",
     "accountMaxLabelLengthError": "Rekeningetiket moet minder as 16 karakters bevat!",
     "accountLabelCannotBeMoreThan": "Rekening etiket kan nie meer as 64 karakters wees nie!",
     "accountTrustLines": "Account Vertroulyne",

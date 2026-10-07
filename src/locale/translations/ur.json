@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "آپ اپنی رسائی کی سطح کو گھٹا رہے ہیں۔ کیا تمہیں یقین ہے؟",
     "removeTrustLineWarning": "آپ یہ اثاثہ اپنے اکاؤنٹ سے نکال رہے ہیں۔ یہ کارروائی ناقابل واپسی ہے۔ کیا تمہیں یقین ہے؟",
     "unavailableChangeSecurityLevel": "سیکیورٹی کی سطح کو تبدیل کرنا ابھی دستیاب نہیں ہے",
-    "accountRemoveWarning": "آپ کا اکاؤنٹ Xaman سے مستقل طور پر حذف ہوجائے گا۔ کیا تمہیں یقین ہے؟",
+    "accountRemoveWarning": "آپ کا اکاؤنٹ اس ڈیوائس سے ہٹا دیا جائے گا۔ آپ اپنے اکاؤنٹ کے راز کے ذریعے اسے کسی بھی وقت دوبارہ درآمد کر سکتے ہیں۔ کیا آپ کو یقین ہے؟",
     "accountMaxLabelLengthError": "اکاؤنٹ کا لیبل 16 حروف سے کم ہونا چاہئے!",
     "accountLabelCannotBeMoreThan": "اکاؤنٹ لیبل 64 حروف سے زیادہ نہیں ہو سکتا!",
     "accountTrustLines": "اکاؤنٹ ٹرسٹ لائنز",

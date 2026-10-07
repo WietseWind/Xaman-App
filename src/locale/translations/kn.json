@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "ನಿಮ್ಮ ಪ್ರವೇಶ ಮಟ್ಟವನ್ನು ನೀವು ಡೌನ್‌ಗ್ರೇಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ. ನಿಮಗೆ ಖಚಿತವಾಗಿದೆಯೇ?",
     "removeTrustLineWarning": "ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಈ ಆಸ್ತಿಯನ್ನು ನೀವು ತೆಗೆದುಹಾಕುತ್ತಿದ್ದೀರಿ. ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ. ನೀವು ಖಚಿತವಾಗಿರುವಿರಾ?",
     "unavailableChangeSecurityLevel": "ಭದ್ರತಾ ಮಟ್ಟವನ್ನು ಬದಲಾಯಿಸುವುದು ಇದೀಗ ಲಭ್ಯವಿಲ್ಲ",
-    "accountRemoveWarning": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು Xaman ನಿಂದ ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗುತ್ತದೆ. ನೀವು ಖಚಿತವಾಗಿರುವಿರಾ?",
+    "accountRemoveWarning": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಈ ಸಾಧನದಿಂದ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಖಾತೆಯ ರಹಸ್ಯವನ್ನು ಬಳಸಿ ನೀವು ಅದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಮತ್ತೆ ಆಮದು ಮಾಡಿಕೊಳ್ಳಬಹುದು. ನೀವು ಖಚಿತವಾಗಿರುವಿರಾ?",
     "accountMaxLabelLengthError": "ಖಾತೆ ಲೇಬಲ್ 16 ಅಕ್ಷರಗಳಿಗಿಂತ ಕಡಿಮೆಯಿರಬೇಕು!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "ಖಾತೆ ಟ್ರಸ್ಟ್‌ಲೈನ್ಸ್",

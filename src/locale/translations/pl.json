@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Obniżyłeś poziom dostępu. Czy na pewno?",
     "removeTrustLineWarning": "Usuwasz tą walutę ze swojego konta. Ta akcja nie może być cofnięta. Jesteś pewny(a)?",
     "unavailableChangeSecurityLevel": "Zmiana poziomu bezpieczeństwa nie jest w tym momencie dostępna",
-    "accountRemoveWarning": "Twoje konto zostanie usunięte na stałe z Xaman, czy na pewno?",
+    "accountRemoveWarning": "Twoje konto zostanie usunięte z tego urządzenia. W każdej chwili możesz zaimportować je ponownie za pomocą sekretu konta. Czy na pewno?",
     "accountMaxLabelLengthError": "Etykieta konta powinna mieć mniej niż 16 znaków!",
     "accountLabelCannotBeMoreThan": "Etykieta konta nie może mieć więcej niż 64 znaki!",
     "accountTrustLines": "TrustLines dla konta",

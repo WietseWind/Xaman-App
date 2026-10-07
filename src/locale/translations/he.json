@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "אתה משדרג לאחור את רמת הגישה שלך. האם אתה בטוח?",
     "removeTrustLineWarning": "אתה מסיר אסימון זה מחשבון ספר ה- XRP שלך. האם אתה בטוח?",
     "unavailableChangeSecurityLevel": "שינוי רמת האבטחה אינו זמין כעת",
-    "accountRemoveWarning": "חשבונך יימחק לצמיתות מ- Xaman. האם אתה בטוח?",
+    "accountRemoveWarning": "חשבונך יוסר ממכשיר זה. תוכל לייבא אותו מחדש בכל עת באמצעות סוד החשבון שלך. האם אתה בטוח?",
     "accountMaxLabelLengthError": "תווית החשבון צריכה להכיל פחות מ -16 תווים!",
     "accountLabelCannotBeMoreThan": "תווית חשבון לא יכולה להיות יותר מ-64 תווים!",
     "accountTrustLines": "קווי TrustLines",

@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Prin efectuarea acestei acțiuni dumneavoastră renunțați la o parte din drepturile de acces la acest cont. Sunteți sigur(ă) ?",
     "removeTrustLineWarning": "Veți înlătura acest activ din contul dumneavoastră. Această acţiune nu poate fi anulată. Sunteţi sigur(ă) ? ",
     "unavailableChangeSecurityLevel": "Modificarea nivelului de securitate nu este disponibilă acum.",
-    "accountRemoveWarning": "Contul dvs. va fi şters permanent din Xaman, sunteţi sigur(ă) ?",
+    "accountRemoveWarning": "Contul dvs. va fi eliminat de pe acest dispozitiv. Îl puteți importa din nou oricând cu cheia secretă a contului. Sunteți sigur(ă)?",
     "accountMaxLabelLengthError": "Eticheta contului ar trebui să aibă maxim 16 caractere !",
     "accountLabelCannotBeMoreThan": "Eticheta contului nu poate depăși 64 de caractere!",
     "accountTrustLines": "Cont TrustLines",

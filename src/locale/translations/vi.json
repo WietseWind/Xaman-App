@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Bạn đang hạ cấp cấp độ truy cập của mình. Bạn có chắc không?",
     "removeTrustLineWarning": "Bạn đang xóa nội dung này khỏi tài khoản của mình. Hành động này không thể được hoàn tác. Bạn có chắc không?",
     "unavailableChangeSecurityLevel": "Thay đổi cấp độ bảo mật không khả dụng ngay bây giờ",
-    "accountRemoveWarning": "Tài khoản của bạn sẽ bị xóa vĩnh viễn khỏi Xaman. Bạn có chắc không?",
+    "accountRemoveWarning": "Tài khoản của bạn sẽ bị xóa khỏi thiết bị này. Bạn có thể nhập lại tài khoản bất cứ lúc nào bằng khóa bí mật tài khoản. Bạn có chắc không?",
     "accountMaxLabelLengthError": "Nhãn tài khoản phải ít hơn 16 ký tự!",
     "accountLabelCannotBeMoreThan": "Nhãn tài khoản không được dài hơn 64 ký tự!",
     "accountTrustLines": "Dòng tin cậy tài khoản",

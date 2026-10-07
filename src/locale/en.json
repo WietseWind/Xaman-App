@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "You are downgrading your access level. Are you sure?",
     "removeTrustLineWarning": "You are removing this token from your account. Are you sure?",
     "unavailableChangeSecurityLevel": "Changing Security level is not available right now",
-    "accountRemoveWarning": "Your account will be deleted permanently from Xaman. Are you sure?",
+    "accountRemoveWarning": "Your account will be removed from this device. You can re-import it at any time with your account secret. Are you sure?",
     "accountMaxLabelLengthError": "Account label should be less than 64 characters!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "Account TrustLines",

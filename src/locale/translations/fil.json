@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Ibinababa mo ang antas ng iyong pag-access. Sigurado ka ba?",
     "removeTrustLineWarning": "Aalisin mo ang token na ito mula sa iyong XRP Ledger account. Sigurado ka ba?",
     "unavailableChangeSecurityLevel": "Ang pagbabago ng antas ng Seguridad ay hindi magagamit ngayon",
-    "accountRemoveWarning": "Permanenteng matatanggal ang iyong account mula sa Xaman. Sigurado ka ba?",
+    "accountRemoveWarning": "Aalisin ang iyong account mula sa aparatong ito. Maaari mo itong i-import muli anumang oras gamit ang lihim ng iyong account. Sigurado ka ba?",
     "accountMaxLabelLengthError": "Ang label ng account ay dapat mas mababa sa 16 characters!",
     "accountLabelCannotBeMoreThan": "Ang label ng account ay hindi maaaring mahigit 64 na character!",
     "accountTrustLines": "Mga Linya ng Trust ng Account",

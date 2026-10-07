@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Jūs mažinate prieigos lygį. Ar tikrai?",
     "removeTrustLineWarning": "Jūs šalinate šį žetoną iš sąskaitos. Ar tikrai?",
     "unavailableChangeSecurityLevel": "Saugumo lygio keitimas šiuo metu nepasiekiamas",
-    "accountRemoveWarning": "Jūsų sąskaita bus visam laikui ištrinta iš Xaman. Ar tikrai?",
+    "accountRemoveWarning": "Jūsų sąskaita bus pašalinta iš šio įrenginio. Bet kada galėsite ją iš naujo importuoti naudodami sąskaitos slaptą raktą. Ar tikrai?",
     "accountMaxLabelLengthError": "Sąskaitos etiketė turi būti trumpesnė nei 64 simboliai!",
     "accountLabelCannotBeMoreThan": "Sąskaitos etiketė negali būti ilgesnė nei 64 simboliai!",
     "accountTrustLines": "Sąskaitos TrustLines",

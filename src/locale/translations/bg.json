@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Понижавайки нивото си на достъп. Сигурен ли си?",
     "removeTrustLineWarning": "Премахвате този актив от сметката си. Това действие не може да бъде отменено. Сигурен ли си?",
     "unavailableChangeSecurityLevel": "Промяната на нивото на сигурност не е достъпна в момента",
-    "accountRemoveWarning": "Вашият акаунт ще бъде изтрит завинаги от Xaman. Сигурен ли сте?",
+    "accountRemoveWarning": "Вашият акаунт ще бъде премахнат от това устройство. Можете да го импортирате отново по всяко време с тайния ключ на акаунта. Сигурни ли сте?",
     "accountMaxLabelLengthError": "Етикетът на акаунта трябва да е по-малък от 16 знака!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "TrustLines за Сметката",

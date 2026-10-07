@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "您正在降低访问级别。您确定吗？",
     "removeTrustLineWarning": "您正在从帐户中删除此资产。此操作无法撤消。你确定吗？",
     "unavailableChangeSecurityLevel": "更改安全级别目前不可用",
-    "accountRemoveWarning": "您的账户将从 Xaman 中永久删除。您确定吗？",
+    "accountRemoveWarning": "您的账户将从此设备中移除。您可以随时使用账户密钥重新导入。您确定吗？",
     "accountMaxLabelLengthError": "账户标签应少于16个字符！",
     "accountLabelCannotBeMoreThan": "账户标签不能超过 64 个字符！",
     "accountTrustLines": "帐户信任线",

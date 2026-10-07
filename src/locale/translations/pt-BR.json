@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Você está a baixar o seu nível de acesso. Tem certeza?",
     "removeTrustLineWarning": "Você está removendo esta moeda da sua conta. Esta ação não pode ser desfeita. Você tem certeza?",
     "unavailableChangeSecurityLevel": "A alteração do nível de segurança não está disponível neste momento",
-    "accountRemoveWarning": "A sua conta será excluída permanentemente do Xaman, você tem certeza?",
+    "accountRemoveWarning": "Sua conta será removida deste dispositivo. Você pode importá-la novamente a qualquer momento com o código secreto da conta. Você tem certeza?",
     "accountMaxLabelLengthError": "O rótulo da conta deve ser inferior a 16 caracteres!",
     "accountLabelCannotBeMoreThan": "O rótulo da conta não pode ter mais de 64 caracteres!",
     "accountTrustLines": "TrustLines de conta",

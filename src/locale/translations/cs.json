@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Snižujete úroveň svého zabezpečení přístupu. Jste si jistý?",
     "removeTrustLineWarning": "Odebíráte toto aktivum z vašeho účtu. Tuto akci nelze vrátit zpět. Jste si jistý?",
     "unavailableChangeSecurityLevel": "Změna úrovně zabezpečení není teď k dispozici",
-    "accountRemoveWarning": "Váš účet bude trvale odstraněn z Xaman, jste si jisti?",
+    "accountRemoveWarning": "Váš účet bude odebrán z tohoto zařízení. Kdykoli jej můžete znovu importovat pomocí tajného klíče k účtu. Jste si jisti?",
     "accountMaxLabelLengthError": "Štítek (popisek) účtu by měl být kratší než 16 znaků!",
     "accountLabelCannotBeMoreThan": "Account label cannot be more than 64 characters!",
     "accountTrustLines": "TrustLines účtu",

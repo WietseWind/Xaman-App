@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Sarbide maila mailaz igotzen ari zara. Ziur zaude?",
     "removeTrustLineWarning": "Token hau XRP liburuaren kontutik kentzen ari zara. Ziur zaude?",
     "unavailableChangeSecurityLevel": "Une honetan segurtasun maila aldatzea ez dago erabilgarri",
-    "accountRemoveWarning": "Zure kontua behin betiko ezabatuko da Xaman-etik. Ziur zaude?",
+    "accountRemoveWarning": "Zure kontua gailu honetatik kenduko da. Edozein unetan inporta dezakezu berriro zure kontuaren sekretuarekin. Ziur zaude?",
     "accountMaxLabelLengthError": "Kontuaren etiketak 16 karaktere baino gutxiago izan behar ditu!",
     "accountLabelCannotBeMoreThan": "Kontuaren etiketa ezin da 64 karaktere baino gehiago izan!",
     "accountTrustLines": "Kontu fidagarrienLerroak",

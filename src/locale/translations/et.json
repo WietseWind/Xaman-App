@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Sa alandad oma ligipääsutaset. Oled sa kindel?",
     "removeTrustLineWarning": "Sa eemaldad selle vara oma kontolt. Seda tegevust ei saa teha. Oled sa kindel?",
     "unavailableChangeSecurityLevel": "Turvataseme muutmine ei ole praegu kättesaadav",
-    "accountRemoveWarning": "Sinu konto kustutatakse jäädavalt Xaman-ist, oled sa kindel?",
+    "accountRemoveWarning": "Sinu konto eemaldatakse sellest seadmest. Saad selle igal ajal oma konto saladusega uuesti importida. Oled sa kindel?",
     "accountMaxLabelLengthError": "Konto silt peaks olema vähem kui 16 tähemärki!",
     "accountLabelCannotBeMoreThan": "Konto silt ei saa olla pikem kui 64 tähemärki!",
     "accountTrustLines": "Konto TrustLines",

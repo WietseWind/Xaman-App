@@ -1061,7 +1061,7 @@
     "downgradingAccessLevelWarningPhysical": "Ou ap degradation nivo aksè ou yo. Èske ou sèten?",
     "removeTrustLineWarning": "Ou ap retire siy sa a nan kont XRP Ledger ou. Èske ou sèten?",
     "unavailableChangeSecurityLevel": "Chanje nivo sekirite a pa disponib kounye a",
-    "accountRemoveWarning": "Kont ou pral efase pou tout tan nan Xaman. Èske ou sèten?",
+    "accountRemoveWarning": "Kont ou pral retire nan aparèy sa a. Ou ka enpòte l ankò nenpòt lè ak sekrè kont ou. Èske ou sèten?",
     "accountMaxLabelLengthError": "Etikèt kont yo ta dwe mwens pase 16 karaktè!",
     "accountLabelCannotBeMoreThan": "Etikèt kont pa ka gen plis pase 64 karaktè!",
     "accountTrustLines": "Kont KonfyansLiy ",
