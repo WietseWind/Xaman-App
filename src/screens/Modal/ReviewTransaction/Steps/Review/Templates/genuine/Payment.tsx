@@ -29,6 +29,7 @@ import { TemplateProps } from '../types';
 import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 import { MPToken, MPTokenIssuance } from '@common/libs/ledger/objects';
 import { ComponentTypes } from '@services/NavigationService';
+import { paymentReceivesAmount, showSpendableNextToSendMax } from './paymentReviewBalance';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -358,6 +359,37 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
 
+    renderSpendableBalance = (currency?: string, issuer?: string) => {
+        const { source } = this.props;
+
+        if (!source) {
+            return null;
+        }
+
+        if (!currency || currency === NetworkService.getNativeAsset()) {
+            return (
+                <Text style={[AppStyles.monoBold]}>
+                    {Localize.formatNumber(CalculateAvailableBalance(source))}{' '}
+                    {NetworkService.getNativeAsset()}
+                </Text>
+            );
+        }
+
+        const line = (source.lines || []).find(
+            (item) => item.currency.currencyCode === currency && item.currency.issuer === issuer,
+        );
+        const balance = line ? Math.floor(Number(line.balance || 0) * 100_000_000) / 100_000_000 : 0;
+
+        return (
+            <AmountText
+                value={balance}
+                style={[AppStyles.monoBold]}
+                currency={line?.getFormattedCurrency() || NormalizeCurrencyCode(currency)}
+                immutable
+            />
+        );
+    };
+
     renderAmountRate = () => {
         const {
             amount,
@@ -454,6 +486,8 @@ class PaymentTemplate extends Component<Props, State> {
 
         const isNativeAsset = (currencyRate && amount) ||
             (currencyRate && !this.isMPTAmount() && currencyName === NetworkService.getNativeAsset());
+        const receivesAmount = paymentReceivesAmount(transaction.SendMax);
+        const spendableNextToSendMax = showSpendableNextToSendMax(transaction.SendMax, Boolean(selectedPath));
 
         // TODO: better handling this part
         if (!account) {
@@ -491,7 +525,9 @@ class PaymentTemplate extends Component<Props, State> {
 
                 {/* Amount */}
                 <>
-                    <Text style={styles.label}>{Localize.t('global.amount')}</Text>
+                    <Text style={styles.label}>
+                        {receivesAmount ? Localize.t('global.amountToReceive') : Localize.t('global.amount')}
+                    </Text>
                     <View style={[
                         styles.contentBox,
                         // AppStyles.borderGreen,
@@ -554,6 +590,7 @@ class PaymentTemplate extends Component<Props, State> {
                                 AppStyles.flex1,
                                 AppStyles.flexStart,
                             ]}>{this.renderAmountRate()}</View>
+                            {!spendableNextToSendMax && (
                             <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
                                 <Text style={[
                                     !isNativeAsset
@@ -595,6 +632,7 @@ class PaymentTemplate extends Component<Props, State> {
                                     }
                                 </Text>
                             </View>
+                            )}
                         </View>
                     </View>
                 </>
@@ -630,6 +668,15 @@ class PaymentTemplate extends Component<Props, State> {
                                 style={styles.amount}
                                 immutable
                             />
+                            <View style={[AppStyles.flexEnd, AppStyles.stretchSelf]}>
+                                <Text style={[AppStyles.textRightAligned, SummaryStepStyle.currencyBalance]}>
+                                    {Localize.t('global.available')}{': '}
+                                    {this.renderSpendableBalance(
+                                        transaction.SendMax.currency,
+                                        transaction.SendMax.issuer,
+                                    )}
+                                </Text>
+                            </View>
                         </View>
                     </>
                 )}
