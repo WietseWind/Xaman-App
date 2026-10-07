@@ -708,6 +708,59 @@ const nodePlainLabel = (node) => {
     return (node.contentDesc || '').trim();
 };
 
+const OVERLAY_SHEET_IDS = ['switch-network-overlay', 'home-actions-overlay'];
+
+const nodeIsNetworkRow = (node) => {
+    const blob = `${node.attrs || ''} ${node.resourceId || ''} ${node.contentDesc || ''}`;
+    return blob.indexOf('network-') !== -1 && blob.indexOf('network-switch-button') === -1;
+};
+
+/**
+ * Home actions and the network list cover the tab bar. Tapping Settings
+ * while the list is open hits the row at that spot. Developer mode puts
+ * XRPL Devnet last, on the Settings tab, so the suite changes network.
+ * Tap the backdrop above the sheet title instead.
+ */
+const dismissAndroidOverlaySheet = async (xml) => {
+    if (!xml || !OVERLAY_SHEET_IDS.some((id) => pickNodeForTestId(xml, id))) {
+        return false;
+    }
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const title = nodes.find((n) => {
+        const label = nodePlainLabel(n).toLowerCase();
+        return label === 'networks' || label === 'recently used';
+    });
+    const overlay =
+        pickNodeForTestId(xml, 'switch-network-overlay') ||
+        pickNodeForTestId(xml, 'home-actions-overlay');
+    const x = overlay ? Math.round((overlay.bounds.x1 + overlay.bounds.x2) / 2) : 200;
+    let tapY = title ? Math.max(160, title.bounds.y1 - 70) : 160;
+    const coversRow = (y) =>
+        nodes.some((n) => nodeIsNetworkRow(n) && y >= n.bounds.y1 && y <= n.bounds.y2);
+    while (tapY > 80 && coversRow(tapY)) {
+        tapY -= 40;
+    }
+    adbTap(x, tapY);
+    cachedXml = '';
+    cachedAt = 0;
+    await sleep(450);
+    return true;
+};
+
+const pointHitsNetworkControl = (xml, bounds) => {
+    if (!xml || !bounds) {
+        return false;
+    }
+    const { x, y } = bounds;
+    return parseNodes(xml).some((n) => {
+        const blob = `${n.attrs || ''} ${n.resourceId || ''} ${n.contentDesc || ''}`;
+        if (blob.indexOf('network-') === -1) {
+            return false;
+        }
+        return x >= n.bounds.x1 && x <= n.bounds.x2 && y >= n.bounds.y1 && y <= n.bounds.y2;
+    });
+};
+
 const androidClearBlockingUi = async () => {
     try {
         execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'keyevent', '66'], {
@@ -889,9 +942,15 @@ const clickByTestId = async (testId) => {
         return;
     }
     if (TAB_LABELS[testId]) {
+        if (await dismissAndroidOverlaySheet(xml)) {
+            return;
+        }
         const tab = pickTabNode(xml, testId) || (lastTabXml && pickTabNode(lastTabXml, testId));
         if (!tab) {
             throw new Error(`android hierarchy has no app tab for ${testId} (${dumpSummary(xml || lastTabXml)})`);
+        }
+        if (pointHitsNetworkControl(xml, tab.bounds)) {
+            return;
         }
         await tapBounds(tab.bounds);
         return;
@@ -1280,17 +1339,18 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             if (testId === 'settings-tab-screen' && xmlLooksLikeSettings(lastXml)) {
                 return;
             }
-            if (
-                testId === 'settings-tab-screen' &&
-                !xmlLooksLikeSettings(lastXml) &&
-                pickTabNode(lastXml, 'tab-Settings')
-            ) {
+            if (testId === 'settings-tab-screen' && !xmlLooksLikeSettings(lastXml)) {
+                if (await dismissAndroidOverlaySheet(lastXml)) {
+                    continue;
+                }
                 const tab = pickTabNode(lastXml, 'tab-Settings');
-                await tapBounds(tab.bounds);
-                cachedXml = '';
-                cachedAt = 0;
-                await sleep(500);
-                continue;
+                if (tab && !pointHitsNetworkControl(lastXml, tab.bounds)) {
+                    await tapBounds(tab.bounds);
+                    cachedXml = '';
+                    cachedAt = 0;
+                    await sleep(500);
+                    continue;
+                }
             }
         }
         // Do not auto-unlock AuthenticateOverlay (same testID) during signing.
@@ -1402,16 +1462,22 @@ const androidSwipeTestId = async (testId, direction) => {
     if (direction === 'up') {
         // Start in the sheet, not at y2. On gesture-nav emu y2 sits on the
         // Home pill (launcher). Stay above the Xaman content bottom.
+        // The center dock protrudes above the tab strip and opens Home actions.
+        // 96px above the window bottom still lands on it and covers the review slider.
         const xml = await androidDumpXml();
+        if (await dismissAndroidOverlaySheet(xml)) {
+            return;
+        }
         const nodes = parseNodes(xml);
-        const bottom = xummContentBottom(nodes) || bounds.y2;
         const h = Math.max(1, bounds.y2 - bounds.y1);
         const x = Math.round((bounds.x1 + bounds.x2) / 2);
         let startY = Math.round(bounds.y1 + h * 0.55);
         let endY = Math.round(bounds.y1 + h * 0.18);
-        const maxStart = bottom - 96;
-        if (startY > maxStart) {
-            startY = Math.max(bounds.y1 + 40, maxStart);
+        const tabBar = pickTabBarContainer(nodes);
+        const contentBottom = xummContentBottom(nodes) || bounds.y2;
+        const dockTop = tabBar ? tabBar.bounds.y1 - 140 : contentBottom - 220;
+        if (startY > dockTop) {
+            startY = Math.max(bounds.y1 + 48, dockTop);
         }
         if (endY >= startY - 80) {
             endY = Math.max(bounds.y1 + 16, startY - 160);
