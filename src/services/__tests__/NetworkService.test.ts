@@ -306,6 +306,10 @@ describe('NetworkService', () => {
             expect(networkService.normalizeEndpoint(endpoint)).toBe(endpoint);
         });
 
+        test('Should connect to Xahau testnet directly instead of the custom-node proxy', () => {
+            expect(networkService.normalizeEndpoint('wss://xahau-test.net')).toBe('wss://xahau-test.net');
+        });
+
         test('Should append ORIGIN and userId for RPC hosts listed as cluster endpoints', () => {
             const rpcClusterEndpoints = [
                 'wss://rpc.xrpl-labs.com',
