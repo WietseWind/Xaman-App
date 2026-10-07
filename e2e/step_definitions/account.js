@@ -711,15 +711,24 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
     // next word otherwise lands in the previous row.
     if (device.getPlatform() === 'android') {
         const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
+        // Curve options scroll the list down, and Android only exposes the
+        // visible rows. Word 0 is then missing. Back at the top, Enter moves
+        // focus and scrolls the next row into the tree before we type it.
+        try {
+            await element(by.id('mnemonic-words-scroll')).scrollTo('top');
+        } catch (e) {
+            // already at the top
+        }
+        await new Promise((resolve) => { setTimeout(resolve, 400); });
         for (let i = 0; i < words.length; i++) {
-            // Enter moves focus on a timer. Typing the next word before that
-            // lands it in the previous row, and Next derives a different address.
-            await waitUntilAndroidTestId(`word-${i}-input`, 10000);
+            await waitUntilAndroidTestId(`word-${i}-input`, 8000);
             await clickByTestId(`word-${i}-input`);
             await new Promise((resolve) => { setTimeout(resolve, 200); });
             androidTypeText(words[i]);
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            if (i + 1 < words.length) {
+                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
+                await new Promise((resolve) => { setTimeout(resolve, 500); });
+            }
         }
         return;
     }

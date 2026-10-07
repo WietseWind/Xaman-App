@@ -235,7 +235,13 @@ Given('I should see {string}', async (elementId) => {
         return;
     }
     if (device.getPlatform() === 'android') {
-        const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view' ? 30000 : 10000;
+        // Changing the passcode re-encrypts every secret. With a full suite of
+        // accounts that screen stays up longer than the usual 10s.
+        const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view'
+            ? 30000
+            : elementId === 'security-settings-screen'
+                ? 90000
+                : 10000;
         if (elementId === 'accept-button') {
             for (let i = 0; i < 5; i += 1) {
                 try {
