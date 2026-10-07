@@ -39,6 +39,7 @@ public class LaunchActivity extends NavigationActivity {
 
     private View splashView;
     private boolean splashHidden = false;
+    private int lastWindowBackground = Color.TRANSPARENT;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -246,7 +247,8 @@ public class LaunchActivity extends NavigationActivity {
                 child.setBackgroundColor(Color.TRANSPARENT);
             }
         }
-        if (paintedRoot) {
+        if (paintedRoot && background != lastWindowBackground) {
+            lastWindowBackground = background;
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }
     }
