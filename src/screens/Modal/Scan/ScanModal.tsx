@@ -577,7 +577,7 @@ class ScanModal extends Component<Props, State> {
     handleUndetectedType = (content?: string, clipboard?: boolean) => {
         // some users scan QR on tangem card, navigate them to the account add screen
         if (content && ['https://xumm.app/tangem', 'https://xaman.app/tangem'].some((url) => content.startsWith(url))) {
-            this.routeUser(AppScreens.Account.Add);
+            this.routeUser(AppScreens.Account.Add, {});
             return;
         }
 
