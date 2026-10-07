@@ -26,6 +26,7 @@ import {
     // Switch,
     Icon,
 } from '@components/General';
+import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
 
 import { ConvertCodecAlphabet } from '@common/utils/codec';
 import {
@@ -459,28 +460,30 @@ class EnterSeedStep extends Component<Props, State> {
 
                     <Spacer size={50} />
 
-                    <TextInput
-                        testID="seed-input"
-                        placeholder={
-                            alternativeSeedAlphabet
-                                ? Localize.t('account.enterSecret')
-                                : Localize.t('account.pleaseEnterYourFamilySeed')
-                        }
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        secureTextEntry={!showSecret}
-                        keyboardType={keyboardType}
-                        inputStyle={
-                            String(secret || '') === '' ? styles.inputTextEmpty : styles.inputText
-                        }
-                        onChangeText={this.onTextChange}
-                        style={styles.textInput}
-                        value={secret}
-                        showScanner
-                        scannerType={StringType.XrplSecret}
-                        onScannerRead={this.onQRCodeRead}
-                        numberOfLines={1}
-                    />
+                    <SensitiveAccessibilityView>
+                        <TextInput
+                            testID="seed-input"
+                            placeholder={
+                                alternativeSeedAlphabet
+                                    ? Localize.t('account.enterSecret')
+                                    : Localize.t('account.pleaseEnterYourFamilySeed')
+                            }
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            secureTextEntry={!showSecret}
+                            keyboardType={keyboardType}
+                            inputStyle={
+                                String(secret || '') === '' ? styles.inputTextEmpty : styles.inputText
+                            }
+                            onChangeText={this.onTextChange}
+                            style={styles.textInput}
+                            value={secret}
+                            showScanner
+                            scannerType={StringType.XrplSecret}
+                            onScannerRead={this.onQRCodeRead}
+                            numberOfLines={1}
+                        />
+                    </SensitiveAccessibilityView>
                     <Spacer size={20} />
                     <Button
                         roundedMini

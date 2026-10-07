@@ -33,6 +33,7 @@ import {
     Footer,
     noAutofillProps,
 } from '@components/General';
+import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
 
 import Localize from '@locale';
 
@@ -652,8 +653,10 @@ class EnterMnemonicStep extends Component<Props, State> {
                     contentContainerStyle={[AppStyles.paddingHorizontal, styles.mnemonicScrollContent]}
                     onContentSizeChange={this.onContentSizeChange}
                 >
-                    {this.renderRows()}
-                    {this.renderPassphrase()}
+                    <SensitiveAccessibilityView>
+                        {this.renderRows()}
+                        {this.renderPassphrase()}
+                    </SensitiveAccessibilityView>
                     {this.renderDerivationPath()}
                     {this.renderCurve()}
                 </KeyboardAwareScrollView>
