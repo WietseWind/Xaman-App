@@ -168,7 +168,7 @@ class EventsView extends Component<Props, State> {
             !isEqual(nextState.isLoadingMore, isLoadingMore) ||
             !isEqual(nextState.isLoadingMoreDebounced, isLoadingMoreDebounced) ||
             !isEqual(nextState.canLoadMore, canLoadMore) ||
-            !isEqual(nextState.account, account) ||
+            nextState.account !== account ||
             !isEqual(nextState.filters, filters) ||
             !isEqual(nextProps.timestamp, timestamp)
         );
