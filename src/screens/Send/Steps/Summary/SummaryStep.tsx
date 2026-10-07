@@ -386,6 +386,11 @@ class SummaryStep extends Component<Props, State> {
             canSendFee,
         } = this.state;
 
+        // destination can be cleared by a late async callback of the recipient step
+        if (!destination) {
+            return null;
+        }
+
         return (
             <View testID="send-summary-view" style={styles.container}>
                 <KeyboardAwareScrollView
