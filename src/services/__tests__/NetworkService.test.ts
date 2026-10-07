@@ -377,4 +377,27 @@ describe('NetworkService', () => {
             statusSpy.mockRestore();
         });
     });
+
+    describe('hasSwap', () => {
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('does not throw when profile or swapNetworks is missing', () => {
+            const spy = jest.spyOn(ProfileRepository, 'getProfile');
+            spy.mockReturnValue(undefined);
+            expect(() => networkService.hasSwap()).not.toThrow();
+            expect(networkService.hasSwap()).toBe(false);
+
+            spy.mockReturnValue({} as any);
+            expect(() => networkService.hasSwap()).not.toThrow();
+            expect(networkService.hasSwap()).toBe(false);
+        });
+
+        it('is true when the current network key is listed', () => {
+            jest.replaceProperty(networkService, 'network', { key: 'MAINNET' } as any);
+            jest.spyOn(ProfileRepository, 'getProfile').mockReturnValue({ swapNetworks: 'MAINNET,XAHAU' } as any);
+            expect(networkService.hasSwap()).toBe(true);
+        });
+    });
 });
