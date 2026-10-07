@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Code QR non valide (pour Xaman), essayez un nouveau code ou essayez à nouveau",
     "invalidClipboardDateTryNewOneOrTryAgain": "Données du presse-papier non valides (pour Xaman), essayez-en un nouveau ou réessayez",
     "importFromClipboard": "Importer à partir du presse-papiers",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Torche éteinte",
+    "flashlightOn": "Torche allumée"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Charge utile gérée par un autre client",

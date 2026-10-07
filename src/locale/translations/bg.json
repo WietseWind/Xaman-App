@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Невалиден QR код (за Xaman), опитайте нов или опитайте отново",
     "invalidClipboardDateTryNewOneOrTryAgain": "Невалидни данни за клипборда (за Xaman), опитайте нов или опитайте отново",
     "importFromClipboard": "Импортиране от Клипборда",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Фенерче изключено",
+    "flashlightOn": "Фенерче включено"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload, обработен от друг клиент",

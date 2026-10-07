@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Nederīgs QR kods (priekš Xaman aplikācijas), mēģiniet jaunu vai mēģiniet vēlreiz",
     "invalidClipboardDateTryNewOneOrTryAgain": "Nederīgi starpliktuves dati (priekš Xaman aplikācijas). Mēģiniet jaunu vai mēģiniet vēlreiz.",
     "importFromClipboard": "Migrēt no Starpliktuves",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Lukturis izslēgts",
+    "flashlightOn": "Lukturis ieslēgts"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Datu ievades pieprasījums ",

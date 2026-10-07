@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Ugyldig QR kode (for Xaman), prøv en ny eller prøv igjen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ugyldige utklippstavle-data (for Xaman), prøv en ny en eller prøv igjen",
     "importFromClipboard": "Importer fra utklippstavla",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Lommelykt av",
+    "flashlightOn": "Lommelykt på"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Data blir håndtert av en annen klient",

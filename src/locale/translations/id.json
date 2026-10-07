@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Kode QR tidak valid (untuk Xaman), coba yang baru atau coba lagi",
     "invalidClipboardDateTryNewOneOrTryAgain": "Data papan klip tidak valid (untuk Xaman). Coba yang baru atau coba lagi.",
     "importFromClipboard": "Impor dari Clipboard",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Senter mati",
+    "flashlightOn": "Senter nyala"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Muatan ditangani oleh klien lain",

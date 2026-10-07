@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Ungültiger QR-Code (für Xaman), versuchen Sie es erneut oder probieren Sie einen neuen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ungültige Zwischenablagedaten (für Xaman), versuchen Sie es mit einer neuen oder versuchen Sie es erneut",
     "importFromClipboard": "Aus Zwischenablage einfügen",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Taschenlampe aus",
+    "flashlightOn": "Taschenlampe an"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Nutzdaten von anderem Clienten abgewickelt",

@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Codice QR non valido (per Xaman), provane uno nuovo o riprova",
     "invalidClipboardDateTryNewOneOrTryAgain": "Dati degli appunti non validi (per Xaman), provane uno nuovo o riprova",
     "importFromClipboard": "Importa dagli Appunti",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Torcia spenta",
+    "flashlightOn": "Torcia accesa"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Pacchetto di dati da firmare gestito da un altro cliente",

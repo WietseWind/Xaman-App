@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "അസാധുവായ QR കോഡ് (Xaman- നായി), പുതിയത് പരീക്ഷിക്കുക അല്ലെങ്കിൽ വീണ്ടും ശ്രമിക്കുക",
     "invalidClipboardDateTryNewOneOrTryAgain": "ക്ലിപ്പ്ബോർഡ് ഡാറ്റ അസാധുവാണ് (Xaman നായി), പുതിയത് പരീക്ഷിക്കുക അല്ലെങ്കിൽ വീണ്ടും ശ്രമിക്കുക",
     "importFromClipboard": "ക്ലിപ്പ്ബോർഡിൽ നിന്ന് ഇറക്കുമതി ചെയ്യുക",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "ഫ്ലാഷ്‌ലൈറ്റ് ഓഫ്",
+    "flashlightOn": "ഫ്ലാഷ്‌ലൈറ്റ് ഓൺ"
   },
   "payload": {
     "payloadHandledByAnotherClient": "പേലോഡ് മറ്റൊരു ക്ലയന്റ് കൈകാര്യം ചെയ്യുന്നു",

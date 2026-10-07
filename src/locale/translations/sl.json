@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Neveljavna QR koda (za Xaman), poskusite z novo ali poskusite znova",
     "invalidClipboardDateTryNewOneOrTryAgain": "Neveljavni podatki odložišča (za Xaman), poskusite novega ali poskusite znova",
     "importFromClipboard": "Uvozi iz odložišča",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Svetilka izklopljena",
+    "flashlightOn": "Svetilka vklopljena"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Vsebino obravnava drug klient",

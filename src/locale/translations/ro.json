@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Cod QR invalid (pentru Xaman), încercaţi unul nou sau încercaţi din nou.",
     "invalidClipboardDateTryNewOneOrTryAgain": "Datele din clipboard sunt invalide (pentru Xaman), încercaţi altele sau încercaţi din nou.",
     "importFromClipboard": "Import din clipboard",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Lanternă oprită",
+    "flashlightOn": "Lanternă pornită"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Conținut manipulat de un alt client.",

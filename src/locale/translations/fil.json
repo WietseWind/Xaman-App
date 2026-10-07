@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Di-wastong QR code (para sa Xaman), sumubok ng bago o subukang muli",
     "invalidClipboardDateTryNewOneOrTryAgain": "Di-wastong data ng clipboard (para sa Xaman), subukan ang bago o subukang muli",
     "importFromClipboard": "Angkat mula sa Clipboard",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Ilaw nakapatay",
+    "flashlightOn": "Ilaw nakabukas"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Ang paghawak ng payload ng ibang kliyente",

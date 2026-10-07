@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Neplatný QR kód (pre Xaman), skúste nový alebo skúste znova",
     "invalidClipboardDateTryNewOneOrTryAgain": "Neplatné údaje schránky (pre Xaman), skúste nový alebo skúste znova",
     "importFromClipboard": "Dovoz zo schránky",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Baterka vypnutá",
+    "flashlightOn": "Baterka zapnutá"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Užitočné zaťaženie vybavuje iný klient",

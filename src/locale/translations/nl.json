@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Ongeldige QR-code (voor Xaman), probeer een nieuwe of probeer opnieuw",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ongeldige klembord gegevens (voor Xaman). Probeer een nieuwe of probeer opnieuw.",
     "importFromClipboard": "Importeren uit klembord",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Flitser uit",
+    "flashlightOn": "Flitser aan"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload afgehandeld door een andere client",

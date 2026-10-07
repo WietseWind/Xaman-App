@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "קוד QR לא חוקי (עבור Xaman), נסה קוד חדש או נסה שוב",
     "invalidClipboardDateTryNewOneOrTryAgain": "נתוני הלוח לא חוקיים (עבור Xaman), נסה נתונים חדשים או נסה שוב",
     "importFromClipboard": "ייבא מלוח",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "פנס כבוי",
+    "flashlightOn": "פנס דולק"
   },
   "payload": {
     "payloadHandledByAnotherClient": "מטען מטופל על ידי לקוח אחר",

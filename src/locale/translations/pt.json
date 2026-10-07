@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Código QR inválido (para a app Xaman), tente um novo ou tente novamente.",
     "invalidClipboardDateTryNewOneOrTryAgain": "Dados da área de transferência inválidos (para a app Xaman), tente um novo ou tente novamente.",
     "importFromClipboard": "Importar da área de transferência.",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Lanterna desligada",
+    "flashlightOn": "Lanterna ligada"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload gerido por outro cliente",

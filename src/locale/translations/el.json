@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Μη έγκυρος κωδικός QR (για Xaman), δοκιμάστε ένα νέο κωδικό ή προσπαθήστε ξανά",
     "invalidClipboardDateTryNewOneOrTryAgain": "Μη έγκυρα δεδομένα πρόχειρου (για Xaman), δοκιμάστε ένα νέο ή προσπαθήστε ξανά",
     "importFromClipboard": "Εισαγωγή από το πρόχειρο",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Φακός κλειστός",
+    "flashlightOn": "Φακός ανοιχτός"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Το φορτίο χειρίστηκε από άλλο πελάτη",

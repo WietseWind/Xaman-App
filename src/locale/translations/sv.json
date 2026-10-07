@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Ogiltig QR-kod (för Xaman), försök med ett nytt försök eller försök igen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Ogiltiga data från Urklipp (för Xaman), försök med ett nytt försök eller försök igen",
     "importFromClipboard": "Importera från Urklipp",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Ficklampa av",
+    "flashlightOn": "Ficklampa på"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Nyttolast hanteras av en annan klient",

@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Virheellinen QR-koodi (Xaman), yritä toista koodia tai yritä uudelleen",
     "invalidClipboardDateTryNewOneOrTryAgain": "Virheelliset leikepöydän tiedot (Xaman: lle). Kokeile uutta tai yritä uudelleen.",
     "importFromClipboard": "Tuo leikepöydältä",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Taskulamppu pois",
+    "flashlightOn": "Taskulamppu päällä"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Toisen asiakkaan käsittelemä hyötykuorma",

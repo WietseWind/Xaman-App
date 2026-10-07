@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "غلط QR ڪوڊ (Xaman لاءِ) ، نئون آزمايو يا ٻيهر ڪوشش ڪريو",
     "invalidClipboardDateTryNewOneOrTryAgain": "غلط ڪلپ بورڊ ڊيٽا (Xaman لاءِ) هڪ نئون يا ٻيهر ڪوشش ڪريو.",
     "importFromClipboard": "ڪلپ بورڊ مان درآمد ڪريو",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "فليش لائيٽ بند",
+    "flashlightOn": "فليش لائيٽ کليل"
   },
   "payload": {
     "payloadHandledByAnotherClient": "پيڪي لوڊ ٻئي گراهڪ طرفان ترتيب ڏنل آهي",

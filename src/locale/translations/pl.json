@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Nieprawidłowy kod QR (dla Xaman), wypróbuj nowy lub spróbuj ponownie",
     "invalidClipboardDateTryNewOneOrTryAgain": "Nieprawidłowe dane schowka (dla Xaman), spróbuj nowego lub spróbuj ponownie",
     "importFromClipboard": "Importuj ze schowka",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Latarka wyłączona",
+    "flashlightOn": "Latarka włączona"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Zawartość obsługiwana przez innego klienta",

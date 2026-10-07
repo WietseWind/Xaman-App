@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Codi QR invàlid (per a Xaman). Prova'n un de nou o torna-ho a intentar",
     "invalidClipboardDateTryNewOneOrTryAgain": "Les dades del porta-retalls no són vàlides (per a Xaman).  Prova'n unes altres de noves o torna-ho a intentar.",
     "importFromClipboard": "Importa des del porta-retalls",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Llanterna apagada",
+    "flashlightOn": "Llanterna encesa"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Càrrega útil gestionada per un altre client",

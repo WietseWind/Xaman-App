@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Неважећи QR код (за Xaman), покушајте нови или покушајте поново ",
     "invalidClipboardDateTryNewOneOrTryAgain": "Неважећи подаци из привремене меморије (клипборда) (за Xaman), испробајте нову или покушајте поново",
     "importFromClipboard": "Унети из првремене меморије (клипборд)",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Лампа искључена",
+    "flashlightOn": "Лампа укључена"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Уплатом управља други клијент",

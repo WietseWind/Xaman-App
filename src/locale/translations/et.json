@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Vigane QR-kood (Xaman-i jaoks), proovi uut või proovi uuesti",
     "invalidClipboardDateTryNewOneOrTryAgain": "Vigased lõikepuhvri andmed (Xaman-i jaoks), proovi uut või proovi uuesti",
     "importFromClipboard": "Impordi lõikepuhvrist",
-    "flashlightOff": "Flashlight",
-    "flashlightOn": "Flashlight on"
+    "flashlightOff": "Taskulamp väljas",
+    "flashlightOn": "Taskulamp sees"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Tasuline koormus teise kliendi poolt",
