@@ -18,6 +18,7 @@ import { RippleStateToTrustLine } from '@common/libs/ledger/parser/entry';
 import { LedgerEntryFlags } from '@common/constants/flags';
 
 import NetworkService from '@services/NetworkService';
+import { recoverSubmitAfterSendError, submitNetworkFromConnection } from '@services/submitRecovery';
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 import {
     AccountInfoRequest,
@@ -755,13 +756,16 @@ class LedgerService extends EventEmitter {
                 message: engine_result_message,
             });
         } catch (error: any) {
-            // something wrong happened
-            return {
-                success: false,
-                engineResult: 'telFAILED',
-                message: error?.message,
-                network: undefined,
-            };
+            // The socket can die after the node has already accepted the blob.
+            // Look the hash up on the connection we have now instead of
+            // reporting telFAILED with no node.
+            const details = NetworkService.getConnectionDetails();
+            return recoverSubmitAfterSendError({
+                hash: txHash,
+                error,
+                network: submitNetworkFromConnection(details),
+                lookup: (id) => this.getTransaction(id),
+            });
         }
     };
 
