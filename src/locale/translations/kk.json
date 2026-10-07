@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "QR коды дұрыс емес (Xaman үшін), жаңасын қолданып көріңіз немесе қайталап көріңіз",
     "invalidClipboardDateTryNewOneOrTryAgain": "Алмасу буферінің жарамсыз деректері (Xaman үшін). Жаңа көріңіз немесе қайталап көріңіз.",
     "importFromClipboard": "Алмасу буферінен импорттау",
-    "flashlightOff": "Қолшам өшірулі",
-    "flashlightOn": "Қолшам қосулы"
+    "flashlightOff": "Жарқыл өшірулі",
+    "flashlightOn": "Жарқыл қосулы"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Ақылы жүктеме басқа клиентпен өңделеді",

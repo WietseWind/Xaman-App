@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "无效的二维码，尝试新的或再试一次",
     "invalidClipboardDateTryNewOneOrTryAgain": "剪贴板数据无效（对于 Xaman）。尝试新的或再试一次。",
     "importFromClipboard": "从剪贴板导入",
-    "flashlightOff": "手电筒已关",
-    "flashlightOn": "手电筒已开"
+    "flashlightOff": "闪光灯已关",
+    "flashlightOn": "闪光灯已开"
   },
   "payload": {
     "payloadHandledByAnotherClient": "其他客户处理的有效负载",

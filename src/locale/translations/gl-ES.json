@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Código QR non válido (para Xaman), probe un novo ou inténteo outra vez",
     "invalidClipboardDateTryNewOneOrTryAgain": "Datos do portapapeis non válidos (para Xaman), probe un novo ou inténteo outra vez",
     "importFromClipboard": "Importar do Portapapeis",
-    "flashlightOff": "Lanterna apagada",
-    "flashlightOn": "Lanterna acesa"
+    "flashlightOff": "Flash apagado",
+    "flashlightOn": "Flash aceso"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Carga manexada por outro cliente",

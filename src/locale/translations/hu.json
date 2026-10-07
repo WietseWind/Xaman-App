@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Érvénytelen QR kód (Xaman számára), próbáljon újat vagy próbálja újra",
     "invalidClipboardDateTryNewOneOrTryAgain": "Invalid clipboard data (for Xaman). Try a new one or try again.",
     "importFromClipboard": "Importálás vágólapról",
-    "flashlightOff": "Zseblámpa ki",
-    "flashlightOn": "Zseblámpa be"
+    "flashlightOff": "Vaku ki",
+    "flashlightOn": "Vaku be"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Adattartalom másik kliens által kezelve",

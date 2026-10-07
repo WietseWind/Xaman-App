@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "अमान्य QR कोड (Xaman के लिए), एक नया प्रयास करें या फिर से प्रयास करें",
     "invalidClipboardDateTryNewOneOrTryAgain": "अमान्य क्लिपबोर्ड डेटा (Xaman के लिए), एक नया प्रयास करें या फिर से प्रयास करें",
     "importFromClipboard": "क्लिपबोर्ड से आयात करें",
-    "flashlightOff": "फ्लैशलाइट बंद",
-    "flashlightOn": "फ्लैशलाइट चालू"
+    "flashlightOff": "फ्लैश बंद",
+    "flashlightOn": "फ्लैश चालू"
   },
   "payload": {
     "payloadHandledByAnotherClient": "पेलोड एक और ग्राहक द्वारा संभाला",

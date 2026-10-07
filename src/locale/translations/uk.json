@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Недійсний QR-код (для Xaman). Спробуйте новий або повторіть ще раз",
     "invalidClipboardDateTryNewOneOrTryAgain": "Недійсні дані буфера обміну (для Xaman), спробуйте нові або повторіть спробу",
     "importFromClipboard": "Імпорт з буфера обміну",
-    "flashlightOff": "Ліхтарик вимкнено",
-    "flashlightOn": "Ліхтарик увімкнено"
+    "flashlightOff": "Спалах вимкнено",
+    "flashlightOn": "Спалах увімкнено"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload обробляється іншим клієнтом",

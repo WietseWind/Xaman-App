@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "غلط QR کوڈ (Xaman کیلئے) ، کوئی نیا آزمائیں یا دوبارہ کوشش کریں",
     "invalidClipboardDateTryNewOneOrTryAgain": "غلط کلپ بورڈ ڈیٹا (Xaman کیلئے) ایک نیا آزمائیں یا دوبارہ کوشش کریں۔",
     "importFromClipboard": "کلپ بورڈ سے درآمد کریں",
-    "flashlightOff": "فلیش لائٹ بند",
-    "flashlightOn": "فلیش لائٹ آن"
+    "flashlightOff": "فلیش بند",
+    "flashlightOn": "فلیش آن"
   },
   "payload": {
     "payloadHandledByAnotherClient": "پے لوڈ دوسرے کلائنٹ کے زیر انتظام",

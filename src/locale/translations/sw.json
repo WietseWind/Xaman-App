@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "Invalid QR code (for Xaman), try a new one or try again",
     "invalidClipboardDateTryNewOneOrTryAgain": "Invalid clipboard data (for Xaman). Try a new one or try again.",
     "importFromClipboard": "Leta from Clipboard",
-    "flashlightOff": "Tochi imezimwa",
-    "flashlightOn": "Tochi imewashwa"
+    "flashlightOff": "Mwako umezimwa",
+    "flashlightOn": "Mwako umewashwa"
   },
   "payload": {
     "payloadHandledByAnotherClient": "Payload handled by another client",

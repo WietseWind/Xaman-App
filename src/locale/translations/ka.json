@@ -1290,8 +1290,8 @@
     "invalidQRTryNewOneOrTryAgain": "არასწორი QR კოდი (Xaman აპლიკაციისთვის), სცადეთ ახლიდან",
     "invalidClipboardDateTryNewOneOrTryAgain": "არასწორი დაკოპირებული მონაცემი (Xaman აპლიკაციისათვის). სცადეთ ახალი ან ხელახლა. ",
     "importFromClipboard": "დაკოპირებული მისამართის ჩასმა",
-    "flashlightOff": "ფანარი გამორთულია",
-    "flashlightOn": "ფანარი ჩართულია"
+    "flashlightOff": "ფლეში გამორთულია",
+    "flashlightOn": "ფლეში ჩართულია"
   },
   "payload": {
     "payloadHandledByAnotherClient": "გადაცემული მონაცემების მართვა ხორციელდება სხვა პლატფორმის მეშვეობით",
