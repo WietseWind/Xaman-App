@@ -127,6 +127,17 @@ const compactOptions = (
     return Object.keys(out).length > 0 ? out : undefined;
 };
 
+/**
+ * Inactive word rows are shown as bullets. Android writes that mask back through
+ * onChangeText. Keep the typed word so Next derives the mnemonic the user entered.
+ */
+export const nextMnemonicWord = (current: string, incoming: string): string => {
+    if (/^•+$/.test(incoming)) {
+        return current;
+    }
+    return incoming.replace(/\s/g, '');
+};
+
 export const deriveMnemonicAccount = (
     mnemonic: string,
     options?: MnemonicDeriveOptions & { algorithm?: MnemonicAlgorithm },

@@ -7,6 +7,7 @@ import {
     curvePickerItemTitle,
     deriveMnemonicAccount,
     deriveMnemonicAddresses,
+    nextMnemonicWord,
     getMnemonicAlgorithm,
     isLedgerAccountActivated,
     pickMnemonicImport,
@@ -65,6 +66,24 @@ describe('mnemonicImport', () => {
             );
 
             expect(signed.signedTransaction).toBeTruthy();
+        });
+    });
+
+    describe('nextMnemonicWord', () => {
+        it('ignores the bullet mask and still derives the typed mnemonic', () => {
+            const words = SAMPLE.split(' ');
+            const kept = words.map((word) => nextMnemonicWord(word, '•'.repeat(word.length)));
+
+            expect(kept).toEqual(words);
+            expect(deriveMnemonicAccount(kept.join(' ')).address).toBe(SECP_ADDRESS);
+        });
+
+        it('a stored bullet mask is not the typed mnemonic', () => {
+            const masked = SAMPLE.split(' ')
+                .map((word) => '•'.repeat(word.length))
+                .join(' ');
+
+            expect(deriveMnemonicAccount(masked).address).not.toBe(SECP_ADDRESS);
         });
     });
 
