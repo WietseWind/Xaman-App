@@ -32,6 +32,8 @@ const {
     isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
+    clickAndroidTextIncludes,
+    androidDismissImeIfShown,
     dismissAndroidImportedSecretAlert,
     unlockAndroidPasscodeIfPresent,
 } = require('../helpers/tapById');
@@ -558,9 +560,47 @@ Then('I choose family seed curve {string}', async (curve) => {
     await device.disableSynchronization();
 
     if (device.getPlatform() === 'android') {
+        // The seed field is still focused after typing. A tap on the curve
+        // row is swallowed to close the keyboard, or lands on the IME and
+        // never opens the picker. Hide the keyboard without hardware Back
+        // (Back pops the whole import screen).
+        if (await androidDismissImeIfShown()) {
+            await sleepMs(400);
+        }
+        const pickerOpen = async () =>
+            (await androidHasTestId('picker-modal')) || (await androidHasTestId(`${curve}-item`));
         await clickByTestId('keypair-curve-row');
-        await sleepMs(800);
-        await clickByTestId(`${curve}-item`);
+        let opened = false;
+        const openDeadline = Date.now() + 4000;
+        while (Date.now() < openDeadline) {
+            if (await pickerOpen()) {
+                opened = true;
+                break;
+            }
+            await sleepMs(250);
+        }
+        if (!opened) {
+            if (await androidDismissImeIfShown()) {
+                await sleepMs(400);
+            }
+            await clickByTestId('keypair-curve-row');
+            const retryDeadline = Date.now() + 4000;
+            while (Date.now() < retryDeadline) {
+                if (await pickerOpen()) {
+                    opened = true;
+                    break;
+                }
+                await sleepMs(250);
+            }
+        }
+        if (!opened) {
+            throw new Error(`family seed curve picker did not open for ${curve}`);
+        }
+        if (await androidHasTestId(`${curve}-item`)) {
+            await clickByTestId(`${curve}-item`);
+        } else if (!(await clickAndroidTextIncludes(curve))) {
+            await clickByTestId(`${curve}-item`);
+        }
         const deadline = Date.now() + 15000;
         let last = '';
         while (Date.now() < deadline) {

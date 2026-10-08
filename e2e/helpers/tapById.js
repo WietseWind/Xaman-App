@@ -1499,6 +1499,73 @@ const androidBlurIme = () => {
     }
 };
 
+// mInputShown is the IME window, not "an EditText is focused".
+// Hardware BACK is Navigator.pop on this screen and leaves import entirely
+// (Add an account). Hide the keyboard with a tap on the non-pressable
+// prompt, then Escape. Escape dismisses an AlertDialog, so callers must
+// not use this while a curve prompt is open.
+const androidImeShown = () => {
+    try {
+        const out = androidAdb(['shell', 'dumpsys', 'input_method'], 5000);
+        return /mInputShown=true/.test(String(out));
+    } catch (e) {
+        return false;
+    }
+};
+
+const androidDismissImeIfShown = async () => {
+    if (!androidImeShown()) {
+        return false;
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const prompt = nodes.find((n) =>
+        /please provide your account secret|family seed \/ privat/i.test(n.text || ''),
+    );
+    if (prompt) {
+        await tapBounds(prompt.bounds);
+    } else {
+        adbTap(540, 420);
+        cachedXml = '';
+        cachedAt = 0;
+    }
+    const deadline = Date.now() + 1200;
+    while (Date.now() < deadline) {
+        if (!androidImeShown()) {
+            return true;
+        }
+        await sleep(150);
+    }
+    try {
+        androidAdb(['shell', 'input', 'keyevent', '111'], 4000);
+    } catch (e) {
+        // IME already down
+    }
+    await sleep(300);
+    return true;
+};
+
+const clickAndroidTextIncludes = async (snippet) => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    const want = String(snippet || '').toLowerCase();
+    if (!want) {
+        return false;
+    }
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const pick =
+        nodes.find((n) => n.clickable && (n.text || '').toLowerCase().indexOf(want) !== -1) ||
+        nodes.find((n) => (n.text || '').toLowerCase().indexOf(want) !== -1);
+    if (!pick) {
+        return false;
+    }
+    await tapBounds(pick.bounds);
+    return true;
+};
+
 const androidPasteText = (value) => {
     const text = String(value);
     try {
@@ -1884,6 +1951,8 @@ module.exports = {
     androidSwipeTestId,
     androidTypeText,
     androidBlurIme,
+    androidDismissImeIfShown,
+    clickAndroidTextIncludes,
     isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
