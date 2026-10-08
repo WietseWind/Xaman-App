@@ -627,8 +627,29 @@ Then('I select a spendable account if Send is hidden', { timeout: 60 * 1000 }, a
     let lastErr = new Error('no funded account from earlier scenarios exposed Send');
     for (let i = 0; i < SPENDABLE_ACCOUNT_LABELS.length; i += 1) {
         const label = SPENDABLE_ACCOUNT_LABELS[i];
+        const row = element(by.text(label));
         try {
-            await element(by.text(label)).tap();
+            await waitFor(row).toBeVisible().withTimeout(1500);
+        } catch (e) {
+            try {
+                await waitFor(row)
+                    .toBeVisible()
+                    .whileElement(by.id('switch-account-scroll'))
+                    .scroll(220, 'up');
+            } catch (upErr) {
+                try {
+                    await waitFor(row)
+                        .toBeVisible()
+                        .whileElement(by.id('switch-account-scroll'))
+                        .scroll(220, 'down');
+                } catch (downErr) {
+                    lastErr = downErr;
+                    continue;
+                }
+            }
+        }
+        try {
+            await row.tap();
             await waitFor(element(by.id('send-button'))).toExist().withTimeout(8000);
             return;
         } catch (e) {
