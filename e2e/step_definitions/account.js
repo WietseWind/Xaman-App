@@ -554,11 +554,17 @@ Then('I should see the recipient search settle', { timeout: 40 * 1000 }, async (
                     (await androidDumpIncludes('recipient-r')))
             );
         }
-        try {
-            await waitFor(element(by.id('recipient-no-search-result'))).toExist().withTimeout(400);
-            return true;
-        } catch (e) {
-            // still looking
+        const settledIds = [
+            'recipient-no-search-result',
+            'recipient-rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ',
+        ];
+        for (let i = 0; i < settledIds.length; i += 1) {
+            try {
+                await waitFor(element(by.id(settledIds[i]))).toExist().withTimeout(400);
+                return true;
+            } catch (e) {
+                // still looking
+            }
         }
         try {
             await waitFor(element(by.text('Search results'))).toExist().withTimeout(400);
