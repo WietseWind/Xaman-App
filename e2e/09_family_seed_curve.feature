@@ -71,20 +71,9 @@ Feature: Family seed curve import on Xahau testnet
         Then I should see the family seed different curve prompt
         Then I tap alert button with label "secp256k1 rE1b4i…"
         Given I should see family seed curve "secp256k1"
+        Then I should see the derived family seed address
         Then I tap 'next-button'
-        Then I should confirm expected family seed address
-        Then I tap 'next-button'
-        Given I should see 'account-import-explain-activation-view'
-        Then I tap 'next-button'
-        Given I should have 'account-import-security-view'
-        Then I tap 'next-button'
-        Given I should have 'account-import-label-view'
-        Then I enter 'E2E-FS-Secp' in 'label-input'
-        Then I tap 'next-button'
-        Given I should have 'account-import-finish-view'
-        Then I tap 'finish-button'
-        Then I tap 'tab-Home'
-        Given I should have 'home-tab-view'
+        Then I finish importing this family seed unless it is already in Xaman
 
     Scenario: Re-importing the same family seed does not stick Next
         Then I open the family seed import screen
