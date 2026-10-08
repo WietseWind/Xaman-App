@@ -29,7 +29,6 @@ const {
     enterAndroidSecretNumbers,
     androidTypeText,
     androidSwipeTestId,
-    androidBlurIme,
     isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
@@ -213,7 +212,8 @@ Then('I enter my seed in the input', async () => {
         // Timeout often happens after the seed is already in the field
         // (secp256k1 picker is up). Recover: dump, blur IME, do not Next here.
         if (await seedLooksValid()) {
-            androidBlurIme();
+            // Do not send Escape. The curve prompt opens while this step is
+            // still checking the field, and Escape dismisses that dialog.
             return;
         }
 
@@ -257,7 +257,6 @@ Then('I enter my seed in the input', async () => {
         if (!(await seedLooksValid()) && !/^sed/i.test(want)) {
             throw new Error('seed-input did not produce a valid family seed (keypair picker hidden)');
         }
-        androidBlurIme();
         return;
     }
     const input = element(by.id('seed-input'));
