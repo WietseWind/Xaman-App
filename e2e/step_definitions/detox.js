@@ -5,6 +5,7 @@ const { dismissKeyboard } = require('../helpers/keyboard');
 const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
 const {
     clickByTestId,
+    clickAndroidLabel,
     waitUntilAndroidTestId,
     waitUntilAndroidEnabled,
     waitUntilAndroidRnReady,
@@ -19,9 +20,6 @@ const {
 let androidAlertPending = false;
 
 Then('I tap {string}', async (buttonId) => {
-    if (device.getPlatform() === 'android' && buttonId === '24-words-button') {
-        buttonId = '12-words-button';
-    }
     // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
     // Android: home-tab-view stays in the dump on Settings. Only skip when
     // Home content is actually showing.
@@ -386,6 +384,13 @@ Then('I tap alert button with label {string}', async (label) => {
             return;
         }
         androidAlertPending = false;
+        // The curve prompt has three buttons. The coordinate sweep closes the
+        // dialog on the scrim or Cancel and never selects the curve.
+        if (label.indexOf('secp256k1') === 0 || label.indexOf('ed25519') === 0) {
+            if (await clickAndroidLabel(label)) {
+                return;
+            }
+        }
         await device.disableSynchronization();
         const ui = device.getUiDevice();
         await tapAndroidAlertButton(label, device.id, (x, y) => ui.click(x, y));
