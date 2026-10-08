@@ -505,6 +505,22 @@ Then('I choose family seed curve {string}', async (curve) => {
     await dismissKeyboard();
     await device.disableSynchronization();
 
+    if (device.getPlatform() === 'android') {
+        await clickByTestId('keypair-curve-row');
+        await sleepMs(800);
+        await clickByTestId(`${curve}-item`);
+        const deadline = Date.now() + 15000;
+        let last = '';
+        while (Date.now() < deadline) {
+            last = String((await androidReadTextByTestId('keypair-curve-value')) || '');
+            if (last.indexOf(curve) !== -1) {
+                return;
+            }
+            await sleepMs(400);
+        }
+        throw new Error(`did not select family seed curve ${curve}, value ${JSON.stringify(last)}`);
+    }
+
     try {
         await element(by.id('keypair-curve-row')).tap({ x: 12, y: 12 });
     } catch (e) {
