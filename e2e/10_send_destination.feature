@@ -4,6 +4,7 @@ Feature: Send destination lookup
     # ever calling handle-lookup.
 
     Scenario: Open send recipient
+        Then I leave account import if open
         Then I tap 'tab-Home'
         Given I should have 'home-tab-view'
         Then I tap 'send-button'
