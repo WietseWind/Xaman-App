@@ -413,6 +413,11 @@ Then('I leave account import if open', async () => {
             }
         }
 
+        if (device.getPlatform() === 'android' && (await androidHasTestId('back-button'))) {
+            await clickByTestId('back-button');
+            await sleepMs(400);
+            continue;
+        }
         try {
             await element(by.id('back-button')).tap();
             await sleepMs(250);
