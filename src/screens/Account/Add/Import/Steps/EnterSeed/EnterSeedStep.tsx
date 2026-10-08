@@ -163,10 +163,20 @@ class EnterSeedStep extends Component<Props, State> {
         }
 
         try {
-            const picked = await pickFamilySeedCurve({
+            await NetworkService.prepareForAccountLookup();
+            let picked = await pickFamilySeedCurve({
                 secret: this.resolveFamilySeed(secret as string),
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
+            // A dropped reply makes one side "unknown", which hides a real
+            // ed-funded / secp-absent account. Ask the node once more.
+            if (picked.status === 'inconclusive') {
+                await NetworkService.prepareForAccountLookup();
+                picked = await pickFamilySeedCurve({
+                    secret: this.resolveFamilySeed(secret as string),
+                    getAccountInfo: (address) => LedgerService.getAccountInfo(address),
+                });
+            }
 
             if (token !== this.curveDetectToken || this.userSelectedCurve) {
                 return this.getSecretType();
@@ -214,6 +224,11 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     applySecret = (secret?: string) => {
+        // Blur and the IME re-send the same secret. Restarting the lookup
+        // drops a result that already knows ed25519 is funded and secp is not.
+        if (secret === this.pendingSecret) {
+            return;
+        }
         this.userSelectedCurve = false;
         this.curveDetectToken += 1;
         this.pendingSecret = secret;

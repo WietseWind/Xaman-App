@@ -581,6 +581,27 @@ class NetworkService extends EventEmitter {
     };
 
     /**
+     * Account lookups that decide a curve need a live socket. A quiet
+     * connection hangs until the 40s call timeout and the answer is lost.
+     */
+    prepareForAccountLookup = async (): Promise<void> => {
+        try {
+            const state = this.connection?.getState?.();
+            const quietFor = state?.secLastContact;
+            const stale = !state?.online || (typeof quietFor === 'number' && quietFor > 8);
+            if (!stale) {
+                return;
+            }
+            this.reconnect();
+            await new Promise((resolve) => {
+                setTimeout(resolve, 1500);
+            });
+        } catch (error) {
+            this.logger.error('Unable to prepare the connection for an account lookup', error);
+        }
+    };
+
+    /**
      * Asynchronously sends a payload to the connected node and ensures that the response is valid by
      * matching the network ID.
      *
