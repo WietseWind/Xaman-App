@@ -201,6 +201,18 @@ Given('I should have {string}', async (elementId) => {
             ? 90000
             : 10000;
     if (device.getPlatform() === 'android') {
+        // The home tab stays mounted under an import screen, so the test id
+        // alone does not mean Home is what the user is looking at.
+        if (elementId === 'home-tab-view') {
+            const deadline = Date.now() + timeout;
+            while (Date.now() < deadline) {
+                if ((await androidHasTestId('home-tab-view')) && !(await androidHasTestId('account-import-view'))) {
+                    return;
+                }
+                await new Promise((resolve) => { setTimeout(resolve, 400); });
+            }
+            throw new Error('android hierarchy timed out waiting for a visible home-tab-view');
+        }
         await waitUntilAndroidTestId(elementId, timeout);
         return;
     }

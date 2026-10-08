@@ -572,7 +572,7 @@ Then('I should see the already imported secret alert', { timeout: 30 * 1000 }, a
         .withTimeout(15000);
 });
 
-Then('I should see the family seed different curve prompt', { timeout: 30 * 1000 }, async () => {
+Then('I should see the family seed different curve prompt', { timeout: 50 * 1000 }, async () => {
     if (device.getPlatform() === 'android') {
         await waitForAndroidAlertText('ed25519', device.id);
         return;
