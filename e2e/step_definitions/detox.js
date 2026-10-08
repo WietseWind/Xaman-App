@@ -2,7 +2,7 @@ const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
-const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
+const { tapAndroidAlertButton, waitForAndroidAlertText, appWindowCount } = require('../helpers/androidAlert');
 const {
     clickByTestId,
     clickAndroidLabel,
@@ -380,13 +380,22 @@ Then('I slide right {string}', async (elementId) => {
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
         // Passphrase/passcode success is Toast. Do not tap a ghost OK on those screens.
-        if (label === 'OK' && !androidAlertPending) {
+        // A real Error dialog (already-imported secret) is a second window and
+        // must be tapped even when no earlier step set the pending flag.
+        if (label === 'OK' && !androidAlertPending && appWindowCount(device.id) < 2) {
             return;
         }
         androidAlertPending = false;
         // The curve prompt has three buttons. The coordinate sweep closes the
         // dialog on the scrim or Cancel and never selects the curve.
         if (label.indexOf('secp256k1') === 0 || label.indexOf('ed25519') === 0) {
+            if (await clickAndroidLabel(label)) {
+                return;
+            }
+        }
+        // OK on the already-imported dialog sits at the card's lower right.
+        // Hit that node. The coordinate sweep is only the fallback.
+        if (label === 'OK' || label === 'Cancel') {
             if (await clickAndroidLabel(label)) {
                 return;
             }

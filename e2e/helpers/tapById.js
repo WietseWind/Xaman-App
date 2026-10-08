@@ -1655,6 +1655,32 @@ const dismissAndroidInvalidSecret = async (xml) => {
     return clickDumpLabel(xml, 'OK');
 };
 
+// Import refuses a full-access secret that is already in Xaman with a single
+// OK button. The message is long and the dump truncates it, so match the
+// prefix that is actually in the hierarchy ("…has alrea").
+const importedSecretAlert = (xml) => {
+    const blob = String(xml || '').toLowerCase();
+    return (
+        blob.indexOf('account secret that you have entered') !== -1 ||
+        blob.indexOf('already been imported') !== -1 ||
+        blob.indexOf('account already exists') !== -1
+    );
+};
+
+const dismissAndroidImportedSecretAlert = async () => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    if (!importedSecretAlert(xml)) {
+        return false;
+    }
+    if (await clickDumpLabel(xml, 'OK')) {
+        await sleep(500);
+        return true;
+    }
+    return false;
+};
+
 const androidReadSecretRow = async (row) => {
     const letter = SECRET_LETTERS[row];
     const deadline = Date.now() + 40000;
@@ -1872,5 +1898,6 @@ module.exports = {
     androidReadSecretRow,
     enterAndroidSecretNumbers,
     dismissAndroidWipeDialog,
+    dismissAndroidImportedSecretAlert,
     clearAndroidBlockingDialogs,
 };
