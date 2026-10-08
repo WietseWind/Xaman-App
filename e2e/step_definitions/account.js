@@ -28,6 +28,7 @@ const {
     androidReadSecretRow,
     enterAndroidSecretNumbers,
     androidTypeText,
+    androidBlurIme,
     androidSwipeTestId,
     isAdbTimeout,
     androidDumpIncludes,
@@ -386,6 +387,7 @@ const leaveAccountImportIfOpen = async () => {
         // The already-imported Error is a native dialog. Matching its buttons
         // through Detox never returns, so the step used to sit until timeout
         // and leave the dialog on screen.
+        let hardwareBacks = 0;
         for (let i = 0; i < 20; i += 1) {
             if (await dismissImportedSecretAlert()) {
                 await sleepMs(400);
@@ -414,6 +416,21 @@ const leaveAccountImportIfOpen = async () => {
             if (await androidHasTestId('back-button')) {
                 await clickByTestId('back-button');
                 await sleepMs(400);
+                continue;
+            }
+            // Explain Activation comments out its footer back, and the import
+            // header back exists only on the access-level step. Hardware Back
+            // pops that modal. account-import-view stays mounted under other
+            // screens, so it must not be the signal for this.
+            if (hardwareBacks < 2 && (await androidHasTestId('account-import-explain-activation-view'))) {
+                hardwareBacks += 1;
+                const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+                try {
+                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '4'], { timeout: 4000 });
+                } catch (backErr) {
+                    // activity already gone
+                }
+                await sleepMs(500);
                 continue;
             }
             try {
@@ -505,6 +522,118 @@ const leaveAccountImportIfOpen = async () => {
 };
 
 Then('I leave account import if open', leaveAccountImportIfOpen);
+
+// Home shows Send only when the selected account is signable and has a
+// balance (AccountRepository.getSpendableAccounts). Feature 09 leaves the
+// unactivated secp import selected, so Send is hidden until an earlier
+// funded account is selected.
+const SPENDABLE_ACCOUNT_LABELS = [
+    'G-Passcode-1',
+    'G-Passphrase-2',
+    'I-SN-Passcode',
+    'I-FS-Passcode',
+    'I-MN-Passcode',
+    'I-MN-Secp',
+    'I-MN-Ed',
+    'I-MN-Ed-Auto',
+    'I-FS-Passphrase',
+];
+
+// An incomplete r-string is not a local address (tryNormalizeDestination
+// returns null). handle-lookup then runs. The directory may return a match
+// or nothing; either way the list must leave the spinner and show Search results.
+Then('I should see the recipient search settle', { timeout: 40 * 1000 }, async () => {
+    const settled = async () => {
+        if (device.getPlatform() === 'android') {
+            return (
+                (await androidDumpIncludes('Search results')) &&
+                ((await androidHasTestId('recipient-no-search-result')) ||
+                    (await androidDumpIncludes('recipient-r')))
+            );
+        }
+        try {
+            await waitFor(element(by.id('recipient-no-search-result'))).toExist().withTimeout(400);
+            return true;
+        } catch (e) {
+            // still looking
+        }
+        try {
+            await waitFor(element(by.text('Search results'))).toExist().withTimeout(400);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+    const deadline = Date.now() + 25000;
+    while (Date.now() < deadline) {
+        if (await settled()) {
+            return;
+        }
+        await sleepMs(400);
+    }
+    throw new Error('recipient search did not settle');
+});
+
+Then('I select a spendable account if Send is hidden', { timeout: 60 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        if (await androidHasTestId('send-button')) {
+            return;
+        }
+        await clickByTestId('account-switch-button');
+        await waitUntilAndroidTestId('switch-account-overlay', 10000);
+        const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+        for (let pass = 0; pass < 8; pass += 1) {
+            for (let i = 0; i < SPENDABLE_ACCOUNT_LABELS.length; i += 1) {
+                const label = SPENDABLE_ACCOUNT_LABELS[i];
+                if (!(await androidDumpIncludes(label))) {
+                    continue;
+                }
+                if (!(await clickAndroidLabel(label))) {
+                    continue;
+                }
+                const deadline = Date.now() + 12000;
+                while (Date.now() < deadline) {
+                    if (await androidHasTestId('send-button')) {
+                        return;
+                    }
+                    await sleepMs(400);
+                }
+            }
+            try {
+                execFileSync(
+                    'adb',
+                    ['-s', serial, 'shell', 'input', 'swipe', '540', '1700', '540', '900', '300'],
+                    { timeout: 5000 },
+                );
+            } catch (swipeErr) {
+                // overlay may already be gone
+            }
+            await sleepMs(400);
+        }
+        throw new Error('no funded account from earlier scenarios exposed Send');
+    }
+
+    try {
+        await waitFor(element(by.id('send-button'))).toExist().withTimeout(2000);
+        return;
+    } catch (e) {
+        // current account is not spendable
+    }
+    await element(by.id('account-switch-button')).tap();
+    await waitFor(element(by.id('switch-account-overlay'))).toExist().withTimeout(8000);
+    let lastErr = new Error('no funded account from earlier scenarios exposed Send');
+    for (let i = 0; i < SPENDABLE_ACCOUNT_LABELS.length; i += 1) {
+        const label = SPENDABLE_ACCOUNT_LABELS[i];
+        try {
+            await element(by.text(label)).tap();
+            await waitFor(element(by.id('send-button'))).toExist().withTimeout(8000);
+            return;
+        } catch (e) {
+            lastErr = e;
+        }
+    }
+    throw lastErr;
+});
 
 Then('I open the family seed import screen', async () => {
     await tapUntilScreen('tab-Settings', 'settings-tab-screen');
