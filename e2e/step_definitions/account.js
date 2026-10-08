@@ -721,9 +721,13 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
         }
         await new Promise((resolve) => { setTimeout(resolve, 400); });
         for (let i = 0; i < words.length; i++) {
-            await waitUntilAndroidTestId(`word-${i}-input`, 8000);
-            await clickByTestId(`word-${i}-input`);
-            await new Promise((resolve) => { setTimeout(resolve, 200); });
+            // Only the rows on screen are in the hierarchy. Enter focuses the
+            // next row and scrolls it up. Click it when it is visible. When it
+            // is not listed yet, type into the field Enter just focused.
+            if (await androidHasTestId(`word-${i}-input`)) {
+                await clickByTestId(`word-${i}-input`);
+                await new Promise((resolve) => { setTimeout(resolve, 200); });
+            }
             androidTypeText(words[i]);
             if (i + 1 < words.length) {
                 execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
