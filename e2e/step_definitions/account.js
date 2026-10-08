@@ -28,6 +28,7 @@ const {
     androidReadSecretRow,
     enterAndroidSecretNumbers,
     androidTypeText,
+    androidSwipeTestId,
     androidBlurIme,
     isAdbTimeout,
     androidDumpIncludes,
@@ -723,38 +724,32 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
     // next word otherwise lands in the previous row.
     if (device.getPlatform() === 'android') {
         const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
-        // Curve options scroll the list down, and Android only exposes the
-        // visible rows. Word 0 is then missing. Back at the top, Enter moves
-        // focus and scrolls the next row into the tree before we type it.
-        try {
-            await element(by.id('mnemonic-words-scroll')).scrollTo('top');
-        } catch (e) {
-            // already at the top
-        }
-        await new Promise((resolve) => { setTimeout(resolve, 400); });
-        for (let i = 0; i < words.length; i++) {
-            const wordId = `word-${i}-input`;
-            // Android only lists the rows on screen. Scroll until this row
-            // is one of them, then type into that row.
-            let visible = await androidHasTestId(wordId);
-            for (let nudge = 0; !visible && nudge < 8; nudge += 1) {
-                try {
-                    await element(by.id('mnemonic-words-scroll')).scroll(240, 'down');
-                } catch (scrollErr) {
-                    break;
-                }
+        // The 12/16/24 buttons sit above the list. A scroll gesture that
+        // starts on them resets the length, so only swipe inside the list.
+        await clickByTestId(`${words.length}-words-button`);
+        await new Promise((resolve) => { setTimeout(resolve, 300); });
+        const revealWord = async (index) => {
+            const wordId = `word-${index}-input`;
+            if (await androidHasTestId(wordId)) {
+                return;
+            }
+            for (let nudge = 0; nudge < 8; nudge += 1) {
+                await androidSwipeTestId('mnemonic-words-scroll', 'up');
                 await new Promise((resolve) => { setTimeout(resolve, 250); });
-                visible = await androidHasTestId(wordId);
+                if (await androidHasTestId(wordId)) {
+                    return;
+                }
             }
-            if (!visible) {
-                throw new Error(`mnemonic word ${i + 1} never came on screen`);
-            }
-            await clickByTestId(wordId);
+            throw new Error(`mnemonic word ${index + 1} never came on screen`);
+        };
+        for (let i = 0; i < words.length; i++) {
+            await revealWord(i);
+            await clickByTestId(`word-${i}-input`);
             await new Promise((resolve) => { setTimeout(resolve, 200); });
             androidTypeText(words[i]);
             if (i + 1 < words.length) {
                 execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-                await new Promise((resolve) => { setTimeout(resolve, 300); });
+                await new Promise((resolve) => { setTimeout(resolve, 200); });
             }
         }
         return;
