@@ -389,6 +389,9 @@ const leaveAccountImportIfOpen = async () => {
         // and leave the dialog on screen.
         let hardwareBacks = 0;
         for (let i = 0; i < 20; i += 1) {
+            if (await androidHasTestId('onboarding-screen')) {
+                return;
+            }
             if (await dismissImportedSecretAlert()) {
                 await sleepMs(400);
                 continue;
