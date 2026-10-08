@@ -175,11 +175,27 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
         if (!(needle && current.indexOf(needle) !== -1) && current.trim() && !placeholder) {
             androidClearFocusedField(Math.min(80, current.length + 6));
         }
-        if (!(needle && current.indexOf(needle) !== -1)) {
+        const typeValue = () => {
             try {
                 androidTypeText(value);
             } catch (e) {
                 // timeout: field may already have the value
+            }
+        };
+        if (!(needle && current.indexOf(needle) !== -1)) {
+            typeValue();
+        }
+        // input text can drop the start of a long destination. One more try.
+        if (needle.length >= 24) {
+            const typed = String((await androidReadTextByTestId(textInputId)) || '');
+            if (typed.indexOf(needle) === -1) {
+                const junk = typed.trim();
+                if (junk && !/enter a name|please enter|search|amount|label|password|passphrase/i.test(junk)) {
+                    androidClearFocusedField(Math.min(80, junk.length + 8));
+                    await new Promise((resolve) => { setTimeout(resolve, 600); });
+                    await clickByTestId(textInputId);
+                }
+                typeValue();
             }
         }
         androidBlurIme();

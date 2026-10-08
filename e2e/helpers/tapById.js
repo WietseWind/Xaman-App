@@ -1628,6 +1628,18 @@ const androidClearFocusedField = (count) => {
 };
 
 const androidTypeLiteral = (text) => {
+    // One input text keeps ':' and '/' in a URL. Chunks that contain those
+    // characters were dropped, so a Bithomp link arrived as the address tail.
+    if (text.length <= 90) {
+        try {
+            androidTypeChunk(text);
+            return;
+        } catch (e) {
+            if (!isAdbTimeout(e)) {
+                throw e;
+            }
+        }
+    }
     const size = text.length > 10 ? 6 : text.length;
     for (let i = 0; i < text.length; i += size) {
         try {
