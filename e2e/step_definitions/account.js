@@ -761,6 +761,13 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
             await revealWord(i);
             await clickByTestId(`word-${i}-input`);
             await new Promise((resolve) => { setTimeout(resolve, 200); });
+            // Developer mode prefills the 24-word ed25519 sample. input text
+            // appends, so clear the row before typing the phrase.
+            execFileSync(
+                'adb',
+                ['-s', serial, 'shell', 'input', 'keyevent', ...Array(16).fill('67')],
+                { timeout: 5000 },
+            );
             androidTypeText(words[i]);
             if (i + 1 < words.length) {
                 execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
