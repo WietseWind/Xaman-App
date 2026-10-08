@@ -406,6 +406,12 @@ Then('I leave account import if open', async () => {
             // not on picker
         }
 
+        if (device.getPlatform() === 'android' && (await androidDumpIncludes('go back'))) {
+            if (await clickAndroidLabel('GO BACK')) {
+                await sleepMs(400);
+                continue;
+            }
+        }
         for (let a = 0; a < alertLabels.length; a += 1) {
             if (await tryTapAlertLabel(alertLabels[a])) {
                 await sleepMs(250);
