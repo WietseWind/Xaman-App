@@ -165,6 +165,23 @@ Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, bu
 
 Then('I enter {string} in {string}', async (value, textInputId) => {
     if (device.getPlatform() === 'android') {
+        // adb input text drops the start of a spaced address or a URL during
+        // a long suite (` rJ9u` never arrives, lookup shows no result).
+        // replaceText writes the React value directly.
+        if (/[ :/]/.test(String(value))) {
+            try {
+                await waitUntilAndroidTestId(textInputId, 10000);
+                await element(by.id(textInputId)).replaceText(String(value));
+                try {
+                    await element(by.id(textInputId)).tapReturnKey();
+                } catch (e) {
+                    androidBlurIme();
+                }
+                return;
+            } catch (e) {
+                // fall through to keystrokes
+            }
+        }
         await waitUntilAndroidTestId(textInputId, 10000);
         await clickByTestId(textInputId);
         // Let a preceding Clear search setState land before keystrokes append.
