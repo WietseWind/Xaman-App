@@ -1650,6 +1650,16 @@ const androidTypeText = (value) => {
     if (!text) {
         return;
     }
+    // The first input text after a focus is dropped while the IME animates
+    // open. A spaced address then starts at J32u instead of rJ9u.
+    const readyBy = Date.now() + 1500;
+    while (!androidImeShown() && Date.now() < readyBy) {
+        try {
+            execFileSync('sleep', ['0.12']);
+        } catch (e) {
+            break;
+        }
+    }
     // Do not paste first: Samsung cmd clipboard + KEYCODE_PASTE often no-ops
     // in RN TextInput while returning success (empty account label, Next dead).
     // Do not encode a space as %s inside a letter chunk. `input text '%srJ9u'`
@@ -1982,6 +1992,7 @@ module.exports = {
     androidSwipeTestId,
     androidTypeText,
     androidClearFocusedField,
+    androidPasteText,
     androidBlurIme,
     androidDismissImeIfShown,
     clickAndroidTextIncludes,
