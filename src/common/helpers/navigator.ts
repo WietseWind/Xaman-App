@@ -5,7 +5,6 @@ import LoggerService, { LogEvents } from '@services/LoggerService';
 import { Navigation, Options, LayoutTabsChildren } from 'react-native-navigation';
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
-import { runSetRootOnce, setRootLatch } from '@common/helpers/setRootLatch';
 
 import { AppScreens } from '@common/constants';
 
@@ -27,6 +26,7 @@ type EnforcedProps<P extends { [K in keyof P]: any }> = P;
 const allScreens = new Set();
 
 let iteration = 1;
+let setRoot = false;
 
 /* Constants ==================================================================== */
 const getDefaultOptions = (): Options => {
@@ -188,7 +188,7 @@ const Navigator = {
             tabsLength: Object.keys(AppScreens.TabBar).length,
             tabKeys: Object.keys(AppScreens.TabBar).join(','),
             startDefaultIteration: typeof iteration === 'undefined' ? 0 : iteration,
-            setRoot: setRootLatch.current ? 'true' : 'false',
+            setRoot: setRoot ? 'true' : 'false',
         });
 
         Object.keys(AppScreens.TabBar).forEach((tab) => {
@@ -232,16 +232,22 @@ const Navigator = {
         });
 
         InteractionManager.runAfterInteractions(async () => {
-            await runSetRootOnce(async () => {
-                await Navigation.setRoot({
-                    root: {
-                        bottomTabs: {
-                            id: RootType.DefaultRoot,
-                            children: bottomTabsChildren,
+            if (!setRoot) {
+                setRoot = true;
+                try {
+                    await Navigation.setRoot({
+                        root: {
+                            bottomTabs: {
+                                id: RootType.DefaultRoot,
+                                children: bottomTabsChildren,
+                            },
                         },
-                    },
-                });
-            });
+                    });
+                } catch (error) {
+                    setRoot = false;
+                    throw error;
+                }
+            }
         });
     },
 

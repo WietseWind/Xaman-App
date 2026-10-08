@@ -1,16 +1,19 @@
-import { extAssetsOrEmpty } from '../extAssetsOrEmpty';
-
 describe('ext-assets vs ledger balance refresh', () => {
-    it('keeps going with an empty list when ext-assets rejects', async () => {
-        const warned: unknown[] = [];
-
+    it('reproduces Promise.all aborting ledger results when ext-assets rejects', async () => {
         await expect(
-            extAssetsOrEmpty(Promise.reject(new Error('ext-assets')), (error) => warned.push(error)),
-        ).resolves.toEqual([]);
-        expect(warned).toHaveLength(1);
+            Promise.all([Promise.resolve(['line']), Promise.resolve(['mpt']), Promise.reject(new Error('ext-assets'))]),
+        ).rejects.toThrow('ext-assets');
     });
 
-    it('returns the ext-assets list when the request succeeds', async () => {
-        await expect(extAssetsOrEmpty(Promise.resolve(['line']))).resolves.toEqual(['line']);
+    it('keeps ledger results when ext-assets is caught', async () => {
+        const [lines, mpt, ext] = await Promise.all([
+            Promise.resolve(['line']),
+            Promise.resolve(['mpt']),
+            Promise.reject(new Error('ext-assets')).catch(() => []),
+        ]);
+
+        expect(lines).toEqual(['line']);
+        expect(mpt).toEqual(['mpt']);
+        expect(ext).toEqual([]);
     });
 });

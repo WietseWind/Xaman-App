@@ -19,7 +19,6 @@ import { LedgerEntryFlags } from '@common/constants/flags';
 
 import NetworkService from '@services/NetworkService';
 import { recoverSubmitAfterSendError, submitNetworkFromConnection } from '@services/submitRecovery';
-import { submittedBlobHash } from '@services/submittedBlobHash';
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 import {
     AccountInfoRequest,
@@ -755,7 +754,7 @@ class LedgerService extends EventEmitter {
                 success: true,
                 engineResult: engine_result,
                 message: engine_result_message,
-                hash: submittedBlobHash(txHash, submitResponse.tx_json?.hash),
+                hash: txHash || submitResponse.tx_json?.hash,
             });
         } catch (error: any) {
             // The socket can die after the node has already accepted the blob.

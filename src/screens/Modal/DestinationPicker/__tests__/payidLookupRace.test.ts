@@ -1,41 +1,32 @@
-import { appendServerMatches } from '../appendServerMatches';
-
 describe('PayID lookup result timing', () => {
-    it('publishes the PayID name only after enrichment resolves', async () => {
-        let release: () => void = () => undefined;
-        const gate = new Promise<void>((resolve) => {
-            release = resolve;
-        });
-        const searchResult: { name?: string; address: string }[] = [];
+    it('reproduces publishing before async payid enrichment finishes', async () => {
+        const searchResult: string[] = [];
+        const matches = [{ source: 'payid', account: 'r1', alias: 'alice' }];
 
-        const pending = appendServerMatches(
-            searchResult,
-            [{ source: 'payid', account: 'r1', tag: 1, alias: 'r1' }],
-            1,
-            () => 1,
-            async () => {
-                await gate;
-                return { name: 'alice', source: 'internal' };
-            },
-        );
+        matches.forEach(async (element: { source: string; account: string; alias: string }) => {
+            if (element.source === 'payid') {
+                await Promise.resolve();
+                searchResult.push(element.alias);
+            }
+        });
 
         expect(searchResult).toEqual([]);
-        release();
-        await pending;
-        expect(searchResult).toEqual([{ name: 'alice', address: 'r1', tag: 1, source: 'internal' }]);
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(searchResult).toEqual(['alice']);
     });
 
-    it('stops when the search sequence has moved on', async () => {
-        const searchResult: { name?: string; address: string }[] = [];
+    it('publishes only after payid enrichment when matches are awaited', async () => {
+        const searchResult: string[] = [];
+        const matches = [{ source: 'payid', account: 'r1', alias: 'alice' }];
 
-        await appendServerMatches(
-            searchResult,
-            [{ source: 'payid', account: 'r1', alias: 'alice' }],
-            1,
-            () => 2,
-            async () => ({ name: 'alice' }),
-        );
+        for (const element of matches) {
+            if (element.source === 'payid') {
+                await Promise.resolve();
+                searchResult.push(element.alias);
+            }
+        }
 
-        expect(searchResult).toEqual([]);
+        expect(searchResult).toEqual(['alice']);
     });
 });

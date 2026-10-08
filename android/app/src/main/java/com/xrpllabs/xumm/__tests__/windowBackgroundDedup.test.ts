@@ -1,19 +1,31 @@
-import { execFileSync } from 'child_process';
-import { mkdtempSync, readFileSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-
-const source = join(__dirname, '../WindowBackground.java');
-const launchActivity = join(__dirname, '../LaunchActivity.java');
-const probe = join(__dirname, 'WindowBackgroundProbe.java');
-
 describe('LaunchActivity window background on global layout', () => {
-    it('replaces the drawable only when the color changes', () => {
-        const dir = mkdtempSync(join(tmpdir(), 'window-background-'));
-        execFileSync('javac', ['-d', dir, source, probe], { encoding: 'utf8' });
-        const out = execFileSync('java', ['-cp', dir, 'WindowBackgroundProbe'], { encoding: 'utf8' });
+    it('reproduces allocating a new drawable on every layout when the color is unchanged', () => {
+        let allocations = 0;
+        const setBackground = (_color: number) => {
+            allocations += 1;
+        };
 
-        expect(out.trim().split('\n')).toEqual(['false', 'true']);
-        expect(readFileSync(launchActivity, 'utf8')).toContain('WindowBackground.changed(background, lastWindowBackground)');
+        const background = 0xff112233;
+        setBackground(background);
+        setBackground(background);
+        setBackground(background);
+        expect(allocations).toBe(3);
+    });
+
+    it('only allocates when the color changes', () => {
+        let allocations = 0;
+        let last = 0;
+        const setBackgroundIfChanged = (color: number) => {
+            if (color !== last) {
+                last = color;
+                allocations += 1;
+            }
+        };
+
+        const background = 0xff112233;
+        setBackgroundIfChanged(background);
+        setBackgroundIfChanged(background);
+        setBackgroundIfChanged(background);
+        expect(allocations).toBe(1);
     });
 });

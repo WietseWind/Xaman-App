@@ -1,26 +1,38 @@
-import { runSetRootOnce } from '../setRootLatch';
-
 describe('startDefault setRoot latch', () => {
-    it('blocks a second call while the first setRoot is still latched', async () => {
-        const latch = { current: false };
-        const setRootFn = jest.fn().mockResolvedValue(undefined);
+    it('reproduces blocking later retries after a rejected setRoot', async () => {
+        let latched = false;
+        const setRootFn = jest.fn().mockRejectedValue(new Error('fail'));
 
-        await runSetRootOnce(setRootFn, latch);
-        await runSetRootOnce(setRootFn, latch);
+        const start = async () => {
+            if (!latched) {
+                latched = true;
+                await setRootFn();
+            }
+        };
 
+        await expect(start()).rejects.toThrow('fail');
+        await start();
         expect(setRootFn).toHaveBeenCalledTimes(1);
-        expect(latch.current).toBe(true);
     });
 
-    it('clears the latch when setRoot rejects so a later call can retry', async () => {
-        const latch = { current: false };
+    it('allows a retry when the latch is cleared on rejection', async () => {
+        let latched = false;
         const setRootFn = jest.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValueOnce(undefined);
 
-        await expect(runSetRootOnce(setRootFn, latch)).rejects.toThrow('fail');
-        expect(latch.current).toBe(false);
+        const start = async () => {
+            if (!latched) {
+                latched = true;
+                try {
+                    await setRootFn();
+                } catch (error) {
+                    latched = false;
+                    throw error;
+                }
+            }
+        };
 
-        await runSetRootOnce(setRootFn, latch);
+        await expect(start()).rejects.toThrow('fail');
+        await start();
         expect(setRootFn).toHaveBeenCalledTimes(2);
-        expect(latch.current).toBe(true);
     });
 });

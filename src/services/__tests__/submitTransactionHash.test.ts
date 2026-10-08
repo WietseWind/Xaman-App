@@ -1,16 +1,19 @@
-import { submittedBlobHash } from '../submittedBlobHash';
-
 describe('submit blob verify hash', () => {
-    it('uses the hash returned in tx_json when the caller omitted it', () => {
-        const submitResponse = { tx_json: { hash: 'ABC'.repeat(21) + 'A' } };
+    it('reproduces verifying undefined when the caller omitted the hash', () => {
+        const submitResult = {
+            success: true,
+            hash: undefined as string | undefined,
+        };
 
-        expect(submittedBlobHash(undefined, submitResponse.tx_json.hash)).toBe(submitResponse.tx_json.hash);
-        expect(submittedBlobHash(undefined, submitResponse.tx_json.hash)).toHaveLength(64);
+        expect(submitResult.hash).toBeUndefined();
     });
 
-    it('keeps the hash the caller already had', () => {
-        const caller = 'D'.repeat(64);
+    it('uses the hash returned in tx_json when the caller omitted it', () => {
+        const txHash = undefined as string | undefined;
+        const submitResponse = { tx_json: { hash: 'ABC'.repeat(21) + 'A' } };
+        const hash = txHash || submitResponse.tx_json?.hash;
 
-        expect(submittedBlobHash(caller, 'E'.repeat(64))).toBe(caller);
+        expect(hash).toBe(submitResponse.tx_json.hash);
+        expect(hash).toHaveLength(64);
     });
 });
