@@ -1614,6 +1614,19 @@ const androidTypeChunk = (chunk) => {
  * Quote for device sh so `& ; < > | #` in Extra Security passphrases
  * are not split. `input text` maps `%s` to space.
  */
+// A controlled TextInput can still show the previous value when the next
+// step types. input text appends, so a cleared search would become the old
+// partial plus the new address and lookup would return nothing.
+const androidClearFocusedField = (count) => {
+    const n = Math.max(1, Math.min(80, Number(count) || 1));
+    const script = `input keyevent 123; i=0; while [ $i -lt ${n} ]; do input keyevent 67; i=$((i+1)); done`;
+    try {
+        androidAdb(['shell', script], 20000);
+    } catch (e) {
+        // field already empty
+    }
+};
+
 const androidTypeText = (value) => {
     const text = String(value);
     if (!text) {
@@ -1950,6 +1963,7 @@ module.exports = {
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
+    androidClearFocusedField,
     androidBlurIme,
     androidDismissImeIfShown,
     clickAndroidTextIncludes,

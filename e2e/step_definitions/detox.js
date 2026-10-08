@@ -13,6 +13,7 @@ const {
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
+    androidClearFocusedField,
     androidBlurIme,
 } = require('../helpers/tapById');
 
@@ -166,10 +167,20 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
     if (device.getPlatform() === 'android') {
         await waitUntilAndroidTestId(textInputId, 10000);
         await clickByTestId(textInputId);
-        try {
-            androidTypeText(value);
-        } catch (e) {
-            // timeout: field may already have the value
+        // Let a preceding Clear search setState land before keystrokes append.
+        await new Promise((resolve) => { setTimeout(resolve, 300); });
+        const current = String((await androidReadTextByTestId(textInputId)) || '');
+        const needle = String(value).trim();
+        const placeholder = /enter a name|please enter|search|amount|label|password|passphrase/i.test(current);
+        if (!(needle && current.indexOf(needle) !== -1) && current.trim() && !placeholder) {
+            androidClearFocusedField(Math.min(80, current.length + 6));
+        }
+        if (!(needle && current.indexOf(needle) !== -1)) {
+            try {
+                androidTypeText(value);
+            } catch (e) {
+                // timeout: field may already have the value
+            }
         }
         androidBlurIme();
         return;
