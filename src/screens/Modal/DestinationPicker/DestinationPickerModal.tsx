@@ -207,45 +207,52 @@ class DestinationPickerModal extends Component<Props, State> {
             // if text length is more than 4 do server lookup
             if (searchText?.length >= 4) {
                 BackendService.lookup(searchText)
-                    .then((res: any) => {
-                        if (!isEmpty(res) && res.error !== true) {
-                            if (!isEmpty(res.matches)) {
-                                res.matches.forEach(async (element: any) => {
-                                    // if payid in result, then look for payId in local source as well
-                                    if (element.source === 'payid') {
-                                        const internalResult = await ResolverService.getAccountName(
-                                            element.account,
-                                            element.tag,
-                                            true,
-                                        );
+                    .then(async (res: any) => {
+                        if (!isEmpty(res) && res.error !== true && !isEmpty(res.matches)) {
+                            for (const element of res.matches) {
+                                if (sequence !== this.sequence) {
+                                    return;
+                                }
 
-                                        // found in local source
-                                        if (internalResult.name) {
-                                            searchResult.push({
-                                                name: internalResult.name || '',
-                                                address: element.account,
-                                                tag: element.tag,
-                                                source: internalResult.source,
-                                            });
+                                // if payid in result, then look for payId in local source as well
+                                if (element.source === 'payid') {
+                                    const internalResult = await ResolverService.getAccountName(
+                                        element.account,
+                                        element.tag,
+                                        true,
+                                    );
 
-                                            return;
-                                        }
+                                    if (sequence !== this.sequence) {
+                                        return;
                                     }
 
-                                    searchResult.push({
-                                        name: element.alias === element.account ? '' : element.alias,
-                                        address: element.account,
-                                        source: element.source,
-                                        tag: element.tag,
-                                        kycApproved: element.kycApproved,
-                                    });
+                                    // found in local source
+                                    if (internalResult.name) {
+                                        searchResult.push({
+                                            name: internalResult.name || '',
+                                            address: element.account,
+                                            tag: element.tag,
+                                            source: internalResult.source,
+                                        });
+                                        continue;
+                                    }
+                                }
+
+                                searchResult.push({
+                                    name: element.alias === element.account ? '' : element.alias,
+                                    address: element.account,
+                                    source: element.source,
+                                    tag: element.tag,
+                                    kycApproved: element.kycApproved,
                                 });
                             }
                         }
+
+                        if (sequence === this.sequence) {
+                            this.setSearchResult(searchResult);
+                        }
                     })
-                    .catch(() => {})
-                    .finally(() => {
-                        // this will make sure the latest call will apply
+                    .catch(() => {
                         if (sequence === this.sequence) {
                             this.setSearchResult(searchResult);
                         }

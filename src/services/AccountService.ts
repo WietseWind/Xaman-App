@@ -262,7 +262,10 @@ class AccountService extends EventEmitter {
             ...(NetworkService.getNetwork().name.toLowerCase().match(/xahau/)
                 ? [Promise.resolve([])]
                 : [LedgerService.getAccountMPTFullDetails(account)]),
-            BackendService.getAccountExtAssets(account),
+            BackendService.getAccountExtAssets(account).catch((error) => {
+                this.logger.warn('Unable to get ext assets, continuing with ledger balances', error);
+                return [];
+            }),
         ]);
 
         this.logger.debug('Getting Normalised Account Lines for ', account);

@@ -36,9 +36,15 @@ import * as Blocks from './Blocks';
 import { AppSizes, AppStyles } from '@theme';
 import styles from './styles';
 import lpStyles from '@components/Modules/AssetsList/Tokens/TokenItem/styles';
+import ContactRepository from '@store/repositories/contact';
 import trustLine from '@store/repositories/trustLine';
 import { OperationActions } from '@common/libs/ledger/parser/types';
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
+
+import { ContactAddressSource, createContactAddressFanout } from './contactAddressFanout';
+
+// One subscription for the whole list. Rows compare the address themselves.
+const contactAddressChanges = createContactAddressFanout(ContactRepository as unknown as ContactAddressSource);
 
 /* types ==================================================================== */
 export interface cachedTokenDetailsState {
@@ -80,6 +86,10 @@ class TransactionItem extends Component<Props, State> {
 
     private mounted = false;
 
+    private resolveGeneration = 0;
+
+    private unsubscribeContact?: () => void;
+
     constructor(props: Props) {
         super(props);
 
@@ -97,18 +107,16 @@ class TransactionItem extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Props, nextState: State) {
-        // const { item, timestamp } = this.props;
-        // const { isLoading, participant, explainer } = this.state;
-        const { isLoading, cachedTokenDetails, vaultInfo } = this.state;
+        const { isLoading, cachedTokenDetails, vaultInfo, participant } = this.state;
 
         return (
-            // !isEqual(nextProps.item?.hash, item?.hash) ||
             !isEqual(nextState.isLoading, isLoading) ||
             !isEqual(nextState.cachedTokenDetails.account, cachedTokenDetails.account) ||
-            !isEqual(nextState.vaultInfo, vaultInfo)
-            // !isEqual(nextState.participant, participant) ||
-            // !isEqual(nextState.explainer, explainer) // ||
-            // !isEqual(nextProps.timestamp, timestamp)
+            !isEqual(nextState.vaultInfo, vaultInfo) ||
+            nextState.participant?.name !== participant?.name ||
+            nextState.participant?.address !== participant?.address ||
+            nextState.cachedTokenDetails.title !== cachedTokenDetails.title ||
+            nextState.cachedTokenDetails.icon !== cachedTokenDetails.icon
         );
     }
 
@@ -118,6 +126,8 @@ class TransactionItem extends Component<Props, State> {
 
         // fetch recipient details
         InteractionManager.runAfterInteractions(this.setDetails);
+        // Same function reference for the life of this row, removed on unmount.
+        this.unsubscribeContact = contactAddressChanges.subscribe(this.onContactAddress);
     }
 
     componentDidUpdate(prevProps: Props) {
@@ -131,9 +141,65 @@ class TransactionItem extends Component<Props, State> {
 
     componentWillUnmount() {
         this.mounted = false;
+        this.unsubscribeContact?.();
+        this.unsubscribeContact = undefined;
     }
 
+    private beginResolve = () => {
+        this.resolveGeneration += 1;
+        return this.resolveGeneration;
+    };
+
+    private isCurrentResolve = (generation: number) => {
+        return this.mounted && generation === this.resolveGeneration;
+    };
+
+    // Address book add/rename/remove. Other rows keep the name they already resolved.
+    private onContactAddress = (address: string) => {
+        const { participant } = this.state;
+        if (!this.mounted || address !== participant?.address) {
+            return;
+        }
+
+        this.refreshMatchingParticipant();
+    };
+
+    private refreshMatchingParticipant = () => {
+        const { participant } = this.state;
+        const address = participant?.address;
+        const tag = participant?.tag;
+        if (!address) {
+            return;
+        }
+
+        const generation = this.beginResolve();
+
+        ResolverService.getAccountName(address, tag)
+            .then((resp) => {
+                if (!this.isCurrentResolve(generation) || resp?.address !== address) {
+                    return;
+                }
+
+                this.setState({
+                    participant: resp,
+                    isLoading: false,
+                });
+                this.getTokenDetails(resp);
+            })
+            .catch(() => {
+                const { isLoading } = this.state;
+                if (this.isCurrentResolve(generation) && isLoading) {
+                    this.setState({ isLoading: false });
+                }
+            });
+    };
+
     setDetails = async () => {
+        if (!this.mounted) {
+            return;
+        }
+
+        const generation = this.beginResolve();
         const { item, account } = this.props;
         const { isLoading } = this.state;
 
@@ -165,9 +231,18 @@ class TransactionItem extends Component<Props, State> {
                   ? participants.end
                   : { address: account.address };        
 
+        let resolved: AccountNameResolveType | undefined;
+
         try {
             // get participant details
             const resp = await ResolverService.getAccountName(otherParty.address, otherParty.tag);
+
+            // A newer contact refresh or a newer item owns the row now.
+            if (!this.isCurrentResolve(generation)) {
+                return;
+            }
+
+            resolved = resp;
 
             const isFeeTransaction = resp?.address && AppConfig?.feeAccount &&
                 String(resp?.address || '') === String(AppConfig?.feeAccount || '') &&
@@ -195,7 +270,7 @@ class TransactionItem extends Component<Props, State> {
                 }
             }
 
-            if (!isEmpty(resp) && this.mounted) {
+            if (!isEmpty(resp)) {
                 this.setState({
                     explainer,
                     participant: resp,
@@ -205,16 +280,23 @@ class TransactionItem extends Component<Props, State> {
                 });
             }
         } catch (error) {
-            if (this.mounted) {
-                this.setState({
-                    explainer,
-                    participant: { ...otherParty },
-                    isLoading: false,
-                });
+            if (!this.isCurrentResolve(generation)) {
+                return;
             }
+
+            resolved = { ...otherParty };
+            this.setState({
+                explainer,
+                participant: resolved,
+                isLoading: false,
+            });
         }
 
-        this.getTokenDetails();
+        if (!this.isCurrentResolve(generation)) {
+            return;
+        }
+
+        this.getTokenDetails(resolved);
         this.checkVaultShare();
     };
 
@@ -258,11 +340,20 @@ class TransactionItem extends Component<Props, State> {
         // });
     };
 
-    getTokenDetails() {
+    getTokenDetails(resolved?: AccountNameResolveType) {
         const { item, account } = this.props;
-        const { participant, cachedTokenDetails } = this.state;
+        const { participant: shown, cachedTokenDetails } = this.state;
+        const participant = resolved ?? shown;
 
-        if (cachedTokenDetails?.icon) return;
+        // The label element is created once. Rebuild it when this address's name changes.
+        const shownNameChanged =
+            !!resolved &&
+            (resolved.name !== shown?.name ||
+                resolved.address !== shown?.address ||
+                resolved.kycApproved !== shown?.kycApproved ||
+                resolved.blocked !== shown?.blocked);
+
+        if (cachedTokenDetails?.icon && !shownNameChanged) return;
 
         let changesToAmmLine;
         let changesSwap;

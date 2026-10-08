@@ -605,7 +605,11 @@ class ReviewTransactionModal extends Component<Props, State> {
     */
     setSource = (account: AccountModel) => {
         const { payload } = this.props;
-        const { transaction } = this.state;
+        const { transaction, isLoading } = this.state;
+
+        if (isLoading) {
+            return;
+        }
 
         if (!transaction) {
             throw new Error('Transaction is not set and cannot set source account!');

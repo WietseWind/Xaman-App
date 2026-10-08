@@ -306,6 +306,10 @@ describe('NetworkService', () => {
             expect(networkService.normalizeEndpoint(endpoint)).toBe(endpoint);
         });
 
+        test('Should connect to Xahau testnet directly instead of the custom-node proxy', () => {
+            expect(networkService.normalizeEndpoint('wss://xahau-test.net')).toBe('wss://xahau-test.net');
+        });
+
         test('Should append ORIGIN and userId for RPC hosts listed as cluster endpoints', () => {
             const rpcClusterEndpoints = [
                 'wss://rpc.xrpl-labs.com',
@@ -375,6 +379,29 @@ describe('NetworkService', () => {
             definitionsSpy.mockRestore();
             featuresSpy.mockRestore();
             statusSpy.mockRestore();
+        });
+    });
+
+    describe('hasSwap', () => {
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('does not throw when profile or swapNetworks is missing', () => {
+            const spy = jest.spyOn(ProfileRepository, 'getProfile');
+            spy.mockReturnValue(undefined);
+            expect(() => networkService.hasSwap()).not.toThrow();
+            expect(networkService.hasSwap()).toBe(false);
+
+            spy.mockReturnValue({} as any);
+            expect(() => networkService.hasSwap()).not.toThrow();
+            expect(networkService.hasSwap()).toBe(false);
+        });
+
+        it('is true when the current network key is listed', () => {
+            jest.replaceProperty(networkService, 'network', { key: 'MAINNET' } as any);
+            jest.spyOn(ProfileRepository, 'getProfile').mockReturnValue({ swapNetworks: 'MAINNET,XAHAU' } as any);
+            expect(networkService.hasSwap()).toBe(true);
         });
     });
 });

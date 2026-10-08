@@ -34,7 +34,9 @@ class DelegateSetInfo extends ExplainerAbstract<DelegateSet, MutationsMixinType>
 
             content.push(
                 Localize.t('txDelegateSet.itSetsThesePermissions', {
-                    permissions: `\n\n - ${this.item.___translatedDelegations.join('\n - ')}`,
+                    permissions: `\n\n - ${this.item.___translatedDelegations
+                        .map((name) => (this.item.___dangerPerms.indexOf(name) > -1 ? `${name} (!)` : name))
+                        .join('\n - ')}`,
                 }),
             );
         }

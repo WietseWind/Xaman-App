@@ -26,6 +26,7 @@ import {
     // Switch,
     Icon,
 } from '@components/General';
+import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
 
 import { ConvertCodecAlphabet } from '@common/utils/codec';
 import {
@@ -162,10 +163,20 @@ class EnterSeedStep extends Component<Props, State> {
         }
 
         try {
-            const picked = await pickFamilySeedCurve({
+            await NetworkService.prepareForAccountLookup();
+            let picked = await pickFamilySeedCurve({
                 secret: this.resolveFamilySeed(secret as string),
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
+            // A dropped reply makes one side "unknown", which hides a real
+            // ed-funded / secp-absent account. Ask the node once more.
+            if (picked.status === 'inconclusive') {
+                await NetworkService.prepareForAccountLookup();
+                picked = await pickFamilySeedCurve({
+                    secret: this.resolveFamilySeed(secret as string),
+                    getAccountInfo: (address) => LedgerService.getAccountInfo(address),
+                });
+            }
 
             if (token !== this.curveDetectToken || this.userSelectedCurve) {
                 return this.getSecretType();
@@ -213,6 +224,11 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     applySecret = (secret?: string) => {
+        // Blur and the IME re-send the same secret. Restarting the lookup
+        // drops a result that already knows ed25519 is funded and secp is not.
+        if (secret === this.pendingSecret) {
+            return;
+        }
         this.userSelectedCurve = false;
         this.curveDetectToken += 1;
         this.pendingSecret = secret;
@@ -459,28 +475,30 @@ class EnterSeedStep extends Component<Props, State> {
 
                     <Spacer size={50} />
 
-                    <TextInput
-                        testID="seed-input"
-                        placeholder={
-                            alternativeSeedAlphabet
-                                ? Localize.t('account.enterSecret')
-                                : Localize.t('account.pleaseEnterYourFamilySeed')
-                        }
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        secureTextEntry={!showSecret}
-                        keyboardType={keyboardType}
-                        inputStyle={
-                            String(secret || '') === '' ? styles.inputTextEmpty : styles.inputText
-                        }
-                        onChangeText={this.onTextChange}
-                        style={styles.textInput}
-                        value={secret}
-                        showScanner
-                        scannerType={StringType.XrplSecret}
-                        onScannerRead={this.onQRCodeRead}
-                        numberOfLines={1}
-                    />
+                    <SensitiveAccessibilityView>
+                        <TextInput
+                            testID="seed-input"
+                            placeholder={
+                                alternativeSeedAlphabet
+                                    ? Localize.t('account.enterSecret')
+                                    : Localize.t('account.pleaseEnterYourFamilySeed')
+                            }
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            secureTextEntry={!showSecret}
+                            keyboardType={keyboardType}
+                            inputStyle={
+                                String(secret || '') === '' ? styles.inputTextEmpty : styles.inputText
+                            }
+                            onChangeText={this.onTextChange}
+                            style={styles.textInput}
+                            value={secret}
+                            showScanner
+                            scannerType={StringType.XrplSecret}
+                            onScannerRead={this.onQRCodeRead}
+                            numberOfLines={1}
+                        />
+                    </SensitiveAccessibilityView>
                     <Spacer size={20} />
                     <Button
                         roundedMini

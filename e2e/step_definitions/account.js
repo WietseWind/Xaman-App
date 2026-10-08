@@ -18,7 +18,7 @@ const {
     SAMPLE_FAMILY_SEED_SECP_ADDRESS,
 } = require('../helpers/fixtures');
 const { dismissKeyboard } = require('../helpers/keyboard');
-const { waitForAndroidAlertText } = require('../helpers/androidAlert');
+const { waitForAndroidAlertText, tapAndroidAlertButton } = require('../helpers/androidAlert');
 const {
     clickByTestId,
     waitUntilAndroidTestId,
@@ -29,9 +29,14 @@ const {
     enterAndroidSecretNumbers,
     androidTypeText,
     androidBlurIme,
+    androidSwipeTestId,
     isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
+    clickAndroidTextIncludes,
+    androidDismissImeIfShown,
+    dismissAndroidImportedSecretAlert,
+    unlockAndroidPasscodeIfPresent,
 } = require('../helpers/tapById');
 
 Then('I write down secret numbers', { timeout: 10 * 60 * 1000 }, async () => {
@@ -212,7 +217,8 @@ Then('I enter my seed in the input', async () => {
         // Timeout often happens after the seed is already in the field
         // (secp256k1 picker is up). Recover: dump, blur IME, do not Next here.
         if (await seedLooksValid()) {
-            androidBlurIme();
+            // Do not send Escape. The curve prompt opens while this step is
+            // still checking the field, and Escape dismisses that dialog.
             return;
         }
 
@@ -256,7 +262,6 @@ Then('I enter my seed in the input', async () => {
         if (!(await seedLooksValid()) && !/^sed/i.test(want)) {
             throw new Error('seed-input did not produce a valid family seed (keypair picker hidden)');
         }
-        androidBlurIme();
         return;
     }
     const input = element(by.id('seed-input'));
@@ -344,8 +349,103 @@ const tryTapAlertLabel = async (label) => {
     }
 };
 
-Then('I leave account import if open', async () => {
+const androidImportedSecretAlert = async () =>
+    (await androidDumpIncludes('account secret that you have entered')) ||
+    (await androidDumpIncludes('already been imported')) ||
+    (await androidDumpIncludes('account already exists'));
+
+const dismissImportedSecretAlert = async () => {
+    if (await dismissAndroidImportedSecretAlert()) {
+        return true;
+    }
+    if (device.getPlatform() === 'android' && (await androidImportedSecretAlert())) {
+        await tapAndroidAlertButton('OK', device.id);
+        return true;
+    }
+    return false;
+};
+
+const leaveAccountImportIfOpen = async () => {
     await dismissKeyboard();
+
+    // Only treat tab-hosting screens as done. accounts-list and add-account hide
+    // the tab bar, so later scenarios cannot tap tab-Settings from there.
+    const doneIds = [
+        'network-switch-button',
+        'home-tab-view',
+        'home-tab-empty-view',
+        'settings-tab-screen',
+    ];
+    const alertLabels = ['Go back', 'Cancel', 'OK', 'No'];
+
+    if (device.getPlatform() === 'android') {
+        try {
+            await device.disableSynchronization();
+        } catch (e) {
+            // already off
+        }
+        // The already-imported Error is a native dialog. Matching its buttons
+        // through Detox never returns, so the step used to sit until timeout
+        // and leave the dialog on screen.
+        let hardwareBacks = 0;
+        for (let i = 0; i < 20; i += 1) {
+            if (await androidHasTestId('onboarding-screen')) {
+                return;
+            }
+            if (await dismissImportedSecretAlert()) {
+                await sleepMs(400);
+                continue;
+            }
+            if (await androidDumpIncludes('go back')) {
+                if (await clickAndroidLabel('GO BACK')) {
+                    await sleepMs(400);
+                    continue;
+                }
+            }
+            if (await unlockAndroidPasscodeIfPresent()) {
+                await sleepMs(300);
+                continue;
+            }
+            let done = false;
+            for (let d = 0; d < doneIds.length; d += 1) {
+                if (await androidHasTestId(doneIds[d])) {
+                    done = true;
+                    break;
+                }
+            }
+            if (done) {
+                return;
+            }
+            if (await androidHasTestId('back-button')) {
+                await clickByTestId('back-button');
+                await sleepMs(400);
+                continue;
+            }
+            // Explain Activation comments out its footer back, and the import
+            // header back exists only on the access-level step. Hardware Back
+            // pops that modal. account-import-view stays mounted under other
+            // screens, so it must not be the signal for this.
+            if (hardwareBacks < 2 && (await androidHasTestId('account-import-explain-activation-view'))) {
+                hardwareBacks += 1;
+                const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+                try {
+                    execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '4'], { timeout: 4000 });
+                } catch (backErr) {
+                    // activity already gone
+                }
+                await sleepMs(500);
+                continue;
+            }
+            try {
+                await clickByTestId('tab-Home');
+            } catch (homeErr) {
+                // not on a tab host yet
+            }
+            await sleepMs(300);
+        }
+        throw new Error('still inside account import after leave attempts');
+    }
+
     try {
         await waitFor(element(by.id('lock-overlay')))
             .toExist()
@@ -360,11 +460,6 @@ Then('I leave account import if open', async () => {
     } catch (lockErr) {
         // already unlocked
     }
-
-    // Only treat tab-hosting screens as done. accounts-list and add-account hide
-    // the tab bar, so later scenarios cannot tap tab-Settings from there.
-    const doneIds = ['network-switch-button', 'home-tab-view', 'settings-tab-screen'];
-    const alertLabels = ['Go back', 'Cancel', 'OK', 'No'];
 
     leaveLoop: for (let i = 0; i < 20; i += 1) {
         for (let d = 0; d < doneIds.length; d += 1) {
@@ -427,6 +522,147 @@ Then('I leave account import if open', async () => {
     }
 
     throw new Error('still inside account import after leave attempts');
+};
+
+Then('I leave account import if open', leaveAccountImportIfOpen);
+
+// Home shows Send only when the selected account is signable and has a
+// balance (AccountRepository.getSpendableAccounts). Feature 09 leaves the
+// unactivated secp import selected, so Send is hidden until an earlier
+// funded account is selected.
+const SPENDABLE_ACCOUNT_LABELS = [
+    'G-Passcode-1',
+    'G-Passphrase-2',
+    'I-SN-Passcode',
+    'I-FS-Passcode',
+    'I-MN-Passcode',
+    'I-MN-Secp',
+    'I-MN-Ed',
+    'I-MN-Ed-Auto',
+    'I-FS-Passphrase',
+];
+
+// An incomplete r-string is not a local address (tryNormalizeDestination
+// returns null). handle-lookup then runs. The directory may return a match
+// or nothing; either way the list must leave the spinner and show Search results.
+Then('I should see the recipient search settle', { timeout: 40 * 1000 }, async () => {
+    const settled = async () => {
+        if (device.getPlatform() === 'android') {
+            return (
+                (await androidDumpIncludes('Search results')) &&
+                ((await androidHasTestId('recipient-no-search-result')) ||
+                    (await androidDumpIncludes('recipient-r')))
+            );
+        }
+        const settledIds = [
+            'recipient-no-search-result',
+            'recipient-rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ',
+        ];
+        for (let i = 0; i < settledIds.length; i += 1) {
+            try {
+                await waitFor(element(by.id(settledIds[i]))).toExist().withTimeout(400);
+                return true;
+            } catch (e) {
+                // still looking
+            }
+        }
+        try {
+            await waitFor(element(by.text('Search results'))).toExist().withTimeout(400);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+    const deadline = Date.now() + 25000;
+    while (Date.now() < deadline) {
+        if (await settled()) {
+            return;
+        }
+        await sleepMs(400);
+    }
+    throw new Error('recipient search did not settle');
+});
+
+Then('I select a spendable account if Send is hidden', { timeout: 60 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        if (await androidHasTestId('send-button')) {
+            return;
+        }
+        await clickByTestId('account-switch-button');
+        await waitUntilAndroidTestId('switch-account-overlay', 10000);
+        const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+        for (let pass = 0; pass < 8; pass += 1) {
+            for (let i = 0; i < SPENDABLE_ACCOUNT_LABELS.length; i += 1) {
+                const label = SPENDABLE_ACCOUNT_LABELS[i];
+                if (!(await androidDumpIncludes(label))) {
+                    continue;
+                }
+                if (!(await clickAndroidLabel(label))) {
+                    continue;
+                }
+                const deadline = Date.now() + 12000;
+                while (Date.now() < deadline) {
+                    if (await androidHasTestId('send-button')) {
+                        return;
+                    }
+                    await sleepMs(400);
+                }
+            }
+            try {
+                execFileSync(
+                    'adb',
+                    ['-s', serial, 'shell', 'input', 'swipe', '540', '1700', '540', '900', '300'],
+                    { timeout: 5000 },
+                );
+            } catch (swipeErr) {
+                // overlay may already be gone
+            }
+            await sleepMs(400);
+        }
+        throw new Error('no funded account from earlier scenarios exposed Send');
+    }
+
+    try {
+        await waitFor(element(by.id('send-button'))).toExist().withTimeout(2000);
+        return;
+    } catch (e) {
+        // current account is not spendable
+    }
+    await element(by.id('account-switch-button')).tap();
+    await waitFor(element(by.id('switch-account-overlay'))).toExist().withTimeout(8000);
+    let lastErr = new Error('no funded account from earlier scenarios exposed Send');
+    for (let i = 0; i < SPENDABLE_ACCOUNT_LABELS.length; i += 1) {
+        const label = SPENDABLE_ACCOUNT_LABELS[i];
+        const row = element(by.text(label));
+        try {
+            await waitFor(row).toBeVisible().withTimeout(1500);
+        } catch (e) {
+            try {
+                await waitFor(row)
+                    .toBeVisible()
+                    .whileElement(by.id('switch-account-scroll'))
+                    .scroll(220, 'up');
+            } catch (upErr) {
+                try {
+                    await waitFor(row)
+                        .toBeVisible()
+                        .whileElement(by.id('switch-account-scroll'))
+                        .scroll(220, 'down');
+                } catch (downErr) {
+                    lastErr = downErr;
+                    continue;
+                }
+            }
+        }
+        try {
+            await row.tap();
+            await waitFor(element(by.id('send-button'))).toExist().withTimeout(8000);
+            return;
+        } catch (e) {
+            lastErr = e;
+        }
+    }
+    throw lastErr;
 });
 
 Then('I open the family seed import screen', async () => {
@@ -482,6 +718,60 @@ Then('I choose family seed curve {string}', async (curve) => {
     await dismissKeyboard();
     await device.disableSynchronization();
 
+    if (device.getPlatform() === 'android') {
+        // The seed field is still focused after typing. A tap on the curve
+        // row is swallowed to close the keyboard, or lands on the IME and
+        // never opens the picker. Hide the keyboard without hardware Back
+        // (Back pops the whole import screen).
+        if (await androidDismissImeIfShown()) {
+            await sleepMs(400);
+        }
+        const pickerOpen = async () =>
+            (await androidHasTestId('picker-modal')) || (await androidHasTestId(`${curve}-item`));
+        await clickByTestId('keypair-curve-row');
+        let opened = false;
+        const openDeadline = Date.now() + 4000;
+        while (Date.now() < openDeadline) {
+            if (await pickerOpen()) {
+                opened = true;
+                break;
+            }
+            await sleepMs(250);
+        }
+        if (!opened) {
+            if (await androidDismissImeIfShown()) {
+                await sleepMs(400);
+            }
+            await clickByTestId('keypair-curve-row');
+            const retryDeadline = Date.now() + 4000;
+            while (Date.now() < retryDeadline) {
+                if (await pickerOpen()) {
+                    opened = true;
+                    break;
+                }
+                await sleepMs(250);
+            }
+        }
+        if (!opened) {
+            throw new Error(`family seed curve picker did not open for ${curve}`);
+        }
+        if (await androidHasTestId(`${curve}-item`)) {
+            await clickByTestId(`${curve}-item`);
+        } else if (!(await clickAndroidTextIncludes(curve))) {
+            await clickByTestId(`${curve}-item`);
+        }
+        const deadline = Date.now() + 15000;
+        let last = '';
+        while (Date.now() < deadline) {
+            last = String((await androidReadTextByTestId('keypair-curve-value')) || '');
+            if (last.indexOf(curve) !== -1) {
+                return;
+            }
+            await sleepMs(400);
+        }
+        throw new Error(`did not select family seed curve ${curve}, value ${JSON.stringify(last)}`);
+    }
+
     try {
         await element(by.id('keypair-curve-row')).tap({ x: 12, y: 12 });
     } catch (e) {
@@ -519,6 +809,10 @@ Then('I choose family seed curve {string}', async (curve) => {
 });
 
 Then('I should confirm expected family seed address', async () => {
+    if (device.getPlatform() === 'android' && (await androidImportedSecretAlert())) {
+        await dismissImportedSecretAlert();
+        throw new Error('already-imported secret alert was up; expected the family seed address screen');
+    }
     const expected = this.expectedFamilySeedAddress;
     await waitFor(element(by.id('account-import-show-address-view')))
         .toExist()
@@ -526,6 +820,95 @@ Then('I should confirm expected family seed address', async () => {
     const attributes = await element(by.id('account-address-text')).getAttributes();
     this.address = attributes.text;
     assert.equal(this.address, expected);
+});
+
+// The secp sample is imported by an earlier run of this feature. Next then
+// raises the already-imported error instead of the address screen. Accept
+// that, tap OK, and leave. A fresh install still walks the wizard to Home.
+Then('I finish importing this family seed unless it is already in Xaman', { timeout: 3 * 60 * 1000 }, async () => {
+    const expected = this.expectedFamilySeedAddress;
+
+    if (device.getPlatform() === 'android') {
+        const deadline = Date.now() + 20000;
+        let imported = false;
+        let sawAddress = false;
+        while (Date.now() < deadline) {
+            if (await androidImportedSecretAlert()) {
+                imported = true;
+                break;
+            }
+            if (
+                (await androidHasTestId('account-address-text')) ||
+                (await androidHasTestId('account-import-show-address-view'))
+            ) {
+                sawAddress = true;
+                break;
+            }
+            await sleepMs(400);
+        }
+        if (imported) {
+            await dismissImportedSecretAlert();
+            await leaveAccountImportIfOpen();
+            return;
+        }
+        if (!sawAddress) {
+            throw new Error('family seed Next did not open the address screen or the already-imported alert');
+        }
+        assert.equal(await androidReadTextByTestId('account-address-text'), expected);
+        await clickByTestId('next-button');
+        await waitUntilAndroidTestId('account-import-explain-activation-view', 20000);
+        await clickByTestId('next-button');
+        await waitUntilAndroidTestId('account-import-security-view', 20000);
+        await clickByTestId('next-button');
+        await waitUntilAndroidTestId('account-import-label-view', 20000);
+        await clickByTestId('label-input');
+        try {
+            androidTypeText('E2E-FS-Secp');
+        } catch (e) {
+            // field may already hold the label
+        }
+        androidBlurIme();
+        await clickByTestId('next-button');
+        await waitUntilAndroidTestId('account-import-finish-view', 20000);
+        await clickByTestId('finish-button');
+        await waitUntilAndroidTestId('home-tab-view', 30000);
+        return;
+    }
+
+    const address = element(by.id('account-address-text'));
+    const importedOk = element(by.label('OK').and(by.type('_UIAlertControllerActionView')));
+    let imported = false;
+    try {
+        await waitFor(address).toExist().withTimeout(15000);
+    } catch (e) {
+        await waitFor(importedOk).toExist().withTimeout(4000);
+        imported = true;
+    }
+    if (imported) {
+        await importedOk.tap();
+        await leaveAccountImportIfOpen();
+        return;
+    }
+    const attributes = await address.getAttributes();
+    assert.equal(attributes.text, expected);
+    await element(by.id('next-button')).tap();
+    await waitFor(element(by.id('account-import-explain-activation-view'))).toExist().withTimeout(20000);
+    await element(by.id('next-button')).tap();
+    await waitFor(element(by.id('account-import-security-view'))).toExist().withTimeout(20000);
+    await element(by.id('next-button')).tap();
+    await waitFor(element(by.id('account-import-label-view'))).toExist().withTimeout(20000);
+    const label = element(by.id('label-input'));
+    await waitFor(label).toBeVisible().withTimeout(5000);
+    await label.replaceText('E2E-FS-Secp');
+    try {
+        await label.tapReturnKey();
+    } catch (e) {
+        await dismissKeyboard();
+    }
+    await element(by.id('next-button')).tap();
+    await waitFor(element(by.id('account-import-finish-view'))).toExist().withTimeout(20000);
+    await element(by.id('finish-button')).tap();
+    await waitFor(element(by.id('home-tab-view'))).toExist().withTimeout(30000);
 });
 
 Then('I activate expected family seed address', { timeout: 5 * 60 * 1000 }, async () => {
@@ -548,7 +931,7 @@ Then('I should see the already imported secret alert', { timeout: 30 * 1000 }, a
         .withTimeout(15000);
 });
 
-Then('I should see the family seed different curve prompt', { timeout: 30 * 1000 }, async () => {
+Then('I should see the family seed different curve prompt', { timeout: 50 * 1000 }, async () => {
     if (device.getPlatform() === 'android') {
         await waitForAndroidAlertText('ed25519', device.id);
         return;
@@ -706,18 +1089,49 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
         throw new Error(`mnemonic not ready: ${JSON.stringify(words)}`);
     }
 
-    // typeText + return advances to the next word field on iOS. Android
-    // later rows are under 75% visible. Do not tap (IME covers the list).
+    // iOS typeText + return advances to the next word field.
+    // Android must focus each row. Enter moves focus on a timer, and the
+    // next word otherwise lands in the previous row.
     if (device.getPlatform() === 'android') {
-        for (let i = 0; i < words.length; i++) {
-            const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
-            if (i === 0) {
-                await waitUntilAndroidTestId('word-0-input', 10000);
-                await clickByTestId('word-0-input');
+        const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
+        // The 12/16/24 buttons sit above the list. A scroll gesture that
+        // starts on them resets the length, so only swipe inside the list.
+        await clickByTestId(`${words.length}-words-button`);
+        await new Promise((resolve) => { setTimeout(resolve, 300); });
+        const revealWord = async (index) => {
+            const wordId = `word-${index}-input`;
+            if (await androidHasTestId(wordId)) {
+                return;
             }
+            // 'down' moves the list back to the top. 'up' reveals later rows.
+            // The curve options leave the list at the bottom, so word 1 is
+            // reached by swiping down, not up.
+            const direction = index === 0 ? 'down' : 'up';
+            for (let nudge = 0; nudge < 8; nudge += 1) {
+                await androidSwipeTestId('mnemonic-words-scroll', direction);
+                await new Promise((resolve) => { setTimeout(resolve, 250); });
+                if (await androidHasTestId(wordId)) {
+                    return;
+                }
+            }
+            throw new Error(`mnemonic word ${index + 1} never came on screen`);
+        };
+        for (let i = 0; i < words.length; i++) {
+            await revealWord(i);
+            await clickByTestId(`word-${i}-input`);
+            await new Promise((resolve) => { setTimeout(resolve, 200); });
+            // Developer mode prefills the 24-word ed25519 sample. input text
+            // appends, so clear the row before typing the phrase.
+            execFileSync(
+                'adb',
+                ['-s', serial, 'shell', 'input', 'keyevent', ...Array(16).fill('67')],
+                { timeout: 5000 },
+            );
             androidTypeText(words[i]);
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-            await new Promise((resolve) => { setTimeout(resolve, 250); });
+            if (i + 1 < words.length) {
+                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
+                await new Promise((resolve) => { setTimeout(resolve, 200); });
+            }
         }
         return;
     }

@@ -127,6 +127,29 @@ const compactOptions = (
     return Object.keys(out).length > 0 ? out : undefined;
 };
 
+/**
+ * Inactive rows are shown as bullets. Android writes that mask, or an empty
+ * string, back through onChangeText when focus moves or the list scrolls.
+ * A focused row can still be cleared by the person typing.
+ */
+export const mnemonicWordFromChange = (current: string, incoming: string, editing: boolean): string => {
+    const trimmed = String(incoming || '').replace(/\s/g, '');
+
+    if (/^•+$/.test(trimmed)) {
+        return current;
+    }
+
+    if (!editing && trimmed === '') {
+        return current;
+    }
+
+    return trimmed;
+};
+
+export const nextMnemonicWord = (current: string, incoming: string): string => {
+    return mnemonicWordFromChange(current, incoming, true);
+};
+
 export const deriveMnemonicAccount = (
     mnemonic: string,
     options?: MnemonicDeriveOptions & { algorithm?: MnemonicAlgorithm },

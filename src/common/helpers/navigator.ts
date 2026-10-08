@@ -234,14 +234,19 @@ const Navigator = {
         InteractionManager.runAfterInteractions(async () => {
             if (!setRoot) {
                 setRoot = true;
-                await Navigation.setRoot({
-                    root: {
-                        bottomTabs: {
-                            id: RootType.DefaultRoot,
-                            children: bottomTabsChildren,
+                try {
+                    await Navigation.setRoot({
+                        root: {
+                            bottomTabs: {
+                                id: RootType.DefaultRoot,
+                                children: bottomTabsChildren,
+                            },
                         },
-                    },
-                });
+                    });
+                } catch (error) {
+                    setRoot = false;
+                    throw error;
+                }
             }
         });
     },
