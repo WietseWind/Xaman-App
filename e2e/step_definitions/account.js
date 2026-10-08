@@ -363,10 +363,22 @@ Then('I leave account import if open', async () => {
 
     // Only treat tab-hosting screens as done. accounts-list and add-account hide
     // the tab bar, so later scenarios cannot tap tab-Settings from there.
-    const doneIds = ['network-switch-button', 'home-tab-view', 'settings-tab-screen'];
+    const doneIds = [
+        'network-switch-button',
+        'home-tab-view',
+        'home-tab-empty-view',
+        'settings-tab-screen',
+    ];
     const alertLabels = ['Go back', 'Cancel', 'OK', 'No'];
 
     leaveLoop: for (let i = 0; i < 20; i += 1) {
+        if (device.getPlatform() === 'android') {
+            for (let d = 0; d < doneIds.length; d += 1) {
+                if (await androidHasTestId(doneIds[d])) {
+                    return;
+                }
+            }
+        }
         for (let d = 0; d < doneIds.length; d += 1) {
             try {
                 await waitFor(element(by.id(doneIds[d])))
@@ -721,17 +733,28 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
         }
         await new Promise((resolve) => { setTimeout(resolve, 400); });
         for (let i = 0; i < words.length; i++) {
-            // Only the rows on screen are in the hierarchy. Enter focuses the
-            // next row and scrolls it up. Click it when it is visible. When it
-            // is not listed yet, type into the field Enter just focused.
-            if (await androidHasTestId(`word-${i}-input`)) {
-                await clickByTestId(`word-${i}-input`);
-                await new Promise((resolve) => { setTimeout(resolve, 200); });
+            const wordId = `word-${i}-input`;
+            // Android only lists the rows on screen. Scroll until this row
+            // is one of them, then type into that row.
+            let visible = await androidHasTestId(wordId);
+            for (let nudge = 0; !visible && nudge < 8; nudge += 1) {
+                try {
+                    await element(by.id('mnemonic-words-scroll')).scroll(240, 'down');
+                } catch (scrollErr) {
+                    break;
+                }
+                await new Promise((resolve) => { setTimeout(resolve, 250); });
+                visible = await androidHasTestId(wordId);
             }
+            if (!visible) {
+                throw new Error(`mnemonic word ${i + 1} never came on screen`);
+            }
+            await clickByTestId(wordId);
+            await new Promise((resolve) => { setTimeout(resolve, 200); });
             androidTypeText(words[i]);
             if (i + 1 < words.length) {
                 execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-                await new Promise((resolve) => { setTimeout(resolve, 500); });
+                await new Promise((resolve) => { setTimeout(resolve, 300); });
             }
         }
         return;
