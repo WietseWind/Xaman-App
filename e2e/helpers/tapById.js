@@ -1627,18 +1627,11 @@ const androidClearFocusedField = (count) => {
     }
 };
 
-const androidTypeText = (value) => {
-    const text = String(value);
-    if (!text) {
-        return;
-    }
-    // Do not paste first: Samsung cmd clipboard + KEYCODE_PASTE often no-ops
-    // in RN TextInput while returning success (empty account label, Next dead).
-    const encoded = text.replace(/ /g, '%s');
-    const size = text.length > 10 ? 6 : encoded.length;
-    for (let i = 0; i < encoded.length; i += size) {
+const androidTypeLiteral = (text) => {
+    const size = text.length > 10 ? 6 : text.length;
+    for (let i = 0; i < text.length; i += size) {
         try {
-            androidTypeChunk(encoded.slice(i, i + size));
+            androidTypeChunk(text.slice(i, i + size));
         } catch (e) {
             if (!isAdbTimeout(e)) {
                 throw e;
@@ -1648,6 +1641,31 @@ const androidTypeText = (value) => {
                 androidPasteText(rest);
             }
             return;
+        }
+    }
+};
+
+const androidTypeText = (value) => {
+    const text = String(value);
+    if (!text) {
+        return;
+    }
+    // Do not paste first: Samsung cmd clipboard + KEYCODE_PASTE often no-ops
+    // in RN TextInput while returning success (empty account label, Next dead).
+    // Do not encode a space as %s inside a letter chunk. `input text '%srJ9u'`
+    // dropped the whole first chunk, so the recipient field started at J32u
+    // and the spaced address never normalized.
+    const pieces = text.split(' ');
+    for (let p = 0; p < pieces.length; p += 1) {
+        if (p > 0) {
+            try {
+                androidAdb(['shell', 'input', 'keyevent', '62'], 4000);
+            } catch (e) {
+                // space key already down
+            }
+        }
+        if (pieces[p]) {
+            androidTypeLiteral(pieces[p]);
         }
     }
 };
