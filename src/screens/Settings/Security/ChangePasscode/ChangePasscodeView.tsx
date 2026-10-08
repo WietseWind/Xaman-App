@@ -26,6 +26,7 @@ import Localize from '@locale';
 // style
 import { AppStyles } from '@theme';
 import styles from './styles';
+import { passcodeWrittenOnRollback } from './passcodeRollback';
 import { CriticalProcessingOverlayProps } from '@screens/Overlay/CriticalProcessing';
 
 /* types ==================================================================== */
@@ -165,7 +166,7 @@ class ChangePasscodeView extends Component<Props, State> {
                 // in case of vaults reKey failed, rollback the passcode to old one.
                 // `passcode` from settings is already hashed; setPasscode() would hash it again.
                 if (isReKeyFailed) {
-                    CoreRepository.saveSettings({ passcode });
+                    CoreRepository.saveSettings({ passcode: passcodeWrittenOnRollback(passcode) });
                 }
 
                 resolve();

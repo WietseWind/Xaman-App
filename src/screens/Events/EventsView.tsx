@@ -58,6 +58,7 @@ import { DataSourceItem, RowItemType } from '@components/Modules/EventsList/Even
 import { AppStyles } from '@theme';
 import styles from './styles';
 import { isRegularKeyForDestination, shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
+import { shouldFetchNextEventPage } from './loadMoreGuard';
 
 /* types ==================================================================== */
 export interface Props {
@@ -706,13 +707,20 @@ class EventsView extends Component<Props, State> {
         }
 
         // console.log('loadingmore', canLoadMore, isLoadingMore)
-        if (!forced || typeof forced !== 'boolean') {
-            // only force return if NOT forced (if forced continue)
-            // or if FORCED but forced isn't bool (see fn enter comment)
-            // lastMarker: ignore empty-list onEndReached before the first page exists
-            if (isLoading || isLoadingMore || !canLoadMore || !lastMarker || activeSection !== EventSections.ALL) {
-                return;
-            }
+        // only force return if NOT forced (if forced continue)
+        // or if FORCED but forced isn't bool (see fn enter comment)
+        // lastMarker: ignore empty-list onEndReached before the first page exists
+        if (
+            !shouldFetchNextEventPage({
+                forced,
+                isLoading,
+                isLoadingMore,
+                canLoadMore,
+                hasMarker: !!lastMarker,
+                isAllSection: activeSection === EventSections.ALL,
+            })
+        ) {
+            return;
         }
         // console.log('loadingmoremore', forced)
         

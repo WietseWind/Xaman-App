@@ -48,6 +48,7 @@ import styles from './styles';
 
 /* types ==================================================================== */
 import { Props, State } from './types';
+import { removingFlagAfterDustFailure } from './dustRemoveBusyFlag';
 import BackendService from '@services/BackendService';
 import { DepositAuthorizedRequest, DepositAuthorizedResponse } from '@common/libs/ledger/types/methods';
 
@@ -276,7 +277,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                 },
             );
         } catch (e) {
-            this.setState({ isRemoving: false });
+            this.setState(removingFlagAfterDustFailure());
             Alert.alert(Localize.t('global.error'), Localize.t('asset.failedRemove'));
         }
     };

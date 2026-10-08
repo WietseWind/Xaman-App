@@ -251,7 +251,7 @@ public class LaunchActivity extends NavigationActivity {
                 child.setBackgroundColor(Color.TRANSPARENT);
             }
         }
-        if (paintedRoot && background != lastWindowBackground) {
+        if (paintedRoot && WindowBackground.changed(background, lastWindowBackground)) {
             lastWindowBackground = background;
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }

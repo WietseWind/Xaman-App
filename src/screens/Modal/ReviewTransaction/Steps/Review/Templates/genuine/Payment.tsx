@@ -30,6 +30,7 @@ import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 import { MPToken, MPTokenIssuance } from '@common/libs/ledger/objects';
 import { ComponentTypes } from '@services/NavigationService';
 import { paymentReceivesAmount, showSpendableNextToSendMax } from './paymentReviewBalance';
+import { settleLedgerFetches } from '@screens/Modal/ReviewTransaction/settleLedgerFetches';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -144,8 +145,7 @@ class PaymentTemplate extends Component<Props, State> {
         const { account } = this.state;
 
         if (this.isMPTAmount()) {
-          try {
-            const [issuance, mpt] = await Promise.all([
+          const fetched = await settleLedgerFetches([
                 LedgerService.getLedgerEntry({
                     command: 'ledger_entry',
                     mpt_issuance: transaction?.Amount?.mpt_issuance_id,
@@ -158,6 +158,18 @@ class PaymentTemplate extends Component<Props, State> {
                     },
                 }),
             ]);
+
+          if (!fetched.ok) {
+            this.setState(
+                {
+                    mptIssuanceError: { error: 'fetch_failed' },
+                },
+                this.setIsReady,
+            );
+            return;
+          }
+
+            const [issuance, mpt] = fetched.values;
 
             if ((mpt as any)?.node) {
                 this.setState({
@@ -176,14 +188,6 @@ class PaymentTemplate extends Component<Props, State> {
             }
 
             this.setIsReady();
-          } catch {
-            this.setState(
-                {
-                    mptIssuanceError: { error: 'fetch_failed' },
-                },
-                this.setIsReady,
-            );
-          }
         }
     };
 

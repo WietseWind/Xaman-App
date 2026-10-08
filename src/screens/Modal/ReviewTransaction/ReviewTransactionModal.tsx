@@ -31,6 +31,7 @@ import ErrorView from './Shared/ErrorView';
 
 import { StepsContext } from './Context';
 import { Props, State, Steps } from './types';
+import { shouldIgnoreSourceChange } from './settleLedgerFetches';
 import LedgerService from '@services/LedgerService';
 import BackendService from '@services/BackendService';
 import { VerifyResultType } from '@common/libs/ledger/types';
@@ -607,7 +608,7 @@ class ReviewTransactionModal extends Component<Props, State> {
         const { payload } = this.props;
         const { transaction, isLoading } = this.state;
 
-        if (isLoading) {
+        if (shouldIgnoreSourceChange(isLoading)) {
             return;
         }
 
