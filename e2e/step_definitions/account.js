@@ -733,8 +733,12 @@ Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
             if (await androidHasTestId(wordId)) {
                 return;
             }
+            // 'down' moves the list back to the top. 'up' reveals later rows.
+            // The curve options leave the list at the bottom, so word 1 is
+            // reached by swiping down, not up.
+            const direction = index === 0 ? 'down' : 'up';
             for (let nudge = 0; nudge < 8; nudge += 1) {
-                await androidSwipeTestId('mnemonic-words-scroll', 'up');
+                await androidSwipeTestId('mnemonic-words-scroll', direction);
                 await new Promise((resolve) => { setTimeout(resolve, 250); });
                 if (await androidHasTestId(wordId)) {
                     return;
