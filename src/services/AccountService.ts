@@ -30,6 +30,7 @@ import {
 } from '@common/libs/ledger/types/methods';
 import { AccountTypes } from '@store/types';
 import BackendService from './BackendService';
+import { extAssetsOrEmpty } from './extAssetsOrEmpty';
 
 /* Events  ==================================================================== */
 export type AccountServiceEvent = {
@@ -262,9 +263,8 @@ class AccountService extends EventEmitter {
             ...(NetworkService.getNetwork().name.toLowerCase().match(/xahau/)
                 ? [Promise.resolve([])]
                 : [LedgerService.getAccountMPTFullDetails(account)]),
-            BackendService.getAccountExtAssets(account).catch((error) => {
+            extAssetsOrEmpty(BackendService.getAccountExtAssets(account), (error) => {
                 this.logger.warn('Unable to get ext assets, continuing with ledger balances', error);
-                return [];
             }),
         ]);
 

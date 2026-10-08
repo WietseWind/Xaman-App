@@ -1,36 +1,21 @@
-describe('review MPT fetch and source switch', () => {
-    it('reproduces an unhandled rejection when MPT ledger_entry fails', async () => {
-        const fetchMPTDetails = async () => {
-            await Promise.all([Promise.reject(new Error('ledger_entry failed'))]);
-        };
+import { settleLedgerFetches, shouldIgnoreSourceChange } from '../settleLedgerFetches';
 
-        await expect(fetchMPTDetails()).rejects.toThrow('ledger_entry failed');
+describe('review MPT fetch and source switch', () => {
+    it('swallows a rejected ledger_entry so review can continue', async () => {
+        await expect(settleLedgerFetches([Promise.reject(new Error('ledger_entry failed'))])).resolves.toEqual({
+            ok: false,
+        });
     });
 
-    it('swallows MPT fetch failures so review can continue', async () => {
-        const fetchMPTDetails = async () => {
-            try {
-                await Promise.all([Promise.reject(new Error('ledger_entry failed'))]);
-            } catch {
-                return 'handled';
-            }
-            return 'ok';
-        };
-
-        await expect(fetchMPTDetails()).resolves.toBe('handled');
+    it('returns the ledger entries when every fetch succeeds', async () => {
+        await expect(settleLedgerFetches([Promise.resolve({ node: { id: 1 } })])).resolves.toEqual({
+            ok: true,
+            values: [{ node: { id: 1 } }],
+        });
     });
 
     it('ignores account picker changes while signing is already in flight', () => {
-        let source = 'rOne';
-        const isLoading = true;
-        const setSource = (next: string) => {
-            if (isLoading) {
-                return;
-            }
-            source = next;
-        };
-
-        setSource('rTwo');
-        expect(source).toBe('rOne');
+        expect(shouldIgnoreSourceChange(true)).toBe(true);
+        expect(shouldIgnoreSourceChange(false)).toBe(false);
     });
 });

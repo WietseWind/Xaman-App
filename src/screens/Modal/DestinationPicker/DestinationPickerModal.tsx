@@ -34,6 +34,7 @@ import { FlaggedDestinationOverlayProps } from '@screens/Overlay/FlaggedDestinat
 
 import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
+import { appendServerMatches } from './appendServerMatches';
 
 /* types ==================================================================== */
 export interface Props {
@@ -209,43 +210,13 @@ class DestinationPickerModal extends Component<Props, State> {
                 BackendService.lookup(searchText)
                     .then(async (res: any) => {
                         if (!isEmpty(res) && res.error !== true && !isEmpty(res.matches)) {
-                            for (const element of res.matches) {
-                                if (sequence !== this.sequence) {
-                                    return;
-                                }
-
-                                // if payid in result, then look for payId in local source as well
-                                if (element.source === 'payid') {
-                                    const internalResult = await ResolverService.getAccountName(
-                                        element.account,
-                                        element.tag,
-                                        true,
-                                    );
-
-                                    if (sequence !== this.sequence) {
-                                        return;
-                                    }
-
-                                    // found in local source
-                                    if (internalResult.name) {
-                                        searchResult.push({
-                                            name: internalResult.name || '',
-                                            address: element.account,
-                                            tag: element.tag,
-                                            source: internalResult.source,
-                                        });
-                                        continue;
-                                    }
-                                }
-
-                                searchResult.push({
-                                    name: element.alias === element.account ? '' : element.alias,
-                                    address: element.account,
-                                    source: element.source,
-                                    tag: element.tag,
-                                    kycApproved: element.kycApproved,
-                                });
-                            }
+                            await appendServerMatches(
+                                searchResult,
+                                res.matches,
+                                sequence,
+                                () => this.sequence,
+                                (account, tag) => ResolverService.getAccountName(account, tag, true),
+                            );
                         }
 
                         if (sequence === this.sequence) {

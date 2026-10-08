@@ -59,6 +59,7 @@ import { ShareAccountOverlayProps } from '@screens/Overlay/ShareAccount';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import { shouldApplyAccountUpdate } from './accountUpdateGuard';
 import onboardingStyles from '../Onboarding/styles';
 import { AccountGenerateViewProps } from '@screens/Account/Add/Generate';
 import { AccountImportViewProps } from '@screens/Account/Add/Import';
@@ -254,7 +255,7 @@ class HomeView extends Component<Props, State> {
     onAccountUpdate = (updatedAccount: AccountModel) => {
         const { account } = this.state;
 
-        if (updatedAccount?.isValid() && updatedAccount.address === account?.address) {
+        if (shouldApplyAccountUpdate(updatedAccount, account)) {
             // update the UI
             this.setState(
                 {
