@@ -404,4 +404,52 @@ describe('NetworkService', () => {
             expect(networkService.hasSwap()).toBe(true);
         });
     });
+
+    describe('prepareForAccountLookup', () => {
+        const service = networkService as any;
+        let connection: any;
+
+        beforeEach(() => {
+            connection = service.connection;
+        });
+
+        afterEach(() => {
+            service.connection = connection;
+            jest.useRealTimers();
+            jest.restoreAllMocks();
+        });
+
+        it('leaves a socket that spoke within the last 8 seconds', async () => {
+            const reconnect = jest.spyOn(networkService, 'reconnect').mockImplementation(() => undefined);
+            service.connection = { getState: () => ({ online: true, secLastContact: 8 }) };
+
+            await networkService.prepareForAccountLookup();
+
+            expect(reconnect).not.toHaveBeenCalled();
+        });
+
+        it('reconnects when the socket has been quiet for more than 8 seconds', async () => {
+            jest.useFakeTimers();
+            const reconnect = jest.spyOn(networkService, 'reconnect').mockImplementation(() => undefined);
+            service.connection = { getState: () => ({ online: true, secLastContact: 9 }) };
+
+            const pending = networkService.prepareForAccountLookup();
+            await jest.advanceTimersByTimeAsync(1500);
+            await pending;
+
+            expect(reconnect).toHaveBeenCalledTimes(1);
+        });
+
+        it('reconnects when the socket is offline', async () => {
+            jest.useFakeTimers();
+            const reconnect = jest.spyOn(networkService, 'reconnect').mockImplementation(() => undefined);
+            service.connection = { getState: () => ({ online: false, secLastContact: 0 }) };
+
+            const pending = networkService.prepareForAccountLookup();
+            await jest.advanceTimersByTimeAsync(1500);
+            await pending;
+
+            expect(reconnect).toHaveBeenCalledTimes(1);
+        });
+    });
 });
