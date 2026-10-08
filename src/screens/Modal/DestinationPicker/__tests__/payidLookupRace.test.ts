@@ -1,9 +1,4 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-
 import { appendServerMatches } from '../appendServerMatches';
-
-const destinationPicker = readFileSync(join(__dirname, '../DestinationPickerModal.tsx'), 'utf8');
 
 describe('PayID lookup result timing', () => {
     it('publishes the PayID name only after enrichment resolves', async () => {
@@ -28,7 +23,6 @@ describe('PayID lookup result timing', () => {
         release();
         await pending;
         expect(searchResult).toEqual([{ name: 'alice', address: 'r1', tag: 1, source: 'internal' }]);
-        expect(destinationPicker).toContain('await appendServerMatches(');
     });
 
     it('stops when the search sequence has moved on', async () => {

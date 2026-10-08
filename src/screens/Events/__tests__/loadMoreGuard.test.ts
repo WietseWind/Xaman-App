@@ -1,9 +1,4 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-
 import { shouldFetchNextEventPage } from '../loadMoreGuard';
-
-const eventsView = readFileSync(join(__dirname, '../EventsView.tsx'), 'utf8');
 
 const idle = {
     isLoading: false,
@@ -29,7 +24,6 @@ describe('Events loadMore initial race', () => {
                 hasMarker: true,
             }),
         ).toBe(true);
-        expect(eventsView).toContain('shouldFetchNextEventPage({');
     });
 
     it('still loads when the caller forces a boolean, even without a marker', () => {

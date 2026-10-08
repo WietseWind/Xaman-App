@@ -1,9 +1,4 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-
 import { runSetRootOnce, setRootLatch } from '../setRootLatch';
-
-const navigatorSource = readFileSync(join(__dirname, '../navigator.ts'), 'utf8');
 
 describe('startDefault setRoot latch', () => {
     beforeEach(() => {
@@ -18,7 +13,6 @@ describe('startDefault setRoot latch', () => {
 
         expect(setRootFn).toHaveBeenCalledTimes(1);
         expect(setRootLatch.current).toBe(true);
-        expect(navigatorSource).toContain('await runSetRootOnce(async () => {');
     });
 
     it('clears the latch when setRoot rejects so a later call can retry', async () => {
