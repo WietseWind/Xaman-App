@@ -45,7 +45,8 @@ import { SelectSigner } from './SelectSinger';
 
 /* types ==================================================================== */
 import { AuthMethods, Props, SignOptions, State, Steps } from './types';
-import { computeBinaryTransactionHash, createBatchInnerTxnBlob, hashBatchInnerTxn } from 'xrpl-accountlib/dist/utils';
+import { computeBinaryTransactionHash } from 'xrpl-accountlib/dist/utils';
+import { batchJsonForSigning } from '@common/libs/ledger/utils/batchSigners';
 
 /* Component ==================================================================== */
 class VaultOverlay extends Component<Props, State> {
@@ -346,49 +347,39 @@ class VaultOverlay extends Component<Props, State> {
                 transaction.populateFields();
             }
 
+            // Batch: an inner account (not the Batch Account) adds its BatchSigner signature,
+            // the Batch Account signs the Batch itself
+            const isBatchCoSign = !multiSign && transaction.isBatchCoSigner(account.address);
+
             LoggerService.logEvent(LogEvents.SigningRoutingInformation, {
                 transactionType: transaction.Type,
                 preferredSigner: preferredSigner.address,
                 flow: 'INTERNAL',
-                inNeedOfMultipleSigners: transaction.isBatchInNeedOfMultipleSigners() &&
-                    transaction.innerBatchSigners().length > 1 ? 'true' : 'false',
+                inNeedOfMultipleSigners: isBatchCoSign ? 'true' : 'false',
             });
 
-            // If batch, check if at the final stage and signign with the same account as
-            // an inner batch signer is already present: in that case: suppress, no duplicate
-            // signing
-            if (transaction.JsonForSigning.TransactionType === 'Batch') {
-                if (!transaction.isBatchInNeedOfMultipleSigners()) {
-                    // ^^ inner signers already fulfilled or not required
-                    if (transaction?.JsonForSigning?.BatchSigners && transaction.innerBatchSigners().length > 0) {
-                        const overlappingInnerSigner = transaction.JsonForSigning.BatchSigners
-                            ?.find(b => b.BatchSigner.Account === transaction.Account);
-                        
-                        if (overlappingInnerSigner) {
-                            // console.log('Batch signer already present, no need to sign again')
-                            transaction.JsonForSigning.BatchSigners.splice(
-                                transaction.JsonForSigning.BatchSigners.indexOf(overlappingInnerSigner),
-                                1,
-                            );
-                        }
-                    }
-                }
-            }
+            // The BatchSigner is the inner account, also when signing with its regular key
+            const txJson = batchJsonForSigning(
+                transaction.JsonForSigning,
+                transaction.Account,
+                isBatchCoSign
+                    ? AccountLib.signInnerBatch(
+                        transaction.JsonForSigning,
+                        preferredSigner.address !== account.address
+                            ? AccountLib.derive.privatekey(privateKey).signAs(account.address)
+                            : signerInstance,
+                        definitions,
+                    )
+                    : undefined,
+            );
 
             let signedObject = AccountLib.sign(
-                {
-                    ...transaction.JsonForSigning,
-                    ...(transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1 ? {
-                        BatchSigners: [
-                            AccountLib.signInnerBatch(transaction.JsonForSigning, signerInstance, definitions),
-                        ],
-                    } : {}),
-                },
+                txJson,
                 signerInstance,
                 definitions,
             ) as SignedObjectType;
 
-            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
+            if (isBatchCoSign) {
                 if (signedObject?.txJson && (signedObject?.txJson as any)?.BatchSigners) {
                     delete (signedObject?.txJson as any).SigningPubKey;
                     delete (signedObject?.txJson as any).TxnSignature;
@@ -437,7 +428,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     private signWithTangemCard = async (options: SignOptions) => {
-        const { transaction, multiSign } = this.props;
+        const { account, transaction, multiSign } = this.props;
         const { tangemCard } = options;
 
         try {
@@ -457,54 +448,29 @@ class VaultOverlay extends Component<Props, State> {
             // get current network definitions
             const definitions = NetworkService.getNetworkDefinitions();
 
+            // Batch: an inner account (not the Batch Account) adds its BatchSigner signature,
+            // the Batch Account signs the Batch itself
+            const isBatchCoSign = !multiSign && transaction.isBatchCoSigner(account.address);
+
             LoggerService.logEvent(LogEvents.SigningRoutingInformation, {
                 transactionType: transaction.Type,
                 card: tangemCard.cardId,
                 flow: 'TANGEM',
-                inNeedOfMultipleSigners: transaction.isBatchInNeedOfMultipleSigners() &&
-                    transaction.innerBatchSigners().length > 1 ? 'true' : 'false',
+                inNeedOfMultipleSigners: isBatchCoSign ? 'true' : 'false',
             });
 
-            // If batch, check if at the final stage and signign with the same account as
-            // an inner batch signer is already present: in that case: suppress, no duplicate
-            // signing
-            if (transaction.JsonForSigning.TransactionType === 'Batch') {
-                if (!transaction.isBatchInNeedOfMultipleSigners()) {
-                    // ^^ inner signers already fulfilled or not required
-                    if (transaction?.JsonForSigning?.BatchSigners && transaction.innerBatchSigners().length > 0) {
-                        const overlappingInnerSigner = transaction.JsonForSigning.BatchSigners
-                            ?.find(b => b.BatchSigner.Account === transaction.Account);
-                        
-                        if (overlappingInnerSigner) {
-                            // console.log('Batch signer already present, no need to sign again')
-                            transaction.JsonForSigning.BatchSigners.splice(
-                                transaction.JsonForSigning.BatchSigners.indexOf(overlappingInnerSigner),
-                                1,
-                            );
-                        }
-                    }
-                }
-            }
-
-            let batchSigners = {};
-            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
-                batchSigners = {
-                    BatchSigners: [{
-                        BatchSigner: {
-                            Account: String(AccountLib.utils.deriveAddress(publicKey)),
-                            SigningPubKey: publicKey,
-                            TxnSignature: '',
-                        },
-                    } ],
-                };
-            }
+            // The BatchSigner is the inner account, also when signing with its regular key
+            const txJson = batchJsonForSigning(
+                transaction.JsonForSigning,
+                transaction.Account,
+                isBatchCoSign
+                    ? { BatchSigner: { Account: account.address, SigningPubKey: publicKey, TxnSignature: '' } }
+                    : undefined,
+            );
 
             // prepare the transaction for signing
             const preparedTx = AccountLib.rawSigning.prepare(
-                {
-                    ...transaction.JsonForSigning,
-                    ...(batchSigners),
-                },
+                txJson,
                 publicKey,
                 multiSign,
                 definitions,
@@ -512,14 +478,12 @@ class VaultOverlay extends Component<Props, State> {
 
             let preparedFeeTx: ReturnType<typeof AccountLib.rawSigning.prepare>;
 
-            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
-                const BatchInnerHashes = (transaction.JsonForSigning as any)?.RawTransactions.map(
-                    (t: Object) => hashBatchInnerTxn((t as any)?.RawTransaction, definitions),
-                );
-
-                const batchSignerPayload = createBatchInnerTxnBlob(
-                    Number((transaction.JsonForSigning as any)?.Flags),
-                    BatchInnerHashes,
+            if (isBatchCoSign) {
+                // BatchV1_1: binds the Batch Account + Sequence and the BatchSigner Account
+                const batchSignerPayload = AccountLib.utils.batchSignerSigningData(
+                    transaction.JsonForSigning as any,
+                    account.address,
+                    definitions,
                 );
 
                 const hashToSign =
@@ -580,7 +544,7 @@ class VaultOverlay extends Component<Props, State> {
 
                     if (multiSign) {
                         signedObject = AccountLib.rawSigning.completeMultiSigned(
-                            transaction.JsonForSigning,
+                            txJson,
                             [
                                 {
                                     pubKey: publicKey,
@@ -616,7 +580,7 @@ class VaultOverlay extends Component<Props, State> {
                     // include sign method
                     signedObject = { ...signedObject, signerPubKey: publicKey, signMethod: AuthMethods.TANGEM };
                     
-                    if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
+                    if (isBatchCoSign) {
                         if ((signedObject?.txJson as any)?.BatchSigners?.[0]?.BatchSigner?.TxnSignature === '') {
                                 ; (signedObject?.txJson as any).BatchSigners[0].BatchSigner.TxnSignature =
                                     (signedObject as any).txnSignature;

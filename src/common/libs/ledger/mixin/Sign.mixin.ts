@@ -222,6 +222,51 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                         return;
                     }
 
+                    // Batch with inner accounts that are not the signer (BatchV1_1): every BatchSigner
+                    // signature binds the outer Account and Sequence, so these must come from the payload
+                    if (this.TransactionType === TransactionTypes.Batch && !multiSign) {
+                        if (
+                            typeof this.Account === 'undefined' &&
+                            this.innerBatchSigners().some((innerAccount) => innerAccount !== account.address)
+                        ) {
+                            reject(
+                                new Error(
+                                    'This Batch has inner transactions of another account: ' +
+                                        'the Batch Account must be set.',
+                                ),
+                            );
+                            return;
+                        }
+
+                        if (
+                            this.isBatchCoSigner(account.address) &&
+                            (typeof this.Sequence === 'undefined' ||
+                                (this.Sequence === 0 && typeof this.TicketSequence === 'undefined'))
+                        ) {
+                            reject(
+                                new Error(
+                                    'Signing as an inner account: the Batch Sequence must be set ' +
+                                        '(0 when the Batch uses a TicketSequence).',
+                                ),
+                            );
+                            return;
+                        }
+
+                        if (
+                            typeof this.Account !== 'undefined' &&
+                            account.address !== this.Account &&
+                            !this.isBatchCoSigner(account.address)
+                        ) {
+                            reject(
+                                new Error(
+                                    `This Batch can only be signed by its Account (${this.Account}) ` +
+                                        'or by one of its inner accounts.',
+                                ),
+                            );
+                            return;
+                        }
+                    }
+
                     // if account not set , set the signing account
                     if (typeof this.Account === 'undefined') {
                         this.Account = account.address;
@@ -301,24 +346,67 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             });
         };
 
+        /**
+         * Batch: the (unique) accounts that sign the inner transactions, as rippled requires them:
+         * the inner transaction Delegate (or else its Account), its Counterparty, and its Sponsor
+         * when it carries a SponsorSignature
+         * @param splice also leave out the outer Account: it signs the Batch itself, not as a BatchSigner
+         * @returns {string[]} inner accounts
+         */
         innerBatchSigners(splice: boolean = false): string[] {
             if (this.TransactionType === TransactionTypes.Batch) {
                 const innerAccounts = ((this as unknown as Batch)?.RawTransactions || [])
-                    .map((innerTx) => {
-                        return innerTx?.Account;
+                    .flatMap((innerTx: any) => {
+                        return [
+                            innerTx?.Delegate || innerTx?.Account,
+                            innerTx?.Counterparty,
+                            innerTx?.SponsorSignature ? innerTx?.Sponsor : undefined,
+                        ];
                     })
-                    .filter((account) => account !== undefined);
+                    .filter((account): account is string => typeof account === 'string' && account !== '');
 
-                if (splice) {
-                    if (this?.Account && innerAccounts.indexOf(this.Account) > -1) {
-                        innerAccounts.splice(innerAccounts.indexOf(this.Account), 1);
-                    }
-                }
-
-                return [...new Set(innerAccounts)];
+                // Every occurrence: the outer Account can own more than one inner transaction
+                return [...new Set(innerAccounts)].filter((account) => !splice || account !== this.Account);
             }
 
             return [];
+        }
+
+        /**
+         * Batch: the Batch Account to set when an account is selected to sign
+         * @param {string} source the selected account address
+         * @param {string} payloadAccount the Batch Account from the payload
+         * @returns {string | undefined} the Batch Account, or undefined to leave it as it is
+         */
+        batchAccountForSource(source: string, payloadAccount?: string): string | undefined {
+            // BatchV1_1: the BatchSigner signatures of the other inner accounts bind the payload Batch Account
+            if (
+                typeof payloadAccount !== 'undefined' &&
+                this.innerBatchSigners().some((innerAccount) => innerAccount !== payloadAccount)
+            ) {
+                return payloadAccount;
+            }
+
+            // The selected account signs all inner transactions (or there are none): it signs and submits the Batch
+            if (this.innerBatchSigners().every((innerAccount) => innerAccount === source)) {
+                return source;
+            }
+
+            // Else leave it as it is: sign() tells which accounts can sign
+            return undefined;
+        }
+
+        /**
+         * Check if the account signs this Batch as an inner account (BatchSigner), not as the Batch Account
+         * @param {string} account signing account address
+         * @returns {boolean} True if the account has to add a BatchSigner signature
+         */
+        isBatchCoSigner(account: string): boolean {
+            if (this.TransactionType !== TransactionTypes.Batch || typeof this.Account === 'undefined') {
+                return false;
+            }
+
+            return account !== this.Account && this.innerBatchSigners(true /** splice */).includes(account);
         }
 
         /**
