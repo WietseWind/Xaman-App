@@ -145,20 +145,23 @@ class AddContactView extends Component<Props, State> {
     saveContact = () => {
         const { name, address, tag } = this.state;
 
-        ContactRepository.create({
+        // add() emits contactCreate. create() only writes, so an open event row never hears it.
+        ContactRepository.add({
             id: uuidv4(),
             name,
             address,
             destinationTag: tag || '',
-        });
+        })
+            .then(() => {
+                Toast(Localize.t('settings.contactSuccessSaved'));
 
-        Toast(Localize.t('settings.contactSuccessSaved'));
+                // force re-render the app
+                Navigator.reRender();
 
-        // force re-render the app
-        Navigator.reRender();
-
-        // close screen
-        Navigator.pop();
+                // close screen
+                Navigator.pop();
+            })
+            .catch(() => {});
     };
 
     onDestinationTagChange = (text: string) => {

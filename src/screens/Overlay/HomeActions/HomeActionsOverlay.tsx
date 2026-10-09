@@ -102,6 +102,10 @@ class HomeActionsOverlay extends Component<Props, State> {
             });
     };
 
+    onPanelSlideDown = () => {
+        Navigator.dismissOverlay(AppScreens.Overlay.HomeActions);
+    };
+
     onScanButtonPress = () => {
         if (this.actionPanel.current) {
             this.actionPanel.current.slideDown();
@@ -154,7 +158,7 @@ class HomeActionsOverlay extends Component<Props, State> {
                 ref={this.actionPanel}
                 testID="home-actions-overlay"
                 height={AppSizes.moderateScale(430)}
-                onSlideDown={Navigator.dismissOverlay}
+                onSlideDown={this.onPanelSlideDown}
                 extraBottomInset
             >
                 <Text numberOfLines={1} style={[styles.rowTitle, styles.rowTitleFirst]}>

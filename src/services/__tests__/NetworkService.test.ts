@@ -306,6 +306,10 @@ describe('NetworkService', () => {
             expect(networkService.normalizeEndpoint(endpoint)).toBe(endpoint);
         });
 
+        test('Should connect to Xahau testnet directly instead of the custom-node proxy', () => {
+            expect(networkService.normalizeEndpoint('wss://xahau-test.net')).toBe('wss://xahau-test.net');
+        });
+
         test('Should append ORIGIN and userId for RPC hosts listed as cluster endpoints', () => {
             const rpcClusterEndpoints = [
                 'wss://rpc.xrpl-labs.com',
@@ -375,6 +379,77 @@ describe('NetworkService', () => {
             definitionsSpy.mockRestore();
             featuresSpy.mockRestore();
             statusSpy.mockRestore();
+        });
+    });
+
+    describe('hasSwap', () => {
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('does not throw when profile or swapNetworks is missing', () => {
+            const spy = jest.spyOn(ProfileRepository, 'getProfile');
+            spy.mockReturnValue(undefined);
+            expect(() => networkService.hasSwap()).not.toThrow();
+            expect(networkService.hasSwap()).toBe(false);
+
+            spy.mockReturnValue({} as any);
+            expect(() => networkService.hasSwap()).not.toThrow();
+            expect(networkService.hasSwap()).toBe(false);
+        });
+
+        it('is true when the current network key is listed', () => {
+            jest.replaceProperty(networkService, 'network', { key: 'MAINNET' } as any);
+            jest.spyOn(ProfileRepository, 'getProfile').mockReturnValue({ swapNetworks: 'MAINNET,XAHAU' } as any);
+            expect(networkService.hasSwap()).toBe(true);
+        });
+    });
+
+    describe('prepareForAccountLookup', () => {
+        const service = networkService as any;
+        let connection: any;
+
+        beforeEach(() => {
+            connection = service.connection;
+        });
+
+        afterEach(() => {
+            service.connection = connection;
+            jest.useRealTimers();
+            jest.restoreAllMocks();
+        });
+
+        it('leaves a socket that spoke within the last 8 seconds', async () => {
+            const reconnect = jest.spyOn(networkService, 'reconnect').mockImplementation(() => undefined);
+            service.connection = { getState: () => ({ online: true, secLastContact: 8 }) };
+
+            await networkService.prepareForAccountLookup();
+
+            expect(reconnect).not.toHaveBeenCalled();
+        });
+
+        it('reconnects when the socket has been quiet for more than 8 seconds', async () => {
+            jest.useFakeTimers();
+            const reconnect = jest.spyOn(networkService, 'reconnect').mockImplementation(() => undefined);
+            service.connection = { getState: () => ({ online: true, secLastContact: 9 }) };
+
+            const pending = networkService.prepareForAccountLookup();
+            await jest.advanceTimersByTimeAsync(1500);
+            await pending;
+
+            expect(reconnect).toHaveBeenCalledTimes(1);
+        });
+
+        it('reconnects when the socket is offline', async () => {
+            jest.useFakeTimers();
+            const reconnect = jest.spyOn(networkService, 'reconnect').mockImplementation(() => undefined);
+            service.connection = { getState: () => ({ online: false, secLastContact: 0 }) };
+
+            const pending = networkService.prepareForAccountLookup();
+            await jest.advanceTimersByTimeAsync(1500);
+            await pending;
+
+            expect(reconnect).toHaveBeenCalledTimes(1);
         });
     });
 });

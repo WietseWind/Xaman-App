@@ -58,6 +58,7 @@ import { DataSourceItem, RowItemType } from '@components/Modules/EventsList/Even
 import { AppStyles } from '@theme';
 import styles from './styles';
 import { isRegularKeyForDestination, shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
+import { shouldFetchNextEventPage } from './loadMoreGuard';
 
 /* types ==================================================================== */
 export interface Props {
@@ -168,7 +169,7 @@ class EventsView extends Component<Props, State> {
             !isEqual(nextState.isLoadingMore, isLoadingMore) ||
             !isEqual(nextState.isLoadingMoreDebounced, isLoadingMoreDebounced) ||
             !isEqual(nextState.canLoadMore, canLoadMore) ||
-            !isEqual(nextState.account, account) ||
+            nextState.account !== account ||
             !isEqual(nextState.filters, filters) ||
             !isEqual(nextProps.timestamp, timestamp)
         );
@@ -693,7 +694,7 @@ class EventsView extends Component<Props, State> {
     loadMore = async (forced = false) => {
         //            ^^ danger: called elsewhere natively by RN adds {distanceFromEnd: float} so must be
         //               not only truthy but also boolean
-        const { canLoadMore, filters, searchText, isLoadingMore, isLoading, activeSection } = this.state;
+        const { canLoadMore, filters, searchText, isLoadingMore, isLoading, activeSection, lastMarker } = this.state;
 
         // console.log('-- load more',  new Date(), {
         //     canLoadMore,
@@ -706,10 +707,20 @@ class EventsView extends Component<Props, State> {
         }
 
         // console.log('loadingmore', canLoadMore, isLoadingMore)
-        if (!forced || typeof forced !== 'boolean') {
-            // only force return if NOT forced (if forced continue)
-            // or if FORCED but forced isn't bool (see fn enter comment)
-            if (isLoading || isLoadingMore || !canLoadMore || activeSection !== EventSections.ALL) return;
+        // only force return if NOT forced (if forced continue)
+        // or if FORCED but forced isn't bool (see fn enter comment)
+        // lastMarker: ignore empty-list onEndReached before the first page exists
+        if (
+            !shouldFetchNextEventPage({
+                forced,
+                isLoading,
+                isLoadingMore,
+                canLoadMore,
+                hasMarker: !!lastMarker,
+                isAllSection: activeSection === EventSections.ALL,
+            })
+        ) {
+            return;
         }
         // console.log('loadingmoremore', forced)
         

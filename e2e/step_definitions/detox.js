@@ -2,9 +2,10 @@ const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
-const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
+const { tapAndroidAlertButton, waitForAndroidAlertText, appWindowCount } = require('../helpers/androidAlert');
 const {
     clickByTestId,
+    clickAndroidLabel,
     waitUntilAndroidTestId,
     waitUntilAndroidEnabled,
     waitUntilAndroidRnReady,
@@ -12,6 +13,7 @@ const {
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
+    androidClearFocusedField,
     androidBlurIme,
 } = require('../helpers/tapById');
 
@@ -19,9 +21,6 @@ const {
 let androidAlertPending = false;
 
 Then('I tap {string}', async (buttonId) => {
-    if (device.getPlatform() === 'android' && buttonId === '24-words-button') {
-        buttonId = '12-words-button';
-    }
     // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
     // Android: home-tab-view stays in the dump on Settings. Only skip when
     // Home content is actually showing.
@@ -166,12 +165,55 @@ Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, bu
 
 Then('I enter {string} in {string}', async (value, textInputId) => {
     if (device.getPlatform() === 'android') {
+        // adb input text drops the start of a spaced address or a URL during
+        // a long suite (` rJ9u` never arrives, lookup shows no result).
+        // replaceText writes the React value directly.
+        if (/[ :/]/.test(String(value))) {
+            try {
+                await waitUntilAndroidTestId(textInputId, 10000);
+                await element(by.id(textInputId)).replaceText(String(value));
+                try {
+                    await element(by.id(textInputId)).tapReturnKey();
+                } catch (e) {
+                    androidBlurIme();
+                }
+                return;
+            } catch (e) {
+                // fall through to keystrokes
+            }
+        }
         await waitUntilAndroidTestId(textInputId, 10000);
         await clickByTestId(textInputId);
-        try {
-            androidTypeText(value);
-        } catch (e) {
-            // timeout: field may already have the value
+        // Let a preceding Clear search setState land before keystrokes append.
+        await new Promise((resolve) => { setTimeout(resolve, 300); });
+        const current = String((await androidReadTextByTestId(textInputId)) || '');
+        const needle = String(value).trim();
+        const placeholder = /enter a name|please enter|search|amount|label|password|passphrase/i.test(current);
+        if (!(needle && current.indexOf(needle) !== -1) && current.trim() && !placeholder) {
+            androidClearFocusedField(Math.min(80, current.length + 6));
+        }
+        const typeValue = () => {
+            try {
+                androidTypeText(value);
+            } catch (e) {
+                // timeout: field may already have the value
+            }
+        };
+        if (!(needle && current.indexOf(needle) !== -1)) {
+            typeValue();
+        }
+        // input text can drop the start of a long destination. One more try.
+        if (needle.length >= 24) {
+            const typed = String((await androidReadTextByTestId(textInputId)) || '');
+            if (typed.indexOf(needle) === -1) {
+                const junk = typed.trim();
+                if (junk && !/enter a name|please enter|search|amount|label|password|passphrase/i.test(junk)) {
+                    androidClearFocusedField(Math.min(80, junk.length + 8));
+                    await new Promise((resolve) => { setTimeout(resolve, 600); });
+                    await clickByTestId(textInputId);
+                }
+                typeValue();
+            }
         }
         androidBlurIme();
         return;
@@ -235,7 +277,13 @@ Given('I should see {string}', async (elementId) => {
         return;
     }
     if (device.getPlatform() === 'android') {
-        const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view' ? 30000 : 10000;
+        // Changing the passcode re-encrypts every secret. With a full suite of
+        // accounts that screen stays up longer than the usual 10s.
+        const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view'
+            ? 30000
+            : elementId === 'security-settings-screen'
+                ? 90000
+                : 10000;
         if (elementId === 'accept-button') {
             for (let i = 0; i < 5; i += 1) {
                 try {
@@ -376,10 +424,26 @@ Then('I slide right {string}', async (elementId) => {
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
         // Passphrase/passcode success is Toast. Do not tap a ghost OK on those screens.
-        if (label === 'OK' && !androidAlertPending) {
+        // A real Error dialog (already-imported secret) is a second window and
+        // must be tapped even when no earlier step set the pending flag.
+        if (label === 'OK' && !androidAlertPending && appWindowCount(device.id) < 2) {
             return;
         }
         androidAlertPending = false;
+        // The curve prompt has three buttons. The coordinate sweep closes the
+        // dialog on the scrim or Cancel and never selects the curve.
+        if (label.indexOf('secp256k1') === 0 || label.indexOf('ed25519') === 0) {
+            if (await clickAndroidLabel(label)) {
+                return;
+            }
+        }
+        // OK on the already-imported dialog sits at the card's lower right.
+        // Hit that node. The coordinate sweep is only the fallback.
+        if (label === 'OK' || label === 'Cancel') {
+            if (await clickAndroidLabel(label)) {
+                return;
+            }
+        }
         await device.disableSynchronization();
         const ui = device.getUiDevice();
         await tapAndroidAlertButton(label, device.id, (x, y) => ui.click(x, y));

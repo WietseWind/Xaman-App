@@ -6,11 +6,10 @@
  */
 
     import React, { Component } from 'react';
-    import { View } from 'react-native';
-    
     import { CoreModel } from '@store/models';
     
     import { SecurePinInput } from '@components/General';
+    import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
     import { CoreRepository } from '@store/repositories';
     
     import { AppStyles } from '@theme';
@@ -142,11 +141,11 @@
             const { isBiometricAvailable, coreSettings } = this.state;
     
             if (readonly) {
-                return this.renderRows();
+                return <SensitiveAccessibilityView>{this.renderRows()}</SensitiveAccessibilityView>;
             }
     
             return (
-                <View style={AppStyles.stretchSelf}>
+                <SensitiveAccessibilityView style={AppStyles.stretchSelf}>
                     <SecurePinInput
                         ref={this.securePinInputRef}
                         virtualKeyboard
@@ -155,7 +154,7 @@
                         enableHapticFeedback={coreSettings.hapticFeedback}
                         length={6}
                     />
-                </View>
+                </SensitiveAccessibilityView>
             );
         }
     }

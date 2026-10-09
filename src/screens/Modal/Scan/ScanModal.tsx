@@ -40,6 +40,7 @@ import styles from './styles';
 /* types ==================================================================== */
 import { Props, State } from './types';
 import CameraScanner from './CameraScanner';
+import { isTrustedXamanUrl, isXamanTangemUrl } from './trustedUrl';
 import { AccountSet, Invoke, TrustSet } from '@common/libs/ledger/transactions';
 import { ReviewTransactionModalProps } from '../ReviewTransaction';
 
@@ -69,6 +70,8 @@ class ScanModal extends Component<Props, State> {
         this.state = {
             isLoading: false,
             coreSettings: CoreRepository.getSettings(),
+            torchEnabled: false,
+            hasTorch: false,
         };
 
         // flag to check if we need to read the QR
@@ -576,22 +579,16 @@ class ScanModal extends Component<Props, State> {
 
     handleUndetectedType = (content?: string, clipboard?: boolean) => {
         // some users scan QR on tangem card, navigate them to the account add screen
-        if (content && ['https://xumm.app/tangem', 'https://xaman.app/tangem'].some((url) => content.startsWith(url))) {
-            this.routeUser(AppScreens.Account.Add);
+        if (content && isXamanTangemUrl(content)) {
+            this.routeUser(AppScreens.Account.Add, {});
             return;
         }
 
-        // To make sure users scanning our Knowledge Base / etc QRs with Xumm instead of OS (regular URLs)
-        if (
-            content &&
-            ['https://xumm.app', 'https://help.xumm.app', 'https://xaman.app', 'https://help.xaman.app'].some((url) =>
-                content.startsWith(url),
-            )
-        ) {
-            if (StringTypeCheck.isValidURL(content)) {
-                Linking.openURL(content);
-                return;
-            }
+        // Knowledge Base / site QRs: match hostname, not a URL prefix
+        // (https://xaman.app.evil.example/ must not pass)
+        if (content && isTrustedXamanUrl(content) && StringTypeCheck.isValidURL(content)) {
+            Linking.openURL(content);
+            return;
         }
 
         // show error message base on origin
@@ -751,6 +748,26 @@ class ScanModal extends Component<Props, State> {
         }
     };
 
+    onHasTorchChange = (hasTorch: boolean) => {
+        this.setState((state) => {
+            if (state.hasTorch === hasTorch) {
+                return null;
+            }
+            return {
+                hasTorch,
+                torchEnabled: hasTorch ? state.torchEnabled : false,
+            };
+        });
+    };
+
+    toggleTorch = () => {
+        const { hasTorch, torchEnabled } = this.state;
+        if (!hasTorch) {
+            return;
+        }
+        this.setState({ torchEnabled: !torchEnabled });
+    };
+
     onClose = () => {
         const { onClose } = this.props;
 
@@ -814,7 +831,7 @@ class ScanModal extends Component<Props, State> {
 
     render() {
         const { type } = this.props;
-        const { isLoading } = this.state;
+        const { isLoading, torchEnabled, hasTorch } = this.state;
 
         let description;
 
@@ -852,7 +869,12 @@ class ScanModal extends Component<Props, State> {
 
         return (
             <View testID="scan-modal" style={styles.container}>
-                <CameraScanner onRead={this.onReadCode} notAuthorizedView={this.renderNotAuthorizedView()}>
+                <CameraScanner
+                    onRead={this.onReadCode}
+                    notAuthorizedView={this.renderNotAuthorizedView()}
+                    torchEnabled={torchEnabled}
+                    onHasTorchChange={this.onHasTorchChange}
+                >
                     <View style={styles.rectangleContainer}>
                         <View style={styles.topLeft} />
                         <View style={styles.topRight} />
@@ -870,6 +892,25 @@ class ScanModal extends Component<Props, State> {
                     }
                     <Spacer size={20} />
                     <View style={AppStyles.centerSelf}>
+                        {hasTorch && (
+                            <>
+                                <Button
+                                    numberOfLines={1}
+                                    testID="scan-flashlight-button"
+                                    onPress={this.toggleTorch}
+                                    label={
+                                        torchEnabled
+                                            ? Localize.t('scan.flashlightOn')
+                                            : Localize.t('scan.flashlightOff')
+                                    }
+                                    icon="IconStar"
+                                    secondary={!torchEnabled}
+                                    roundedMini
+                                    style={[AppStyles.paddingHorizontal]}
+                                />
+                                <Spacer size={15} />
+                            </>
+                        )}
                         <Button
                             numberOfLines={1}
                             testID="scan-clipboard-button"

@@ -5,6 +5,7 @@ import LoggerService, { LogEvents } from '@services/LoggerService';
 import { Navigation, Options, LayoutTabsChildren } from 'react-native-navigation';
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
+import { runSetRootOnce, setRootLatch } from '@common/helpers/setRootLatch';
 
 import { AppScreens } from '@common/constants';
 
@@ -26,7 +27,6 @@ type EnforcedProps<P extends { [K in keyof P]: any }> = P;
 const allScreens = new Set();
 
 let iteration = 1;
-let setRoot = false;
 
 /* Constants ==================================================================== */
 const getDefaultOptions = (): Options => {
@@ -188,7 +188,7 @@ const Navigator = {
             tabsLength: Object.keys(AppScreens.TabBar).length,
             tabKeys: Object.keys(AppScreens.TabBar).join(','),
             startDefaultIteration: typeof iteration === 'undefined' ? 0 : iteration,
-            setRoot: setRoot ? 'true' : 'false',
+            setRoot: setRootLatch.current ? 'true' : 'false',
         });
 
         Object.keys(AppScreens.TabBar).forEach((tab) => {
@@ -232,8 +232,7 @@ const Navigator = {
         });
 
         InteractionManager.runAfterInteractions(async () => {
-            if (!setRoot) {
-                setRoot = true;
+            await runSetRootOnce(async () => {
                 await Navigation.setRoot({
                     root: {
                         bottomTabs: {
@@ -242,7 +241,7 @@ const Navigator = {
                         },
                     },
                 });
-            }
+            });
         });
     },
 
