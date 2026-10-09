@@ -42,6 +42,8 @@ class ReviewTransactionModal extends Component<Props, State> {
 
     private backHandler: NativeEventSubscription | undefined;
     private mounted = false;
+    // Batch: the Batch Account from the payload (setSource can change transaction.Account)
+    private payloadBatchAccount?: string;
 
     static options() {
         return {
@@ -587,6 +589,10 @@ class ReviewTransactionModal extends Component<Props, State> {
             // console.log('new', tx);
         }
 
+        if (!forced) {
+            this.payloadBatchAccount = tx.Type === TransactionTypes.Batch ? tx.Account : undefined;
+        }
+
         this.setState({
             transaction: tx,
         });
@@ -625,26 +631,16 @@ class ReviewTransactionModal extends Component<Props, State> {
 
         // console.log('isinneedofsigners', transaction.isBatchInNeedOfMultipleSigners())
 
-        if (
-            !payload.isMultiSign() &&
-            transaction.Type !== TransactionTypes.Import &&
-            !transaction.isBatchInNeedOfMultipleSigners()
-            // ^^ Only if the batch is already fully inner satisfied it's OK to update the
-            // outer parent account, as we don't care anymore who signs and submits it then.
-        ) {
-            transaction.Account = account.address;
-        }
-
-        if (transaction.Type === TransactionTypes.Batch) {
-            const innerSigners = transaction.innerBatchSigners();
-            if (innerSigners.length === 1) {
-                // Just one signer, that's the top level one then
-                // no need for individual signatures
-                if (payload.shouldSubmit()) {
-                    // eslint-disable-next-line prefer-destructuring
-                    transaction.Account = account.address;
-                }
+        if (!payload.isMultiSign() && transaction.Type === TransactionTypes.Batch) {
+            // Batch (BatchV1_1): keep the payload Batch Account when other inner accounts sign (their
+            // BatchSigner signatures bind it), else the selected account becomes the Batch Account when it
+            // signs all inner transactions
+            const batchAccount = transaction.batchAccountForSource(account.address, this.payloadBatchAccount);
+            if (typeof batchAccount !== 'undefined') {
+                transaction.Account = batchAccount;
             }
+        } else if (!payload.isMultiSign() && transaction.Type !== TransactionTypes.Import) {
+            transaction.Account = account.address;
         }
 
         // change state
@@ -678,7 +674,7 @@ class ReviewTransactionModal extends Component<Props, State> {
 
     submit = async () => {
         const { payload } = this.props;
-        const { transaction, coreSettings } = this.state;
+        const { transaction, coreSettings, source } = this.state;
 
         // if not mounted
         if (!this.mounted) {
@@ -710,10 +706,12 @@ class ReviewTransactionModal extends Component<Props, State> {
             payload.patch(payloadPatch);
 
             // check if we need to submit the payload to the Ledger
-            if (payload.shouldSubmit() && (
-                !transaction.isBatchInNeedOfMultipleSigners() ||
-                transaction.innerBatchSigners().length === 1
-            )) {
+            // Batch: only the Batch Account submits, and only when no BatchSigner signatures are missing
+            if (
+                payload.shouldSubmit() &&
+                !transaction.isBatchInNeedOfMultipleSigners() &&
+                !(source && transaction.isBatchCoSigner(source.address))
+            ) {
                 this.setState({
                     currentStep: Steps.Submitting,
                 });
