@@ -56,7 +56,9 @@ export interface SignMixinType {
     get FinalResult(): TransactionResult;
 
     isBatchInNeedOfMultipleSigners(): boolean;
-    innerBatchSigners(): string[];
+    innerBatchSigners(splice?: boolean): string[];
+    isBatchCoSigner(account: string): boolean;
+    batchAccountForSource(source: string, payloadAccount?: string): string | undefined;
     setServiceFee(serviceFee: number): void;
     setServiceFeeTx(serviceFeeTx: SignedObjectType): void;
     prepare(account: AccountModel): Promise<void>;
