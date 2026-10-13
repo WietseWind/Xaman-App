@@ -324,20 +324,8 @@ class LoanBrokerCoverWithdrawTemplate extends Component<Props, State> {
                             AppStyles.marginBottomSml,
                         ]}
                     >
-                        <AccountElement
-                            address={destination.address}
-                            tag={transaction.DestinationTag}
-                            containerStyle={AppStyles.flex1}
-                        />
+                        <AccountElement address={destination.address} containerStyle={AppStyles.flex1} />
                     </View>
-                )}
-                {!destination?.address && !isUndefined(transaction.DestinationTag) && (
-                    <>
-                        <Text style={styles.label}>{Localize.t('global.destinationTag')}</Text>
-                        <View style={styles.contentBox}>
-                            <Text style={styles.value}>{transaction.DestinationTag}</Text>
-                        </View>
-                    </>
                 )}
 
                 {transaction?.CredentialIDs && (

@@ -67,7 +67,7 @@ const cases: [string, any, Record<string, any>, any][] = [
     [
         'LoanBrokerCoverWithdraw',
         LoanBrokerCoverWithdraw,
-        { DestinationTag: 7, CredentialIDs: [Hash] },
+        { CredentialIDs: [Hash] },
         { LoanBrokerID: Hash, Amount: '1000000', Destination: Other },
     ],
 ];
