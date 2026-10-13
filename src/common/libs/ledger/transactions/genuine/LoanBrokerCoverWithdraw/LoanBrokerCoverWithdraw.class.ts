@@ -1,6 +1,6 @@
 import BaseGenuineTransaction from '@common/libs/ledger/transactions/genuine/base';
 
-import { Hash256, Amount, AccountID } from '@common/libs/ledger/parser/fields';
+import { Hash256, Amount, AccountID, UInt32, STArray } from '@common/libs/ledger/parser/fields';
 
 /* Types ==================================================================== */
 import { TransactionJson, TransactionMetadata } from '@common/libs/ledger/types/transaction';
@@ -16,11 +16,15 @@ class LoanBrokerCoverWithdraw extends BaseGenuineTransaction {
         LoanBrokerID: { required: true, type: Hash256 },
         Amount: { required: true, type: Amount },
         Destination: { type: AccountID },
+        DestinationTag: { type: UInt32 },
+        CredentialIDs: { type: STArray },
     };
 
     declare LoanBrokerID: FieldReturnType<typeof Hash256>;
     declare Amount: FieldReturnType<typeof Amount>;
     declare Destination: FieldReturnType<typeof AccountID>;
+    declare DestinationTag: FieldReturnType<typeof UInt32>;
+    declare CredentialIDs: FieldReturnType<typeof STArray, string[]>;
 
     constructor(tx?: TransactionJson, meta?: TransactionMetadata) {
         super(tx, meta);

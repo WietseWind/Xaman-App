@@ -185,6 +185,14 @@ class VaultDeleteTemplate extends Component<Props, State> {
                         )}
                     </>
                 )}
+                {!isUndefined(transaction.MemoData) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.memoData')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.valueSubtext}>{transaction.MemoData}</Text>
+                        </View>
+                    </>
+                )}
             </>
         );
     }
