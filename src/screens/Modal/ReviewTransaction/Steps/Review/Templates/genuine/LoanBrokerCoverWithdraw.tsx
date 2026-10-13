@@ -327,6 +327,19 @@ class LoanBrokerCoverWithdrawTemplate extends Component<Props, State> {
                         <AccountElement address={destination.address} containerStyle={AppStyles.flex1} />
                     </View>
                 )}
+
+                {transaction?.CredentialIDs && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.credentialIDs')}</Text>
+                        <View style={styles.contentBox}>
+                            {transaction.CredentialIDs.map((id, index) => (
+                                <Text key={`credential-${index}`} style={styles.value}>
+                                    {id}
+                                </Text>
+                            ))}
+                        </View>
+                    </>
+                )}
             </>
         );
     }
