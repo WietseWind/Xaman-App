@@ -47,8 +47,27 @@
   // bootstrap local notification and Biometric module
   [LocalNotificationModule initialise];
   [BiometricModule initialise];
+  [self keepClassicBarChrome];
 
   return YES;
+}
+
+- (void)keepClassicBarChrome
+{
+  UITabBarAppearance *tabAppearance = [[UITabBarAppearance alloc] init];
+  [tabAppearance configureWithOpaqueBackground];
+  UITabBar *tabBar = [UITabBar appearance];
+  tabBar.standardAppearance = tabAppearance;
+  tabBar.scrollEdgeAppearance = tabAppearance;
+  tabBar.translucent = NO;
+
+  UINavigationBarAppearance *navigationAppearance = [[UINavigationBarAppearance alloc] init];
+  [navigationAppearance configureWithOpaqueBackground];
+  UINavigationBar *navigationBar = [UINavigationBar appearance];
+  navigationBar.standardAppearance = navigationAppearance;
+  navigationBar.scrollEdgeAppearance = navigationAppearance;
+  navigationBar.compactAppearance = navigationAppearance;
+  navigationBar.translucent = NO;
 }
 
 - (UISceneConfiguration *)application:(UIApplication *)application
@@ -69,6 +88,7 @@
   } else if (self.window.windowScene != windowScene) {
     self.window.windowScene = windowScene;
   }
+  self.window.frame = windowScene.coordinateSpace.bounds;
 
   if (self.didStartReactNative) {
     return;

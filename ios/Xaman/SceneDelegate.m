@@ -13,8 +13,17 @@
         return;
     }
 
+    UIWindowScene *windowScene = (UIWindowScene *)scene;
+    // UIKit delivers touches to the scene delegate's window. Leaving this nil
+    // puts a system window over the top of the screen.
+    if (self.window == nil) {
+        self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
+    }
+
     AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
-    [appDelegate startReactNativeForScene:(UIWindowScene *)scene connectionOptions:connectionOptions];
+    appDelegate.window = self.window;
+    [appDelegate startReactNativeForScene:windowScene connectionOptions:connectionOptions];
+    [self.window makeKeyAndVisible];
 }
 
 - (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
