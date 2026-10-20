@@ -55,6 +55,11 @@ module.exports = {
             type: 'ios.simulator',
             device: { name: 'Xaman-se' },
         },
+        // iOS 27 glass runtime. Xaman-e2e stays on iOS 26.5.
+        'ios.simulator.ios27': {
+            type: 'ios.simulator',
+            device: { name: 'Xaman-e2e-27' },
+        },
         'android.emulator': {
             type: 'android.emulator',
             device: { avdName: 'Nexus_5X_API_28' },
@@ -95,6 +100,10 @@ module.exports = {
         },
         'ios.simulator.se+xaman.ios': {
             device: 'ios.simulator.se',
+            app: 'xaman.ios',
+        },
+        'ios.simulator.ios27+xaman.ios': {
+            device: 'ios.simulator.ios27',
             app: 'xaman.ios',
         },
         'android.emulator+xaman.android': {

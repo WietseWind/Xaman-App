@@ -297,6 +297,16 @@ Given('I should see {string}', async (elementId) => {
         await waitUntilAndroidTestId(elementId, timeout);
         return;
     }
+    // A fast submit finishes Verifying before Detox is idle enough to see it.
+    // The success screen is the same outcome Android already accepts.
+    if (elementId === 'submitting-view') {
+        try {
+            await waitFor(element(by.id('submitting-view'))).toBeVisible().withTimeout(4000);
+        } catch (e) {
+            await waitFor(element(by.id('success-result-view'))).toBeVisible().withTimeout(15000);
+        }
+        return;
+    }
     if (elementId === 'accept-button') {
         const btn = element(by.id('accept-button'));
         const scroller = element(by.id('review-content-container'));
@@ -402,10 +412,12 @@ Then('I slide right {string}', async (elementId) => {
     if (device.getPlatform() === 'android') {
         await androidSwipeTestId(elementId, 'right');
         if (elementId === 'accept-button') {
-            const slideDone = async () =>
-                (await androidHasTestId('1-key')) ||
-                (await androidHasTestId('passphrase-input')) ||
-                (await androidHasTestId('sign-button'));
+            const slideDone = async () => {
+                const hasKey = await androidHasTestId('1-key');
+                const hasPassphrase = await androidHasTestId('passphrase-input');
+                const hasSign = await androidHasTestId('sign-button');
+                return hasKey || hasPassphrase || hasSign;
+            };
             for (let i = 0; i < 8; i += 1) {
                 if (await slideDone()) {
                     return;

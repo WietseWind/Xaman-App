@@ -5,6 +5,7 @@ import LoggerService, { LogEvents } from '@services/LoggerService';
 import { Navigation, Options, LayoutTabsChildren } from 'react-native-navigation';
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
+import { iosGlassTabBar } from '@common/helpers/glassTabBar';
 import { runSetRootOnce, setRootLatch } from '@common/helpers/setRootLatch';
 
 import { AppScreens } from '@common/constants';
@@ -53,7 +54,7 @@ const getDefaultOptions = (): Options => {
             backgroundColor: StyleService.value('$background'),
             translucent: false,
             animate: false,
-            drawBehind: false,
+            drawBehind: iosGlassTabBar,
             tabsAttachMode: 'onSwitchToTab',
             titleDisplayMode: 'alwaysShow',
             elevation: 10,
