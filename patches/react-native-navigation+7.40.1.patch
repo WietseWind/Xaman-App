@@ -144,7 +144,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
 --- a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
-@@ -1,6 +1,31 @@
+@@ -1,6 +1,35 @@
  #import "RNNBottomTabsController.h"
  #import "UITabBarController+RNNUtils.h"
  
@@ -158,17 +158,21 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
 +}
 +
 +- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
-+    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-+    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
++    UIViewController *fromVC = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
++    UIViewController *toVC = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
++    UIView *fromView = fromVC.view;
++    UIView *toView = toVC.view;
 +    UIView *container = transitionContext.containerView;
-+    if (toView != nil && toView.superview != container) {
-+        toView.frame = container.bounds;
-+        [container insertSubview:toView atIndex:0];
-+    }
-+    if (fromView != nil) {
-+        [container bringSubviewToFront:fromView];
-+    }
++    toView.frame = container.bounds;
++    [container addSubview:toView];
 +    [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
++    // UIKit removes the outgoing page when the transition ends. Put it back
++    // inside the actions screen so the sheet covers that page, not an empty one.
++    if (fromView != nil && toView != nil) {
++        fromView.frame = toView.bounds;
++        fromView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++        [toView addSubview:fromView];
++    }
 +}
 +
 +@end
@@ -176,7 +180,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  @interface RNNBottomTabsController ()
  @property(nonatomic, strong) BottomTabPresenter *bottomTabPresenter;
  @property(nonatomic, strong) RNNDotIndicatorPresenter *dotIndicatorPresenter;
-@@ -13,6 +38,8 @@
+@@ -13,6 +42,8 @@
      NSUInteger _previousTabIndex;
      BottomTabsBaseAttacher *_bottomTabsAttacher;
      BOOL _tabBarNeedsRestore;
@@ -185,7 +189,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  }
  
  - (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo
-@@ -68,6 +95,14 @@
+@@ -68,6 +99,14 @@
  
  - (void)viewDidLoad {
      [super viewDidLoad];
@@ -200,7 +204,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  }
  
  - (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
-@@ -101,6 +136,16 @@
+@@ -101,6 +140,16 @@
      [_dotIndicatorPresenter bottomTabsDidLayoutSubviews:self];
  }
  
@@ -217,7 +221,24 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  - (UIViewController *)getCurrentChild {
      return self.selectedViewController;
  }
-@@ -183,12 +228,31 @@
+@@ -164,6 +213,16 @@
+ 
+ - (void)tabBarController:(UITabBarController *)tabBarController
+     didSelectViewController:(UIViewController *)viewController {
++    if (_restoreTabAfterOverlay && _tabIndexToRestore < self.viewControllers.count) {
++        UIViewController *previous = self.viewControllers[_tabIndexToRestore];
++        UIView *page = previous.view;
++        UIView *host = viewController.view;
++        if (page != nil && host != nil && page != host && page.superview != host) {
++            page.frame = host.bounds;
++            page.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++            [host addSubview:page];
++        }
++    }
+     [self.eventEmitter sendBottomTabSelected:@(tabBarController.selectedIndex)
+                                   unselected:@(_previousTabIndex)];
+ }
+@@ -183,12 +242,31 @@
      [self.eventEmitter sendBottomTabPressed:@(_index)];
  
      if ([[viewController resolveOptions].bottomTab.selectTabOnPress withDefault:YES] || isMoreTab) {
@@ -249,6 +270,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  #pragma mark - UIViewController overrides
  
  - (UIStatusBarStyle)preferredStatusBarStyle {
+
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
