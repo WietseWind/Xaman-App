@@ -44,6 +44,7 @@ interface Props {
     dataSource: Array<any>;
     sortable?: boolean;
     firstItemExtraHeight?: number;
+    endInset?: number;
     renderItem: ListRenderItem<any> | null | undefined;
     renderEmptyList?: React.ComponentType<any> | React.ReactElement | null | undefined;
     onItemPress?: (item: any, index: number) => void;
@@ -104,6 +105,7 @@ export default class SortableFlatList extends Component<Props, State> {
     static defaultProps: Partial<Props> = {
         separatorHeight: 0,
         sortable: true,
+        endInset: 0,
     };
 
     constructor(props: Props) {
@@ -112,7 +114,8 @@ export default class SortableFlatList extends Component<Props, State> {
         this.state = {
             containerHeight: (props.itemHeight + props.separatorHeight!) *
                 (props.dataSource.length + 1) +
-                (props.firstItemExtraHeight || 0) - 10,
+                (props.firstItemExtraHeight || 0) +
+                (props.endInset || 0) - 10,
             isItemActive: false,
             accWorthIdentifier: '',
             accWorthTitle: '',
@@ -314,7 +317,8 @@ export default class SortableFlatList extends Component<Props, State> {
         // if dataSource size or item height or separator size changed then apply new container height
         let newContainerHeight = (nextProps.itemHeight + nextProps.separatorHeight!) *
             (nextProps.dataSource.length + 1) +
-            (nextProps.firstItemExtraHeight || 0) - 10;
+            (nextProps.firstItemExtraHeight || 0) +
+            (nextProps.endInset || 0) - 10;
         
         if (nextProps.sortable) {
             newContainerHeight -= -40;

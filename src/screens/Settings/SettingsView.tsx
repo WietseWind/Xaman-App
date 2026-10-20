@@ -8,6 +8,7 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 
 import { XAppOrigin } from '@common/libs/payload';
 
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { AppScreenKeys, Navigator } from '@common/helpers/navigator';
 import { AppConfig, AppScreens } from '@common/constants';
 
@@ -101,7 +102,11 @@ class SettingsView extends Component<Props, State> {
                 <View style={AppStyles.contentContainer}>
                     <ScrollView
                         style={AppStyles.flex1}
-                        contentContainerStyle={[AppStyles.paddingRightSml, AppStyles.paddingLeft]}
+                        contentContainerStyle={[
+                            AppStyles.paddingRightSml,
+                            AppStyles.paddingLeft,
+                            glassTabScrollPadding > 0 && { paddingBottom: glassTabScrollPadding },
+                        ]}
                     >
                         {this.renderRow(
                             'IconSlider',

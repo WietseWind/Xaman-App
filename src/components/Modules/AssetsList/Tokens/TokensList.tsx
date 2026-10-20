@@ -6,6 +6,7 @@ import { AppScreens } from '@common/constants';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { Navigator } from '@common/helpers/navigator';
 
 import { CoreRepository, CurrencyRepository, TrustLineRepository } from '@store/repositories';
@@ -677,6 +678,7 @@ class TokensList extends Component<Props, State> {
                     lineWorthLoading={this.updateLineWorthLoading}
                     accWorthEnabled={accWorthEnabled}
                     firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
+                    endInset={glassTabScrollPadding}
                     dataSource={[
                         ...(reorderEnabled ? [] : [{
                             id: 'native',
