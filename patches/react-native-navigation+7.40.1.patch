@@ -144,17 +144,48 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
 --- a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
-@@ -13,6 +13,9 @@
+@@ -1,6 +1,31 @@
+ #import "RNNBottomTabsController.h"
+ #import "UITabBarController+RNNUtils.h"
+ 
++@interface RNNKeepVisibleTabAnimator : NSObject <UIViewControllerAnimatedTransitioning>
++@end
++
++@implementation RNNKeepVisibleTabAnimator
++
++- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext {
++    return 0;
++}
++
++- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
++    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
++    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
++    UIView *container = transitionContext.containerView;
++    if (toView != nil && toView.superview != container) {
++        toView.frame = container.bounds;
++        [container insertSubview:toView atIndex:0];
++    }
++    if (fromView != nil) {
++        [container bringSubviewToFront:fromView];
++    }
++    [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
++}
++
++@end
++
+ @interface RNNBottomTabsController ()
+ @property(nonatomic, strong) BottomTabPresenter *bottomTabPresenter;
+ @property(nonatomic, strong) RNNDotIndicatorPresenter *dotIndicatorPresenter;
+@@ -13,6 +38,8 @@
      NSUInteger _previousTabIndex;
      BottomTabsBaseAttacher *_bottomTabsAttacher;
      BOOL _tabBarNeedsRestore;
-+    BOOL _holdingTabSelection;
-+    BOOL _applyingHeldSelection;
-+    UITabBarItem *_heldTabBarItem;
++    BOOL _restoreTabAfterOverlay;
++    NSUInteger _tabIndexToRestore;
  }
  
  - (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo
-@@ -68,6 +71,14 @@
+@@ -68,6 +95,14 @@
  
  - (void)viewDidLoad {
      [super viewDidLoad];
@@ -169,79 +200,55 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  }
  
  - (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
-@@ -99,6 +110,30 @@
-     [super viewDidLayoutSubviews];
-     [self.presenter viewDidLayoutSubviews];
+@@ -101,6 +136,16 @@
      [_dotIndicatorPresenter bottomTabsDidLayoutSubviews:self];
-+    [self applyHeldTabSelection];
-+}
-+
-+- (void)applyHeldTabSelection {
-+    if (!_holdingTabSelection || _heldTabBarItem == nil || _applyingHeldSelection) {
-+        return;
-+    }
-+    if (self.tabBar.selectedItem == _heldTabBarItem) {
-+        return;
-+    }
-+    _applyingHeldSelection = YES;
-+    self.tabBar.selectedItem = _heldTabBarItem;
-+    _applyingHeldSelection = NO;
-+}
-+
+ }
+ 
 +- (void)releaseHeldTabSelection {
-+    if (!_holdingTabSelection) {
++    if (!_restoreTabAfterOverlay) {
 +        return;
 +    }
-+    _holdingTabSelection = NO;
-+    _heldTabBarItem = nil;
-+    if (self.selectedIndex < self.tabBar.items.count) {
-+        self.tabBar.selectedItem = self.tabBar.items[self.selectedIndex];
++    _restoreTabAfterOverlay = NO;
++    if (_tabIndexToRestore < self.viewControllers.count && _tabIndexToRestore != self.selectedIndex) {
++        [self setSelectedIndex:_tabIndexToRestore];
 +    }
- }
- 
++}
++
  - (UIViewController *)getCurrentChild {
-@@ -124,6 +159,9 @@
+     return self.selectedViewController;
  }
- 
- - (void)setSelectedIndex:(NSUInteger)selectedIndex {
-+    if (_holdingTabSelection || _applyingHeldSelection) {
-+        return;
-+    }
-     _currentTabIndex = selectedIndex;
-     [super setSelectedIndex:selectedIndex];
- }
-@@ -133,6 +171,9 @@
- }
- 
- - (void)setSelectedViewController:(__kindof UIViewController *)selectedViewController {
-+    if (_holdingTabSelection || _applyingHeldSelection) {
-+        return;
-+    }
-     _previousTabIndex = _currentTabIndex;
-     _currentTabIndex = [self.childViewControllers indexOfObject:selectedViewController];
-     [super setSelectedViewController:selectedViewController];
-@@ -183,9 +224,21 @@
+@@ -183,12 +228,31 @@
      [self.eventEmitter sendBottomTabPressed:@(_index)];
  
      if ([[viewController resolveOptions].bottomTab.selectTabOnPress withDefault:YES] || isMoreTab) {
-+        _holdingTabSelection = NO;
-+        _heldTabBarItem = nil;
++        _restoreTabAfterOverlay = NO;
++        return YES;
++    }
++
++    // Let UIKit finish the glass bubble move. Setting the selected item while
++    // that animation is running throws. The previous tab returns when the
++    // overlay closes.
++    if (@available(iOS 26.0, *)) {
++        _tabIndexToRestore = _currentTabIndex;
++        _restoreTabAfterOverlay = YES;
          return YES;
      }
  
-+    // The glass selection bubble follows the selected item. Keep it on this
-+    // button while its overlay is open, without switching the screen behind.
-+    if (@available(iOS 26.0, *)) {
-+        _holdingTabSelection = YES;
-+        _heldTabBarItem = viewController.tabBarItem;
-+        dispatch_async(dispatch_get_main_queue(), ^{
-+            [self applyHeldTabSelection];
-+        });
-+    }
-+
      return NO;
  }
  
++- (id<UIViewControllerAnimatedTransitioning>)tabBarController:(UITabBarController *)tabBarController
++           animationControllerForTransitionFromViewController:(UIViewController *)fromVC
++                                             toViewController:(UIViewController *)toVC {
++    if (_restoreTabAfterOverlay) {
++        return [RNNKeepVisibleTabAnimator new];
++    }
++    return nil;
++}
++
+ #pragma mark - UIViewController overrides
+ 
+ - (UIStatusBarStyle)preferredStatusBarStyle {
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
