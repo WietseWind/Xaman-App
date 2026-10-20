@@ -221,55 +221,15 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  - (UIViewController *)getCurrentChild {
      return self.selectedViewController;
  }
-@@ -164,6 +213,16 @@
- 
- - (void)tabBarController:(UITabBarController *)tabBarController
-     didSelectViewController:(UIViewController *)viewController {
-+    if (_restoreTabAfterOverlay && _tabIndexToRestore < self.viewControllers.count) {
-+        UIViewController *previous = self.viewControllers[_tabIndexToRestore];
-+        UIView *page = previous.view;
-+        UIView *host = viewController.view;
-+        if (page != nil && host != nil && page != host && page.superview != host) {
-+            page.frame = host.bounds;
-+            page.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-+            [host addSubview:page];
-+        }
-+    }
-     [self.eventEmitter sendBottomTabSelected:@(tabBarController.selectedIndex)
-                                   unselected:@(_previousTabIndex)];
- }
-@@ -183,12 +242,31 @@
-     [self.eventEmitter sendBottomTabPressed:@(_index)];
- 
-     if ([[viewController resolveOptions].bottomTab.selectTabOnPress withDefault:YES] || isMoreTab) {
-+        _restoreTabAfterOverlay = NO;
-+        return YES;
-+    }
-+
-+    // Let UIKit finish the glass bubble move. Setting the selected item while
-+    // that animation is running throws. The previous tab returns when the
-+    // overlay closes.
-+    if (@available(iOS 26.0, *)) {
-+        _tabIndexToRestore = _currentTabIndex;
-+        _restoreTabAfterOverlay = YES;
+@@ -186,6 +235,8 @@
          return YES;
      }
  
++    // This tab only opens an overlay. Selecting it would replace the visible
++    // page with the empty Actions screen. Leave the current tab selected.
      return NO;
  }
  
-+- (id<UIViewControllerAnimatedTransitioning>)tabBarController:(UITabBarController *)tabBarController
-+           animationControllerForTransitionFromViewController:(UIViewController *)fromVC
-+                                             toViewController:(UIViewController *)toVC {
-+    if (_restoreTabAfterOverlay) {
-+        return [RNNKeepVisibleTabAnimator new];
-+    }
-+    return nil;
-+}
-+
- #pragma mark - UIViewController overrides
- 
- - (UIStatusBarStyle)preferredStatusBarStyle {
 
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
