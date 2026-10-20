@@ -141,3 +141,113 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b
        overlayWindow.rootViewController = weakOverlayVC;
        if ([weakOverlayVC.resolveOptionsWithDefault.overlay.handleKeyboardEvents withDefault:NO]) {
            [self->_overlayManager showOverlayWindowAsKeyWindow:overlayWindow];
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
+--- a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
+@@ -13,6 +13,9 @@
+     NSUInteger _previousTabIndex;
+     BottomTabsBaseAttacher *_bottomTabsAttacher;
+     BOOL _tabBarNeedsRestore;
++    BOOL _holdingTabSelection;
++    BOOL _applyingHeldSelection;
++    UITabBarItem *_heldTabBarItem;
+ }
+ 
+ - (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo
+@@ -68,6 +71,14 @@
+ 
+ - (void)viewDidLoad {
+     [super viewDidLoad];
++    [[NSNotificationCenter defaultCenter] addObserver:self
++                                             selector:@selector(releaseHeldTabSelection)
++                                                 name:@"RNNOverlayWindowDidDetach"
++                                               object:nil];
++}
++
++- (void)dealloc {
++    [[NSNotificationCenter defaultCenter] removeObserver:self];
+ }
+ 
+ - (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
+@@ -99,6 +110,30 @@
+     [super viewDidLayoutSubviews];
+     [self.presenter viewDidLayoutSubviews];
+     [_dotIndicatorPresenter bottomTabsDidLayoutSubviews:self];
++    [self applyHeldTabSelection];
++}
++
++- (void)applyHeldTabSelection {
++    if (!_holdingTabSelection || _heldTabBarItem == nil || _applyingHeldSelection) {
++        return;
++    }
++    if (self.tabBar.selectedItem == _heldTabBarItem) {
++        return;
++    }
++    _applyingHeldSelection = YES;
++    self.tabBar.selectedItem = _heldTabBarItem;
++    _applyingHeldSelection = NO;
++}
++
++- (void)releaseHeldTabSelection {
++    if (!_holdingTabSelection) {
++        return;
++    }
++    _holdingTabSelection = NO;
++    _heldTabBarItem = nil;
++    if (self.selectedIndex < self.tabBar.items.count) {
++        self.tabBar.selectedItem = self.tabBar.items[self.selectedIndex];
++    }
+ }
+ 
+ - (UIViewController *)getCurrentChild {
+@@ -183,12 +218,38 @@
+     [self.eventEmitter sendBottomTabPressed:@(_index)];
+ 
+     if ([[viewController resolveOptions].bottomTab.selectTabOnPress withDefault:YES] || isMoreTab) {
++        _holdingTabSelection = NO;
++        _heldTabBarItem = nil;
+         return YES;
+     }
+ 
++    // The glass selection bubble follows the selected item. Keep it on this
++    // button while its overlay is open, without switching the screen behind.
++    if (@available(iOS 26.0, *)) {
++        _holdingTabSelection = YES;
++        _heldTabBarItem = viewController.tabBarItem;
++        dispatch_async(dispatch_get_main_queue(), ^{
++            [self applyHeldTabSelection];
++        });
++    }
++
+     return NO;
+ }
+ 
++- (void)setSelectedIndex:(NSUInteger)selectedIndex {
++    if (_holdingTabSelection || _applyingHeldSelection) {
++        return;
++    }
++    [super setSelectedIndex:selectedIndex];
++}
++
++- (void)setSelectedViewController:(UIViewController *)selectedViewController {
++    if (_holdingTabSelection || _applyingHeldSelection) {
++        return;
++    }
++    [super setSelectedViewController:selectedViewController];
++}
++
+ #pragma mark - UIViewController overrides
+ 
+ - (UIStatusBarStyle)preferredStatusBarStyle {
+
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
+--- a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
+@@ -42,6 +42,7 @@
+     [overlayWindow setHidden:YES];
+     [overlayWindow setRootViewController:nil];
+     [_overlayWindows removeObject:overlayWindow];
++    [[NSNotificationCenter defaultCenter] postNotificationName:@"RNNOverlayWindowDidDetach" object:overlayWindow];
+ }
+ 
+ - (RNNOverlayWindow *)findWindowByRootViewController:(UIViewController *)viewController {
