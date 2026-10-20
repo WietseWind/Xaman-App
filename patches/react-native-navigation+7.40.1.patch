@@ -109,3 +109,35 @@ index a9e2c53..066cb11 100644
  
          WindowInsetsCompat finalInsets = new WindowInsetsCompat.Builder()
                  .setInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime(),
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
+--- a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
+@@ -455,8 +455,26 @@ static NSString *const setDefaultOptions = @"setDefaultOptions";
+ 
+     __weak UIViewController *weakOverlayVC = overlayVC;
+     [overlayVC setReactViewReadyCallback:^{
+-      UIWindow *overlayWindow =
+-          [[RNNOverlayWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
++      UIWindowScene *windowScene = nil;
++      for (UIScene *connectedScene in UIApplication.sharedApplication.connectedScenes) {
++          if (![connectedScene isKindOfClass:[UIWindowScene class]]) {
++              continue;
++          }
++          if (windowScene == nil ||
++              connectedScene.activationState == UISceneActivationStateForegroundActive) {
++              windowScene = (UIWindowScene *)connectedScene;
++          }
++          if (connectedScene.activationState == UISceneActivationStateForegroundActive) {
++              break;
++          }
++      }
++
++      RNNOverlayWindow *overlayWindow = windowScene != nil
++          ? [[RNNOverlayWindow alloc] initWithWindowScene:windowScene]
++          : [[RNNOverlayWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
++      if (windowScene != nil) {
++          overlayWindow.frame = windowScene.coordinateSpace.bounds;
++      }
+       overlayWindow.rootViewController = weakOverlayVC;
+       if ([weakOverlayVC.resolveOptionsWithDefault.overlay.handleKeyboardEvents withDefault:NO]) {
+           [self->_overlayManager showOverlayWindowAsKeyWindow:overlayWindow];
