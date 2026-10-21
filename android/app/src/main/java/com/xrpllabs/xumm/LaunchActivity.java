@@ -28,6 +28,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowMetrics;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
@@ -341,14 +343,29 @@ public class LaunchActivity extends NavigationActivity {
     }
 
     /**
-     * Full-screen pages draw behind the status bar. Use the device status bar
-     * height, including punch-hole phones where that bar is taller than 24dp.
-     * Capping it put header titles under the clock and status icons.
+     * Full-screen pages draw behind the status bar. Use the taller of the
+     * status_bar_height resource and the real window inset. Private Space
+     * reports the short 24dp resource while the parent user's status bar,
+     * including the punch-hole, is still drawn over the app. Padding only
+     * the short value puts the network switcher under the clock.
      */
     private int topContentInsetPx() {
         int resource = systemDimensionPx("status_bar_height");
-        if (resource > 0) {
-            return resource;
+        int fromWindow = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                WindowMetrics metrics = getWindowManager().getCurrentWindowMetrics();
+                WindowInsets insets = metrics.getWindowInsets();
+                int status = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars()).top;
+                int cutout = insets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout()).top;
+                fromWindow = Math.max(status, cutout);
+            } catch (Exception ignored) {
+                fromWindow = 0;
+            }
+        }
+        int top = Math.max(resource, fromWindow);
+        if (top > 0) {
+            return top;
         }
         float density = getResources().getDisplayMetrics().density;
         return Math.round(32f * density);
