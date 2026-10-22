@@ -30,6 +30,11 @@ export default StyleService.create({
     },
     labelIcon: {
         marginRight: 8,
+        tintColor: '$grey',
+    },
+    labelIconSelected: {
+        marginRight: 8,
+        tintColor: '$textPrimary',
     },
     dot: {
         height: 26,

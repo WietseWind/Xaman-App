@@ -126,7 +126,6 @@ class SecretTypeStep extends Component<Props, State> {
                             label={Localize.t('account.tangemCard')}
                             description={Localize.t('account.tangemCardBelongsToAccount')}
                             icon="IconTangem"
-                            iconStyle={AppStyles.imgColorContrast}
                             checked={secretType === SecretTypes.Tangem}
                         />
                     )}

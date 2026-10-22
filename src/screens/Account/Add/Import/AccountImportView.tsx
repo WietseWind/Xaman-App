@@ -20,7 +20,12 @@ import { SHA256 } from '@common/libs/crypto';
 
 import Vault from '@common/libs/vault';
 
-import { GetCardId, GetWalletDerivedPublicKey, TangemCardMatchesAccount } from '@common/utils/tangem';
+import {
+    DefaultDerivationPaths,
+    GetCardId,
+    GetWalletDerivedPublicKey,
+    TangemCardMatchesAccount,
+} from '@common/utils/tangem';
 
 import { AppScreens } from '@common/constants';
 
@@ -243,6 +248,13 @@ class AccountImportView extends Component<Props, State> {
         }
 
         try {
+            await RNTangemSdk.startSession({
+                attestationMode: 'offline',
+                defaultDerivationPaths: DefaultDerivationPaths,
+            }).catch(() => {
+                // The scan below still runs. Offline mode matches the other Tangem entry points.
+            });
+
             const card = await RNTangemSdk.scanCard();
             const publicKey = GetWalletDerivedPublicKey(card);
             const address = AccountLib.utils.deriveAddress(publicKey);

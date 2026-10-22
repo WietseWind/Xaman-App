@@ -82,7 +82,17 @@ class RadioButton extends PureComponent<Props> {
                 </View>
                 <View style={AppStyles.flex6}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
-                        {!!icon && <Icon name={icon} size={22} style={[styles.labelIcon, iconStyle]} />}
+                        {!!icon && (
+                            <Icon
+                                name={icon}
+                                size={22}
+                                style={[
+                                    checked ? styles.labelIconSelected : styles.labelIcon,
+                                    danger && checked && AppStyles.imgColorRed,
+                                    iconStyle,
+                                ]}
+                            />
+                        )}
                         <Text
                             style={[
                                 AppStyles.p,
