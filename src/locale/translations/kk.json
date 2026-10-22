@@ -62,6 +62,8 @@
     "request": "Сұрау",
     "receiveOnAccount": "Шотқа алу",
     "details": "Толығырақ",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Алушы",
     "destination": "Тағайындалған орны",
     "selectDestination": "Тағайындалған жерді таңдаңыз",

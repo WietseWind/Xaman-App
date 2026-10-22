@@ -62,6 +62,8 @@
     "request": "Kérés",
     "receiveOnAccount": "Fogadás a fiókon",
     "details": "Részletek",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Címzett",
     "destination": "Célpont",
     "selectDestination": "Cél kiválasztása",

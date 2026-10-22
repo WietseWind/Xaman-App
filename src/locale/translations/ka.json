@@ -62,6 +62,8 @@
     "request": "მოთხოვნა",
     "receiveOnAccount": "მიღება ანგარიშზე",
     "details": "დეტალები",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "მიმღები",
     "destination": "დანიშნულების ადგილი",
     "selectDestination": "აირჩიეთ დანიშნულება",

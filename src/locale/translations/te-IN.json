@@ -62,6 +62,8 @@
     "request": "అభ్యర్ధించు",
     "receiveOnAccount": "ఖాతాలో స్వీకరించండి",
     "details": "వివరాలు",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "గ్రహీత",
     "destination": "గమ్యస్థానము",
     "selectDestination": "గమ్యస్థానాన్ని ఎంచుకోండి",

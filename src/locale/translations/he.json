@@ -62,6 +62,8 @@
     "request": "קבל ",
     "receiveOnAccount": "קבל לחשבון",
     "details": "פרטים",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "נמענים",
     "destination": "יַעַד",
     "selectDestination": "בחר יעד",

@@ -67,6 +67,7 @@ ReactNative.NativeModules.AppUtilsModule = {
     appVersion: '0.0.1',
     buildNumber: '1',
     isDebug: false,
+    isTestFlight: false,
     isFlagSecure: jest.fn(() => Promise.resolve(false)),
     setFlagSecure: jest.fn((value) => {}),
     restartBundle: jest.fn(() => {}),

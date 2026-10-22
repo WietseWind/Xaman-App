@@ -62,6 +62,8 @@
     "request": "Surov",
     "receiveOnAccount": "Hisobga qabul qilish",
     "details": "Tafsilotlar",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Qabul qiluvchi",
     "destination": "Belgilangan manzil",
     "selectDestination": "Manzilni tanlang",

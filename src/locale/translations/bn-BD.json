@@ -62,6 +62,8 @@
     "request": "অনুসন্ধান",
     "receiveOnAccount": "অ্যাকাউন্টে গ্রহণ করুন",
     "details": "বিশদ",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "প্রাপক",
     "destination": "গন্তব্য",
     "selectDestination": "গন্তব্য নির্বাচন করুন",

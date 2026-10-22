@@ -52,6 +52,11 @@ export interface AppUtilsModuleInterface extends NativeModule {
     isDebug: boolean;
 
     /**
+     * True on an iOS TestFlight install (sandbox App Store receipt). Android is false.
+     */
+    isTestFlight?: boolean;
+
+    /**
      * Checks if blocking screenshots enabled
      * @returns A Promise that resolves to `true` if taking screenshot is blocked, otherwise `false`.
      * #### (Android specific)

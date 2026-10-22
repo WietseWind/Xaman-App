@@ -62,6 +62,8 @@
     "request": "Żądanie zapłaty",
     "receiveOnAccount": "Otrzymaj na konto",
     "details": "Szczegóły",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Odbiorca",
     "destination": "Miejsce docelowe",
     "selectDestination": "Wybierz miejsce docelowe",

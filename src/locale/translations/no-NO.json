@@ -62,6 +62,8 @@
     "request": "Be om",
     "receiveOnAccount": "Motta på konto",
     "details": "Detaljer",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Mottaker",
     "destination": "Destinasjon",
     "selectDestination": "Velg destinasjon",

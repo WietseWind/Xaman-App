@@ -62,6 +62,8 @@
     "request": "ਰਿਕਵੈਸਟ",
     "receiveOnAccount": "ਖਾਤੇ ਤੇ ਪ੍ਰਾਪਤ ਕਰੋ",
     "details": "ਡਿਟੇਲ",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "ਰਿਸਿਪਿਅੰਟ",
     "destination": "ਮੰਜ਼ਿਲ",
     "selectDestination": "ਮੰਜ਼ਿਲ ਚੁਣੋ",

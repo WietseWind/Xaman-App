@@ -62,6 +62,8 @@
     "request": "请求",
     "receiveOnAccount": "账户收款",
     "details": "详细信息",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "收款人",
     "destination": "目的地",
     "selectDestination": "选择目的地",

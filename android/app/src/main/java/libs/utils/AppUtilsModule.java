@@ -72,6 +72,7 @@ public class AppUtilsModule extends ReactContextBaseJavaModule {
         constants.put("appVersion", this.getAppVersion());
         constants.put("buildNumber", this.getAppBuildNumber());
         constants.put("isDebug", this.isDebug());
+        constants.put("isTestFlight", false);
         return constants;
     }
 

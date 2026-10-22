@@ -62,6 +62,8 @@
     "request": "Eskaera",
     "receiveOnAccount": "Jaso kontuan",
     "details": "Xehetasunak",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Hartzailea",
     "destination": "Helmuga",
     "selectDestination": "Hautatu helmuga",
