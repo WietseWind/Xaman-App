@@ -47,6 +47,7 @@ interface State {
 class DetailsStep extends Component<Props, State> {
     amountInput: React.RefObject<typeof AmountInput | null>;
     amountRateInput: React.RefObject<typeof AmountInput | null>;
+    currencyRateRequest: number;
 
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
@@ -63,19 +64,41 @@ class DetailsStep extends Component<Props, State> {
 
         this.amountInput = React.createRef();
         this.amountRateInput = React.createRef();
+        this.currencyRateRequest = 0;
     }
 
     componentDidMount() {
+        NetworkService.on('networkChange', this.onNetworkChange);
         InteractionManager.runAfterInteractions(this.fetchCurrencyRate);
     }
 
+    componentWillUnmount() {
+        NetworkService.off('networkChange', this.onNetworkChange);
+    }
+
+    onNetworkChange = () => {
+        this.currencyRateRequest += 1;
+        this.setState(
+            {
+                currencyRate: undefined,
+                amountRate: '',
+            },
+            () => {
+                InteractionManager.runAfterInteractions(this.fetchCurrencyRate);
+            },
+        );
+    };
+
     fetchCurrencyRate = () => {
         const { coreSettings } = this.context;
-
         const { currency } = coreSettings;
+        const requestId = this.currencyRateRequest;
 
         BackendService.getCurrencyRate(currency)
             .then((rate) => {
+                if (requestId !== this.currencyRateRequest) {
+                    return;
+                }
                 this.setState(
                     {
                         currencyRate: rate,

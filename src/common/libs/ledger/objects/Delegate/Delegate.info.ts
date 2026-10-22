@@ -7,6 +7,7 @@ import Delegate from './Delegate.class';
 /* Types ==================================================================== */
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
 import { OperationActions } from '@common/libs/ledger/parser/types';
+import { describeDelegatePermission } from '@common/libs/ledger/utils/delegatePermission';
 import NetworkService from '@services/NetworkService';
 
 /* Descriptor ==================================================================== */
@@ -30,13 +31,11 @@ class DelegateInfo extends ExplainerAbstract<Delegate> {
         msg += '\n\n';
 
         const perms = (this.item.Permissions || []).map((p) => {
-            const matchingTx = Object.keys(transactionDefinitions).filter(
-                (v) => transactionDefinitions[v] === p?.Permission?.PermissionValue,
-            )?.[0];
-
-            if (matchingTx) return matchingTx;
-
-            return p?.Permission?.PermissionValue;
+            const described = describeDelegatePermission(
+                p?.Permission?.PermissionValue,
+                transactionDefinitions,
+            );
+            return described.dangerous ? `${described.label} (!)` : described.label;
         });
 
         msg += Localize.t('txDelegateSet.itSetsThesePermissions', {

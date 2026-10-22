@@ -29,6 +29,8 @@ import { TemplateProps } from '../types';
 import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 import { MPToken, MPTokenIssuance } from '@common/libs/ledger/objects';
 import { ComponentTypes } from '@services/NavigationService';
+import { paymentReceivesAmount, showSpendableNextToSendMax } from './paymentReviewBalance';
+import { settleLedgerFetches } from '@screens/Modal/ReviewTransaction/settleLedgerFetches';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -65,16 +67,7 @@ class PaymentTemplate extends Component<Props, State> {
 
         // console.log('transactiontransaction', transaction)
 
-        if (transaction.Amount?.currency && transaction.Amount?.issuer) {
-            this.currentCurrency = (source?.lines || [])
-                .filter(l => {
-                    return l.currency.currencyCode === transaction.Amount?.currency &&
-                        l.currency.issuer === transaction.Amount?.issuer;
-                })?.[0];
-
-            // console.log(this.currentCurrency?.balance);
-            // console.log(this.currentCurrency?.getFormattedCurrency());
-        };
+        this.bindCurrentCurrency(source, transaction);
 
         this.state = {
             account: undefined,
@@ -119,6 +112,26 @@ class PaymentTemplate extends Component<Props, State> {
         return null;
     }
 
+    bindCurrentCurrency = (source: Props['source'], transaction: Props['transaction']) => {
+        if (transaction.Amount?.currency && transaction.Amount?.issuer) {
+            this.currentCurrency = (source?.lines || []).filter((l) => {
+                return (
+                    l.currency.currencyCode === transaction.Amount?.currency &&
+                    l.currency.issuer === transaction.Amount?.issuer
+                );
+            })?.[0];
+        } else {
+            this.currentCurrency = undefined;
+        }
+    };
+
+    componentDidUpdate(prevProps: Props) {
+        const { source, transaction } = this.props;
+        if (prevProps.source?.address !== source?.address) {
+            this.bindCurrentCurrency(source, transaction);
+        }
+    }
+
     isMPTAmount = () => {
         const { transaction } = this.props;
         return transaction?.Amount &&
@@ -132,7 +145,7 @@ class PaymentTemplate extends Component<Props, State> {
         const { account } = this.state;
 
         if (this.isMPTAmount()) {
-            const [issuance, mpt] = await Promise.all([
+          const fetched = await settleLedgerFetches([
                 LedgerService.getLedgerEntry({
                     command: 'ledger_entry',
                     mpt_issuance: transaction?.Amount?.mpt_issuance_id,
@@ -145,6 +158,18 @@ class PaymentTemplate extends Component<Props, State> {
                     },
                 }),
             ]);
+
+          if (!fetched.ok) {
+            this.setState(
+                {
+                    mptIssuanceError: { error: 'fetch_failed' },
+                },
+                this.setIsReady,
+            );
+            return;
+          }
+
+            const [issuance, mpt] = fetched.values;
 
             if ((mpt as any)?.node) {
                 this.setState({
@@ -338,6 +363,37 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
 
+    renderSpendableBalance = (currency?: string, issuer?: string) => {
+        const { source } = this.props;
+
+        if (!source) {
+            return null;
+        }
+
+        if (!currency || currency === NetworkService.getNativeAsset()) {
+            return (
+                <Text style={[AppStyles.monoBold]}>
+                    {Localize.formatNumber(CalculateAvailableBalance(source))}{' '}
+                    {NetworkService.getNativeAsset()}
+                </Text>
+            );
+        }
+
+        const line = (source.lines || []).find(
+            (item) => item.currency.currencyCode === currency && item.currency.issuer === issuer,
+        );
+        const balance = line ? Math.floor(Number(line.balance || 0) * 100_000_000) / 100_000_000 : 0;
+
+        return (
+            <AmountText
+                value={balance}
+                style={[AppStyles.monoBold]}
+                currency={line?.getFormattedCurrency() || NormalizeCurrencyCode(currency)}
+                immutable
+            />
+        );
+    };
+
     renderAmountRate = () => {
         const {
             amount,
@@ -434,6 +490,8 @@ class PaymentTemplate extends Component<Props, State> {
 
         const isNativeAsset = (currencyRate && amount) ||
             (currencyRate && !this.isMPTAmount() && currencyName === NetworkService.getNativeAsset());
+        const receivesAmount = paymentReceivesAmount(transaction.SendMax);
+        const spendableNextToSendMax = showSpendableNextToSendMax(transaction.SendMax, Boolean(selectedPath));
 
         // TODO: better handling this part
         if (!account) {
@@ -471,7 +529,9 @@ class PaymentTemplate extends Component<Props, State> {
 
                 {/* Amount */}
                 <>
-                    <Text style={styles.label}>{Localize.t('global.amount')}</Text>
+                    <Text style={styles.label}>
+                        {receivesAmount ? Localize.t('global.amountToReceive') : Localize.t('global.amount')}
+                    </Text>
                     <View style={[
                         styles.contentBox,
                         // AppStyles.borderGreen,
@@ -534,6 +594,7 @@ class PaymentTemplate extends Component<Props, State> {
                                 AppStyles.flex1,
                                 AppStyles.flexStart,
                             ]}>{this.renderAmountRate()}</View>
+                            {!spendableNextToSendMax && (
                             <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
                                 <Text style={[
                                     !isNativeAsset
@@ -575,6 +636,7 @@ class PaymentTemplate extends Component<Props, State> {
                                     }
                                 </Text>
                             </View>
+                            )}
                         </View>
                     </View>
                 </>
@@ -610,6 +672,15 @@ class PaymentTemplate extends Component<Props, State> {
                                 style={styles.amount}
                                 immutable
                             />
+                            <View style={[AppStyles.flexEnd, AppStyles.stretchSelf]}>
+                                <Text style={[AppStyles.textRightAligned, SummaryStepStyle.currencyBalance]}>
+                                    {Localize.t('global.available')}{': '}
+                                    {this.renderSpendableBalance(
+                                        transaction.SendMax.currency,
+                                        transaction.SendMax.issuer,
+                                    )}
+                                </Text>
+                            </View>
                         </View>
                     </>
                 )}

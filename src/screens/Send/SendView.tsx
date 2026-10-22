@@ -108,6 +108,8 @@ class SendView extends Component<Props, State> {
     componentDidMount() {
         const { accounts } = this.state;
 
+        NetworkService.on('networkChange', this.onNetworkChange);
+
         // go back if no spendable account is available
         if (accounts.length === 0) {
             this.closeTimeout = setTimeout(() => {
@@ -120,6 +122,8 @@ class SendView extends Component<Props, State> {
     componentWillUnmount() {
         const { isLoading, payment, check, remit } = this.state;
 
+        NetworkService.off('networkChange', this.onNetworkChange);
+
         if (this.closeTimeout) clearTimeout(this.closeTimeout);
 
         // abort the transaction if already running
@@ -129,6 +133,18 @@ class SendView extends Component<Props, State> {
             remit.abort();
         }
     }
+
+    onNetworkChange = () => {
+        const { token } = this.state;
+
+        // Native send stores the asset code from when the screen opened.
+        // The label reads the live asset, so keep the code on the same network.
+        if (typeof token === 'string') {
+            this.setState({
+                token: NetworkService.getNativeAsset(),
+            });
+        }
+    };
 
     setSource = (source: AccountModel) => {
         this.setState({ source });

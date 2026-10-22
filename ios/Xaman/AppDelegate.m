@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "SceneDelegate.h"
 #import "SecurityProvider.h"
 
 #import <React/RCTBundleURLProvider.h>
@@ -10,6 +11,11 @@
 #import "Libs/Notification/LocalNotification.h"
 #import "Libs/Security/Authentication/Biometric/BiometricModule.h"
 #import "Libs/Common/InAppPurchase/InAppPurchase.h"
+
+@interface AppDelegate ()
+@property (nonatomic, copy) NSDictionary *savedLaunchOptions;
+@property (nonatomic, assign) BOOL didStartReactNative;
+@end
 
 @implementation AppDelegate
 
@@ -30,22 +36,85 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  self.savedLaunchOptions = launchOptions;
+
   // Initialize security key early
   [SecurityProvider ensureKeyIsReady];
 
-  // bootstrap rnn
-  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-  [ReactNativeNavigation bootstrapWithBridge:bridge];
-
   // init firebase app
   [FIRApp configure];
-  
 
   // bootstrap local notification and Biometric module
   [LocalNotificationModule initialise];
   [BiometricModule initialise];
+  [self keepClassicBarChrome];
 
   return YES;
+}
+
+- (void)keepClassicBarChrome
+{
+  UITabBarAppearance *tabAppearance = [[UITabBarAppearance alloc] init];
+  [tabAppearance configureWithOpaqueBackground];
+  UITabBar *tabBar = [UITabBar appearance];
+  tabBar.standardAppearance = tabAppearance;
+  tabBar.scrollEdgeAppearance = tabAppearance;
+  tabBar.translucent = NO;
+
+  UINavigationBarAppearance *navigationAppearance = [[UINavigationBarAppearance alloc] init];
+  [navigationAppearance configureWithOpaqueBackground];
+  UINavigationBar *navigationBar = [UINavigationBar appearance];
+  navigationBar.standardAppearance = navigationAppearance;
+  navigationBar.scrollEdgeAppearance = navigationAppearance;
+  navigationBar.compactAppearance = navigationAppearance;
+  navigationBar.translucent = NO;
+}
+
+- (UISceneConfiguration *)application:(UIApplication *)application
+    configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
+                                   options:(UISceneConnectionOptions *)options
+{
+  UISceneConfiguration *configuration =
+      [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+  configuration.delegateClass = [SceneDelegate class];
+  return configuration;
+}
+
+- (void)startReactNativeForScene:(UIWindowScene *)windowScene
+               connectionOptions:(UISceneConnectionOptions *)connectionOptions
+{
+  if (self.window == nil) {
+    self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
+  } else if (self.window.windowScene != windowScene) {
+    self.window.windowScene = windowScene;
+  }
+  self.window.frame = windowScene.coordinateSpace.bounds;
+
+  if (self.didStartReactNative) {
+    return;
+  }
+  self.didStartReactNative = YES;
+
+  NSMutableDictionary *launchOptions = [NSMutableDictionary dictionaryWithDictionary:self.savedLaunchOptions ?: @{}];
+  NSURL *url = connectionOptions.URLContexts.anyObject.URL;
+  if (url != nil && launchOptions[UIApplicationLaunchOptionsURLKey] == nil) {
+    launchOptions[UIApplicationLaunchOptionsURLKey] = url;
+  }
+
+  NSUserActivity *userActivity = connectionOptions.userActivities.anyObject;
+  if (userActivity != nil && launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey] == nil) {
+    NSMutableDictionary *activity = [NSMutableDictionary dictionary];
+    if (userActivity.activityType != nil) {
+      activity[UIApplicationLaunchOptionsUserActivityTypeKey] = userActivity.activityType;
+    }
+    activity[@"UIApplicationLaunchOptionsUserActivityKey"] = userActivity;
+    launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey] = activity;
+  }
+
+  // The window must belong to the scene before React Native Navigation reads it.
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  self.bridge = bridge;
+  [ReactNativeNavigation bootstrapWithBridge:bridge];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

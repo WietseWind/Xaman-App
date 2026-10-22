@@ -13,6 +13,7 @@ export interface Props {
     title?: string;
     icon?: string;
     account?: AccountModel;
+    network?: NetworkModel;
     origin?: XAppOrigin;
     originData?: any;
     noSwitching?: boolean;

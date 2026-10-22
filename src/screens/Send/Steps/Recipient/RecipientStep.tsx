@@ -1325,6 +1325,7 @@ class RecipientStep extends Component<Props, State> {
                 <Footer style={AppStyles.row} safeArea>
                     <View style={[AppStyles.flex1, AppStyles.paddingRightSml]}>
                         <Button
+                            testID="back-button"
                             light
                             icon="IconChevronLeft"
                             label={Localize.t('global.back')}

@@ -33,6 +33,7 @@ import { AppStyles } from '@theme';
 import styles from './styles';
 import { ErrorResponse } from '@common/libs/ledger/types/methods';
 import { ComponentTypes } from '@services/NavigationService';
+import { transactionLoaderView } from './loaderView';
 
 /* types ==================================================================== */
 export interface Props {
@@ -111,6 +112,12 @@ class TransactionLoaderModal extends Component<Props, State> {
             this.setState({
                 isLoading: true,
                 error: false,
+                requiresSwitchNetwork: false,
+            });
+        } else {
+            this.setState({
+                error: false,
+                requiresSwitchNetwork: false,
             });
         }
 
@@ -142,6 +149,7 @@ class TransactionLoaderModal extends Component<Props, State> {
                     error: true,
                     isLoading: false,
                     errorMessage: String(resp?.error_message || resp?.error || ''),
+                    requiresSwitchNetwork: false,
                 });
                 return;
             }
@@ -195,6 +203,7 @@ class TransactionLoaderModal extends Component<Props, State> {
             this.setState({
                 isLoading: false,
                 error: true,
+                requiresSwitchNetwork: false,
             });
         }
     };
@@ -323,17 +332,16 @@ class TransactionLoaderModal extends Component<Props, State> {
             error,
         } = this.state;
 
-        if (isLoading) {
-            return this.renderLoading();
+        switch (transactionLoaderView({ isLoading, requiresSwitchNetwork, error })) {
+            case 'loading':
+                return this.renderLoading();
+            case 'switch':
+                return this.renderNetworkSwitch();
+            case 'error':
+                return this.renderError();
+            default:
+                return null;
         }
-        if (requiresSwitchNetwork) {
-            return this.renderNetworkSwitch();
-        }
-        if (error) {
-            return this.renderError();
-        }
-
-        return null;
     };
 
     render() {

@@ -182,4 +182,4 @@ const waitForAndroidAlertText = async (title, serial) => {
     );
 };
 
-module.exports = { tapAndroidAlertButton, waitForAndroidAlertText };
+module.exports = { tapAndroidAlertButton, waitForAndroidAlertText, appWindowCount };

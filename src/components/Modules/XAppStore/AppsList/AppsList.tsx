@@ -11,6 +11,7 @@ import Localize from '@locale';
 import { AppStyles } from '@theme';
 import styles from './styles';
 import { XAppOrigin } from '@common/libs/payload';
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { VibrateHapticFeedback } from '@common/helpers/interface';
 import { CoreModel } from '@store/models';
 import { CoreRepository } from '@store/repositories';
@@ -122,6 +123,9 @@ class AppsList extends Component<Props, State> {
         return (
             <SectionList
                 style={containerStyle}
+                contentContainerStyle={
+                    glassTabScrollPadding > 0 ? { paddingBottom: glassTabScrollPadding } : undefined
+                }
                 sections={dataSource ?? []}
                 renderItem={this.renderItem}
                 keyExtractor={(item: XamanBackend.AppCategory, index) => `${item?.identifier}${index}`}

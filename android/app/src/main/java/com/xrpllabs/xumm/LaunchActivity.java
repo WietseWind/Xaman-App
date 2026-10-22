@@ -28,6 +28,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowMetrics;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
@@ -39,9 +41,14 @@ public class LaunchActivity extends NavigationActivity {
 
     private View splashView;
     private boolean splashHidden = false;
+    private int lastWindowBackground = Color.TRANSPARENT;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // DeviceUtilsModule.getConstants() snapshots layout insets once, and
+        // NavigationActivity starts React Native inside super.onCreate. Seed
+        // before that or some phones keep a 0 top inset for the whole session.
+        seedInsetsFromResources();
         super.onCreate(savedInstanceState);
 
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -246,7 +253,8 @@ public class LaunchActivity extends NavigationActivity {
                 child.setBackgroundColor(Color.TRANSPARENT);
             }
         }
-        if (paintedRoot) {
+        if (paintedRoot && WindowBackground.changed(background, lastWindowBackground)) {
+            lastWindowBackground = background;
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }
     }
@@ -335,20 +343,32 @@ public class LaunchActivity extends NavigationActivity {
     }
 
     /**
-     * Punch-hole devices inflate status_bar_height / statusBars.top to the
-     * camera cutout (~52dp). Clock and wifi sit in the classic 24dp icon bar.
-     * Pad that bar plus 8dp so titles sit close to the status icons, like iOS.
+     * Full-screen pages draw behind the status bar. Use the taller of the
+     * status_bar_height resource and the real window inset. Private Space
+     * reports the short 24dp resource while the parent user's status bar,
+     * including the punch-hole, is still drawn over the app. Padding only
+     * the short value puts the network switcher under the clock.
      */
     private int topContentInsetPx() {
-        float density = getResources().getDisplayMetrics().density;
-        int classic = Math.round(24f * density);
-        int extra = Math.round(8f * density);
         int resource = systemDimensionPx("status_bar_height");
-        int iconBar = resource;
-        if (iconBar <= 0 || iconBar > classic + extra) {
-            iconBar = classic;
+        int fromWindow = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                WindowMetrics metrics = getWindowManager().getCurrentWindowMetrics();
+                WindowInsets insets = metrics.getWindowInsets();
+                int status = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars()).top;
+                int cutout = insets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout()).top;
+                fromWindow = Math.max(status, cutout);
+            } catch (Exception ignored) {
+                fromWindow = 0;
+            }
         }
-        return iconBar + extra;
+        int top = Math.max(resource, fromWindow);
+        if (top > 0) {
+            return top;
+        }
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(32f * density);
     }
 
     private int systemDimensionPx(final String name) {

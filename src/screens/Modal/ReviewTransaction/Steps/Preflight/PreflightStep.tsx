@@ -228,7 +228,9 @@ class PreflightStep extends Component<Props, State> {
                 if (
                     transaction &&
                     transaction.TransactionType === TransactionTypes.Batch &&
-                    transaction.innerBatchSigners().length === 1
+                    transaction.innerBatchSigners().length === 1 &&
+                    (!transaction.Account || transaction.isBatchInNeedOfMultipleSigners())
+                    // ^^ else the Batch Account signs (e.g. it submits for an inner account that already signed)
                 ) {
                     // Batch in need of one signer, set as preferred account
                     preferredAccount = find(availableAccounts, { address: transaction.innerBatchSigners()[0] });

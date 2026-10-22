@@ -708,6 +708,59 @@ const nodePlainLabel = (node) => {
     return (node.contentDesc || '').trim();
 };
 
+const OVERLAY_SHEET_IDS = ['switch-network-overlay', 'home-actions-overlay'];
+
+const nodeIsNetworkRow = (node) => {
+    const blob = `${node.attrs || ''} ${node.resourceId || ''} ${node.contentDesc || ''}`;
+    return blob.indexOf('network-') !== -1 && blob.indexOf('network-switch-button') === -1;
+};
+
+/**
+ * Home actions and the network list cover the tab bar. Tapping Settings
+ * while the list is open hits the row at that spot. Developer mode puts
+ * XRPL Devnet last, on the Settings tab, so the suite changes network.
+ * Tap the backdrop above the sheet title instead.
+ */
+const dismissAndroidOverlaySheet = async (xml) => {
+    if (!xml || !OVERLAY_SHEET_IDS.some((id) => pickNodeForTestId(xml, id))) {
+        return false;
+    }
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const title = nodes.find((n) => {
+        const label = nodePlainLabel(n).toLowerCase();
+        return label === 'networks' || label === 'recently used';
+    });
+    const overlay =
+        pickNodeForTestId(xml, 'switch-network-overlay') ||
+        pickNodeForTestId(xml, 'home-actions-overlay');
+    const x = overlay ? Math.round((overlay.bounds.x1 + overlay.bounds.x2) / 2) : 200;
+    let tapY = title ? Math.max(160, title.bounds.y1 - 70) : 160;
+    const coversRow = (y) =>
+        nodes.some((n) => nodeIsNetworkRow(n) && y >= n.bounds.y1 && y <= n.bounds.y2);
+    while (tapY > 80 && coversRow(tapY)) {
+        tapY -= 40;
+    }
+    adbTap(x, tapY);
+    cachedXml = '';
+    cachedAt = 0;
+    await sleep(450);
+    return true;
+};
+
+const pointHitsNetworkControl = (xml, bounds) => {
+    if (!xml || !bounds) {
+        return false;
+    }
+    const { x, y } = bounds;
+    return parseNodes(xml).some((n) => {
+        const blob = `${n.attrs || ''} ${n.resourceId || ''} ${n.contentDesc || ''}`;
+        if (blob.indexOf('network-') === -1) {
+            return false;
+        }
+        return x >= n.bounds.x1 && x <= n.bounds.x2 && y >= n.bounds.y1 && y <= n.bounds.y2;
+    });
+};
+
 const androidClearBlockingUi = async () => {
     try {
         execFileSync('adb', ['-s', androidSerial(), 'shell', 'input', 'keyevent', '66'], {
@@ -889,9 +942,15 @@ const clickByTestId = async (testId) => {
         return;
     }
     if (TAB_LABELS[testId]) {
+        if (await dismissAndroidOverlaySheet(xml)) {
+            return;
+        }
         const tab = pickTabNode(xml, testId) || (lastTabXml && pickTabNode(lastTabXml, testId));
         if (!tab) {
             throw new Error(`android hierarchy has no app tab for ${testId} (${dumpSummary(xml || lastTabXml)})`);
+        }
+        if (pointHitsNetworkControl(xml, tab.bounds)) {
+            return;
         }
         await tapBounds(tab.bounds);
         return;
@@ -1280,17 +1339,18 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
             if (testId === 'settings-tab-screen' && xmlLooksLikeSettings(lastXml)) {
                 return;
             }
-            if (
-                testId === 'settings-tab-screen' &&
-                !xmlLooksLikeSettings(lastXml) &&
-                pickTabNode(lastXml, 'tab-Settings')
-            ) {
+            if (testId === 'settings-tab-screen' && !xmlLooksLikeSettings(lastXml)) {
+                if (await dismissAndroidOverlaySheet(lastXml)) {
+                    continue;
+                }
                 const tab = pickTabNode(lastXml, 'tab-Settings');
-                await tapBounds(tab.bounds);
-                cachedXml = '';
-                cachedAt = 0;
-                await sleep(500);
-                continue;
+                if (tab && !pointHitsNetworkControl(lastXml, tab.bounds)) {
+                    await tapBounds(tab.bounds);
+                    cachedXml = '';
+                    cachedAt = 0;
+                    await sleep(500);
+                    continue;
+                }
             }
         }
         // Do not auto-unlock AuthenticateOverlay (same testID) during signing.
@@ -1402,16 +1462,22 @@ const androidSwipeTestId = async (testId, direction) => {
     if (direction === 'up') {
         // Start in the sheet, not at y2. On gesture-nav emu y2 sits on the
         // Home pill (launcher). Stay above the Xaman content bottom.
+        // The center dock protrudes above the tab strip and opens Home actions.
+        // 96px above the window bottom still lands on it and covers the review slider.
         const xml = await androidDumpXml();
+        if (await dismissAndroidOverlaySheet(xml)) {
+            return;
+        }
         const nodes = parseNodes(xml);
-        const bottom = xummContentBottom(nodes) || bounds.y2;
         const h = Math.max(1, bounds.y2 - bounds.y1);
         const x = Math.round((bounds.x1 + bounds.x2) / 2);
         let startY = Math.round(bounds.y1 + h * 0.55);
         let endY = Math.round(bounds.y1 + h * 0.18);
-        const maxStart = bottom - 96;
-        if (startY > maxStart) {
-            startY = Math.max(bounds.y1 + 40, maxStart);
+        const tabBar = pickTabBarContainer(nodes);
+        const contentBottom = xummContentBottom(nodes) || bounds.y2;
+        const dockTop = tabBar ? tabBar.bounds.y1 - 140 : contentBottom - 220;
+        if (startY > dockTop) {
+            startY = Math.max(bounds.y1 + 48, dockTop);
         }
         if (endY >= startY - 80) {
             endY = Math.max(bounds.y1 + 16, startY - 160);
@@ -1431,6 +1497,73 @@ const androidBlurIme = () => {
     } catch (e) {
         // IME already down
     }
+};
+
+// mInputShown is the IME window, not "an EditText is focused".
+// Hardware BACK is Navigator.pop on this screen and leaves import entirely
+// (Add an account). Hide the keyboard with a tap on the non-pressable
+// prompt, then Escape. Escape dismisses an AlertDialog, so callers must
+// not use this while a curve prompt is open.
+const androidImeShown = () => {
+    try {
+        const out = androidAdb(['shell', 'dumpsys', 'input_method'], 5000);
+        return /mInputShown=true/.test(String(out));
+    } catch (e) {
+        return false;
+    }
+};
+
+const androidDismissImeIfShown = async () => {
+    if (!androidImeShown()) {
+        return false;
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const prompt = nodes.find((n) =>
+        /please provide your account secret|family seed \/ privat/i.test(n.text || ''),
+    );
+    if (prompt) {
+        await tapBounds(prompt.bounds);
+    } else {
+        adbTap(540, 420);
+        cachedXml = '';
+        cachedAt = 0;
+    }
+    const deadline = Date.now() + 1200;
+    while (Date.now() < deadline) {
+        if (!androidImeShown()) {
+            return true;
+        }
+        await sleep(150);
+    }
+    try {
+        androidAdb(['shell', 'input', 'keyevent', '111'], 4000);
+    } catch (e) {
+        // IME already down
+    }
+    await sleep(300);
+    return true;
+};
+
+const clickAndroidTextIncludes = async (snippet) => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    const want = String(snippet || '').toLowerCase();
+    if (!want) {
+        return false;
+    }
+    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const pick =
+        nodes.find((n) => n.clickable && (n.text || '').toLowerCase().indexOf(want) !== -1) ||
+        nodes.find((n) => (n.text || '').toLowerCase().indexOf(want) !== -1);
+    if (!pick) {
+        return false;
+    }
+    await tapBounds(pick.bounds);
+    return true;
 };
 
 const androidPasteText = (value) => {
@@ -1481,18 +1614,36 @@ const androidTypeChunk = (chunk) => {
  * Quote for device sh so `& ; < > | #` in Extra Security passphrases
  * are not split. `input text` maps `%s` to space.
  */
-const androidTypeText = (value) => {
-    const text = String(value);
-    if (!text) {
-        return;
+// A controlled TextInput can still show the previous value when the next
+// step types. input text appends, so a cleared search would become the old
+// partial plus the new address and lookup would return nothing.
+const androidClearFocusedField = (count) => {
+    const n = Math.max(1, Math.min(80, Number(count) || 1));
+    const script = `input keyevent 123; i=0; while [ $i -lt ${n} ]; do input keyevent 67; i=$((i+1)); done`;
+    try {
+        androidAdb(['shell', script], 20000);
+    } catch (e) {
+        // field already empty
     }
-    // Do not paste first: Samsung cmd clipboard + KEYCODE_PASTE often no-ops
-    // in RN TextInput while returning success (empty account label, Next dead).
-    const encoded = text.replace(/ /g, '%s');
-    const size = text.length > 10 ? 6 : encoded.length;
-    for (let i = 0; i < encoded.length; i += size) {
+};
+
+const androidTypeLiteral = (text) => {
+    // One input text keeps ':' and '/' in a URL. Chunks that contain those
+    // characters were dropped, so a Bithomp link arrived as the address tail.
+    if (text.length <= 90) {
         try {
-            androidTypeChunk(encoded.slice(i, i + size));
+            androidTypeChunk(text);
+            return;
+        } catch (e) {
+            if (!isAdbTimeout(e)) {
+                throw e;
+            }
+        }
+    }
+    const size = text.length > 10 ? 6 : text.length;
+    for (let i = 0; i < text.length; i += size) {
+        try {
+            androidTypeChunk(text.slice(i, i + size));
         } catch (e) {
             if (!isAdbTimeout(e)) {
                 throw e;
@@ -1502,6 +1653,41 @@ const androidTypeText = (value) => {
                 androidPasteText(rest);
             }
             return;
+        }
+    }
+};
+
+const androidTypeText = (value) => {
+    const text = String(value);
+    if (!text) {
+        return;
+    }
+    // The first input text after a focus is dropped while the IME animates
+    // open. A spaced address then starts at J32u instead of rJ9u.
+    const readyBy = Date.now() + 1500;
+    while (!androidImeShown() && Date.now() < readyBy) {
+        try {
+            execFileSync('sleep', ['0.12']);
+        } catch (e) {
+            break;
+        }
+    }
+    // Do not paste first: Samsung cmd clipboard + KEYCODE_PASTE often no-ops
+    // in RN TextInput while returning success (empty account label, Next dead).
+    // Do not encode a space as %s inside a letter chunk. `input text '%srJ9u'`
+    // dropped the whole first chunk, so the recipient field started at J32u
+    // and the spaced address never normalized.
+    const pieces = text.split(' ');
+    for (let p = 0; p < pieces.length; p += 1) {
+        if (p > 0) {
+            try {
+                androidAdb(['shell', 'input', 'keyevent', '62'], 4000);
+            } catch (e) {
+                // space key already down
+            }
+        }
+        if (pieces[p]) {
+            androidTypeLiteral(pieces[p]);
         }
     }
 };
@@ -1587,6 +1773,32 @@ const dismissAndroidInvalidSecret = async (xml) => {
         return false;
     }
     return clickDumpLabel(xml, 'OK');
+};
+
+// Import refuses a full-access secret that is already in Xaman with a single
+// OK button. The message is long and the dump truncates it, so match the
+// prefix that is actually in the hierarchy ("…has alrea").
+const importedSecretAlert = (xml) => {
+    const blob = String(xml || '').toLowerCase();
+    return (
+        blob.indexOf('account secret that you have entered') !== -1 ||
+        blob.indexOf('already been imported') !== -1 ||
+        blob.indexOf('account already exists') !== -1
+    );
+};
+
+const dismissAndroidImportedSecretAlert = async () => {
+    cachedXml = '';
+    cachedAt = 0;
+    const xml = await androidDumpXml();
+    if (!importedSecretAlert(xml)) {
+        return false;
+    }
+    if (await clickDumpLabel(xml, 'OK')) {
+        await sleep(500);
+        return true;
+    }
+    return false;
 };
 
 const androidReadSecretRow = async (row) => {
@@ -1791,7 +2003,11 @@ module.exports = {
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
+    androidClearFocusedField,
+    androidPasteText,
     androidBlurIme,
+    androidDismissImeIfShown,
+    clickAndroidTextIncludes,
     isAdbTimeout,
     androidDumpIncludes,
     clickAndroidLabel,
@@ -1806,5 +2022,6 @@ module.exports = {
     androidReadSecretRow,
     enterAndroidSecretNumbers,
     dismissAndroidWipeDialog,
+    dismissAndroidImportedSecretAlert,
     clearAndroidBlockingDialogs,
 };

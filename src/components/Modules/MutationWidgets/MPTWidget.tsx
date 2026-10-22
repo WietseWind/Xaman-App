@@ -103,7 +103,7 @@ class MPTWidget extends PureComponent<Props, State> {
                     </>
                 )}
 
-                {mpTokenIssuance?.TransferFee && mpTokenIssuance.TransferFee > 0 && (
+                {!!mpTokenIssuance?.TransferFee && mpTokenIssuance.TransferFee > 0 && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Transfer Fee</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>

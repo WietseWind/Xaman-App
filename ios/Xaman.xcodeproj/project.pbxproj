@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
+		A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A2SC0E012710000200A75B9A /* SceneDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		559A5D08536F62959115419B /* libPods-Xaman.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E970B0A9270522FB0AF008B0 /* libPods-Xaman.a */; };
@@ -84,6 +85,8 @@
 		13B07F961A680F5B00A75B9A /* Xaman.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Xaman.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Xaman/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Xaman/AppDelegate.m; sourceTree = "<group>"; };
+		A2SC0E012710000100A75B9A /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = Xaman/SceneDelegate.h; sourceTree = "<group>"; };
+		A2SC0E012710000200A75B9A /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SceneDelegate.m; path = Xaman/SceneDelegate.m; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Xaman/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Xaman/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Xaman/main.m; sourceTree = "<group>"; };
@@ -234,6 +237,8 @@
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
+				A2SC0E012710000100A75B9A /* SceneDelegate.h */,
+				A2SC0E012710000200A75B9A /* SceneDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				A2B145CA243E935F00E952B6 /* LaunchScreen.storyboard */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -966,6 +971,7 @@
 				A2AFF13C243E79C30007005E /* UIView+QRCode.m in Sources */,
 				A2805CE224D1982400B5552E /* LocalNotification.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */,
 				A2BE295B2C0C977600F66E10 /* InAppPurchase+ProductRequestHandler.m in Sources */,
 				A2AFF13B243E79C30007005E /* QRCode.m in Sources */,
 				A2AFF13F243E79C30007005E /* CIColor+QRCode.m in Sources */,
@@ -1173,7 +1179,7 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 194;
+				CURRENT_PROJECT_VERSION = 307;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -1184,7 +1190,7 @@
 				INFOPLIST_FILE = Xaman/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.3.0;
+				MARKETING_VERSION = 5.4.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1209,13 +1215,13 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 194;
+				CURRENT_PROJECT_VERSION = 307;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				INFOPLIST_FILE = Xaman/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.3.0;
+				MARKETING_VERSION = 5.4.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

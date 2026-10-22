@@ -51,9 +51,9 @@ class ActionPanel extends Component<Props, State> {
     private currentY: number;
     private dragStartY: number;
     private currentIndex: number;
-    private isOpening: boolean;
     private isDragging: boolean;
     private dismissed: boolean;
+    private closeRequested: boolean;
     private startedOnHeader: boolean;
     private slideTimeout?: ReturnType<typeof setTimeout>;
 
@@ -72,9 +72,9 @@ class ActionPanel extends Component<Props, State> {
         this.currentY = screenHeight;
         this.dragStartY = screenHeight;
         this.currentIndex = 0;
-        this.isOpening = true;
         this.isDragging = false;
         this.dismissed = false;
+        this.closeRequested = false;
         this.startedOnHeader = false;
 
         this.translateY.addListener(({ value }) => {
@@ -138,10 +138,16 @@ class ActionPanel extends Component<Props, State> {
     }
 
     public slideUp = () => {
+        // A tap can close the sheet before the deferred open runs.
+        if (this.dismissed || this.closeRequested) {
+            return;
+        }
+
         this.snapTo(1);
     };
 
     public slideDown = () => {
+        this.closeRequested = true;
         this.snapTo(0);
     };
 
@@ -242,6 +248,10 @@ class ActionPanel extends Component<Props, State> {
             return;
         }
 
+        if (index === 0) {
+            this.closeRequested = true;
+        }
+
         this.currentIndex = index;
 
         Animated.spring(this.translateY, {
@@ -255,11 +265,10 @@ class ActionPanel extends Component<Props, State> {
                 return;
             }
 
-            if (this.isOpening && index > 0) {
-                this.isOpening = false;
-            }
-
-            if (index === 0 && !this.isOpening) {
+            // The sheet starts off-screen, and that position is not a close animation.
+            // A close that interrupts the open spring is an animation to index 0 and must
+            // still remove the overlay. Otherwise the invisible backdrop keeps eating taps.
+            if (index === 0) {
                 this.notifyDismissed();
             }
         });

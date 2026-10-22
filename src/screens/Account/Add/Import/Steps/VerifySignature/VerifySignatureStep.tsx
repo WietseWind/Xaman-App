@@ -48,7 +48,7 @@ class VerifySignatureStep extends Component<Props, State> {
     }
 
     componentDidMount(): void {
-        RNTangemSdk.startSession({}).catch(() => {
+        RNTangemSdk.startSession({ attestationMode: 'offline' }).catch(() => {
             // ignore
         });
     }

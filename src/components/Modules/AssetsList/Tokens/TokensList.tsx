@@ -1,11 +1,12 @@
 import { toLower, map, filter, sortBy, isEqual, has, findIndex } from 'lodash';
 import React, { Component } from 'react';
-import { InteractionManager, View, ViewStyle } from 'react-native';
+import { InteractionManager, Platform, View, ViewStyle } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { Navigator } from '@common/helpers/navigator';
 
 import { CoreRepository, CurrencyRepository, TrustLineRepository } from '@store/repositories';
@@ -351,9 +352,9 @@ class TokensList extends Component<Props, State> {
                             onClose: () => {
                                 AccountService.updateAccountInfo(account.address);
                             },
-                            containerStyle: {
-                                marginTop: 0,
-                            },
+                            // iOS page sheet is already below the status bar. Android full-screen
+                            // xApps draw behind it, so keep the header's status-bar margin.
+                            containerStyle: Platform.OS === 'android' ? undefined : { marginTop: 0 },
                             noSwitching: true,
                             altHeader: {
                                 left: {
@@ -677,6 +678,7 @@ class TokensList extends Component<Props, State> {
                     lineWorthLoading={this.updateLineWorthLoading}
                     accWorthEnabled={accWorthEnabled}
                     firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
+                    endInset={glassTabScrollPadding}
                     dataSource={[
                         ...(reorderEnabled ? [] : [{
                             id: 'native',

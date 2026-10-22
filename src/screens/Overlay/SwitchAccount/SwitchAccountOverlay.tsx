@@ -286,6 +286,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
                     )}
                 </View>
                 <ScrollView
+                    testID="switch-account-scroll"
                     style={AppStyles.flex1}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom }}

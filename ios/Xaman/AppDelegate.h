@@ -3,4 +3,8 @@
 
 
 @interface AppDelegate : RCTAppDelegate
+
+- (void)startReactNativeForScene:(UIWindowScene *)windowScene
+               connectionOptions:(UISceneConnectionOptions *)connectionOptions API_AVAILABLE(ios(13.0));
+
 @end

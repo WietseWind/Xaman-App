@@ -26,6 +26,7 @@ import { TemplateProps } from '../types';
 import { HookExplainerOrigin } from '@components/Modules/HooksExplainer/HooksExplainer';
 import { Toast } from '@common/helpers/interface';
 import { AppStyles } from '@theme/index';
+import { canAdjustNativeAmount, nativeSpendFromTransaction, xrpLeavingDrops } from './paymentSpend';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -93,16 +94,13 @@ class GlobalTemplate extends Component<Props, State> {
         const { setServiceFee, transaction, source } = this.props;
 
         if (transaction && source) {
-            let isXrpPayment = false;
-            try {
-                isXrpPayment = transaction &&
-                    transaction.TransactionType === 'Payment' &&
-                    (transaction as any)?.Amount?.currency === NetworkService.getNativeAsset();
-            } catch (e) {
-                // console.log(e)
-            }
+            // A plain XRP send can be shrunk to fit the fee. Anything else keeps Amount
+            // and the service fee is capped to the XRP that is actually free, same as an IOU payment.
+            const plainNativePayment = canAdjustNativeAmount(
+                nativeSpendFromTransaction(transaction, NetworkService.getNativeAsset()),
+            );
 
-            if (!isXrpPayment) {
+            if (!plainNativePayment) {
                 const sfee = Number(fee?.value || 0) / 1_000_000;
                 const avail = CalculateAvailableBalance(source!);
                 const spendable = (Math.floor(Number(avail) * 1_000_000) - 100) / 1_000_000; 
@@ -419,26 +417,9 @@ class GlobalTemplate extends Component<Props, State> {
             return null;
         }
         
-        const sendDrops = Math.ceil(Number(
-            typeof transaction?.JsonForSigning?.Amount === 'string'
-                ? (transaction as any)?.Amount?.value
-                    ? Number(String((transaction as any)?.Amount?.value || '0')) * 1_000_000
-                    : transaction?.JsonForSigning?.Amount
-                : 0,
-        ));
-
-        const amountField = 'Amount';
-        // if (transaction.TransactionType === 'OfferCreate') {
-        //     amountField = 'TakerGets';
-        // }
-        let isXrpPayment = false;
-        try {
-            isXrpPayment = transaction &&
-                transaction.TransactionType === 'Payment' &&
-                (transaction as any)?.Amount?.currency === NetworkService.getNativeAsset();
-        } catch (e) {
-            // console.log(e)
-        }
+        const spend = nativeSpendFromTransaction(transaction, NetworkService.getNativeAsset());
+        const sendDrops = xrpLeavingDrops(spend);
+        const plainNativePayment = canAdjustNativeAmount(spend);
 
         return (
             <>
@@ -462,24 +443,16 @@ class GlobalTemplate extends Component<Props, State> {
                         spendableBalanceDrops={Math.floor(Number(CalculateAvailableBalance(source!)) * 1_000_000)}
                         serviceFeeDrops={Number(serviceFee || 0)}
                         txFeeDrops={Number(transaction?.JsonForSigning?.Fee || 0)}
-                        sendAmountDrops={Math.ceil(Number(
-                            typeof (transaction?.JsonForSigning?.[amountField]) === 'string'
-                                ? (transaction as any)?.[amountField]?.value
-                                    ? Number(String((transaction as any)?.[amountField]?.value || '0')) * 1_000_000
-                                    : transaction?.JsonForSigning?.[amountField]
-                                : 0,
-                        ))}
+                        sendAmountDrops={sendDrops}
                         onTxMaySend={this.canSendFee}
                         updateSendingAmountDrops={
-                            isXrpPayment
-                                ? (drops) => { 
-                                    if (isXrpPayment) {
-                                        (transaction as any).Amount = {
-                                            ...(transaction as any).Amount,
-                                            value: String(drops / 1_000_000),
-                                        };
-                                        setTransaction(transaction, true);
-                                    }
+                            plainNativePayment
+                                ? (drops) => {
+                                    (transaction as any).Amount = {
+                                        ...(transaction as any).Amount,
+                                        value: String(drops / 1_000_000),
+                                    };
+                                    setTransaction(transaction, true);
                                 }
                                 : undefined
                         }

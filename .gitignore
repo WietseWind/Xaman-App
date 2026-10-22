@@ -2,6 +2,10 @@
 #
 .DS_Store
 
+# Pull-request screenshots. Keep them on the fix branch so the writeup links work.
+# Do not merge this folder into a release branch or into main.
+repro/
+
 # Xcode
 #
 build/
