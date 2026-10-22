@@ -3,9 +3,9 @@
  */
 
 import React, { Component } from 'react';
-import { SafeAreaView, View, Text, ScrollView } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, EventSubscription } from 'react-native';
 
-import RNTangemSdk from 'tangem-sdk-react-native';
+import RNTangemSdk, { EventCallback } from 'tangem-sdk-react-native';
 
 import { Button, RadioButton, Footer } from '@components/General';
 
@@ -23,6 +23,7 @@ export interface Props {}
 
 export interface State {
     nfcSupported: boolean;
+    nfcEnabled: boolean;
 }
 
 /* Component ==================================================================== */
@@ -30,27 +31,35 @@ class SecretTypeStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
 
+    private nfcChangeListener?: EventSubscription;
+
     constructor(props: Props) {
         super(props);
 
         this.state = {
             nfcSupported: false,
+            nfcEnabled: false,
         };
     }
 
     componentDidMount() {
+        this.nfcChangeListener = RNTangemSdk.addListener('NFCStateChange', this.onNFCStateChange);
         RNTangemSdk.getNFCStatus()
-            .then(({ support }) => {
-                const { nfcSupported } = this.state;
-                if (nfcSupported === support) {
-                    return;
-                }
-                this.setState({ nfcSupported: support });
+            .then(({ support, enabled }) => {
+                this.setState({ nfcSupported: support, nfcEnabled: enabled });
             })
             .catch(() => {
                 // Tangem is unavailable on this device.
             });
     }
+
+    componentWillUnmount() {
+        this.nfcChangeListener?.remove();
+    }
+
+    onNFCStateChange = ({ enabled }: EventCallback) => {
+        this.setState({ nfcEnabled: enabled });
+    };
 
     onRadioButtonPress = (type: SecretTypes) => {
         const { setSecretType } = this.context;
@@ -80,7 +89,7 @@ class SecretTypeStep extends Component<Props, State> {
     };
     render() {
         const { goBack, secretType, upgradeAccount } = this.context;
-        const { nfcSupported } = this.state;
+        const { nfcSupported, nfcEnabled } = this.state;
 
         return (
             <SafeAreaView testID="account-import-secret-type-view" style={AppStyles.contentContainer}>
@@ -118,7 +127,7 @@ class SecretTypeStep extends Component<Props, State> {
                         description={Localize.t('account.mnemonicDesc')}
                         checked={secretType === SecretTypes.Mnemonic}
                     />
-                    {!!upgradeAccount && nfcSupported && (
+                    {!!upgradeAccount && nfcSupported && nfcEnabled && (
                         <RadioButton
                             testID="tangem-radio-button"
                             onPress={this.onRadioButtonPress}
