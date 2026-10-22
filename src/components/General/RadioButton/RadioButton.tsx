@@ -5,9 +5,10 @@
  *
  */
 import React, { PureComponent } from 'react';
-import { View, Text, ViewStyle } from 'react-native';
+import { View, Text, ViewStyle, ImageStyle, StyleProp } from 'react-native';
 
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
+import { Icon } from '@components/General/Icon';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
@@ -21,6 +22,8 @@ interface Props {
     value: any;
     labelSmall?: string;
     description?: string;
+    icon?: React.ComponentProps<typeof Icon>['name'];
+    iconStyle?: StyleProp<ImageStyle>;
     disabled?: boolean;
     lessVerticalPadding?: boolean;
     testID?: string;
@@ -44,6 +47,8 @@ class RadioButton extends PureComponent<Props> {
             danger,
             labelSmall,
             description,
+            icon,
+            iconStyle,
             disabled,
             testID,
             style,
@@ -76,16 +81,19 @@ class RadioButton extends PureComponent<Props> {
                     </View>
                 </View>
                 <View style={AppStyles.flex6}>
-                    <Text
-                        style={[
-                            AppStyles.p,
-                            AppStyles.strong,
-                            checked ? styles.textColorSelected : styles.textColor,
-                            checked && danger && AppStyles.colorRed,
-                    ]}
-                    >
-                        {label}
-                    </Text>
+                    <View style={[AppStyles.row, AppStyles.centerAligned]}>
+                        {!!icon && <Icon name={icon} size={22} style={[styles.labelIcon, iconStyle]} />}
+                        <Text
+                            style={[
+                                AppStyles.p,
+                                AppStyles.strong,
+                                checked ? styles.textColorSelected : styles.textColor,
+                                checked && danger && AppStyles.colorRed,
+                            ]}
+                        >
+                            {label}
+                        </Text>
+                    </View>
                     {labelSmall && (
                         <Text style={[styles.labelSmall, checked ? styles.textColorSelected : styles.textColor]}>
                             {labelSmall}

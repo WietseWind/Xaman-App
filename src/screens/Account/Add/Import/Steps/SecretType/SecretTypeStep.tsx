@@ -3,7 +3,9 @@
  */
 
 import React, { Component } from 'react';
-import { SafeAreaView, View, Text } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView } from 'react-native';
+
+import RNTangemSdk from 'tangem-sdk-react-native';
 
 import { Button, RadioButton, Footer } from '@components/General';
 
@@ -19,12 +21,36 @@ import { SecretTypes } from '../../types';
 /* types ==================================================================== */
 export interface Props {}
 
-export interface State {}
+export interface State {
+    nfcSupported: boolean;
+}
 
 /* Component ==================================================================== */
 class SecretTypeStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
+
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            nfcSupported: false,
+        };
+    }
+
+    componentDidMount() {
+        RNTangemSdk.getNFCStatus()
+            .then(({ support }) => {
+                const { nfcSupported } = this.state;
+                if (nfcSupported === support) {
+                    return;
+                }
+                this.setState({ nfcSupported: support });
+            })
+            .catch(() => {
+                // Tangem is unavailable on this device.
+            });
+    }
 
     onRadioButtonPress = (type: SecretTypes) => {
         const { setSecretType } = this.context;
@@ -33,7 +59,7 @@ class SecretTypeStep extends Component<Props, State> {
     };
 
     goNext = () => {
-        const { goNext, secretType } = this.context;
+        const { goNext, secretType, beginTangemUpgrade } = this.context;
 
         switch (secretType) {
             case SecretTypes.SecretNumbers:
@@ -45,12 +71,16 @@ class SecretTypeStep extends Component<Props, State> {
             case SecretTypes.Mnemonic:
                 goNext('MnemonicAlert');
                 break;
+            case SecretTypes.Tangem:
+                beginTangemUpgrade();
+                break;
             default:
                 break;
         }
     };
     render() {
-        const { goBack, secretType } = this.context;
+        const { goBack, secretType, upgradeAccount } = this.context;
+        const { nfcSupported } = this.state;
 
         return (
             <SafeAreaView testID="account-import-secret-type-view" style={AppStyles.contentContainer}>
@@ -58,7 +88,10 @@ class SecretTypeStep extends Component<Props, State> {
                     {Localize.t('account.pleaseSelectAccountSecretType')}
                 </Text>
 
-                <View style={[AppStyles.contentContainer, AppStyles.centerContent, AppStyles.paddingSml]}>
+                <ScrollView
+                    style={AppStyles.flex1}
+                    contentContainerStyle={[AppStyles.centerContent, AppStyles.paddingSml]}
+                >
                     <RadioButton
                         testID="secret-numbers-radio-button"
                         onPress={this.onRadioButtonPress}
@@ -85,7 +118,19 @@ class SecretTypeStep extends Component<Props, State> {
                         description={Localize.t('account.mnemonicDesc')}
                         checked={secretType === SecretTypes.Mnemonic}
                     />
-                </View>
+                    {!!upgradeAccount && nfcSupported && (
+                        <RadioButton
+                            testID="tangem-radio-button"
+                            onPress={this.onRadioButtonPress}
+                            value={SecretTypes.Tangem}
+                            label={Localize.t('account.tangemCard')}
+                            description={Localize.t('account.tangemCardBelongsToAccount')}
+                            icon="IconTangem"
+                            iconStyle={AppStyles.imgColorContrast}
+                            checked={secretType === SecretTypes.Tangem}
+                        />
+                    )}
+                </ScrollView>
 
                 <Footer style={[AppStyles.row, AppStyles.centerAligned]}>
                     <View style={[AppStyles.flex3, AppStyles.paddingRightSml]}>
