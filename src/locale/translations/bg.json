@@ -62,6 +62,8 @@
     "request": "Заявка",
     "receiveOnAccount": "Получи на акаунт",
     "details": "Детайли",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Получател",
     "destination": "Дестинация",
     "selectDestination": "Изберете дестинация",

@@ -62,6 +62,8 @@
     "request": "Primește",
     "receiveOnAccount": "Primește pe cont",
     "details": "Detalii",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Destinatar",
     "destination": "Destinaţie",
     "selectDestination": "Selectati destinatia",

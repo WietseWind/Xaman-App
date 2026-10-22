@@ -62,6 +62,8 @@
     "request": "વિનંતી",
     "receiveOnAccount": "એકાઉન્ટ પર પ્રાપ્ત કરો",
     "details": "વિગતો",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "પ્રાપ્તકર્તા",
     "destination": "લક્ષ્યસ્થાન",
     "selectDestination": "લક્ષ્યસ્થાન પસંદ કરો",

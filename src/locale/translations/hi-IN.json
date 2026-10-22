@@ -62,6 +62,8 @@
     "request": "निवेदन",
     "receiveOnAccount": "खाते पर प्राप्त करें",
     "details": "विवरण",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "प्राप्तकर्ता",
     "destination": "गंतव्य",
     "selectDestination": "गंतव्य चुनें",

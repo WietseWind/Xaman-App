@@ -62,6 +62,8 @@
     "request": "ವಿನಂತಿ",
     "receiveOnAccount": "ಖಾತೆಯಲ್ಲಿ ಸ್ವೀಕರಿಸಿ",
     "details": "ವಿವರಗಳು",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "ಸ್ವೀಕರಿಸುವವರು",
     "destination": "ಗಮ್ಯಸ್ಥಾನ",
     "selectDestination": "ಗಮ್ಯಸ್ಥಾನವನ್ನು ಆಯ್ಕೆಮಾಡಿ",

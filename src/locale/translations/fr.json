@@ -62,6 +62,8 @@
     "request": "Demander",
     "receiveOnAccount": "Recevoir sur compte",
     "details": "Détails",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Bénéficiaire",
     "destination": "Destination",
     "selectDestination": "Sélectionner la destination",

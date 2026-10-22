@@ -62,6 +62,8 @@
     "request": "Zahtevaj",
     "receiveOnAccount": "Prejmi na račun",
     "details": "Podrobnosti",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Prejemnik",
     "destination": "Cilj",
     "selectDestination": "Izberite cilj",

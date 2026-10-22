@@ -62,6 +62,8 @@
     "request": "عرض ڪيو",
     "receiveOnAccount": "اڪائونٽ تي حاصل ڪريو",
     "details": "تفصيلات",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "وصول ڪندڙ",
     "destination": "منزلن",
     "selectDestination": "منزل چونڊيو",

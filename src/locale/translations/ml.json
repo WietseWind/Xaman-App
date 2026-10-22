@@ -62,6 +62,8 @@
     "request": "അഭ്യർത്ഥിക്കുക",
     "receiveOnAccount": "അക്കൗണ്ടിൽ സ്വീകരിക്കുക",
     "details": "വിശദാംശങ്ങൾ",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "സ്വീകർത്താവ്",
     "destination": "ലക്ഷ്യസ്ഥാനം",
     "selectDestination": "ലക്ഷ്യസ്ഥാനം തിരഞ്ഞെടുക്കുക",

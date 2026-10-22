@@ -31,6 +31,13 @@ const IsDebugBuild = (): boolean => {
 };
 
 /**
+ * iOS TestFlight builds ship a sandbox App Store receipt. Android is never TestFlight.
+ */
+const IsTestFlightBuild = (): boolean => {
+    return AppUtilsModule?.isTestFlight === true;
+};
+
+/**
  * Android: Check if flagSecure is set on current activity
  * @returns Promise<boolean>
  */
@@ -72,6 +79,7 @@ export {
     GetAppBuildNumber,
     GetAppReadableVersion,
     IsDebugBuild,
+    IsTestFlightBuild,
     IsFlagSecure,
     SetFlagSecure,
     RestartBundle,

@@ -62,6 +62,8 @@
     "request": "Получить",
     "receiveOnAccount": "Получить на аккаунт",
     "details": "Детали",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "Получатель",
     "destination": "Назначение",
     "selectDestination": "Выберите назначение",

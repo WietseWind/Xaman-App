@@ -62,6 +62,8 @@
     "request": "கோரிக்கை",
     "receiveOnAccount": "கணக்கில் பெறவும்",
     "details": "விவரங்கள்",
+    "unexpectedBackendResponse": "Xaman received an unexpected response from the backend.",
+    "copiedToClipboard": "Copied to clipboard",
     "recipient": "பெறுநர்",
     "destination": "இலக்கு",
     "selectDestination": "இலக்கைத் தேர்ந்தெடுக்கவும்",
