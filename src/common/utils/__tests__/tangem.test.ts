@@ -1,10 +1,25 @@
 /* eslint-disable max-len */
 /* eslint-disable quotes */
-import { GetWalletPublicKey, GetWalletDerivedPublicKey, GetPreferCurve, GetSignOptions } from '../tangem';
+import {
+    GetWalletPublicKey,
+    GetWalletDerivedPublicKey,
+    GetPreferCurve,
+    GetSignOptions,
+    TangemCardMatchesAccount,
+} from '../tangem';
 
 import cards from './fixtures/tangem.cards.json';
 
 describe('Utils.Tangem', () => {
+    describe('TangemCardMatchesAccount', () => {
+        it('matches only the same r-address', () => {
+            expect(TangemCardMatchesAccount('rAddress', 'rAddress')).toBe(true);
+            expect(TangemCardMatchesAccount('rAddress', 'rOther')).toBe(false);
+            expect(TangemCardMatchesAccount(undefined, 'rAddress')).toBe(false);
+            expect(TangemCardMatchesAccount('rAddress', undefined)).toBe(false);
+        });
+    });
+
     describe('GetWalletPublicKey', () => {
         it('should return right wallet public key', () => {
             // @ts-ignore
