@@ -516,17 +516,17 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             this.VerifyResult = { success: verifyResult.success };
 
             // console.log('this.VerifyResult.success', this.VerifyResult.success)
-            if (this.VerifyResult.success) {
-                if (this.ServiceFeeTx && this.ServiceFeeTx.signedTransaction) {
-                    const sendFee = await this.serviceFeeShouldSubmit().catch(() => false);
-                    if (sendFee) {
-                        LedgerService.submitTransaction(
-                            this.ServiceFeeTx.signedTransaction,
-                            this.ServiceFeeTx.id,
-                            false,
-                        );
-                    }
-                }
+            if (this.VerifyResult.success && this.ServiceFeeTx?.signedTransaction) {
+                const signed = this.ServiceFeeTx.signedTransaction;
+                const feeId = this.ServiceFeeTx.id;
+                // The result screen must not wait on account_tx for a Batch fee.
+                this.serviceFeeShouldSubmit()
+                    .then((sendFee) => {
+                        if (sendFee) {
+                            LedgerService.submitTransaction(signed, feeId, false);
+                        }
+                    })
+                    .catch(() => undefined);
             }
 
             return verifyResult;

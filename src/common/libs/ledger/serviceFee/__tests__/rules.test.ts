@@ -132,6 +132,36 @@ describe('service fee submit rules', () => {
         expect(serviceFeeLastLedgerSequence(batch)).toBe(107859777);
     });
 
+    it('leaves a ticket transaction without a fee sequence so the account sequence is read', () => {
+        expect(
+            serviceFeeSequence({
+                TransactionType: 'Payment',
+                Account: ACCOUNT,
+                Sequence: 0,
+                TicketSequence: 9,
+            }),
+        ).toBeUndefined();
+
+        expect(
+            serviceFeeSequence({
+                TransactionType: 'Batch',
+                Account: ACCOUNT,
+                Sequence: 0,
+                TicketSequence: 9,
+                RawTransactions: [
+                    {
+                        RawTransaction: {
+                            Account: ACCOUNT,
+                            Sequence: 0,
+                            TicketSequence: 9,
+                            TransactionType: 'Payment',
+                        },
+                    },
+                ],
+            }),
+        ).toBeUndefined();
+    });
+
     it('uses Batch Sequence + 1 when every inner transaction is on a ticket', () => {
         expect(
             serviceFeeSequence({
