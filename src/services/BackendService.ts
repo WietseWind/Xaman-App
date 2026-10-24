@@ -575,6 +575,19 @@ class BackendService {
         feeHooks: number;
         feePercentage: number;
         suggested: string;
+        submitCondition?: {
+            minMovedShare?: number;
+            field?: string;
+            amount?: string | { currency: string; issuer: string; value: string };
+            allRequiredInnerSucceeded?: boolean;
+            requiredInner?: number[];
+            inner?: Array<{
+                index: number;
+                minMovedShare: number;
+                field: string;
+                amount: string | { currency: string; issuer: string; value: string };
+            }>;
+        };
     }> => {
         const body = {
             txJson,

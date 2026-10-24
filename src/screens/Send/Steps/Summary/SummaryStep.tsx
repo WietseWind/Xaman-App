@@ -376,15 +376,12 @@ class SummaryStep extends Component<Props, State> {
             isLoading,
             selectedFee,
             setFee,
+            onServiceFeeQuote,
             getPaymentJsonForFee,
             credentials,
             serviceFeeAmount,
         } = this.context;
-        const {
-            destinationTagInputVisible,
-            canScroll,
-            canSendFee,
-        } = this.state;
+        const { destinationTagInputVisible, canScroll, canSendFee } = this.state;
 
         // destination can be cleared by a late async callback of the recipient step
         if (!destination) {
@@ -440,49 +437,45 @@ class SummaryStep extends Component<Props, State> {
 
                         <Spacer size={10} />
 
-                        {
-                            String(destination?.tag || '') === '' && (
-                                <View style={[ styles.rowTitle ]}>
+                        {String(destination?.tag || '') === '' && (
+                            <View style={[styles.rowTitle]}>
+                                <Button
+                                    activeOpacity={0.9}
+                                    roundedSmallBlock
+                                    style={[styles.destinationTagBtn]}
+                                    onPress={this.showEnterDestinationTag}
+                                    icon="IconEdit"
+                                    iconSize={15}
+                                    label={Localize.t('send.addDestinationTag')}
+                                />
+                            </View>
+                        )}
+                        {String(destination?.tag || '') !== '' && (
+                            <View>
+                                <Spacer size={10} />
+                                <View style={AppStyles.row}>
+                                    <View style={AppStyles.flex1}>
+                                        <View style={styles.rowTitle}>
+                                            <Text style={[AppStyles.monoSubText, AppStyles.colorGrey]}>
+                                                {typeof destination!.tag !== 'undefined' &&
+                                                    `${Localize.t('global.destinationTag')}: `}
+                                                <Text style={AppStyles.colorBlue}>
+                                                    {destination!.tag || Localize.t('send.noDestinationTag')}
+                                                </Text>
+                                            </Text>
+                                        </View>
+                                    </View>
                                     <Button
-                                        activeOpacity={0.9}
-                                        roundedSmallBlock
-                                        style={[styles.destinationTagBtn]}
                                         onPress={this.showEnterDestinationTag}
+                                        style={styles.editButton}
+                                        roundedMini
+                                        iconSize={13}
+                                        light
                                         icon="IconEdit"
-                                        iconSize={15}
-                                        label={Localize.t('send.addDestinationTag')}
                                     />
                                 </View>
-                            )
-                        }
-                        {
-                            String(destination?.tag || '') !== '' && (
-                                <View>
-                                    <Spacer size={10} />
-                                    <View style={AppStyles.row}>
-                                        <View style={AppStyles.flex1}>
-                                            <View style={styles.rowTitle}>
-                                                <Text style={[AppStyles.monoSubText, AppStyles.colorGrey]}>
-                                                    {typeof destination!.tag !== 'undefined' &&
-                                                        `${Localize.t('global.destinationTag')}: `}
-                                                    <Text style={AppStyles.colorBlue}>
-                                                        {destination!.tag || Localize.t('send.noDestinationTag')}
-                                                    </Text>
-                                                </Text>
-                                            </View>
-                                        </View>
-                                        <Button
-                                            onPress={this.showEnterDestinationTag}
-                                            style={styles.editButton}
-                                            roundedMini
-                                            iconSize={13}
-                                            light
-                                            icon="IconEdit"
-                                        />
-                                    </View>
-                                </View>
-                            )
-                        }
+                            </View>
+                        )}
                     </View>
 
                     {/* Currency */}
@@ -513,20 +506,15 @@ class SummaryStep extends Component<Props, State> {
                     {/* Credentials */}
                     {credentials && credentials.length > 0 && (
                         <View style={styles.rowItem}>
-                            <View style={[
-                                styles.rowTitle,
-                                AppStyles.marginBottomSml,
-                            ]}>
+                            <View style={[styles.rowTitle, AppStyles.marginBottomSml]}>
                                 <Text style={[AppStyles.subtext, AppStyles.strong, { color: AppColors.grey }]}>
                                     {Localize.t('global.credential')}
                                 </Text>
                             </View>
 
-                            <Text style={[
-                                AppStyles.subtext,
-                                AppStyles.colorGreen,
-                                AppStyles.marginTopNegativeSml,
-                            ]}>{Localize.t('txCredentialSet.paymentBeingUsed')}</Text>
+                            <Text style={[AppStyles.subtext, AppStyles.colorGreen, AppStyles.marginTopNegativeSml]}>
+                                {Localize.t('txCredentialSet.paymentBeingUsed')}
+                            </Text>
                         </View>
                     )}
 
@@ -573,32 +561,25 @@ class SummaryStep extends Component<Props, State> {
                         <FeePicker
                             txJson={{
                                 ...getPaymentJsonForFee(),
-                                ...(
-                                    NetworkService.getNativeAsset() === 'XRP'
-                                        ? { Memos: undefined } // If XRP: ignore memo to prevent bouncing
-                                        : {} // on Xahau: needs Memo as it adds to fee
-                                ),
+                                ...(NetworkService.getNativeAsset() === 'XRP'
+                                    ? { Memos: undefined } // If XRP: ignore memo to prevent bouncing
+                                    : {}), // on Xahau: needs Memo as it adds to fee
                             }}
                             source={source}
                             containerStyle={styles.feePickerContainer}
                             textStyle={styles.feeText}
                             onSelect={setFee}
+                            onQuote={onServiceFeeQuote}
                         />
                     </View>
 
-                    <Footer style={[
-                        styles.swipeFooterSize,
-                    ]} safeArea>
-                        <View style={[
-                            AppStyles.alignSelfStretch,
-                        ]}>
+                    <Footer style={[styles.swipeFooterSize]} safeArea>
+                        <View style={[AppStyles.alignSelfStretch]}>
                             <ServiceFeeSpendable
-                                spendableBalanceDrops={
-                                    Math.floor(Number(CalculateAvailableBalance(source!)) * 1_000_000)
-                                }
-                                style={[
-                                    styles.rowItem,
-                                ]}
+                                spendableBalanceDrops={Math.floor(
+                                    Number(CalculateAvailableBalance(source!)) * 1_000_000,
+                                )}
+                                style={[styles.rowItem]}
                                 serviceFeeDrops={Number(serviceFeeAmount?.value || 0)}
                                 txFeeDrops={Number(selectedFee?.value || 0)}
                                 sendAmountDrops={
