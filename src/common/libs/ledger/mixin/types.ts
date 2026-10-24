@@ -9,6 +9,7 @@ import {
 } from '@common/libs/ledger/parser/types';
 import { HookExecution } from '@common/libs/ledger/types/common';
 import { SubmitResultType, VerifyResultType, SignedObjectType } from '@common/libs/ledger/types';
+import { ServiceFeeSubmitCondition } from '@common/libs/ledger/serviceFee/rules';
 
 export type BalanceChanges = {
     [OperationActions.INC]: BalanceChangeType[];
@@ -44,6 +45,7 @@ export interface SignMixinType {
     SignerAccount?: string;
     ServiceFee?: number;
     ServiceFeeTx?: SignedObjectType;
+    ServiceFeeSubmitCondition?: ServiceFeeSubmitCondition;
 
     DefaultLastLedgerOffset: number;
 
@@ -61,6 +63,7 @@ export interface SignMixinType {
     batchAccountForSource(source: string, payloadAccount?: string): string | undefined;
     setServiceFee(serviceFee: number): void;
     setServiceFeeTx(serviceFeeTx: SignedObjectType): void;
+    setServiceFeeSubmitCondition(condition?: ServiceFeeSubmitCondition): void;
     prepare(account: AccountModel): Promise<void>;
     populateFields(options?: { lastLedgerOffset?: number }): void;
     sign(account: AccountModel, multiSign?: boolean): Promise<string>;

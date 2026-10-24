@@ -20,6 +20,14 @@ import { SignableTransaction } from '@common/libs/ledger/transactions/types';
 
 import { Constructor, SignMethodType, SignMixinType } from './types';
 import { Batch } from '../transactions';
+import { loadBatchInnerOutcomes } from '../serviceFee/batchOutcomes';
+import {
+    changesForAccount,
+    isBatchSubmitCondition,
+    ServiceFeeSubmitCondition,
+    shouldSubmitBatchFee,
+    shouldSubmitSingleFee,
+} from '../serviceFee/rules';
 
 /* Mixin ==================================================================== */
 export function SignMixin<TBase extends Constructor>(Base: TBase) {
@@ -31,6 +39,7 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
 
         public ServiceFee?: number;
         public ServiceFeeTx?: SignedObjectType;
+        public ServiceFeeSubmitCondition?: ServiceFeeSubmitCondition;
         public SignedBlob?: string;
         public SignerPubKey?: string;
         public SignMethod?: SignMethodType;
@@ -452,6 +461,30 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             this.ServiceFee = serviceFee;
         };
 
+        setServiceFeeSubmitCondition = (condition?: ServiceFeeSubmitCondition) => {
+            this.ServiceFeeSubmitCondition = condition;
+        };
+
+        serviceFeeShouldSubmit = async (): Promise<boolean> => {
+            const json = this.JsonForSigning;
+            const account = json?.Account;
+            const meta = this._meta as any;
+            const feeDrops = String((this._tx as any)?.Fee || json?.Fee || '0');
+            const condition = this.ServiceFeeSubmitCondition;
+
+            if (this.TransactionType === TransactionTypes.Batch && isBatchSubmitCondition(condition)) {
+                const inners = await loadBatchInnerOutcomes(json, this.hash || '', (this._tx as any)?.ledger_index);
+                return shouldSubmitBatchFee(condition, inners);
+            }
+
+            return shouldSubmitSingleFee({
+                result: meta?.TransactionResult,
+                changes: changesForAccount(meta, account),
+                feeDrops,
+                submitCondition: condition,
+            });
+        };
+
         /*
         Set Service FeeTx
         */
@@ -485,9 +518,14 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             // console.log('this.VerifyResult.success', this.VerifyResult.success)
             if (this.VerifyResult.success) {
                 if (this.ServiceFeeTx && this.ServiceFeeTx.signedTransaction) {
-                    // Submit the Fee transaction
-                    // console.log('Submit fee tx')
-                    LedgerService.submitTransaction(this.ServiceFeeTx.signedTransaction, this.ServiceFeeTx.id, false);
+                    const sendFee = await this.serviceFeeShouldSubmit().catch(() => false);
+                    if (sendFee) {
+                        LedgerService.submitTransaction(
+                            this.ServiceFeeTx.signedTransaction,
+                            this.ServiceFeeTx.id,
+                            false,
+                        );
+                    }
                 }
             }
 
