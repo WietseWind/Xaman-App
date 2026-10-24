@@ -12,8 +12,24 @@ const outcomeFromEntry = (entry: any, account: string): InnerOutcome => {
     };
 };
 
+const innerAccounts = (batch: any): string[] => {
+    const raw = Array.isArray(batch?.RawTransactions) ? batch.RawTransactions : [];
+    const accounts = new Set<string>();
+    for (const entry of raw) {
+        const account = (entry?.RawTransaction || entry)?.Account;
+        if (typeof account === 'string' && account) {
+            accounts.add(account);
+        }
+    }
+    if (accounts.size === 0 && typeof batch?.Account === 'string' && batch.Account) {
+        accounts.add(batch.Account);
+    }
+    return [...accounts];
+};
+
 /**
  * Inner results of a Batch, keyed by 1-based RawTransactions index.
+ * Each inner account is read on its own, including a BatchSigners account.
  * Missing entries did not run.
  */
 export const loadBatchInnerOutcomes = async (
@@ -22,38 +38,44 @@ export const loadBatchInnerOutcomes = async (
     ledgerIndex?: number,
 ): Promise<Map<number, InnerOutcome>> => {
     const outcomes = new Map<number, InnerOutcome>();
-    const account = batch?.Account;
-    if (!account || !batchHash) {
+    if (!batchHash) {
         return outcomes;
     }
 
-    const request: Record<string, unknown> = {
-        command: 'account_tx',
-        account,
-        limit: 200,
-        binary: false,
-    };
-    if (typeof ledgerIndex === 'number' && ledgerIndex > 0) {
-        request.ledger_index_min = ledgerIndex;
-        request.ledger_index_max = ledgerIndex;
-    }
+    for (const account of innerAccounts(batch)) {
+        const request: Record<string, unknown> = {
+            command: 'account_tx',
+            account,
+            limit: 200,
+            binary: false,
+        };
+        if (typeof ledgerIndex === 'number' && ledgerIndex > 0) {
+            request.ledger_index_min = ledgerIndex;
+            request.ledger_index_max = ledgerIndex;
+        }
 
-    const response = await NetworkService.send(request as any);
-    if (!response || 'error' in response) {
-        return outcomes;
-    }
-
-    const transactions = (response as { transactions?: any[] }).transactions || [];
-    for (const entry of transactions) {
-        if (parentBatchId(entry) !== batchHash) {
+        let response: any;
+        try {
+            response = await NetworkService.send(request as any);
+        } catch {
             continue;
         }
-        const applied = entry?.tx || entry?.tx_json;
-        const index = innerIndexForApplied(batch, applied);
-        if (!index || outcomes.has(index)) {
+        if (!response || response.error) {
             continue;
         }
-        outcomes.set(index, outcomeFromEntry(entry, account));
+
+        const transactions = response.transactions || [];
+        for (const entry of transactions) {
+            if (parentBatchId(entry) !== batchHash) {
+                continue;
+            }
+            const applied = entry?.tx || entry?.tx_json;
+            const index = innerIndexForApplied(batch, applied);
+            if (!index || outcomes.has(index)) {
+                continue;
+            }
+            outcomes.set(index, outcomeFromEntry(entry, applied?.Account || account));
+        }
     }
 
     return outcomes;

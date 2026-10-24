@@ -239,17 +239,20 @@ export const shouldSubmitBatchFee = (
 const innerBody = (entry: any): any => entry?.RawTransaction || entry;
 
 /**
+ * Next sequence after a real sequence. Sequence 0 means a ticket: the caller
+ * must read the account sequence instead of signing the fee at sequence 1.
+ */
+const ownSequence = (tx: any): number | undefined =>
+    typeof tx?.Sequence === 'number' && tx.Sequence > 0 ? tx.Sequence + 1 : undefined;
+
+/**
  * Sequence of the service-fee Payment.
- * Batch: one past the highest sequence the outer account consumes inside the batch.
- * Ticket-only inners leave the old Batch Sequence + 1.
+ * Batch: one past the highest sequence that account consumes in the outer
+ * transaction and its own inner transactions. Tickets are not counted.
  */
 export const serviceFeeSequence = (tx: any): number | undefined => {
-    if (!tx || typeof tx !== 'object') {
-        return undefined;
-    }
-
-    if (tx.TransactionType !== 'Batch') {
-        return typeof tx.Sequence === 'number' ? tx.Sequence + 1 : undefined;
+    if (tx?.TransactionType !== 'Batch') {
+        return ownSequence(tx);
     }
 
     let highest: number | undefined;
@@ -271,11 +274,7 @@ export const serviceFeeSequence = (tx: any): number | undefined => {
         }
     }
 
-    if (highest !== undefined) {
-        return highest + 1;
-    }
-
-    return typeof tx.Sequence === 'number' ? tx.Sequence + 1 : undefined;
+    return highest !== undefined ? highest + 1 : ownSequence(tx);
 };
 
 export const serviceFeeLastLedgerSequence = (tx: any): number | undefined => {
