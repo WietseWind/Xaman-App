@@ -122,7 +122,7 @@ class BatchTemplate extends Component<Props, State> {
                 setServiceFee: () => {},
             } as any;
 
-            return <View style={[
+            return <View key={hash} style={[
                 styles.transactionContainer,
                 !matchingSourceAccount && styles.transactionContainerThirdParty,
                 matchingSourceAccount && source.address !== matchingSourceAccount.address &&

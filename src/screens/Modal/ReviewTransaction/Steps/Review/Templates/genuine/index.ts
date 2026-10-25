@@ -41,6 +41,7 @@ import AMMDelete from './AMMDelete';
 import AMMDeposit from './AMMDeposit';
 import AMMVote from './AMMVote';
 import AMMWithdraw from './AMMWithdraw';
+import AMMClawback from './AMMClawback';
 import Remit from './Remit';
 import Clawback from './Clawback';
 import DIDSet from './DIDSet';
@@ -72,6 +73,7 @@ import LoanSet from './LoanSet';
 import LoanDelete from './LoanDelete';
 import LoanManage from './LoanManage';
 import LoanPay from './LoanPay';
+import LedgerStateFix from './LedgerStateFix';
 // eslint-disable-next-line import/no-cycle
 import Batch from './Batch';
 
@@ -118,6 +120,7 @@ export {
     AMMDeposit,
     AMMVote,
     AMMWithdraw,
+    AMMClawback,
     Remit,
     Clawback,
     DIDSet,
@@ -151,4 +154,5 @@ export {
     LoanPay,
     Batch,
     CronSet,
+    LedgerStateFix,
 };

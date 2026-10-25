@@ -9,6 +9,8 @@
 import NetworkService from '@services/NetworkService';
 import { binary, XrplDefinitions } from 'xrpl-accountlib';
 
+import { TransactionFactory } from '@common/libs/ledger/factory';
+
 import {
     ClaimReward,
     OfferCreate,
@@ -21,6 +23,8 @@ import {
     LoanBrokerCoverWithdraw,
     Payment,
     Batch,
+    AMMClawback,
+    LedgerStateFix,
 } from '..';
 
 jest.mock('@services/NetworkService');
@@ -75,6 +79,13 @@ const cases: [string, any, Record<string, any>, any][] = [
         { CredentialIDs: [Hash] },
         { LoanBrokerID: Hash, Amount: '1000000', Destination: Other },
     ],
+    [
+        'AMMClawback',
+        AMMClawback,
+        { Amount: { currency: 'USD', issuer: Account, value: '1' } },
+        { Holder: Other, Asset: { currency: 'USD', issuer: Account }, Asset2: { currency: 'XRP' } },
+    ],
+    ['LedgerStateFix', LedgerStateFix, { Owner: Other }, { LedgerFixType: 1 }],
 ];
 
 describe('JsonForSigning keeps the ledger fields of the models', () => {
@@ -150,6 +161,19 @@ describe('A ledger field the model does not declare is refused by name, never re
         expect(new LoanBrokerCoverWithdraw(tx).unsignableFields()).toEqual(['DestinationTag']);
     });
 
+    it('names nothing for a LedgerStateFix carrying the BookDirectory of a book exchange rate fix', () => {
+        const tx = {
+            TransactionType: 'LedgerStateFix',
+            Account,
+            Fee: '12',
+            Sequence: 1,
+            LedgerFixType: 2,
+            BookDirectory: Hash,
+        };
+        expect(new LedgerStateFix(tx).unsignableFields()).toEqual([]);
+        expect(new LedgerStateFix(tx).JsonForSigning).toEqual(tx);
+    });
+
     it('names nothing for definitions names that are never serialized (hash, index)', () => {
         const tx = { ...payment, hash: Hash, index: Hash };
         expect(new Payment(tx).unsignableFields()).toEqual([]);
@@ -188,6 +212,34 @@ describe('A ledger field the model does not declare is refused by name, never re
         it('names nothing when every inner transaction carries only its model fields', () => {
             const tx = batch([inner, { ...inner, Sequence: 3 }]);
             expect(new Batch(tx as any).unsignableFields()).toEqual([]);
+        });
+
+        describe('with an AMMClawback inner transaction', () => {
+            const ammClawback = {
+                TransactionType: 'AMMClawback',
+                Account,
+                Holder: Other,
+                Asset: { currency: 'USD', issuer: Account },
+                Asset2: { currency: 'XRP' },
+                Amount: { currency: 'USD', issuer: Account, value: '1' },
+                Fee: '0',
+                Sequence: 2,
+                SigningPubKey: '',
+                Flags: 0x40000000,
+            };
+
+            it('reads it with the AMMClawback model', () => {
+                expect(TransactionFactory.fromJson(ammClawback as any)).toBeInstanceOf(AMMClawback);
+            });
+
+            it('names nothing when it carries only its model fields', () => {
+                expect(new Batch(batch([ammClawback]) as any).unsignableFields()).toEqual([]);
+            });
+
+            it('names a ledger field its model does not declare', () => {
+                const tx = batch([{ ...ammClawback, Delegate: Other }]);
+                expect(new Batch(tx as any).unsignableFields()).toEqual(['RawTransactions[0].Delegate']);
+            });
         });
     });
 

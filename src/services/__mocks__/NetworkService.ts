@@ -20,6 +20,13 @@ class NetworkService {
         return 'XRP';
     }
 
+    public getNativeAssetIcons() {
+        return {
+            currency: this.network.nativeAsset.icon,
+            asset: this.network.nativeAsset.iconSquare,
+        };
+    }
+
     public getNetworkId() {
         return 0;
     }
