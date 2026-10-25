@@ -25,7 +25,8 @@ class BaseGenuineTransaction extends BaseTransaction {
     }
 
     /**
-     * Ledger fields this transaction carries that the model does not declare, so the review cannot show them.
+     * Serialized ledger fields this transaction carries that the model does not declare, so the review cannot
+     * show them.
      * Signing refuses these by name: a ledger field is never removed silently from what is signed.
      */
     unsignableFields(): string[] {
@@ -35,7 +36,7 @@ class BaseGenuineTransaction extends BaseTransaction {
         });
         const definitions = NetworkService.getNetworkDefinitions() as any;
         return Object.getOwnPropertyNames(this._tx).filter(
-            (key) => !declared.includes(key) && !!definitions?.field?.[key],
+            (key) => !declared.includes(key) && definitions?.field?.[key]?.isSerialized === true,
         );
     }
 
