@@ -6,6 +6,9 @@
  * (e.g. Xahau ClaimReward ClaimCurrency, OfferCreate OfferSequence). These fields are in the models now.
  */
 
+import NetworkService from '@services/NetworkService';
+import { binary, XrplDefinitions } from 'xrpl-accountlib';
+
 import {
     ClaimReward,
     OfferCreate,
@@ -16,6 +19,8 @@ import {
     VaultDelete,
     VaultWithdraw,
     LoanBrokerCoverWithdraw,
+    Payment,
+    Batch,
 } from '..';
 
 jest.mock('@services/NetworkService');
@@ -103,5 +108,92 @@ describe('JsonForSigning keeps the ledger fields of the models', () => {
         expect(new OfferCreate({ ...base, OfferSequence: 42 } as any).OfferSequence).toBe(42);
         expect(new OfferCreate(base as any).OfferSequence).toBeUndefined();
         expect(new OfferCreate({ ...base, Sequence: 5 } as any).OfferSequence).toBeUndefined();
+    });
+});
+
+describe('A ledger field the model does not declare is refused by name, never removed', () => {
+    const payment = { TransactionType: 'Payment', Account, Destination: Other, Amount: '1', Fee: '12', Sequence: 1 };
+
+    beforeEach(() => {
+        jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue(
+            new XrplDefinitions(binary.DEFAULT_DEFINITIONS),
+        );
+    });
+    afterEach(() => jest.restoreAllMocks());
+
+    for (const [type, Model, fields, base] of cases) {
+        it(`${type}: names nothing when it carries only the model's fields`, () => {
+            const tx = { TransactionType: type, Account, Fee: '12', Sequence: 1, ...base, ...fields };
+            expect(new Model(tx).unsignableFields()).toEqual([]);
+        });
+    }
+
+    it('names a ledger field the model does not declare for the type', () => {
+        expect(new Payment({ ...payment, TakerPays: '5' }).unsignableFields()).toEqual(['TakerPays']);
+    });
+
+    it('names Delegate, since signing on behalf of another account is not built', () => {
+        expect(new Payment({ ...payment, Delegate: Other }).unsignableFields()).toEqual(['Delegate']);
+    });
+
+    it('names LoanBrokerCoverWithdraw DestinationTag, which its review cannot show', () => {
+        const tx = {
+            TransactionType: 'LoanBrokerCoverWithdraw',
+            Account,
+            Fee: '12',
+            Sequence: 1,
+            LoanBrokerID: Hash,
+            Amount: '1000000',
+            Destination: Other,
+            DestinationTag: 99,
+        };
+        expect(new LoanBrokerCoverWithdraw(tx).unsignableFields()).toEqual(['DestinationTag']);
+    });
+
+    it('names nothing for definitions names that are never serialized (hash, index)', () => {
+        const tx = { ...payment, hash: Hash, index: Hash };
+        expect(new Payment(tx).unsignableFields()).toEqual([]);
+        expect(Object.keys(new Payment(tx).JsonForSigning)).not.toContain('index');
+    });
+
+    it('names only the serialized field when it travels with names that are never serialized', () => {
+        const tx = { ...payment, hash: Hash, index: Hash, Delegate: Other };
+        expect(new Payment(tx).unsignableFields()).toEqual(['Delegate']);
+    });
+
+    describe('Batch', () => {
+        const inner = { ...payment, Fee: '0', Sequence: 2, SigningPubKey: '', Flags: 0x40000000 };
+        const batch = (rawTransactions: Record<string, any>[]) => ({
+            TransactionType: 'Batch',
+            Account,
+            Fee: '40',
+            Sequence: 1,
+            Flags: 0x00010000,
+            RawTransactions: rawTransactions.map((RawTransaction) => ({ RawTransaction })),
+        });
+
+        it('names the ledger fields an inner transaction carries that its model does not declare', () => {
+            const tx = batch([{ ...inner, Delegate: Other, TakerPays: '5' }]);
+            expect(new Batch(tx as any).unsignableFields()).toEqual([
+                'RawTransactions[0].Delegate',
+                'RawTransactions[0].TakerPays',
+            ]);
+        });
+
+        it('names the outer fields first, then each inner field by the index of its transaction', () => {
+            const tx = { ...batch([inner, { ...inner, Sequence: 3, Delegate: Other }]), Delegate: Other };
+            expect(new Batch(tx as any).unsignableFields()).toEqual(['Delegate', 'RawTransactions[1].Delegate']);
+        });
+
+        it('names nothing when every inner transaction carries only its model fields', () => {
+            const tx = batch([inner, { ...inner, Sequence: 3 }]);
+            expect(new Batch(tx as any).unsignableFields()).toEqual([]);
+        });
+    });
+
+    it('still drops a key that is not a ledger field, and names nothing', () => {
+        const tx = { ...payment, NotALedgerField: 'x' };
+        expect(Object.keys(new Payment(tx).JsonForSigning)).not.toContain('NotALedgerField');
+        expect(new Payment(tx).unsignableFields()).toEqual([]);
     });
 });

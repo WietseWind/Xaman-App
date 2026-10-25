@@ -231,6 +231,16 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                         return;
                     }
 
+                    // a field Xaman cannot sign is refused, never removed: the signed transaction is the reviewed one
+                    const unsignable =
+                        typeof (this as any).unsignableFields === 'function' ? (this as any).unsignableFields() : [];
+                    if (unsignable.length) {
+                        reject(
+                            new Error(`Xaman cannot sign this transaction yet: it carries ${unsignable.join(', ')}.`),
+                        );
+                        return;
+                    }
+
                     // Batch with inner accounts that are not the signer (BatchV1_1): every BatchSigner
                     // signature binds the outer Account and Sequence, so these must come from the payload
                     if (this.TransactionType === TransactionTypes.Batch && !multiSign) {

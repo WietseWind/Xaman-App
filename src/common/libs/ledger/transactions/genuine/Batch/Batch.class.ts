@@ -59,6 +59,22 @@ class Batch extends BaseGenuineTransaction {
         // set transaction type
         this.TransactionType = Batch.Type;
     }
+
+    /**
+     * The outer unsignable fields, then each inner transaction's as RawTransactions[i].<field>,
+     * since the review shows each inner transaction through its own model.
+     */
+    unsignableFields(): string[] {
+        // loaded at call time: the factory imports this class
+        const { TransactionFactory } = require('@common/libs/ledger/factory');
+        const inner = (this.RawTransactions || []).flatMap((rawTransaction, index) => {
+            const transaction = TransactionFactory.fromJson({ ...rawTransaction });
+            const fields: string[] =
+                typeof transaction.unsignableFields === 'function' ? transaction.unsignableFields() : [];
+            return fields.map((field) => `RawTransactions[${index}].${field}`);
+        });
+        return [...super.unsignableFields(), ...inner];
+    }
 }
 
 /* Export ==================================================================== */
