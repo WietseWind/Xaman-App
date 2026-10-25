@@ -305,10 +305,8 @@ class ScanModal extends Component<Props, State> {
                 __DEV__ &&
                 CoreRepository.isDeveloperModeEnabled()
             ) {
-                const transaction =
-                    json.TransactionType === 'Invoke' ? new Invoke(json) : new AccountSet(json);
-
-                const payload = Payload.build(transaction.JsonForSigning);
+                // the template unaltered: sign() refuses a ledger field the review cannot show
+                const payload = Payload.build({ ...json });
 
                 if (templateNetwork) {
                     payload.meta.force_network = templateNetwork.key;

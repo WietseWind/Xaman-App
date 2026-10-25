@@ -18,7 +18,7 @@ import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
 
 import Localize from '@locale';
-import { AccountSet, Invoke, Payment, PaymentValidation } from '@common/libs/ledger/transactions';
+import { Payment, PaymentValidation } from '@common/libs/ledger/transactions';
 import NetworkService from './NetworkService';
 import { CoreRepository, NetworkRepository } from '@store/repositories';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
@@ -490,10 +490,8 @@ class LinkingService {
                 __DEV__ &&
                 CoreRepository.isDeveloperModeEnabled()
             ) {
-                const transaction =
-                    json.TransactionType === 'Invoke' ? new Invoke(json) : new AccountSet(json);
-
-                const payload = Payload.build(transaction.JsonForSigning);
+                // the template unaltered: sign() refuses a ledger field the review cannot show
+                const payload = Payload.build({ ...json });
 
                 if (templateNetwork) {
                     payload.meta.force_network = templateNetwork.key;
