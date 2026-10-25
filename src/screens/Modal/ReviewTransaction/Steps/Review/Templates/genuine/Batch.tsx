@@ -13,6 +13,7 @@ import { AppStyles } from '@theme';
 import styles from '../styles';
 
 import { TemplateProps } from '../types';
+import { FallbackTemplate } from '../fallback';
 // eslint-disable-next-line import/no-cycle
 import * as GenuineTransactionTemplates from '.';
 
@@ -22,6 +23,7 @@ import { BatchSigner } from '@common/libs/ledger/types/common';
 import { TransactionFactory } from '@common/libs/ledger/factory';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { MixingTypes } from '@common/libs/ledger/mixin/types';
+import { InstanceTypes } from '@common/libs/ledger/types/enums';
 import { utils } from 'xrpl-accountlib';
 import NetworkService from '@services/NetworkService';
 import { AccountModel } from '@store/models';
@@ -104,6 +106,12 @@ class BatchTemplate extends Component<Props, State> {
 
             const matchingSourceAccount = AccountRepository.findOne({ address: tx.Account });
 
+            // an inner transaction with no genuine template is reviewed as raw JSON, as ReviewStep does for a fallback
+            const GenuineTemplate =
+                tx.InstanceType === InstanceTypes.GenuineTransaction
+                    ? get(GenuineTransactionTemplates, String(tx.TransactionType))
+                    : undefined;
+
             const Props = {
                 source: matchingSourceAccount ||
                     { address: tx.Account } as AccountModel, // TODO: find local accounts first
@@ -178,18 +186,21 @@ class BatchTemplate extends Component<Props, State> {
                             containerStyle={[styles.contentBox, styles.addressContainer]}
                         />
 
-                        {
-                            React.createElement(get(GenuineTransactionTemplates, String(tx.TransactionType)), {
-                                ...Props,
-                                key: `InnerTxn-${hash}`,
-                            })
-                        }
-                        {
-                            React.createElement(get(GenuineTransactionTemplates, 'Global'), {
-                                ...Props,
-                                key: `InnerTxn-${hash}-GlobalTemplate`,
-                            })
-                        }
+                        {GenuineTemplate
+                            ? [
+                                  React.createElement(GenuineTemplate, {
+                                      ...Props,
+                                      key: `InnerTxn-${hash}`,
+                                  }),
+                                  React.createElement(get(GenuineTransactionTemplates, 'Global'), {
+                                      ...Props,
+                                      key: `InnerTxn-${hash}-GlobalTemplate`,
+                                  }),
+                              ]
+                            : React.createElement(FallbackTemplate, {
+                                  ...Props,
+                                  key: `InnerTxn-${hash}-FallbackTemplate`,
+                              })}
                     </View>
                 </View>
             </View>;
