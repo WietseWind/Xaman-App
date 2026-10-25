@@ -36,7 +36,9 @@ class FallbackTemplate extends Component<Props, State> {
 
         this.state = {
             transactionJsonData: undefined,
-            showFeePicker: typeof props.transaction?.Fee === 'undefined' && !props.payload.isMultiSign(),
+            // a Batch inner transaction is signed as received, so its fee is not picked here
+            showFeePicker:
+                !props.innerBatch && typeof props.transaction?.Fee === 'undefined' && !props.payload.isMultiSign(),
         };
     }
 

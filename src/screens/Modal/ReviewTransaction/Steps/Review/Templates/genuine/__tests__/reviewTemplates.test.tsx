@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import React from 'react';
 import { InteractionManager, Text } from 'react-native';
 import renderer, { act, ReactTestRenderer } from 'react-test-renderer';
@@ -7,14 +8,15 @@ import NetworkService from '@services/NetworkService';
 import ResolverService from '@services/ResolverService';
 import DataStorage from '@store/storage';
 
-import { AMMClawback, Batch, LedgerStateFix } from '@common/libs/ledger/transactions';
+import { AMMClawback, Batch, FallbackTransaction, LedgerStateFix } from '@common/libs/ledger/transactions';
 
-import { AmountText } from '@components/General';
-import { AccountElement, CurrencyElement } from '@components/Modules';
+import { AmountText, JsonTree } from '@components/General';
+import { AccountElement, CurrencyElement, FeePicker } from '@components/Modules';
 
 import AMMClawbackTemplate from '../AMMClawback';
 import LedgerStateFixTemplate from '../LedgerStateFix';
 import BatchTemplate from '../Batch';
+import { FallbackTemplate } from '../../fallback';
 
 jest.mock('@services/NetworkService');
 jest.mock('@services/LedgerService');
@@ -42,6 +44,34 @@ const ledgerStateFix = {
     Fee: '200000',
     Sequence: 13,
 };
+
+const xChainCommit = {
+    TransactionType: 'XChainCommit',
+    Account: Holder,
+    XChainBridge: {
+        LockingChainDoor: Issuer,
+        LockingChainIssue: { currency: 'XRP' },
+        IssuingChainDoor: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh',
+        IssuingChainIssue: { currency: 'XRP' },
+    },
+    XChainClaimID: '13F',
+    Amount: '10000',
+    OtherChainDestination: Issuer,
+    Fee: '0',
+    Sequence: 6,
+    SigningPubKey: '',
+    Flags: 0x40000000,
+};
+
+const batchOf = (inner: Record<string, any>): Batch =>
+    new Batch({
+        TransactionType: 'Batch',
+        Account: Issuer,
+        Fee: '40',
+        Sequence: 5,
+        Flags: 0x00010000,
+        RawTransactions: [{ RawTransaction: inner }],
+    } as any);
 
 const render = (Template: any, transaction: any): ReactTestRenderer => {
     let tree: ReactTestRenderer;
@@ -92,7 +122,11 @@ describe('Review templates', () => {
             new XrplDefinitions(binary.DEFAULT_DEFINITIONS),
         );
     });
-    afterEach(() => (NetworkService.getNetworkDefinitions as jest.Mock).mockRestore());
+    afterEach(() => {
+        (NetworkService.getNetworkDefinitions as jest.Mock).mockRestore();
+        // the mocked NetworkService has no getAvailableNetworkFee; a test that needs it adds its own
+        delete (NetworkService as any).getAvailableNetworkFee;
+    });
 
     describe('AMMClawback', () => {
         it('shows the Holder, Asset, Asset2 and Amount it declares', () => {
@@ -159,20 +193,41 @@ describe('Review templates', () => {
     describe('Batch', () => {
         it('reviews an AMMClawback inner transaction through the AMMClawback template', () => {
             const inner = { ...ammClawback, Fee: '0', Sequence: 6, SigningPubKey: '', Flags: 0x40000000 };
-            const batch = new Batch({
-                TransactionType: 'Batch',
-                Account: Issuer,
-                Fee: '40',
-                Sequence: 5,
-                Flags: 0x00010000,
-                RawTransactions: [{ RawTransaction: inner }],
-            } as any);
 
-            const tree = render(BatchTemplate, batch);
+            const tree = render(BatchTemplate, batchOf(inner));
 
             const [template] = tree.root.findAllByType(AMMClawbackTemplate);
             expect(template.props.transaction).toBeInstanceOf(AMMClawback);
             expect(template.props.transaction.Holder).toBe(Holder);
+        });
+
+        it('reviews an inner transaction Xaman has no model for through the fallback template', () => {
+            let tree: ReactTestRenderer;
+            expect(() => {
+                tree = render(BatchTemplate, batchOf(xChainCommit));
+            }).not.toThrow();
+
+            const [template] = tree!.root.findAllByType(FallbackTemplate);
+            expect(template.props.transaction).toBeInstanceOf(FallbackTransaction);
+            const [json] = template.findAllByType(JsonTree);
+            expect(json.props.data).toEqual(omit(xChainCommit, 'Account'));
+        });
+
+        it('shows no fee picker for an inner transaction without Fee under the fallback template', async () => {
+            (NetworkService as any).getAvailableNetworkFee = jest.fn().mockResolvedValue({
+                availableFees: [{ type: 'LOW', value: '12' }],
+                feeHooks: 0,
+                suggested: 'LOW',
+            });
+
+            const tree = render(BatchTemplate, batchOf(omit(xChainCommit, 'Fee')));
+            // let a fee picker's fetched fee reach the template
+            await act(async () => {});
+
+            const [template] = tree.root.findAllByType(FallbackTemplate);
+            expect(template.findAllByType(FeePicker)).toHaveLength(0);
+            const [json] = template.findAllByType(JsonTree);
+            expect(json.props.data).not.toHaveProperty('Fee');
         });
     });
 });
