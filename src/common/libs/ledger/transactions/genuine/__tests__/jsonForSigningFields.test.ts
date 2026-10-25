@@ -150,6 +150,17 @@ describe('A ledger field the model does not declare is refused by name, never re
         expect(new LoanBrokerCoverWithdraw(tx).unsignableFields()).toEqual(['DestinationTag']);
     });
 
+    it('names nothing for definitions names that are never serialized (hash, index)', () => {
+        const tx = { ...payment, hash: Hash, index: Hash };
+        expect(new Payment(tx).unsignableFields()).toEqual([]);
+        expect(Object.keys(new Payment(tx).JsonForSigning)).not.toContain('index');
+    });
+
+    it('names only the serialized field when it travels with names that are never serialized', () => {
+        const tx = { ...payment, hash: Hash, index: Hash, Delegate: Other };
+        expect(new Payment(tx).unsignableFields()).toEqual(['Delegate']);
+    });
+
     describe('Batch', () => {
         const inner = { ...payment, Fee: '0', Sequence: 2, SigningPubKey: '', Flags: 0x40000000 };
         const batch = (rawTransactions: Record<string, any>[]) => ({

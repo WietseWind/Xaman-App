@@ -208,7 +208,7 @@ describe('Sign Mixin', () => {
         } as any);
         jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue({
             transactionNames: ['Payment'],
-            field: { Delegate: {} },
+            field: { Delegate: { isSerialized: true } },
         } as any);
         await expect(instance.sign({ address: 'rE6wHjDtqWbpvcyZDjhxVrt6ykg4LSwXWz' } as any)).rejects.toThrow(
             'Xaman cannot sign this transaction yet: it carries Delegate.',
