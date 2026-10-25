@@ -15,6 +15,7 @@ const {
     androidTypeText,
     androidClearFocusedField,
     androidBlurIme,
+    androidDismissImeIfShown,
 } = require('../helpers/tapById');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
@@ -54,6 +55,15 @@ Then('I tap {string}', async (buttonId) => {
             await waitUntilAndroidTestId(buttonId, 10000);
             if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
                 return;
+            }
+            // Family-seed Next sits under the keyboard. The first tap hits the
+            // IME Next key and the seed screen stays put.
+            if (
+                buttonId === 'next-button' &&
+                ((await androidHasTestId('account-import-enter-family-seed-view')) ||
+                    (await androidHasTestId('account-import-enter-mnemonic-view')))
+            ) {
+                await androidDismissImeIfShown();
             }
             await clickByTestId(buttonId);
         } catch (e) {
