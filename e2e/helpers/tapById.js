@@ -886,7 +886,15 @@ const pickFooterNode = (xml, testId) => {
     if (!labels) {
         return pickNodeForTestId(xml, testId);
     }
-    const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    const nodes = parseNodes(xml).filter(
+        (n) => !isSystemUiNode(n) && String(n.package || '').indexOf('inputmethod') === -1,
+    );
+    const exact = nodes.find(
+        (n) => resourceIdTail(n.resourceId) === testId || n.contentDesc === testId,
+    );
+    if (exact) {
+        return exact;
+    }
     const want = labels.map((label) => label.toLowerCase());
     const labelHits = nodes.filter((n) => want.indexOf(nodePlainLabel(n).toLowerCase()) !== -1);
     let hit = null;
@@ -1437,6 +1445,25 @@ const swipeBounds = async (x1, y1, x2, y2) => {
     adbSwipe(x1, y1, x2, y2);
     cachedXml = '';
     cachedAt = 0;
+};
+
+// Short swipe inside a form list. The review-sheet swipe avoids the center
+// dock and misses rows that sit under the keyboard on the mnemonic screen.
+const androidNudgeScroll = async (testId, direction) => {
+    await waitUntilAndroidTestId(testId, 10000);
+    const bounds = await androidBoundsByTestId(testId);
+    if (!bounds) {
+        throw new Error(`android hierarchy has no bounds for ${testId}`);
+    }
+    const x = Math.round((bounds.x1 + bounds.x2) / 2);
+    const top = Math.round(bounds.y1 + 72);
+    const span = Math.max(240, Math.min(640, bounds.y2 - bounds.y1 - 120));
+    const mid = top + span;
+    if (direction === 'down') {
+        await swipeBounds(x, top, x, mid);
+        return;
+    }
+    await swipeBounds(x, mid, x, top);
 };
 
 const androidSwipeTestId = async (testId, direction) => {
@@ -2002,6 +2029,7 @@ module.exports = {
     androidReadTextByTestId,
     androidHasTestId,
     androidSwipeTestId,
+    androidNudgeScroll,
     androidTypeText,
     androidClearFocusedField,
     androidPasteText,
