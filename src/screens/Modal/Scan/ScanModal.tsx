@@ -266,10 +266,9 @@ class ScanModal extends Component<Props, State> {
             }
 
             if (json?.TransactionType === 'TrustSet') {
-                const trustSet = new TrustSet(json);
-
+                // the template unaltered: sign() refuses a ledger field the review cannot show
                 const payload = Payload.build(
-                    trustSet.JsonForSigning,
+                    { ...json },
                     Localize.t('asset.addingAssetReserveDescription', {
                         ownerReserve: NetworkService.getNetworkReserve().OwnerReserve,
                         nativeAsset: NetworkService.getNativeAsset(),

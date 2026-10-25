@@ -18,7 +18,7 @@ import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
 
 import Localize from '@locale';
-import { AccountSet, Invoke, Payment, PaymentValidation, TrustSet } from '@common/libs/ledger/transactions';
+import { AccountSet, Invoke, Payment, PaymentValidation } from '@common/libs/ledger/transactions';
 import NetworkService from './NetworkService';
 import { CoreRepository, NetworkRepository } from '@store/repositories';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
@@ -455,10 +455,9 @@ class LinkingService {
             }
 
             if (json?.TransactionType === 'TrustSet') {
-                const trustSet = new TrustSet(json);
-
+                // the template unaltered: sign() refuses a ledger field the review cannot show
                 const payload = Payload.build(
-                    trustSet.JsonForSigning,
+                    { ...json },
                     Localize.t('asset.addingAssetReserveDescription', {
                         ownerReserve: NetworkService.getNetworkReserve().OwnerReserve,
                         nativeAsset: NetworkService.getNativeAsset(),
