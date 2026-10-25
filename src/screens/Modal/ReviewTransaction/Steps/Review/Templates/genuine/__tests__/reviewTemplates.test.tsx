@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import React from 'react';
 import { InteractionManager, Text } from 'react-native';
 import renderer, { act, ReactTestRenderer } from 'react-test-renderer';
@@ -7,14 +8,15 @@ import NetworkService from '@services/NetworkService';
 import ResolverService from '@services/ResolverService';
 import DataStorage from '@store/storage';
 
-import { AMMClawback, Batch, LedgerStateFix } from '@common/libs/ledger/transactions';
+import { AMMClawback, Batch, FallbackTransaction, LedgerStateFix } from '@common/libs/ledger/transactions';
 
-import { AmountText } from '@components/General';
+import { AmountText, JsonTree } from '@components/General';
 import { AccountElement, CurrencyElement } from '@components/Modules';
 
 import AMMClawbackTemplate from '../AMMClawback';
 import LedgerStateFixTemplate from '../LedgerStateFix';
 import BatchTemplate from '../Batch';
+import { FallbackTemplate } from '../../fallback';
 
 jest.mock('@services/NetworkService');
 jest.mock('@services/LedgerService');
@@ -173,6 +175,44 @@ describe('Review templates', () => {
             const [template] = tree.root.findAllByType(AMMClawbackTemplate);
             expect(template.props.transaction).toBeInstanceOf(AMMClawback);
             expect(template.props.transaction.Holder).toBe(Holder);
+        });
+
+        it('reviews an inner transaction Xaman has no model for through the fallback template', () => {
+            const inner = {
+                TransactionType: 'XChainCommit',
+                Account: Holder,
+                XChainBridge: {
+                    LockingChainDoor: Issuer,
+                    LockingChainIssue: { currency: 'XRP' },
+                    IssuingChainDoor: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh',
+                    IssuingChainIssue: { currency: 'XRP' },
+                },
+                XChainClaimID: '13F',
+                Amount: '10000',
+                OtherChainDestination: Issuer,
+                Fee: '0',
+                Sequence: 6,
+                SigningPubKey: '',
+                Flags: 0x40000000,
+            };
+            const batch = new Batch({
+                TransactionType: 'Batch',
+                Account: Issuer,
+                Fee: '40',
+                Sequence: 5,
+                Flags: 0x00010000,
+                RawTransactions: [{ RawTransaction: inner }],
+            } as any);
+
+            let tree: ReactTestRenderer;
+            expect(() => {
+                tree = render(BatchTemplate, batch);
+            }).not.toThrow();
+
+            const [template] = tree!.root.findAllByType(FallbackTemplate);
+            expect(template.props.transaction).toBeInstanceOf(FallbackTransaction);
+            const [json] = template.findAllByType(JsonTree);
+            expect(json.props.data).toEqual(omit(inner, 'Account'));
         });
     });
 });
