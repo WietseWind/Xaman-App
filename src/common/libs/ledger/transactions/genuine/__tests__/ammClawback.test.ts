@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-
 import Localize from '@locale';
 
 import { MutationsMixin } from '@common/libs/ledger/mixin';
