@@ -16,6 +16,7 @@ import {
     VaultDelete,
     VaultWithdraw,
     LoanBrokerCoverWithdraw,
+    Payment,
 } from '..';
 
 jest.mock('@services/NetworkService');
@@ -103,5 +104,56 @@ describe('JsonForSigning keeps the ledger fields of the models', () => {
         expect(new OfferCreate({ ...base, OfferSequence: 42 } as any).OfferSequence).toBe(42);
         expect(new OfferCreate(base as any).OfferSequence).toBeUndefined();
         expect(new OfferCreate({ ...base, Sequence: 5 } as any).OfferSequence).toBeUndefined();
+    });
+});
+
+describe('A ledger field the model does not declare is refused by name, never removed', () => {
+    // eslint-disable-next-line global-require
+    const NetworkService = require('@services/NetworkService').default;
+    // eslint-disable-next-line global-require
+    const { binary, XrplDefinitions } = require('xrpl-accountlib');
+
+    const payment = { TransactionType: 'Payment', Account, Destination: Other, Amount: '1', Fee: '12', Sequence: 1 };
+
+    beforeEach(() => {
+        jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue(
+            new XrplDefinitions(binary.DEFAULT_DEFINITIONS),
+        );
+    });
+    afterEach(() => jest.restoreAllMocks());
+
+    for (const [type, Model, fields, base] of cases) {
+        it(`${type}: names nothing when it carries only the model's fields`, () => {
+            const tx = { TransactionType: type, Account, Fee: '12', Sequence: 1, ...base, ...fields };
+            expect(new Model(tx).unsignableFields()).toEqual([]);
+        });
+    }
+
+    it('names a ledger field the model does not declare for the type', () => {
+        expect(new Payment({ ...payment, TakerPays: '5' }).unsignableFields()).toEqual(['TakerPays']);
+    });
+
+    it('names Delegate, since signing on behalf of another account is not built', () => {
+        expect(new Payment({ ...payment, Delegate: Other }).unsignableFields()).toEqual(['Delegate']);
+    });
+
+    it('names LoanBrokerCoverWithdraw DestinationTag, which its review cannot show', () => {
+        const tx = {
+            TransactionType: 'LoanBrokerCoverWithdraw',
+            Account,
+            Fee: '12',
+            Sequence: 1,
+            LoanBrokerID: Hash,
+            Amount: '1000000',
+            Destination: Other,
+            DestinationTag: 99,
+        };
+        expect(new LoanBrokerCoverWithdraw(tx).unsignableFields()).toEqual(['DestinationTag']);
+    });
+
+    it('still drops a key that is not a ledger field, and names nothing', () => {
+        const tx = { ...payment, NotALedgerField: 'x' };
+        expect(Object.keys(new Payment(tx).JsonForSigning)).not.toContain('NotALedgerField');
+        expect(new Payment(tx).unsignableFields()).toEqual([]);
     });
 });

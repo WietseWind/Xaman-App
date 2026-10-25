@@ -199,4 +199,19 @@ describe('Sign Mixin', () => {
             spy.mockRestore();
         });
     });
+
+    it('Should refuse to sign a transaction carrying a field Xaman cannot sign, rather than remove it', async () => {
+        const instance = new Mixed({
+            TransactionType: 'Payment',
+            Account: 'rE6wHjDtqWbpvcyZDjhxVrt6ykg4LSwXWz',
+            Delegate: 'rJ8e4mfYAu8ZcAcr4gMFxPRhZuawjAGzBi',
+        } as any);
+        jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue({
+            transactionNames: ['Payment'],
+            field: { Delegate: {} },
+        } as any);
+        await expect(instance.sign({ address: 'rE6wHjDtqWbpvcyZDjhxVrt6ykg4LSwXWz' } as any)).rejects.toThrow(
+            'Xaman cannot sign this transaction yet: it carries Delegate.',
+        );
+    });
 });
