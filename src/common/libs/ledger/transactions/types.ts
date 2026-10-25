@@ -38,6 +38,7 @@ import {
     AMMDelete,
     AMMDeposit,
     AMMWithdraw,
+    AMMClawback,
     AMMVote,
     AMMBid,
     Remit,
@@ -50,6 +51,7 @@ import {
     PermissionedDomainSet,
     Batch,
     CronSet,
+    LedgerStateFix,
     VaultCreate,
     VaultSet,
     VaultDelete,
@@ -119,6 +121,7 @@ export type Transactions =
     | AMMDelete
     | AMMDeposit
     | AMMWithdraw
+    | AMMClawback
     | AMMVote
     | AMMBid
     | Remit
@@ -130,6 +133,7 @@ export type Transactions =
     | PermissionedDomainDelete
     | PermissionedDomainSet
     | CronSet
+    | LedgerStateFix
     | VaultCreate
     | VaultSet
     | VaultDelete

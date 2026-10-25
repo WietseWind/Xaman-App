@@ -1149,6 +1149,7 @@ class EventsView extends Component<Props, State> {
                         TransactionTypes.AMMDelete,
                         TransactionTypes.AMMDeposit,
                         TransactionTypes.AMMWithdraw,
+                        TransactionTypes.AMMClawback,
                         TransactionTypes.AMMBid,
                         TransactionTypes.AMMVote,
                     ];
@@ -1173,6 +1174,7 @@ class EventsView extends Component<Props, State> {
                         TransactionTypes.TicketCreate,
                         TransactionTypes.DepositPreauth,
                         TransactionTypes.AccountDelete,
+                        TransactionTypes.LedgerStateFix,
                         TransactionTypes.NFTokenAcceptOffer,
                         TransactionTypes.NFTokenBurn,
                         TransactionTypes.NFTokenCancelOffer,
