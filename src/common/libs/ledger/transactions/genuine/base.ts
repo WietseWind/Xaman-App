@@ -11,6 +11,8 @@ import { TransactionType } from '@common/libs/ledger/parser/fields';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
 import { FieldReturnType } from '@common/libs/ledger/parser/fields/types';
 
+import NetworkService from '@services/NetworkService';
+
 /* Class ==================================================================== */
 class BaseGenuineTransaction extends BaseTransaction {
     public static InstanceType = InstanceTypes.GenuineTransaction as const;
@@ -20,6 +22,21 @@ class BaseGenuineTransaction extends BaseTransaction {
 
     constructor(tx?: TransactionJson, meta?: TransactionMetadata, txFilter?: Function) {
         super(tx, meta, txFilter);
+    }
+
+    /**
+     * Ledger fields this transaction carries that the model does not declare, so the review cannot show them.
+     * Signing refuses these by name: a ledger field is never removed silently from what is signed.
+     */
+    unsignableFields(): string[] {
+        const declared = Object.keys({
+            ...BaseGenuineTransaction.CommonFields,
+            ...(this.constructor as typeof BaseGenuineTransaction).Fields,
+        });
+        const definitions = NetworkService.getNetworkDefinitions() as any;
+        return Object.getOwnPropertyNames(this._tx).filter(
+            (key) => !declared.includes(key) && !!definitions?.field?.[key],
+        );
     }
 
     /**
