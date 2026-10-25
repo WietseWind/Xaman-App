@@ -201,6 +201,38 @@ index 80c6803..f8f5c58 100644
          setWebViewClient(null);
          destroy();
      }
+diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java
+index 0287e1c..4db13ac 100644
+--- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java
+@@ -44,6 +44,7 @@ public class RNCWebViewClient extends WebViewClient {
+     protected boolean mLastLoadFailed = false;
+     protected RNCWebView.ProgressChangedFilter progressChangedFilter = null;
+     protected @Nullable RNCBasicAuthCredential basicAuthCredential = null;
++    private final XamanOttScope xamanOttScope = new XamanOttScope();
+ 
+     public void setBasicAuthCredential(@Nullable RNCBasicAuthCredential credential) {
+         basicAuthCredential = credential;
+@@ -146,6 +147,19 @@ public class RNCWebViewClient extends WebViewClient {
+         return this.shouldOverrideUrlLoading(view, url);
+     }
+ 
++    @Override
++    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
++        if (request == null) {
++            return null;
++        }
++        try {
++            return XamanOttInterceptor.intercept(xamanOttScope, request);
++        } catch (Throwable ignored) {
++            // Fail open. The WebView loads the request itself.
++            return null;
++        }
++    }
++
+     @Override
+     public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+         if (basicAuthCredential != null) {
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
 index f83033b..630c519 100644
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
@@ -298,11 +330,448 @@ index f83033b..630c519 100644
          return RNCWebViewWrapper(context, webView)
      }
  
+diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java
+new file mode 100644
+index 0000000..7c19e68
+--- /dev/null
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java
+@@ -0,0 +1,269 @@
++package com.reactnativecommunity.webview;
++
++import android.net.Uri;
++import android.os.Build;
++import android.webkit.WebResourceRequest;
++import android.webkit.WebResourceResponse;
++
++import java.io.ByteArrayInputStream;
++import java.io.FilterInputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.net.HttpURLConnection;
++import java.net.URL;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++
++/**
++ * Re-fetches requests that must not see the xApp one-time token.
++ * Allowed hosts return null so the WebView loads them unchanged.
++ * A proxy failure also returns null: the resource still loads, with the token.
++ */
++final class XamanOttInterceptor {
++    private static final int MAX_REDIRECTS = 5;
++    private static final int CONNECT_TIMEOUT_MS = 15000;
++    private static final int READ_TIMEOUT_MS = 20000;
++
++    private XamanOttInterceptor() {
++    }
++
++    static WebResourceResponse intercept(XamanOttScope scope, WebResourceRequest request) throws IOException {
++        Uri uri = request.getUrl();
++        if (uri == null) {
++            return null;
++        }
++        String scheme = uri.getScheme();
++        if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
++            return null;
++        }
++
++        Map<String, String> headers = request.getRequestHeaders();
++        String userAgent = header(headers, "User-Agent");
++        if (userAgent == null || !userAgent.contains("(ott:")) {
++            return null;
++        }
++
++        String path = uri.getPath() == null ? "" : uri.getPath();
++        boolean document = isDocument(request, headers);
++        boolean redirect = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && request.isRedirect();
++        boolean keep;
++        synchronized (scope) {
++            keep = scope.observe(uri.getHost(), path, document, redirect);
++        }
++        if (keep) {
++            return null;
++        }
++
++        String method = request.getMethod() == null ? "GET" : request.getMethod().toUpperCase(Locale.US);
++        if (!method.equals("GET") && !method.equals("HEAD") && !method.equals("OPTIONS")) {
++            // The request body is not available here. Let the WebView send it.
++            return null;
++        }
++
++        return fetchStripped(scope, uri.toString(), method, headers, userAgent);
++    }
++
++    private static boolean isDocument(WebResourceRequest request, Map<String, String> headers) {
++        if (request.isForMainFrame()) {
++            return true;
++        }
++        String dest = header(headers, "Sec-Fetch-Dest");
++        if (dest != null && !dest.isEmpty()) {
++            return dest.equals("document") || dest.equals("iframe");
++        }
++        String mode = header(headers, "Sec-Fetch-Mode");
++        if ("navigate".equals(mode)) {
++            return true;
++        }
++        String accept = header(headers, "Accept");
++        return accept != null && accept.contains("text/html");
++    }
++
++    private static String header(Map<String, String> headers, String name) {
++        if (headers == null) {
++            return null;
++        }
++        for (Map.Entry<String, String> entry : headers.entrySet()) {
++            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(name)) {
++                return entry.getValue();
++            }
++        }
++        return null;
++    }
++
++    private static WebResourceResponse fetchStripped(
++        XamanOttScope scope,
++        String urlString,
++        String method,
++        Map<String, String> requestHeaders,
++        String originalUserAgent
++    ) throws IOException {
++        String strippedUserAgent = XamanOttScope.stripOtt(originalUserAgent);
++        URL current = new URL(urlString);
++        String userAgent = strippedUserAgent;
++
++        for (int hop = 0; hop < MAX_REDIRECTS; hop++) {
++            HttpURLConnection conn = open(current, method, requestHeaders, userAgent);
++            int status = conn.getResponseCode();
++            if (status >= 300 && status < 400) {
++                String location = conn.getHeaderField("Location");
++                conn.disconnect();
++                if (location == null || location.isEmpty()) {
++                    break;
++                }
++                URL next = new URL(current, location);
++                String nextScheme = next.getProtocol();
++                if (nextScheme == null || (!nextScheme.equalsIgnoreCase("http") && !nextScheme.equalsIgnoreCase("https"))) {
++                    break;
++                }
++                userAgent = scope.keeps(next.getHost()) ? originalUserAgent : strippedUserAgent;
++                current = next;
++                if (status == 303 || ((status == 301 || status == 302) && !method.equals("GET") && !method.equals("HEAD"))) {
++                    method = "GET";
++                }
++                continue;
++            }
++            return responseFor(conn, status, method);
++        }
++        return null;
++    }
++
++    private static HttpURLConnection open(
++        URL url,
++        String method,
++        Map<String, String> requestHeaders,
++        String userAgent
++    ) throws IOException {
++        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
++        conn.setInstanceFollowRedirects(false);
++        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
++        conn.setReadTimeout(READ_TIMEOUT_MS);
++        conn.setUseCaches(false);
++        conn.setRequestMethod(method);
++        if (requestHeaders != null) {
++            for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
++                String key = entry.getKey();
++                if (key == null || isHopByHop(key) || key.equalsIgnoreCase("User-Agent") || key.equalsIgnoreCase("X-OTT")) {
++                    continue;
++                }
++                try {
++                    conn.setRequestProperty(key, entry.getValue());
++                } catch (IllegalArgumentException | IllegalStateException ignored) {
++                    // Restricted headers are filled in by the client.
++                }
++            }
++        }
++        conn.setRequestProperty("User-Agent", userAgent == null ? "" : userAgent);
++        return conn;
++    }
++
++    private static WebResourceResponse responseFor(HttpURLConnection conn, int status, String method) throws IOException {
++        if (status < 100) {
++            conn.disconnect();
++            return null;
++        }
++
++        String contentType = conn.getContentType();
++        String mime = "application/octet-stream";
++        String encoding = null;
++        if (contentType != null && !contentType.isEmpty()) {
++            String[] parts = contentType.split(";");
++            if (!parts[0].trim().isEmpty()) {
++                mime = parts[0].trim();
++            }
++            for (int i = 1; i < parts.length; i++) {
++                String part = parts[i].trim();
++                if (part.toLowerCase(Locale.US).startsWith("charset=")) {
++                    encoding = part.substring("charset=".length()).trim().replace("\"", "");
++                }
++            }
++        }
++
++        Map<String, String> responseHeaders = new HashMap<>();
++        Map<String, List<String>> fields = conn.getHeaderFields();
++        if (fields != null) {
++            for (Map.Entry<String, List<String>> entry : fields.entrySet()) {
++                String key = entry.getKey();
++                if (key == null || isHopByHop(key) || key.equalsIgnoreCase("Content-Encoding") || key.equalsIgnoreCase("Content-Length")) {
++                    continue;
++                }
++                List<String> values = entry.getValue();
++                if (values == null || values.isEmpty()) {
++                    continue;
++                }
++                responseHeaders.put(key, join(values));
++            }
++        }
++        String reason = reason(conn.getResponseMessage(), status);
++
++        InputStream stream;
++        if (method.equals("HEAD") || status == 204 || status == 304) {
++            stream = new ByteArrayInputStream(new byte[0]);
++            conn.disconnect();
++        } else {
++            InputStream raw = status >= 400 ? conn.getErrorStream() : conn.getInputStream();
++            if (raw == null) {
++                raw = new ByteArrayInputStream(new byte[0]);
++                conn.disconnect();
++                stream = raw;
++            } else {
++                stream = new FilterInputStream(raw) {
++                    @Override
++                    public void close() throws IOException {
++                        try {
++                            super.close();
++                        } finally {
++                            conn.disconnect();
++                        }
++                    }
++                };
++            }
++        }
++
++        return new WebResourceResponse(mime, encoding, status, reason, responseHeaders, stream);
++    }
++
++    private static String join(List<String> values) {
++        StringBuilder builder = new StringBuilder();
++        for (String value : values) {
++            if (value == null) {
++                continue;
++            }
++            if (builder.length() > 0) {
++                builder.append(", ");
++            }
++            builder.append(value);
++        }
++        return builder.toString();
++    }
++
++    private static String reason(String value, int status) {
++        String fallback = status == 200 ? "OK" : "Status";
++        if (value == null) {
++            return fallback;
++        }
++        StringBuilder cleaned = new StringBuilder();
++        for (int i = 0; i < value.length(); i++) {
++            char c = value.charAt(i);
++            if (c >= 0x20 && c <= 0x7E) {
++                cleaned.append(c);
++            }
++        }
++        String result = cleaned.toString().trim();
++        return result.isEmpty() ? fallback : result;
++    }
++
++    private static boolean isHopByHop(String name) {
++        return name.equalsIgnoreCase("Connection")
++            || name.equalsIgnoreCase("Keep-Alive")
++            || name.equalsIgnoreCase("Proxy-Authenticate")
++            || name.equalsIgnoreCase("Proxy-Authorization")
++            || name.equalsIgnoreCase("TE")
++            || name.equalsIgnoreCase("Trailer")
++            || name.equalsIgnoreCase("Transfer-Encoding")
++            || name.equalsIgnoreCase("Upgrade")
++            || name.equalsIgnoreCase("Host");
++    }
++}
+diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java
+new file mode 100644
+index 0000000..5a4fc06
+--- /dev/null
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java
+@@ -0,0 +1,148 @@
++package com.reactnativecommunity.webview;
++
++import java.util.LinkedHashSet;
++import java.util.Locale;
++import java.util.Set;
++import java.util.regex.Pattern;
++
++/**
++ * Which hosts still receive the xApp one-time token in the User-Agent.
++ * Keep this in sync with src/common/libs/xapp/ottScope.ts and XamanOttSchemeHandler.m.
++ */
++final class XamanOttScope {
++    private static final String[] OWN_SUFFIXES = {"xaman.app", "xumm.app", "xrpl-labs.com"};
++    private static final Pattern OTT = Pattern.compile("\\s*\\(ott:[^)]*\\)");
++
++    String pinnedHost;
++    final Set<String> allowedHosts = new LinkedHashSet<>();
++    boolean chainOpen;
++    boolean expectingRedirect;
++
++    void reset() {
++        pinnedHost = null;
++        allowedHosts.clear();
++        chainOpen = false;
++        expectingRedirect = false;
++    }
++
++    static String normalizeHost(String host) {
++        if (host == null) {
++            return null;
++        }
++        String value = host.trim().toLowerCase(Locale.US);
++        if (value.endsWith(".")) {
++            value = value.substring(0, value.length() - 1);
++        }
++        int colon = value.lastIndexOf(':');
++        if (colon > -1 && value.indexOf(':') == colon) {
++            String port = value.substring(colon + 1);
++            boolean digits = !port.isEmpty();
++            for (int i = 0; digits && i < port.length(); i++) {
++                if (!Character.isDigit(port.charAt(i))) {
++                    digits = false;
++                }
++            }
++            if (digits) {
++                value = value.substring(0, colon);
++            }
++        }
++        return value.isEmpty() ? null : value;
++    }
++
++    static boolean isOwnHost(String host) {
++        String normalized = normalizeHost(host);
++        if (normalized == null) {
++            return false;
++        }
++        for (String suffix : OWN_SUFFIXES) {
++            if (normalized.equals(suffix) || normalized.endsWith("." + suffix)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    static boolean isDetectLaunch(String path) {
++        return path != null && path.contains("/detect/xapp");
++    }
++
++    static String stripOtt(String userAgent) {
++        if (userAgent == null || userAgent.isEmpty()) {
++            return "";
++        }
++        return OTT.matcher(userAgent).replaceAll("");
++    }
++
++    synchronized boolean keeps(String host) {
++        String normalized = normalizeHost(host);
++        if (normalized == null) {
++            return true;
++        }
++        return isOwnHost(normalized) || allowedHosts.contains(normalized);
++    }
++
++    synchronized void noteRedirect(String fromHost, String toHost, boolean document) {
++        if (!document) {
++            return;
++        }
++        String to = normalizeHost(toHost);
++        if (to == null || isOwnHost(to)) {
++            return;
++        }
++        String from = normalizeHost(fromHost);
++        boolean fromKnown = from != null && (isOwnHost(from) || allowedHosts.contains(from) || chainOpen);
++        if (!fromKnown) {
++            return;
++        }
++        allowedHosts.add(to);
++        pinnedHost = to;
++        chainOpen = true;
++        expectingRedirect = true;
++    }
++
++    synchronized void noteDocumentStatus(int status) {
++        if (status >= 300 && status < 400) {
++            expectingRedirect = true;
++            return;
++        }
++        chainOpen = false;
++        expectingRedirect = false;
++    }
++
++    synchronized boolean observe(String host, String path, boolean document, boolean redirect) {
++        String normalized = normalizeHost(host);
++        if (normalized == null) {
++            return true;
++        }
++        String requestPath = path == null ? "" : path;
++
++        if (isOwnHost(normalized)) {
++            if (document && !redirect && isDetectLaunch(requestPath)) {
++                reset();
++            }
++            return true;
++        }
++
++        if (allowedHosts.contains(normalized)) {
++            if (!document && chainOpen && !expectingRedirect) {
++                chainOpen = false;
++            }
++            return true;
++        }
++
++        if (document) {
++            boolean first = pinnedHost == null && allowedHosts.isEmpty();
++            boolean follow = chainOpen && (redirect || expectingRedirect);
++            if (first || follow) {
++                allowedHosts.add(normalized);
++                pinnedHost = normalized;
++                chainOpen = true;
++                expectingRedirect = false;
++                return true;
++            }
++            return false;
++        }
++
++        return false;
++    }
++}
 diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
-index 38904266..9aa43cd7 100644
+index 3890426..f6c68ad 100644
 --- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 +++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
-@@ -25,6 +25,23 @@ static NSDictionary* customCertificatesForHost;
+@@ -6,6 +6,7 @@
+  */
+ 
+ #import "RNCWebViewImpl.h"
++#import "XamanOttSchemeHandler.h"
+ #import <React/RCTConvert.h>
+ #import <React/RCTAutoInsetsProtocol.h>
+ #import "RNCWKProcessPoolManager.h"
+@@ -25,6 +26,23 @@ static NSDictionary* customCertificatesForHost;
  
  NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
  
@@ -326,7 +795,25 @@ index 38904266..9aa43cd7 100644
  #if TARGET_OS_IOS
  // runtime trick to remove WKWebView keyboard default toolbar
  // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
-@@ -420,6 +437,63 @@ RCTAutoInsetsProtocol>
+@@ -55,6 +73,17 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
+ #endif // !TARGET_OS_OSX
+ @end
+ @implementation RNCWKWebView
++
+++ (BOOL)handlesURLScheme:(NSString *)urlScheme {
++  if ([XamanOttSchemeHandler isClaimingBuiltinSchemes] && urlScheme != nil) {
++    if ([urlScheme caseInsensitiveCompare:@"https"] == NSOrderedSame ||
++        [urlScheme caseInsensitiveCompare:@"http"] == NSOrderedSame) {
++      return NO;
++    }
++  }
++  return [super handlesURLScheme:urlScheme];
++}
++
+ #if !TARGET_OS_OSX
+ - (NSString *)stringFromAction:(SEL) action {
+   NSString *sel = NSStringFromSelector(action);
+@@ -420,6 +449,63 @@ RCTAutoInsetsProtocol>
  }
  #endif //Target_OS_OSX
  
@@ -390,7 +877,7 @@ index 38904266..9aa43cd7 100644
  - (WKWebViewConfiguration *)setUpWkWebViewConfig
  {
    WKWebViewConfiguration *wkWebViewConfig = [WKWebViewConfiguration new];
-@@ -461,13 +535,19 @@ RCTAutoInsetsProtocol>
+@@ -461,13 +547,19 @@ RCTAutoInsetsProtocol>
    }
    if (_incognito) {
      wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore nonPersistentDataStore];
@@ -411,7 +898,39 @@ index 38904266..9aa43cd7 100644
  
  #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 /* iOS 13 */
    if (@available(iOS 13.0, *)) {
-@@ -588,6 +668,9 @@ RCTAutoInsetsProtocol>
+@@ -516,7 +608,30 @@ RCTAutoInsetsProtocol>
+ {
+   if (self.window != nil && _webView == nil) {
+     WKWebViewConfiguration *wkWebViewConfig = [self setUpWkWebViewConfig];
+-    _webView = [[RNCWKWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
++    // Only the xApp webview carries `(ott:...)` in its user agent. Claiming
++    // http(s) here leaves every other webview on WebKit's own loader.
++    __block BOOL xamanOttHandlerInstalled = NO;
++    if ([_userAgent containsString:@"(ott:"]) {
++      XamanOttSchemeHandler *ottHandler = [XamanOttSchemeHandler new];
++      [XamanOttSchemeHandler claimBuiltinSchemesWhile:^{
++        @try {
++          [wkWebViewConfig setURLSchemeHandler:ottHandler forURLScheme:@"https"];
++          xamanOttHandlerInstalled = YES;
++        } @catch (NSException *exception) {
++        }
++        @try {
++          [wkWebViewConfig setURLSchemeHandler:ottHandler forURLScheme:@"http"];
++        } @catch (NSException *exception) {
++        }
++      }];
++    }
++    if (xamanOttHandlerInstalled) {
++      [XamanOttSchemeHandler claimBuiltinSchemesWhile:^{
++        _webView = [[RNCWKWebView alloc] initWithFrame:self.bounds configuration:wkWebViewConfig];
++      }];
++    } else {
++      _webView = [[RNCWKWebView alloc] initWithFrame:self.bounds configuration:wkWebViewConfig];
++    }
+     [self setBackgroundColor: _savedBackgroundColor];
+ #if !TARGET_OS_OSX
+     // Apply once at creation time. The prop is documented as non-reactive —
+@@ -588,6 +703,9 @@ RCTAutoInsetsProtocol>
      [self addSubview:_webView];
      [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
      [self setKeyboardDisplayRequiresUserAction: _savedKeyboardDisplayRequiresUserAction];
@@ -421,7 +940,7 @@ index 38904266..9aa43cd7 100644
      [self visitSource];
    }
  
-@@ -628,6 +711,9 @@ RCTAutoInsetsProtocol>
+@@ -628,6 +746,9 @@ RCTAutoInsetsProtocol>
  #endif
  {
    if (_webView) {
@@ -431,7 +950,7 @@ index 38904266..9aa43cd7 100644
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:HistoryShimName];
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:MessageHandlerName];
      [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
-@@ -1216,6 +1302,10 @@ RCTAutoInsetsProtocol>
+@@ -1216,6 +1337,10 @@ RCTAutoInsetsProtocol>
  - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
  {
  #if !TARGET_OS_OSX
@@ -442,7 +961,7 @@ index 38904266..9aa43cd7 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler();
-@@ -1235,6 +1325,10 @@ RCTAutoInsetsProtocol>
+@@ -1235,6 +1360,10 @@ RCTAutoInsetsProtocol>
   */
  - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler{
  #if !TARGET_OS_OSX
@@ -453,7 +972,7 @@ index 38904266..9aa43cd7 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler(YES);
-@@ -1260,6 +1354,10 @@ RCTAutoInsetsProtocol>
+@@ -1260,6 +1389,10 @@ RCTAutoInsetsProtocol>
   */
  - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler{
  #if !TARGET_OS_OSX
@@ -464,7 +983,7 @@ index 38904266..9aa43cd7 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
      textField.text = defaultText;
-@@ -1594,6 +1692,14 @@ didFinishNavigation:(WKNavigation *)navigation
+@@ -1594,6 +1727,14 @@ didFinishNavigation:(WKNavigation *)navigation
  - (void)cookiesDidChangeInCookieStore:(WKHTTPCookieStore *)cookieStore
  {
    if (@available(iOS 11.0, *)) {
@@ -479,7 +998,7 @@ index 38904266..9aa43cd7 100644
      if(_sharedCookiesEnabled) {
        // Write all cookies from WKWebView back to sharedHTTPCookieStorage
        [cookieStore getAllCookies:^(NSArray* cookies) {
-@@ -1875,6 +1981,12 @@ didFinishNavigation:(WKNavigation *)navigation
+@@ -1875,6 +2016,12 @@ didFinishNavigation:(WKNavigation *)navigation
    ];
    WKUserScript *userScript = [[WKUserScript alloc] initWithSource:html5HistoryAPIShimSource injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
    [wkWebViewConfig.userContentController addUserScript:userScript];
@@ -492,3 +1011,712 @@ index 38904266..9aa43cd7 100644
  
    if(_sharedCookiesEnabled) {
      // More info to sending cookies with WKWebView
+diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h
+new file mode 100644
+index 0000000..4b4fa04
+--- /dev/null
++++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h
+@@ -0,0 +1,11 @@
++#import <WebKit/WebKit.h>
++
++// Proxies the xApp webview so the one-time token stays on sandbox hosts and
++// the xApp host, and is removed for every other host. Installed only when the
++// webview user agent carries an ott marker.
++@interface XamanOttSchemeHandler : NSObject <WKURLSchemeHandler>
++
+++ (void)claimBuiltinSchemesWhile:(void (^)(void))block;
+++ (BOOL)isClaimingBuiltinSchemes;
++
++@end
+diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
+new file mode 100644
+index 0000000..5e27a41
+--- /dev/null
++++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
+@@ -0,0 +1,686 @@
++#import "XamanOttSchemeHandler.h"
++
++#import <objc/runtime.h>
++
++// Keep this host policy in sync with src/common/libs/xapp/ottScope.ts
++// and android/.../XamanOttScope.java.
++
++static BOOL XamanOttClaimBuiltinSchemes = NO;
++static IMP XamanOttOriginalHandlesURLScheme = NULL;
++
++static BOOL XamanOttHandlesURLScheme(id self, SEL _cmd, NSString *scheme) {
++  if (XamanOttClaimBuiltinSchemes && scheme != nil) {
++    if ([scheme caseInsensitiveCompare:@"https"] == NSOrderedSame ||
++        [scheme caseInsensitiveCompare:@"http"] == NSOrderedSame) {
++      return NO;
++    }
++  }
++  if (XamanOttOriginalHandlesURLScheme == NULL) {
++    return YES;
++  }
++  return ((BOOL (*)(id, SEL, NSString *))XamanOttOriginalHandlesURLScheme)(self, _cmd, scheme);
++}
++
++@interface XamanOttScope : NSObject
++@property (nonatomic, copy) NSString *pinnedHost;
++@property (nonatomic, strong) NSMutableSet<NSString *> *allowedHosts;
++@property (nonatomic, assign) BOOL chainOpen;
++@property (nonatomic, assign) BOOL expectingRedirect;
++- (void)reset;
++- (BOOL)keeps:(NSString *)host;
++- (void)noteRedirectFromHost:(NSString *)fromHost toHost:(NSString *)toHost document:(BOOL)document;
++- (void)noteDocumentStatus:(NSInteger)status;
++- (BOOL)observeHost:(NSString *)host path:(NSString *)path document:(BOOL)document redirect:(BOOL)redirect;
+++ (NSString *)normalizeHost:(NSString *)host;
+++ (BOOL)isOwnHost:(NSString *)host;
+++ (NSString *)stripOtt:(NSString *)userAgent;
++@end
++
++@implementation XamanOttScope
++
++- (instancetype)init {
++  if ((self = [super init])) {
++    _allowedHosts = [NSMutableSet set];
++  }
++  return self;
++}
++
++- (void)reset {
++  self.pinnedHost = nil;
++  [self.allowedHosts removeAllObjects];
++  self.chainOpen = NO;
++  self.expectingRedirect = NO;
++}
++
+++ (NSString *)normalizeHost:(NSString *)host {
++  if (host.length == 0) {
++    return nil;
++  }
++  NSString *value = host.lowercaseString;
++  value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
++  if ([value hasSuffix:@"."]) {
++    value = [value substringToIndex:value.length - 1];
++  }
++  NSRange colon = [value rangeOfString:@":" options:NSBackwardsSearch];
++  if (colon.location != NSNotFound && [value rangeOfString:@":"].location == colon.location) {
++    NSString *port = [value substringFromIndex:colon.location + 1];
++    NSCharacterSet *nonDigits = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
++    if (port.length > 0 && [port rangeOfCharacterFromSet:nonDigits].location == NSNotFound) {
++      value = [value substringToIndex:colon.location];
++    }
++  }
++  return value.length == 0 ? nil : value;
++}
++
+++ (BOOL)isOwnHost:(NSString *)host {
++  NSString *normalized = [self normalizeHost:host];
++  if (normalized.length == 0) {
++    return NO;
++  }
++  for (NSString *suffix in @[ @"xaman.app", @"xumm.app", @"xrpl-labs.com" ]) {
++    if ([normalized isEqualToString:suffix] || [normalized hasSuffix:[@"." stringByAppendingString:suffix]]) {
++      return YES;
++    }
++  }
++  return NO;
++}
++
+++ (BOOL)isDetectLaunch:(NSString *)path {
++  return [path containsString:@"/detect/xapp"];
++}
++
+++ (NSString *)stripOtt:(NSString *)userAgent {
++  if (userAgent.length == 0) {
++    return @"";
++  }
++  static NSRegularExpression *regex;
++  static dispatch_once_t once;
++  dispatch_once(&once, ^{
++    regex = [NSRegularExpression regularExpressionWithPattern:@"\\s*\\(ott:[^)]*\\)" options:0 error:nil];
++  });
++  if (regex == nil) {
++    return userAgent;
++  }
++  return [regex stringByReplacingMatchesInString:userAgent
++                                         options:0
++                                           range:NSMakeRange(0, userAgent.length)
++                                    withTemplate:@""];
++}
++
++- (BOOL)keeps:(NSString *)host {
++  @synchronized(self) {
++    NSString *normalized = [XamanOttScope normalizeHost:host];
++    if (normalized.length == 0) {
++      return YES;
++    }
++    return [XamanOttScope isOwnHost:normalized] || [self.allowedHosts containsObject:normalized];
++  }
++}
++
++- (void)noteRedirectFromHost:(NSString *)fromHost toHost:(NSString *)toHost document:(BOOL)document {
++  @synchronized(self) {
++    if (!document) {
++      return;
++    }
++    NSString *to = [XamanOttScope normalizeHost:toHost];
++    if (to.length == 0 || [XamanOttScope isOwnHost:to]) {
++      return;
++    }
++    NSString *from = [XamanOttScope normalizeHost:fromHost];
++    BOOL fromKnown = from.length > 0 && ([XamanOttScope isOwnHost:from] || [self.allowedHosts containsObject:from] || self.chainOpen);
++    if (!fromKnown) {
++      return;
++    }
++    [self.allowedHosts addObject:to];
++    self.pinnedHost = to;
++    self.chainOpen = YES;
++    self.expectingRedirect = YES;
++  }
++}
++
++- (void)noteDocumentStatus:(NSInteger)status {
++  @synchronized(self) {
++    if (status >= 300 && status < 400) {
++      self.expectingRedirect = YES;
++      return;
++    }
++    self.chainOpen = NO;
++    self.expectingRedirect = NO;
++  }
++}
++
++- (BOOL)observeHost:(NSString *)host path:(NSString *)path document:(BOOL)document redirect:(BOOL)redirect {
++  @synchronized(self) {
++    NSString *normalized = [XamanOttScope normalizeHost:host];
++    if (normalized.length == 0) {
++      return YES;
++    }
++    NSString *requestPath = path ?: @"";
++    if ([XamanOttScope isOwnHost:normalized]) {
++      if (document && !redirect && [XamanOttScope isDetectLaunch:requestPath]) {
++        self.pinnedHost = nil;
++        [self.allowedHosts removeAllObjects];
++        self.chainOpen = NO;
++        self.expectingRedirect = NO;
++      }
++      return YES;
++    }
++    if ([self.allowedHosts containsObject:normalized]) {
++      if (!document && self.chainOpen && !self.expectingRedirect) {
++        self.chainOpen = NO;
++      }
++      return YES;
++    }
++    if (document) {
++      BOOL first = self.pinnedHost.length == 0 && self.allowedHosts.count == 0;
++      BOOL follow = self.chainOpen && (redirect || self.expectingRedirect);
++      if (first || follow) {
++        [self.allowedHosts addObject:normalized];
++        self.pinnedHost = normalized;
++        self.chainOpen = YES;
++        self.expectingRedirect = NO;
++        return YES;
++      }
++      return NO;
++    }
++    return NO;
++  }
++}
++
++@end
++
++@interface XamanOttTaskBox : NSObject
++@property (nonatomic, strong) id<WKURLSchemeTask> schemeTask;
++@property (nonatomic, strong) NSURLSessionDataTask *dataTask;
++@property (nonatomic, assign) BOOL document;
++@property (nonatomic, assign) BOOL stopped;
++@property (nonatomic, assign) BOOL finished;
++@property (nonatomic, assign) BOOL receivedResponse;
++@property (nonatomic, assign) NSInteger redirects;
++@end
++
++@implementation XamanOttTaskBox
++@end
++
++@interface XamanOttSchemeHandler ()
++@property (nonatomic, strong) XamanOttScope *scope;
++@property (nonatomic, strong) NSURLSession *session;
++@property (nonatomic, strong) NSMapTable *boxByScheme;
++@property (nonatomic, strong) NSMapTable *boxBySessionTask;
++@property (nonatomic, strong) NSMutableSet *ignoredSessionTasks;
++- (void)sessionTask:(NSURLSessionTask *)task
++ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
++         newRequest:(NSURLRequest *)request
++  completionHandler:(void (^)(NSURLRequest *_Nullable))completionHandler;
++- (void)sessionDataTask:(NSURLSessionDataTask *)dataTask
++     didReceiveResponse:(NSURLResponse *)response
++      completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler;
++- (void)sessionDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data;
++- (void)sessionTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error;
++- (void)session:(NSURLSession *)session
++ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
++ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *_Nullable))completionHandler;
++@end
++
++@interface XamanOttSessionProxy : NSObject <NSURLSessionDataDelegate>
++@property (nonatomic, weak) XamanOttSchemeHandler *handler;
++@end
++
++@implementation XamanOttSchemeHandler
++
+++ (void)load {
++  static dispatch_once_t once;
++  dispatch_once(&once, ^{
++    Method method = class_getClassMethod([WKWebView class], @selector(handlesURLScheme:));
++    if (method == NULL) {
++      return;
++    }
++    XamanOttOriginalHandlesURLScheme = method_getImplementation(method);
++    method_setImplementation(method, (IMP)XamanOttHandlesURLScheme);
++  });
++}
++
+++ (BOOL)isClaimingBuiltinSchemes {
++  return XamanOttClaimBuiltinSchemes;
++}
++
+++ (void)claimBuiltinSchemesWhile:(void (^)(void))block {
++  if (block == nil) {
++    return;
++  }
++  if (XamanOttOriginalHandlesURLScheme == NULL) {
++    block();
++    return;
++  }
++  @synchronized([XamanOttSchemeHandler class]) {
++    XamanOttClaimBuiltinSchemes = YES;
++    @try {
++      block();
++    } @finally {
++      XamanOttClaimBuiltinSchemes = NO;
++    }
++  }
++}
++
++- (instancetype)init {
++  if ((self = [super init])) {
++    _scope = [XamanOttScope new];
++    NSPointerFunctionsOptions keyOptions = NSPointerFunctionsStrongMemory | NSPointerFunctionsOpaquePersonality;
++    NSPointerFunctionsOptions valueOptions = NSPointerFunctionsStrongMemory;
++    _boxByScheme = [NSMapTable mapTableWithKeyOptions:keyOptions valueOptions:valueOptions];
++    _boxBySessionTask = [NSMapTable mapTableWithKeyOptions:keyOptions valueOptions:valueOptions];
++    _ignoredSessionTasks = [NSMutableSet set];
++  }
++  return self;
++}
++
++- (void)dealloc {
++  [_session invalidateAndCancel];
++}
++
++- (NSURLSession *)ensureSession {
++  if (self.session != nil) {
++    return self.session;
++  }
++  NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
++  config.timeoutIntervalForRequest = 30;
++  config.timeoutIntervalForResource = 60;
++  config.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
++  config.HTTPShouldSetCookies = NO;
++  config.HTTPCookieStorage = nil;
++  config.URLCredentialStorage = nil;
++  XamanOttSessionProxy *proxy = [XamanOttSessionProxy new];
++  proxy.handler = self;
++  self.session = [NSURLSession sessionWithConfiguration:config delegate:proxy delegateQueue:nil];
++  return self.session;
++}
++
++- (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
++  NSURLRequest *original = urlSchemeTask.request;
++  NSURL *url = original.URL;
++  NSString *scheme = url.scheme.lowercaseString;
++  if (url == nil || !([scheme isEqualToString:@"https"] || [scheme isEqualToString:@"http"])) {
++    [self failTask:urlSchemeTask error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorUnsupportedURL userInfo:nil]];
++    return;
++  }
++
++  BOOL document = [self isDocumentRequest:original];
++  BOOL keep = [self.scope observeHost:url.host path:url.path ?: @"" document:document redirect:NO];
++  NSMutableURLRequest *next = [self forwardingRequest:original keepOtt:keep];
++  XamanOttTaskBox *box = [XamanOttTaskBox new];
++  box.schemeTask = urlSchemeTask;
++  box.document = document;
++  @synchronized(self) {
++    [self.boxByScheme setObject:box forKey:urlSchemeTask];
++  }
++  [self startDataTask:next box:box];
++}
++
++- (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
++  XamanOttTaskBox *box;
++  @synchronized(self) {
++    box = [self.boxByScheme objectForKey:urlSchemeTask];
++  }
++  if (box == nil) {
++    return;
++  }
++  box.stopped = YES;
++  [box.dataTask cancel];
++}
++
++- (BOOL)isDocumentRequest:(NSURLRequest *)request {
++  NSString *dest = [request valueForHTTPHeaderField:@"Sec-Fetch-Dest"];
++  if (dest.length > 0) {
++    return [dest isEqualToString:@"document"] || [dest isEqualToString:@"iframe"];
++  }
++  NSString *mode = [request valueForHTTPHeaderField:@"Sec-Fetch-Mode"];
++  if ([mode isEqualToString:@"navigate"]) {
++    return YES;
++  }
++  if (request.URL != nil && request.mainDocumentURL != nil && [self sameDocument:request.URL other:request.mainDocumentURL]) {
++    return YES;
++  }
++  NSString *accept = [request valueForHTTPHeaderField:@"Accept"] ?: @"";
++  return [accept containsString:@"text/html"];
++}
++
++- (BOOL)sameDocument:(NSURL *)left other:(NSURL *)right {
++  NSURLComponents *a = [NSURLComponents componentsWithURL:left resolvingAgainstBaseURL:NO];
++  NSURLComponents *b = [NSURLComponents componentsWithURL:right resolvingAgainstBaseURL:NO];
++  if (a == nil || b == nil) {
++    return [left.absoluteString isEqualToString:right.absoluteString];
++  }
++  a.fragment = nil;
++  b.fragment = nil;
++  return [a.string.lowercaseString isEqualToString:b.string.lowercaseString];
++}
++
++- (NSMutableURLRequest *)forwardingRequest:(NSURLRequest *)request keepOtt:(BOOL)keep {
++  NSMutableURLRequest *next = [request mutableCopy];
++  NSData *body = [self bodyOf:request];
++  if (body != nil) {
++    next.HTTPBodyStream = nil;
++    next.HTTPBody = body;
++  }
++  if (!keep) {
++    NSString *userAgent = [next valueForHTTPHeaderField:@"User-Agent"];
++    if ([userAgent containsString:@"(ott:"]) {
++      [next setValue:[XamanOttScope stripOtt:userAgent] forHTTPHeaderField:@"User-Agent"];
++    }
++    [next setValue:nil forHTTPHeaderField:@"X-OTT"];
++  }
++  return next;
++}
++
++- (NSData *)bodyOf:(NSURLRequest *)request {
++  if (request.HTTPBody.length > 0) {
++    return request.HTTPBody;
++  }
++  NSInputStream *stream = request.HTTPBodyStream;
++  if (stream == nil) {
++    return nil;
++  }
++  NSMutableData *data = [NSMutableData data];
++  [stream open];
++  uint8_t buffer[16 * 1024];
++  while (YES) {
++    NSInteger count = [stream read:buffer maxLength:sizeof(buffer)];
++    if (count <= 0) {
++      break;
++    }
++    [data appendBytes:buffer length:(NSUInteger)count];
++  }
++  [stream close];
++  return data;
++}
++
++- (void)startDataTask:(NSURLRequest *)request box:(XamanOttTaskBox *)box {
++  if (box.stopped || box.finished) {
++    return;
++  }
++  NSURLSessionDataTask *dataTask = [[self ensureSession] dataTaskWithRequest:request];
++  box.dataTask = dataTask;
++  @synchronized(self) {
++    [self.boxBySessionTask setObject:box forKey:dataTask];
++  }
++  [dataTask resume];
++}
++
++- (XamanOttTaskBox *)boxForSessionTask:(NSURLSessionTask *)task {
++  @synchronized(self) {
++    return [self.boxBySessionTask objectForKey:task];
++  }
++}
++
++- (BOOL)isIgnoredSessionTask:(NSURLSessionTask *)task {
++  @synchronized(self) {
++    return [self.ignoredSessionTasks containsObject:task];
++  }
++}
++
++- (void)ignoreSessionTask:(NSURLSessionTask *)task {
++  @synchronized(self) {
++    [self.ignoredSessionTasks addObject:task];
++  }
++}
++
++- (void)forgetSessionTask:(NSURLSessionTask *)task {
++  @synchronized(self) {
++    [self.ignoredSessionTasks removeObject:task];
++    [self.boxBySessionTask removeObjectForKey:task];
++  }
++}
++
++- (void)forgetBox:(XamanOttTaskBox *)box {
++  @synchronized(self) {
++    if (box.schemeTask != nil) {
++      [self.boxByScheme removeObjectForKey:box.schemeTask];
++    }
++    if (box.dataTask != nil) {
++      [self.boxBySessionTask removeObjectForKey:box.dataTask];
++    }
++  }
++}
++
++- (void)failTask:(id<WKURLSchemeTask>)task error:(NSError *)error {
++  @try {
++    [task didFailWithError:error];
++  } @catch (NSException *exception) {
++  }
++}
++
++- (void)receiveResponse:(NSURLResponse *)response box:(XamanOttTaskBox *)box {
++  if (box.stopped || box.finished) {
++    return;
++  }
++  @try {
++    [box.schemeTask didReceiveResponse:response];
++    box.receivedResponse = YES;
++  } @catch (NSException *exception) {
++    box.stopped = YES;
++  }
++}
++
++- (void)receiveData:(NSData *)data box:(XamanOttTaskBox *)box {
++  if (box.stopped || box.finished || data.length == 0) {
++    return;
++  }
++  @try {
++    [box.schemeTask didReceiveData:data];
++  } @catch (NSException *exception) {
++    box.stopped = YES;
++  }
++}
++
++- (void)finishBox:(XamanOttTaskBox *)box error:(NSError *)error {
++  if (box == nil || box.finished) {
++    return;
++  }
++  box.finished = YES;
++  if (!box.stopped) {
++    @try {
++      if (!box.receivedResponse) {
++        NSError *failure = error ?: [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil];
++        [box.schemeTask didFailWithError:failure];
++      } else if (error != nil && error.code != NSURLErrorCancelled) {
++        [box.schemeTask didFailWithError:error];
++      } else if (error == nil) {
++        [box.schemeTask didFinish];
++      }
++    } @catch (NSException *exception) {
++    }
++  }
++  [self forgetBox:box];
++}
++
++- (NSHTTPURLResponse *)cleanResponse:(NSHTTPURLResponse *)http {
++  NSMutableDictionary *headers = [NSMutableDictionary dictionary];
++  [http.allHeaderFields enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
++    if (![key isKindOfClass:[NSString class]]) {
++      return;
++    }
++    NSString *name = (NSString *)key;
++    if ([self isHopByHop:name] ||
++        [name caseInsensitiveCompare:@"Content-Encoding"] == NSOrderedSame ||
++        [name caseInsensitiveCompare:@"Content-Length"] == NSOrderedSame) {
++      return;
++    }
++    headers[name] = obj;
++  }];
++  NSHTTPURLResponse *clean = [[NSHTTPURLResponse alloc] initWithURL:http.URL
++                                                         statusCode:http.statusCode
++                                                        HTTPVersion:@"HTTP/1.1"
++                                                       headerFields:headers];
++  return clean ?: http;
++}
++
++- (BOOL)isHopByHop:(NSString *)name {
++  return [name caseInsensitiveCompare:@"Connection"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Keep-Alive"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Proxy-Authenticate"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Proxy-Authorization"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"TE"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Trailer"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Transfer-Encoding"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Upgrade"] == NSOrderedSame ||
++    [name caseInsensitiveCompare:@"Host"] == NSOrderedSame;
++}
++
++- (void)performRedirect:(NSHTTPURLResponse *)response request:(NSURLRequest *)request box:(XamanOttTaskBox *)box {
++  if (box.stopped || box.finished) {
++    return;
++  }
++  SEL selector = NSSelectorFromString(@"_willPerformRedirection:newRequest:completionHandler:");
++  if (![box.schemeTask respondsToSelector:selector]) {
++    BOOL keep = [self.scope keeps:request.URL.host];
++    [self startDataTask:[self forwardingRequest:request keepOtt:keep] box:box];
++    return;
++  }
++
++  __weak XamanOttSchemeHandler *weakSelf = self;
++  __weak XamanOttTaskBox *weakBox = box;
++  void (^completion)(NSURLRequest *) = ^(NSURLRequest *updated) {
++    XamanOttSchemeHandler *strongSelf = weakSelf;
++    XamanOttTaskBox *strongBox = weakBox;
++    if (strongSelf == nil || strongBox == nil || strongBox.stopped || strongBox.finished || updated.URL == nil) {
++      return;
++    }
++    BOOL keep = [strongSelf.scope keeps:updated.URL.host];
++    [strongSelf startDataTask:[strongSelf forwardingRequest:updated keepOtt:keep] box:strongBox];
++  };
++  void (^heapCompletion)(NSURLRequest *) = [completion copy];
++
++  @try {
++    NSMethodSignature *signature = [(NSObject *)box.schemeTask methodSignatureForSelector:selector];
++    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
++    invocation.target = box.schemeTask;
++    invocation.selector = selector;
++    NSHTTPURLResponse *redirectResponse = response;
++    NSURLRequest *redirectRequest = request;
++    [invocation setArgument:&redirectResponse atIndex:2];
++    [invocation setArgument:&redirectRequest atIndex:3];
++    [invocation setArgument:&heapCompletion atIndex:4];
++    [invocation retainArguments];
++    [invocation invoke];
++  } @catch (NSException *exception) {
++    BOOL keep = [self.scope keeps:request.URL.host];
++    [self startDataTask:[self forwardingRequest:request keepOtt:keep] box:box];
++  }
++}
++
++- (void)sessionTask:(NSURLSessionTask *)task
++ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
++         newRequest:(NSURLRequest *)request
++  completionHandler:(void (^)(NSURLRequest *_Nullable))completionHandler {
++  XamanOttTaskBox *box = [self boxForSessionTask:task];
++  if (box == nil || box.stopped || box.finished || box.redirects >= 8) {
++    completionHandler(nil);
++    return;
++  }
++  box.redirects += 1;
++  NSURL *from = task.originalRequest.URL ?: task.currentRequest.URL;
++  [self.scope noteRedirectFromHost:from.host toHost:request.URL.host document:box.document];
++  [self ignoreSessionTask:task];
++  completionHandler(nil);
++  [self performRedirect:response request:request box:box];
++}
++
++- (void)sessionDataTask:(NSURLSessionDataTask *)dataTask
++     didReceiveResponse:(NSURLResponse *)response
++      completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
++  if ([self isIgnoredSessionTask:dataTask]) {
++    completionHandler(NSURLSessionResponseCancel);
++    return;
++  }
++  XamanOttTaskBox *box = [self boxForSessionTask:dataTask];
++  if (box == nil || box.stopped || box.finished || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
++    completionHandler(NSURLSessionResponseCancel);
++    if (box != nil) {
++      [self finishBox:box error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil]];
++    }
++    return;
++  }
++  NSHTTPURLResponse *http = (NSHTTPURLResponse *)response;
++  if (box.document) {
++    [self.scope noteDocumentStatus:http.statusCode];
++  }
++  [self receiveResponse:[self cleanResponse:http] box:box];
++  completionHandler(NSURLSessionResponseAllow);
++}
++
++- (void)sessionDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
++  if ([self isIgnoredSessionTask:dataTask]) {
++    return;
++  }
++  XamanOttTaskBox *box = [self boxForSessionTask:dataTask];
++  [self receiveData:data box:box];
++}
++
++- (void)sessionTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
++  BOOL ignored = [self isIgnoredSessionTask:task];
++  XamanOttTaskBox *box = [self boxForSessionTask:task];
++  [self forgetSessionTask:task];
++  if (ignored || box == nil) {
++    return;
++  }
++  if (box.dataTask != nil && box.dataTask != task) {
++    return;
++  }
++  [self finishBox:box error:error];
++}
++
++- (void)session:(NSURLSession *)session
++ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
++ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *_Nullable))completionHandler {
++  completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
++}
++
++@end
++
++@implementation XamanOttSessionProxy
++
++- (void)URLSession:(NSURLSession *)session
++              task:(NSURLSessionTask *)task
++willPerformHTTPRedirection:(NSHTTPURLResponse *)response
++        newRequest:(NSURLRequest *)request
++ completionHandler:(void (^)(NSURLRequest *_Nullable))completionHandler {
++  XamanOttSchemeHandler *handler = self.handler;
++  if (handler == nil) {
++    completionHandler(nil);
++    return;
++  }
++  [handler sessionTask:task willPerformHTTPRedirection:response newRequest:request completionHandler:completionHandler];
++}
++
++- (void)URLSession:(NSURLSession *)session
++          dataTask:(NSURLSessionDataTask *)dataTask
++didReceiveResponse:(NSURLResponse *)response
++ completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
++  XamanOttSchemeHandler *handler = self.handler;
++  if (handler == nil) {
++    completionHandler(NSURLSessionResponseCancel);
++    return;
++  }
++  [handler sessionDataTask:dataTask didReceiveResponse:response completionHandler:completionHandler];
++}
++
++- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
++  [self.handler sessionDataTask:dataTask didReceiveData:data];
++}
++
++- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
++  [self.handler sessionTask:task didCompleteWithError:error];
++}
++
++- (void)URLSession:(NSURLSession *)session
++ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
++ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *_Nullable))completionHandler {
++  XamanOttSchemeHandler *handler = self.handler;
++  if (handler == nil) {
++    completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
++    return;
++  }
++  [handler session:session didReceiveChallenge:challenge completionHandler:completionHandler];
++}
++
++@end

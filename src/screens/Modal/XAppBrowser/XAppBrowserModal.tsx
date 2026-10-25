@@ -384,7 +384,7 @@ class XAppBrowserModal extends Component<Props, State> {
                     text: Localize.t('global.continue'),
                     onPress: () => {
                         const result = LoggerService.getLogs();
-                        this.sendEvent({ method: XAppMethods.GetLogs, result });                
+                        this.sendEvent({ method: XAppMethods.GetLogs, result });
                     },
                     light: false,
                 },
@@ -439,11 +439,7 @@ class XAppBrowserModal extends Component<Props, State> {
         });
     };
 
-    openTxDetails = async (data: {
-        tx: string;
-        account: string;
-        network?: string;
-    }) => {
+    openTxDetails = async (data: { tx: string; account: string; network?: string }) => {
         const { network: stateNetwork } = this.state;
 
         const paramNetwork = NetworkRepository.findOne({ key: String(data?.network).toUpperCase() });
@@ -624,7 +620,7 @@ class XAppBrowserModal extends Component<Props, State> {
         return StyleService.getCurrentTheme();
         // const {coreSettings} = this.state;
 
-        // const style: Themes = 
+        // const style: Themes =
         //     !coreSettings.themeAutoSwitch                     // If not auto switching
         //         ? coreSettings.theme                          //   then return as is (from settings)
         //         : StyleService.getCurrentTheme() === 'light'  //   else, if the current theme is light
@@ -847,8 +843,10 @@ class XAppBrowserModal extends Component<Props, State> {
     getUserAgent = (): string => {
         const { appVersionCode, ott } = this.state;
 
-        // NOTE: we included the ott in the header for the server side xApps to be able to access the ott easier
-        // Security risk is really low as the ott details can only be fetched by application and only once
+        // Server-side xApps read the one-time token from the User-Agent. It stays on
+        // xaman.app, xumm.app, xrpl-labs.com, and the xApp's own host (including
+        // that document's redirects). Native webview code strips it for every
+        // other host so a CDN, font, image, or stylesheet request cannot see it.
         return `xumm/xapp:${appVersionCode} (ott:${ott})`;
     };
 
@@ -1241,26 +1239,28 @@ class XAppBrowserModal extends Component<Props, State> {
                     }}
                     centerComponent={{
                         text: altHeader?.center?.text,
-                        extraComponent: altHeader?.center?.showNetworkLabel
-                            ? <NetworkLabel type="both" />
-                            : altHeader?.center?.subtitle && (
+                        extraComponent: altHeader?.center?.showNetworkLabel ? (
+                            <NetworkLabel type="both" />
+                        ) : (
+                            altHeader?.center?.subtitle && (
                                 <Text style={AppStyles.smalltext}>{String(altHeader?.center?.subtitle)}</Text>
-                            ),
+                            )
+                        ),
                     }}
                     rightComponent={
                         Object.values(AppConfig.xappIdentifiers).indexOf(String(app?.identifier || '')) > -1 ||
-                            altHeader?.right?.element ||
-                            (altHeader?.center?.subtitle && altHeader?.right?.icon)
-                                ? { 
-                                    icon: altHeader?.right?.icon,
-                                    element: altHeader?.right?.element,
-                                    iconSize: altHeader?.right?.iconSize,
-                                    onPress: () => {
-                                        const fn = this?.[(altHeader?.right?.onPress || '_') as keyof this];
-                                        if (typeof fn === 'function') fn(altHeader?.right?.onPressOptions);
-                                    },
-                                }
-                                : undefined
+                        altHeader?.right?.element ||
+                        (altHeader?.center?.subtitle && altHeader?.right?.icon)
+                            ? {
+                                  icon: altHeader?.right?.icon,
+                                  element: altHeader?.right?.element,
+                                  iconSize: altHeader?.right?.iconSize,
+                                  onPress: () => {
+                                      const fn = this?.[(altHeader?.right?.onPress || '_') as keyof this];
+                                      if (typeof fn === 'function') fn(altHeader?.right?.onPressOptions);
+                                  },
+                              }
+                            : undefined
                     }
                 />
             );
