@@ -26,6 +26,8 @@ import Localize from '@locale';
 
 import { Props as LockOverlayProps } from '@screens/Overlay/Lock/types';
 
+const MAX_FAILED_PASSCODE_ATTEMPTS = 10;
+
 /* Types  ==================================================================== */
 export enum LockStatus {
     LOCKED = 'LOCKED',
@@ -229,21 +231,23 @@ class AuthenticationService extends EventEmitter {
             ts = await GetElapsedRealtime();
         }
 
+        const failedAttempts = coreSettings.passcodeFailedAttempts + 1;
+
         // increase failed attempt
         CoreRepository.saveAuthenticationSettings({
-            passcodeFailedAttempts: coreSettings.passcodeFailedAttempts + 1,
+            passcodeFailedAttempts: failedAttempts,
             lastPasscodeFailedTimestamp: ts,
         });
 
         // check for purge on too many attempts
         if (coreSettings.purgeOnBruteForce) {
             // alert user next attempt will wipe the entire app
-            if (coreSettings.passcodeFailedAttempts + 1 === 10) {
+            if (failedAttempts === MAX_FAILED_PASSCODE_ATTEMPTS - 1) {
                 // alert
                 Navigator.showAlertModal({
                     type: 'error',
                     title: Localize.t('global.critical'),
-                    text: Localize.t('global.autoWipeAlert', { times: coreSettings.passcodeFailedAttempts + 1 }),
+                    text: Localize.t('global.autoWipeAlert', { times: failedAttempts }),
                     buttons: [
                         {
                             text: Localize.t('global.dismiss'),
@@ -254,7 +258,7 @@ class AuthenticationService extends EventEmitter {
                 });
             }
 
-            if (coreSettings.passcodeFailedAttempts + 1 > 10) {
+            if (failedAttempts >= MAX_FAILED_PASSCODE_ATTEMPTS) {
                 // wipe/reset the app
                 await this.resetApp();
             }
