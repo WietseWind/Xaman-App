@@ -19,6 +19,8 @@ import { Prompt } from '@common/helpers/interface';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 import { CalculateAvailableBalance } from '@common/utils/balance';
+import { mptDisplayToRaw, mptScaleFromCache } from '@common/utils/mptAmount';
+import { mptAmountMessage } from '../../mptAmountMessage';
 
 // components
 import { Button, KeyboardAwareScrollView, AmountInput, Footer } from '@components/General';
@@ -161,42 +163,26 @@ class DetailsStep extends Component<Props, State> {
             return;
         }
 
+        if (typeof token !== 'string' && token?.isMPToken()) {
+            try {
+                mptDisplayToRaw(amount, mptScaleFromCache(token.limit_peer));
+            } catch (error) {
+                Prompt(
+                    Localize.t('global.error'),
+                    mptAmountMessage(error),
+                    [{ text: Localize.t('global.cancel') }],
+                    { type: 'default' },
+                );
+                return;
+            }
+        }
+
         // check for exceed amount
         // if sending IOU and obligation can send unlimited
         if (typeof token !== 'string' && token.obligation) {
             // go to next screen
             goNext();
             return;
-        }
-
-        if (typeof token !== 'string' && token?.isMPToken()) {
-            let mpTokenAmount = 0;
-            try {
-                const mptIssuanceDetails = JSON.parse(
-                    String(token?.limit_peer || '|{}').split('|')?.[1] || '{}',
-                );
-                if (mptIssuanceDetails && typeof mptIssuanceDetails === 'object') {
-                    if (mptIssuanceDetails?.AssetScale && Number(mptIssuanceDetails?.AssetScale || 0) > 1) {
-                        mpTokenAmount = Number(amount);
-                        mpTokenAmount *= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                        if (String(mpTokenAmount).split('.').length > 1) {
-                            Prompt(
-                                Localize.t('global.error'),
-                                Localize.t('send.theMaxDecimalsYouCanSendIs', {
-                                    decimals: mptIssuanceDetails?.AssetScale || 1,
-                                }),
-                                [
-                                    { text: Localize.t('global.cancel') },
-                                ],
-                                { type: 'default' },
-                            );
-                            return;
-                        }
-                    }
-                }
-            } catch {
-                //
-            }
         }
 
         this.setState({
@@ -215,7 +201,9 @@ class DetailsStep extends Component<Props, State> {
             Prompt(
                 Localize.t('global.error'),
                 Localize.t('send.theMaxAmountYouCanSendIs', {
-                    spendable: Localize.formatNumber(Number(availableBalance)),
+                    spendable: typeof token !== 'string' && token?.isMPToken()
+                        ? Localize.formatNumber(String(availableBalance), 0, false)
+                        : Localize.formatNumber(Number(availableBalance)),
                     currency: this.getCurrencyName(),
                 }),
                 [

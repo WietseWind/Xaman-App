@@ -114,17 +114,14 @@ class AmountText extends Component<Props, State> {
             return null;
         }
 
-        // case passed value to Number
-        if (typeof value === 'string') {
-            value = Number(value);
-        }
-
         // normalize currency code
         let normalizedCurrency;
         if (typeof currency === 'string' && currency) {
             // normalize currency code
             normalizedCurrency = NormalizeCurrencyCode(currency);
         }
+
+        if (typeof value === 'string' && value.trim() === '') value = 0;
 
         if (value === 0) {
             return {
@@ -144,6 +141,12 @@ class AmountText extends Component<Props, State> {
                 currency: normalizedCurrency,
                 localSettings: newLocalSettings,
             };
+        }
+
+        // Immutable ledger amounts must reach the decimal formatter as strings.
+        // Retain the existing compact-number behavior for the interactive display.
+        if (typeof value === 'string') {
+            value = Number(value);
         }
 
         const PRECISION = 8;

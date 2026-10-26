@@ -169,26 +169,14 @@ class AccountRepository extends BaseRepository<AccountModel> {
         const availableAccounts = [] as Array<AccountModel>;
 
         accounts.forEach((account: AccountModel) => {
-            if (account.accessLevel === AccessLevels.Full) {
-                // check if master key is disable and regular key not imported
-                if (account.regularKey) {
-                    // eslint-disable-next-line max-len
-                    const regularKeyImported = !this.query({
-                        address: account.regularKey,
-                        accessLevel: AccessLevels.Full,
-                    }).isEmpty();
-
-                    if ((account.flags?.disableMasterKey && regularKeyImported) || !account.flags?.disableMasterKey) {
-                        availableAccounts.push(account);
-                    }
-                } else {
-                    availableAccounts.push(account);
-                }
-            } else if (
-                // Readonly but the regular Key imported as full access
-                account.regularKey &&
-                !this.query({ address: account.regularKey, accessLevel: AccessLevels.Full }).isEmpty()
-            ) {
+            const masterAvailable = account.accessLevel === AccessLevels.Full && !account.flags?.disableMasterKey;
+            // A regular key can authorize this account even if the regular-key
+            // account's own master key is disabled. Do not recursively filter it.
+            const regularKeyImported = !!account.regularKey && !this.query({
+                address: account.regularKey,
+                accessLevel: AccessLevels.Full,
+            }).isEmpty();
+            if (masterAvailable || regularKeyImported) {
                 availableAccounts.push(account);
             }
         });

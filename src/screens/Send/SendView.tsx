@@ -20,6 +20,8 @@ import { Navigator } from '@common/helpers/navigator';
 import Memo from '@common/libs/ledger/parser/common/memo';
 
 import { CalculateAvailableBalance } from '@common/utils/balance';
+import { mptDisplayToRaw, mptScaleFromCache } from '@common/utils/mptAmount';
+import { mptAmountMessage } from './mptAmountMessage';
 
 import { AmountParser } from '@common/libs/ledger/parser/common';
 import {
@@ -235,6 +237,16 @@ class SendView extends Component<Props, State> {
         this.setState({ scanResult: result });
     };
 
+    getMPTWireAmount = () => {
+        const { token, amount } = this.state;
+        if (typeof token === 'string') throw new Error('Expected MPT');
+        try {
+            return mptDisplayToRaw(amount, mptScaleFromCache(token.limit_peer));
+        } catch (error) {
+            throw new Error(mptAmountMessage(error));
+        }
+    };
+
     getPaymentJsonForFee = () => {
         const { token, amount, destination, source, memo, credentials, altTxTypeTo } = this.state;
 
@@ -258,6 +270,15 @@ class SendView extends Component<Props, State> {
             });
         }
 
+        let mptValue = '0';
+        if (typeof token !== 'string' && token?.isMPToken()) {
+            try {
+                mptValue = this.getMPTWireAmount();
+            } catch {
+                // Quote an empty draft while editing; send() validates again before signing.
+            }
+        }
+
         // set the amount
         if (typeof token === 'string') {
             Object.assign(txJson, {
@@ -268,7 +289,7 @@ class SendView extends Component<Props, State> {
                 Amount: token?.isMPToken()
                     ? {
                           mpt_issuance_id: token.currency.currencyCode,
-                          value: amount,
+                          value: mptValue,
                       }
                     : {
                           currency: token.currency.currencyCode,
@@ -457,27 +478,10 @@ class SendView extends Component<Props, State> {
                     }
                 }
 
-                // set the amount, fix AssetScale for MPT
-                let mpTokenAmount = 0;
-                if (token?.isMPToken()) {
-                    try {
-                        const mptIssuanceDetails = JSON.parse(
-                            String(token?.limit_peer || '|{}').split('|')?.[1] || '{}',
-                        );
-                        if (mptIssuanceDetails && typeof mptIssuanceDetails === 'object') {
-                            if (mptIssuanceDetails?.AssetScale && Number(mptIssuanceDetails?.AssetScale || 0) > 1) {
-                                mpTokenAmount = Number(amount);
-                                mpTokenAmount *= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                            }
-                        }
-                    } catch {
-                        //
-                    }
-                }
                 const am = token?.isMPToken()
                     ? {
                           mpt_issuance_id: token.currency.currencyCode,
-                          value: String(mpTokenAmount || amount),
+                          value: this.getMPTWireAmount(),
                       }
                     : {
                           currency: token.currency.currencyCode,

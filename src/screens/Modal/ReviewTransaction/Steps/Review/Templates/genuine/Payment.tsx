@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, InteractionManager } from 'react-native';
 
@@ -11,6 +12,7 @@ import { Payment } from '@common/libs/ledger/transactions';
 import { PathFindPathOption } from '@common/libs/ledger/types/methods';
 
 import { CalculateAvailableBalance } from '@common/utils/balance';
+import { MPT_MAX_AMOUNT, mptRawToDisplay } from '@common/utils/mptAmount';
 
 import { TrustLineModel } from '@store/models';
 
@@ -48,16 +50,23 @@ export interface State {
     isLoadingIssuerFee: boolean;
     issuerFee: number;
     selectedPath?: PathFindPathOption;
+    mptLoading: boolean;
+    mptLookupKey: string;
     mptDetails?: MPToken;
     mptIssuanceDetails?: MPTokenIssuance;
     mptIssuanceError?: { error: string };
 }
+
+const mptLookupKey = (props: Props) =>
+    JSON.stringify([props.source?.address, props.transaction.Amount?.mpt_issuance_id]);
 
 /* Component ==================================================================== */
 class PaymentTemplate extends Component<Props, State> {
     amountInput: React.RefObject<typeof AmountInput | null>;
 
     private currentCurrency: TrustLineModel | undefined;
+    private mounted = false;
+    private mptGeneration = 0;
 
     constructor(props: Props) {
         super(props);
@@ -82,6 +91,8 @@ class PaymentTemplate extends Component<Props, State> {
             isLoadingIssuerFee: false,
             issuerFee: 0,
             selectedPath: undefined,
+            mptLoading: !!this.isMPTAmount(),
+            mptLookupKey: mptLookupKey(props),
             mptDetails: undefined,
             mptIssuanceDetails: undefined,
         };
@@ -90,7 +101,9 @@ class PaymentTemplate extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
         InteractionManager.runAfterInteractions(() => {
+            if (!this.mounted) return;
             // if native currency then show equal amount in selected currency
             this.fetchCurrencyRate();
 
@@ -105,10 +118,25 @@ class PaymentTemplate extends Component<Props, State> {
         });
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+        this.mptGeneration += 1;
+    }
+
     static getDerivedStateFromProps(nextProps: Props, prevState: State) {
-        if (nextProps.source?.address !== prevState.account) {
-            return { account: nextProps.source?.address };
+        const key = mptLookupKey(nextProps);
+        if (key !== prevState.mptLookupKey) {
+            const id = nextProps.transaction.Amount?.mpt_issuance_id;
+            return {
+                account: nextProps.source?.address,
+                mptLookupKey: key,
+                mptLoading: typeof id === 'string' && id.length === 48,
+                mptDetails: undefined,
+                mptIssuanceDetails: undefined,
+                mptIssuanceError: undefined,
+            };
         }
+        if (nextProps.source?.address !== prevState.account) return { account: nextProps.source?.address };
         return null;
     }
 
@@ -125,10 +153,14 @@ class PaymentTemplate extends Component<Props, State> {
         }
     };
 
-    componentDidUpdate(prevProps: Props) {
+    componentDidUpdate(prevProps: Props, prevState: State) {
         const { source, transaction } = this.props;
         if (prevProps.source?.address !== source?.address) {
             this.bindCurrentCurrency(source, transaction);
+        }
+        const { mptLookupKey: key } = this.state;
+        if (prevState.mptLookupKey !== key) {
+            this.fetchMPTDetails();
         }
     }
 
@@ -141,69 +173,60 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
     fetchMPTDetails = async () => {
-        const { transaction } = this.props;
-        const { account } = this.state;
-
-        if (this.isMPTAmount()) {
-          const fetched = await settleLedgerFetches([
-                LedgerService.getLedgerEntry({
-                    command: 'ledger_entry',
-                    mpt_issuance: transaction?.Amount?.mpt_issuance_id,
-                }),
-                LedgerService.getLedgerEntry({
-                    command: 'ledger_entry',
-                    mptoken: {
-                        mpt_issuance_id: transaction?.Amount?.mpt_issuance_id,
-                        account,
-                    },
-                }),
-            ]);
-
-          if (!fetched.ok) {
-            this.setState(
-                {
-                    mptIssuanceError: { error: 'fetch_failed' },
-                },
-                this.setIsReady,
-            );
+        const generation = ++this.mptGeneration;
+        const key = mptLookupKey(this.props);
+        const { transaction, source, setReady } = this.props;
+        if (!this.mounted || !this.isMPTAmount() || !source?.address) return;
+        setReady(false);
+        this.setState({
+            mptLoading: true, mptDetails: undefined, mptIssuanceDetails: undefined, mptIssuanceError: undefined,
+        });
+        const fetched = await settleLedgerFetches([
+            LedgerService.getLedgerEntry({
+                command: 'ledger_entry', mpt_issuance: transaction.Amount?.mpt_issuance_id,
+            }),
+            LedgerService.getLedgerEntry({
+                command: 'ledger_entry',
+                mptoken: { mpt_issuance_id: transaction.Amount?.mpt_issuance_id, account: source.address },
+            }),
+        ]);
+        if (!this.mounted || generation !== this.mptGeneration || key !== mptLookupKey(this.props)) return;
+        if (!fetched.ok) {
+            this.setState({
+                mptLoading: false, mptIssuanceError: { error: 'fetch_failed' },
+            }, this.setIsReady);
             return;
-          }
-
-            const [issuance, mpt] = fetched.values;
-
-            if ((mpt as any)?.node) {
-                this.setState({
-                    mptDetails: (mpt as any).node as MPToken,
-                });
-            }
-
-            if ((issuance as any)?.node) {
-                this.setState({
-                    mptIssuanceDetails: (issuance as any).node as MPTokenIssuance,
-                });
-            } else if ((issuance as any)?.error) {
-                this.setState({
-                    mptIssuanceError: issuance as any,
-                });
-            }
-
-            this.setIsReady();
         }
+        const [issuance, holding] = fetched.values as any[];
+        // Issuers/new holders can legitimately have no MPToken object yet.
+        const holdingKnown = !!holding?.node || holding?.error === 'entryNotFound';
+        if (!issuance?.node || !holdingKnown) {
+            this.setState({
+                mptLoading: false,
+                mptIssuanceError: { error: issuance?.error || holding?.error || 'fetch_failed' },
+            }, this.setIsReady);
+            return;
+        }
+        this.setState({
+            mptLoading: false,
+            mptDetails: holding.node,
+            mptIssuanceDetails: issuance.node,
+            mptIssuanceError: undefined,
+        }, this.setIsReady);
     };
 
     setIsReady = () => {
-        const { payload, setReady } = this.props;
-        const { mptIssuanceDetails } = this.state;
-
-        // disable ready until user selects a payment option
+        const { payload, setReady, transaction } = this.props;
+        const { mptLoading, mptIssuanceDetails, mptLookupKey: key } = this.state;
         if (payload.isPathFinding()) {
             setReady(false);
+            return;
         }
-
         if (this.isMPTAmount()) {
-            if (mptIssuanceDetails) {                
-                setReady(true);
-            } else {
+            try {
+                mptRawToDisplay(transaction.Amount?.value ?? '0', mptIssuanceDetails?.AssetScale);
+                setReady(!mptLoading && !!mptIssuanceDetails && key === mptLookupKey(this.props));
+            } catch {
                 setReady(false);
             }
         }
@@ -445,22 +468,22 @@ class PaymentTemplate extends Component<Props, State> {
         } = this.state;
 
         const mptAmount = {
-            holding: 0,
-            transaction: 0,
-            availableForIssuance: 0,
+            holding: '0',
+            transaction: '0',
+            availableForIssuance: '0',
         };
 
         if (this.isMPTAmount()) {
-            mptAmount.holding = Number(mptDetails?.MPTAmount || 0);
-            mptAmount.transaction = Number(transaction?.Amount?.value || 0);
-
-            mptAmount.availableForIssuance = Number(mptIssuanceDetails?.MaximumAmount || 0) -
-                Number(mptIssuanceDetails?.OutstandingAmount || 0);
-
-            if ((mptIssuanceDetails?.AssetScale || 1) > 1) {
-                mptAmount.holding /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                mptAmount.transaction /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                mptAmount.availableForIssuance /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
+            try {
+                const scale = mptIssuanceDetails?.AssetScale;
+                mptAmount.holding = mptRawToDisplay(mptDetails?.MPTAmount ?? '0', scale);
+                mptAmount.transaction = mptRawToDisplay(transaction.Amount?.value ?? '0', scale);
+                mptAmount.availableForIssuance = mptRawToDisplay(
+                    new BigNumber(mptIssuanceDetails?.MaximumAmount ?? MPT_MAX_AMOUNT)
+                        .minus(mptIssuanceDetails?.OutstandingAmount ?? '0'), scale,
+                );
+            } catch {
+                return <InfoMessage type="error" label={Localize.t('mptoken.errorLoading')} />;
             }
 
             if (!mptIssuanceDetails && !mptIssuanceError) {
@@ -619,11 +642,7 @@ class PaymentTemplate extends Component<Props, State> {
                                                 <Text style={[AppStyles.monoBold]}>
                                                     {
                                                         source.address === mptIssuanceDetails?.Issuer
-                                                            ? (
-                                                                (mptIssuanceDetails?.MaximumAmount || 0) > 0
-                                                                    ? mptAmount.availableForIssuance
-                                                                    : 'N/A (issuer)'
-                                                            )
+                                                            ? mptAmount.availableForIssuance
                                                             : mptAmount.holding
                                                     }{' '}
                                                 </Text>

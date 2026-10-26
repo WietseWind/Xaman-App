@@ -127,7 +127,9 @@ class ResolverService {
         // remove the cache if account is added/removed/updated
         if (account?.address) {
             if (!changes || (changes && 'label' in changes)) {
-                this.accountNameCache.delete(this.getAccountNameCacheKey(account.address));
+                // Account labels apply to all destination tags and both lookup modes.
+                const prefix = `[${JSON.stringify(account.address)},`;
+                this.accountNameCache.deleteWhere((key) => key.startsWith(prefix));
             }
         }
     };
@@ -135,12 +137,18 @@ class ResolverService {
     private onContactChange = (contact: Partial<ContactModel>) => {
         // remove the cache if contact is added/removed/updated
         if (contact?.address) {
-            this.accountNameCache.delete(this.getAccountNameCacheKey(contact.address, contact.destinationTag));
+            // Older removal events used "tag"; accept them during release integration.
+            const legacyTag = 'tag' in contact &&
+                (typeof contact.tag === 'string' || typeof contact.tag === 'number') ? contact.tag : undefined;
+            const tag = contact.destinationTag ?? legacyTag;
+            [false, true].forEach((internal) => {
+                this.accountNameCache.delete(this.getAccountNameCacheKey(contact.address!, tag, internal));
+            });
         }
     };
 
-    private getAccountNameCacheKey = (address: string, tag?: number | string) => {
-        return `${address}${tag ?? ''}`;
+    private getAccountNameCacheKey = (address: string, tag?: number | string, internal = false) => {
+        return JSON.stringify([address, String(tag ?? ''), internal]);
     };
 
     private resolveAccountName = async (address: string, tag?: number, internal = false) => {
@@ -220,7 +228,7 @@ class ResolverService {
         tag?: number,
         internal = false,
     ): Promise<AccountNameResolveType> => {
-        const key = `${address}${tag ?? ''}`;
+        const key = this.getAccountNameCacheKey(address, tag, internal);
 
         const cachedValue = this.accountNameCache.get(key);
 
