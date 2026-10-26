@@ -466,6 +466,10 @@ const Navigator = {
      *
      * @return {Promise<string | boolean>} A promise that resolves to either string or false
      */
+    currentModal(): string | undefined {
+        return NavigationService.getCurrentModal();
+    },
+
     dismissModal(): Promise<string | boolean> {
         const currentModal = NavigationService.getCurrentModal();
 

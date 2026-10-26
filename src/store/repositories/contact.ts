@@ -54,7 +54,7 @@ class ContactRepository extends BaseRepository<ContactModel> {
         const deletedContact = {
             id: object.id,
             address: object.address,
-            tag: object.destinationTag,
+            destinationTag: object.destinationTag,
         };
 
         await this.deleteById(object.id);

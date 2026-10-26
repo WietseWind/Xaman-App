@@ -18,7 +18,7 @@ export type SubmitNetworkDetails = {
 export type RecoveredSubmit = {
     success: boolean;
     engineResult: string;
-    message?: string;
+    message: string;
     hash?: string;
     node: string;
     network: SubmitNetworkDetails;
@@ -67,7 +67,7 @@ export const engineResultFromTxLookup = (response: any): string | undefined => {
     return undefined;
 };
 
-const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms); });
+const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
 
 /** The blob never left the device. A missing hash, or no socket to send on. */
 export const submitWasNotSent = (error: { message?: string }, hash?: string): boolean => {
@@ -134,7 +134,7 @@ export const recoverSubmitAfterSendError = async ({
             ...carried,
             success: false,
             engineResult: 'telFAILED',
-            message: error?.message,
+            message: error?.message || 'The transaction was not sent.',
         };
     }
 

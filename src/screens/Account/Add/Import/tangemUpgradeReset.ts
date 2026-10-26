@@ -1,10 +1,12 @@
-import { AccountTypes } from '@store/types';
+import { AccountTypes, EncryptionLevels } from '@store/types';
 
 import { SecretTypes } from './types';
 
 export type TangemImportAccount = {
     type?: AccountTypes;
     additionalInfoString?: string;
+    encryptionLevel?: EncryptionLevels;
+    encryptionVersion?: number;
 };
 
 export type TangemImportSlice = {
@@ -21,7 +23,13 @@ export const stateForSecretType = <T extends TangemImportSlice>(state: T, type: 
 
     const account =
         state.account?.type === AccountTypes.Tangem
-            ? { ...state.account, type: AccountTypes.Regular, additionalInfoString: undefined }
+            ? {
+                  ...state.account,
+                  type: AccountTypes.Regular,
+                  additionalInfoString: undefined,
+                  encryptionLevel: undefined,
+                  encryptionVersion: undefined,
+              }
             : state.account;
 
     return {

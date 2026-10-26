@@ -5,7 +5,7 @@ import { AccountModel } from '@store/models';
 import PaymentChannelClaim from './PaymentChannelClaim.class';
 
 /* Types ==================================================================== */
-import { MutationsMixinType } from '@common/libs/ledger/mixin/types';
+import { BalanceChanges, MutationsMixinType } from '@common/libs/ledger/mixin/types';
 import { ExplainerAbstract, MonetaryStatus } from '@common/libs/ledger/factory/types';
 import { OperationActions } from '@common/libs/ledger/parser/types';
 import { payChannelAmountsFromMeta, remainingPayChannelAmount } from '@common/libs/ledger/utils/payChannelAmounts';
@@ -95,7 +95,7 @@ class PaymentChannelClaimInfo extends ExplainerAbstract<PaymentChannelClaim, Mut
             });
         }
 
-        const emptyMutate = {
+        const emptyMutate: BalanceChanges = {
             [OperationActions.INC]: [],
             [OperationActions.DEC]: [],
         };

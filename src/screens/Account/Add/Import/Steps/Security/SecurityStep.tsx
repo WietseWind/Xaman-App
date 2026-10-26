@@ -30,7 +30,7 @@ class SecurityStep extends Component<Props, State> {
     componentDidMount() {
         const { account, setEncryptionLevel } = this.context;
 
-        if (!account.encryptionLevel) {
+        if (![EncryptionLevels.Passcode, EncryptionLevels.Passphrase].includes(account.encryptionLevel!)) {
             setEncryptionLevel(EncryptionLevels.Passcode);
         }
     }

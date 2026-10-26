@@ -9,40 +9,16 @@
  * request to that domain and its subdomains keeps the token, including
  * reloads and navigations to other pages. Direct redirects of that first
  * document are part of the same allowance. Every other domain has it removed.
+ * Android attaches it through its scoped bodyless transport; body-bearing requests
+ * and native fallbacks use a token-free Chromium user agent.
  */
+
+// Snapshot includes ICANN/private rules, wildcards and exceptions (MPL-2.0).
+import publicSuffixes from './publicSuffixRules.json';
 
 export const XAPP_OTT_OWN_SUFFIXES = ['xaman.app', 'xumm.app', 'xrpl-labs.com'] as const;
 
-// Longest match wins. These are shared suffixes where the label before the
-// suffix is the real site, so one xApp cannot cover every tenant.
-const PUBLIC_SUFFIXES = [
-    's3.amazonaws.com',
-    'amazonaws.com',
-    'azurewebsites.net',
-    'cloudfront.net',
-    'firebaseapp.com',
-    'github.io',
-    'gitlab.io',
-    'herokuapp.com',
-    'netlify.app',
-    'pages.dev',
-    'vercel.app',
-    'web.app',
-    'workers.dev',
-    'com.au',
-    'net.au',
-    'org.au',
-    'co.jp',
-    'co.nz',
-    'co.uk',
-    'org.uk',
-    'ac.uk',
-    'com.br',
-    'com.mx',
-    'com.sg',
-    'com.tr',
-    'co.za',
-];
+const suffixRules = new Set(publicSuffixes.rules);
 
 const OTT_PATTERN = /\s*\(ott:[^)]*\)/g;
 
@@ -93,22 +69,20 @@ export function xappSiteRoot(host: string | null | undefined): string | null {
     if (isIpHost(normalized) || !normalized.includes('.')) {
         return normalized;
     }
-    let suffix = '';
-    for (const candidate of PUBLIC_SUFFIXES) {
-        if ((normalized === candidate || normalized.endsWith(`.${candidate}`)) && candidate.length > suffix.length) {
-            suffix = candidate;
-        }
-    }
-    if (suffix) {
-        if (normalized === suffix) {
-            return normalized;
-        }
-        const remainder = normalized.slice(0, -(suffix.length + 1));
-        const left = remainder.split('.').pop();
-        return left ? `${left}.${suffix}` : normalized;
-    }
     const labels = normalized.split('.');
-    return labels.slice(-2).join('.');
+    let suffixLength = 1;
+    for (let i = 0; i < labels.length; i += 1) {
+        const candidate = labels.slice(i).join('.');
+        if (suffixRules.has(`!${candidate}`)) {
+            suffixLength = labels.length - i - 1;
+            break;
+        }
+        if (suffixRules.has(candidate)) suffixLength = Math.max(suffixLength, labels.length - i);
+        if (i > 0 && suffixRules.has(`*.${candidate}`)) {
+            suffixLength = Math.max(suffixLength, labels.length - i + 1);
+        }
+    }
+    return labels.slice(-Math.min(labels.length, suffixLength + 1)).join('.');
 }
 
 export function sameXappSite(host: string | null | undefined, allowedHost: string | null | undefined): boolean {

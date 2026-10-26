@@ -12,7 +12,7 @@ export const SCAM_ACCEPT_CONFIRM_BUTTONS = [
 ] as const;
 
 export type CancelCraft = {
-    txJson: TransactionJson;
+    txJson: Omit<TransactionJson, 'Account'>;
     labelKey: 'cancelOffer' | 'cancelCheck' | 'cancelEscrow';
 };
 
@@ -96,13 +96,16 @@ export const craftCancelFromSignRequest = (transaction: any): CancelCraft | unde
     const type = transaction?.Type || transaction?.TransactionType;
 
     if (type === TransactionTypes.NFTokenAcceptOffer) {
-        const offerId = transaction.NFTokenSellOffer || transaction.NFTokenBuyOffer;
-        if (typeof offerId === 'string' && offerId) {
+        const offerIds = [
+            ...new Set(
+                [transaction.NFTokenSellOffer, transaction.NFTokenBuyOffer].filter(
+                    (id): id is string => typeof id === 'string' && !!id,
+                ),
+            ),
+        ];
+        if (offerIds.length) {
             return {
-                txJson: {
-                    TransactionType: TransactionTypes.NFTokenCancelOffer,
-                    NFTokenOffers: [offerId],
-                },
+                txJson: { TransactionType: TransactionTypes.NFTokenCancelOffer, NFTokenOffers: offerIds },
                 labelKey: 'cancelOffer',
             };
         }
@@ -119,7 +122,7 @@ export const craftCancelFromSignRequest = (transaction: any): CancelCraft | unde
     }
 
     if (type === TransactionTypes.EscrowFinish && typeof transaction?.Owner === 'string' && transaction.Owner) {
-        const txJson: TransactionJson = {
+        const txJson: CancelCraft['txJson'] = {
             TransactionType: TransactionTypes.EscrowCancel,
             Owner: transaction.Owner,
         };
@@ -153,10 +156,21 @@ export const resolveScamSignRequest = async (
     payloadRiskWarn: boolean,
     lookup: ScamSignRequestLookup,
 ): Promise<{ isScam: boolean; cancelCraft?: CancelCraft }> => {
-    const cancelCraft = craftCancelFromSignRequest(transaction);
+    // Batch inners are decoded by the model; scanned raw JSON can still be wrapped.
+    const type = transaction?.Type || transaction?.TransactionType;
+    let innerIsScam = false;
+    if (type === TransactionTypes.Batch) {
+        const results = await Promise.all(
+            (transaction.RawTransactions || []).map((entry: any) =>
+                resolveScamSignRequest(entry.RawTransaction || entry, sourceAddress, false, lookup),
+            ),
+        );
+        innerIsScam = results.some((result) => result.isScam);
+    }
+    let cancelCraft = craftCancelFromSignRequest(transaction);
     let canCancel = !!cancelCraft;
-    let isScam = !!payloadRiskWarn;
-    let offerNode: LedgerOfferNode | undefined;
+    let isScam = !!payloadRiskWarn || innerIsScam;
+    const offerNodes: LedgerOfferNode[] = [];
     const extraCounterparties: string[] = [];
 
     const readNode = async (spec: LedgerEntrySpec) => {
@@ -165,25 +179,29 @@ export const resolveScamSignRequest = async (
     };
 
     if (cancelCraft?.labelKey === 'cancelOffer') {
-        canCancel = false;
-        try {
-            const offerId = transaction?.NFTokenSellOffer || transaction?.NFTokenBuyOffer;
-            if (typeof offerId === 'string' && offerId) {
-                const res = await lookup.getLedgerEntry(offerId);
-                offerNode = res?.node;
-                canCancel = canCancelNFTokenOffer(offerNode, sourceAddress);
-
-                if (offerNode?.NFTokenID && sourceAddress) {
-                    const details = await lookup.getNFTDetails(sourceAddress, [offerNode.NFTokenID]);
-                    const image = details?.tokenData?.[offerNode.NFTokenID]?.image;
-                    if (isScamImageUrl(image)) {
-                        isScam = true;
+        const cancellable: string[] = [];
+        const ids = cancelCraft.txJson.NFTokenOffers as string[];
+        await Promise.all(
+            ids.map(async (offerId) => {
+                try {
+                    const node = await readNode(offerId);
+                    if (!node) return;
+                    offerNodes.push(node);
+                    if (canCancelNFTokenOffer(node, sourceAddress)) cancellable.push(offerId);
+                    if (node.NFTokenID && sourceAddress) {
+                        const details = await lookup.getNFTDetails(sourceAddress, [node.NFTokenID]);
+                        if (isScamImageUrl(details?.tokenData?.[node.NFTokenID]?.image)) isScam = true;
                     }
+                } catch {
+                    // A failed lookup never grants cancellation permission.
                 }
-            }
-        } catch {
-            canCancel = false;
-        }
+            }),
+        );
+        canCancel = cancellable.length > 0;
+        cancelCraft = {
+            ...cancelCraft,
+            txJson: { ...cancelCraft.txJson, NFTokenOffers: ids.filter((id) => cancellable.includes(id)) },
+        };
     }
 
     if (cancelCraft?.labelKey === 'cancelEscrow') {
@@ -227,7 +245,7 @@ export const resolveScamSignRequest = async (
 
     const addresses = [
         ...collectSignRequestCounterparties(transaction, sourceAddress),
-        ...collectLedgerOfferCounterparties(offerNode, sourceAddress),
+        ...offerNodes.flatMap((node) => collectLedgerOfferCounterparties(node, sourceAddress)),
         ...extraCounterparties,
     ].filter((address, index, all) => address && address !== sourceAddress && all.indexOf(address) === index);
 

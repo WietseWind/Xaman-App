@@ -180,11 +180,12 @@ class TransactionItem extends Component<Props, State> {
                     return;
                 }
 
+                // Compare with the previous participant before setState can commit.
+                this.getTokenDetails(resp);
                 this.setState({
                     participant: resp,
                     isLoading: false,
                 });
-                this.getTokenDetails(resp);
             })
             .catch(() => {
                 const { isLoading } = this.state;

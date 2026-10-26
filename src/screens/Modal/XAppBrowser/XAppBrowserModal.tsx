@@ -12,6 +12,7 @@ import {
     InteractionManager,
     Linking,
     NativeEventSubscription,
+    Platform,
     Share,
     Share as RNShare,
     Text,
@@ -829,9 +830,9 @@ class XAppBrowserModal extends Component<Props, State> {
 
         return {
             uri,
-            headers: {
-                'X-OTT': ott,
-            },
+            // Android's scoped native transport adds X-OTT only on owned hosts.
+            // Keeping it in source headers would restore it during Chromium fallback.
+            ...(Platform.OS === 'android' ? {} : { headers: { 'X-OTT': ott } }),
         };
     };
 
@@ -845,8 +846,9 @@ class XAppBrowserModal extends Component<Props, State> {
 
         // Server-side xApps read the one-time token from the User-Agent. It stays on
         // xaman.app, xumm.app, xrpl-labs.com, and on the xApp domain plus its
-        // subdomains for every later request. Native webview code strips it for
-        // every other domain so a CDN, font, image, or stylesheet cannot see it.
+        // subdomains. Android adds it to scoped bodyless requests and exposes it
+        // to the SDK at document start; Chromium's default UA stays token-free,
+        // including requests with bodies, WebSockets and interception fallbacks.
         return `xumm/xapp:${appVersionCode} (ott:${ott})`;
     };
 

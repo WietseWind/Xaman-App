@@ -1,4 +1,4 @@
-import { AccountTypes } from '@store/types';
+import { AccountTypes, EncryptionLevels } from '@store/types';
 
 import { SecretTypes } from '../types';
 import { shouldFinishTangemUpgrade, stateForSecretType } from '../tangemUpgradeReset';
@@ -10,6 +10,8 @@ describe('tangem upgrade reset', () => {
         tangemSignature: 'sig',
         account: {
             type: AccountTypes.Tangem,
+            encryptionLevel: EncryptionLevels.Physical,
+            encryptionVersion: 2,
             address: 'rAddress',
             additionalInfoString: '{"cardId":"CD1"}',
         },
@@ -22,6 +24,8 @@ describe('tangem upgrade reset', () => {
         expect(next.scannedTangemCard).toBeUndefined();
         expect(next.tangemSignature).toBeUndefined();
         expect(next.account.type).toBe(AccountTypes.Regular);
+        expect(next.account.encryptionLevel).toBeUndefined();
+        expect(next.account.encryptionVersion).toBeUndefined();
         expect(next.account.address).toBe('rAddress');
         expect(next.account.additionalInfoString).toBeUndefined();
     });

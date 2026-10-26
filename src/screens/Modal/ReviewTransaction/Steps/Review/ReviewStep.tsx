@@ -5,7 +5,7 @@
 import { get } from 'lodash';
 import React, { Component } from 'react';
 import { ImageBackground, Text, View } from 'react-native';
-import { OptionsModalPresentationStyle } from 'react-native-navigation';
+import { Navigation, OptionsModalPresentationStyle } from 'react-native-navigation';
 
 import { BackendService, LedgerService, PushNotificationsService, ResolverService, StyleService } from '@services';
 
@@ -62,6 +62,8 @@ class ReviewStep extends Component<Props, State> {
 
     private scamGeneration = 0;
 
+    private scamCancelPending = false;
+
     private scamSourceAddress: string | undefined;
 
     constructor(props: Props) {
@@ -117,11 +119,14 @@ class ReviewStep extends Component<Props, State> {
 
     componentWillUnmount(): void {
         this.mounted = false;
+        this.scamGeneration += 1;
     }
 
     scamLookup = () => ({
-        getLedgerEntry: async (spec: string | Record<string, unknown>) =>
-            LedgerService.getLedgerEntry(typeof spec === 'string' ? { index: spec } : spec),
+        getLedgerEntry: async (spec: string | Record<string, unknown>) => {
+            const response = await LedgerService.getLedgerEntry(typeof spec === 'string' ? { index: spec } : spec);
+            return response && 'node' in response ? { node: response.node } : undefined;
+        },
         getNFTDetails: BackendService.getNFTDetails,
         getAccountAdvisory: BackendService.getAccountAdvisory,
         getAccountName: ResolverService.getAccountName,
@@ -188,42 +193,43 @@ class ReviewStep extends Component<Props, State> {
     };
 
     onScamCancelPress = async () => {
-        const { payload, source, transaction } = this.context;
-
-        if (!source || !transaction) {
-            return;
-        }
-
-        const { cancelCraft } = await resolveScamSignRequest(
-            transaction,
-            source.address,
-            !!payload?.risk?.__warn_user,
-            this.scamLookup(),
-        );
-
-        if (!cancelCraft) {
-            return;
-        }
-
-        payload.reject('USER');
-        setTimeout(() => {
-            PushNotificationsService.emit('signRequestUpdate');
-        }, 1000);
-
-        Navigator.dismissModal().then(() => {
-            const craftedTxJson = {
-                ...cancelCraft.txJson,
-                Account: source.address,
-            } as TransactionJson;
-
+        const { payload, source, transaction, isLoading, setLoading } = this.context;
+        if (!this.mounted || !source || !transaction || isLoading || this.scamCancelPending) return;
+        const generation = this.scamGeneration;
+        const { address } = source;
+        const modal = Navigator.currentModal();
+        if (!modal) return;
+        const current = () => {
+            const { source: currentSource, transaction: currentTransaction, payload: currentPayload } = this.context;
+            return this.mounted && Navigator.currentModal() === modal && generation === this.scamGeneration &&
+                currentSource?.address === address && currentTransaction === transaction && currentPayload === payload;
+        };
+        this.scamCancelPending = true;
+        setLoading(true);
+        try {
+            const { cancelCraft } = await resolveScamSignRequest(
+                transaction,
+                address,
+                !!payload?.risk?.__warn_user,
+                this.scamLookup(),
+            );
+            if (!current() || !cancelCraft) return;
+            payload.reject('USER');
+            setTimeout(() => PushNotificationsService.emit('signRequestUpdate'), 1000);
+            await Navigation.dismissModal(modal);
+            const activeModal = Navigator.currentModal();
+            if (activeModal && activeModal !== modal) return;
             Navigator.showModal(
                 AppScreens.Modal.ReviewTransaction,
-                {
-                    payload: Payload.build(craftedTxJson),
-                },
+                { payload: Payload.build({ ...cancelCraft.txJson, Account: address } as TransactionJson) },
                 { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
             );
-        });
+        } catch {
+            // The initiating modal may have been dismissed while navigation was settling.
+        } finally {
+            this.scamCancelPending = false;
+            if (this.mounted) setLoading(false);
+        }
     };
 
     toggleCanScroll = () => {

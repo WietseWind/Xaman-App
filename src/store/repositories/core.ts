@@ -172,6 +172,17 @@ class CoreRepository extends BaseRepository<CoreModel> {
         }
     };
 
+    /** Persist an already hashed passcode as the rekey transaction's commit record. */
+    savePasscodeHash = (passcode: string): void => {
+        if (!passcode) throw new Error('Empty passcode hash');
+        const settings = this.getSettings();
+        // Do not defer this commit: recovery uses the persisted hash to choose its target.
+        this.realm.write(() => {
+            settings.passcode = passcode;
+        });
+        this.emit('updateSettings', settings, { passcode });
+    };
+
     /**
      * Set the passcode for the app.
      * @param passcode - The passcode to set.

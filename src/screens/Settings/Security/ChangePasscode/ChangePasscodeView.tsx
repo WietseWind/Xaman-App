@@ -5,12 +5,11 @@
 import React, { Component } from 'react';
 import { View, Text, Alert, InteractionManager } from 'react-native';
 
-import { CoreRepository, AccountRepository } from '@store/repositories';
-import { EncryptionLevels } from '@store/types';
+import { CoreRepository } from '@store/repositories';
 
 import { CoreModel } from '@store/models';
 
-import Vault from '@common/libs/vault';
+import { changePasscode } from '@common/libs/passcodeChange';
 import { Navigator } from '@common/helpers/navigator';
 import { Prompt, Toast } from '@common/helpers/interface';
 
@@ -26,7 +25,6 @@ import Localize from '@locale';
 // style
 import { AppStyles } from '@theme';
 import styles from './styles';
-import { passcodeWrittenOnRollback } from './passcodeRollback';
 import { CriticalProcessingOverlayProps } from '@screens/Overlay/CriticalProcessing';
 
 /* types ==================================================================== */
@@ -77,7 +75,7 @@ class ChangePasscodeView extends Component<Props, State> {
             if (this.pinInput.current) {
                 this.pinInput.current?.setState({
                     digits: '',
-                });    
+                });
             }
         });
     };
@@ -129,51 +127,9 @@ class ChangePasscodeView extends Component<Props, State> {
         Alert.alert(Localize.t('global.error'), Localize.t('global.unexpectedErrorOccurred'));
     };
 
-    processChangePasscode = (): Promise<void> => {
+    processChangePasscode = async (): Promise<void> => {
         const { newPasscode } = this.state;
-
-        // eslint-disable-next-line no-async-promise-executor
-        return new Promise(async (resolve, reject): Promise<void> => {
-            try {
-                // get current passcode
-                const { passcode } = CoreRepository.getSettings();
-
-                if (!passcode) {
-                    throw new Error('Core settings passcode has not been set!');
-                }
-
-                // store the new passcode in the store
-                const newEncPasscode = await CoreRepository.setPasscode(newPasscode);
-
-                if (!newEncPasscode) {
-                    Alert.alert(Localize.t('global.error'), Localize.t('setupPasscode.UnableToStoreThePasscode'));
-                    return;
-                }
-
-                // get all accounts with encryption level Passcode
-                const accounts = AccountRepository.findBy('encryptionLevel', EncryptionLevels.Passcode);
-
-                const passcodeVaultNames = accounts.map((account) => account.publicKey);
-
-                let isReKeyFailed = false;
-
-                try {
-                    await Vault.reKeyBatch(passcodeVaultNames, passcode, newEncPasscode);
-                } catch (e) {
-                    isReKeyFailed = true;
-                }
-
-                // in case of vaults reKey failed, rollback the passcode to old one.
-                // `passcode` from settings is already hashed; setPasscode() would hash it again.
-                if (isReKeyFailed) {
-                    CoreRepository.saveSettings({ passcode: passcodeWrittenOnRollback(passcode) });
-                }
-
-                resolve();
-            } catch (e) {
-                reject(e);
-            }
-        });
+        await changePasscode(newPasscode);
     };
 
     changePasscode = async () => {
@@ -280,7 +236,7 @@ class ChangePasscodeView extends Component<Props, State> {
                     }}
                     centerComponent={{ text: Localize.t('settings.changePasscode') }}
                 />
-                
+
                 <View style={[AppStyles.flex1, AppStyles.flexStart, AppStyles.paddingTop]}>
                     <Text style={[AppStyles.p, AppStyles.textCenterAligned]}>{stepDescription}</Text>
                 </View>

@@ -156,3 +156,23 @@ describe('xApp OTT host scope', () => {
         }
     });
 });
+
+describe('full public suffix scope', () => {
+    it.each([
+        ['app.wallet.co.in', 'collector.unrelated.co.in'],
+        ['wallet.onrender.com', 'unrelated.onrender.com'],
+        ['wallet.com.cn', 'unrelated.com.cn'],
+        ['a.foo.ck', 'b.foo.ck'],
+        ['app.a.公司.cn', 'collector.b.公司.cn'],
+        ['app.a.xn--55qx5d.cn', 'collector.b.xn--55qx5d.cn'],
+    ])('isolates %s from %s', (app, collector) => {
+        const scope = new XappOttScope();
+        scope.observe({ host: app, document: true, redirect: false });
+        expect(scope.keeps(collector)).toBe(false);
+    });
+    it('supports wildcard exceptions without splitting a single registrable site', () => {
+        expect(xappSiteRoot('a.www.ck')).toBe('www.ck');
+        expect(sameXappSite('a.www.ck', 'b.www.ck')).toBe(true);
+        expect(sameXappSite('api.wallet.co.in', 'app.wallet.co.in')).toBe(true);
+    });
+});
