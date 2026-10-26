@@ -844,9 +844,9 @@ class XAppBrowserModal extends Component<Props, State> {
         const { appVersionCode, ott } = this.state;
 
         // Server-side xApps read the one-time token from the User-Agent. It stays on
-        // xaman.app, xumm.app, xrpl-labs.com, and the xApp's own host (including
-        // that document's redirects). Native webview code strips it for every
-        // other host so a CDN, font, image, or stylesheet request cannot see it.
+        // xaman.app, xumm.app, xrpl-labs.com, and on the xApp domain plus its
+        // subdomains for every later request. Native webview code strips it for
+        // every other domain so a CDN, font, image, or stylesheet cannot see it.
         return `xumm/xapp:${appVersionCode} (ott:${ott})`;
     };
 

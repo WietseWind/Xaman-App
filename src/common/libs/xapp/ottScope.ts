@@ -5,12 +5,44 @@
  * this same policy. Change all three together.
  *
  * Own hosts (the sandbox and the detect redirect) always keep the token.
- * The first document on any other host becomes the xApp host, and direct
- * redirects of that document are included. Later requests to those hosts
- * keep the token. Every other host has it removed.
+ * The first document on any other host becomes the xApp site. Every later
+ * request to that domain and its subdomains keeps the token, including
+ * reloads and navigations to other pages. Direct redirects of that first
+ * document are part of the same allowance. Every other domain has it removed.
  */
 
 export const XAPP_OTT_OWN_SUFFIXES = ['xaman.app', 'xumm.app', 'xrpl-labs.com'] as const;
+
+// Longest match wins. These are shared suffixes where the label before the
+// suffix is the real site, so one xApp cannot cover every tenant.
+const PUBLIC_SUFFIXES = [
+    's3.amazonaws.com',
+    'amazonaws.com',
+    'azurewebsites.net',
+    'cloudfront.net',
+    'firebaseapp.com',
+    'github.io',
+    'gitlab.io',
+    'herokuapp.com',
+    'netlify.app',
+    'pages.dev',
+    'vercel.app',
+    'web.app',
+    'workers.dev',
+    'com.au',
+    'net.au',
+    'org.au',
+    'co.jp',
+    'co.nz',
+    'co.uk',
+    'org.uk',
+    'ac.uk',
+    'com.br',
+    'com.mx',
+    'com.sg',
+    'com.tr',
+    'co.za',
+];
 
 const OTT_PATTERN = /\s*\(ott:[^)]*\)/g;
 
@@ -48,6 +80,43 @@ export function isXappDetectLaunch(path: string | null | undefined): boolean {
     return (path || '').includes('/detect/xapp');
 }
 
+function isIpHost(host: string): boolean {
+    return host.includes(':') || /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+}
+
+/** Registrable site: example.com, example.co.uk, or tenant.github.io. */
+export function xappSiteRoot(host: string | null | undefined): string | null {
+    const normalized = normalizeHost(host);
+    if (!normalized) {
+        return null;
+    }
+    if (isIpHost(normalized) || !normalized.includes('.')) {
+        return normalized;
+    }
+    let suffix = '';
+    for (const candidate of PUBLIC_SUFFIXES) {
+        if ((normalized === candidate || normalized.endsWith(`.${candidate}`)) && candidate.length > suffix.length) {
+            suffix = candidate;
+        }
+    }
+    if (suffix) {
+        if (normalized === suffix) {
+            return normalized;
+        }
+        const remainder = normalized.slice(0, -(suffix.length + 1));
+        const left = remainder.split('.').pop();
+        return left ? `${left}.${suffix}` : normalized;
+    }
+    const labels = normalized.split('.');
+    return labels.slice(-2).join('.');
+}
+
+export function sameXappSite(host: string | null | undefined, allowedHost: string | null | undefined): boolean {
+    const left = xappSiteRoot(host);
+    const right = xappSiteRoot(allowedHost);
+    return !!left && left === right;
+}
+
 export function stripOttUserAgent(userAgent: string | null | undefined): string {
     if (!userAgent) {
         return '';
@@ -76,7 +145,16 @@ export class XappOttScope {
         if (!normalized) {
             return true;
         }
-        return isOwnXappHost(normalized) || this.allowedHosts.has(normalized);
+        return isOwnXappHost(normalized) || this.matchesAllowed(normalized);
+    }
+
+    private matchesAllowed(host: string): boolean {
+        for (const allowed of this.allowedHosts) {
+            if (sameXappSite(host, allowed)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -92,7 +170,7 @@ export class XappOttScope {
             return;
         }
         const from = normalizeHost(fromHost);
-        const fromKnown = !!from && (isOwnXappHost(from) || this.allowedHosts.has(from) || this.chainOpen);
+        const fromKnown = !!from && (isOwnXappHost(from) || this.matchesAllowed(from) || this.chainOpen);
         if (!fromKnown) {
             return;
         }
@@ -126,7 +204,7 @@ export class XappOttScope {
             return true;
         }
 
-        if (this.allowedHosts.has(host)) {
+        if (this.matchesAllowed(host)) {
             // A subresource from the xApp host means that document has started.
             if (!input.document && this.chainOpen && !this.expectingRedirect) {
                 this.chainOpen = false;
