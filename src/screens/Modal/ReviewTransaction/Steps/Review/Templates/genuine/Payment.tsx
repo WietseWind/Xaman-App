@@ -379,7 +379,7 @@ class PaymentTemplate extends Component<Props, State> {
             );
         }
 
-        const line = (source.lines || []).find(
+        const line = Array.from(source.lines || []).find(
             (item) => item.currency.currencyCode === currency && item.currency.issuer === issuer,
         );
         const balance = line ? Math.floor(Number(line.balance || 0) * 100_000_000) / 100_000_000 : 0;

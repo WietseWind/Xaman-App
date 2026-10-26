@@ -12,7 +12,7 @@ export const SCAM_ACCEPT_CONFIRM_BUTTONS = [
 ] as const;
 
 export type CancelCraft = {
-    txJson: TransactionJson;
+    txJson: Omit<TransactionJson, 'Account'>;
     labelKey: 'cancelOffer' | 'cancelCheck' | 'cancelEscrow';
 };
 
@@ -119,7 +119,7 @@ export const craftCancelFromSignRequest = (transaction: any): CancelCraft | unde
     }
 
     if (type === TransactionTypes.EscrowFinish && typeof transaction?.Owner === 'string' && transaction.Owner) {
-        const txJson: TransactionJson = {
+        const txJson: CancelCraft['txJson'] = {
             TransactionType: TransactionTypes.EscrowCancel,
             Owner: transaction.Owner,
         };

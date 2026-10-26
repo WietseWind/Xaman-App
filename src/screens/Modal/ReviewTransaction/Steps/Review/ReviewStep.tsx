@@ -120,8 +120,10 @@ class ReviewStep extends Component<Props, State> {
     }
 
     scamLookup = () => ({
-        getLedgerEntry: async (spec: string | Record<string, unknown>) =>
-            LedgerService.getLedgerEntry(typeof spec === 'string' ? { index: spec } : spec),
+        getLedgerEntry: async (spec: string | Record<string, unknown>) => {
+            const response = await LedgerService.getLedgerEntry(typeof spec === 'string' ? { index: spec } : spec);
+            return response && 'node' in response ? { node: response.node } : undefined;
+        },
         getNFTDetails: BackendService.getNFTDetails,
         getAccountAdvisory: BackendService.getAccountAdvisory,
         getAccountName: ResolverService.getAccountName,
