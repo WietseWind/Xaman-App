@@ -229,6 +229,7 @@
     "domainID": "ID de domini",
     "sendMax": "Envia-ho tot",
     "deliverMin": "Mínim del lliurament",
+    "maximumReceiveLimit": "Límit màxim de recepció",
     "checkID": "Identificador del xec",
     "checkAmount": "Import del xec",
     "regularKey": "Clau Normal",

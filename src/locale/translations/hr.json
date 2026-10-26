@@ -229,6 +229,7 @@
     "domainID": "ID domene",
     "sendMax": "Pošalji sve",
     "deliverMin": "Isporuči minimalno",
+    "maximumReceiveLimit": "Najveći iznos za primanje",
     "checkID": "ID provjere",
     "checkAmount": "Provjeri iznos",
     "regularKey": "Redovni ključ",

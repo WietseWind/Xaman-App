@@ -229,6 +229,7 @@
     "domainID": "डोमेन ID",
     "sendMax": "अधिकतम राशि भेजें",
     "deliverMin": "न्यूनतम राशि वितरित करें",
+    "maximumReceiveLimit": "प्राप्ति की अधिकतम सीमा",
     "checkID": "Check ID",
     "checkAmount": "Check राशि",
     "regularKey": "नियमित कुंजी",

@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Maksimal miqdorni yuboring",
     "deliverMin": "Minimal miqdorni etkazib bering",
+    "maximumReceiveLimit": "Qabul qilishning maksimal chegarasi",
     "checkID": "Schot raqami",
     "checkAmount": "Miqdorni tekshiring",
     "regularKey": "Muntazam kalit",

@@ -229,6 +229,7 @@
     "domainID": "Domän-ID",
     "sendMax": "Skicka max",
     "deliverMin": "Levermin",
+    "maximumReceiveLimit": "Högsta mottagningsgräns",
     "checkID": "Check ID",
     "checkAmount": "Kontrollera belopp ",
     "regularKey": "Ordinarie nyckel",

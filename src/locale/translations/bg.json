@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Изпрати Макс",
     "deliverMin": "Избави Мин",
+    "maximumReceiveLimit": "Максимален лимит за получаване",
     "checkID": "Провери ID",
     "checkAmount": "Провери сума",
     "regularKey": "Regular Key",

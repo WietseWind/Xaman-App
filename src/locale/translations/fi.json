@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Lähetä Enimmäismäärä",
     "deliverMin": "Toimita vähimmäismäärä",
+    "maximumReceiveLimit": "Vastaanoton enimmäisraja",
     "checkID": "Tarkista henkilöllisyys",
     "checkAmount": "Tarkista määrä",
     "regularKey": "Tavallinen avain",

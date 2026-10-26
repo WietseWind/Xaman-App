@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "سبھی بھیجیں",
     "deliverMin": "کم سے کم فراہمی",
+    "maximumReceiveLimit": "وصولی کی زیادہ سے زیادہ حد",
     "checkID": "چیک ID",
     "checkAmount": "رقم چیک کریں",
     "regularKey": "باقاعدہ کلید",

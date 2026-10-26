@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Ipadala ang Lahat",
     "deliverMin": "Ihatid Minimum",
+    "maximumReceiveLimit": "Pinakamataas na limitasyon sa pagtanggap",
     "checkID": "Suriin ID",
     "checkAmount": "Suriin ang halaga",
     "regularKey": "Regular susi",

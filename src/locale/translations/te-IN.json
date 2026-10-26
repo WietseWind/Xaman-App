@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "అన్నీ పంపండి",
     "deliverMin": "కనిష్టంగా ఇవ్వండి",
+    "maximumReceiveLimit": "స్వీకరణ గరిష్ఠ పరిమితి",
     "checkID": "ఐడి పరిశీలించు",
     "checkAmount": "మొత్తము పరిశీలించు",
     "regularKey": "రెగ్యులర్ కీ",

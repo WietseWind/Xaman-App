@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "发送最大金额",
     "deliverMin": "交付最小金额",
+    "maximumReceiveLimit": "接收金额上限",
     "checkID": "支票ID",
     "checkAmount": "支票金额",
     "regularKey": "常规密钥",

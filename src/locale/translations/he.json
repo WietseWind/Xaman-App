@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "שלח הכל",
     "deliverMin": "לספק מינימום",
+    "maximumReceiveLimit": "מגבלת קבלה מרבית",
     "checkID": "בדיקת זיהוי",
     "checkAmount": "בדיקת סכום",
     "regularKey": "מפתח רגיל",

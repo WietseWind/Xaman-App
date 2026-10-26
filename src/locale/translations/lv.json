@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Maksimālā sūtīšanas summa",
     "deliverMin": "Minimālā piegādes summa",
+    "maximumReceiveLimit": "Maksimālais saņemšanas limits",
     "checkID": "Čeka ID",
     "checkAmount": "Čeka summa",
     "regularKey": "Regulāra atslēga",

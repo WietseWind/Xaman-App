@@ -229,6 +229,7 @@
     "domainID": "Domain azonosító",
     "sendMax": "Maximum küldött összeg",
     "deliverMin": "Minimum kézbesített összeg",
+    "maximumReceiveLimit": "Maximális fogadási korlát",
     "checkID": "Check azonosító",
     "checkAmount": "Check összeg",
     "regularKey": "Regular kulcs",

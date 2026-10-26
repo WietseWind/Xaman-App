@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Gửi tất cả",
     "deliverMin": "Cung cấp tối thiểu",
+    "maximumReceiveLimit": "Giới hạn nhận tối đa",
     "checkID": "Kiểm tra ID",
     "checkAmount": "Kiểm tra số tiền",
     "regularKey": "Chìa khóa thông thường",

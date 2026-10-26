@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Odoslať všetko",
     "deliverMin": "Doručiť minimum",
+    "maximumReceiveLimit": "Maximálny limit príjmu",
     "checkID": "ID šeku",
     "checkAmount": "Suma šeku",
     "regularKey": "Pravidelný kľúč",

@@ -229,6 +229,7 @@
     "domainID": "Domein ID",
     "sendMax": "Stuur maksimum bedrag",
     "deliverMin": "Lewer Minimum",
+    "maximumReceiveLimit": "Maksimum ontvangslimiet",
     "checkID": "Kontroleer ID",
     "checkAmount": "Kontroleer bedrag",
     "regularKey": "Gewone sleutel",

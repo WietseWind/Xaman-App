@@ -229,6 +229,7 @@
     "domainID": "ID Domèn",
     "sendMax": "Voye kantite maksimòm",
     "deliverMin": "Livre kantite minimòm",
+    "maximumReceiveLimit": "Limit maksimòm pou resevwa",
     "checkID": "ID Check",
     "checkAmount": "Kantite chèk",
     "regularKey": "Kle Regilye",

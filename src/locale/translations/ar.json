@@ -229,6 +229,7 @@
     "domainID": "معرّف Domain",
     "sendMax": "أرسل الكل",
     "deliverMin": "تسليم الحد الأدنى",
+    "maximumReceiveLimit": "الحد الأقصى للاستلام",
     "checkID": "تحقق من الهوية",
     "checkAmount": "التحقق من المبلغ",
     "regularKey": "مفتاح اعتيادي",

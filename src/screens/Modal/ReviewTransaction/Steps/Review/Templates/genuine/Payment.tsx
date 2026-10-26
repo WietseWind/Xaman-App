@@ -33,6 +33,7 @@ import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 import { MPToken, MPTokenIssuance } from '@common/libs/ledger/objects';
 import { ComponentTypes } from '@services/NavigationService';
 import { paymentReceivesAmount, showSpendableNextToSendMax } from './paymentReviewBalance';
+import { showMinimumReceiveFirst } from './paymentAmountPresentation';
 import { settleLedgerFetches } from '@screens/Modal/ReviewTransaction/settleLedgerFetches';
 
 /* types ==================================================================== */
@@ -418,13 +419,9 @@ class PaymentTemplate extends Component<Props, State> {
         );
     };
 
-    renderAmountRate = () => {
-        const {
-            amount,
-            isLoadingRate,
-            currencyRate,
-            currencyName,
-        } = this.state;
+    renderAmountRate = (displayAmount?: string) => {
+        const { amount, isLoadingRate, currencyRate, currencyName } = this.state;
+        const amountToDisplay = displayAmount ?? amount;
 
         if (isLoadingRate) {
             return (
@@ -435,8 +432,8 @@ class PaymentTemplate extends Component<Props, State> {
         }
 
         // only show rate for native asset
-        if (currencyRate && (amount || currencyName === NetworkService.getNativeAsset())) {
-            const rate = Number(amount || 1) * currencyRate.rate;
+        if (currencyRate && (amountToDisplay || currencyName === NetworkService.getNativeAsset())) {
+            const rate = Number(amountToDisplay || 1) * currencyRate.rate;
             if (rate > 0) {
                 return (
                     <View style={styles.rateContainer}>
@@ -515,7 +512,11 @@ class PaymentTemplate extends Component<Props, State> {
         const isNativeAsset = (currencyRate && amount) ||
             (currencyRate && !this.isMPTAmount() && currencyName === NetworkService.getNativeAsset());
         const receivesAmount = paymentReceivesAmount(transaction.SendMax);
-        const spendableNextToSendMax = showSpendableNextToSendMax(transaction.SendMax, Boolean(selectedPath));
+        // Keep a user-entered amount editable; this presentation is for fixed receive caps.
+        const minimumReceiveFirst = !editableAmount && showMinimumReceiveFirst(transaction);
+        const displayAmount = minimumReceiveFirst ? transaction.DeliverMin!.value : amount;
+        const spendableNextToSendMax =
+            minimumReceiveFirst || showSpendableNextToSendMax(transaction.SendMax, Boolean(selectedPath));
 
         // TODO: better handling this part
         if (!account) {
@@ -554,7 +555,9 @@ class PaymentTemplate extends Component<Props, State> {
                 {/* Amount */}
                 <>
                     <Text style={styles.label}>
-                        {receivesAmount ? Localize.t('global.amountToReceive') : Localize.t('global.amount')}
+                        {minimumReceiveFirst
+                            ? Localize.t('global.deliverMin')
+                            : Localize.t(receivesAmount ? 'global.amountToReceive' : 'global.amount')}
                     </Text>
                     <View style={[
                         styles.contentBox,
@@ -596,7 +599,7 @@ class PaymentTemplate extends Component<Props, State> {
                             ) : (
                                 <View>
                                     <AmountText
-                                        value={this.isMPTAmount() ? mptAmount.transaction : amount!}
+                                        value={this.isMPTAmount() ? mptAmount.transaction : displayAmount!}
                                         currency={transaction.Amount?.currency}
                                         style={styles.amountInput}
                                         immutable
@@ -617,7 +620,7 @@ class PaymentTemplate extends Component<Props, State> {
                             <View style={[
                                 AppStyles.flex1,
                                 AppStyles.flexStart,
-                            ]}>{this.renderAmountRate()}</View>
+                            ]}>{this.renderAmountRate(displayAmount)}</View>
                             {!spendableNextToSendMax && (
                             <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
                                 <Text style={[
@@ -682,7 +685,7 @@ class PaymentTemplate extends Component<Props, State> {
                     </>
                 )}
 
-                {transaction.SendMax && !selectedPath && (
+                {transaction.SendMax && (!selectedPath || minimumReceiveFirst) && (
                     <>
                         <Text style={styles.label}>{Localize.t('global.sendMax')}</Text>
                         <View style={styles.contentBox}>
@@ -705,7 +708,7 @@ class PaymentTemplate extends Component<Props, State> {
                     </>
                 )}
 
-                {transaction.DeliverMin && (
+                {transaction.DeliverMin && !minimumReceiveFirst && (
                     <>
                         <Text style={styles.label}>{Localize.t('global.deliverMin')}</Text>
                         <View style={styles.contentBox}>
@@ -713,6 +716,20 @@ class PaymentTemplate extends Component<Props, State> {
                                 value={transaction.DeliverMin.value}
                                 currency={transaction.DeliverMin.currency}
                                 style={styles.amount}
+                                immutable
+                            />
+                        </View>
+                    </>
+                )}
+
+                {minimumReceiveFirst && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.maximumReceiveLimit')}</Text>
+                        <View style={styles.contentBox}>
+                            <AmountText
+                                value={transaction.Amount!.value}
+                                currency={transaction.Amount!.currency}
+                                style={styles.value}
                                 immutable
                             />
                         </View>

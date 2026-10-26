@@ -229,6 +229,7 @@
     "domainID": "Домен ID",
     "sendMax": "Барлығын жіберу",
     "deliverMin": "Минимумды қойыңыз",
+    "maximumReceiveLimit": "Алу сомасының ең жоғары шегі",
     "checkID": "Идентификаторды тексеру",
     "checkAmount": "Соманы тексеру",
     "regularKey": "Кәдімгі Кілт",

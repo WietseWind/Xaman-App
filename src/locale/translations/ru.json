@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Отправить максимальную сумму",
     "deliverMin": "Доставить минимальную сумму",
+    "maximumReceiveLimit": "Предельная сумма к получению",
     "checkID": "Идентификатор чека",
     "checkAmount": "Сумма чека",
     "regularKey": "Обычный ключ",

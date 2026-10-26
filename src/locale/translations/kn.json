@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "ಎಲ್ಲಾ ಕಳಿಸಿ",
     "deliverMin": "ತಲುಪಿಸಿ ಕನಿಷ್ಠ",
+    "maximumReceiveLimit": "ಸ್ವೀಕೃತಿಯ ಗರಿಷ್ಠ ಮಿತಿ",
     "checkID": "ಐಡಿ ಪರಿಶೀಲಿಸಿ",
     "checkAmount": "ಮೊತ್ತವನ್ನು ಪರಿಶೀಲಿಸಿ",
     "regularKey": "ನಿಯಮಿತ ಕೀ",

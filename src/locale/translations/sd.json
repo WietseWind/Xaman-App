@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "وڌ کان وڌ رقم موڪليو",
     "deliverMin": "گھٽ ۾ گھٽ رقم پهچائڻ",
+    "maximumReceiveLimit": "وصولي جي وڌ ۾ وڌ حد",
     "checkID": "چيڪ ڪريو ID",
     "checkAmount": "رقم چيڪ ڪريو",
     "regularKey": "باقاعده چاٻي",

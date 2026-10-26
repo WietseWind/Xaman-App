@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "送信最大量",
     "deliverMin": "デリバリー 最低額",
+    "maximumReceiveLimit": "受取額の上限",
     "checkID": "IDを確認してください",
     "checkAmount": "金額を確認してください",
     "regularKey": "レギュラーキー",

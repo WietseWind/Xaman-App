@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Kirim semua",
     "deliverMin": "Kirim Minimum",
+    "maximumReceiveLimit": "Batas maksimum penerimaan",
     "checkID": "Periksa ID",
     "checkAmount": "Periksa jumlah",
     "regularKey": "Kunci Reguler",

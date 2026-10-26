@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Αποστολή Max",
     "deliverMin": "Deliver Min",
+    "maximumReceiveLimit": "Ανώτατο όριο λήψης",
     "checkID": "Έλεγχος ID",
     "checkAmount": "Έλεγχος ποσού",
     "regularKey": "Κανονικό κλειδί",

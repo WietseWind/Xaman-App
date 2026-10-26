@@ -229,6 +229,7 @@
     "domainID": "ডোমেইন আইডি",
     "sendMax": "সব পাঠাও",
     "deliverMin": "ন্যূনতম বিতরণ করুন",
+    "maximumReceiveLimit": "সর্বোচ্চ প্রাপ্তির সীমা",
     "checkID": "আইডি চেক করুন",
     "checkAmount": "চেক পরিমাণ",
     "regularKey": "নিয়মিত কী",

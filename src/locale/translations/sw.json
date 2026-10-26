@@ -229,6 +229,7 @@
     "domainID": "Kitambulisho cha Kikoa",
     "sendMax": "Tuma Kiasi cha Juu Zaidi",
     "deliverMin": "Peleka Kiasi cha Chini Zaidi",
+    "maximumReceiveLimit": "Kikomo cha juu cha kupokea",
     "checkID": "Kitambulisho cha Check",
     "checkAmount": "Kiasi cha Check",
     "regularKey": "Funguo ya Kawaida",

@@ -229,6 +229,7 @@
     "domainID": "ID domena",
     "sendMax": "Послати све",
     "deliverMin": "Испоручи мин",
+    "maximumReceiveLimit": "Максимални износ за пријем",
     "checkID": "Чек ИД",
     "checkAmount": "Износ чека",
     "regularKey": "Обична лозинка",

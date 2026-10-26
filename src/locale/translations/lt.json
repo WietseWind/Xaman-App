@@ -229,6 +229,7 @@
     "domainID": "Domeno ID",
     "sendMax": "Siųsti maksimalią sumą",
     "deliverMin": "Pristatyti minimalią sumą",
+    "maximumReceiveLimit": "Didžiausia gavimo riba",
     "checkID": "Patikrinkite ID",
     "checkAmount": "Check suma",
     "regularKey": "Įprastas Raktas",

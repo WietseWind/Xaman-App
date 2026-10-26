@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Wyślij wszystkie",
     "deliverMin": "Dostarcz minimum",
+    "maximumReceiveLimit": "Maksymalny limit otrzymania",
     "checkID": "Identyfikator Czeku",
     "checkAmount": "Kwota czeku",
     "regularKey": "Klucz zwyczajny",

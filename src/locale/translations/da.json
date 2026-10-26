@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Send max",
     "deliverMin": "Send mindst",
+    "maximumReceiveLimit": "Maksimal modtagelsesgrænse",
     "checkID": "Check-id",
     "checkAmount": "Checkbeløb",
     "regularKey": "Regular Key",

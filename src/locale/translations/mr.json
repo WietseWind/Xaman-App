@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "कमाल पाठवा",
     "deliverMin": "वितरित करा किमान",
+    "maximumReceiveLimit": "प्राप्तीची कमाल मर्यादा",
     "checkID": "तपासा ID",
     "checkAmount": "तपासा रक्कम",
     "regularKey": "नियमित किल्ली",

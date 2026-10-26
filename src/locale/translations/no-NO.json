@@ -229,6 +229,7 @@
     "domainID": "Domene-ID",
     "sendMax": "Send Alt",
     "deliverMin": "Lever Minimum",
+    "maximumReceiveLimit": "Maksimal mottaksgrense",
     "checkID": "Sjekk ID",
     "checkAmount": "Sjekk beløp",
     "regularKey": "Vanlig Nøkkel",

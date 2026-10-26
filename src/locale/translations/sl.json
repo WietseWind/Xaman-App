@@ -229,6 +229,7 @@
     "domainID": "ID domene",
     "sendMax": "Pošlji vse",
     "deliverMin": "Dostavi najmanj",
+    "maximumReceiveLimit": "Najvišja meja prejetega zneska",
     "checkID": "ID čeka",
     "checkAmount": "Znesek čeka",
     "regularKey": "Običajni ključ",

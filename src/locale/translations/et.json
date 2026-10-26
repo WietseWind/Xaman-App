@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "Saada kõik",
     "deliverMin": "Anna minimaalne",
+    "maximumReceiveLimit": "Maksimaalne vastuvõtupiir",
     "checkID": "Kontrolli ID",
     "checkAmount": "Kontrollsumma",
     "regularKey": "Tavaline võti",

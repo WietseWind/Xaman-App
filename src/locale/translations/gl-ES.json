@@ -229,6 +229,7 @@
     "domainID": "ID do Dominio",
     "sendMax": "Envíar o máximo",
     "deliverMin": "Entrega mínima",
+    "maximumReceiveLimit": "Límite máximo de recepción",
     "checkID": "ID do cheque",
     "checkAmount": "Comprobar importe",
     "regularKey": "Clave Regular",

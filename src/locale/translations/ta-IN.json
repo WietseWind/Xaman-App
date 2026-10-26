@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "அனைத்து அனுப்பவும்",
     "deliverMin": "குறைந்தபட்சம் வழங்கவும்",
+    "maximumReceiveLimit": "பெறக்கூடிய தொகையின் அதிகபட்ச வரம்பு",
     "checkID": "ஐடியை சரிபார்க்கவும்",
     "checkAmount": "தொகையை சரிபார்க்கவும்",
     "regularKey": "வழக்கமான விசை",

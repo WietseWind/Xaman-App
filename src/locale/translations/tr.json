@@ -229,6 +229,7 @@
     "domainID": "Domain Kimliği",
     "sendMax": "Tamamını gönder",
     "deliverMin": "Minimum teslim",
+    "maximumReceiveLimit": "Alınabilecek azami tutar",
     "checkID": "ID Numarasını Denetle",
     "checkAmount": "Tutarı Kontrol Et",
     "regularKey": "Düzenli Anahtar",

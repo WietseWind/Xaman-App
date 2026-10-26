@@ -229,6 +229,7 @@
     "domainID": "ID domeniu",
     "sendMax": "Trimite suma maximă",
     "deliverMin": "Livrează suma minimă",
+    "maximumReceiveLimit": "Limita maximă de primire",
     "checkID": "ID Check",
     "checkAmount": "Sumă Check",
     "regularKey": "Cheie obișnuită",

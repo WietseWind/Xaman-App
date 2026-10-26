@@ -229,6 +229,7 @@
     "domainID": "Domeinu IDa",
     "sendMax": "Bidali gehieneko zenbatekoa",
     "deliverMin": "entregatu Gutxieneko",
+    "maximumReceiveLimit": "Gehienezko jasotze-muga",
     "checkID": "Egiaztatu ID",
     "checkAmount": "Egiaztatu zenbatekoa",
     "regularKey": "Gako erregularra",

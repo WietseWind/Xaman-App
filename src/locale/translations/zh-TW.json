@@ -229,6 +229,7 @@
     "domainID": "Domain ID",
     "sendMax": "發送最大金額",
     "deliverMin": "交付最小金額",
+    "maximumReceiveLimit": "接收金額上限",
     "checkID": "Check ID",
     "checkAmount": "Check 金額",
     "regularKey": "Regular Key",
