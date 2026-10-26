@@ -9,7 +9,8 @@ import { Navigator } from '@common/helpers/navigator';
 
 import { Destination } from '@common/libs/ledger/parser/types';
 
-import { LedgerService, NetworkService, StyleService } from '@services';
+import { LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { LoanBrokerCoverWithdraw } from '@common/libs/ledger/transactions';
 import { LoanBroker, Vault } from '@common/libs/ledger/objects';

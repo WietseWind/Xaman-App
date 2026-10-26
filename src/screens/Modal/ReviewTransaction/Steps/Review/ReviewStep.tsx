@@ -7,7 +7,8 @@ import React, { Component } from 'react';
 import { ImageBackground, Text, View } from 'react-native';
 import { Navigation, OptionsModalPresentationStyle } from 'react-native-navigation';
 
-import { BackendService, LedgerService, PushNotificationsService, ResolverService, StyleService } from '@services';
+import { BackendService, LedgerService, PushNotificationsService, ResolverService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';

@@ -3,7 +3,8 @@ import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, InteractionManager } from 'react-native';
 
 import SummaryStepStyle from '@screens/Send/Steps/Summary/styles';
-import { BackendService, LedgerService, NetworkService, StyleService } from '@services';
+import { BackendService, LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 import { RatesType } from '@services/BackendService';
 
 import { CoreRepository } from '@store/repositories';

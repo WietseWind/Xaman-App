@@ -14,8 +14,7 @@ import styles from '../styles';
 
 import { TemplateProps } from '../types';
 import { FallbackTemplate } from '../fallback';
-// eslint-disable-next-line import/no-cycle
-import * as GenuineTransactionTemplates from '.';
+import * as GenuineTransactionTemplates from './registry';
 
 // import { HexEncoding } from '@common/utils/string';
 import { BatchSigner } from '@common/libs/ledger/types/common';
