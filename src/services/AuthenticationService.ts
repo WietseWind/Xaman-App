@@ -272,21 +272,22 @@ class AuthenticationService extends EventEmitter {
             // calculate potential wait time
             const waitTime = this.calculateWrongAttemptWaitTime(coreSettings.passcodeFailedAttempts);
 
-            // device is rebooted , we cannot calculate the wait time
-            if (realTime < coreSettings.lastPasscodeFailedTimestamp) {
+            const lastFailure = coreSettings.lastPasscodeFailedTimestamp;
+            // Restart the full delay if the clock rebooted or the saved timestamp is unusable.
+            if (!Number.isFinite(lastFailure) || lastFailure < 0 || realTime < lastFailure) {
                 // store the new latest real time
                 CoreRepository.saveAuthenticationSettings({
                     lastPasscodeFailedTimestamp: realTime,
                 });
 
-                return Math.floor(waitTime / 60);
+                return Math.ceil(waitTime / 60);
             }
 
-            const blockTime = coreSettings.lastPasscodeFailedTimestamp + waitTime - realTime;
+            const blockTime = lastFailure + waitTime - realTime;
 
             // entering passcode is still blocked
             if (blockTime > 0) {
-                return Math.floor(blockTime / 60);
+                return Math.ceil(blockTime / 60);
             }
         }
 
