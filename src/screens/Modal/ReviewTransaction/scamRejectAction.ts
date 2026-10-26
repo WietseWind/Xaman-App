@@ -1,3 +1,5 @@
+import Check from '@common/libs/ledger/objects/Check/Check.class';
+import Escrow from '@common/libs/ledger/objects/Escrow/Escrow.class';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 
@@ -16,6 +18,10 @@ export type CancelCraft = {
 
 export const isScamDanger = (danger?: string): boolean => {
     return !!danger && SCAM_DANGER_LEVELS.includes(danger);
+};
+
+export const canSlideToAccept = (isReady: boolean, scamCheckPending: boolean): boolean => {
+    return isReady && !scamCheckPending;
 };
 
 export const isScamImageUrl = (image?: string): boolean => {
@@ -38,10 +44,7 @@ const pushAddress = (bucket: string[], value: unknown) => {
     }
 };
 
-export const collectSignRequestCounterparties = (
-    transaction: any,
-    sourceAddress?: string,
-): string[] => {
+export const collectSignRequestCounterparties = (transaction: any, sourceAddress?: string): string[] => {
     const addresses: string[] = [];
 
     pushAddress(addresses, transaction?.Destination);
@@ -77,8 +80,10 @@ export const collectLedgerOfferCounterparties = (
     return [...new Set(addresses.filter((address) => address !== sourceAddress))];
 };
 
+export type LedgerEntrySpec = string | Record<string, unknown>;
+
 export type ScamSignRequestLookup = {
-    getLedgerEntry: (index: string) => Promise<{ node?: LedgerOfferNode } | undefined>;
+    getLedgerEntry: (spec: LedgerEntrySpec) => Promise<{ node?: any } | undefined>;
     getNFTDetails: (
         account: string,
         tokens: string[],
@@ -152,6 +157,12 @@ export const resolveScamSignRequest = async (
     let canCancel = !!cancelCraft;
     let isScam = !!payloadRiskWarn;
     let offerNode: LedgerOfferNode | undefined;
+    const extraCounterparties: string[] = [];
+
+    const readNode = async (spec: LedgerEntrySpec) => {
+        const res = await lookup.getLedgerEntry(spec);
+        return res?.node;
+    };
 
     if (cancelCraft?.labelKey === 'cancelOffer') {
         canCancel = false;
@@ -175,9 +186,49 @@ export const resolveScamSignRequest = async (
         }
     }
 
+    if (cancelCraft?.labelKey === 'cancelEscrow') {
+        canCancel = false;
+        try {
+            const escrowId = typeof transaction?.EscrowID === 'string' ? transaction.EscrowID : undefined;
+            const owner = typeof transaction?.Owner === 'string' ? transaction.Owner : undefined;
+            const sequence = transaction?.OfferSequence;
+            let node: any;
+            if (escrowId) {
+                node = await readNode(escrowId);
+            } else if (owner && sequence != null) {
+                node = await readNode({ escrow: { owner, seq: sequence } });
+            }
+            if (node) {
+                pushAddress(extraCounterparties, node.Account);
+                pushAddress(extraCounterparties, node.Destination);
+                canCancel = new Escrow(node).isExpired === true;
+            }
+        } catch {
+            canCancel = false;
+        }
+    }
+
+    if (cancelCraft?.labelKey === 'cancelCheck') {
+        canCancel = false;
+        try {
+            const node = await readNode(transaction.CheckID);
+            if (node?.Account) {
+                pushAddress(extraCounterparties, node.Account);
+                pushAddress(extraCounterparties, node.Destination);
+                const expired = new Check(node).isExpired === true;
+                const party = !!sourceAddress && (sourceAddress === node.Account || sourceAddress === node.Destination);
+                // Sender or destination can cancel before expiry. After expiry, any account can.
+                canCancel = expired || party;
+            }
+        } catch {
+            canCancel = false;
+        }
+    }
+
     const addresses = [
         ...collectSignRequestCounterparties(transaction, sourceAddress),
         ...collectLedgerOfferCounterparties(offerNode, sourceAddress),
+        ...extraCounterparties,
     ].filter((address, index, all) => address && address !== sourceAddress && all.indexOf(address) === index);
 
     await Promise.all(

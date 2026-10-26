@@ -2,6 +2,7 @@ import { TransactionTypes } from '@common/libs/ledger/types/enums';
 
 import {
     canCancelNFTokenOffer,
+    canSlideToAccept,
     collectLedgerOfferCounterparties,
     collectSignRequestCounterparties,
     craftCancelFromSignRequest,
@@ -268,6 +269,126 @@ describe('scamRejectAction', () => {
 
             expect(result.isScam).toBe(true);
             expect(result.cancelCraft?.labelKey).toBe('cancelOffer');
+        });
+    });
+
+    describe('accept stays closed until the scam check settles', () => {
+        it('blocks the slider while the advisory is still pending', () => {
+            expect(canSlideToAccept(true, true)).toBe(false);
+            expect(canSlideToAccept(true, false)).toBe(true);
+            expect(canSlideToAccept(false, false)).toBe(false);
+        });
+    });
+
+    describe('escrow cancel eligibility', () => {
+        const finish = {
+            Type: TransactionTypes.EscrowFinish,
+            Account: 'rDest',
+            Owner: 'rOwner',
+            OfferSequence: 7,
+        };
+        const PAST = 500000000;
+        const FUTURE = 2000000000;
+
+        const escrowLookup = (cancelAfter?: number) => {
+            const calls: unknown[] = [];
+            return {
+                calls,
+                lookup: lookupFor({
+                    advisoryByAddress: { rOwner: 'CONFIRMED' },
+                    getLedgerEntry: async (spec) => {
+                        calls.push(spec);
+                        return {
+                            node: {
+                                LedgerEntryType: 'Escrow',
+                                Account: 'rOwner',
+                                Destination: 'rDest',
+                                Amount: '1000000',
+                                ...(cancelAfter != null ? { CancelAfter: cancelAfter } : {}),
+                            },
+                        };
+                    },
+                }),
+            };
+        };
+
+        it('does not offer cancel when CancelAfter is missing or still in the future', async () => {
+            const missing = escrowLookup();
+            const missingResult = await resolveScamSignRequest(finish, 'rDest', false, missing.lookup);
+            expect(missing.calls).toEqual([{ escrow: { owner: 'rOwner', seq: 7 } }]);
+            expect(missingResult.isScam).toBe(true);
+            expect(missingResult.cancelCraft).toBeUndefined();
+
+            const future = escrowLookup(FUTURE);
+            const futureResult = await resolveScamSignRequest(finish, 'rDest', false, future.lookup);
+            expect(futureResult.cancelCraft).toBeUndefined();
+        });
+
+        it('offers cancel once CancelAfter has passed', async () => {
+            const past = escrowLookup(PAST);
+            const result = await resolveScamSignRequest(finish, 'rAnyone', false, past.lookup);
+            expect(result.isScam).toBe(true);
+            expect(result.cancelCraft?.labelKey).toBe('cancelEscrow');
+        });
+    });
+
+    describe('check cash scam sender', () => {
+        const cash = {
+            Type: TransactionTypes.CheckCash,
+            Account: 'rDest',
+            CheckID: 'CHECKINDEX',
+            Amount: '1000000',
+        };
+
+        it('flags the check creator and lets the destination cancel before expiry', async () => {
+            const calls: unknown[] = [];
+            const result = await resolveScamSignRequest(
+                cash,
+                'rDest',
+                false,
+                lookupFor({
+                    advisoryByAddress: { rSender: 'CONFIRMED' },
+                    getLedgerEntry: async (spec) => {
+                        calls.push(spec);
+                        return {
+                            node: {
+                                LedgerEntryType: 'Check',
+                                Account: 'rSender',
+                                Destination: 'rDest',
+                                SendMax: '1000000',
+                                Expiration: 2000000000,
+                            },
+                        };
+                    },
+                }),
+            );
+
+            expect(calls).toEqual(['CHECKINDEX']);
+            expect(result.isScam).toBe(true);
+            expect(result.cancelCraft?.labelKey).toBe('cancelCheck');
+        });
+
+        it('does not let a stranger cancel a check that has not expired', async () => {
+            const result = await resolveScamSignRequest(
+                { ...cash, Account: 'rStranger' },
+                'rStranger',
+                false,
+                lookupFor({
+                    advisoryByAddress: { rSender: 'CONFIRMED' },
+                    getLedgerEntry: async () => ({
+                        node: {
+                            LedgerEntryType: 'Check',
+                            Account: 'rSender',
+                            Destination: 'rDest',
+                            SendMax: '1000000',
+                            Expiration: 2000000000,
+                        },
+                    }),
+                }),
+            );
+
+            expect(result.isScam).toBe(true);
+            expect(result.cancelCraft).toBeUndefined();
         });
     });
 });
