@@ -43,6 +43,18 @@
     [RCTLinkingManager application:UIApplication.sharedApplication openURL:context.URL options:options];
 }
 
+- (void)sceneWillResignActive:(UIScene *)scene
+{
+    AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
+    [appDelegate xamanBlurAppSwitcher];
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene
+{
+    AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
+    [appDelegate xamanUnblurAppSwitcher];
+}
+
 - (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
 {
     [RCTLinkingManager application:UIApplication.sharedApplication

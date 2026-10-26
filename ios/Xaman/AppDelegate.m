@@ -135,15 +135,27 @@
   return [ReactNativeNavigation extraModulesForBridge:bridge];
 }
 
-// hide snapshot in task switcher
-- (void)applicationWillResignActive:(UIApplication *)application {
+- (UIWindow *)xamanPrivacyWindow {
+  NSPredicate *isKeyWindow = [NSPredicate predicateWithFormat:@"isKeyWindow == YES"];
+  UIWindow *topWindow = [[[UIApplication sharedApplication] windows] filteredArrayUsingPredicate:isKeyWindow].firstObject;
+  if (topWindow == nil) {
+    topWindow = self.window;
+  }
+  return topWindow;
+}
+
+// Hide the snapshot in the app switcher. Scene lifecycle calls this directly;
+// UIKit does not deliver applicationWillResignActive once a scene manifest exists.
+- (void)xamanBlurAppSwitcher {
   // ignore if user is authenticating with biometric or processing in app purchase
   if([BiometricModule isUserAuthenticating] || [InAppPurchaseModule isUserPurchasing]){
     return;
   }
 
-  NSPredicate *isKeyWindow = [NSPredicate predicateWithFormat:@"isKeyWindow == YES"];
-  UIWindow *topWindow = [[[UIApplication sharedApplication] windows] filteredArrayUsingPredicate:isKeyWindow].firstObject;
+  UIWindow *topWindow = [self xamanPrivacyWindow];
+  if (topWindow == nil || [topWindow viewWithTag:0xDEADBEEF] != nil) {
+    return;
+  }
 
   UIViewController *rootViewController = topWindow.rootViewController;
   UIViewController *currentViewController = rootViewController;
@@ -152,7 +164,7 @@
     currentViewController = [rootViewController presentedViewController];
   }
 
-  if(![NSStringFromClass([currentViewController class]) hasPrefix:@"RNN"]){
+  if (currentViewController == nil || ![NSStringFromClass([currentViewController class]) hasPrefix:@"RNN"]) {
     return;
   }
 
@@ -168,21 +180,30 @@
   }];
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-  NSArray *windows = [UIApplication sharedApplication].windows;
-  for(UIWindow *window in [windows reverseObjectEnumerator]) {
+- (void)xamanUnblurAppSwitcher {
+  NSMutableArray<UIWindow *> *windows = [[[UIApplication sharedApplication] windows] mutableCopy];
+  if (self.window != nil && ![windows containsObject:self.window]) {
+    [windows addObject:self.window];
+  }
+  for (UIWindow *window in [windows reverseObjectEnumerator]) {
     UIView *blurEffectView = [window viewWithTag:0xDEADBEEF];
-    if (blurEffectView){
-      // fade away colour view from main view
+    if (blurEffectView) {
       [UIView animateWithDuration:0.5 animations:^{
         blurEffectView.alpha = 0;
       } completion:^(BOOL finished) {
-        // remove when finished fading
         [blurEffectView removeFromSuperview];
       }];
       return;
     }
   }
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+  [self xamanBlurAppSwitcher];
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+  [self xamanUnblurAppSwitcher];
 }
 
 - (BOOL)application:(UIApplication *)application shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
