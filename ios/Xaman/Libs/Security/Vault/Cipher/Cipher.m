@@ -19,12 +19,13 @@
   // detect which version used in derived keys
   // NOTE: in the first version the derived keys only contains (string) iv
 
+  CipherCheckCondition([derivedKeysString isKindOfClass:[NSString class]] && derivedKeysString.length > 0, @"Missing derived keys");
   // try to deserialize derived keys
   NSError * error;
   NSDictionary * derivedKeysDict = (NSDictionary *)[NSJSONSerialization JSONObjectWithData:[derivedKeysString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&error];
 
 
-  struct DerivedKeys derivedKeys;
+  struct DerivedKeys derivedKeys = {0};
 
   if(error) {
     // JSON text did not start with array or object and option to allow fragments not set
@@ -37,6 +38,15 @@
 
     // and unexpected error occurred during parsing the derived keys
     return derivedKeys;
+  }
+
+  CipherCheckCondition([derivedKeysDict isKindOfClass:[NSDictionary class]], @"Invalid derived keys object");
+  CipherCheckCondition([derivedKeysDict[@"version"] isKindOfClass:[NSNumber class]], @"Invalid cipher version");
+  CipherCheckCondition([derivedKeysDict[@"iv"] isKindOfClass:[NSString class]], @"Invalid IV");
+  if ([derivedKeysDict[@"version"] intValue] == 2) {
+    for (NSString *field in @[@"passcode_salt", @"pre_key_salt", @"encr_key_salt"]) {
+      CipherCheckCondition([derivedKeysDict[field] isKindOfClass:[NSString class]], @"Invalid derived key %@", field);
+    }
   }
 
   // it's v2 encryption
@@ -62,7 +72,7 @@
     };
   } @catch (NSException* exception) {
     // pass any exception to the error
-    *error = [NSError errorWithDomain:exception.name code:0 userInfo:@{
+    if (error != NULL) *error = [NSError errorWithDomain:exception.name code:0 userInfo:@{
       NSUnderlyingErrorKey: exception,
       NSDebugDescriptionErrorKey: exception.userInfo ?: @{ },
       NSLocalizedFailureReasonErrorKey: (exception.reason ?: @"???") }];
@@ -101,7 +111,7 @@
     return clearText;
 
   } @catch (NSException* exception) {
-    *error = [NSError errorWithDomain:exception.name code:0 userInfo:@{
+    if (error != NULL) *error = [NSError errorWithDomain:exception.name code:0 userInfo:@{
       NSUnderlyingErrorKey: exception,
       NSDebugDescriptionErrorKey: exception.userInfo ?: @{ },
       NSLocalizedFailureReasonErrorKey: (exception.reason ?: @"???") }];
