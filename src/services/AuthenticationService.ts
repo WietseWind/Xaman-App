@@ -50,6 +50,7 @@ class AuthenticationService extends EventEmitter {
     private lockStatus: LockStatus;
     private postSuccess: Array<() => void>;
     private logger: LoggerInstance;
+    private lockScreenTask?: Promise<void>;
 
     constructor() {
         super();
@@ -113,6 +114,7 @@ class AuthenticationService extends EventEmitter {
      * reinstate service
      */
     public reinstate = () => {
+        this.lockScreenTask = undefined;
         // set locked to false
         this.setLockStatus(LockStatus.UNLOCKED);
 
@@ -200,19 +202,18 @@ class AuthenticationService extends EventEmitter {
      * @param ts
      */
     onSuccessAuthentication = async (ts?: number) => {
-        if (!ts) {
+        if (ts === undefined) {
             ts = await GetElapsedRealtime();
         }
 
-        // change to unlocked
-        this.setLockStatus(LockStatus.UNLOCKED);
-
-        // reset everything
-        CoreRepository.saveSettings({
+        // Commit the counters before granting access.
+        CoreRepository.saveAuthenticationSettings({
             passcodeFailedAttempts: 0,
             lastPasscodeFailedTimestamp: 0,
             lastUnlockedTimestamp: ts,
         });
+        this.lockScreenTask = undefined;
+        this.setLockStatus(LockStatus.UNLOCKED);
 
         // run services/functions need to run after success auth
         this.runAfterSuccessAuth();
@@ -224,12 +225,12 @@ class AuthenticationService extends EventEmitter {
      * @param ts
      */
     private onWrongPasscodeInput = async (coreSettings: any, ts?: number) => {
-        if (!ts) {
+        if (ts === undefined) {
             ts = await GetElapsedRealtime();
         }
 
         // increase failed attempt
-        CoreRepository.saveSettings({
+        CoreRepository.saveAuthenticationSettings({
             passcodeFailedAttempts: coreSettings.passcodeFailedAttempts + 1,
             lastPasscodeFailedTimestamp: ts,
         });
@@ -274,7 +275,7 @@ class AuthenticationService extends EventEmitter {
             // device is rebooted , we cannot calculate the wait time
             if (realTime < coreSettings.lastPasscodeFailedTimestamp) {
                 // store the new latest real time
-                CoreRepository.saveSettings({
+                CoreRepository.saveAuthenticationSettings({
                     lastPasscodeFailedTimestamp: realTime,
                 });
 
@@ -296,80 +297,71 @@ class AuthenticationService extends EventEmitter {
      * @param  {string} passcode clear passcode
      * @returns string hashed passcode
      */
-    authenticatePasscode = (passcode: string): Promise<string> => {
-        /* eslint-disable-next-line */
-        return new Promise(async (resolve, reject) => {
-            // get core settings
-            const coreSettings = CoreRepository.getSettings();
-            // get device real time
-            const realTime = await GetElapsedRealtime();
-            // check if passcode input is blocked
-            const blockTime = await this.getInputBlockTime(coreSettings, realTime);
+    authenticatePasscode = async (passcode: string): Promise<string> => {
+        const coreSettings = CoreRepository.getSettings();
+        const realTime = await GetElapsedRealtime();
+        const blockTime = await this.getInputBlockTime(coreSettings, realTime);
+        if (blockTime) {
+            throw new Error(Localize.t('global.tooManyAttempts', { after: blockTime }));
+        }
 
-            if (blockTime) {
-                reject(new Error(Localize.t('global.tooManyAttempts', { after: blockTime })));
-                return;
-            }
+        const hashedPasscode = await CoreRepository.hashPasscode(passcode);
+        if (hashedPasscode === coreSettings.passcode) {
+            await this.onSuccessAuthentication(realTime);
+            return hashedPasscode;
+        }
 
-            // calculate quick hash to compare passcode's
-            const hashedPasscode = await CoreRepository.hashPasscode(passcode);
+        await this.onWrongPasscodeInput(coreSettings, realTime);
+        throw new Error(Localize.t('global.invalidPasscode'));
+    };
 
-            // check if entered passcode is correct
-            if (hashedPasscode === coreSettings.passcode) {
-                // reset block timers and set status to unlocked
-                await this.onSuccessAuthentication(realTime);
-                // resolve
-                resolve(hashedPasscode);
-                return;
-            }
-
-            await this.onWrongPasscodeInput(coreSettings, realTime);
-
-            reject(new Error(Localize.t('global.invalidPasscode')));
+    private showLockScreen = (): Promise<void> => {
+        if (this.lockScreenTask) return this.lockScreenTask;
+        this.setLockStatus(LockStatus.LOCKED);
+        const task = Promise.resolve()
+            .then(() =>
+                Navigator.showOverlay<LockOverlayProps>(
+                    AppScreens.Overlay.Lock,
+                    {},
+                    { overlay: { handleKeyboardEvents: false } },
+                ),
+            )
+            .then(() => undefined);
+        this.lockScreenTask = task;
+        // Permit another presentation attempt if navigation fails, while retaining the locked state.
+        task.catch(() => {
+            if (this.lockScreenTask === task) this.lockScreenTask = undefined;
         });
+        return task;
     };
 
     /**
      * check if the app needs to be lock base on the latest lock time and user settings
      */
-    checkLockScreen = async () => {
-        /* eslint-disable-next-line */
-        return new Promise<void>(async (resolve) => {
-            // already locked no need to check
-            if (this.getLockStatus() === LockStatus.LOCKED) {
-                resolve();
-                return;
-            }
+    checkLockScreen = async (): Promise<void> => {
+        if (this.getLockStatus() === LockStatus.LOCKED) {
+            await this.showLockScreen();
+            return;
+        }
 
+        let requiresLock = true;
+        try {
             const coreSettings = CoreRepository.getSettings();
-
             const realTime = await GetElapsedRealtime();
-
-            if (
+            requiresLock =
                 coreSettings.lastUnlockedTimestamp === 0 ||
                 realTime < (coreSettings.lastUnlockedTimestamp ?? 0) ||
-                realTime - (coreSettings.lastUnlockedTimestamp ?? 0) > coreSettings.minutesAutoLock * 60
-            ) {
-                // show lock overlay
-                Navigator.showOverlay<LockOverlayProps>(
-                    AppScreens.Overlay.Lock,
-                    {},
-                    {
-                        overlay: {
-                            handleKeyboardEvents: false,
-                        },
-                    },
-                );
+                realTime - (coreSettings.lastUnlockedTimestamp ?? 0) > coreSettings.minutesAutoLock * 60;
+        } catch (error) {
+            // An unavailable clock/settings record cannot establish that the unlock is still fresh.
+            this.logger.error('checkLockScreen', error);
+        }
 
-                // change the lock status to locked
-                this.setLockStatus(LockStatus.LOCKED);
-            } else {
-                // run services/functions need to run after success auth
-                this.runAfterSuccessAuth();
-            }
-
-            resolve();
-        });
+        if (requiresLock || this.getLockStatus() === LockStatus.LOCKED) {
+            await this.showLockScreen();
+        } else {
+            this.runAfterSuccessAuth();
+        }
     };
 
     /**
@@ -410,38 +402,23 @@ class AuthenticationService extends EventEmitter {
     /**
      * start biometric authentication
      */
-    authenticateBiometrics = (reason: string): Promise<Boolean> => {
-        // eslint-disable-next-line no-async-promise-executor
-        return new Promise(async (resolve, reject) => {
-            // we do not want to trigger Biometric UI when app is NOT active
-            if (AppService.currentAppState !== AppStateStatus.Active) {
-                this.logger.warn('ignore requested biometric authentication while app is not active');
-                reject(new Error(BiometricErrors.APP_NOT_ACTIVE));
-                return;
+    authenticateBiometrics = async (reason: string): Promise<boolean> => {
+        if (AppService.currentAppState !== AppStateStatus.Active) {
+            this.logger.warn('ignore requested biometric authentication while app is not active');
+            throw new Error(BiometricErrors.APP_NOT_ACTIVE);
+        }
+
+        try {
+            await Biometric.authenticate(reason);
+            await this.onSuccessAuthentication();
+            return true;
+        } catch (error) {
+            this.logger.warn('authenticateBiometrics', error);
+            if (error instanceof Error && error.name === BiometricErrors.ERROR_BIOMETRIC_HAS_BEEN_CHANGED) {
+                this.onBiometricInvalidated();
             }
-
-            // check if we can authenticate with biometrics in the device level
-            Biometric.authenticate(reason)
-                .then(async () => {
-                    // successfully authenticate
-                    // reset block timers and set status to unlocked
-                    await this.onSuccessAuthentication();
-                    // return resolve
-                    resolve(true);
-                })
-                .catch((error) => {
-                    this.logger.warn('authenticateBiometrics', error);
-
-                    // biometric's has been changed, we need to disable the biometric authentication
-                    // NOTE: this is where we delete the biometrics key when biometrics changes on device
-                    if (error.name === BiometricErrors.ERROR_BIOMETRIC_HAS_BEEN_CHANGED) {
-                        this.onBiometricInvalidated();
-                    }
-
-                    // reject with error
-                    reject(error);
-                });
-        });
+            throw error;
+        }
     };
 
     /**
@@ -449,7 +426,12 @@ class AuthenticationService extends EventEmitter {
      */
     onAppStateChange = async () => {
         // let's check the lock screen in any app state change
-        await this.checkLockScreen();
+        try {
+            await this.checkLockScreen();
+        } catch (error) {
+            // EventEmitter cannot consume an async listener's rejected promise.
+            this.logger.error('onAppStateChange', error);
+        }
     };
 }
 
