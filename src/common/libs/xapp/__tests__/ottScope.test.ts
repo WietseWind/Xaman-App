@@ -1,4 +1,11 @@
-import { isOwnXappHost, isXappDetectLaunch, stripOttUserAgent, XappOttScope } from '../ottScope';
+import {
+    isOwnXappHost,
+    isXappDetectLaunch,
+    sameXappSite,
+    stripOttUserAgent,
+    XappOttScope,
+    xappSiteRoot,
+} from '../ottScope';
 
 const realFs = jest.requireActual('fs') as {
     readFileSync: (file: string, encoding: 'utf8') => string;
@@ -73,15 +80,44 @@ describe('xApp OTT host scope', () => {
         scope.observe({ host: 'xaman.app', path: '/detect/xapp:a', document: true, redirect: false });
         scope.noteRedirect('xaman.app', 'app.example.com', true);
         expect(scope.keeps('app.example.com')).toBe(true);
-        expect(scope.keeps('cdn.example.com')).toBe(false);
-        scope.noteRedirect('app.example.com', 'cdn.example.com', false);
-        expect(scope.keeps('cdn.example.com')).toBe(false);
+        expect(scope.keeps('cdn.example.com')).toBe(true);
+        scope.noteRedirect('app.example.com', 'cdn.jsdelivr.net', false);
+        expect(scope.keeps('cdn.jsdelivr.net')).toBe(false);
         scope.noteDocumentStatus(200);
         expect(scope.keeps('app.example.com')).toBe(true);
 
         scope.observe({ host: 'xaman.app', path: '/detect/xapp:b', document: true, redirect: false });
         expect(scope.keeps('app.example.com')).toBe(false);
         expect(scope.observe({ host: 'second.example', path: '/', document: true, redirect: true })).toBe(true);
+    });
+
+    it('keeps every later call on that domain and its subdomains', () => {
+        const scope = new XappOttScope();
+
+        scope.observe({ host: 'xaman.app', path: '/detect/xapp:a', document: true, redirect: false });
+        expect(scope.observe({ host: 'app.example.com', path: '/', document: true, redirect: false })).toBe(true);
+        expect(scope.observe({ host: 'app.example.com', path: '/app.js', document: false, redirect: false })).toBe(
+            true,
+        );
+        expect(scope.observe({ host: 'app.example.com', path: '/settings', document: true, redirect: false })).toBe(
+            true,
+        );
+        expect(scope.observe({ host: 'api.example.com', path: '/v1', document: false, redirect: false })).toBe(true);
+        expect(scope.observe({ host: 'www.example.com', path: '/home', document: true, redirect: false })).toBe(true);
+        expect(scope.keeps('example.com')).toBe(true);
+        expect(scope.observe({ host: 'fonts.googleapis.com', path: '/css', document: false, redirect: false })).toBe(
+            false,
+        );
+        expect(scope.observe({ host: 'other.example.net', path: '/', document: true, redirect: false })).toBe(false);
+    });
+
+    it('does not treat a neighbour on a shared suffix as the same site', () => {
+        expect(xappSiteRoot('app.example.co.uk')).toBe('example.co.uk');
+        expect(xappSiteRoot('mine.github.io')).toBe('mine.github.io');
+        expect(sameXappSite('mine.github.io', 'other.github.io')).toBe(false);
+        expect(sameXappSite('api.mine.github.io', 'mine.github.io')).toBe(true);
+        expect(sameXappSite('notexample.com', 'example.com')).toBe(false);
+        expect(sameXappSite('example.com.evil.com', 'example.com')).toBe(false);
     });
 
     it('does not let a CDN request close the redirect chain', () => {
@@ -115,6 +151,8 @@ describe('xApp OTT host scope', () => {
             expect(source).toContain('xrpl-labs.com');
             expect(source).toContain('(ott:');
             expect(source).toContain('/detect/xapp');
+            expect(source).toContain('github.io');
+            expect(source).toContain('co.uk');
         }
     });
 });

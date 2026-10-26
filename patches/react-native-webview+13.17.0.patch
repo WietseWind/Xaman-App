@@ -607,10 +607,10 @@ index 0000000..7c19e68
 +}
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java
 new file mode 100644
-index 0000000..5a4fc06
+index 0000000..527ca60
 --- /dev/null
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,236 @@
 +package com.reactnativecommunity.webview;
 +
 +import java.util.LinkedHashSet;
@@ -624,6 +624,35 @@ index 0000000..5a4fc06
 + */
 +final class XamanOttScope {
 +    private static final String[] OWN_SUFFIXES = {"xaman.app", "xumm.app", "xrpl-labs.com"};
++    // Longest match wins. The label before one of these is the real site.
++    private static final String[] PUBLIC_SUFFIXES = {
++        "s3.amazonaws.com",
++        "amazonaws.com",
++        "azurewebsites.net",
++        "cloudfront.net",
++        "firebaseapp.com",
++        "github.io",
++        "gitlab.io",
++        "herokuapp.com",
++        "netlify.app",
++        "pages.dev",
++        "vercel.app",
++        "web.app",
++        "workers.dev",
++        "com.au",
++        "net.au",
++        "org.au",
++        "co.jp",
++        "co.nz",
++        "co.uk",
++        "org.uk",
++        "ac.uk",
++        "com.br",
++        "com.mx",
++        "com.sg",
++        "com.tr",
++        "co.za"
++    };
 +    private static final Pattern OTT = Pattern.compile("\\s*\\(ott:[^)]*\\)");
 +
 +    String pinnedHost;
@@ -679,6 +708,65 @@ index 0000000..5a4fc06
 +        return path != null && path.contains("/detect/xapp");
 +    }
 +
++    static boolean isIpHost(String host) {
++        if (host.indexOf(':') >= 0) {
++            return true;
++        }
++        int dots = 0;
++        for (int i = 0; i < host.length(); i++) {
++            char c = host.charAt(i);
++            if (c == '.') {
++                dots++;
++            } else if (!Character.isDigit(c)) {
++                return false;
++            }
++        }
++        return dots == 3;
++    }
++
++    static String siteRoot(String host) {
++        String normalized = normalizeHost(host);
++        if (normalized == null) {
++            return null;
++        }
++        if (isIpHost(normalized) || normalized.indexOf('.') < 0) {
++            return normalized;
++        }
++        String suffix = "";
++        for (String candidate : PUBLIC_SUFFIXES) {
++            if ((normalized.equals(candidate) || normalized.endsWith("." + candidate)) && candidate.length() > suffix.length()) {
++                suffix = candidate;
++            }
++        }
++        if (!suffix.isEmpty()) {
++            if (normalized.equals(suffix)) {
++                return normalized;
++            }
++            String remainder = normalized.substring(0, normalized.length() - suffix.length() - 1);
++            int dot = remainder.lastIndexOf('.');
++            String left = dot < 0 ? remainder : remainder.substring(dot + 1);
++            return left.isEmpty() ? normalized : left + "." + suffix;
++        }
++        int last = normalized.lastIndexOf('.');
++        int previous = last > 0 ? normalized.lastIndexOf('.', last - 1) : -1;
++        return previous < 0 ? normalized : normalized.substring(previous + 1);
++    }
++
++    static boolean sameSite(String host, String allowed) {
++        String left = siteRoot(host);
++        String right = siteRoot(allowed);
++        return left != null && left.equals(right);
++    }
++
++    boolean matchesAllowed(String host) {
++        for (String allowed : allowedHosts) {
++            if (sameSite(host, allowed)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
 +    static String stripOtt(String userAgent) {
 +        if (userAgent == null || userAgent.isEmpty()) {
 +            return "";
@@ -691,7 +779,7 @@ index 0000000..5a4fc06
 +        if (normalized == null) {
 +            return true;
 +        }
-+        return isOwnHost(normalized) || allowedHosts.contains(normalized);
++        return isOwnHost(normalized) || matchesAllowed(normalized);
 +    }
 +
 +    synchronized void noteRedirect(String fromHost, String toHost, boolean document) {
@@ -703,7 +791,7 @@ index 0000000..5a4fc06
 +            return;
 +        }
 +        String from = normalizeHost(fromHost);
-+        boolean fromKnown = from != null && (isOwnHost(from) || allowedHosts.contains(from) || chainOpen);
++        boolean fromKnown = from != null && (isOwnHost(from) || matchesAllowed(from) || chainOpen);
 +        if (!fromKnown) {
 +            return;
 +        }
@@ -736,7 +824,7 @@ index 0000000..5a4fc06
 +            return true;
 +        }
 +
-+        if (allowedHosts.contains(normalized)) {
++        if (matchesAllowed(normalized)) {
 +            if (!document && chainOpen && !expectingRedirect) {
 +                chainOpen = false;
 +            }
@@ -1030,10 +1118,10 @@ index 0000000..4b4fa04
 +@end
 diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
 new file mode 100644
-index 0000000..5e27a41
+index 0000000..7a623ff
 --- /dev/null
 +++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
-@@ -0,0 +1,686 @@
+@@ -0,0 +1,757 @@
 +#import "XamanOttSchemeHandler.h"
 +
 +#import <objc/runtime.h>
@@ -1069,6 +1157,7 @@ index 0000000..5e27a41
 +- (BOOL)observeHost:(NSString *)host path:(NSString *)path document:(BOOL)document redirect:(BOOL)redirect;
 ++ (NSString *)normalizeHost:(NSString *)host;
 ++ (BOOL)isOwnHost:(NSString *)host;
+++ (BOOL)sameSite:(NSString *)host asHost:(NSString *)allowed;
 ++ (NSString *)stripOtt:(NSString *)userAgent;
 +@end
 +
@@ -1125,6 +1214,76 @@ index 0000000..5e27a41
 +  return [path containsString:@"/detect/xapp"];
 +}
 +
+++ (BOOL)isIpHost:(NSString *)host {
++  if ([host containsString:@":"]) {
++    return YES;
++  }
++  NSUInteger dots = 0;
++  for (NSUInteger i = 0; i < host.length; i++) {
++    unichar c = [host characterAtIndex:i];
++    if (c == '.') {
++      dots++;
++    } else if (c < '0' || c > '9') {
++      return NO;
++    }
++  }
++  return dots == 3;
++}
++
+++ (NSString *)siteRoot:(NSString *)host {
++  NSString *normalized = [self normalizeHost:host];
++  if (normalized.length == 0) {
++    return nil;
++  }
++  if ([self isIpHost:normalized] || [normalized rangeOfString:@"."].location == NSNotFound) {
++    return normalized;
++  }
++  NSArray<NSString *> *suffixes = @[
++    @"s3.amazonaws.com", @"amazonaws.com", @"azurewebsites.net", @"cloudfront.net",
++    @"firebaseapp.com", @"github.io", @"gitlab.io", @"herokuapp.com", @"netlify.app",
++    @"pages.dev", @"vercel.app", @"web.app", @"workers.dev", @"com.au", @"net.au",
++    @"org.au", @"co.jp", @"co.nz", @"co.uk", @"org.uk", @"ac.uk", @"com.br",
++    @"com.mx", @"com.sg", @"com.tr", @"co.za"
++  ];
++  NSString *suffix = @"";
++  for (NSString *candidate in suffixes) {
++    if (([normalized isEqualToString:candidate] || [normalized hasSuffix:[@"." stringByAppendingString:candidate]]) &&
++        candidate.length > suffix.length) {
++      suffix = candidate;
++    }
++  }
++  if (suffix.length > 0) {
++    if ([normalized isEqualToString:suffix]) {
++      return normalized;
++    }
++    NSString *remainder = [normalized substringToIndex:normalized.length - suffix.length - 1];
++    NSRange dot = [remainder rangeOfString:@"." options:NSBackwardsSearch];
++    NSString *left = dot.location == NSNotFound ? remainder : [remainder substringFromIndex:dot.location + 1];
++    return left.length == 0 ? normalized : [left stringByAppendingFormat:@".%@", suffix];
++  }
++  NSRange last = [normalized rangeOfString:@"." options:NSBackwardsSearch];
++  if (last.location == NSNotFound || last.location == 0) {
++    return normalized;
++  }
++  NSRange previous = [normalized rangeOfString:@"." options:NSBackwardsSearch range:NSMakeRange(0, last.location)];
++  return previous.location == NSNotFound ? normalized : [normalized substringFromIndex:previous.location + 1];
++}
++
+++ (BOOL)sameSite:(NSString *)host asHost:(NSString *)allowed {
++  NSString *left = [self siteRoot:host];
++  NSString *right = [self siteRoot:allowed];
++  return left.length > 0 && [left isEqualToString:right];
++}
++
++- (BOOL)matchesAllowed:(NSString *)host {
++  for (NSString *allowed in self.allowedHosts) {
++    if ([XamanOttScope sameSite:host asHost:allowed]) {
++      return YES;
++    }
++  }
++  return NO;
++}
++
 ++ (NSString *)stripOtt:(NSString *)userAgent {
 +  if (userAgent.length == 0) {
 +    return @"";
@@ -1149,7 +1308,7 @@ index 0000000..5e27a41
 +    if (normalized.length == 0) {
 +      return YES;
 +    }
-+    return [XamanOttScope isOwnHost:normalized] || [self.allowedHosts containsObject:normalized];
++    return [XamanOttScope isOwnHost:normalized] || [self matchesAllowed:normalized];
 +  }
 +}
 +
@@ -1163,7 +1322,7 @@ index 0000000..5e27a41
 +      return;
 +    }
 +    NSString *from = [XamanOttScope normalizeHost:fromHost];
-+    BOOL fromKnown = from.length > 0 && ([XamanOttScope isOwnHost:from] || [self.allowedHosts containsObject:from] || self.chainOpen);
++    BOOL fromKnown = from.length > 0 && ([XamanOttScope isOwnHost:from] || [self matchesAllowed:from] || self.chainOpen);
 +    if (!fromKnown) {
 +      return;
 +    }
@@ -1201,7 +1360,7 @@ index 0000000..5e27a41
 +      }
 +      return YES;
 +    }
-+    if ([self.allowedHosts containsObject:normalized]) {
++    if ([self matchesAllowed:normalized]) {
 +      if (!document && self.chainOpen && !self.expectingRedirect) {
 +        self.chainOpen = NO;
 +      }
