@@ -22,5 +22,8 @@ describe('trusted Xaman scan URLs', () => {
         expect(isXamanTangemUrl('https://xumm.app/tangem/setup')).toBe(true);
         expect(isXamanTangemUrl('https://xaman.app/tangem.evil')).toBe(false);
         expect(isXamanTangemUrl('https://xaman.app.evil.example/tangem')).toBe(false);
+        expect(isXamanTangemUrl('https://user:secret@xaman.app/tangem')).toBe(false);
+        expect(isXamanTangemUrl('https://xaman.app:443/tangem')).toBe(true);
+        expect(isTrustedXamanUrl('https://HELP.XAMAN.APP/article')).toBe(true);
     });
 });
