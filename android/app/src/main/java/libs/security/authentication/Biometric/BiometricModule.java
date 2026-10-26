@@ -102,6 +102,7 @@ public class BiometricModule extends ReactContextBaseJavaModule {
                         );
 
                         PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
                                 .setConfirmationRequired(false)
                                 .setNegativeButtonText("Cancel")
                                 .setTitle(reason)
