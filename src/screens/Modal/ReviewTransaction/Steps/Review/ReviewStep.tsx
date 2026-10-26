@@ -27,7 +27,9 @@ import Localize from '@locale';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
-import { CancelCraft, resolveScamSignRequest, SCAM_ACCEPT_CONFIRM_BUTTONS } from '../../scamRejectAction';
+import {
+    canSlideToAccept, CancelCraft, resolveScamSignRequest, SCAM_ACCEPT_CONFIRM_BUTTONS,
+} from '../../scamRejectAction';
 
 // transaction templates
 import * as GenuineTransactionTemplates from './Templates/genuine';
@@ -47,6 +49,7 @@ export interface State {
     riskUserWarnedAccepted?: boolean;
     riskQuestionStage?: number;
     isScamCounterpart: boolean;
+    scamCheckPending: boolean;
     cancelCraft?: CancelCraft;
 }
 
@@ -56,6 +59,10 @@ class ReviewStep extends Component<Props, State> {
     declare context: React.ContextType<typeof StepsContext>;
 
     private mounted = false;
+
+    private scamGeneration = 0;
+
+    private scamSourceAddress: string | undefined;
 
     constructor(props: Props) {
         super(props);
@@ -67,11 +74,12 @@ class ReviewStep extends Component<Props, State> {
             canSendFee: true,
             riskMustWarnUser: false,
             isScamCounterpart: false,
+            scamCheckPending: true,
         };
     }
 
     componentDidMount(): void {
-        const { payload, coreSettings } = this.context;
+        const { payload, coreSettings, source } = this.context;
         const { riskUserWarnedAccepted } = this.state;
 
         this.mounted = true;
@@ -93,6 +101,17 @@ class ReviewStep extends Component<Props, State> {
             // ignore
         }
 
+        this.scamSourceAddress = source?.address;
+        this.detectScamAndCancel();
+    }
+
+    componentDidUpdate(): void {
+        const { source } = this.context;
+        const address = source?.address;
+        if (address === this.scamSourceAddress) {
+            return;
+        }
+        this.scamSourceAddress = address;
         this.detectScamAndCancel();
     }
 
@@ -100,32 +119,46 @@ class ReviewStep extends Component<Props, State> {
         this.mounted = false;
     }
 
+    scamLookup = () => ({
+        getLedgerEntry: async (spec: string | Record<string, unknown>) =>
+            LedgerService.getLedgerEntry(typeof spec === 'string' ? { index: spec } : spec),
+        getNFTDetails: BackendService.getNFTDetails,
+        getAccountAdvisory: BackendService.getAccountAdvisory,
+        getAccountName: ResolverService.getAccountName,
+    });
+
     detectScamAndCancel = async () => {
         const { transaction, source, payload } = this.context;
+        const generation = ++this.scamGeneration;
 
         if (!transaction) {
+            if (this.mounted) {
+                this.setState({ scamCheckPending: false });
+            }
             return;
         }
+
+        this.setState({
+            scamCheckPending: true,
+            isScamCounterpart: false,
+            cancelCraft: undefined,
+        });
 
         const { isScam, cancelCraft } = await resolveScamSignRequest(
             transaction,
             source?.address,
             !!payload?.risk?.__warn_user,
-            {
-                getLedgerEntry: async (index) => LedgerService.getLedgerEntry({ index }),
-                getNFTDetails: BackendService.getNFTDetails,
-                getAccountAdvisory: BackendService.getAccountAdvisory,
-                getAccountName: ResolverService.getAccountName,
-            },
+            this.scamLookup(),
         );
 
-        if (!this.mounted) {
+        if (!this.mounted || generation !== this.scamGeneration) {
             return;
         }
 
         this.setState({
             isScamCounterpart: isScam,
             cancelCraft,
+            scamCheckPending: false,
         });
     };
 
@@ -154,11 +187,21 @@ class ReviewStep extends Component<Props, State> {
         });
     };
 
-    onScamCancelPress = () => {
-        const { payload, source } = this.context;
-        const { cancelCraft } = this.state;
+    onScamCancelPress = async () => {
+        const { payload, source, transaction } = this.context;
 
-        if (!cancelCraft || !source) {
+        if (!source || !transaction) {
+            return;
+        }
+
+        const { cancelCraft } = await resolveScamSignRequest(
+            transaction,
+            source.address,
+            !!payload?.risk?.__warn_user,
+            this.scamLookup(),
+        );
+
+        if (!cancelCraft) {
             return;
         }
 
@@ -311,6 +354,7 @@ class ReviewStep extends Component<Props, State> {
             riskUserWarnedAccepted,
             riskQuestionStage,
             isScamCounterpart,
+            scamCheckPending,
             cancelCraft,
         } = this.state;
 
@@ -600,7 +644,7 @@ class ReviewStep extends Component<Props, State> {
                                                         testID="accept-button"
                                                         color={this.getSwipeButtonColor()}
                                                         isLoading={isLoading}
-                                                        isDisabled={!isReady}
+                                                        isDisabled={!canSlideToAccept(!!isReady, scamCheckPending)}
                                                         onSwipeSuccess={
                                                             isScamCounterpart ? this.onScamAcceptSwipe : onAccept
                                                         }
