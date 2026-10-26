@@ -412,6 +412,7 @@ class LedgerService extends EventEmitter {
             command: 'account_objects',
             account,
             type: 'mptoken',
+            marker,
         }).then(async (resp) => {
             if ('error' in resp) {
                 this.logger.error('Unable to get mpt details state', resp.error);
