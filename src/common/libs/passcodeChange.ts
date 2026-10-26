@@ -21,7 +21,11 @@ type Dependencies = {
 export const createPasscodeChange = ({ vault, readHash, writeHash, hash, names }: Dependencies) => {
     const cleanup = async (journal: Journal) => {
         for (const name of journal.names) {
-            if (await vault.exist(backupName(name))) await vault.purge(backupName(name));
+            // Every primary is verified with the committed key before cleanup.
+            // Remove both the JS recovery copy and any native batch leftovers.
+            for (const recovery of [backupName(name), `${name}_RECOVER`]) {
+                if (await vault.exist(recovery)) await vault.purge(recovery);
+            }
         }
         await vault.purge(PASSCODE_CHANGE_JOURNAL);
     };

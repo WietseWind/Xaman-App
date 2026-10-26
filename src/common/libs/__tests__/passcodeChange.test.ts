@@ -99,6 +99,7 @@ describe('durable passcode change', () => {
         expect(await vault.open('A', 'old')).toBe('secret-A');
         expect(await vault.open('B', 'old')).toBe('secret-B');
         expect(blobs.has(PASSCODE_CHANGE_JOURNAL)).toBe(false);
+        expect(blobs.has('B_RECOVER')).toBe(false);
     });
 
     it.each(['before rekey', 'partial rekey', 'after commit'])('recovers on launch: %s', async (phase) => {
@@ -158,5 +159,30 @@ it('keeps committed rekey recovery available when journal cleanup fails', async 
     expect(blobs.has(PASSCODE_CHANGE_JOURNAL)).toBe(true);
     await createPasscodeChange(deps).recover();
     expect(await vault.open('A', 'new')).toBe('secret-A');
+    expect(blobs.has(PASSCODE_CHANGE_JOURNAL)).toBe(false);
+});
+
+it('retains recovery copies until every primary is restored, then removes all recovery variants', async () => {
+    const { service, seed, vault, blobs, deps } = setup();
+    await seed();
+    blobs.set('A', { data: 'secret-A', key: 'new' });
+    blobs.set('B_RECOVER', blobs.get('B')!);
+    blobs.delete('B');
+    const create = vault.create.getMockImplementation()!;
+    vault.create.mockImplementation(async (name, data, key) => {
+        if (name === 'B') throw new Error('storage unavailable');
+        return create(name, data, key);
+    });
+    await expect(service.recover()).rejects.toThrow('storage unavailable');
+    expect(blobs.has(PASSCODE_CHANGE_JOURNAL)).toBe(true);
+    expect(blobs.has('A_PASSCODE_RECOVER')).toBe(true);
+    expect(blobs.has('B_RECOVER')).toBe(true);
+    vault.create.mockImplementation(create);
+    await createPasscodeChange(deps).recover();
+    for (const name of ['A', 'B']) {
+        expect(await vault.open(name, 'old')).toBe(`secret-${name}`);
+        expect(blobs.has(`${name}_RECOVER`)).toBe(false);
+        expect(blobs.has(`${name}_PASSCODE_RECOVER`)).toBe(false);
+    }
     expect(blobs.has(PASSCODE_CHANGE_JOURNAL)).toBe(false);
 });
