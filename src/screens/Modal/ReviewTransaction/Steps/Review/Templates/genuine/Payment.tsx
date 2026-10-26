@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, InteractionManager } from 'react-native';
 
@@ -11,6 +12,7 @@ import { Payment } from '@common/libs/ledger/transactions';
 import { PathFindPathOption } from '@common/libs/ledger/types/methods';
 
 import { CalculateAvailableBalance } from '@common/utils/balance';
+import { MPT_MAX_AMOUNT, mptRawToDisplay } from '@common/utils/mptAmount';
 
 import { TrustLineModel } from '@store/models';
 
@@ -214,14 +216,19 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
     setIsReady = () => {
-        const { payload, setReady } = this.props;
+        const { payload, setReady, transaction } = this.props;
         const { mptLoading, mptIssuanceDetails, mptLookupKey: key } = this.state;
         if (payload.isPathFinding()) {
             setReady(false);
             return;
         }
         if (this.isMPTAmount()) {
-            setReady(!mptLoading && !!mptIssuanceDetails && key === mptLookupKey(this.props));
+            try {
+                mptRawToDisplay(transaction.Amount?.value ?? '0', mptIssuanceDetails?.AssetScale);
+                setReady(!mptLoading && !!mptIssuanceDetails && key === mptLookupKey(this.props));
+            } catch {
+                setReady(false);
+            }
         }
     };
 
@@ -461,22 +468,22 @@ class PaymentTemplate extends Component<Props, State> {
         } = this.state;
 
         const mptAmount = {
-            holding: 0,
-            transaction: 0,
-            availableForIssuance: 0,
+            holding: '0',
+            transaction: '0',
+            availableForIssuance: '0',
         };
 
         if (this.isMPTAmount()) {
-            mptAmount.holding = Number(mptDetails?.MPTAmount || 0);
-            mptAmount.transaction = Number(transaction?.Amount?.value || 0);
-
-            mptAmount.availableForIssuance = Number(mptIssuanceDetails?.MaximumAmount || 0) -
-                Number(mptIssuanceDetails?.OutstandingAmount || 0);
-
-            if ((mptIssuanceDetails?.AssetScale || 1) > 1) {
-                mptAmount.holding /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                mptAmount.transaction /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                mptAmount.availableForIssuance /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
+            try {
+                const scale = mptIssuanceDetails?.AssetScale;
+                mptAmount.holding = mptRawToDisplay(mptDetails?.MPTAmount ?? '0', scale);
+                mptAmount.transaction = mptRawToDisplay(transaction.Amount?.value ?? '0', scale);
+                mptAmount.availableForIssuance = mptRawToDisplay(
+                    new BigNumber(mptIssuanceDetails?.MaximumAmount ?? MPT_MAX_AMOUNT)
+                        .minus(mptIssuanceDetails?.OutstandingAmount ?? '0'), scale,
+                );
+            } catch {
+                return <InfoMessage type="error" label={Localize.t('mptoken.errorLoading')} />;
             }
 
             if (!mptIssuanceDetails && !mptIssuanceError) {
@@ -635,11 +642,7 @@ class PaymentTemplate extends Component<Props, State> {
                                                 <Text style={[AppStyles.monoBold]}>
                                                     {
                                                         source.address === mptIssuanceDetails?.Issuer
-                                                            ? (
-                                                                (mptIssuanceDetails?.MaximumAmount || 0) > 0
-                                                                    ? mptAmount.availableForIssuance
-                                                                    : 'N/A (issuer)'
-                                                            )
+                                                            ? mptAmount.availableForIssuance
                                                             : mptAmount.holding
                                                     }{' '}
                                                 </Text>
