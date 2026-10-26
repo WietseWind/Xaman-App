@@ -38,6 +38,12 @@ class LRUCache<K, V> {
         this.cache.delete(key);
     }
 
+    deleteWhere(predicate: (key: K) => boolean): void {
+        this.cache.forEach((_value, key) => {
+            if (predicate(key)) this.cache.delete(key);
+        });
+    }
+
     clear(): void {
         this.cache.clear();
     }
