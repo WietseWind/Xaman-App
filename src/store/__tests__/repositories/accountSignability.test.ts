@@ -1,5 +1,5 @@
 import AccountRepository from '../../repositories/account';
-import { AccessLevels } from '@store/types';
+import { AccessLevels, AccountTypes, EncryptionLevels } from '@store/types';
 import { AccountModel } from '@store/models';
 
 const account = (changes: Record<string, unknown> = {}) => ({
@@ -34,4 +34,27 @@ it('preserves balance and hidden-account filtering after eligibility is checked'
     jest.spyOn(AccountRepository, 'findAll').mockReturnValue([visible, hidden, empty, disabled] as any);
     expect(AccountRepository.getSpendableAccounts()).toEqual([visible]);
     expect(AccountRepository.getSpendableAccounts(true)).toEqual([visible, hidden]);
+});
+
+it.each([
+    [AccountTypes.Regular, AccessLevels.Full, true],
+    [AccountTypes.Tangem, AccessLevels.Full, true],
+    [AccountTypes.Regular, AccessLevels.Readonly, false],
+    [AccountTypes.Tangem, AccessLevels.Readonly, false],
+])('uses an imported %s regular key with %s access', (type, accessLevel, expected) => {
+    const owner = account({ regularKey: 'rKey', flags: { disableMasterKey: true } });
+    const key = account({
+        address: 'rKey', type, accessLevel, balance: 0,
+        encryptionLevel: type === AccountTypes.Tangem ? EncryptionLevels.Physical : EncryptionLevels.Passcode,
+        flags: { disableMasterKey: true },
+    });
+    const imported = [owner, key];
+    jest.spyOn(AccountRepository, 'findAll').mockReturnValue(imported as any);
+    jest.spyOn(AccountRepository, 'query').mockImplementation((criteria: any) => ({
+        isEmpty: () => !imported.some((item: any) =>
+            Object.entries(criteria).every(([field, value]) => item[field] === value)),
+    }) as any);
+    // A regular key needs neither its own balance nor its own enabled master key.
+    expect(AccountRepository.isSignable(owner)).toBe(expected);
+    expect(AccountRepository.getSpendableAccounts()).toEqual(expected ? [owner] : []);
 });
