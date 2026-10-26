@@ -56,6 +56,7 @@ import NetworkService from '@services/NetworkService';
 
 /* types ==================================================================== */
 import { ImportSteps, Props, SecretTypes, State } from './types';
+import { shouldFinishTangemUpgrade, stateForSecretType } from './tangemUpgradeReset';
 
 /* Component ==================================================================== */
 class AccountImportView extends Component<Props, State> {
@@ -341,7 +342,7 @@ class AccountImportView extends Component<Props, State> {
     };
 
     setSecretType = (type: SecretTypes, callback?: any) => {
-        this.setState({ secretType: type }, () => {
+        this.setState((state) => stateForSecretType(state, type), () => {
             if (typeof callback === 'function') {
                 callback();
             }
@@ -368,8 +369,10 @@ class AccountImportView extends Component<Props, State> {
     };
 
     goNext = async (nextStep?: ImportSteps) => {
-        const { account, upgradeAccount, importedAccount, alternativeSeedAlphabet, currentStep, prevSteps } =
-            this.state;
+        const {
+            account, upgradeAccount, importedAccount, alternativeSeedAlphabet, currentStep, prevSteps,
+            secretType, scannedTangemCard,
+        } = this.state;
 
         // we are in the last screen, just import the account and close the screen
         if (currentStep === 'FinishStep') {
@@ -377,8 +380,13 @@ class AccountImportView extends Component<Props, State> {
             return;
         }
 
-        // Tangem upgrade is decided by the card address, then returns to account settings.
-        if (nextStep === 'ConfirmPublicKey' && upgradeAccount && account.type === AccountTypes.Tangem) {
+        // Tangem upgrade follows the selected secret type, not a card left over from Back.
+        if (shouldFinishTangemUpgrade({
+            nextStep,
+            hasUpgradeAccount: !!upgradeAccount,
+            secretType,
+            hasScannedCard: !!scannedTangemCard,
+        })) {
             await this.finishTangemUpgrade();
             return;
         }
