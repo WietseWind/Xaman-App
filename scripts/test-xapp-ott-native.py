@@ -107,6 +107,7 @@ public class OttProbe {
    row.put("auth",ex.getRequestHeaders().getFirst("Authorization"));
    row.put("cookie",ex.getRequestHeaders().getFirst("Cookie"));
    row.put("ott",ex.getRequestHeaders().getFirst("X-OTT"));
+   row.put("cred",ex.getRequestHeaders().getFirst("X-Xaman-Credentials"));
    received.add(row);
    if(ex.getRequestURI().getPath().equals("/redirect")){
     ex.getResponseHeaders().add("Location","https://localhost:"+port+"/collector");
@@ -120,7 +121,9 @@ public class OttProbe {
     }
     if(ex.getRequestURI().getPath().equals("/logout")){
      ex.getResponseHeaders().add("Set-Cookie","session=own; Max-Age=0");
-    } else if(!ex.getRequestURI().getPath().equals("/omit")){
+    } else if(ex.getRequestURI().getPath().equals("/omit")){
+     ex.getResponseHeaders().add("Set-Cookie","session=evil");
+    } else {
      ex.getResponseHeaders().add("Set-Cookie","session=own");
     }
     ex.sendResponseHeaders(200,body.length);ex.getResponseBody().write(body);
@@ -141,13 +144,17 @@ public class OttProbe {
    scope.observe("127.0.0.1","/",true,false);scope.noteDocumentStatus(200);
    RNCWebView view=new RNCWebView();
    view.pageUrl=own+"/";
+   android.webkit.CookieManager.getInstance().setCookie(own,"a=1");
+   android.webkit.CookieManager.getInstance().setCookie("https://localhost:"+port,"b=2");
    WebResourceResponse response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/redirect","GET",false));
    check(new String(response.data.readAllBytes(),StandardCharsets.UTF_8).equals("OK"),"redirect response");
    response.data.close();
    check(received.get(0).get("ua").contains("(ott:"),"own resource gets token");
    check(!received.get(1).get("ua").contains("(ott:"),"third-party redirected resource stripped");
    check(received.get(1).get("auth")==null,"cross-origin Authorization stripped");
-   check(received.get(1).get("cookie")==null,"cross-origin Cookie stripped");
+   check("a=1".equals(received.get(0).get("cookie")),"same-origin redirect hop sends site A cookie");
+   check(received.get(1).get("cookie")==null,"cross-origin redirect receives no cookies");
+   check(received.get(0).get("cred")==null && received.get(1).get("cred")==null,"credential stamp is not forwarded");
    response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/gzip","GET",false));
    check(new String(response.data.readAllBytes(),StandardCharsets.UTF_8).equals("OK"),"gzip decoded");
    response.data.close();
@@ -160,7 +167,8 @@ public class OttProbe {
    response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/omit","GET",false,false,"omit"));
    response.data.close();
    check(received.get(0).get("cookie")==null,"credentials omit does not send saved cookie");
-   check("session=own".equals(android.webkit.CookieManager.getInstance().getCookie(own)),"omit does not drop the saved session");
+   check(received.get(0).get("cred")==null,"omit stamp is not forwarded");
+   check("session=own".equals(android.webkit.CookieManager.getInstance().getCookie(own)),"omit ignores the response cookie");
    received.clear();
    response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/logout","GET",false,false,null));
    response.data.close();
