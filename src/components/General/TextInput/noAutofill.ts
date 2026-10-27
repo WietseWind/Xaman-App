@@ -6,7 +6,7 @@
 export const noAutofillProps = {
     autoComplete: 'off' as const,
     textContentType: 'none' as const,
-    importantForAutofill: 'no' as const,
+    importantForAutofill: 'noExcludeDescendants' as const,
     autoCorrect: false,
     spellCheck: false,
 };

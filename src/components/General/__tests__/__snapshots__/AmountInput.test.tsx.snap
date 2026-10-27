@@ -2,25 +2,40 @@
 
 exports[`[AmountInput] renders correctly with default props 1`] = `
 <TextInput
-  autoCapitalize="words"
+  autoCapitalize="none"
+  autoComplete="off"
+  autoCorrect={false}
+  editable={true}
+  importantForAutofill="noExcludeDescendants"
   keyboardType="decimal-pad"
+  onBlur={[Function]}
   onChangeText={[Function]}
+  onFocus={[Function]}
   placeholder="0"
   returnKeyType="done"
+  spellCheck={false}
+  textContentType="none"
   value=""
 />
 `;
 
 exports[`[AmountInput] renders correctly with specific props 1`] = `
 <TextInput
-  autoCapitalize="words"
+  autoCapitalize="none"
+  autoComplete="off"
+  autoCorrect={false}
   editable={false}
+  importantForAutofill="noExcludeDescendants"
   keyboardType="decimal-pad"
+  onBlur={[Function]}
   onChangeText={[Function]}
+  onFocus={[Function]}
   placeholder="0"
   placeholderTextColor="#999"
   returnKeyType="done"
+  spellCheck={false}
   testID="amount-input"
+  textContentType="none"
   value="12345.6789"
 />
 `;

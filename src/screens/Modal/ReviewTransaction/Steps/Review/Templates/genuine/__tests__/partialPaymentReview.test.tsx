@@ -1,5 +1,8 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, TextInput } from 'react-native';
+import renderer, { act } from 'react-test-renderer';
+import { AmountInput as EditableAmountInput } from '@components/General/AmountInput';
+import { AmountInputEditingContext } from '@components/General/AmountInput/EditingContext';
 import { AmountInput, AmountText } from '@components/General';
 import { AccountElement } from '@components/Modules';
 import { Payment } from '@common/libs/ledger/transactions';
@@ -160,4 +163,27 @@ it('preserves the existing editable-amount workflow', () => {
     const input = elements(tree).find(el => el.type === AmountInput);
     expect(input.props.value).toBe(MAXIMUM);
     expect(input.props.editable).toBe(true);
+});
+
+it('keeps the real payment unchanged when password-manager text reaches the background amount input', () => {
+    const { transaction, view } = render({ Amount: '0', DeliverMin: undefined, SendMax: undefined, Flags: 0 });
+    view.setState = jest.fn((next: any) => { Object.assign(view.state, next); }) as any;
+    let editable = true;
+    const tree = renderer.create(
+        <AmountInputEditingContext.Provider value={() => editable}>
+            <EditableAmountInput value="0" onChange={view.onAmountChange} />
+        </AmountInputEditingContext.Provider>,
+    );
+    const input = tree.root.findByType(TextInput);
+    const before = JSON.stringify(transaction.JsonForSigning);
+    act(() => input.props.onFocus());
+    act(() => input.props.onChangeText('test123'));
+    expect(JSON.stringify(transaction.JsonForSigning)).toBe(before);
+    editable = false;
+    act(() => input.props.onChangeText('123'));
+    expect(JSON.stringify(transaction.JsonForSigning)).toBe(before);
+    editable = true;
+    act(() => input.props.onFocus());
+    act(() => input.props.onChangeText('1.25'));
+    expect(transaction.JsonForSigning.Amount).toBe('1250000');
 });

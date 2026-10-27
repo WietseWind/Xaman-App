@@ -42,6 +42,9 @@ class ReviewTransactionModal extends Component<Props, State> {
 
     private backHandler: NativeEventSubscription | undefined;
     private mounted = false;
+    private signing = false;
+
+    canEditAmount = () => !this.signing;
     // Batch: the Batch Account from the payload (setSource can change transaction.Account)
     private payloadBatchAccount?: string;
 
@@ -124,40 +127,48 @@ class ReviewTransactionModal extends Component<Props, State> {
         const { payload } = this.props;
 
         // if not mounted return
-        if (!this.mounted) {
+        if (!this.mounted || this.signing) {
             return;
         }
 
-        this.setState({
-            isLoading: true,
-        });
-
-        // console.log({serviceFee}, transaction?.ServiceFee, transaction?.ServiceFeeTx);
-        if (serviceFee) {
-            transaction?.setServiceFee(serviceFee);
-        }
-
-        // TODO: transaction!
-        await transaction!
-            // TODO: source!
-            .sign(source!, payload.isMultiSign())
-            .then(this.submit)
-            .catch((error: Error) => {
-                if (this.mounted) {
-                    if (error) {
-                        if (error?.message) {
-                            Alert.alert(Localize.t('global.error'), error.message);
-                        } else {
-                            Alert.alert(Localize.t('global.error'), Localize.t('global.unexpectedErrorOccurred'));
-                        }
-                    }
-
-                    this.setState({
-                        currentStep: Steps.Review,
-                        isLoading: false,
-                    });
-                }
+        // Set the lock synchronously, before React renders the busy state or a
+        // password manager sends another event to the underlying amount field.
+        this.signing = true;
+        try {
+            this.setState({
+                isLoading: true,
             });
+
+            // console.log({serviceFee}, transaction?.ServiceFee, transaction?.ServiceFeeTx);
+            if (serviceFee) {
+                transaction?.setServiceFee(serviceFee);
+            }
+
+            // TODO: transaction!
+            await transaction!
+                // TODO: source!
+                .sign(source!, payload.isMultiSign())
+                .then(this.submit)
+                .catch((error: Error) => {
+                    this.signing = false;
+                    if (this.mounted) {
+                        if (error) {
+                            if (error?.message) {
+                                Alert.alert(Localize.t('global.error'), error.message);
+                            } else {
+                                Alert.alert(Localize.t('global.error'), Localize.t('global.unexpectedErrorOccurred'));
+                            }
+                        }
+
+                        this.setState({
+                            currentStep: Steps.Review,
+                            isLoading: false,
+                        });
+                    }
+                });
+        } finally {
+            this.signing = false;
+        }
     };
 
     onDecline = () => {
@@ -860,6 +871,7 @@ class ReviewTransactionModal extends Component<Props, State> {
                 value={{
                     ...this.state,
                     timestamp,
+                    canEditAmount: this.canEditAmount,
                     setTransaction: this.setTransaction,
                     setAccounts: this.setAccounts,
                     setSource: this.setSource,

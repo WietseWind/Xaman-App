@@ -37,6 +37,7 @@ import * as GenuineTransactionTemplates from './Templates/genuine';
 import * as PseudoTransactionTemplates from './Templates/pseudo';
 import { FallbackTemplate } from './Templates/fallback';
 import ExtraFields from './ExtraFields';
+import { AmountInputEditingContext } from '@components/General/AmountInput/EditingContext';
 
 import { StepsContext } from '../../Context';
 /* types ==================================================================== */
@@ -349,6 +350,7 @@ class ReviewStep extends Component<Props, State> {
             source,
             isReady,
             isLoading,
+            canEditAmount,
             setSource,
             onAccept,
             onClose,
@@ -607,7 +609,12 @@ class ReviewStep extends Component<Props, State> {
                                         )}
 
                                         {/* transaction details */}
-                                        <View style={styles.detailsContainer}>{this.renderDetails()}</View>
+                                        <View style={styles.detailsContainer}>
+                                            <AmountInputEditingContext.Provider value={() =>
+                                                !isLoading && (canEditAmount?.() ?? true)}>
+                                                {this.renderDetails()}
+                                            </AmountInputEditingContext.Provider>
+                                        </View>
                                         {transaction.ExtraFields.length > 0 && (
                                             <View style={styles.detailsContainer}>
                                                 <ExtraFields transaction={transaction} />
