@@ -1000,8 +1000,8 @@ new file mode 100644
 +    }
 +}
 diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
---- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m	1985-10-26 09:15:00
-+++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m	2026-10-26 22:42:15
+--- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m
++++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 @@ -6,6 +6,7 @@
   */
  
@@ -1010,15 +1010,14 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
  #import <React/RCTConvert.h>
  #import <React/RCTAutoInsetsProtocol.h>
  #import "RNCWKProcessPoolManager.h"
-@@ -24,6 +25,22 @@
+@@ -24,6 +25,21 @@
  static NSDictionary* customCertificatesForHost;
  
  NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
 +
-+// When incognito is off, iOS uses the app default data store so localStorage /
-+// IndexedDB work (Android incognito still has those). Cookies stay for
-+// navigations inside this webview and are cleared when it opens and closes.
-+// Service workers are not kept.
++// Incognito uses a private in-memory store. Cookies, localStorage and IndexedDB
++// survive navigation inside this WebView and are discarded with the view.
++// Service workers remain disabled.
 +static NSString *const RNCXamanStorageLockdownScript =
 +    @"(function(){"
 +    "try{if(navigator.serviceWorker){"
@@ -1033,7 +1032,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
  
  #if TARGET_OS_IOS
  // runtime trick to remove WKWebView keyboard default toolbar
-@@ -55,6 +72,17 @@
+@@ -55,6 +71,17 @@
  #endif // !TARGET_OS_OSX
  @end
  @implementation RNCWKWebView
@@ -1051,56 +1050,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
  #if !TARGET_OS_OSX
  - (NSString *)stringFromAction:(SEL) action {
    NSString *sel = NSStringFromSelector(action);
-@@ -420,6 +448,37 @@
- }
- #endif //Target_OS_OSX
- 
-+- (BOOL)xamanAllowScriptStorageOnly
-+{
-+  return !_incognito;
-+}
-+
-+- (void)xamanStripCookiesAndServiceWorkersFromStore:(WKWebsiteDataStore *)store
-+                                          completion:(void (^)(void))completion
-+{
-+  void (^done)(void) = ^{
-+    if (completion == nil) {
-+      return;
-+    }
-+    if ([NSThread isMainThread]) {
-+      completion();
-+    } else {
-+      dispatch_async(dispatch_get_main_queue(), completion);
-+    }
-+  };
-+  if (store == nil) {
-+    done();
-+    return;
-+  }
-+  NSMutableSet *types = [NSMutableSet setWithObject:WKWebsiteDataTypeCookies];
-+  if (@available(iOS 16.0, *)) {
-+    [types addObject:WKWebsiteDataTypeServiceWorkerRegistrations];
-+  }
-+  [store removeDataOfTypes:types
-+             modifiedSince:[NSDate dateWithTimeIntervalSince1970:0]
-+         completionHandler:done];
-+}
-+
- - (WKWebViewConfiguration *)setUpWkWebViewConfig
- {
-   WKWebViewConfiguration *wkWebViewConfig = [WKWebViewConfiguration new];
-@@ -461,7 +520,9 @@
-   }
-   if (_incognito) {
-     wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore nonPersistentDataStore];
--  } else if (_cacheEnabled) {
-+  } else {
-+    // Persistent app-sandbox store so localStorage / IndexedDB work. Cookies are
-+    // cleared when the webview opens and closes, not on each navigation.
-     wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
-   }
-   if(self.useSharedProcessPool) {
-@@ -516,7 +577,30 @@
+@@ -516,7 +543,30 @@
  {
    if (self.window != nil && _webView == nil) {
      WKWebViewConfiguration *wkWebViewConfig = [self setUpWkWebViewConfig];
@@ -1132,38 +1082,19 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
      [self setBackgroundColor: _savedBackgroundColor];
  #if !TARGET_OS_OSX
      // Apply once at creation time. The prop is documented as non-reactive —
-@@ -588,7 +672,18 @@
-     [self addSubview:_webView];
-     [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
-     [self setKeyboardDisplayRequiresUserAction: _savedKeyboardDisplayRequiresUserAction];
--    [self visitSource];
-+    if ([self xamanAllowScriptStorageOnly]) {
-+      // Finish wiping the previous launch before the first navigation, so that
-+      // wipe cannot delete cookies this visit has just stored.
-+      [self xamanStripCookiesAndServiceWorkersFromStore:_webView.configuration.websiteDataStore
-+                                             completion:^{
-+                                               if (self->_webView != nil) {
-+                                                 [self visitSource];
-+                                               }
-+                                             }];
-+    } else {
-+      [self visitSource];
-+    }
-   }
- 
- #if !TARGET_OS_OSX
-@@ -628,6 +723,10 @@
+@@ -628,6 +678,11 @@
  #endif
  {
    if (_webView) {
-+    if ([self xamanAllowScriptStorageOnly]) {
-+      [self xamanStripCookiesAndServiceWorkersFromStore:_webView.configuration.websiteDataStore
-+                                             completion:nil];
++    if (!_webView.configuration.websiteDataStore.persistent) {
++      [_webView.configuration.websiteDataStore removeDataOfTypes:[WKWebsiteDataStore allWebsiteDataTypes]
++                                                  modifiedSince:[NSDate dateWithTimeIntervalSince1970:0]
++                                              completionHandler:^{}];
 +    }
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:HistoryShimName];
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:MessageHandlerName];
      [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
-@@ -1216,6 +1315,10 @@
+@@ -1216,6 +1271,10 @@
  - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
  {
  #if !TARGET_OS_OSX
@@ -1174,7 +1105,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler();
-@@ -1235,6 +1338,10 @@
+@@ -1235,6 +1294,10 @@
   */
  - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler{
  #if !TARGET_OS_OSX
@@ -1185,7 +1116,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler(YES);
-@@ -1260,6 +1367,10 @@
+@@ -1260,6 +1323,10 @@
   */
  - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler{
  #if !TARGET_OS_OSX
@@ -1196,11 +1127,11 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
      textField.text = defaultText;
-@@ -1875,6 +1986,12 @@
+@@ -1875,6 +1942,12 @@
    ];
    WKUserScript *userScript = [[WKUserScript alloc] initWithSource:html5HistoryAPIShimSource injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
    [wkWebViewConfig.userContentController addUserScript:userScript];
-+  if ([self xamanAllowScriptStorageOnly]) {
++  if (_incognito) {
 +    WKUserScript *lockdownScript = [[WKUserScript alloc] initWithSource:RNCXamanStorageLockdownScript
 +                                                          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
 +                                                       forMainFrameOnly:NO];
@@ -1229,7 +1160,7 @@ diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m b/n
 new file mode 100644
 --- /dev/null
 +++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
-@@ -0,0 +1,842 @@
+@@ -0,0 +1,1012 @@
 +#import "XamanOttSchemeHandler.h"
 +
 +#import <objc/runtime.h>
@@ -1527,7 +1458,10 @@ new file mode 100644
 +
 +@interface XamanOttTaskBox : NSObject
 +@property (nonatomic, strong) id<WKURLSchemeTask> schemeTask;
++@property (nonatomic, weak) WKWebView *webView;
++@property (nonatomic, assign) BOOL topLevel;
 +@property (nonatomic, strong) NSURLSessionDataTask *dataTask;
++@property (nonatomic, copy) NSURLRequest *request;
 +@property (nonatomic, assign) BOOL document;
 +@property (nonatomic, assign) BOOL stopped;
 +@property (nonatomic, assign) BOOL finished;
@@ -1541,8 +1475,10 @@ new file mode 100644
 +@interface XamanOttSchemeHandler ()
 +@property (nonatomic, strong) XamanOttScope *scope;
 +@property (nonatomic, strong) NSURLSession *session;
-+// In-memory only. Dies with this webview, so a later launch does not inherit it.
-+@property (nonatomic, strong) NSHTTPCookieStorage *cookieJar;
++// The cookie store belongs to this WebView's private website data store.
++@property (nonatomic, strong) WKHTTPCookieStore *cookieStore;
++@property (nonatomic, strong) NSURL *topLevelRedirectURL;
++@property (nonatomic, assign) NSInteger topLevelRedirects;
 +@property (nonatomic, strong) NSMapTable *boxByScheme;
 +@property (nonatomic, strong) NSMapTable *boxBySessionTask;
 +@property (nonatomic, strong) NSMutableSet *ignoredSessionTasks;
@@ -1603,8 +1539,6 @@ new file mode 100644
 +- (instancetype)init {
 +  if ((self = [super init])) {
 +    _scope = [XamanOttScope new];
-+    _cookieJar = [NSHTTPCookieStorage new];
-+    _cookieJar.cookieAcceptPolicy = NSHTTPCookieAcceptPolicyAlways;
 +    NSPointerFunctionsOptions keyOptions = NSPointerFunctionsStrongMemory | NSPointerFunctionsOpaquePersonality;
 +    NSPointerFunctionsOptions valueOptions = NSPointerFunctionsStrongMemory;
 +    _boxByScheme = [NSMapTable mapTableWithKeyOptions:keyOptions valueOptions:valueOptions];
@@ -1622,21 +1556,22 @@ new file mode 100644
 +  if (self.session != nil) {
 +    return self.session;
 +  }
-+  NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
++  NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
 +  config.timeoutIntervalForRequest = 30;
 +  config.timeoutIntervalForResource = 60;
 +  config.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-+  // The webview jar below is the session. The shared app cookie store is not.
++  // Cookies are synchronized with this WebView's own store before each task.
 +  config.HTTPShouldSetCookies = NO;
 +  config.HTTPCookieStorage = nil;
 +  config.URLCredentialStorage = nil;
 +  XamanOttSessionProxy *proxy = [XamanOttSessionProxy new];
 +  proxy.handler = self;
-+  self.session = [NSURLSession sessionWithConfiguration:config delegate:proxy delegateQueue:nil];
++  self.session = [NSURLSession sessionWithConfiguration:config delegate:proxy delegateQueue:[NSOperationQueue mainQueue]];
 +  return self.session;
 +}
 +
 +- (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
++  self.cookieStore = webView.configuration.websiteDataStore.httpCookieStore;
 +  NSURLRequest *original = urlSchemeTask.request;
 +  NSURL *url = original.URL;
 +  NSString *scheme = url.scheme.lowercaseString;
@@ -1645,11 +1580,18 @@ new file mode 100644
 +    return;
 +  }
 +
++  BOOL topLevel = [self isTopLevelNavigation:original];
++  if (topLevel && ![self sameDocument:url other:self.topLevelRedirectURL]) {
++    self.topLevelRedirectURL = nil;
++    self.topLevelRedirects = 0;
++  }
 +  BOOL document = [self isDocumentRequest:original];
 +  BOOL keep = [self.scope observeHost:url.host path:url.path ?: @"" document:document redirect:NO];
 +  NSMutableURLRequest *next = [self forwardingRequest:original keepOtt:keep];
 +  XamanOttTaskBox *box = [XamanOttTaskBox new];
 +  box.schemeTask = urlSchemeTask;
++  box.webView = webView;
++  box.topLevel = topLevel;
 +  box.document = document;
 +  @synchronized(self) {
 +    [self.boxByScheme setObject:box forKey:urlSchemeTask];
@@ -1686,6 +1628,7 @@ new file mode 100644
 +}
 +
 +- (BOOL)sameDocument:(NSURL *)left other:(NSURL *)right {
++  if (left == nil || right == nil) return NO;
 +  NSURLComponents *a = [NSURLComponents componentsWithURL:left resolvingAgainstBaseURL:NO];
 +  NSURLComponents *b = [NSURLComponents componentsWithURL:right resolvingAgainstBaseURL:NO];
 +  if (a == nil || b == nil) {
@@ -1735,56 +1678,153 @@ new file mode 100644
 +  return data;
 +}
 +
-+- (void)rememberCookiesFromResponse:(NSHTTPURLResponse *)response {
-+  if (response.URL == nil) {
-+    return;
-+  }
-+  NSArray<NSHTTPCookie *> *cookies = [NSHTTPCookie cookiesWithResponseHeaderFields:response.allHeaderFields
-+                                                                            forURL:response.URL];
-+  if (cookies.count == 0) {
-+    return;
-+  }
-+  WKHTTPCookieStore *store = [WKWebsiteDataStore defaultDataStore].httpCookieStore;
++- (NSHTTPCookieStorage *)cookieStorageWithCookies:(NSArray<NSHTTPCookie *> *)cookies {
++  // init/new does not create a working Foundation cookie store.
++  NSHTTPCookieStorage *storage = [NSURLSessionConfiguration ephemeralSessionConfiguration].HTTPCookieStorage;
++  storage.cookieAcceptPolicy = NSHTTPCookieAcceptPolicyAlways;
 +  for (NSHTTPCookie *cookie in cookies) {
-+    [self.cookieJar setCookie:cookie];
-+    [store setCookie:cookie completionHandler:nil];
++    [storage setCookie:cookie];
 +  }
++  return storage;
 +}
 +
-+- (void)applyCookiesToRequest:(NSMutableURLRequest *)request {
-+  if (request.URL == nil) {
++- (NSArray<NSString *> *)keyForCookie:(NSHTTPCookie *)cookie {
++  NSString *domain = [cookie.domain.lowercaseString stringByTrimmingCharactersInSet:
++                      [NSCharacterSet characterSetWithCharactersInString:@"."]];
++  return @[cookie.name, domain, cookie.path];
++}
++
++- (BOOL)isSameSiteRequest:(NSURLRequest *)request {
++  NSString *site = [request valueForHTTPHeaderField:@"Sec-Fetch-Site"];
++  if ([site isEqualToString:@"cross-site"]) return NO;
++  if ([site isEqualToString:@"same-origin"] || [site isEqualToString:@"same-site"] ||
++      [site isEqualToString:@"none"]) return YES;
++  NSString *referer = [request valueForHTTPHeaderField:@"Referer"];
++  NSURL *source = referer.length > 0 ? [NSURL URLWithString:referer] : request.mainDocumentURL;
++  return source != nil &&
++    [source.scheme.lowercaseString isEqualToString:request.URL.scheme.lowercaseString] &&
++    [XamanOttScope sameSite:source.host asHost:request.URL.host];
++}
++
++- (BOOL)isTopLevelNavigation:(NSURLRequest *)request {
++  NSString *destination = [request valueForHTTPHeaderField:@"Sec-Fetch-Dest"];
++  if (destination.length > 0) return [destination isEqualToString:@"document"];
++  return request.mainDocumentURL != nil && [self sameDocument:request.URL other:request.mainDocumentURL] &&
++    [self isDocumentRequest:request];
++}
++
++- (NSArray<NSHTTPCookie *> *)cookiesForRequest:(NSURLRequest *)request
++                              storedCookies:(NSArray<NSHTTPCookie *> *)storedCookies {
++  if (!request.HTTPShouldHandleCookies || request.URL == nil) return @[];
++  NSHTTPCookieStorage *storage = [self cookieStorageWithCookies:storedCookies];
++  BOOL sameSite = [self isSameSiteRequest:request];
++  NSString *method = (request.HTTPMethod ?: @"GET").uppercaseString;
++  BOOL safeNavigation = [self isTopLevelNavigation:request] &&
++    ([method isEqualToString:@"GET"] || [method isEqualToString:@"HEAD"]);
++  return [[storage cookiesForURL:request.URL] filteredArrayUsingPredicate:
++    [NSPredicate predicateWithBlock:^BOOL(NSHTTPCookie *cookie, NSDictionary *bindings) {
++      // Foundation represents SameSite=None (and an unspecified policy) as nil.
++      NSString *policy = cookie.sameSitePolicy;
++      if (sameSite || policy == nil) return YES;
++      return ![policy isEqualToString:@"strict"] && safeNavigation;
++    }]];
++}
++
++- (NSDictionary<NSString *, NSArray<NSHTTPCookie *> *> *)cookieChangesFromResponse:(NSHTTPURLResponse *)response
++                                                                         request:(NSURLRequest *)request
++                                                                   storedCookies:(NSArray<NSHTTPCookie *> *)storedCookies {
++  if (!request.HTTPShouldHandleCookies || response.URL == nil) return @{@"set": @[], @"delete": @[]};
++  NSArray<NSHTTPCookie *> *received = [NSHTTPCookie cookiesWithResponseHeaderFields:response.allHeaderFields
++                                                                           forURL:response.URL];
++  if (![self isSameSiteRequest:request] && ![self isTopLevelNavigation:request]) {
++    received = [received filteredArrayUsingPredicate:
++      [NSPredicate predicateWithBlock:^BOOL(NSHTTPCookie *cookie, NSDictionary *bindings) {
++        return cookie.sameSitePolicy == nil;
++      }]];
++  }
++  NSHTTPCookieStorage *storage = [self cookieStorageWithCookies:storedCookies];
++  NSMutableDictionary *before = [NSMutableDictionary dictionary];
++  for (NSHTTPCookie *cookie in storedCookies) before[[self keyForCookie:cookie]] = cookie;
++  NSMutableArray *validationCookies = [NSMutableArray array];
++  NSMutableDictionary *originalByKey = [NSMutableDictionary dictionary];
++  NSMutableDictionary *validationByKey = [NSMutableDictionary dictionary];
++  for (NSHTTPCookie *cookie in received) {
++    NSArray *key = [self keyForCookie:cookie];
++    NSHTTPCookie *probe = cookie;
++    NSHTTPCookie *old = before[key];
++    if (old.isHTTPOnly && !cookie.isHTTPOnly) {
++      // Foundation otherwise refuses to replace/delete an HttpOnly cookie when
++      // the response omits HttpOnly. This is a server response, not JavaScript.
++      // Match the flag only in the validation jar; apply the original below.
++      NSMutableDictionary *properties = [cookie.properties mutableCopy];
++      properties[@"HttpOnly"] = @"TRUE";
++      probe = [NSHTTPCookie cookieWithProperties:properties];
++    }
++    if (probe == nil) continue;
++    [validationCookies addObject:probe];
++    originalByKey[key] = cookie;
++    validationByKey[key] = probe;
++  }
++  // Foundation validates response domains, prefixes, public suffixes and expiry.
++  [storage setCookies:validationCookies forURL:response.URL mainDocumentURL:request.mainDocumentURL ?: response.URL];
++  NSMutableDictionary *after = [NSMutableDictionary dictionary];
++  for (NSHTTPCookie *cookie in storage.cookies) after[[self keyForCookie:cookie]] = cookie;
++  NSMutableArray *set = [NSMutableArray array];
++  NSMutableArray *deleted = [NSMutableArray array];
++  for (NSArray *key in originalByKey) {
++    NSHTTPCookie *old = before[key];
++    NSHTTPCookie *updated = after[key];
++    NSHTTPCookie *original = originalByKey[key];
++    NSHTTPCookie *probe = validationByKey[key];
++    if (updated != nil && [updated.properties isEqualToDictionary:probe.properties] &&
++        ![original.properties isEqualToDictionary:old.properties]) [set addObject:original];
++    else if (old != nil && updated == nil) [deleted addObject:old];
++  }
++  return @{@"set": set, @"delete": deleted};
++}
++
++- (void)rememberCookiesFromResponse:(NSHTTPURLResponse *)response
++                           request:(NSURLRequest *)request
++                        completion:(void (^)(void))completion {
++  if (self.cookieStore == nil || response.URL == nil || !request.HTTPShouldHandleCookies ||
++      [NSHTTPCookie cookiesWithResponseHeaderFields:response.allHeaderFields forURL:response.URL].count == 0) {
++    completion();
 +    return;
 +  }
-+  // Drop a Cookie header from another host or from the previous launch.
++  [self.cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *storedCookies) {
++    NSDictionary *changes = [self cookieChangesFromResponse:response request:request storedCookies:storedCookies];
++    dispatch_group_t writes = dispatch_group_create();
++    for (NSHTTPCookie *cookie in changes[@"set"]) {
++      dispatch_group_enter(writes);
++      [self.cookieStore setCookie:cookie completionHandler:^{ dispatch_group_leave(writes); }];
++    }
++    for (NSHTTPCookie *cookie in changes[@"delete"]) {
++      dispatch_group_enter(writes);
++      [self.cookieStore deleteCookie:cookie completionHandler:^{ dispatch_group_leave(writes); }];
++    }
++    dispatch_group_notify(writes, dispatch_get_main_queue(), completion);
++  }];
++}
++
++- (void)applyCookiesToRequest:(NSMutableURLRequest *)request storedCookies:(NSArray<NSHTTPCookie *> *)storedCookies {
++  // WebKit's per-view store is authoritative, including JavaScript deletions.
 +  [request setValue:nil forHTTPHeaderField:@"Cookie"];
-+  NSArray<NSHTTPCookie *> *cookies = [self.cookieJar cookiesForURL:request.URL];
-+  if (cookies.count == 0) {
-+    return;
-+  }
++  NSArray *cookies = [self cookiesForRequest:request storedCookies:storedCookies];
 +  NSString *header = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies][@"Cookie"];
-+  if (header.length > 0) {
-+    [request setValue:header forHTTPHeaderField:@"Cookie"];
-+  }
++  if (header.length > 0) [request setValue:header forHTTPHeaderField:@"Cookie"];
 +}
 +
 +- (void)startDataTask:(NSURLRequest *)request box:(XamanOttTaskBox *)box {
-+  if (box.stopped || box.finished) {
-+    return;
-+  }
++  if (box.stopped || box.finished) return;
 +  __weak XamanOttSchemeHandler *weakSelf = self;
-+  [[WKWebsiteDataStore defaultDataStore].httpCookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *pageCookies) {
++  [self.cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *pageCookies) {
 +    XamanOttSchemeHandler *strongSelf = weakSelf;
-+    if (strongSelf == nil || box.stopped || box.finished) {
-+      return;
-+    }
-+    // document.cookie writes land in the webview store, not the proxy jar.
-+    for (NSHTTPCookie *cookie in pageCookies) {
-+      [strongSelf.cookieJar setCookie:cookie];
-+    }
++    if (strongSelf == nil || box.stopped || box.finished) return;
 +    NSMutableURLRequest *next = [request mutableCopy];
-+    [strongSelf applyCookiesToRequest:next];
++    [strongSelf applyCookiesToRequest:next storedCookies:pageCookies];
 +    NSURLSessionDataTask *dataTask = [[strongSelf ensureSession] dataTaskWithRequest:next];
 +    box.dataTask = dataTask;
++    box.request = next;
 +    @synchronized(strongSelf) {
 +      [strongSelf.boxBySessionTask setObject:box forKey:dataTask];
 +    }
@@ -1887,6 +1927,7 @@ new file mode 100644
 +    }
 +    NSString *name = (NSString *)key;
 +    if ([self isHopByHop:name] ||
++        [name caseInsensitiveCompare:@"Set-Cookie"] == NSOrderedSame ||
 +        [name caseInsensitiveCompare:@"Content-Encoding"] == NSOrderedSame ||
 +        [name caseInsensitiveCompare:@"Content-Length"] == NSOrderedSame) {
 +      return;
@@ -1912,8 +1953,32 @@ new file mode 100644
 +    [name caseInsensitiveCompare:@"Host"] == NSOrderedSame;
 +}
 +
++- (BOOL)allowsRedirectFromURL:(NSURL *)source toURL:(NSURL *)target {
++  NSString *scheme = target.scheme.lowercaseString;
++  if (!([scheme isEqualToString:@"https"] || [scheme isEqualToString:@"http"])) return NO;
++  return ![source.scheme.lowercaseString isEqualToString:@"https"] || [scheme isEqualToString:@"https"];
++}
++
 +- (void)performRedirect:(NSHTTPURLResponse *)response request:(NSURLRequest *)request box:(XamanOttTaskBox *)box {
 +  if (box.stopped || box.finished) {
++    return;
++  }
++  if (box.topLevel) {
++    // The scheme-task redirect SPI can lose its completion after a process swap.
++    // Restart the uncommitted top-level navigation in the same view/store. The
++    // normal navigation delegate still checks the destination; subresources keep
++    // their WebKit redirect handoff below for origin/CORS handling.
++    WKWebView *webView = box.webView;
++    if (webView == nil) {
++      [self finishBox:box error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]];
++      return;
++    }
++    NSHTTPURLResponse *empty = [[NSHTTPURLResponse alloc] initWithURL:response.URL statusCode:204
++                                                       HTTPVersion:@"HTTP/1.1" headerFields:@{}];
++    [self receiveResponse:empty box:box];
++    [self finishBox:box error:nil];
++    self.topLevelRedirectURL = request.URL;
++    [webView loadRequest:request];
 +    return;
 +  }
 +  SEL selector = NSSelectorFromString(@"_willPerformRedirection:newRequest:completionHandler:");
@@ -1931,8 +1996,15 @@ new file mode 100644
 +    if (strongSelf == nil || strongBox == nil || strongBox.stopped || strongBox.finished || updated.URL == nil) {
 +      return;
 +    }
-+    BOOL keep = [strongSelf.scope keeps:updated.URL.host];
-+    [strongSelf startDataTask:[strongSelf forwardingRequest:updated keepOtt:keep] box:strongBox];
++    NSMutableURLRequest *next = [updated mutableCopy];
++    if ((response.statusCode == 307 || response.statusCode == 308) &&
++        [next.HTTPMethod isEqualToString:request.HTTPMethod]) {
++      next.HTTPBodyStream = nil;
++      next.HTTPBody = request.HTTPBody;
++    }
++    if (!request.HTTPShouldHandleCookies) next.HTTPShouldHandleCookies = NO;
++    BOOL keep = [strongSelf.scope keeps:next.URL.host];
++    [strongSelf startDataTask:[strongSelf forwardingRequest:next keepOtt:keep] box:strongBox];
 +  };
 +  void (^heapCompletion)(NSURLRequest *) = [completion copy];
 +
@@ -1959,17 +2031,37 @@ new file mode 100644
 +         newRequest:(NSURLRequest *)request
 +  completionHandler:(void (^)(NSURLRequest *_Nullable))completionHandler {
 +  XamanOttTaskBox *box = [self boxForSessionTask:task];
-+  if (box == nil || box.stopped || box.finished || box.redirects >= 8) {
++  if (box == nil || box.stopped || box.finished) {
 +    completionHandler(nil);
 +    return;
 +  }
++  if (box.redirects >= 8 || (box.topLevel && self.topLevelRedirects >= 8)) {
++    completionHandler(nil);
++    [self finishBox:box error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorHTTPTooManyRedirects userInfo:nil]];
++    return;
++  }
 +  box.redirects += 1;
-+  NSURL *from = task.originalRequest.URL ?: task.currentRequest.URL;
-+  [self.scope noteRedirectFromHost:from.host toHost:request.URL.host document:box.document];
-+  [self rememberCookiesFromResponse:response];
++  if (box.topLevel) self.topLevelRedirects += 1;
++  NSURLRequest *source = box.request ?: task.originalRequest;
++  NSMutableURLRequest *redirect = [request mutableCopy];
++  if (![self allowsRedirectFromURL:source.URL toURL:redirect.URL]) {
++    completionHandler(nil);
++    [self finishBox:box error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorUnsupportedURL userInfo:nil]];
++    return;
++  }
++  if (response.statusCode == 307 || response.statusCode == 308) {
++    // NSURLSession's redirect request may omit the original POST body.
++    redirect.HTTPBodyStream = nil;
++    redirect.HTTPBody = source.HTTPBody;
++  }
++  if (!source.HTTPShouldHandleCookies) redirect.HTTPShouldHandleCookies = NO;
++  [self.scope noteRedirectFromHost:source.URL.host toHost:redirect.URL.host document:box.document];
 +  [self ignoreSessionTask:task];
-+  completionHandler(nil);
-+  [self performRedirect:response request:request box:box];
++  [self rememberCookiesFromResponse:response request:source completion:^{
++    // Keep the redirect task alive until its cookie writes have finished.
++    completionHandler(nil);
++    [self performRedirect:[self cleanResponse:response] request:redirect box:box];
++  }];
 +}
 +
 +- (void)sessionDataTask:(NSURLSessionDataTask *)dataTask
@@ -1991,9 +2083,18 @@ new file mode 100644
 +  if (box.document) {
 +    [self.scope noteDocumentStatus:http.statusCode];
 +  }
-+  [self rememberCookiesFromResponse:http];
-+  [self receiveResponse:[self cleanResponse:http] box:box];
-+  completionHandler(NSURLSessionResponseAllow);
++  if (box.topLevel) {
++    self.topLevelRedirectURL = nil;
++    self.topLevelRedirects = 0;
++  }
++  [self rememberCookiesFromResponse:http request:box.request ?: dataTask.originalRequest completion:^{
++    if (box.stopped || box.finished) {
++      completionHandler(NSURLSessionResponseCancel);
++      return;
++    }
++    [self receiveResponse:[self cleanResponse:http] box:box];
++    completionHandler(NSURLSessionResponseAllow);
++  }];
 +}
 +
 +- (void)sessionDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {

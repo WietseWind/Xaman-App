@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { Keyboard, Platform } from 'react-native';
+import { Keyboard } from 'react-native';
 import CommunityWebView from 'react-native-webview';
 import type { IOSWebViewProps, AndroidWebViewProps } from 'react-native-webview/lib/WebViewTypes';
 
@@ -89,10 +89,9 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             enableApplePay={false}
             saveFormDataDisabled
             setDisplayZoomControls={false}
-            // Android incognito still has localStorage/IndexedDB. iOS incognito uses a
-            // non-persistent store that drops both, so iOS keeps the app-sandbox store.
-            // Cookies last for this webview only: cleared on open and on close.
-            incognito={Platform.OS === 'android'}
+            // Keep cookies and script storage across navigation in this open view.
+            // iOS gets a private in-memory store that is discarded on close.
+            incognito
             thirdPartyCookiesEnabled
             cacheEnabled={false}
             hideKeyboardAccessoryView
