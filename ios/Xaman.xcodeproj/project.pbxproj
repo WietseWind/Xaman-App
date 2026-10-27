@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A2SC0E012710000200A75B9A /* SceneDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		559A5D08536F62959115419B /* libPods-Xaman.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E970B0A9270522FB0AF008B0 /* libPods-Xaman.a */; };
@@ -64,6 +63,7 @@
 		A2ED131C252F113A002AFC09 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2ED131B252F113A002AFC09 /* StoreKit.framework */; };
 		A2F4F39528802A4600444302 /* UniqueIdProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F4F39428802A4600444302 /* UniqueIdProvider.m */; };
 		A2F4F398288168CB00444302 /* Clipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F4F397288168CB00444302 /* Clipboard.m */; };
+		A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A2SC0E012710000200A75B9A /* SceneDelegate.m */; };
 		CE2349EA1CF53D755A66BD4C /* libPods-Xaman-XamanTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AB54F464B5BCA7B88FD9167 /* libPods-Xaman-XamanTests.a */; };
 /* End PBXBuildFile section */
 
@@ -85,8 +85,6 @@
 		13B07F961A680F5B00A75B9A /* Xaman.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Xaman.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Xaman/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Xaman/AppDelegate.m; sourceTree = "<group>"; };
-		A2SC0E012710000100A75B9A /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = Xaman/SceneDelegate.h; sourceTree = "<group>"; };
-		A2SC0E012710000200A75B9A /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SceneDelegate.m; path = Xaman/SceneDelegate.m; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Xaman/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Xaman/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Xaman/main.m; sourceTree = "<group>"; };
@@ -176,6 +174,8 @@
 		A2F4F39428802A4600444302 /* UniqueIdProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UniqueIdProvider.m; sourceTree = "<group>"; };
 		A2F4F396288168BC00444302 /* Clipboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Clipboard.h; sourceTree = "<group>"; };
 		A2F4F397288168CB00444302 /* Clipboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Clipboard.m; sourceTree = "<group>"; };
+		A2SC0E012710000100A75B9A /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = Xaman/SceneDelegate.h; sourceTree = "<group>"; };
+		A2SC0E012710000200A75B9A /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SceneDelegate.m; path = Xaman/SceneDelegate.m; sourceTree = "<group>"; };
 		B712F110E060129D749043CD /* Pods-Xaman.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Xaman.debug.xcconfig"; path = "Target Support Files/Pods-Xaman/Pods-Xaman.debug.xcconfig"; sourceTree = "<group>"; };
 		CA7812F0C935F7652256C087 /* Pods-Xaman-XamanTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Xaman-XamanTests.debug.xcconfig"; path = "Target Support Files/Pods-Xaman-XamanTests/Pods-Xaman-XamanTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E970B0A9270522FB0AF008B0 /* libPods-Xaman.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Xaman.a"; sourceTree = BUILT_PRODUCTS_DIR; };
