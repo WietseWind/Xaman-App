@@ -1319,6 +1319,9 @@
     "flashlightOn": "Lampa błyskowa włączona"
   },
   "payload": {
+    "extraFields": "Dodatkowe pola",
+    "extraFieldsWarning": "Xaman nie może w pełni odkodować tych pól. Podpisz tylko, jeśli je rozumiesz i oczekujesz tego żądania. Przerwij, jeśli ktoś obiecuje nagrody lub korzyści.",
+    "definitionsChanged": "Dane sieci uległy zmianie. Zamknij żądanie i sprawdź je ponownie.",
     "payloadHandledByAnotherClient": "Zawartość obsługiwana przez innego klienta",
     "payloadNotFound": "Zawartość nie znaleziona",
     "invalidPayloadResult": "Nieprawidłowy wynik dla zawartości",

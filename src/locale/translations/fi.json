@@ -1319,6 +1319,9 @@
     "flashlightOn": "Salama päällä"
   },
   "payload": {
+    "extraFields": "Lisäkentät",
+    "extraFieldsWarning": "Xaman ei pysty purkamaan näitä lisäkenttiä täysin. Allekirjoita vain, jos ymmärrät ne ja odotit tätä pyyntöä. Lopeta, jos joku lupaa palkintoja tai etuja.",
+    "definitionsChanged": "Verkon tiedot ovat muuttuneet. Sulje pyyntö ja tarkista se uudelleen.",
     "payloadHandledByAnotherClient": "Toisen asiakkaan käsittelemä hyötykuorma",
     "payloadNotFound": "Hyötykuormaa ei löydy",
     "invalidPayloadResult": "Virheellinen hyötykuorma",

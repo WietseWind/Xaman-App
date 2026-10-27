@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash ligado"
   },
   "payload": {
+    "extraFields": "Campos adicionais",
+    "extraFieldsWarning": "O Xaman não consegue descodificar totalmente estes campos. Assina apenas se os compreenderes e esperavas este pedido. Para se alguém te prometer recompensas ou vantagens.",
+    "definitionsChanged": "Os dados da rede mudaram. Fecha o pedido e volta a verificá-lo.",
     "payloadHandledByAnotherClient": "Payload gerido por outro cliente",
     "payloadNotFound": "Payload não encontrado",
     "invalidPayloadResult": "Resultado de payload inválido",

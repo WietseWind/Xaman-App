@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flits aan"
   },
   "payload": {
+    "extraFields": "Ekstra velde",
+    "extraFieldsWarning": "Xaman kan hierdie ekstra velde nie volledig dekodeer nie. Teken net as jy dit verstaan en hierdie versoek verwag het. Stop as iemand jou belonings of voordele belowe.",
+    "definitionsChanged": "Netwerkbesonderhede het verander. Sluit hierdie versoek en hersien dit weer.",
     "payloadHandledByAnotherClient": "Loonvrag hanteer deur 'n ander kliënt",
     "payloadNotFound": "Loonvrag nie gevind nie",
     "invalidPayloadResult": "Ongeldige loonvraguitslag",

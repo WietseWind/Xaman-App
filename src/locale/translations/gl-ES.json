@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash aceso"
   },
   "payload": {
+    "extraFields": "Campos adicionais",
+    "extraFieldsWarning": "Xaman non pode descodificar por completo estes campos. Asina só se os entendes e esperabas esta solicitude. Detente se alguén che promete recompensas ou beneficios.",
+    "definitionsChanged": "Os datos da rede cambiaron. Pecha a solicitude e revísaa de novo.",
     "payloadHandledByAnotherClient": "Carga manexada por outro cliente",
     "payloadNotFound": "Carga non atopada",
     "invalidPayloadResult": "Resultado da carga non válido",

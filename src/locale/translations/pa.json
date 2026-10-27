@@ -1319,6 +1319,9 @@
     "flashlightOn": "ਫਲੈਸ਼ ਚਾਲੂ"
   },
   "payload": {
+    "extraFields": "ਵਾਧੂ ਖੇਤਰ",
+    "extraFieldsWarning": "Xaman ਇਹ ਖੇਤਰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਡੀਕੋਡ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਇਨ੍ਹਾਂ ਨੂੰ ਸਮਝਦੇ ਹੋ ਅਤੇ ਇਸ ਬੇਨਤੀ ਦੀ ਉਮੀਦ ਸੀ ਤਾਂ ਹੀ ਦਸਤਖਤ ਕਰੋ। ਕੋਈ ਇਨਾਮ ਜਾਂ ਲਾਭ ਦਾ ਵਾਅਦਾ ਕਰੇ ਤਾਂ ਰੁਕੋ।",
+    "definitionsChanged": "ਨੈੱਟਵਰਕ ਦੇ ਵੇਰਵੇ ਬਦਲ ਗਏ ਹਨ। ਬੇਨਤੀ ਬੰਦ ਕਰਕੇ ਮੁੜ ਜਾਂਚੋ।",
     "payloadHandledByAnotherClient": "ਪੇਲੋਡ ਹੋਰ ਕਲਾਇੰਟ ਦੁਆਰਾ ਪਰਬੰਧਿਤ",
     "payloadNotFound": "ਪੇਲੋਡ ਨਹੀਂ ਮਿਲਿਆ",
     "invalidPayloadResult": "ਅਵੈਧ ਪੇਲੋਡ ਨਤੀਜਾ",

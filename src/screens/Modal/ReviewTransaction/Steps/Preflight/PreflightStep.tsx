@@ -128,18 +128,16 @@ class PreflightStep extends Component<Props, State> {
     /*
     Set the transaction and check if we can sign this transaction in the selected network
      */
-    setTransaction = (): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            const { payload, setTransaction } = this.context;
-
-            try {
-                setTransaction(payload.getTransaction());
-
-                resolve();
-            } catch (error: any) {
-                reject(error);
-            }
-        });
+    setTransaction = async (): Promise<void> => {
+        const { payload, setTransaction } = this.context;
+        // Network switches reconnect asynchronously. Learn the network's current
+        // fields before taking the immutable review/signing definitions snapshot.
+        await NetworkService.updateNetworkDefinitions();
+        await this.checkForcedNetwork();
+        const transaction = payload.getTransaction();
+        // Capture now, so fee estimation, review and both signers use one schema.
+        transaction.assertSigningContext();
+        setTransaction(transaction);
     };
 
     /*

@@ -1319,6 +1319,9 @@
     "flashlightOn": "Mwako umewashwa"
   },
   "payload": {
+    "extraFields": "Sehemu za ziada",
+    "extraFieldsWarning": "Xaman haiwezi kufasiri sehemu hizi kikamilifu. Tia sahihi tu ukizielewa na ulitarajia ombi hili. Simama mtu akikuahidi zawadi au manufaa.",
+    "definitionsChanged": "Taarifa za mtandao zimebadilika. Funga ombi hili na ulikague tena.",
     "payloadHandledByAnotherClient": "Payload handled by another client",
     "payloadNotFound": "Payload si found",
     "invalidPayloadResult": "Batili payload result",

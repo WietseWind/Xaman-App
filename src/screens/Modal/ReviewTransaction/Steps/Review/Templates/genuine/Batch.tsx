@@ -24,7 +24,7 @@ import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { MixingTypes } from '@common/libs/ledger/mixin/types';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
 import { utils } from 'xrpl-accountlib';
-import NetworkService from '@services/NetworkService';
+import ExtraFields from '../../ExtraFields';
 import { AccountModel } from '@store/models';
 import { AccountRepository } from '@store/repositories';
 /* types ==================================================================== */
@@ -98,9 +98,10 @@ class BatchTemplate extends Component<Props, State> {
 
         return transaction.RawTransactions.map((t, index) => {
             const tx = TransactionFactory.fromJson({ ...t } as unknown as TransactionJson, [MixingTypes.Mutation]);
+            tx.inheritSigningContext(transaction);
             const hash = utils.hashBatchInnerTxn(
-                { ...t } as unknown as TransactionJson,
-                NetworkService.getNetworkDefinitions(),
+                tx.JsonForSigning,
+                transaction.SigningDefinitions,
             );
 
             const matchingSourceAccount = AccountRepository.findOne({ address: tx.Account });
@@ -200,6 +201,7 @@ class BatchTemplate extends Component<Props, State> {
                                   ...Props,
                                   key: `InnerTxn-${hash}-FallbackTemplate`,
                               })}
+                        <ExtraFields transaction={tx} />
                     </View>
                 </View>
             </View>;

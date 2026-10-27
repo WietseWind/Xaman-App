@@ -69,11 +69,12 @@ class Batch extends BaseGenuineTransaction {
         const { TransactionFactory } = require('@common/libs/ledger/factory');
         const inner = (this.RawTransactions || []).flatMap((rawTransaction, index) => {
             const transaction = TransactionFactory.fromJson({ ...rawTransaction });
+            transaction.inheritSigningContext(this);
             const fields: string[] =
                 typeof transaction.unsignableFields === 'function' ? transaction.unsignableFields() : [];
             return fields.map((field) => `RawTransactions[${index}].${field}`);
         });
-        return [...super.unsignableFields(), ...inner];
+        return [...super.unsignableFields().filter((field) => !field.startsWith('RawTransactions[')), ...inner];
     }
 }
 

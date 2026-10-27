@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash nyala"
   },
   "payload": {
+    "extraFields": "Kolom tambahan",
+    "extraFieldsWarning": "Xaman tidak dapat sepenuhnya mendekode kolom ini. Tanda tangani hanya jika Anda memahaminya dan mengharapkan permintaan ini. Berhenti jika seseorang menjanjikan hadiah atau keuntungan.",
+    "definitionsChanged": "Detail jaringan berubah. Tutup permintaan ini dan periksa kembali.",
     "payloadHandledByAnotherClient": "Muatan ditangani oleh klien lain",
     "payloadNotFound": "Muatan tidak ditemukan",
     "invalidPayloadResult": "Hasil payload tidak valid",

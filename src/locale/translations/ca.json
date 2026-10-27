@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flaix encès"
   },
   "payload": {
+    "extraFields": "Camps addicionals",
+    "extraFieldsWarning": "Xaman no pot descodificar del tot aquests camps. Signa només si els entens i esperaves aquesta sol·licitud. Atura't si algú et promet recompenses o beneficis.",
+    "definitionsChanged": "Les dades de la xarxa han canviat. Tanca la sol·licitud i revisa-la de nou.",
     "payloadHandledByAnotherClient": "Càrrega útil gestionada per un altre client",
     "payloadNotFound": "No s'ha trobat la càrrega útil",
     "invalidPayloadResult": "El resultat de la càrrega útil no és vàlid",

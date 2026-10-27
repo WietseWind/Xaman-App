@@ -1319,6 +1319,9 @@
     "flashlightOn": "Đèn flash bật"
   },
   "payload": {
+    "extraFields": "Trường bổ sung",
+    "extraFieldsWarning": "Xaman không thể giải mã đầy đủ các trường này. Chỉ ký nếu bạn hiểu chúng và đã dự kiến yêu cầu này. Dừng lại nếu ai đó hứa hẹn phần thưởng hoặc lợi ích.",
+    "definitionsChanged": "Thông tin mạng đã thay đổi. Đóng yêu cầu và kiểm tra lại.",
     "payloadHandledByAnotherClient": "Tải trọng do khách hàng khác xử lý",
     "payloadNotFound": "Không tìm thấy tải trọng",
     "invalidPayloadResult": "Kết quả tải trọng không hợp lệ",

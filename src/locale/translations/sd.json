@@ -1319,6 +1319,9 @@
     "flashlightOn": "فليش کليل"
   },
   "payload": {
+    "extraFields": "اضافي فيلڊ",
+    "extraFieldsWarning": "Xaman هي اضافي فيلڊ مڪمل طرح ڊيڪوڊ نٿو ڪري سگهي. رڳو تڏهن صحيح ڪريو جڏهن اهي سمجهو ۽ هن درخواست جي اميد هجي. ڪو انعام يا فائدي جو واعدو ڪري ته رڪجي وڃو.",
+    "definitionsChanged": "نيٽ ورڪ جا تفصيل بدلجي ويا آهن. درخواست بند ڪري ٻيهر جاچيو.",
     "payloadHandledByAnotherClient": "پيڪي لوڊ ٻئي گراهڪ طرفان ترتيب ڏنل آهي",
     "payloadNotFound": "Payload نه مليو",
     "invalidPayloadResult": "پيڊ لوڊ جو غلط نتيجو",

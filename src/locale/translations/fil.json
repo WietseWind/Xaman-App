@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash nakabukas"
   },
   "payload": {
+    "extraFields": "Mga dagdag na field",
+    "extraFieldsWarning": "Hindi lubusang ma-decode ng Xaman ang mga field na ito. Pumirma lang kung nauunawaan mo ang mga ito at inaasahan ang kahilingang ito. Huminto kung may nangakong gantimpala o benepisyo.",
+    "definitionsChanged": "Nagbago ang detalye ng network. Isara ang kahilingan at suriin itong muli.",
     "payloadHandledByAnotherClient": "Ang paghawak ng payload ng ibang kliyente",
     "payloadNotFound": "Magbayad ng karga hindi natagpuan",
     "invalidPayloadResult": "Di-wastong resulta ng pagbabayad",

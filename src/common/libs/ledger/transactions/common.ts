@@ -10,6 +10,16 @@ import { FieldConfig, FieldReturnType } from '@common/libs/ledger/parser/fields/
 import { TransactionJson, TransactionMetadata } from '@common/libs/ledger/types/transaction';
 import { createPropertyConfig } from '@common/libs/ledger/parser/fields/factory';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
+import { binary, XrplDefinitions } from 'xrpl-accountlib';
+import NetworkService from '@services/NetworkService';
+import Localize from '@locale';
+import {
+    definitionExtraFields,
+    definitionJson,
+    ExtraField,
+    unsupportedDefinitionFields,
+    unserializedDefinitionFields,
+} from '@common/libs/ledger/utils/definitionFields';
 
 export abstract class BaseTransaction {
     InstanceType!: InstanceTypes;
@@ -18,6 +28,64 @@ export abstract class BaseTransaction {
     protected _meta!: TransactionMetadata | Record<string, never>;
 
     public _txFilter?: Function;
+    private signingDefinitions?: XrplDefinitions;
+    private signingNetworkId?: number;
+    private signingNetworkKey?: string;
+
+    get SigningDefinitions(): XrplDefinitions {
+        if (!this.signingDefinitions) {
+            this.signingDefinitions = NetworkService.getNetworkDefinitions() ||
+                new XrplDefinitions(binary.DEFAULT_DEFINITIONS);
+            try {
+                this.signingNetworkId = NetworkService.getNetworkId();
+                this.signingNetworkKey = NetworkService.getNetwork()?.id?.toString();
+            } catch {
+                // Ledger history can be read before a network is initialized.
+                // Actual signing still requires a connected network below.
+            }
+        }
+        return this.signingDefinitions;
+    }
+
+    inheritSigningContext(transaction: BaseTransaction): void {
+        this.signingDefinitions = transaction.SigningDefinitions;
+        this.signingNetworkId = transaction.signingNetworkId;
+        this.signingNetworkKey = transaction.signingNetworkKey;
+    }
+
+    assertSigningContext(): void {
+        const definitions = this.SigningDefinitions;
+        const current = NetworkService.getNetworkDefinitions();
+        if (this.signingNetworkId !== NetworkService.getNetworkId() ||
+            this.signingNetworkKey !== NetworkService.getNetwork()?.id?.toString() ||
+            (current && definitions.getHash?.() !== current.getHash?.())) {
+            throw new Error(Localize.t('payload.definitionsChanged'));
+        }
+    }
+
+    protected get DeclaredFields(): string[] {
+        const model = this.constructor as typeof BaseTransaction;
+        return Object.keys({ ...model.CommonFields, ...model.Fields });
+    }
+
+    protected definitionJson(json: Record<string, any>): TransactionJson {
+        return definitionJson(json, this.SigningDefinitions, this.DeclaredFields) as TransactionJson;
+    }
+
+    get ExtraFields(): ExtraField[] {
+        return definitionExtraFields(this.JsonForSigning, this.SigningDefinitions, this.DeclaredFields);
+    }
+
+    unsignableFields(): string[] {
+        return unsupportedDefinitionFields(this.JsonForSigning, this.SigningDefinitions);
+    }
+
+    assertSigningFields(): void {
+        const unsupported = this.unsignableFields();
+        const fields = unsupported.length ? unsupported
+            : unserializedDefinitionFields(this.JsonForSigning, this.SigningDefinitions);
+        if (fields.length) throw new Error(`Xaman cannot sign this transaction yet: it carries ${fields.join(', ')}.`);
+    }
 
     public static Fields: { [key: string]: FieldConfig } = {};
     public static CommonFields: { [key: string]: FieldConfig } = {

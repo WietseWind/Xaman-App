@@ -1319,6 +1319,9 @@
     "flashlightOn": "Blesk zapnutý"
   },
   "payload": {
+    "extraFields": "Ďalšie polia",
+    "extraFieldsWarning": "Xaman tieto polia nevie úplne dekódovať. Podpíšte iba vtedy, ak im rozumiete a túto požiadavku očakávate. Zastavte sa, ak vám niekto sľubuje odmeny či výhody.",
+    "definitionsChanged": "Údaje siete sa zmenili. Zatvorte požiadavku a znova ju skontrolujte.",
     "payloadHandledByAnotherClient": "Užitočné zaťaženie vybavuje iný klient",
     "payloadNotFound": "Užitočné zaťaženie sa nenašlo",
     "invalidPayloadResult": "Neplatný výsledok užitočného zaťaženia",

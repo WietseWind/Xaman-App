@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash on"
   },
   "payload": {
+    "extraFields": "Extra fields",
+    "extraFieldsWarning": "Xaman cannot fully decode these extra fields. Only sign if you understand them and expected this request. Stop if someone promises you rewards or benefits.",
+    "definitionsChanged": "Network details changed. Close this request and review it again.",
     "payloadHandledByAnotherClient": "Payload handled by another client",
     "payloadNotFound": "Payload not found",
     "invalidPayloadResult": "Invalid payload result",

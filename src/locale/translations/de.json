@@ -1319,6 +1319,9 @@
     "flashlightOn": "Blitz an"
   },
   "payload": {
+    "extraFields": "Zusätzliche Felder",
+    "extraFieldsWarning": "Xaman kann diese Felder nicht vollständig dekodieren. Signiere nur, wenn du sie verstehst und diese Anfrage erwartet hast. Stopp, wenn dir jemand Belohnungen oder Vorteile verspricht.",
+    "definitionsChanged": "Die Netzwerkdaten haben sich geändert. Schließe die Anfrage und prüfe sie erneut.",
     "payloadHandledByAnotherClient": "Nutzdaten von anderem Clienten abgewickelt",
     "payloadNotFound": "Nutzdaten nicht gefunden",
     "invalidPayloadResult": "Ungültiges Nutzdaten-Ergebnis",

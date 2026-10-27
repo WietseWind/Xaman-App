@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash encendido"
   },
   "payload": {
+    "extraFields": "Campos adicionales",
+    "extraFieldsWarning": "Xaman no puede decodificar por completo estos campos. Firma solo si los entiendes y esperabas esta solicitud. Detente si alguien te promete recompensas o beneficios.",
+    "definitionsChanged": "Los datos de la red cambiaron. Cierra la solicitud y revísala de nuevo.",
     "payloadHandledByAnotherClient": "Carga útil manejada por otro cliente",
     "payloadNotFound": "Carga útil (payload) no encontrada",
     "invalidPayloadResult": "Resultado de carga útil invalido",

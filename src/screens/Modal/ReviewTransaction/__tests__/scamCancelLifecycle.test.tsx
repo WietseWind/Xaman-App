@@ -31,6 +31,7 @@ jest.mock('../scamRejectAction', () => ({
 jest.mock('../Steps/Review/Templates/genuine', () => ({}));
 jest.mock('../Steps/Review/Templates/pseudo', () => ({}));
 jest.mock('../Steps/Review/Templates/fallback', () => ({}));
+jest.mock('../Steps/Review/ExtraFields', () => ({ __esModule: true, default: () => null }));
 jest.mock('../Steps/Review/styles', () => ({}));
 jest.mock('@theme', () => ({ AppStyles: {} }));
 

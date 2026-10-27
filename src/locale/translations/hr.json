@@ -1319,6 +1319,9 @@
     "flashlightOn": "Bljeskalica uključena"
   },
   "payload": {
+    "extraFields": "Dodatna polja",
+    "extraFieldsWarning": "Xaman ne može potpuno dekodirati ova polja. Potpišite samo ako ih razumijete i očekivali ste ovaj zahtjev. Stanite ako vam netko obećava nagrade ili pogodnosti.",
+    "definitionsChanged": "Podaci mreže su se promijenili. Zatvorite zahtjev i ponovno ga pregledajte.",
     "payloadHandledByAnotherClient": "Payload je rukovan od strane drugog klijenta",
     "payloadNotFound": "Payload nije pronađen",
     "invalidPayloadResult": "Nevažeći paylod rezultat",

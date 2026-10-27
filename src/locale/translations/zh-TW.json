@@ -1319,6 +1319,9 @@
     "flashlightOn": "閃光燈已開"
   },
   "payload": {
+    "extraFields": "額外欄位",
+    "extraFieldsWarning": "Xaman 無法完整解碼這些額外欄位。僅在您理解這些欄位並預期收到此請求時簽署。若有人向您承諾獎勵或利益，請停止操作。",
+    "definitionsChanged": "網路資訊已變更。請關閉此請求並重新檢查。",
     "payloadHandledByAnotherClient": "載荷由另一個客戶端處理",
     "payloadNotFound": "找不到載荷",
     "invalidPayloadResult": "無效的載荷結果",

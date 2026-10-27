@@ -1319,6 +1319,9 @@
     "flashlightOn": "Blesk zapnutý"
   },
   "payload": {
+    "extraFields": "Další pole",
+    "extraFieldsWarning": "Xaman tato pole neumí plně dekódovat. Podepište jen tehdy, pokud jim rozumíte a tento požadavek očekáváte. Pokud vám někdo slibuje odměny či výhody, nepokračujte.",
+    "definitionsChanged": "Údaje sítě se změnily. Zavřete požadavek a znovu jej zkontrolujte.",
     "payloadHandledByAnotherClient": "Požadavek vyřešil jiný klient",
     "payloadNotFound": "Požadavek nenalezen",
     "invalidPayloadResult": "Neplatný výsledek požadavku",

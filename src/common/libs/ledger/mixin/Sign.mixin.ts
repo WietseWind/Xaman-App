@@ -216,7 +216,8 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                     // check transaction can be signed by the network user is connected to
                     // before triggering the sign flow
                     // NOTE: skip for pseudo transactions
-                    const definitions = NetworkService.getNetworkDefinitions();
+                    this.assertSigningContext();
+                    const definitions = this.SigningDefinitions;
 
                     if (
                         this.TransactionType &&
@@ -296,6 +297,8 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                     if (!multiSign) {
                         await this.prepare(account);
                     }
+
+                    this.assertSigningFields();
 
                     // if transaction aborted then don't continue
                     if (this.isAborted) {

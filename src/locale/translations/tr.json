@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flaş açık"
   },
   "payload": {
+    "extraFields": "Ek alanlar",
+    "extraFieldsWarning": "Xaman bu alanları tam olarak çözümleyemez. Yalnızca bunları anlıyor ve bu isteği bekliyorsanız imzalayın. Birisi ödül veya kazanç vaat ediyorsa durun.",
+    "definitionsChanged": "Ağ bilgileri değişti. Bu isteği kapatıp yeniden inceleyin.",
     "payloadHandledByAnotherClient": "Başka bir istemci tarafından işlenen ödeme yöntemi",
     "payloadNotFound": "Ödeme yöntemi bulunamadı",
     "invalidPayloadResult": "Geçersiz ödeme yöntemi sonucu",

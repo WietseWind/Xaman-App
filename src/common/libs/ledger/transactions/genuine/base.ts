@@ -11,8 +11,6 @@ import { TransactionType } from '@common/libs/ledger/parser/fields';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
 import { FieldReturnType } from '@common/libs/ledger/parser/fields/types';
 
-import NetworkService from '@services/NetworkService';
-
 /* Class ==================================================================== */
 class BaseGenuineTransaction extends BaseTransaction {
     public static InstanceType = InstanceTypes.GenuineTransaction as const;
@@ -25,38 +23,11 @@ class BaseGenuineTransaction extends BaseTransaction {
     }
 
     /**
-     * Serialized ledger fields this transaction carries that the model does not declare, so the review cannot
-     * show them.
-     * Signing refuses these by name: a ledger field is never removed silently from what is signed.
-     */
-    unsignableFields(): string[] {
-        const declared = Object.keys({
-            ...BaseGenuineTransaction.CommonFields,
-            ...(this.constructor as typeof BaseGenuineTransaction).Fields,
-        });
-        const definitions = NetworkService.getNetworkDefinitions() as any;
-        return Object.getOwnPropertyNames(this._tx).filter(
-            (key) => !declared.includes(key) && definitions?.field?.[key]?.isSerialized === true,
-        );
-    }
-
-    /**
      * serialize transaction object to the ledger tx json for signing
-     * Note: this method will remove any unrecognized field from transaction
+     * Model fields and serialized network fields are preserved. Unknown metadata is ignored.
      */
     get JsonForSigning(): TransactionJson {
-        // shallow copy and filter the fields
-        const tx = { ...this._tx } as TransactionJson;
-        Object.getOwnPropertyNames(this._tx).forEach((key: string) => {
-            if (
-                !Object.keys({
-                    ...BaseGenuineTransaction.CommonFields,
-                    ...(this.constructor as typeof BaseGenuineTransaction).Fields,
-                }).includes(key)
-            ) {
-                delete tx[key];
-            }
-        });
+        const tx = this.definitionJson(this._tx);
 
         if (this?._txFilter && typeof this._txFilter === 'function') {
             try {

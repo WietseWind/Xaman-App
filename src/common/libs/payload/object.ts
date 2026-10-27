@@ -6,6 +6,7 @@ import { Endpoints } from '@common/constants/endpoints';
 import { binary } from 'xrpl-accountlib';
 
 import ApiService, { ApiError } from '@services/ApiService';
+import NetworkService from '@services/NetworkService';
 import LoggerService from '@services/LoggerService';
 
 import { TransactionFactory } from '@common/libs/ledger/factory';
@@ -356,7 +357,10 @@ export class Payload {
                         )
                             .map((pseudoSigner) => {
                                 // console.log('pseudoSigner', pseudoSigner);
-                                const batchSigners = binary.decode(pseudoSigner as unknown as string)?.BatchSigners;
+                                const batchSigners = binary.decode(
+                                    pseudoSigner as unknown as string,
+                                    NetworkService.getNetworkDefinitions(),
+                                )?.BatchSigners;
                                 return batchSigners;
                             })
                             .filter((batchSigners) => !!batchSigners)
@@ -364,8 +368,8 @@ export class Payload {
                     }
                 }
             } catch (e: any) {
-                logger.error(`Could not merge batch signers, revert to fallback transaction: ${e?.message}`);
-                delete request_json.BatchSigners;
+                logger.error(`Could not decode batch signers: ${e?.message}`);
+                throw new Error(`Could not decode BatchSigners: ${e?.message}`);
             }
         }
 

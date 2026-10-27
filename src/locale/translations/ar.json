@@ -1319,6 +1319,9 @@
     "flashlightOn": "الفلاش مضاء"
   },
   "payload": {
+    "extraFields": "حقول إضافية",
+    "extraFieldsWarning": "لا يستطيع Xaman فك ترميز هذه الحقول الإضافية بالكامل. وقّع فقط إذا كنت تفهمها وتتوقع هذا الطلب. توقّف إذا وعدك أحد بمكافآت أو مزايا.",
+    "definitionsChanged": "تغيّرت تفاصيل الشبكة. أغلق هذا الطلب وراجعه من جديد.",
     "payloadHandledByAnotherClient": "تم التعامل مع الحمولة من قبل عميل آخر",
     "payloadNotFound": "الحمولة لم يتم العثور",
     "invalidPayloadResult": "نتيجة حمولة غير صالحة",

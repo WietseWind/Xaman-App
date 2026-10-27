@@ -656,6 +656,7 @@ class NetworkService extends EventEmitter {
      */
     updateNetworkDefinitions = async () => {
         try {
+            const network = this.getNetwork();
             const request: ServerDefinitionsRequest = {
                 command: 'server_definitions',
             };
@@ -663,8 +664,8 @@ class NetworkService extends EventEmitter {
             let definitionsHash = '';
 
             // include definitions hash if exist in the request
-            if (this.getNetwork().definitions) {
-                definitionsHash = this.getNetwork().definitions?.hash as string;
+            if (network.definitions) {
+                definitionsHash = network.definitions?.hash as string;
                 Object.assign(request, { hash: definitionsHash });
             }
 
@@ -732,10 +733,10 @@ class NetworkService extends EventEmitter {
                 }
             }
 
-            this.logger.debug(`Updating network [${this.getNetwork().networkId}] definitions ${definitionsResp.hash} `);
+            this.logger.debug(`Updating network [${network.networkId}] definitions ${definitionsResp.hash} `);
 
             NetworkRepository.update({
-                id: this.getNetwork().id,
+                id: network.id,
                 definitionsString: JSON.stringify(definitions),
             });
         } catch (error) {

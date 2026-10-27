@@ -1319,6 +1319,9 @@
     "flashlightOn": "Blits på"
   },
   "payload": {
+    "extraFields": "Ekstra felt",
+    "extraFieldsWarning": "Xaman kan ikke dekode disse feltene fullt ut. Signer bare hvis du forstår dem og forventet denne forespørselen. Stopp hvis noen lover deg belønninger eller fordeler.",
+    "definitionsChanged": "Nettverksdetaljene er endret. Lukk forespørselen og se gjennom den på nytt.",
     "payloadHandledByAnotherClient": "Data blir håndtert av en annen klient",
     "payloadNotFound": "Data ikke funnet",
     "invalidPayloadResult": "Ugyldig nyttelast-resultat",

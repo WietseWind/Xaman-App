@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash allumé"
   },
   "payload": {
+    "extraFields": "Champs supplémentaires",
+    "extraFieldsWarning": "Xaman ne peut pas décoder entièrement ces champs. Ne signez que si vous les comprenez et attendiez cette demande. Arrêtez si quelqu’un vous promet des récompenses ou des avantages.",
+    "definitionsChanged": "Les données du réseau ont changé. Fermez la demande et vérifiez-la à nouveau.",
     "payloadHandledByAnotherClient": "Charge utile gérée par un autre client",
     "payloadNotFound": "Charge utile introuvable",
     "invalidPayloadResult": "Résultat de charge utile non valide",

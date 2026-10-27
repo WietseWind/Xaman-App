@@ -1319,6 +1319,9 @@
     "flashlightOn": "Bliț pornit"
   },
   "payload": {
+    "extraFields": "Câmpuri suplimentare",
+    "extraFieldsWarning": "Xaman nu poate decoda complet aceste câmpuri. Semnați doar dacă le înțelegeți și vă așteptați la această cerere. Opriți-vă dacă cineva vă promite recompense sau beneficii.",
+    "definitionsChanged": "Datele rețelei s-au schimbat. Închideți cererea și verificați-o din nou.",
     "payloadHandledByAnotherClient": "Conținut manipulat de un alt client.",
     "payloadNotFound": "Conținut neidentificat",
     "invalidPayloadResult": "Rezultatul cererii de aprobare este invalid.",

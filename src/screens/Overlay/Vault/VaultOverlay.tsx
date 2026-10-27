@@ -339,7 +339,8 @@ class VaultOverlay extends Component<Props, State> {
             }
 
             // get current network definitions
-            const definitions = NetworkService.getNetworkDefinitions();
+            transaction.assertSigningContext();
+            const definitions = transaction.SigningDefinitions;
 
             // IGNORE if multi signing or pseudo transaction
             if (!multiSign && transaction.InstanceType !== InstanceTypes.PseudoTransaction) {
@@ -373,6 +374,7 @@ class VaultOverlay extends Component<Props, State> {
                     : undefined,
             );
 
+            transaction.assertSigningFields();
             let signedObject = AccountLib.sign(
                 txJson,
                 signerInstance,
@@ -446,7 +448,8 @@ class VaultOverlay extends Component<Props, State> {
             const publicKey = GetWalletDerivedPublicKey(tangemCard);
 
             // get current network definitions
-            const definitions = NetworkService.getNetworkDefinitions();
+            transaction.assertSigningContext();
+            const definitions = transaction.SigningDefinitions;
 
             // Batch: an inner account (not the Batch Account) adds its BatchSigner signature,
             // the Batch Account signs the Batch itself
@@ -469,6 +472,7 @@ class VaultOverlay extends Component<Props, State> {
             );
 
             // prepare the transaction for signing
+            transaction.assertSigningFields();
             const preparedTx = AccountLib.rawSigning.prepare(
                 txJson,
                 publicKey,

@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flash acceso"
   },
   "payload": {
+    "extraFields": "Campi aggiuntivi",
+    "extraFieldsWarning": "Xaman non può decodificare del tutto questi campi. Firma solo se li comprendi e ti aspettavi questa richiesta. Fermati se qualcuno ti promette premi o vantaggi.",
+    "definitionsChanged": "I dati di rete sono cambiati. Chiudi la richiesta e controllala di nuovo.",
     "payloadHandledByAnotherClient": "Pacchetto di dati da firmare gestito da un altro cliente",
     "payloadNotFound": "Pacchetto di dati da firmare non trovato",
     "invalidPayloadResult": "Risultato del pacchetto di dati da firmare non valido",

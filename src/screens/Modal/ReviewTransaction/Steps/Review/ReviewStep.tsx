@@ -36,6 +36,7 @@ import {
 import * as GenuineTransactionTemplates from './Templates/genuine';
 import * as PseudoTransactionTemplates from './Templates/pseudo';
 import { FallbackTemplate } from './Templates/fallback';
+import ExtraFields from './ExtraFields';
 
 import { StepsContext } from '../../Context';
 /* types ==================================================================== */
@@ -607,6 +608,11 @@ class ReviewStep extends Component<Props, State> {
 
                                         {/* transaction details */}
                                         <View style={styles.detailsContainer}>{this.renderDetails()}</View>
+                                        {transaction.ExtraFields.length > 0 && (
+                                            <View style={styles.detailsContainer}>
+                                                <ExtraFields transaction={transaction} />
+                                            </View>
+                                        )}
 
                                         {/* accept button */}
                                         {(canSendFee || isScamCounterpart) && (

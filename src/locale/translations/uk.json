@@ -1319,6 +1319,9 @@
     "flashlightOn": "Спалах увімкнено"
   },
   "payload": {
+    "extraFields": "Додаткові поля",
+    "extraFieldsWarning": "Xaman не може повністю розшифрувати ці поля. Підписуйте лише якщо розумієте їх і очікували цей запит. Зупиніться, якщо хтось обіцяє винагороди чи вигоди.",
+    "definitionsChanged": "Дані мережі змінилися. Закрийте запит і перевірте його знову.",
     "payloadHandledByAnotherClient": "Payload обробляється іншим клієнтом",
     "payloadNotFound": "Payload не знайдено",
     "invalidPayloadResult": "Недійсний результат payload",

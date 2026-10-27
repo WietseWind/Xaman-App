@@ -1319,6 +1319,9 @@
     "flashlightOn": "フラッシュオン"
   },
   "payload": {
+    "extraFields": "追加フィールド",
+    "extraFieldsWarning": "Xaman はこれらの追加フィールドを完全には解読できません。内容を理解し、予期したリクエストである場合のみ署名してください。報酬や利益を約束された場合は中止してください。",
+    "definitionsChanged": "ネットワーク情報が変わりました。このリクエストを閉じ、再度確認してください。",
     "payloadHandledByAnotherClient": "別のクライアントによって処理されるペイロード",
     "payloadNotFound": "ペイロードが見つかりません",
     "invalidPayloadResult": "無効なペイロード結果",

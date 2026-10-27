@@ -1319,6 +1319,9 @@
     "flashlightOn": "פלאש דולק"
   },
   "payload": {
+    "extraFields": "שדות נוספים",
+    "extraFieldsWarning": "Xaman לא יכול לפענח שדות אלה במלואם. יש לחתום רק אם הם מובנים לכם וציפיתם לבקשה הזו. עצרו אם מישהו מבטיח לכם תגמולים או הטבות.",
+    "definitionsChanged": "פרטי הרשת השתנו. סגרו את הבקשה ובדקו אותה שוב.",
     "payloadHandledByAnotherClient": "מטען מטופל על ידי לקוח אחר",
     "payloadNotFound": "מטען לא נמצא",
     "invalidPayloadResult": "תוצאת מטען לא חוקית",

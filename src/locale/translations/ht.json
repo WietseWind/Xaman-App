@@ -1319,6 +1319,9 @@
     "flashlightOn": "Flach limen"
   },
   "payload": {
+    "extraFields": "Chan siplemantè",
+    "extraFieldsWarning": "Xaman pa ka dekode chan sa yo nèt. Siyen sèlman si ou konprann yo epi ou t ap atann demann sa a. Sispann si yon moun pwomèt ou rekonpans oswa avantaj.",
+    "definitionsChanged": "Detay rezo a chanje. Fèmen demann sa a epi revize li ankò.",
     "payloadHandledByAnotherClient": "Chaj manyen pa yon lòt kliyan",
     "payloadNotFound": "Chaj pa jwenn",
     "invalidPayloadResult": "Rezilta chaj envalid",

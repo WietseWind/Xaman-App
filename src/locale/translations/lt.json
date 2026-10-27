@@ -1319,6 +1319,9 @@
     "flashlightOn": "Blykstė įjungta"
   },
   "payload": {
+    "extraFields": "Papildomi laukai",
+    "extraFieldsWarning": "Xaman negali visiškai iškoduoti šių laukų. Pasirašykite tik jei juos suprantate ir tikėjotės šios užklausos. Sustokite, jei kas nors žada atlygį ar naudą.",
+    "definitionsChanged": "Tinklo duomenys pasikeitė. Uždarykite užklausą ir peržiūrėkite ją iš naujo.",
     "payloadHandledByAnotherClient": "Naudingąją apkrovą tvarkė kitas klientas",
     "payloadNotFound": "Naudingoji apkrova nerasta",
     "invalidPayloadResult": "Neteisingas naudingosios apkrovos rezultatas",

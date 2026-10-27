@@ -1319,6 +1319,9 @@
     "flashlightOn": "ફ્લેશ ચાલુ"
   },
   "payload": {
+    "extraFields": "વધારાનાં ફીલ્ડ",
+    "extraFieldsWarning": "Xaman આ વધારાનાં ફીલ્ડ સંપૂર્ણ રીતે ડીકોડ કરી શકતું નથી. તે સમજતા હો અને આ વિનંતીની અપેક્ષા હોય તો જ સહી કરો. કોઈ ઇનામ કે લાભનું વચન આપે તો અટકો.",
+    "definitionsChanged": "નેટવર્કની વિગતો બદલાઈ છે. આ વિનંતી બંધ કરી ફરી તપાસો.",
     "payloadHandledByAnotherClient": "પેલોડ બીજા ક્લાયંટ દ્વારા સંચાલિત",
     "payloadNotFound": "પેલોડ મળ્યું નથી",
     "invalidPayloadResult": "અમાન્ય પેલોડ પરિણામ",

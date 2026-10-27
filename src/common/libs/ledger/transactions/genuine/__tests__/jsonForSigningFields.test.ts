@@ -122,130 +122,44 @@ describe('JsonForSigning keeps the ledger fields of the models', () => {
     });
 });
 
-describe('A ledger field the model does not declare is refused by name, never removed', () => {
+describe('Network fields beyond model coverage', () => {
     const payment = { TransactionType: 'Payment', Account, Destination: Other, Amount: '1', Fee: '12', Sequence: 1 };
-
-    beforeEach(() => {
-        jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue(
-            new XrplDefinitions(binary.DEFAULT_DEFINITIONS),
-        );
-    });
+    beforeEach(() => jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue(
+        new XrplDefinitions(binary.DEFAULT_DEFINITIONS),
+    ));
     afterEach(() => jest.restoreAllMocks());
 
-    for (const [type, Model, fields, base] of cases) {
-        it(`${type}: names nothing when it carries only the model's fields`, () => {
-            const tx = { TransactionType: type, Account, Fee: '12', Sequence: 1, ...base, ...fields };
-            expect(new Model(tx).unsignableFields()).toEqual([]);
-        });
-    }
-
-    it('names a ledger field the model does not declare for the type', () => {
-        expect(new Payment({ ...payment, TakerPays: '5' }).unsignableFields()).toEqual(['TakerPays']);
+    it('preserves a serialized field missing from a model and exposes its exact ledger value', () => {
+        const tx = new Payment({ ...payment, Delegate: Other } as any);
+        expect(tx.JsonForSigning.Delegate).toBe(Other);
+        expect(tx.ExtraFields).toEqual([{ name: 'Delegate', value: Other }]);
+        expect(tx.unsignableFields()).toEqual([]);
     });
 
-    it('names Delegate, since signing on behalf of another account is not built', () => {
-        expect(new Payment({ ...payment, Delegate: Other }).unsignableFields()).toEqual(['Delegate']);
+    it('keeps existing model coverage out of Extra fields', () => {
+        for (const [type, Model, fields, base] of cases) {
+            const tx = new Model({ TransactionType: type, Account, Fee: '12', Sequence: 1, ...base, ...fields });
+            expect(tx.ExtraFields).toEqual([]);
+            expect(tx.unsignableFields()).toEqual([]);
+        }
     });
 
-    it('names LoanBrokerCoverWithdraw DestinationTag, which its review cannot show', () => {
-        const tx = {
-            TransactionType: 'LoanBrokerCoverWithdraw',
-            Account,
-            Fee: '12',
-            Sequence: 1,
-            LoanBrokerID: Hash,
-            Amount: '1000000',
-            Destination: Other,
-            DestinationTag: 99,
-        };
-        expect(new LoanBrokerCoverWithdraw(tx).unsignableFields()).toEqual(['DestinationTag']);
+    it('ignores unknown fields and nonserialized metadata in the extra-field review', () => {
+        const tx = new Payment({ ...payment, NotALedgerField: 'x', hash: Hash, index: Hash } as any);
+        expect(tx.JsonForSigning).not.toHaveProperty('NotALedgerField');
+        expect(tx.JsonForSigning).not.toHaveProperty('index');
+        expect(tx.ExtraFields).toEqual([]);
     });
 
-    it('names nothing for a LedgerStateFix carrying the BookDirectory of a book exchange rate fix', () => {
-        const tx = {
-            TransactionType: 'LedgerStateFix',
-            Account,
-            Fee: '12',
-            Sequence: 1,
-            LedgerFixType: 2,
-            BookDirectory: Hash,
-        };
-        expect(new LedgerStateFix(tx).unsignableFields()).toEqual([]);
-        expect(new LedgerStateFix(tx).JsonForSigning).toEqual(tx);
-    });
-
-    it('names nothing for definitions names that are never serialized (hash, index)', () => {
-        const tx = { ...payment, hash: Hash, index: Hash };
-        expect(new Payment(tx).unsignableFields()).toEqual([]);
-        expect(Object.keys(new Payment(tx).JsonForSigning)).not.toContain('index');
-    });
-
-    it('names only the serialized field when it travels with names that are never serialized', () => {
-        const tx = { ...payment, hash: Hash, index: Hash, Delegate: Other };
-        expect(new Payment(tx).unsignableFields()).toEqual(['Delegate']);
-    });
-
-    describe('Batch', () => {
-        const inner = { ...payment, Fee: '0', Sequence: 2, SigningPubKey: '', Flags: 0x40000000 };
-        const batch = (rawTransactions: Record<string, any>[]) => ({
-            TransactionType: 'Batch',
-            Account,
-            Fee: '40',
-            Sequence: 1,
-            Flags: 0x00010000,
-            RawTransactions: rawTransactions.map((RawTransaction) => ({ RawTransaction })),
-        });
-
-        it('names the ledger fields an inner transaction carries that its model does not declare', () => {
-            const tx = batch([{ ...inner, Delegate: Other, TakerPays: '5' }]);
-            expect(new Batch(tx as any).unsignableFields()).toEqual([
-                'RawTransactions[0].Delegate',
-                'RawTransactions[0].TakerPays',
-            ]);
-        });
-
-        it('names the outer fields first, then each inner field by the index of its transaction', () => {
-            const tx = { ...batch([inner, { ...inner, Sequence: 3, Delegate: Other }]), Delegate: Other };
-            expect(new Batch(tx as any).unsignableFields()).toEqual(['Delegate', 'RawTransactions[1].Delegate']);
-        });
-
-        it('names nothing when every inner transaction carries only its model fields', () => {
-            const tx = batch([inner, { ...inner, Sequence: 3 }]);
-            expect(new Batch(tx as any).unsignableFields()).toEqual([]);
-        });
-
-        describe('with an AMMClawback inner transaction', () => {
-            const ammClawback = {
-                TransactionType: 'AMMClawback',
-                Account,
-                Holder: Other,
-                Asset: { currency: 'USD', issuer: Account },
-                Asset2: { currency: 'XRP' },
-                Amount: { currency: 'USD', issuer: Account, value: '1' },
-                Fee: '0',
-                Sequence: 2,
-                SigningPubKey: '',
-                Flags: 0x40000000,
-            };
-
-            it('reads it with the AMMClawback model', () => {
-                expect(TransactionFactory.fromJson(ammClawback as any)).toBeInstanceOf(AMMClawback);
-            });
-
-            it('names nothing when it carries only its model fields', () => {
-                expect(new Batch(batch([ammClawback]) as any).unsignableFields()).toEqual([]);
-            });
-
-            it('names a ledger field its model does not declare', () => {
-                const tx = batch([{ ...ammClawback, Delegate: Other }]);
-                expect(new Batch(tx as any).unsignableFields()).toEqual(['RawTransactions[0].Delegate']);
-            });
-        });
-    });
-
-    it('still drops a key that is not a ledger field, and names nothing', () => {
-        const tx = { ...payment, NotALedgerField: 'x' };
-        expect(Object.keys(new Payment(tx).JsonForSigning)).not.toContain('NotALedgerField');
-        expect(new Payment(tx).unsignableFields()).toEqual([]);
+    it('preserves Batch inner fields under the same definitions', () => {
+        const inner = { ...payment, Delegate: Other, Fee: '0', SigningPubKey: '', Flags: 0x40000000 };
+        const tx = new Batch({ TransactionType: 'Batch', Account, Sequence: 1, Fee: '40', Flags: 65536,
+            RawTransactions: [{ RawTransaction: inner }] } as any);
+        expect(tx.JsonForSigning.RawTransactions?.[0].RawTransaction.Delegate).toBe(Other);
+        expect(tx.unsignableFields()).toEqual([]);
+        expect(tx.ExtraFields).toEqual([]);
+        const reviewed = TransactionFactory.fromJson(inner as any);
+        reviewed.inheritSigningContext(tx);
+        expect(reviewed.ExtraFields).toEqual([{ name: 'Delegate', value: Other }]);
     });
 });
