@@ -67,6 +67,7 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
 
     return (
         <NativeWebView
+            // eslint-disable-next-line react/jsx-props-no-spreading -- later defaults override these props
             {...props}
             ref={innerRef}
             originWhitelist={[...defaultOriginWhitelist]}
@@ -104,6 +105,7 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             nestedScrollEnabled={false}
             autoManageStatusBarEnabled={false}
             automaticallyAdjustContentInsets={false}
+            // eslint-disable-next-line react/jsx-no-useless-fragment -- native loader requires an element
             renderLoading={() => <></>}
             onFileDownload={rejectFileDownload}
         />
