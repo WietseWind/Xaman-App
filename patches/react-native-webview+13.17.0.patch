@@ -184,8 +184,8 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  
      private PermissionAwareActivity getPermissionAwareActivity() {
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
---- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
-+++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+--- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	1985-10-26 09:15:00
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	2026-10-27 16:43:27
 @@ -9,6 +9,7 @@
  import android.view.MenuItem;
  import android.view.MotionEvent;
@@ -194,7 +194,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.webkit.JavascriptInterface;
  import android.webkit.ValueCallback;
  import android.webkit.WebChromeClient;
-@@ -49,6 +50,45 @@
+@@ -49,6 +50,56 @@
  import java.util.Set;
  
  public class RNCWebView extends WebView implements LifecycleEventListener {
@@ -220,8 +220,19 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +        if (!"https".equals(uri.getScheme())) return;
 +        String origin = uri.getScheme() + "://" + uri.getEncodedAuthority();
 +        if (xamanOttScripts.containsKey(origin)) return;
-+        String script = "Object.defineProperty(navigator,'userAgent',{configurable:true,get:function(){return "
-+            + org.json.JSONObject.quote(xamanOttUserAgent) + ";}});";
++        String script = "(function(){"
++            + "Object.defineProperty(navigator,'userAgent',{configurable:true,get:function(){return "
++            + org.json.JSONObject.quote(xamanOttUserAgent) + ";}});"
++            + "function xamanStamp(headers,mode){var h=new Headers(headers||{});h.set('X-Xaman-Credentials',mode);return h;}"
++            + "if(window.fetch){var orig=window.fetch;window.fetch=function(input,init){"
++            + "var mode=init&&init.credentials;"
++            + "if(!mode&&input&&typeof input==='object'&&input.credentials)mode=input.credentials;"
++            + "if(mode==='omit'||mode==='include'){init=Object.assign({},init);init.headers=xamanStamp(init.headers,mode);}"
++            + "return orig.call(this,input,init);};}"
++            + "var send=XMLHttpRequest.prototype.send;"
++            + "XMLHttpRequest.prototype.send=function(body){if(this.withCredentials){try{this.setRequestHeader('X-Xaman-Credentials','include');}catch(e){}}"
++            + "return send.apply(this,arguments);};"
++            + "})();";
 +        xamanOttScripts.put(origin, androidx.webkit.WebViewCompat.addDocumentStartJavaScript(
 +            this, script, java.util.Collections.singleton(origin)));
 +    }
@@ -240,7 +251,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
      protected @Nullable
      String injectedJS;
      protected @Nullable
-@@ -410,6 +450,10 @@
+@@ -410,6 +461,10 @@
      }
  
      protected void cleanupCallbacksAndDestroy() {
@@ -431,7 +442,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 new file mode 100644
 --- /dev/null
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java
-@@ -0,0 +1,316 @@
+@@ -0,0 +1,352 @@
 +package com.reactnativecommunity.webview;
 +
 +import android.net.Uri;
@@ -495,7 +506,36 @@ new file mode 100644
 +            return null;
 +        }
 +
-+        return fetchScoped(scope, view, uri.toString(), method, headers, userAgent, request.isForMainFrame(), keep);
++        return fetchScoped(scope, view, uri.toString(), method, headers, userAgent, request.isForMainFrame(), keep,
++            shouldSendCookies(request, view, headers));
++    }
++
++    /**
++     * WebView's shouldInterceptRequest omits the Cookie header for every fetch
++     * credential mode. Page script stamps omit and include; the default is
++     * same-origin against the document URL. Main-frame navigation always may
++     * carry cookies.
++     */
++    private static boolean shouldSendCookies(WebResourceRequest request, RNCWebView view, Map<String, String> headers) {
++        String mode = header(headers, "X-Xaman-Credentials");
++        if (mode != null && mode.equalsIgnoreCase("omit")) {
++            return false;
++        }
++        if (mode != null && mode.equalsIgnoreCase("include")) {
++            return true;
++        }
++        if (request.isForMainFrame()) {
++            return true;
++        }
++        String page = view.getUrl();
++        if (page == null || request.getUrl() == null) {
++            return false;
++        }
++        try {
++            return sameOrigin(new URL(page), new URL(request.getUrl().toString()));
++        } catch (IOException malformed) {
++            return false;
++        }
 +    }
 +
 +    private static boolean isDocument(WebResourceRequest request, Map<String, String> headers) {
@@ -534,7 +574,8 @@ new file mode 100644
 +        Map<String, String> requestHeaders,
 +        String originalUserAgent,
 +        boolean mainDocument,
-+        boolean keep
++        boolean keep,
++        boolean sendCookies
 +    ) throws IOException {
 +        String strippedUserAgent = XamanOttScope.stripOtt(originalUserAgent);
 +        URL current = new URL(urlString);
@@ -542,9 +583,11 @@ new file mode 100644
 +
 +        for (int hop = 0; hop < MAX_REDIRECTS; hop++) {
 +            HttpURLConnection conn = open(current, method, requestHeaders, userAgent,
-+                sameOrigin(new URL(urlString), current));
++                sameOrigin(new URL(urlString), current), sendCookies);
 +            int status = conn.getResponseCode();
-+            rememberCookies(current.toString(), conn);
++            if (sendCookies) {
++                rememberCookies(current.toString(), conn);
++            }
 +            if (status >= 300 && status < 400) {
 +                String location = conn.getHeaderField("Location");
 +                conn.disconnect();
@@ -590,7 +633,8 @@ new file mode 100644
 +        String method,
 +        Map<String, String> requestHeaders,
 +        String userAgent,
-+        boolean originalOrigin
++        boolean originalOrigin,
++        boolean sendCookies
 +    ) throws IOException {
 +        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 +        conn.setInstanceFollowRedirects(false);
@@ -602,6 +646,7 @@ new file mode 100644
 +            for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
 +                String key = entry.getKey();
 +                if (key == null || isHopByHop(key) || key.equalsIgnoreCase("User-Agent") || (key.equalsIgnoreCase("X-OTT") && (userAgent == null || !userAgent.contains("(ott:"))) || key.equalsIgnoreCase("Cookie") ||
++                    key.equalsIgnoreCase("X-Xaman-Credentials") ||
 +                    key.equalsIgnoreCase("Accept-Encoding") ||
 +                    (!originalOrigin && key.equalsIgnoreCase("Authorization"))) {
 +                    continue;
@@ -617,8 +662,10 @@ new file mode 100644
 +            java.util.regex.Matcher ott = java.util.regex.Pattern.compile("\\(ott:([^)]*)\\)").matcher(userAgent);
 +            if (ott.find()) conn.setRequestProperty("X-OTT", ott.group(1));
 +        }
-+        String cookie = android.webkit.CookieManager.getInstance().getCookie(url.toString());
-+        if (cookie != null) conn.setRequestProperty("Cookie", cookie);
++        if (sendCookies) {
++            String cookie = android.webkit.CookieManager.getInstance().getCookie(url.toString());
++            if (cookie != null) conn.setRequestProperty("Cookie", cookie);
++        }
 +        conn.setRequestProperty("Accept-Encoding", "identity");
 +        conn.setRequestProperty("User-Agent", userAgent == null ? "" : userAgent);
 +        return conn;
