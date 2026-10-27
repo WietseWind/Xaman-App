@@ -185,7 +185,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
      private PermissionAwareActivity getPermissionAwareActivity() {
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	1985-10-26 09:15:00
-+++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	2026-10-27 16:43:27
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	2026-10-27 17:12:06
 @@ -9,6 +9,7 @@
  import android.view.MenuItem;
  import android.view.MotionEvent;
@@ -194,7 +194,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.webkit.JavascriptInterface;
  import android.webkit.ValueCallback;
  import android.webkit.WebChromeClient;
-@@ -49,6 +50,56 @@
+@@ -49,6 +50,66 @@
  import java.util.Set;
  
  public class RNCWebView extends WebView implements LifecycleEventListener {
@@ -224,14 +224,24 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +            + "Object.defineProperty(navigator,'userAgent',{configurable:true,get:function(){return "
 +            + org.json.JSONObject.quote(xamanOttUserAgent) + ";}});"
 +            + "function xamanStamp(headers,mode){var h=new Headers(headers||{});h.set('X-Xaman-Credentials',mode);return h;}"
++            + "function xamanSame(input){try{var raw=typeof input==='string'?input:(input&&input.url);return new URL(raw,location.href).origin===location.origin;}catch(e){return false;}}"
 +            + "if(window.fetch){var orig=window.fetch;window.fetch=function(input,init){"
-+            + "var mode=init&&init.credentials;"
-+            + "if(!mode&&input&&typeof input==='object'&&input.credentials)mode=input.credentials;"
-+            + "if(mode==='omit'||mode==='include'){init=Object.assign({},init);init.headers=xamanStamp(init.headers,mode);}"
++            + "var mode=init&&init.credentials;if(!mode&&input&&typeof input==='object'&&input.credentials)mode=input.credentials;"
++            + "var method=((init&&init.method)||(input&&typeof input==='object'&&input.method)||'GET').toUpperCase();"
++            + "var proxied=method==='GET'||method==='HEAD'||method==='OPTIONS';"
++            + "if(proxied&&xamanSame(input)&&(mode==='omit'||mode==='include')){"
++            + "var explicit=!!(init&&Object.prototype.hasOwnProperty.call(init,'headers'));"
++            + "var base=explicit?init.headers:(input&&typeof input==='object'?input.headers:undefined);"
++            + "init=Object.assign({},init);init.headers=xamanStamp(base,mode);}"
 +            + "return orig.call(this,input,init);};}"
-+            + "var send=XMLHttpRequest.prototype.send;"
-+            + "XMLHttpRequest.prototype.send=function(body){if(this.withCredentials){try{this.setRequestHeader('X-Xaman-Credentials','include');}catch(e){}}"
-+            + "return send.apply(this,arguments);};"
++            + "var xhrOpen=XMLHttpRequest.prototype.open;var xhrSend=XMLHttpRequest.prototype.send;"
++            + "XMLHttpRequest.prototype.open=function(method,url){this.__xamanMethod=method;"
++            + "try{this.__xamanSame=new URL(url,location.href).origin===location.origin;}catch(e){this.__xamanSame=false;}"
++            + "return xhrOpen.apply(this,arguments);};"
++            + "XMLHttpRequest.prototype.send=function(body){var m=String(this.__xamanMethod||'GET').toUpperCase();"
++            + "if(this.__xamanSame&&this.withCredentials&&(m==='GET'||m==='HEAD'||m==='OPTIONS')){"
++            + "try{this.setRequestHeader('X-Xaman-Credentials','include');}catch(e){}}"
++            + "return xhrSend.apply(this,arguments);};"
 +            + "})();";
 +        xamanOttScripts.put(origin, androidx.webkit.WebViewCompat.addDocumentStartJavaScript(
 +            this, script, java.util.Collections.singleton(origin)));
@@ -251,7 +261,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
      protected @Nullable
      String injectedJS;
      protected @Nullable
-@@ -410,6 +461,10 @@
+@@ -410,6 +471,10 @@
      }
  
      protected void cleanupCallbacksAndDestroy() {
@@ -442,7 +452,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 new file mode 100644
 --- /dev/null
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java
-@@ -0,0 +1,352 @@
+@@ -0,0 +1,351 @@
 +package com.reactnativecommunity.webview;
 +
 +import android.net.Uri;
@@ -507,32 +517,29 @@ new file mode 100644
 +        }
 +
 +        return fetchScoped(scope, view, uri.toString(), method, headers, userAgent, request.isForMainFrame(), keep,
-+            shouldSendCookies(request, view, headers));
++            header(headers, "X-Xaman-Credentials"), view.getUrl());
 +    }
 +
 +    /**
 +     * WebView's shouldInterceptRequest omits the Cookie header for every fetch
-+     * credential mode. Page script stamps omit and include; the default is
-+     * same-origin against the document URL. Main-frame navigation always may
-+     * carry cookies.
++     * credential mode. Page script stamps omit and include on same-origin
++     * GET/HEAD/OPTIONS. The decision is repeated for each redirect hop.
 +     */
-+    private static boolean shouldSendCookies(WebResourceRequest request, RNCWebView view, Map<String, String> headers) {
-+        String mode = header(headers, "X-Xaman-Credentials");
++    private static boolean shouldSendCookies(String mode, boolean mainDocument, String page, URL target) {
 +        if (mode != null && mode.equalsIgnoreCase("omit")) {
 +            return false;
 +        }
 +        if (mode != null && mode.equalsIgnoreCase("include")) {
 +            return true;
 +        }
-+        if (request.isForMainFrame()) {
++        if (mainDocument) {
 +            return true;
 +        }
-+        String page = view.getUrl();
-+        if (page == null || request.getUrl() == null) {
++        if (page == null || target == null) {
 +            return false;
 +        }
 +        try {
-+            return sameOrigin(new URL(page), new URL(request.getUrl().toString()));
++            return sameOrigin(new URL(page), target);
 +        } catch (IOException malformed) {
 +            return false;
 +        }
@@ -575,13 +582,15 @@ new file mode 100644
 +        String originalUserAgent,
 +        boolean mainDocument,
 +        boolean keep,
-+        boolean sendCookies
++        String credentialMode,
++        String pageUrl
 +    ) throws IOException {
 +        String strippedUserAgent = XamanOttScope.stripOtt(originalUserAgent);
 +        URL current = new URL(urlString);
 +        String userAgent = keep ? originalUserAgent : strippedUserAgent;
 +
 +        for (int hop = 0; hop < MAX_REDIRECTS; hop++) {
++            boolean sendCookies = shouldSendCookies(credentialMode, mainDocument, pageUrl, current);
 +            HttpURLConnection conn = open(current, method, requestHeaders, userAgent,
 +                sameOrigin(new URL(urlString), current), sendCookies);
 +            int status = conn.getResponseCode();
