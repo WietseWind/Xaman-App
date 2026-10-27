@@ -46,12 +46,18 @@ public class CookieManager {
  private final java.util.Map<String,String> cookies=new java.util.HashMap<>();
  public static CookieManager getInstance(){return INSTANCE;}
  public String getCookie(String url){return cookies.get(java.net.URI.create(url).getHost());}
- public void setCookie(String url,String value){cookies.put(java.net.URI.create(url).getHost(),value);}
+ public void setCookie(String url,String value){
+  String host=java.net.URI.create(url).getHost();
+  if(value.contains("Max-Age=0")) cookies.remove(host);
+  else cookies.put(host,value.split(";",2)[0]);
+ }
 }''',
 'com/reactnativecommunity/webview/RNCWebView.java': '''package com.reactnativecommunity.webview;
 public class RNCWebView {
  public volatile String xamanOttUserAgent="xumm/xapp:310 (ott:test-secret)";
  public String loadedUrl;
+ public String pageUrl;
+ public String getUrl(){return pageUrl;}
  public boolean post(Runnable task){task.run();return true;}
  public void loadUrl(String url){loadedUrl=url;}
 }''',
@@ -68,8 +74,13 @@ public class OttProbe {
  static void check(boolean ok,String message){if(!ok)throw new AssertionError(message);}
  static class Request implements WebResourceRequest {
   final String url,method; final boolean main; final Map<String,String> headers;
-  Request(String url,String method,boolean main){this.url=url;this.method=method;this.main=main;
-   headers=new HashMap<>();headers.put("Authorization","private-source-auth");headers.put("Cookie","source=private");}
+  Request(String url,String method,boolean main){this(url,method,main,true,null);}
+  Request(String url,String method,boolean main,boolean incomingCookie,String credentialMode){
+   this.url=url;this.method=method;this.main=main;headers=new HashMap<>();
+   headers.put("Authorization","private-source-auth");
+   if(incomingCookie) headers.put("Cookie","source=private");
+   if(credentialMode!=null) headers.put("X-Xaman-Credentials",credentialMode);
+  }
   public Uri getUrl(){return Uri.parse(url);} public Map<String,String> getRequestHeaders(){return headers;}
   public String getMethod(){return method;} public boolean isForMainFrame(){return main;}
   public boolean isRedirect(){return false;}
@@ -107,7 +118,11 @@ public class OttProbe {
      try(java.util.zip.GZIPOutputStream zip=new java.util.zip.GZIPOutputStream(buf)){zip.write(body);}
      body=buf.toByteArray();ex.getResponseHeaders().add("Content-Encoding","gzip");
     }
-    ex.getResponseHeaders().add("Set-Cookie","session=own");
+    if(ex.getRequestURI().getPath().equals("/logout")){
+     ex.getResponseHeaders().add("Set-Cookie","session=own; Max-Age=0");
+    } else if(!ex.getRequestURI().getPath().equals("/omit")){
+     ex.getResponseHeaders().add("Set-Cookie","session=own");
+    }
     ex.sendResponseHeaders(200,body.length);ex.getResponseBody().write(body);
    }
    ex.close();
@@ -125,6 +140,7 @@ public class OttProbe {
    XamanOttScope scope=new XamanOttScope();
    scope.observe("127.0.0.1","/",true,false);scope.noteDocumentStatus(200);
    RNCWebView view=new RNCWebView();
+   view.pageUrl=own+"/";
    WebResourceResponse response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/redirect","GET",false));
    check(new String(response.data.readAllBytes(),StandardCharsets.UTF_8).equals("OK"),"redirect response");
    response.data.close();
@@ -136,6 +152,19 @@ public class OttProbe {
    check(new String(response.data.readAllBytes(),StandardCharsets.UTF_8).equals("OK"),"gzip decoded");
    response.data.close();
    check("session=own".equals(android.webkit.CookieManager.getInstance().getCookie(own)),"cookies retained at proper host");
+   received.clear();
+   response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/again","GET",false,false,null));
+   response.data.close();
+   check("session=own".equals(received.get(0).get("cookie")),"same-origin request sends saved cookie");
+   received.clear();
+   response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/omit","GET",false,false,"omit"));
+   response.data.close();
+   check(received.get(0).get("cookie")==null,"credentials omit does not send saved cookie");
+   check("session=own".equals(android.webkit.CookieManager.getInstance().getCookie(own)),"omit does not drop the saved session");
+   received.clear();
+   response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/logout","GET",false,false,null));
+   response.data.close();
+   check(android.webkit.CookieManager.getInstance().getCookie(own)==null,"logout removes the saved cookie");
    response=XamanOttInterceptor.intercept(scope,view,new Request(own+"/redirect","GET",true));
    check(response.status==204,"main redirect restarts navigation");
    check(view.loadedUrl.equals("https://localhost:"+port+"/collector"),"main redirect preserves destination origin");
