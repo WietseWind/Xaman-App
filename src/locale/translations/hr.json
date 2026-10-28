@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Dodatna polja",
     "extraFieldsWarning": "Xaman ne može potpuno dekodirati ova polja. Potpišite samo ako ih razumijete i očekivali ste ovaj zahtjev. Stanite ako vam netko obećava nagrade ili pogodnosti.",
+    "universalTransactionWarning": "Xaman nema poseban zaslon za ovu vrstu transakcije. Provjerite sva polja. Potpišite samo ako razumijete i očekivali ste ovaj zahtjev. Zaustavite se ako netko obećava nagrade.",
+    "universalTransactionUnavailable": "Odabrana mreža ne podržava ovu vrstu transakcije.",
     "definitionsChanged": "Podaci mreže su se promijenili. Zatvorite zahtjev i ponovno ga pregledajte.",
     "payloadHandledByAnotherClient": "Payload je rukovan od strane drugog klijenta",
     "payloadNotFound": "Payload nije pronađen",

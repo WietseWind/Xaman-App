@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Papildomi laukai",
     "extraFieldsWarning": "Xaman negali visiškai iškoduoti šių laukų. Pasirašykite tik jei juos suprantate ir tikėjotės šios užklausos. Sustokite, jei kas nors žada atlygį ar naudą.",
+    "universalTransactionWarning": "Xaman neturi atskiro ekrano šiam operacijos tipui. Patikrinkite visus laukus. Pasirašykite tik jei suprantate šią užklausą ir jos tikėjotės. Sustokite, jei kas nors žada atlygį.",
+    "universalTransactionUnavailable": "Pasirinktas tinklas nepalaiko šio operacijos tipo.",
     "definitionsChanged": "Tinklo duomenys pasikeitė. Uždarykite užklausą ir peržiūrėkite ją iš naujo.",
     "payloadHandledByAnotherClient": "Naudingąją apkrovą tvarkė kitas klientas",
     "payloadNotFound": "Naudingoji apkrova nerasta",

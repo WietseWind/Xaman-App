@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 
-import { FallbackTransaction } from '@common/libs/ledger/transactions';
+import { BaseTransaction } from '@common/libs/ledger/transactions/common';
+import TransactionData from '@components/Modules/TransactionData';
 
 import { Clipboard } from '@common/helpers/clipboard';
 import { Toast } from '@common/helpers/interface';
@@ -9,7 +10,7 @@ import { Toast } from '@common/helpers/interface';
 import { AmountParser } from '@common/libs/ledger/parser/common';
 
 import { FeePicker } from '@components/Modules';
-import { Button, JsonTree } from '@components/General';
+import { Button } from '@components/General';
 
 import NetworkService from '@services/NetworkService';
 
@@ -22,7 +23,7 @@ import { TemplateProps } from '../types';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
-    transaction: FallbackTransaction;
+    transaction: BaseTransaction;
 }
 
 export interface State {
@@ -74,15 +75,6 @@ class FallbackTemplate extends Component<Props, State> {
         });
     };
 
-    getJsonDataFoeViewer = () => {
-        const { transactionJsonData } = this.state;
-        // remove `Account` from the json as we are showing it in more proper way
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { Account, ...jsonData } = transactionJsonData!;
-
-        return jsonData;
-    };
-
     render() {
         const { transaction, source } = this.props;
         const { transactionJsonData, showFeePicker } = this.state;
@@ -112,7 +104,7 @@ class FallbackTemplate extends Component<Props, State> {
 
                 {/* Transaction JSON */}
                 <View style={styles.jsonTreeContainer}>
-                    <JsonTree data={this.getJsonDataFoeViewer()} />
+                    <TransactionData transaction={transaction} />
                 </View>
 
                 {/* Fee picker  */}

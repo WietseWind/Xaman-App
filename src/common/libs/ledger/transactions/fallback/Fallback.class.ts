@@ -7,6 +7,7 @@ import { TransactionJson, TransactionMetadata } from '@common/libs/ledger/types/
 /* Types ==================================================================== */
 import { FallbackTypes, InstanceTypes } from '@common/libs/ledger/types/enums';
 import { BaseTransaction } from '@common/libs/ledger/transactions/common';
+import Localize from '@locale';
 
 /* Class ==================================================================== */
 class FallbackTransaction extends BaseTransaction {
@@ -29,6 +30,17 @@ class FallbackTransaction extends BaseTransaction {
 
     get MetaData() {
         return { ...this._meta };
+    }
+
+    get JsonRaw(): TransactionJson {
+        return { ...this._tx } as TransactionJson;
+    }
+
+    assertSigningContext(): void {
+        super.assertSigningContext();
+        if (!this.SigningDefinitions.transactionNames.includes(this.TransactionType)) {
+            throw new Error(Localize.t('payload.universalTransactionUnavailable'));
+        }
     }
 }
 

@@ -23,6 +23,32 @@ const fieldOf = (definitions: XrplDefinitions, name: string) => {
     return fields && own(fields, name) ? fields[name] : undefined;
 };
 
+/** Account references in universal transactions must participate in the usual scam checks. */
+export function definitionAccountAddresses(json: Record<string, any>, definitions: XrplDefinitions): string[] {
+    const addresses = new Set<string>();
+    const add = (value: unknown) => { if (typeof value === 'string' && value) addresses.add(value); };
+    const visit = (object: Record<string, any>) => {
+        for (const [name, value] of Object.entries(object)) {
+            const field = fieldOf(definitions, name);
+            if (!field?.isSerialized || value === undefined || value === null) continue;
+            const type = field.type.name;
+            if (type === 'AccountID') add(value);
+            else if (type === 'Amount' || type === 'Issue') add(value?.issuer);
+            else if (type === 'XChainBridge') {
+                add(value?.LockingChainDoor);
+                add(value?.IssuingChainDoor);
+                add(value?.LockingChainIssue?.issuer);
+                add(value?.IssuingChainIssue?.issuer);
+            } else if (type === 'STObject' && typeof value === 'object') visit(value);
+            else if (type === 'STArray' && Array.isArray(value)) {
+                value.forEach((entry) => { if (entry && typeof entry === 'object') visit(entry); });
+            }
+        }
+    };
+    visit(json);
+    return [...addresses];
+}
+
 /** Keep codec-supported structure intact; currency/issuer/path components are not STObject fields. */
 export function definitionJson(
     json: Record<string, any>,

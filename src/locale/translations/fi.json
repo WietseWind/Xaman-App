@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Lisäkentät",
     "extraFieldsWarning": "Xaman ei pysty purkamaan näitä lisäkenttiä täysin. Allekirjoita vain, jos ymmärrät ne ja odotit tätä pyyntöä. Lopeta, jos joku lupaa palkintoja tai etuja.",
+    "universalTransactionWarning": "Xamanissa ei ole erillistä näkymää tälle tapahtumatyypille. Tarkista kaikki kentät. Allekirjoita vain, jos ymmärrät tämän pyynnön ja odotit sitä. Lopeta, jos joku lupaa palkintoja.",
+    "universalTransactionUnavailable": "Valittu verkko ei tue tätä tapahtumatyyppiä.",
     "definitionsChanged": "Verkon tiedot ovat muuttuneet. Sulje pyyntö ja tarkista se uudelleen.",
     "payloadHandledByAnotherClient": "Toisen asiakkaan käsittelemä hyötykuorma",
     "payloadNotFound": "Hyötykuormaa ei löydy",

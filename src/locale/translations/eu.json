@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Eremu gehigarriak",
     "extraFieldsWarning": "Xamanek ezin ditu eremu hauek guztiz deskodetu. Sinatu soilik ulertzen badituzu eta eskaera hau espero bazenuen. Gelditu norbaitek sariak edo onurak agintzen badizkizu.",
+    "universalTransactionWarning": "Xamanek ez du transakzio mota honetarako pantaila berezirik. Egiaztatu eremu guztiak. Sinatu eskaera ulertzen baduzu eta espero bazenuen soilik. Gelditu norbaitek sariak agintzen baditu.",
+    "universalTransactionUnavailable": "Hautatutako sareak ez du transakzio mota hau onartzen.",
     "definitionsChanged": "Sareko datuak aldatu dira. Itxi eskaera eta berrikusi berriro.",
     "payloadHandledByAnotherClient": "Beste bezero batek kudeatzen duen karga",
     "payloadNotFound": "Karga ez da aurkitu",

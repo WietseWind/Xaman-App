@@ -22,6 +22,7 @@ import { GetTransactionLink } from '@common/utils/explorer';
 import { Header } from '@components/General';
 
 import * as MutationWidgets from '@components/Modules/MutationWidgets';
+import TransactionData from '@components/Modules/TransactionData';
 // eslint-disable-next-line import/no-cycle
 import { Transaction } from '@components/Modules/EventsList/EventListItems';
 
@@ -247,6 +248,9 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                 />
 
                 <ScrollView>
+                    {item.InstanceType === InstanceTypes.FallbackTransaction && (
+                        <TransactionData transaction={item} history />
+                    )}
                     {widgetsList.map((widget: WidgetKey, index) => {
                         return React.createElement((MutationWidgets as WidgetComponents)[widget], {
                             key: `${index}-${widget}`,

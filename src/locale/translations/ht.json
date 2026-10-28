@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Chan siplemantè",
     "extraFieldsWarning": "Xaman pa ka dekode chan sa yo nèt. Siyen sèlman si ou konprann yo epi ou t ap atann demann sa a. Sispann si yon moun pwomèt ou rekonpans oswa avantaj.",
+    "universalTransactionWarning": "Xaman pa gen yon ekran espesyal pou kalite tranzaksyon sa a. Verifye tout chan yo. Siyen sèlman si ou konprann demann sa a epi ou te atann li. Kanpe si yon moun pwomèt rekonpans.",
+    "universalTransactionUnavailable": "Rezo ou chwazi a pa sipòte kalite tranzaksyon sa a.",
     "definitionsChanged": "Detay rezo a chanje. Fèmen demann sa a epi revize li ankò.",
     "payloadHandledByAnotherClient": "Chaj manyen pa yon lòt kliyan",
     "payloadNotFound": "Chaj pa jwenn",

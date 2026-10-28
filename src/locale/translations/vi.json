@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Trường bổ sung",
     "extraFieldsWarning": "Xaman không thể giải mã đầy đủ các trường này. Chỉ ký nếu bạn hiểu chúng và đã dự kiến yêu cầu này. Dừng lại nếu ai đó hứa hẹn phần thưởng hoặc lợi ích.",
+    "universalTransactionWarning": "Xaman không có màn hình riêng cho loại giao dịch này. Kiểm tra tất cả các trường. Chỉ ký nếu bạn hiểu và đã dự kiến yêu cầu này. Dừng lại nếu có người hứa hẹn phần thưởng.",
+    "universalTransactionUnavailable": "Mạng đã chọn không hỗ trợ loại giao dịch này.",
     "definitionsChanged": "Thông tin mạng đã thay đổi. Đóng yêu cầu và kiểm tra lại.",
     "payloadHandledByAnotherClient": "Tải trọng do khách hàng khác xử lý",
     "payloadNotFound": "Không tìm thấy tải trọng",

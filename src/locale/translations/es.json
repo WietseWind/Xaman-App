@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Campos adicionales",
     "extraFieldsWarning": "Xaman no puede decodificar por completo estos campos. Firma solo si los entiendes y esperabas esta solicitud. Detente si alguien te promete recompensas o beneficios.",
+    "universalTransactionWarning": "Xaman no tiene una pantalla específica para este tipo de transacción. Revisa todos los campos. Firma solo si entiendes y esperabas esta solicitud. Detente si alguien promete recompensas.",
+    "universalTransactionUnavailable": "La red seleccionada no admite este tipo de transacción.",
     "definitionsChanged": "Los datos de la red han cambiado. Cierra la solicitud y revísala de nuevo.",
     "payloadHandledByAnotherClient": "Carga útil manejada por otro cliente",
     "payloadNotFound": "Carga útil no encontrada",

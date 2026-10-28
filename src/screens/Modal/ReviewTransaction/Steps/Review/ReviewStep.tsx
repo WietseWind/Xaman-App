@@ -304,6 +304,10 @@ class ReviewStep extends Component<Props, State> {
                 );
                 break;
             case InstanceTypes.GenuineTransaction:
+                if (!get(GenuineTransactionTemplates, String(transaction.Type))) {
+                    Components.push(React.createElement(FallbackTemplate, { ...Props, key: 'UniversalTemplate' }));
+                    break;
+                }
                 Components.push(
                     React.createElement(get(GenuineTransactionTemplates, String(transaction.Type)), {
                         ...Props,
@@ -615,7 +619,8 @@ class ReviewStep extends Component<Props, State> {
                                                 {this.renderDetails()}
                                             </AmountInputEditingContext.Provider>
                                         </View>
-                                        {transaction.ExtraFields.length > 0 && (
+                                        {transaction.InstanceType !== InstanceTypes.FallbackTransaction &&
+                                            transaction.ExtraFields.length > 0 && (
                                             <View style={[styles.detailsContainer, styles.extraFieldsContainer]}>
                                                 <ExtraFields transaction={transaction} />
                                             </View>

@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Kolom tambahan",
     "extraFieldsWarning": "Xaman tidak dapat sepenuhnya mendekode kolom ini. Tanda tangani hanya jika Anda memahaminya dan mengharapkan permintaan ini. Berhenti jika seseorang menjanjikan hadiah atau keuntungan.",
+    "universalTransactionWarning": "Xaman tidak memiliki layar khusus untuk jenis transaksi ini. Periksa semua kolom. Tanda tangani hanya jika Anda memahami dan mengharapkan permintaan ini. Hentikan jika seseorang menjanjikan hadiah.",
+    "universalTransactionUnavailable": "Jaringan yang dipilih tidak mendukung jenis transaksi ini.",
     "definitionsChanged": "Detail jaringan berubah. Tutup permintaan ini dan periksa kembali.",
     "payloadHandledByAnotherClient": "Muatan ditangani oleh klien lain",
     "payloadNotFound": "Muatan tidak ditemukan",

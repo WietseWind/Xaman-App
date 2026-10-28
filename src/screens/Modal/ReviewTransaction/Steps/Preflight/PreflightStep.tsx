@@ -133,6 +133,11 @@ class PreflightStep extends Component<Props, State> {
         // Network switches reconnect asynchronously. Learn the network's current
         // fields before taking the immutable review/signing definitions snapshot.
         await NetworkService.updateNetworkDefinitions();
+        // A newly introduced type can arrive before the normal cache expires. Check once before pinning it.
+        if (!payload.isPseudoTransaction() &&
+            !NetworkService.getNetworkDefinitions().transactionNames.includes(payload.getTransactionType())) {
+            await NetworkService.updateNetworkDefinitions(true);
+        }
         await this.checkForcedNetwork();
         const transaction = payload.getTransaction();
         // Capture now, so fee estimation, review and both signers use one schema.

@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Extra velden",
     "extraFieldsWarning": "Xaman kan deze extra velden niet volledig decoderen. Teken alleen als je ze begrijpt en dit verzoek verwachtte. Stop als iemand je beloningen of voordelen belooft.",
+    "universalTransactionWarning": "Xaman heeft geen specifiek scherm voor dit transactietype. Controleer alle velden. Onderteken alleen als je dit verzoek begrijpt en verwachtte. Stop als iemand beloningen belooft.",
+    "universalTransactionUnavailable": "Het geselecteerde netwerk ondersteunt dit transactietype niet.",
     "definitionsChanged": "De netwerkgegevens zijn gewijzigd. Sluit dit verzoek en controleer het opnieuw.",
     "payloadHandledByAnotherClient": "Payload afgehandeld door een andere client",
     "payloadNotFound": "Payload niet gevonden",

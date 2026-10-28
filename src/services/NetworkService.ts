@@ -695,7 +695,7 @@ class NetworkService extends EventEmitter {
     /**
      * Updates the network definitions and persists them to the `NetworkRepository`.
      */
-    updateNetworkDefinitions = (): Promise<void> => {
+    updateNetworkDefinitions = (force = false): Promise<void> => {
         const network = this.getNetwork();
         const key = network.id.toString();
         const endpoint = this.getConnectedEndpoint();
@@ -712,7 +712,7 @@ class NetworkService extends EventEmitter {
                 const validCache = cached?.version === DEFINITION_CACHE_VERSION;
                 const currentCache = validCache && cached.endpoint === endpoint;
                 const age = now - (cached?.checkedAt ?? NaN);
-                if (currentCache && age >= 0 && age < DEFINITIONS_TTL_MS) {
+                if (!force && currentCache && age >= 0 && age < DEFINITIONS_TTL_MS) {
                     this.scheduleDefinitionsRefresh(DEFINITIONS_TTL_MS - age);
                     return;
                 }

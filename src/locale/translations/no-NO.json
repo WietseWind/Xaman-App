@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Ekstra felt",
     "extraFieldsWarning": "Xaman kan ikke dekode disse feltene fullt ut. Signer bare hvis du forstår dem og forventet denne forespørselen. Stopp hvis noen lover deg belønninger eller fordeler.",
+    "universalTransactionWarning": "Xaman har ingen egen skjerm for denne transaksjonstypen. Kontroller alle feltene. Signer bare hvis du forstår og forventet denne forespørselen. Stopp hvis noen lover belønninger.",
+    "universalTransactionUnavailable": "Det valgte nettverket støtter ikke denne transaksjonstypen.",
     "definitionsChanged": "Nettverksdetaljene er endret. Lukk forespørselen og se gjennom den på nytt.",
     "payloadHandledByAnotherClient": "Data blir håndtert av en annen klient",
     "payloadNotFound": "Data ikke funnet",

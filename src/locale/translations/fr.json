@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Champs supplémentaires",
     "extraFieldsWarning": "Xaman ne peut pas décoder entièrement ces champs. Ne signez que si vous les comprenez et attendiez cette demande. Arrêtez si quelqu’un vous promet des récompenses ou des avantages.",
+    "universalTransactionWarning": "Xaman ne dispose pas d’écran spécifique pour ce type de transaction. Vérifiez tous les champs. Signez uniquement si vous comprenez et attendiez cette demande. Arrêtez si quelqu’un promet des récompenses.",
+    "universalTransactionUnavailable": "Le réseau sélectionné ne prend pas en charge ce type de transaction.",
     "definitionsChanged": "Les données du réseau ont changé. Fermez la demande et vérifiez-la à nouveau.",
     "payloadHandledByAnotherClient": "Charge utile gérée par un autre client",
     "payloadNotFound": "Charge utile introuvable",

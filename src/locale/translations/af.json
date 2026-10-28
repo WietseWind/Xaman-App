@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Ekstra velde",
     "extraFieldsWarning": "Xaman kan hierdie ekstra velde nie volledig dekodeer nie. Teken net as jy dit verstaan en hierdie versoek verwag het. Stop as iemand jou belonings of voordele belowe.",
+    "universalTransactionWarning": "Xaman het geen spesifieke skerm vir hierdie transaksietipe nie. Kontroleer alle velde. Teken slegs as jy hierdie versoek verstaan en verwag het. Stop as iemand belonings belowe.",
+    "universalTransactionUnavailable": "Die gekose netwerk ondersteun nie hierdie transaksietipe nie.",
     "definitionsChanged": "Netwerkbesonderhede het verander. Sluit hierdie versoek en hersien dit weer.",
     "payloadHandledByAnotherClient": "Loonvrag hanteer deur 'n ander kliënt",
     "payloadNotFound": "Loonvrag nie gevind nie",

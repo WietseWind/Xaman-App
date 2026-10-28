@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Dodatkowe pola",
     "extraFieldsWarning": "Xaman nie może w pełni odkodować tych pól. Podpisz tylko, jeśli je rozumiesz i oczekujesz tego żądania. Przerwij, jeśli ktoś obiecuje nagrody lub korzyści.",
+    "universalTransactionWarning": "Xaman nie ma osobnego ekranu dla tego typu transakcji. Sprawdź wszystkie pola. Podpisz tylko wtedy, gdy rozumiesz to żądanie i się go spodziewasz. Przerwij, jeśli ktoś obiecuje nagrody.",
+    "universalTransactionUnavailable": "Wybrana sieć nie obsługuje tego typu transakcji.",
     "definitionsChanged": "Dane sieci uległy zmianie. Zamknij żądanie i sprawdź je ponownie.",
     "payloadHandledByAnotherClient": "Zawartość obsługiwana przez innego klienta",
     "payloadNotFound": "Zawartość nie znaleziona",

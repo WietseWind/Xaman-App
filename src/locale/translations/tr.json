@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Ek alanlar",
     "extraFieldsWarning": "Xaman bu alanları tam olarak çözümleyemez. Yalnızca bunları anlıyor ve bu isteği bekliyorsanız imzalayın. Birisi ödül veya kazanç vaat ediyorsa durun.",
+    "universalTransactionWarning": "Xaman’da bu işlem türü için özel bir ekran yoktur. Tüm alanları kontrol edin. Yalnızca bu isteği anlıyor ve bekliyorsanız imzalayın. Birisi ödül vaat ederse durun.",
+    "universalTransactionUnavailable": "Seçilen ağ bu işlem türünü desteklemiyor.",
     "definitionsChanged": "Ağ bilgileri değişti. Bu isteği kapatıp yeniden inceleyin.",
     "payloadHandledByAnotherClient": "Başka bir istemci tarafından işlenen ödeme yöntemi",
     "payloadNotFound": "Ödeme yöntemi bulunamadı",

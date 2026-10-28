@@ -201,7 +201,7 @@ class BatchTemplate extends Component<Props, State> {
                                   ...Props,
                                   key: `InnerTxn-${hash}-FallbackTemplate`,
                               })}
-                        <ExtraFields transaction={tx} />
+                        {GenuineTemplate && <ExtraFields transaction={tx} />}
                     </View>
                 </View>
             </View>;

@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Ďalšie polia",
     "extraFieldsWarning": "Xaman tieto polia nevie úplne dekódovať. Podpíšte iba vtedy, ak im rozumiete a túto požiadavku očakávate. Zastavte sa, ak vám niekto sľubuje odmeny či výhody.",
+    "universalTransactionWarning": "Xaman nemá osobitnú obrazovku pre tento typ transakcie. Skontrolujte všetky polia. Podpíšte iba vtedy, ak tejto požiadavke rozumiete a očakávali ste ju. Ak niekto sľubuje odmeny, zastavte sa.",
+    "universalTransactionUnavailable": "Vybraná sieť tento typ transakcie nepodporuje.",
     "definitionsChanged": "Údaje siete sa zmenili. Zatvorte požiadavku a znova ju skontrolujte.",
     "payloadHandledByAnotherClient": "Užitočné zaťaženie vybavuje iný klient",
     "payloadNotFound": "Užitočné zaťaženie sa nenašlo",
