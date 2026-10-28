@@ -12,10 +12,12 @@ const Delegation = ({ item }: Props) => {
     const types = item.Type === LedgerEntryTypes.Delegate ? item.PermissionTransactionTypes
         : transaction.SigningDefinitions?.rawDefinitions?.TRANSACTION_TYPES || {};
     const permissions = transaction.Permissions || [];
+    const nativeAsset = item.Type === LedgerEntryTypes.Delegate ? item.PermissionNativeAsset
+        : transaction.SigningDefinitions?.rawDefinitions?.native_currency_code;
     return (
         <View style={styles.detailContainer}>
             <DelegationDetails owner={transaction.Account} authorize={transaction.Authorize}
-                permissions={permissions} transactionTypes={types}
+                permissions={permissions} transactionTypes={types} nativeAsset={nativeAsset}
                 mode={item.Type === LedgerEntryTypes.Delegate ? 'object' : permissions.length ? 'grant' : 'revoke'} />
         </View>
     );

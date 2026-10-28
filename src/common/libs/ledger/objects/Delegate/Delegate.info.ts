@@ -21,7 +21,7 @@ class DelegateInfo extends ExplainerAbstract<Delegate> {
 
     generateDescription(): string {
         return delegationDescription(this.item.Account, this.item.Authorize, this.item.Permissions || [],
-            this.item.PermissionTransactionTypes, 'object');
+            this.item.PermissionTransactionTypes, 'object', this.item.PermissionNativeAsset);
     }
 
     getParticipants() {

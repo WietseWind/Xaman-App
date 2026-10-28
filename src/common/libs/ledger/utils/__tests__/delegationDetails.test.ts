@@ -39,6 +39,15 @@ describe('delegation permission explanations', () => {
         expect(delegationPermissionDetail('PaymentBurn', types).risk).toContain('also create tokens');
     });
 
+    it('uses the pinned native asset on Xahau rather than naming XRP', () => {
+        const payment = delegationPermissionDetail('Payment', types, 'XAH');
+        expect(payment.explanation).toContain('Send XAH');
+        expect(payment.explanation).not.toContain('XRP');
+        const ticket = delegationPermissionDetail('TicketCreate', { TicketCreate: 10 }, 'XAH');
+        expect(ticket.risk).toContain('XAH');
+        expect(ticket.risk).not.toContain('%{nativeAsset}');
+    });
+
     it('warns when a known permission lacks a translation, without guessing from the name', () => {
         Localize.setLocaleBundle('missing', { delegation: en.delegation });
         expect(delegationPermissionDetail('Payment', types).unknown).toBe(true);
@@ -57,7 +66,7 @@ describe('delegation permission explanations', () => {
         expect(text).toContain('Account granting permissions: owner');
         expect(text).toContain('Account receiving permissions: delegate');
         expect(text).toContain('Previous permissions not listed will be revoked');
-        expect(text).toContain(en.delegation.whole.Payment);
+        expect(text).toContain(Localize.t('delegation.whole.Payment', { nativeAsset: 'XRP' }));
         const revoked = delegationDescription('owner', 'delegate', [], types, 'revoke');
         expect(revoked).toContain('Other delegations are unchanged');
         expect(revoked).not.toContain(en.delegation.whole.Payment);
@@ -75,7 +84,7 @@ describe('delegation translations', () => {
             for (const name of Object.keys(en.delegation.whole)) {
                 const detail = delegationPermissionDetail(name, { [name]: 1 });
                 expect(detail.unknown).toBe(false);
-                expect(detail.explanation).toBe(bundle.delegation.whole[name]);
+                expect(detail.explanation).toBe(bundle.delegation.whole[name].replace('%{nativeAsset}', 'XRP'));
                 expect(detail.risk).not.toContain('missing');
             }
             for (const name of Object.keys(en.delegation.granular)) {

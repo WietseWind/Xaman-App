@@ -29,7 +29,8 @@ class DelegateSetInfo extends ExplainerAbstract<DelegateSet, MutationsMixinType>
     generateDescription(): string {
         return delegationDescription(this.item.Account, this.item.Authorize, this.item.Permissions || [],
             (this.item.SigningDefinitions as NetworkDefinitions).rawDefinitions?.TRANSACTION_TYPES || {},
-            this.item.Permissions?.length ? 'grant' : 'revoke');
+            this.item.Permissions?.length ? 'grant' : 'revoke',
+            (this.item.SigningDefinitions as NetworkDefinitions).rawDefinitions?.native_currency_code);
     }
 
     getParticipants() {

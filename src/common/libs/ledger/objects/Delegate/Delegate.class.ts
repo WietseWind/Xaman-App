@@ -13,6 +13,7 @@ class Delegate extends BaseLedgerObject<DelegateLedgerEntry> {
     public static Type = LedgerEntryTypes.Delegate as const;
     public readonly Type = Delegate.Type;
     public readonly PermissionTransactionTypes: Record<string, number>;
+    public readonly PermissionNativeAsset: string;
     private readonly networkContext: ReturnType<typeof NetworkService.getConnectionDetails>;
     private readonly networkIdentity?: string;
 
@@ -40,6 +41,8 @@ class Delegate extends BaseLedgerObject<DelegateLedgerEntry> {
         super(object);
 
         this.PermissionTransactionTypes = { ...NetworkService.getRawNetworkDefinitions()?.TRANSACTION_TYPES };
+        this.PermissionNativeAsset = NetworkService.getRawNetworkDefinitions()?.native_currency_code ||
+            NetworkService.getNativeAsset();
         this.networkContext = NetworkService.getConnectionDetails();
         this.networkIdentity = NetworkService.getNetwork()?.id?.toString();
 

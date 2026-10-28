@@ -14,10 +14,11 @@ export interface Props {
     authorize?: string;
     permissions?: unknown[];
     transactionTypes: Record<string, number>;
+    nativeAsset?: string;
     mode: 'grant' | 'revoke' | 'object';
 }
 
-const DelegationDetails = ({ owner, authorize, permissions, transactionTypes, mode }: Props) => {
+const DelegationDetails = ({ owner, authorize, permissions, transactionTypes, nativeAsset, mode }: Props) => {
     const values = delegationPermissionValues(permissions);
     return (
         <View testID="delegation-details">
@@ -38,7 +39,7 @@ const DelegationDetails = ({ owner, authorize, permissions, transactionTypes, mo
                         <Text style={styles.value}>{Localize.t('global.noInformationToShow')}</Text>
                     )}
                     {values.map((value, index) => {
-                        const detail = delegationPermissionDetail(value, transactionTypes);
+                        const detail = delegationPermissionDetail(value, transactionTypes, nativeAsset);
                         return (
                             <View key={`${index}-${detail.name}`} style={styles.permission}
                                 testID={`delegation-permission-${index}`}>

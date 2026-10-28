@@ -17,6 +17,7 @@ const DelegateSetTemplate = ({ transaction, source }: Props) => (
         transactionTypes={
             (transaction.SigningDefinitions as NetworkDefinitions)?.rawDefinitions?.TRANSACTION_TYPES || {}
         }
+        nativeAsset={(transaction.SigningDefinitions as NetworkDefinitions)?.rawDefinitions?.native_currency_code}
         mode={transaction.Permissions?.length ? 'grant' : 'revoke'}
     />
 );

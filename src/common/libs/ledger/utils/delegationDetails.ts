@@ -94,23 +94,25 @@ const hasTranslation = (key: string): boolean => {
 export const delegationPermissionDetail = (
     value: unknown,
     transactionTypes: Record<string, number>,
+    nativeAsset = 'XRP',
 ): DelegationPermissionDetail => {
     const valid = typeof value === 'string' || typeof value === 'number';
     const name = valid ? describeDelegatePermission(value, transactionTypes).label : String(value);
     const granular = GRANULAR.has(name);
     const known = Object.prototype.hasOwnProperty.call(ACTIONS, name) ? ACTIONS[name] : undefined;
     const detailKey = granular ? `delegation.granular.${name}` : `delegation.whole.${name}`;
-    const supported = hasTranslation(detailKey) && (granular || (known && hasTranslation(known.labelKey) &&
-        hasTranslation(`delegation.risks.${known.risk}`)));
+    const riskKey = granular ? name === 'PaymentBurn' ? 'delegation.paymentBurnRisk' : 'delegation.granularRisk'
+        : `delegation.risks.${known?.risk}`;
+    const supported = hasTranslation(detailKey) && hasTranslation(riskKey) &&
+        (granular || (known && hasTranslation(known.labelKey)));
     if (!valid || !supported) {
         return { name, action: name, explanation: Localize.t('delegation.unknownPermission'),
             risk: Localize.t('delegation.unknownRisk'), icon: 'IconAlertTriangle', unknown: true, critical: true };
     }
     const label = granular ? name : Localize.t(known!.labelKey);
     return { name, action: label,
-        explanation: Localize.t(detailKey),
-        risk: granular ? Localize.t(name === 'PaymentBurn' ? 'delegation.paymentBurnRisk' : 'delegation.granularRisk')
-            : Localize.t(`delegation.risks.${known!.risk}`),
+        explanation: Localize.t(detailKey, { nativeAsset }),
+        risk: Localize.t(riskKey, { nativeAsset }),
         icon: granular ? 'IconShield' : known!.icon, unknown: false,
         critical: granular ? ['PaymentMint', 'PaymentBurn'].includes(name)
             : ['funds', 'trading', 'nftBurn', 'nftTrade', 'control', 'programs'].includes(known!.risk) };
@@ -125,6 +127,7 @@ export const delegationDescription = (
     permissions: unknown[],
     transactionTypes: Record<string, number>,
     mode: 'grant' | 'revoke' | 'object',
+    nativeAsset = 'XRP',
 ): string => {
     const lines = [
         Localize.t(mode === 'revoke' ? 'delegation.revokeExplanation' : 'delegation.explanation'),
@@ -135,7 +138,7 @@ export const delegationDescription = (
     if (mode === 'grant') lines.push(Localize.t('delegation.replacesPermissions'));
     lines.push(Localize.t('delegation.wholeTransaction'));
     delegationPermissionValues(permissions).forEach(value => {
-        const detail = delegationPermissionDetail(value, transactionTypes);
+        const detail = delegationPermissionDetail(value, transactionTypes, nativeAsset);
         lines.push(`${detail.name}\n${detail.explanation}\n${detail.risk}`);
     });
     return lines.join('\n\n');
