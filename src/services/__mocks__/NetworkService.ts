@@ -42,6 +42,10 @@ class NetworkService {
         return undefined;
     }
 
+    public getRawNetworkDefinitions(): any {
+        return this.network.definitions;
+    }
+
     public updateNetworkDefinitions = jest.fn().mockResolvedValue(undefined);
 
     public getNetwork(): any {

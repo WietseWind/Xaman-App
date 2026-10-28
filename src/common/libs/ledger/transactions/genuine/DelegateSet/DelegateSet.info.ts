@@ -7,6 +7,8 @@ import DelegateSet from './DelegateSet.class';
 /* Types ==================================================================== */
 import { MutationsMixinType } from '@common/libs/ledger/mixin/types';
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
+import { delegationDescription } from '@common/libs/ledger/utils/delegationDetails';
+import { NetworkDefinitions } from '@common/libs/ledger/utils/normalizeDefinitions';
 
 /* Descriptor ==================================================================== */
 class DelegateSetInfo extends ExplainerAbstract<DelegateSet, MutationsMixinType> {
@@ -15,7 +17,7 @@ class DelegateSetInfo extends ExplainerAbstract<DelegateSet, MutationsMixinType>
     }
 
     getEventsLabel(): string {
-        if (!this.item.Permissions) {
+        if (!this.item.Permissions?.length) {
             return Localize.t('txDelegateSet.removeAuthorize');
         }
         if (this.item.Permissions && this.item.Permissions.length > 0) {
@@ -25,27 +27,9 @@ class DelegateSetInfo extends ExplainerAbstract<DelegateSet, MutationsMixinType>
     }
 
     generateDescription(): string {
-        const { Authorize } = this.item;
-
-        const content: string[] = [Localize.t('txDelegateSet.thisIsAnDelegateSetTransaction')];
-
-        if (Authorize && this.item?.Permissions && this.item.Permissions.length > 0) {
-            content.push(Localize.t('txDelegateSet.itSetsAccountAuthorizeTo', { authorize: Authorize }));
-
-            content.push(
-                Localize.t('txDelegateSet.itSetsThesePermissions', {
-                    permissions: `\n\n - ${this.item.___translatedDelegations
-                        .map((name) => (this.item.___dangerPerms.indexOf(name) > -1 ? `${name} (!)` : name))
-                        .join('\n - ')}`,
-                }),
-            );
-        }
-
-        if (Authorize && (!this.item?.Permissions || this.item.Permissions.length === 0)) {
-            content.push(Localize.t('txDelegateSet.itRemoves', { authorize: Authorize }));
-        }
-
-        return content.join('\n');
+        return delegationDescription(this.item.Account, this.item.Authorize, this.item.Permissions || [],
+            (this.item.SigningDefinitions as NetworkDefinitions).rawDefinitions?.TRANSACTION_TYPES || {},
+            this.item.Permissions?.length ? 'grant' : 'revoke');
     }
 
     getParticipants() {

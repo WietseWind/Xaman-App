@@ -263,7 +263,10 @@ class ActionButtons extends PureComponent<Props, State> {
                 }
                 break;
             case LedgerEntryTypes.Delegate:
-                availableActions.push(ActionTypes.REMOVE_DELEGATION);
+                // A delegate may see the object in its directory, but only the granting account can revoke it.
+                if (item.Account === account.address && item.isOnCurrentNetwork()) {
+                    availableActions.push(ActionTypes.REMOVE_DELEGATION);
+                }
                 break;
             case LedgerEntryTypes.NFTokenOffer:
                 nftOfferActions(item, account.address).forEach((action) => {
@@ -376,6 +379,16 @@ class ActionButtons extends PureComponent<Props, State> {
 
         if (actionType === ActionTypes.OPEN_XAPP) {
             this.onOpenXAppPress();
+            return;
+        }
+
+        if (actionType === ActionTypes.REMOVE_DELEGATION && item.Type === LedgerEntryTypes.Delegate &&
+            !item.isOnCurrentNetwork()) {
+            Navigator.showAlertModal({
+                type: 'warning',
+                text: Localize.t('payload.definitionsChanged'),
+                buttons: [{ text: Localize.t('global.ok'), onPress: () => {}, light: false }],
+            });
             return;
         }
 
@@ -509,7 +522,9 @@ class ActionButtons extends PureComponent<Props, State> {
                 }
                 break;
             case ActionTypes.REMOVE_DELEGATION:
-                if (item.Type === LedgerEntryTypes.Delegate) {
+                if (item.Type === LedgerEntryTypes.Delegate && item.Account === account.address &&
+                    item.isOnCurrentNetwork() &&
+                    AccountRepository.getSpendableAccounts().some(acc => acc.address === account.address)) {
                     Object.assign(craftedTxJson, {
                         TransactionType: TransactionTypes.DelegateSet,
                         Account: item.Account,
