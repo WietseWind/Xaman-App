@@ -20,6 +20,7 @@ import { Button, InfoMessage, JsonTree, KeyboardAwareScrollView, Spacer, SwipeBu
 import { AccountPicker } from '@components/Modules';
 
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
+import { transactionHasCriticalDelegation } from '@common/libs/ledger/utils/delegationDetails';
 
 import { AppInfo, SignerLabel, SignForAccount } from '@components/Modules/ReviewTransaction';
 import { ReviewHeader } from '@screens/Modal/ReviewTransaction/Shared';
@@ -244,10 +245,10 @@ class ReviewStep extends Component<Props, State> {
     };
 
     getSwipeButtonColor = (): string | undefined => {
-        const { coreSettings } = this.context;
+        const { coreSettings, transaction } = this.context;
         const { isScamCounterpart } = this.state;
 
-        if (isScamCounterpart) {
+        if (isScamCounterpart || transactionHasCriticalDelegation(transaction)) {
             return StyleService.value('$red');
         }
 

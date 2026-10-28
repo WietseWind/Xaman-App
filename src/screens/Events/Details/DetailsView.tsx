@@ -32,7 +32,7 @@ import Localize from '@locale';
 import { AppStyles } from '@theme';
 /* types ==================================================================== */
 import { Props, State, WidgetComponents, WidgetKey } from './types';
-import { InstanceTypes } from '@common/libs/ledger/types/enums';
+import { InstanceTypes, LedgerEntryTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 // import { Credential } from '@common/libs/ledger/objects';
 
 // iOS modals already sit below the status bar. Android full-screen modals draw
@@ -209,8 +209,10 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
         const { account, item, componentType, cachedTokenDetails, timestamp } = this.props;
         const { advisory, explainer } = this.state;
 
-        const widgetsList: WidgetKey[] = [
+        const isDelegation = item.Type === TransactionTypes.DelegateSet || item.Type === LedgerEntryTypes.Delegate;
+        const widgetsList = ([
             'LabelWidget',
+            'DelegationWidget',
             'AssetsMutationsWidget',
             'VaultAssetWidget',
             'MemoWidget',
@@ -230,7 +232,9 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             'FeeWidget',
             'TransferRateWidget',
             'ValidatedLedgerWidget',
-        ];
+        ] as WidgetKey[]).filter((widget) => isDelegation
+            ? !['ParticipantsWidget', 'ExplainWidget'].includes(widget)
+            : widget !== 'DelegationWidget');
         // Title, result, date, amount, reserve, from and transaction id stay above the universal JSON.
         const summaryEnd = widgetsList.indexOf('IdentifierWidget') + 1;
         const summaryWidgets = widgetsList.slice(0, summaryEnd);

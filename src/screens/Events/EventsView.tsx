@@ -89,6 +89,7 @@ enum EventSections {
     PLANNED = 'PLANNED',
     REQUESTS = 'REQUESTS',
     OWNED = 'OWNED',
+    AUTHORISATIONS = 'AUTHORISATIONS',
 }
 
 enum DataSourceType {
@@ -764,7 +765,6 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.Check,
                         LedgerEntryTypes.Ticket,
                         LedgerEntryTypes.PayChannel,
-                        LedgerEntryTypes.Delegate,
                         LedgerEntryTypes.Credential,
                         LedgerEntryTypes.Cron,
                         // LedgerEntryTypes.Vault, // Vault is in OWNED, not PLANNED
@@ -890,6 +890,9 @@ class EventsView extends Component<Props, State> {
                 ['Date'],
             );
             items = [...openRequestObjects , ...pendingRequests];
+        } else if (activeSection === EventSections.AUTHORISATIONS) {
+            items = orderBy(filter(plannedTransactions, (item) => item.Type === LedgerEntryTypes.Delegate),
+                ['Account', 'Authorize']);
         } else if (activeSection === EventSections.OWNED) {
             const ownedObjects = orderBy(
                 filter(plannedTransactions, (p) => {
@@ -976,6 +979,7 @@ class EventsView extends Component<Props, State> {
                 sourceTypes = [DataSourceType.PENDING_REQUESTS];
                 break;
             case EventSections.OWNED:
+            case EventSections.AUTHORISATIONS:
                 sourceTypes = [DataSourceType.PLANNED_TRANSACTIONS];
                 break;
             default:
@@ -1052,7 +1056,7 @@ class EventsView extends Component<Props, State> {
 
         // console.log('ap1')
 
-        if (activeSection === EventSections.REQUESTS) {
+        if (activeSection === EventSections.REQUESTS || activeSection === EventSections.AUTHORISATIONS) {
             this.setState({
                 dataSource: this.buildDataSource(transactions, pendingRequests, plannedTransactions),
             });
@@ -1317,7 +1321,9 @@ class EventsView extends Component<Props, State> {
         });
 
         const plannedTransactionFilter = new Fuse(plannedTransactions, {
-            keys: [
+            keys: activeSection === EventSections.AUTHORISATIONS ? [
+                'Account', 'Authorize', 'Permissions.Permission.PermissionValue',
+            ] : [
                 'Account.address',
                 'Account.tag',
                 'Destination.address',
@@ -1337,7 +1343,8 @@ class EventsView extends Component<Props, State> {
         if (activeSection === EventSections.ALL) {
             newPendingRequests = flatMap(payloadFilter.search(text), 'item');
             newTransactions = flatMap(transactionFilter.search(text), 'item');
-        } else if (activeSection === EventSections.PLANNED) {
+        } else if (activeSection === EventSections.PLANNED ||
+            activeSection === EventSections.AUTHORISATIONS) {
             newPlannedTransactions = flatMap(plannedTransactionFilter.search(text), 'item');
         } else if (activeSection === EventSections.REQUESTS) {
             newPendingRequests = flatMap(payloadFilter.search(text), 'item');
@@ -1456,7 +1463,7 @@ class EventsView extends Component<Props, State> {
             return null;
         }
 
-        if (activeSection === EventSections.OWNED) {
+        if (activeSection === EventSections.OWNED || activeSection === EventSections.AUTHORISATIONS) {
             return null;
         }
 
@@ -1489,7 +1496,7 @@ class EventsView extends Component<Props, State> {
                         text: Localize.t('global.events'),
                         textStyle: AppStyles.h3,
                     }}
-                    rightComponent={{
+                    rightComponent={activeSection === EventSections.AUTHORISATIONS ? undefined : {
                         icon: 'IconFilter',
                         iconSize: 25,
                         iconStyle: styles.filterIcon,
@@ -1530,6 +1537,10 @@ class EventsView extends Component<Props, State> {
                             label: Localize.t('events.eventTypeOwned'),
                             value: EventSections.OWNED,
                         },
+                        {
+                            label: Localize.t('delegation.authorisations'),
+                            value: EventSections.AUTHORISATIONS,
+                        },
                     ]}
                     onItemPress={this.onSectionChange}
                 />
@@ -1548,7 +1559,7 @@ class EventsView extends Component<Props, State> {
                     // headerComponent={this.renderListHeader}
                     dataSource={dataSource}
                     isLoading={isLoading}
-                    isFiltering={isFiltering}
+                    isFiltering={activeSection === EventSections.AUTHORISATIONS ? false : isFiltering}
                     // forceFullLoader={isFiltering && dataSource.length === 0}
                     isVisible={this.isScreenVisible}
                     isLoadingMore={isLoadingMore || (isLoadingMoreDebounced && canLoadMore)}

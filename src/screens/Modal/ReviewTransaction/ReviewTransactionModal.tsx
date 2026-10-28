@@ -13,6 +13,7 @@ import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
 
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
+import { transactionHasCriticalDelegation } from '@common/libs/ledger/utils/delegationDetails';
 
 import { MutatedTransaction, SignableTransaction } from '@common/libs/ledger/transactions/types';
 import ValidationFactory from '@common/libs/ledger/factory/validation';
@@ -570,6 +571,28 @@ class ReviewTransactionModal extends Component<Props, State> {
                     // do not continue
                     return;
                 }
+            }
+
+            // A red delegation permission uses the same pause as the other dangerous requests.
+            if (transactionHasCriticalDelegation(transaction)) {
+                Navigator.showAlertModal({
+                    type: 'error',
+                    title: Localize.t('global.danger'),
+                    text: Localize.t('delegation.acceptConfirm'),
+                    buttons: [
+                        {
+                            text: Localize.t('global.cancel'),
+                            light: false,
+                        },
+                        {
+                            text: Localize.t('global.continue'),
+                            onPress: this.prepareAndSignTransaction,
+                            type: 'dismiss',
+                            light: true,
+                        },
+                    ],
+                });
+                return;
             }
 
             // if everything is fine prepare the transaction for signing
