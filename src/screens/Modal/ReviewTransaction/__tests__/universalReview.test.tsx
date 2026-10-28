@@ -1,5 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
+import { ScrollView } from 'react-native';
 import { binary, XrplDefinitions } from 'xrpl-accountlib';
 import NetworkService from '@services/NetworkService';
 import { TransactionFactory } from '@common/libs/ledger/factory';
@@ -81,6 +82,12 @@ describe('universal transaction routing', () => {
         expect(tree.root.findByType(TransactionData).props.transaction.JsonRaw).toEqual(history);
         expect(tree.root.findByType(TransactionData).findAllByType(UniversalTransactionWarning)).toHaveLength(0);
         expect(tree.root.findAllByType(UniversalTransactionWarning)).toHaveLength(1);
+        const children = React.Children.toArray(tree.root.findByType(ScrollView).props.children) as any[];
+        const keys = children.map((child) => String(child.key));
+        const warningAt = children.findIndex((child) => child.props?.testID === 'universal-transaction-details');
+        expect(keys.findIndex((key) => key.endsWith('LabelWidget'))).toBeLessThan(warningAt);
+        expect(keys.findIndex((key) => key.endsWith('IdentifierWidget'))).toBeLessThan(warningAt);
+        expect(keys.findIndex((key) => key.endsWith('ExplainWidget'))).toBeGreaterThan(warningAt);
     });
 
     it('does not add universal warnings or JSON to the native transaction details page', () => {

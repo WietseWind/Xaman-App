@@ -231,6 +231,23 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             'TransferRateWidget',
             'ValidatedLedgerWidget',
         ];
+        // Title, result, date, amount, reserve, from and transaction id stay above the universal JSON.
+        const summaryEnd = widgetsList.indexOf('IdentifierWidget') + 1;
+        const summaryWidgets = widgetsList.slice(0, summaryEnd);
+        const detailWidgets = widgetsList.slice(summaryEnd);
+        const renderWidget = (widget: WidgetKey, index: number) => React.createElement(
+            (MutationWidgets as WidgetComponents)[widget],
+            {
+                key: `${index}-${widget}`,
+                item,
+                account,
+                explainer,
+                advisory,
+                componentType,
+                cachedTokenDetails,
+                TransactionComponent: Transaction,
+            },
+        );
 
         return (
             <View key={`txdetailsview-${timestamp}`} style={AppStyles.container}>
@@ -267,24 +284,14 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                     alwaysBounceHorizontal={false}
                     showsHorizontalScrollIndicator={false}
                 >
+                    {summaryWidgets.map(renderWidget)}
                     {item.InstanceType === InstanceTypes.FallbackTransaction && (
-                        <View style={AppStyles.paddingSml}>
+                        <View testID="universal-transaction-details" style={AppStyles.paddingSml}>
                             <UniversalTransactionWarning />
                             <TransactionData transaction={item} history />
                         </View>
                     )}
-                    {widgetsList.map((widget: WidgetKey, index) => {
-                        return React.createElement((MutationWidgets as WidgetComponents)[widget], {
-                            key: `${index}-${widget}`,
-                            item,
-                            account,
-                            explainer,
-                            advisory,
-                            componentType,
-                            cachedTokenDetails,
-                            TransactionComponent: Transaction,
-                        });
-                    })}
+                    {detailWidgets.map((widget, index) => renderWidget(widget, summaryEnd + index))}
                 </ScrollView>
             </View>
         );
