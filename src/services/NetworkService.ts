@@ -2,14 +2,14 @@
  * Network service
  */
 
-import { find, isArray, isPlainObject, isString } from 'lodash';
+import { find, isPlainObject } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import EventEmitter from 'events';
 import Realm from 'realm';
 
 import { Platform } from 'react-native';
 
-import { binary, DefinitionsData, XrplDefinitions } from 'xrpl-accountlib';
+import { binary, XrplDefinitions } from 'xrpl-accountlib';
 
 import { XrplClient } from 'xrpl-client';
 
@@ -48,6 +48,9 @@ import {
 } from '@common/libs/ledger/types/methods';
 
 import { Amendments } from '@common/libs/ledger/types/ledger';
+import {
+    createNetworkDefinitions, DEFINITION_CACHE_VERSION, NetworkDefinitions, normalizeDefinitions,
+} from '@common/libs/ledger/utils/normalizeDefinitions';
 
 /* Types  ==================================================================== */
 export enum NetworkStateStatus {
@@ -77,6 +80,12 @@ class NetworkService extends EventEmitter {
     private networkReserve?: { base: number; owner: number };
     private lastNetworkErrorId?: Realm.BSON.ObjectId;
     private connectedEndpoint?: string;
+    private definitionsCache?: {
+        network: string;
+        source: unknown;
+        nativeAsset: string;
+        definitions: NetworkDefinitions;
+    };
 
     private static _ORIGIN = `/xaman/${GetAppVersionCode()}/${Platform.OS}`;
     private static _TIMEOUT_SECONDS = 40;
@@ -317,43 +326,28 @@ class NetworkService extends EventEmitter {
      * Get current network definitions
      */
     getRawNetworkDefinitions = () => {
-        if (this.network && this.getNetwork().definitions) {
-            return this.getNetwork().definitions;
-        }
-
-        if (
-            typeof binary.DEFAULT_DEFINITIONS?.TRANSACTION_TYPES === 'object' &&
-            binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES
-        ) {
-            Object.assign(binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES, {
-                SignIn: 999,
-            });
-        }
-        return binary.DEFAULT_DEFINITIONS;
+        const data = normalizeDefinitions(
+            this.network?.definitions || binary.DEFAULT_DEFINITIONS,
+            this.network?.nativeAsset?.asset,
+        );
+        data.TRANSACTION_TYPES.SignIn = 999;
+        return data;
     };
 
     /**
-     * Get current network definitions
+     * Normalize cached data as well as new replies. Never mutate the package snapshot or the stored schema.
      */
     getNetworkDefinitions = (): XrplDefinitions => {
-        if (this.network && this.getNetwork().definitions) {
-            const defs = <DefinitionsData>this.getNetwork().definitions;
-            if (typeof defs?.TRANSACTION_TYPES === 'object' && defs.TRANSACTION_TYPES) {
-                defs.TRANSACTION_TYPES.SignIn = 999;
-            }
-            return new XrplDefinitions(defs);
-        }
-
-        if (
-            typeof binary.DEFAULT_DEFINITIONS?.TRANSACTION_TYPES === 'object' &&
-            binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES
-        ) {
-            Object.assign(binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES, {
-                SignIn: 999,
-            });
-        }
-
-        return new XrplDefinitions(binary.DEFAULT_DEFINITIONS);
+        const network = this.network?.id?.toString() || 'bundled';
+        const nativeAsset = this.network?.nativeAsset?.asset || 'XRP';
+        const source = this.network?.definitionsString || this.network?.definitions || binary.DEFAULT_DEFINITIONS;
+        if (this.definitionsCache?.network === network && this.definitionsCache.source === source &&
+            this.definitionsCache.nativeAsset === nativeAsset) return this.definitionsCache.definitions;
+        const definitions = createNetworkDefinitions(
+            typeof source === 'string' ? JSON.parse(source) : source, nativeAsset,
+        );
+        this.definitionsCache = { network, source, nativeAsset, definitions };
+        return definitions;
     };
 
     /**
@@ -662,79 +656,34 @@ class NetworkService extends EventEmitter {
             };
 
             let definitionsHash = '';
-
-            // include definitions hash if exist in the request
-            if (network.definitions) {
-                definitionsHash = network.definitions?.hash as string;
-                Object.assign(request, { hash: definitionsHash });
+            try {
+                const cached = network.definitions;
+                // Older app versions discarded metadata. Ask for a full reply even if its hash is unchanged.
+                if (cached?.__xamanDefinitionVersion === DEFINITION_CACHE_VERSION) {
+                    createNetworkDefinitions(cached, network.nativeAsset?.asset);
+                    definitionsHash = cached.hash || '';
+                    if (definitionsHash) request.hash = definitionsHash;
+                }
+            } catch {
+                // Corrupt or incomplete cache: obtain a complete schema without a conditional hash.
             }
 
-            const definitionsResp = await this.send<ServerDefinitionsRequest, ServerDefinitionsResponse>(request);
-
-            // validate the response
-            if (
-                typeof definitionsResp !== 'object' ||
-                'error' in definitionsResp ||
-                !('hash' in definitionsResp) ||
-                !definitionsResp.hash
-            ) {
-                this.logger.warn('server_definitions got invalid response:', definitionsResp);
+            const response = await this.send<ServerDefinitionsRequest, ServerDefinitionsResponse>(request);
+            const envelope = response as ServerDefinitionsResponse;
+            const definitionsResp = isPlainObject(envelope?.result) ? envelope.result : response;
+            if (!isPlainObject(definitionsResp) || response?.error || definitionsResp.error ||
+                definitionsResp.status === 'error' ||
+                typeof definitionsResp.hash !== 'string' || !definitionsResp.hash) {
+                this.logger.warn('server_definitions got invalid response:', response);
                 return;
             }
+            if (definitionsHash && definitionsResp.hash === definitionsHash && !definitionsResp.FIELDS) return;
 
-            // nothing has been changed
-            if (definitionsResp.hash === definitionsHash) {
-                return;
-            }
-
-            // validate the response
-            const requiredValidation = {
-                TYPES: isPlainObject,
-                TRANSACTION_RESULTS: isPlainObject,
-                TRANSACTION_TYPES: isPlainObject,
-                LEDGER_ENTRY_TYPES: isPlainObject,
-                FIELDS: isArray,
-                hash: isString,
-            } as { [key: string]: (value?: any) => boolean };
-
-            const optionalValidation = {
-                TRANSACTION_FLAGS: isPlainObject,
-                TRANSACTION_FLAGS_INDICES: isPlainObject,
-            } as { [key: string]: (value?: any) => boolean };
-
-            const definitions = {};
-
-            for (const key in requiredValidation) {
-                if (Object.prototype.hasOwnProperty.call(requiredValidation, key)) {
-                    // validate
-                    if (!requiredValidation[key](definitionsResp[key])) {
-                        this.logger.error(
-                            `server_definitions invalid format for key ${key}, got ${typeof definitionsResp[key]}`,
-                        );
-                        // do not continue and return
-                        return;
-                    }
-                    // set the key
-                    Object.assign(definitions, { [key]: definitionsResp[key] });
-                }
-            }
-
-            for (const key in optionalValidation) {
-                if (Object.prototype.hasOwnProperty.call(optionalValidation, key)) {
-                    // validate optional
-                    if (!optionalValidation[key](definitionsResp[key])) {
-                        this.logger.warn(
-                            `server_definitions invalid format for optional key ${key}, got ${typeof definitionsResp[key]}`,
-                        );
-                        continue;
-                    }
-
-                    Object.assign(definitions, { [key]: definitionsResp[key] });
-                }
-            }
-
+            const definitions = normalizeDefinitions(definitionsResp, network.nativeAsset?.asset);
+            // Build before writing; an invalid reply must not replace a usable cache.
+            createNetworkDefinitions(definitions, network.nativeAsset?.asset);
+            definitions.__xamanDefinitionVersion = DEFINITION_CACHE_VERSION;
             this.logger.debug(`Updating network [${network.networkId}] definitions ${definitionsResp.hash} `);
-
             NetworkRepository.update({
                 id: network.id,
                 definitionsString: JSON.stringify(definitions),

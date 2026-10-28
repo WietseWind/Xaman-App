@@ -6,6 +6,13 @@ import * as FeeUtils from '@common/utils/fee';
 
 import { NetworkConfig } from '@common/constants';
 import ProfileRepository from '@store/repositories/profile';
+import {
+    createNetworkDefinitions, DEFINITION_CACHE_VERSION, normalizeDefinitions,
+} from '@common/libs/ledger/utils/normalizeDefinitions';
+import xrplReply from '@common/libs/ledger/utils/__tests__/fixtures/definitions/live-xrpl.json';
+import xahauReply from '@common/libs/ledger/utils/__tests__/fixtures/definitions/live-xahau.json';
+import packageXrpl from '@common/libs/ledger/utils/__tests__/fixtures/definitions/package-xrpl.json';
+import packageXahau from '@common/libs/ledger/utils/__tests__/fixtures/definitions/package-xahau.json';
 
 describe('NetworkService', () => {
     const networkService = NetworkService;
@@ -44,153 +51,113 @@ describe('NetworkService', () => {
     });
 
     describe('update network definitions', () => {
-        it('updates network definitions correctly', async () => {
-            const returnedResponse = {
-                TYPES: {},
-                TRANSACTION_RESULTS: {},
-                TRANSACTION_TYPES: {},
-                LEDGER_ENTRY_TYPES: {},
-                TRANSACTION_FLAGS: {},
-                TRANSACTION_FLAGS_INDICES: {},
-                FIELDS: [],
-                hash: 'DEFINITIONS_HASH',
-                // other
-                id: 'id',
-                __replyMs: 0,
-                __command: '__command',
-                __networkId: 0,
-                inLedger: 0,
-            };
-
-            jest.replaceProperty(networkService, 'network', {
-                // @ts-ignore
-                id: 'object_id',
-                networkId: 1337,
-            });
-
-            const spy0 = jest.spyOn(networkService, 'send').mockImplementation(() => Promise.resolve(returnedResponse));
-            const spy1 = jest.spyOn(NetworkRepository, 'update').mockImplementation(jest.fn());
-
-            await networkService.updateNetworkDefinitions();
-
-            expect(spy0).toHaveBeenCalledWith({ command: 'server_definitions' });
-            expect(spy1).toHaveBeenCalledWith({
-                id: 'object_id',
-                definitionsString: JSON.stringify({
-                    TYPES: returnedResponse.TYPES,
-                    TRANSACTION_RESULTS: returnedResponse.TRANSACTION_RESULTS,
-                    TRANSACTION_TYPES: returnedResponse.TRANSACTION_TYPES,
-                    LEDGER_ENTRY_TYPES: returnedResponse.LEDGER_ENTRY_TYPES,
-                    FIELDS: returnedResponse.FIELDS,
-                    hash: returnedResponse.hash,
-                    TRANSACTION_FLAGS: returnedResponse.TRANSACTION_FLAGS,
-                    TRANSACTION_FLAGS_INDICES: returnedResponse.TRANSACTION_FLAGS_INDICES,
-                }),
-            });
-
-            spy0.mockRestore();
-            spy1.mockRestore();
+        let send: jest.SpyInstance;
+        let update: jest.SpyInstance;
+        const network = (extra = {}) => ({
+            id: 'object_id', networkId: 1337, nativeAsset: { asset: 'XRP' },
+            isFeatureEnabled: jest.fn(), ...extra,
         });
-
-        it('warns on invalid response', async () => {
-            const invalidResponses = [{ error: 'some error' }, 'invalid resp', {}] as any;
-
-            // eslint-disable-next-line guard-for-in
-            for (const resp of invalidResponses) {
-                const spy0 = jest.spyOn(networkService, 'send').mockImplementation(() => Promise.resolve(resp));
-                // @ts-ignore
-                const spy1 = jest.spyOn(NetworkService.logger, 'warn');
-                const spy2 = jest.spyOn(NetworkRepository, 'update');
-
-                await networkService.updateNetworkDefinitions();
-
-                expect(spy0).toHaveBeenCalledWith({ command: 'server_definitions' });
-                expect(spy1).toHaveBeenCalledWith('server_definitions got invalid response:', resp);
-                expect(spy2).not.toHaveBeenCalled();
-
-                spy0.mockRestore();
-                spy1.mockRestore();
-            }
+        beforeEach(() => {
+            jest.replaceProperty(networkService, 'network', network() as any);
+            send = jest.spyOn(networkService, 'send');
+            update = jest.spyOn(NetworkRepository, 'update').mockImplementation(jest.fn());
         });
-
-        it('returns early when hash has not changed', async () => {
-            const returnedResponse = {
-                TYPES: {},
-                TRANSACTION_RESULTS: {},
-                TRANSACTION_TYPES: {},
-                LEDGER_ENTRY_TYPES: {},
-                TRANSACTION_FLAGS: {},
-                TRANSACTION_FLAGS_INDICES: {},
-                FIELDS: [],
-                hash: 'SOME_HASH',
-                // other
-                id: 'id',
-                __replyMs: 0,
-                __command: '__command',
-                __networkId: 0,
-                inLedger: 0,
-            };
-
-            const spy0 = jest.spyOn(networkService, 'send').mockImplementation(() => Promise.resolve(returnedResponse));
-            const spy1 = jest.spyOn(NetworkRepository, 'update');
-
-            // @ts-ignore
-            jest.replaceProperty(networkService, 'network', {
-                definitions: {
-                    hash: 'SOME_HASH',
-                },
-                isFeatureEnabled: jest.fn(),
-            });
-
-            await networkService.updateNetworkDefinitions();
-
-            expect(spy0).toHaveBeenCalledWith({ command: 'server_definitions', hash: 'SOME_HASH' });
-            expect(spy1).toHaveBeenCalledTimes(0);
-
-            spy0.mockRestore();
-            spy1.mockRestore();
-        });
-
-        it('validates the response object', async () => {
-            const returnedResponse = {
-                TYPES: 'should be object',
-                TRANSACTION_RESULTS: {},
-                TRANSACTION_TYPES: {},
-                LEDGER_ENTRY_TYPES: {},
-                FIELDS: [],
-                hash: 'SOME_HASH',
-                // other
-                id: 'id',
-                __replyMs: 0,
-                __command: '__command',
-                __networkId: 0,
-                inLedger: 0,
-            };
-
-            // @ts-ignore
-            jest.replaceProperty(networkService, 'network', {
-                definitions: undefined,
-                isFeatureEnabled: jest.fn(),
-            });
-
-            const spy0 = jest.spyOn(networkService, 'send').mockImplementation(() => Promise.resolve(returnedResponse));
-            const spy1 = jest.spyOn(NetworkRepository, 'update');
-            // @ts-ignore
-            const spy2 = jest.spyOn(NetworkService.logger, 'error');
-
-            await networkService.updateNetworkDefinitions();
-
-            expect(spy0).toHaveBeenCalledWith({ command: 'server_definitions' });
-            expect(spy1).not.toHaveBeenCalled();
-            expect(spy2).toHaveBeenCalledWith('server_definitions invalid format for key TYPES, got string');
-
-            spy0.mockRestore();
-            spy1.mockRestore();
-            spy2.mockRestore();
-        });
-
         afterEach(() => {
+            send.mockRestore();
+            update.mockRestore();
             jest.clearAllMocks();
+        });
+
+        it.each([
+            ['live XRPL', xrplReply], ['live Xahau', xahauReply],
+            ['package XRPL', packageXrpl], ['package Xahau', packageXahau],
+        ])('stores complete %s metadata and builds a usable schema', async (_name, reply) => {
+            send.mockResolvedValue(reply);
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledWith({ command: 'server_definitions' });
+            const stored = JSON.parse(update.mock.calls[0][0].definitionsString);
+            expect(stored).toEqual({ ...normalizeDefinitions(reply),
+                __xamanDefinitionVersion: DEFINITION_CACHE_VERSION });
+            expect(createNetworkDefinitions(stored).field.TransactionType.associatedType).toBeDefined();
+        });
+
+        it.each([null, 'invalid', {}, { error: 'failed' }, { hash: 'new', FIELDS: [] }])(
+            'keeps the previous cache on an invalid response %p', async (reply) => {
+                const cached = { ...normalizeDefinitions(xrplReply),
+                    __xamanDefinitionVersion: DEFINITION_CACHE_VERSION };
+                jest.replaceProperty(networkService, 'network', network({ definitions: cached }) as any);
+                send.mockResolvedValue(reply);
+                await networkService.updateNetworkDefinitions();
+                expect(update).not.toHaveBeenCalled();
+                expect(networkService.network!.definitions).toBe(cached);
+            },
+        );
+
+        it('accepts a hash-only response only for a complete current cache', async () => {
+            const cached = { ...normalizeDefinitions(xrplReply),
+                __xamanDefinitionVersion: DEFINITION_CACHE_VERSION };
+            jest.replaceProperty(networkService, 'network', network({ definitions: cached }) as any);
+            send.mockResolvedValue({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledWith({ command: 'server_definitions', hash: cached.hash });
+            expect(update).not.toHaveBeenCalled();
+        });
+
+        it('fetches full metadata for an old cache even when the server hash is unchanged', async () => {
+            const cached = normalizeDefinitions(xrplReply);
+            delete cached.ACCOUNT_SET_FLAGS;
+            delete cached.TRANSACTION_FLAGS_INDICES;
+            jest.replaceProperty(networkService, 'network', network({ definitions: cached }) as any);
+            send.mockResolvedValue(xrplReply);
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledWith({ command: 'server_definitions' });
+            const stored = JSON.parse(update.mock.calls[0][0].definitionsString);
+            expect(stored.hash).toBe(cached.hash);
+            expect(stored.ACCOUNT_SET_FLAGS).toBeDefined();
+            expect(stored.TRANSACTION_FLAGS_INDICES.AccountSet).toEqual(stored.ACCOUNT_SET_FLAGS);
+        });
+
+        it('does not send a hash from an incomplete or corrupt cache', async () => {
+            const current = network({ definitions: { hash: 'old',
+                __xamanDefinitionVersion: DEFINITION_CACHE_VERSION } });
+            jest.replaceProperty(networkService, 'network', current as any);
+            send.mockResolvedValue(xrplReply);
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenLastCalledWith({ command: 'server_definitions' });
+            Object.defineProperty(current, 'definitions', { get: () => { throw new Error('Invalid JSON'); } });
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenLastCalledWith({ command: 'server_definitions' });
+            expect(update).toHaveBeenCalledTimes(2);
+        });
+
+        it('retains an old schema object when a new response is stored', async () => {
+            const cached = normalizeDefinitions(xrplReply);
+            jest.replaceProperty(networkService, 'network', network({ definitions: cached }) as any);
+            const previous = networkService.getNetworkDefinitions();
+            const next = normalizeDefinitions(xrplReply);
+            next.TRANSACTION_TYPES.FutureTransaction = 4094;
+            next.hash = 'changed';
+            send.mockResolvedValue(next);
+            await networkService.updateNetworkDefinitions();
+            expect(previous.transactionNames).not.toContain('FutureTransaction');
+            expect(cached.TRANSACTION_TYPES.SignIn).toBeUndefined();
+            expect(createNetworkDefinitions(JSON.parse(update.mock.calls[0][0].definitionsString))
+                .transactionNames).toContain('FutureTransaction');
+        });
+
+        it('reuses a schema only for the same network, stored JSON and native asset', () => {
+            const current = network({ definitionsString: JSON.stringify(normalizeDefinitions(xrplReply)) });
+            jest.replaceProperty(networkService, 'network', current as any);
+            const first = networkService.getNetworkDefinitions();
+            expect(networkService.getNetworkDefinitions()).toBe(first);
+            current.id = 'another_network';
+            expect(networkService.getNetworkDefinitions()).not.toBe(first);
+            const other = networkService.getNetworkDefinitions();
+            const changed = normalizeDefinitions(xrplReply);
+            changed.TRANSACTION_TYPES.FutureTransaction = 4094;
+            current.definitionsString = JSON.stringify(changed);
+            expect(networkService.getNetworkDefinitions()).not.toBe(other);
+            expect(networkService.getNetworkDefinitions().transactionNames).toContain('FutureTransaction');
         });
     });
 

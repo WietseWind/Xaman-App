@@ -10,9 +10,11 @@ const networks = [
     ['XRPL Devnet', 'wss://s.devnet.rippletest.net:51233', 2],
     ['Xahau Mainnet', 'wss://xahau.network', 21337],
     ['Xahau Testnet', 'wss://xahau-test.net', 21338],
+    ['Xahau Devnet', 'wss://xahau-dev.net', 21339],
 ];
 
-const audit = (name, raw) => {
+const audit = (name, input) => {
+    const raw = input.result || input;
     const definitions = new XrplDefinitions(raw);
     const fields = raw.FIELDS.filter(([field, info]) => info.isSerialized &&
         !(field === 'Generic' && info.type === 'Unknown' && info.nth === 0));
