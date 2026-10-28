@@ -1886,6 +1886,7 @@
     "wholeTransaction": "Delegat ushbu ruxsat bilan ruxsat etilgan barcha tranzaksiya qiymatlarini tanlaydi. Siz har bir foydalanishni ma'qullamaysiz.",
     "replacesPermissions": "Bu roʻyxat ushbu delegat uchun barcha ruxsatlarni almashtiradi. Roʻyxatga kiritilmagan oldingi ruxsatlar bekor qilinadi.",
     "revokeExplanation": "Bu faqat ushbu delegat uchun barcha ruxsatlarni olib tashlaydi. Boshqa delegatsiyalar o'zgarishsiz qoldi. Tugallangan tranzaktsiyalar bekor qilinmaydi.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman bu maxsus ruxsatni tushuntira olmaydi. Bu sizning hisobingizga keng kirish imkonini berishi mumkin.",
     "unknownRisk": "Agar bu ruxsatni tushunmasangiz, davom etmang. Mukofot va'dalariga ishonmang.",
     "granularRisk": "Bu ruxsatnomani bekor qilmaguningizcha uni qayta-qayta ishlatishingiz mumkin. Uni faqat o'zingiz ishonadigan hisobingizga bering.",

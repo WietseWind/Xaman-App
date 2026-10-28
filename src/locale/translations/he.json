@@ -1788,6 +1788,7 @@
     "wholeTransaction": "הנציג בוחר את כל ערכי העסקאות המותרים בהרשאה זו. אינך מאשר כל שימוש.",
     "replacesPermissions": "רשימה זו מחליפה את כל ההרשאות עבור הנציג הזה. הרשאות קודמות שלא מופיעות יבוטלו.",
     "revokeExplanation": "פעולה זו מסירה את כל ההרשאות עבור הנציג הזה בלבד. משלחות אחרות ללא שינוי. עסקאות שהושלמו אינן מבוטלות.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman לא יכול להסביר את ההרשאה הספציפית הזו. זה עשוי לתת גישה רחבה לחשבון שלך.",
     "unknownRisk": "אם אינך מבין את ההרשאה הזו, אל תמשיך. אל תסמוך על הבטחות של תגמולים.",
     "granularRisk": "ניתן להשתמש בהרשאה זו שוב ושוב עד שתבטל אותה. הענק אותו רק לחשבון שאתה סומך עליו.",

@@ -1880,6 +1880,7 @@
     "wholeTransaction": "Delegatul alege toate valorile tranzacției permise de această permisiune. Nu aprobați fiecare utilizare.",
     "replacesPermissions": "Această listă înlocuiește toate permisiunile pentru acest delegat. Permisiunile anterioare care nu sunt listate vor fi revocate.",
     "revokeExplanation": "Acest lucru elimină toate permisiunile numai pentru acest delegat. Celelalte delegații rămân neschimbate. Tranzacțiile finalizate nu sunt inversate.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman nu poate explica această permisiune specifică. Poate oferi acces larg la contul dvs.",
     "unknownRisk": "Dacă nu înțelegeți această permisiune, nu continuați. Nu ai încredere în promisiunile de recompense.",
     "granularRisk": "Această permisiune poate fi folosită în mod repetat până când o revocați. Acordați-l doar unui cont în care aveți încredere.",

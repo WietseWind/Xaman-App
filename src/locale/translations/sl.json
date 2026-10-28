@@ -1788,6 +1788,7 @@
     "wholeTransaction": "Pooblaščenec izbere vse vrednosti transakcij, ki jih dovoljuje to dovoljenje. Ne odobrite vsake uporabe.",
     "replacesPermissions": "Ta seznam nadomesti vsa dovoljenja za tega pooblaščenca. Prejšnja dovoljenja, ki niso navedena, bodo preklicana.",
     "revokeExplanation": "S tem odstranite vsa dovoljenja samo za tega pooblaščenca. Ostale delegacije so nespremenjene. Dokončane transakcije se ne razveljavijo.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman ne more pojasniti tega posebnega dovoljenja. Lahko omogoči širok dostop do vašega računa.",
     "unknownRisk": "Če tega dovoljenja ne razumete, ne nadaljujte. Ne verjemite obljubam o nagradah.",
     "granularRisk": "To dovoljenje lahko uporabljate večkrat, dokler ga ne prekličete. Dodelite ga samo računu, ki mu zaupate.",

@@ -1886,6 +1886,7 @@
     "wholeTransaction": "Le délégué choisit toutes les valeurs de transaction autorisées par cette autorisation. Vous n'approuvez pas chaque utilisation.",
     "replacesPermissions": "Cette liste remplace toutes les autorisations pour ce délégué. Les autorisations précédentes non répertoriées seront révoquées.",
     "revokeExplanation": "Cela supprime toutes les autorisations pour ce délégué uniquement. Les autres délégations restent inchangées. Les transactions terminées ne sont pas annulées.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman ne peut pas expliquer cette autorisation spécifique. Cela peut donner un large accès à votre compte.",
     "unknownRisk": "Si vous ne comprenez pas cette autorisation, ne continuez pas. Ne vous fiez pas aux promesses de récompenses.",
     "granularRisk": "Cette autorisation peut être utilisée à plusieurs reprises jusqu'à ce que vous la révoquiez. Accordez-le uniquement à un compte en qui vous avez confiance.",

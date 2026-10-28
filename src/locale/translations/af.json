@@ -1885,6 +1885,7 @@
     "wholeTransaction": "Die afgevaardigde kies alle transaksiewaardes wat deur hierdie toestemming toegelaat word. Jy keur nie elke gebruik goed nie.",
     "replacesPermissions": "Hierdie lys vervang alle toestemmings vir hierdie afgevaardigde. Vorige toestemmings wat nie gelys is nie, sal herroep word.",
     "revokeExplanation": "Dit verwyder alle toestemmings slegs vir hierdie afgevaardigde. Ander afvaardigings is onveranderd. Voltooide transaksies word nie omgekeer nie.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman kan nie hierdie spesifieke toestemming verduidelik nie. Dit kan wye toegang tot jou rekening gee.",
     "unknownRisk": "As jy nie hierdie toestemming verstaan ​​nie, moenie voortgaan nie. Moenie beloftes van belonings vertrou nie.",
     "granularRisk": "Hierdie toestemming kan herhaaldelik gebruik word totdat jy dit herroep. Gee dit slegs aan 'n rekening wat jy vertrou.",

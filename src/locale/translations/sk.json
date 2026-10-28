@@ -1872,6 +1872,7 @@
     "wholeTransaction": "Delegát vyberie všetky hodnoty transakcie povolené týmto povolením. Neschvaľujete každé použitie.",
     "replacesPermissions": "Tento zoznam nahrádza všetky povolenia pre tohto delegáta. Predchádzajúce povolenia, ktoré nie sú uvedené, budú odvolané.",
     "revokeExplanation": "Týmto sa odstránia všetky povolenia iba pre tohto delegáta. Ostatné delegácie sú nezmenené. Dokončené transakcie sa nestornujú.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman nemôže vysvetliť toto konkrétne povolenie. Môže poskytnúť široký prístup k vášmu účtu.",
     "unknownRisk": "Ak tomuto povoleniu nerozumiete, nepokračujte. Neverte sľubom odmeny.",
     "granularRisk": "Toto povolenie je možné použiť opakovane, kým ho neodvoláte. Poskytnite ho iba účtu, ktorému dôverujete.",

@@ -2,7 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import Localize from '@locale';
 import en from '@locale/en.json';
-import { delegationDescription, delegationPermissionDetail, delegationPermissionValues } from '../delegationDetails';
+import {
+    delegationDescription, delegationPermissionDetail, delegationPermissionValues, hasCriticalDelegation,
+    transactionHasCriticalDelegation,
+} from '../delegationDetails';
 
 const types = { Payment: 0, NFTokenModify: 61, FuturePermission: 1024 };
 
@@ -59,6 +62,21 @@ describe('delegation permission explanations', () => {
         expect(delegationPermissionValues([
             { Permission: { PermissionValue: 1 } }, { PermissionValue: 'NFTokenModify' }, {},
         ])).toEqual([1, 'NFTokenModify', undefined]);
+    });
+
+    it('asks for a danger confirmation only when a shown permission is critical', () => {
+        const payment = [{ Permission: { PermissionValue: 'Payment' } }];
+        const safe = [{ Permission: { PermissionValue: 'NFTokenModify' } }];
+        expect(hasCriticalDelegation(payment, types)).toBe(true);
+        expect(hasCriticalDelegation(safe, types)).toBe(false);
+        expect(hasCriticalDelegation([], types)).toBe(false);
+        expect(transactionHasCriticalDelegation({
+            Type: 'DelegateSet',
+            Permissions: payment,
+            SigningDefinitions: { rawDefinitions: { TRANSACTION_TYPES: types } },
+        })).toBe(true);
+        expect(transactionHasCriticalDelegation({ Type: 'DelegateSet', Permissions: [] })).toBe(false);
+        expect(transactionHasCriticalDelegation({ Type: 'Payment', Permissions: payment })).toBe(false);
     });
 
     it('explains replace-all semantics and keeps the account direction in plain descriptions', () => {
