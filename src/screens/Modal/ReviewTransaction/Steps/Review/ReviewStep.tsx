@@ -616,7 +616,7 @@ class ReviewStep extends Component<Props, State> {
                                             </AmountInputEditingContext.Provider>
                                         </View>
                                         {transaction.ExtraFields.length > 0 && (
-                                            <View style={styles.detailsContainer}>
+                                            <View style={[styles.detailsContainer, styles.extraFieldsContainer]}>
                                                 <ExtraFields transaction={transaction} />
                                             </View>
                                         )}

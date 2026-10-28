@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
-import renderer from 'react-test-renderer';
+import { Text, TouchableOpacity } from 'react-native';
+import renderer, { act } from 'react-test-renderer';
 import { binary, XrplDefinitions } from 'xrpl-accountlib';
 import NetworkService from '@services/NetworkService';
 import { Payment, SignIn } from '@common/libs/ledger/transactions';
@@ -35,7 +35,11 @@ describe('Extra fields review', () => {
         const text = tree.root.findAllByType(Text).map((node) => node.props.children).join(' ');
         expect(text).toContain('Extra fields');
         expect(text).toContain('HookName');
-        expect(text).toContain('6177616B656E');
+        expect(text).toContain('awaken');
+        expect(text).not.toContain('6177616B656E');
+        act(() => { tree.root.findByType(TouchableOpacity).props.onPress(); });
+        const toggled = tree.root.findAllByType(Text).map((node) => node.props.children).join(' ');
+        expect(toggled).toContain('6177616B656E');
         const warning = tree.root.findByType(InfoMessage);
         expect(warning.props.type).toBe('warning');
         expect(warning.props.label).toContain('Only sign if you understand');

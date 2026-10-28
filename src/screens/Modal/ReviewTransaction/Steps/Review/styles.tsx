@@ -46,6 +46,9 @@ const styles = StyleService.create({
         paddingHorizontal: AppSizes.paddingSml,
         paddingVertical: AppSizes.paddingSml,
     },
+    extraFieldsContainer: {
+        paddingTop: 0,
+    },
     jsonContainer: {
         paddingTop: AppSizes.paddingSml,
         paddingBottom: AppSizes.paddingExtraSml,
