@@ -98,26 +98,41 @@ exports[`[RadioButton] renders checked correctly 1`] = `
       }
     }
   >
-    <Text
+    <View
       style={
         [
           {
-            "color": "#000000",
-            "fontFamily": "ProximaNova-Regular",
-            "fontSize": 34.285714285714285,
+            "flexDirection": "row",
+            "left": 0,
+            "right": 0,
           },
           {
-            "fontFamily": "ProximaNova-Extrabld",
+            "alignItems": "center",
           },
-          {
-            "color": "#000000",
-          },
-          undefined,
         ]
       }
     >
-      label
-    </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontFamily": "ProximaNova-Regular",
+              "fontSize": 34.285714285714285,
+            },
+            {
+              "fontFamily": "ProximaNova-Extrabld",
+            },
+            {
+              "color": "#000000",
+            },
+            undefined,
+          ]
+        }
+      >
+        label
+      </Text>
+    </View>
     <Text
       style={
         [
@@ -238,26 +253,41 @@ exports[`[RadioButton] renders correctly 1`] = `
       }
     }
   >
-    <Text
+    <View
       style={
         [
           {
-            "color": "#000000",
-            "fontFamily": "ProximaNova-Regular",
-            "fontSize": 34.285714285714285,
+            "flexDirection": "row",
+            "left": 0,
+            "right": 0,
           },
           {
-            "fontFamily": "ProximaNova-Extrabld",
+            "alignItems": "center",
           },
-          {
-            "color": "#606885",
-          },
-          false,
         ]
       }
     >
-      label
-    </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontFamily": "ProximaNova-Regular",
+              "fontSize": 34.285714285714285,
+            },
+            {
+              "fontFamily": "ProximaNova-Extrabld",
+            },
+            {
+              "color": "#606885",
+            },
+            false,
+          ]
+        }
+      >
+        label
+      </Text>
+    </View>
     <Text
       style={
         [
