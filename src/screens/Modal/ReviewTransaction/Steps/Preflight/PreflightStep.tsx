@@ -6,7 +6,7 @@ import { filter, find, first, isEmpty } from 'lodash';
 import React, { Component } from 'react';
 import { Image, InteractionManager, Text, View } from 'react-native';
 
-import { NetworkService } from '@services';
+import NetworkService from '@services/NetworkService';
 
 import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
 import { NetworkType } from '@store/types';
