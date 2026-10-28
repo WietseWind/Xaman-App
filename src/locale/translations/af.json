@@ -1881,6 +1881,8 @@
     "authorisations": "Magtigings",
     "owner": "Rekening wat toestemmings verleen",
     "delegate": "Rekening ontvang toestemmings",
+    "ownerRevoke": "Rekening wat magtigings herroep",
+    "delegateRevoke": "Rekening wat magtigings verloor",
     "explanation": "Jy laat 'n ander rekening vir jou optree sonder om elke gebruik goed te keur. Sy sleutels kan elke toestemming gebruik wat hier gelys word.",
     "wholeTransaction": "Die afgevaardigde kies alle transaksiewaardes wat deur hierdie toestemming toegelaat word. Jy keur nie elke gebruik goed nie.",
     "replacesPermissions": "Hierdie lys vervang alle toestemmings vir hierdie afgevaardigde. Vorige toestemmings wat nie gelys is nie, sal herroep word.",

@@ -1784,6 +1784,8 @@
     "authorisations": "Yetkiler",
     "owner": "Hesap verme izinleri",
     "delegate": "Hesap alma izinleri",
+    "ownerRevoke": "İzinleri iptal eden hesap",
+    "delegateRevoke": "İzinleri kaybeden hesap",
     "explanation": "Her kullanımı onaylamadan başka bir hesabın sizin adınıza hareket etmesine izin vermiş olursunuz. Anahtarları burada listelenen tüm izinleri kullanabilir.",
     "wholeTransaction": "Temsilci bu iznin izin verdiği tüm işlem değerlerini seçer. Her kullanımı onaylamıyorsunuz.",
     "replacesPermissions": "Bu liste, bu temsilciye ait tüm izinlerin yerine geçer. Listelenmeyen önceki izinler iptal edilecek.",

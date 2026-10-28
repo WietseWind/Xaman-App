@@ -1883,6 +1883,8 @@
     "authorisations": "Uidhinishaji",
     "owner": "Ruhusa za kutoa akaunti",
     "delegate": "Ruhusa za kupokea akaunti",
+    "ownerRevoke": "Akaunti inayobatilisha ruhusa",
+    "delegateRevoke": "Akaunti inayopoteza ruhusa",
     "explanation": "Unaruhusu akaunti nyingine kuchukua hatua kwa ajili yako bila kuidhinisha kila matumizi. Vifunguo vyake vinaweza kutumia kila ruhusa iliyoorodheshwa hapa.",
     "wholeTransaction": "Mjumbe huchagua thamani zote za muamala zinazoruhusiwa na ruhusa hii. Hauidhinishi kila matumizi.",
     "replacesPermissions": "Orodha hii inachukua nafasi ya ruhusa zote za mjumbe huyu. Ruhusa za awali ambazo hazijaorodheshwa zitabatilishwa.",

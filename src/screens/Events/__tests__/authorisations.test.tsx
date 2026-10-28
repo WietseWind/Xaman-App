@@ -1,3 +1,4 @@
+import React from 'react';
 import renderer from 'react-test-renderer';
 import { CoreRepository } from '@store/repositories';
 import { SegmentButtons } from '@components/General';
@@ -6,7 +7,8 @@ import EventsView from '../EventsView';
 jest.mock('@services/NetworkService');
 jest.mock('@services/BackendService', () => ({ __esModule: true, default: { ping: jest.fn() } }));
 jest.mock('@components/General', () => ({
-    Spacer: () => null, Button: () => null, Header: () => null, SearchBar: () => null, SegmentButtons: () => null,
+    Spacer: () => null, Button: () => null, Header: () => null, SearchBar: () => null,
+    SegmentButtons: class extends React.Component { render() { return null; } },
 }));
 jest.mock('@components/Modules', () => ({ EventsFilterChip: () => null, EventsList: () => null }));
 
@@ -44,6 +46,22 @@ it('adds the fifth category and places only incoming and outgoing Delegate objec
     expect(buttons.map((button: any) => button.value))
         .toEqual(['ALL', 'PLANNED', 'REQUESTS', 'OWNED', 'AUTHORISATIONS']);
     expect(buttons[4].label).toBe('Authorisations');
+});
+
+it('hides the authorisations tab when the account has no delegations', () => {
+    const view = setup('ALL');
+    view.setState({ plannedTransactions: [other] });
+    view.applyDefaults();
+    const tree = renderer.create(view.render());
+    const { buttons } = tree.root.findByType(SegmentButtons).props;
+    expect(buttons.map((button: any) => button.value)).toEqual(['ALL', 'PLANNED', 'REQUESTS', 'OWNED']);
+});
+
+it('leaves the authorisations tab when a refresh finds none left', () => {
+    const view = setup();
+    view.setState({ plannedTransactions: [] });
+    view.applyDefaults();
+    expect(view.state.activeSection).toBe('ALL');
 });
 
 it.each(['PLANNED', 'OWNED', 'REQUESTS', 'ALL'])('keeps Delegate objects out of %s', section => {

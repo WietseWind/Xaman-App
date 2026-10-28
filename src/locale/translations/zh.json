@@ -1883,6 +1883,8 @@
     "authorisations": "授权",
     "owner": "账户授予权限",
     "delegate": "账户接收权限",
+    "ownerRevoke": "正在撤销权限的账户",
+    "delegateRevoke": "正在失去权限的账户",
     "explanation": "您让另一个帐户为您行事，而无需批准每次使用。它的密钥可以使用此处列出的每个权限。",
     "wholeTransaction": "委托人选择该权限允许的所有交易值。您不批准每次使用。",
     "replacesPermissions": "此列表替换该委托的所有权限。之前未列出的权限将被撤销。",

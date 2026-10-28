@@ -1887,6 +1887,8 @@
     "authorisations": "Ủy quyền",
     "owner": "Quyền cấp tài khoản",
     "delegate": "Tài khoản nhận quyền",
+    "ownerRevoke": "Tài khoản thu hồi quyền",
+    "delegateRevoke": "Tài khoản mất quyền",
     "explanation": "Bạn để một tài khoản khác hành động thay bạn mà không phê duyệt mỗi lần sử dụng. Chìa khóa của nó có thể sử dụng mọi quyền được liệt kê ở đây.",
     "wholeTransaction": "Người được ủy quyền chọn tất cả các giá trị giao dịch được quyền này cho phép. Bạn không chấp thuận mỗi lần sử dụng.",
     "replacesPermissions": "Danh sách này thay thế tất cả các quyền cho người đại diện này. Các quyền trước đó không được liệt kê sẽ bị thu hồi.",

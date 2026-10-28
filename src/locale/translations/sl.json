@@ -1784,6 +1784,8 @@
     "authorisations": "Pooblastila",
     "owner": "Podeljevanje dovoljenj za račun",
     "delegate": "Račun prejema dovoljenja",
+    "ownerRevoke": "Račun, ki prekliče dovoljenja",
+    "delegateRevoke": "Račun, ki izgubi dovoljenja",
     "explanation": "Drugemu računu dovolite, da deluje namesto vas, ne da bi odobrili vsako uporabo. Njegovi ključi lahko uporabljajo vsa dovoljenja, navedena tukaj.",
     "wholeTransaction": "Pooblaščenec izbere vse vrednosti transakcij, ki jih dovoljuje to dovoljenje. Ne odobrite vsake uporabe.",
     "replacesPermissions": "Ta seznam nadomesti vsa dovoljenja za tega pooblaščenca. Prejšnja dovoljenja, ki niso navedena, bodo preklicana.",

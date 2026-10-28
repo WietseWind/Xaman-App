@@ -1903,6 +1903,8 @@
     "authorisations": "Įgaliojimai",
     "owner": "Paskyros suteikimo leidimai",
     "delegate": "Paskyros gavimo leidimai",
+    "ownerRevoke": "Teises atšaukianti paskyra",
+    "delegateRevoke": "Teises prarandanti paskyra",
     "explanation": "Leidžiate kitai paskyrai veikti už jus nepatvirtindami kiekvieno naudojimo. Jo raktai gali naudoti visus čia išvardytus leidimus.",
     "wholeTransaction": "Įgaliotasis pasirenka visas operacijų vertes, kurias leidžia šis leidimas. Jūs nepatvirtinate kiekvieno naudojimo.",
     "replacesPermissions": "Šis sąrašas pakeičia visus šio įgaliotinio leidimus. Ankstesni leidimai, neįtraukti į sąrašą, bus atšaukti.",

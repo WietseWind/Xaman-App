@@ -1784,6 +1784,8 @@
     "authorisations": "Autoritzacions",
     "owner": "Permisos d'atorgament de comptes",
     "delegate": "Permisos de recepció del compte",
+    "ownerRevoke": "Compte que revoca permisos",
+    "delegateRevoke": "Compte que perd permisos",
     "explanation": "Deixes que un altre compte actuï per tu sense aprovar cada ús. Les seves claus poden utilitzar tots els permisos enumerats aquí.",
     "wholeTransaction": "El delegat tria tots els valors de transacció permesos per aquest permís. No aproveu cada ús.",
     "replacesPermissions": "Aquesta llista substitueix tots els permisos d'aquest delegat. Els permisos anteriors que no figuren a la llista seran revocats.",

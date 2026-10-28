@@ -1877,6 +1877,8 @@
     "authorisations": "Autorizzazioni",
     "owner": "Autorizzazioni di concessione dell'account",
     "delegate": "Account che riceve autorizzazioni",
+    "ownerRevoke": "Account che revoca le autorizzazioni",
+    "delegateRevoke": "Account che perde le autorizzazioni",
     "explanation": "Lasci che un altro account agisca per te senza approvare ogni utilizzo. Le sue chiavi possono utilizzare tutte le autorizzazioni elencate qui.",
     "wholeTransaction": "Il delegato sceglie tutti i valori di transazione consentiti da questa autorizzazione. Non approvi ogni utilizzo.",
     "replacesPermissions": "Questo elenco sostituisce tutte le autorizzazioni per questo delegato. Le autorizzazioni precedenti non elencate verranno revocate.",

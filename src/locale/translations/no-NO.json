@@ -1884,6 +1884,8 @@
     "authorisations": "Autorisasjoner",
     "owner": "Konto som gir tillatelser",
     "delegate": "Konto som mottar tillatelser",
+    "ownerRevoke": "Konto som tilbakekaller tillatelser",
+    "delegateRevoke": "Konto som mister tillatelser",
     "explanation": "Du lar en annen konto fungere for deg uten å godkjenne hver bruk. Nøklene kan bruke alle tillatelser som er oppført her.",
     "wholeTransaction": "Delegaten velger alle transaksjonsverdier som tillates av denne tillatelsen. Du godkjenner ikke hver bruk.",
     "replacesPermissions": "Denne listen erstatter alle tillatelser for denne delegaten. Tidligere tillatelser som ikke er oppført, vil bli tilbakekalt.",

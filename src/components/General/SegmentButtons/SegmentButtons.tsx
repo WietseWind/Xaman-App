@@ -17,6 +17,31 @@ interface Props {
 
 /* Component ==================================================================== */
 class SegmentButtons extends PureComponent<Props, State> {
+    private list = React.createRef<FlatList<SegmentButtonType>>();
+
+    componentDidMount() {
+        this.revealActive();
+    }
+
+    componentDidUpdate(prevProps: Props) {
+        const { buttons, activeButton } = this.props;
+        const prevLast = prevProps.buttons[prevProps.buttons.length - 1]?.value;
+        const last = buttons[buttons.length - 1]?.value;
+        if (prevProps.activeButton !== activeButton || prevLast !== last) {
+            this.revealActive();
+        }
+    }
+
+    /** Keep the selected end tab on screen, including after leaving and returning to Events. */
+    revealActive = () => {
+        const { buttons, activeButton } = this.props;
+        const list = this.list.current;
+        if (!list || !buttons.length || buttons[buttons.length - 1].value !== activeButton) {
+            return;
+        }
+        requestAnimationFrame(() => this.list.current?.scrollToEnd({ animated: false }));
+    };
+
     onItemPress = (item: SegmentButtonType) => {
         const { onItemPress } = this.props;
 
@@ -36,11 +61,13 @@ class SegmentButtons extends PureComponent<Props, State> {
 
         return (
             <FlatList
+                ref={this.list}
                 horizontal
                 data={buttons}
                 renderItem={this.renderItem}
                 style={[styles.container, containerStyle]}
                 contentContainerStyle={styles.content}
+                onContentSizeChange={this.revealActive}
             />
         );
     }

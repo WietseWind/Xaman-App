@@ -1876,6 +1876,8 @@
     "authorisations": "Autorizații",
     "owner": "Permisiuni de acordare a contului",
     "delegate": "Cont care primește permisiuni",
+    "ownerRevoke": "Cont care revocă permisiunile",
+    "delegateRevoke": "Cont care pierde permisiunile",
     "explanation": "Lăsați un alt cont să acționeze pentru dvs. fără a aproba fiecare utilizare. Cheile sale pot folosi toate permisiunile enumerate aici.",
     "wholeTransaction": "Delegatul alege toate valorile tranzacției permise de această permisiune. Nu aprobați fiecare utilizare.",
     "replacesPermissions": "Această listă înlocuiește toate permisiunile pentru acest delegat. Permisiunile anterioare care nu sunt listate vor fi revocate.",

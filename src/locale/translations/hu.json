@@ -1784,6 +1784,8 @@
     "authorisations": "Engedélyek",
     "owner": "Engedélyek megadása fiók",
     "delegate": "Fiók fogadási engedélyei",
+    "ownerRevoke": "Engedélyeket visszavonó fiók",
+    "delegateRevoke": "Engedélyeket elveszítő fiók",
     "explanation": "Megengedi, hogy egy másik fiók eljárjon Ön helyett, anélkül, hogy minden egyes felhasználást jóváhagyna. A kulcsai az itt felsorolt ​​összes engedélyt használhatják.",
     "wholeTransaction": "A megbízott kiválasztja az engedély által engedélyezett összes tranzakciós értéket. Ön nem hagyja jóvá az egyes felhasználásokat.",
     "replacesPermissions": "Ez a lista felváltja a meghatalmazott összes engedélyét. A listán nem szereplő korábbi engedélyek visszavonásra kerülnek.",

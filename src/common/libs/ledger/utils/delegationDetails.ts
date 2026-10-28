@@ -154,8 +154,8 @@ export const delegationDescription = (
 ): string => {
     const lines = [
         Localize.t(mode === 'revoke' ? 'delegation.revokeExplanation' : 'delegation.explanation'),
-        `${Localize.t('delegation.owner')}: ${owner}`,
-        `${Localize.t('delegation.delegate')}: ${authorize}`,
+        `${Localize.t(mode === 'revoke' ? 'delegation.ownerRevoke' : 'delegation.owner')}: ${owner}`,
+        `${Localize.t(mode === 'revoke' ? 'delegation.delegateRevoke' : 'delegation.delegate')}: ${authorize}`,
     ];
     if (mode === 'revoke') return lines.join('\n\n');
     if (mode === 'grant') lines.push(Localize.t('delegation.replacesPermissions'));

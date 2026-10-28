@@ -1871,6 +1871,8 @@
     "authorisations": "Pilnvaras",
     "owner": "Konta piešķiršanas atļaujas",
     "delegate": "Konta saņemšanas atļaujas",
+    "ownerRevoke": "Konts, kas atsauc atļaujas",
+    "delegateRevoke": "Konts, kas zaudē atļaujas",
     "explanation": "Jūs ļaujat citam kontam rīkoties jūsu vietā, neapstiprinot katru lietošanas veidu. Tās atslēgas var izmantot visas šeit norādītās atļaujas.",
     "wholeTransaction": "Delegāts izvēlas visas darījumu vērtības, ko atļauj šī atļauja. Jūs neapstiprināt katru lietošanas veidu.",
     "replacesPermissions": "Šis saraksts aizstāj visas šī pārstāvja atļaujas. Iepriekšējās atļaujas, kas nav norādītas sarakstā, tiks atsauktas.",

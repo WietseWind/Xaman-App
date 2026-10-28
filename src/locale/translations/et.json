@@ -1871,6 +1871,8 @@
     "authorisations": "Volitused",
     "owner": "Konto lubade andmine",
     "delegate": "Konto lubade saamine",
+    "ownerRevoke": "Õigusi tühistav konto",
+    "delegateRevoke": "Õigusi kaotav konto",
     "explanation": "Lase teisel kontol enda eest tegutseda ilma iga kasutust kinnitamata. Selle võtmed saavad kasutada kõiki siin loetletud õigusi.",
     "wholeTransaction": "Delegaat valib kõik selle loaga lubatud tehinguväärtused. Te ei kiida iga kasutust heaks.",
     "replacesPermissions": "See loend asendab kõik selle delegaadi õigused. Eelmised load, mida loendis ei olnud, tühistatakse.",

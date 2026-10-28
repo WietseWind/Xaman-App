@@ -1858,6 +1858,8 @@
     "authorisations": "Autoryzacje",
     "owner": "Konto nadawane uprawnienia",
     "delegate": "Konto otrzymuje uprawnienia",
+    "ownerRevoke": "Konto odbierające uprawnienia",
+    "delegateRevoke": "Konto tracące uprawnienia",
     "explanation": "Pozwalasz innemu kontu działać za Ciebie bez zatwierdzania każdego użycia. Jego klucze mogą korzystać ze wszystkich wymienionych tutaj uprawnień.",
     "wholeTransaction": "Delegat wybiera wszystkie wartości transakcji dozwolone przez to uprawnienie. Nie wyrażasz zgody na każde użycie.",
     "replacesPermissions": "Ta lista zastępuje wszystkie uprawnienia tego delegata. Poprzednie uprawnienia, które nie są wymienione, zostaną cofnięte.",

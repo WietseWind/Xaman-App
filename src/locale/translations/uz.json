@@ -1882,6 +1882,8 @@
     "authorisations": "Ruxsatnomalar",
     "owner": "Hisobni berish uchun ruxsatlar",
     "delegate": "Hisobni olish uchun ruxsatnomalar",
+    "ownerRevoke": "Ruxsatlarni bekor qilayotgan hisob",
+    "delegateRevoke": "Ruxsatlarni yo'qotayotgan hisob",
     "explanation": "Siz har bir foydalanishni ma'qullamasdan, boshqa hisob qaydnomasiga harakat qilishiga ruxsat berasiz. Uning kalitlari bu yerda keltirilgan barcha ruxsatlardan foydalanishi mumkin.",
     "wholeTransaction": "Delegat ushbu ruxsat bilan ruxsat etilgan barcha tranzaksiya qiymatlarini tanlaydi. Siz har bir foydalanishni ma'qullamaysiz.",
     "replacesPermissions": "Bu roʻyxat ushbu delegat uchun barcha ruxsatlarni almashtiradi. Roʻyxatga kiritilmagan oldingi ruxsatlar bekor qilinadi.",

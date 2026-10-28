@@ -1874,6 +1874,8 @@
     "authorisations": "Valtuutukset",
     "owner": "Tilin käyttöoikeudet",
     "delegate": "Tili vastaanottaa lupia",
+    "ownerRevoke": "Tili, joka peruu valtuudet",
+    "delegateRevoke": "Tili, joka menettää valtuudet",
     "explanation": "Annat toisen tilin toimia puolestasi hyväksymättä jokaista käyttöä. Sen avaimet voivat käyttää kaikkia tässä lueteltuja käyttöoikeuksia.",
     "wholeTransaction": "Valtuutettu valitsee kaikki tämän luvan sallimat tapahtumaarvot. Et hyväksy jokaista käyttöä.",
     "replacesPermissions": "Tämä luettelo korvaa kaikki tämän edustajan käyttöoikeudet. Aiemmat luvat, joita ei ole listattu, peruutetaan.",

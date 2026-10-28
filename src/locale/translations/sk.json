@@ -1868,6 +1868,8 @@
     "authorisations": "oprávnenia",
     "owner": "Povolenia na udelenie účtu",
     "delegate": "Účet prijímajúci povolenia",
+    "ownerRevoke": "Účet, ktorý odvoláva oprávnenia",
+    "delegateRevoke": "Účet, ktorý oprávnenia stráca",
     "explanation": "Necháte iný účet konať za vás bez schvaľovania každého použitia. Jeho kľúče môžu používať všetky tu uvedené povolenia.",
     "wholeTransaction": "Delegát vyberie všetky hodnoty transakcie povolené týmto povolením. Neschvaľujete každé použitie.",
     "replacesPermissions": "Tento zoznam nahrádza všetky povolenia pre tohto delegáta. Predchádzajúce povolenia, ktoré nie sú uvedené, budú odvolané.",

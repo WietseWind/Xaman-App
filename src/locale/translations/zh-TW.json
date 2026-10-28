@@ -1885,6 +1885,8 @@
     "authorisations": "授權",
     "owner": "帳戶授予權限",
     "delegate": "帳戶接收權限",
+    "ownerRevoke": "正在撤銷權限的帳戶",
+    "delegateRevoke": "正在失去權限的帳戶",
     "explanation": "您讓另一個帳戶為您行事，而無需批准每次使用。它的密鑰可以使用此處列出的每個權限。",
     "wholeTransaction": "委託人選擇該權限允許的所有交易值。您不批准每次使用。",
     "replacesPermissions": "此清單會取代該委託的所有權限。之前未列出的權限將被撤銷。",

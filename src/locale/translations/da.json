@@ -1784,6 +1784,8 @@
     "authorisations": "Autorisationer",
     "owner": "Konto, der giver tilladelser",
     "delegate": "Kontomodtagelsestilladelser",
+    "ownerRevoke": "Konto der tilbagekalder tilladelser",
+    "delegateRevoke": "Konto der mister tilladelser",
     "explanation": "Du lader en anden konto handle for dig uden at godkende hver brug. Dens nøgler kan bruge alle de tilladelser, der er angivet her.",
     "wholeTransaction": "Den delegerede vælger alle transaktionsværdier, der er tilladt af denne tilladelse. Du godkender ikke hver brug.",
     "replacesPermissions": "Denne liste erstatter alle tilladelser for denne delegerede. Tidligere tilladelser, der ikke er angivet, vil blive tilbagekaldt.",
