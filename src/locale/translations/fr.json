@@ -1882,6 +1882,8 @@
     "authorisations": "Autorisations",
     "owner": "Compte accordant des autorisations",
     "delegate": "Compte recevant des autorisations",
+    "ownerRevoke": "Compte qui retire les autorisations",
+    "delegateRevoke": "Compte qui perd les autorisations",
     "explanation": "Vous laissez un autre compte agir à votre place sans approuver chaque utilisation. Ses clés peuvent utiliser toutes les autorisations répertoriées ici.",
     "wholeTransaction": "Le délégué choisit toutes les valeurs de transaction autorisées par cette autorisation. Vous n'approuvez pas chaque utilisation.",
     "replacesPermissions": "Cette liste remplace toutes les autorisations pour ce délégué. Les autorisations précédentes non répertoriées seront révoquées.",

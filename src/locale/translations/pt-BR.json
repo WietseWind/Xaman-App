@@ -1882,6 +1882,8 @@
     "authorisations": "Autorizações",
     "owner": "Conta concedendo permissões",
     "delegate": "Conta recebendo permissões",
+    "ownerRevoke": "Conta que revoga permissões",
+    "delegateRevoke": "Conta que perde permissões",
     "explanation": "Você permite que outra conta atue em seu nome sem aprovar cada uso. Suas chaves podem usar todas as permissões listadas aqui.",
     "wholeTransaction": "O delegado escolhe todos os valores de transação permitidos por esta permissão. Você não aprova cada uso.",
     "replacesPermissions": "Esta lista substitui todas as permissões deste delegado. As permissões anteriores não listadas serão revogadas.",

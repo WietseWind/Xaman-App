@@ -1784,6 +1784,8 @@
     "authorisations": "Behörigheter",
     "owner": "Konto som beviljar behörigheter",
     "delegate": "Kontomottagningsbehörigheter",
+    "ownerRevoke": "Konto som återkallar behörigheter",
+    "delegateRevoke": "Konto som förlorar behörigheter",
     "explanation": "Du låter ett annat konto agera åt dig utan att godkänna varje användning. Dess nycklar kan använda alla behörigheter som anges här.",
     "wholeTransaction": "Delegaten väljer alla transaktionsvärden som tillåts av denna behörighet. Du godkänner inte varje användning.",
     "replacesPermissions": "Den här listan ersätter alla behörigheter för denna delegat. Tidigare behörigheter som inte är listade kommer att återkallas.",

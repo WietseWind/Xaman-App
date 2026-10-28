@@ -24,10 +24,14 @@ const DelegationDetails = ({ owner, authorize, permissions, transactionTypes, na
         <View testID="delegation-details">
             <InfoMessage type={mode === 'revoke' ? 'neutral' : 'warning'}
                 label={Localize.t(mode === 'revoke' ? 'delegation.revokeExplanation' : 'delegation.explanation')} />
-            <Text style={styles.label}>{Localize.t('delegation.owner')}</Text>
+            <Text style={styles.label}>
+                {Localize.t(mode === 'revoke' ? 'delegation.ownerRevoke' : 'delegation.owner')}
+            </Text>
             {owner ? <AccountElement address={owner} containerStyle={styles.account} />
                 : <Text style={styles.value}>{Localize.t('txDelegateSet.empty')}</Text>}
-            <Text style={styles.label}>{Localize.t('delegation.delegate')}</Text>
+            <Text style={styles.label}>
+                {Localize.t(mode === 'revoke' ? 'delegation.delegateRevoke' : 'delegation.delegate')}
+            </Text>
             {authorize ? <AccountElement address={authorize} containerStyle={styles.account} />
                 : <Text style={styles.value}>{Localize.t('txDelegateSet.empty')}</Text>}
             {mode === 'grant' && <InfoMessage type="warning" label={Localize.t('delegation.replacesPermissions')} />}

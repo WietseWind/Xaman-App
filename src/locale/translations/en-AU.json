@@ -1881,6 +1881,8 @@
     "authorisations": "Authorisations",
     "owner": "Account granting permissions",
     "delegate": "Account receiving permissions",
+    "ownerRevoke": "Account revoking permissions",
+    "delegateRevoke": "Account losing permissions",
     "explanation": "You let another account act for you without approving each use. Its keys can use every permission listed here.",
     "wholeTransaction": "The delegate chooses all transaction values allowed by this permission. You do not approve each use.",
     "replacesPermissions": "This list replaces all permissions for this delegate. Previous permissions not listed will be revoked.",

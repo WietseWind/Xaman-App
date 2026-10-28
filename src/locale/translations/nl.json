@@ -1868,6 +1868,8 @@
     "authorisations": "Autorisaties",
     "owner": "Account dat rechten geeft",
     "delegate": "Account dat rechten krijgt",
+    "ownerRevoke": "Account dat machtigingen intrekt",
+    "delegateRevoke": "Account dat machtigingen verliest",
     "explanation": "U geeft een ander account toestemming om namens u te handelen. U hoeft niet elk gebruik goed te keuren. De sleutels van dat account kunnen alle onderstaande rechten gebruiken.",
     "wholeTransaction": "De gemachtigde kiest alle transactiewaarden die deze toestemming toelaat. U keurt niet elk gebruik afzonderlijk goed.",
     "replacesPermissions": "Deze lijst vervangt alle machtigingen voor deze gemachtigde. Eerdere machtigingen die niet in de lijst staan, worden ingetrokken.",

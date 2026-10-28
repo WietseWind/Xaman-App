@@ -1899,6 +1899,8 @@
     "authorisations": "Otorizasyon",
     "owner": "Kont akòde otorizasyon",
     "delegate": "Kont k ap resevwa otorizasyon",
+    "ownerRevoke": "Kont ki retire otorizasyon yo",
+    "delegateRevoke": "Kont ki pèdi otorizasyon yo",
     "explanation": "Ou kite yon lòt kont aji pou ou san ou pa apwouve chak itilizasyon. Kle li yo ka itilize chak pèmisyon ki nan lis isit la.",
     "wholeTransaction": "Delege a chwazi tout valè tranzaksyon yo otorize sa a. Ou pa apwouve chak itilizasyon.",
     "replacesPermissions": "Lis sa a ranplase tout otorizasyon pou delege sa a. Yo pral revoke otorizasyon anvan yo ki pa nan lis la.",

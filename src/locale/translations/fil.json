@@ -1784,6 +1784,8 @@
     "authorisations": "Mga awtorisasyon",
     "owner": "Mga pahintulot sa pagbibigay ng account",
     "delegate": "Mga pahintulot sa pagtanggap ng account",
+    "ownerRevoke": "Account na nagbabawi ng mga pahintulot",
+    "delegateRevoke": "Account na nawawalan ng mga pahintulot",
     "explanation": "Hinahayaan mong kumilos ang isa pang account para sa iyo nang hindi inaaprubahan ang bawat paggamit. Magagamit ng mga susi nito ang bawat pahintulot na nakalista dito.",
     "wholeTransaction": "Pinipili ng delegado ang lahat ng halaga ng transaksyon na pinapayagan ng pahintulot na ito. Hindi mo aprubahan ang bawat paggamit.",
     "replacesPermissions": "Pinapalitan ng listahang ito ang lahat ng pahintulot para sa delegadong ito. Ang mga naunang pahintulot na hindi nakalista ay babawiin.",

@@ -86,6 +86,9 @@ describe('delegation permission explanations', () => {
         expect(text).toContain('Previous permissions not listed will be revoked');
         expect(text).toContain(Localize.t('delegation.whole.Payment', { nativeAsset: 'XRP' }));
         const revoked = delegationDescription('owner', 'delegate', [], types, 'revoke');
+        expect(revoked).toContain('Account revoking permissions: owner');
+        expect(revoked).toContain('Account losing permissions: delegate');
+        expect(revoked).not.toContain('Account granting permissions');
         expect(revoked).toContain('Other delegations are unchanged');
         expect(revoked).not.toContain(en.delegation.whole.Payment);
     });
@@ -109,7 +112,7 @@ describe('delegation translations', () => {
                 expect(delegationPermissionDetail(name, types).unknown).toBe(false);
             }
             for (const key of ['authorisations', 'explanation', 'replacesPermissions', 'revokeExplanation',
-                'unknownPermission', 'unknownRisk']) {
+                'ownerRevoke', 'delegateRevoke', 'unknownPermission', 'unknownRisk']) {
                 expect(bundle.delegation[key]).toEqual(expect.any(String));
                 expect(bundle.delegation[key].trim()).not.toBe('');
                 if (!locale.startsWith('en')) expect(bundle.delegation[key]).not.toBe((en.delegation as any)[key]);

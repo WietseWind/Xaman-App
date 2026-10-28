@@ -1882,6 +1882,8 @@
     "authorisations": "Otorisasi",
     "owner": "Izin pemberian akun",
     "delegate": "Akun menerima izin",
+    "ownerRevoke": "Akun yang mencabut izin",
+    "delegateRevoke": "Akun yang kehilangan izin",
     "explanation": "Anda membiarkan akun lain bertindak untuk Anda tanpa menyetujui setiap penggunaan. Kuncinya dapat menggunakan setiap izin yang tercantum di sini.",
     "wholeTransaction": "Delegasi memilih semua nilai transaksi yang diizinkan oleh izin ini. Anda tidak menyetujui setiap penggunaan.",
     "replacesPermissions": "Daftar ini menggantikan semua izin untuk delegasi ini. Izin sebelumnya yang tidak tercantum akan dicabut.",

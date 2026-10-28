@@ -82,6 +82,10 @@ it('explains that revocation affects only this account pair and does not show a 
     const tree = renderer.create(<DelegationDetails owner={owner} authorize={delegate} mode="revoke"
         permissions={[]} transactionTypes={defs.rawDefinitions.TRANSACTION_TYPES} />);
     expect(text(tree)).toContain('Other delegations are unchanged');
+    expect(text(tree)).toContain('Account revoking permissions');
+    expect(text(tree)).toContain('Account losing permissions');
+    expect(text(tree)).not.toContain('Account granting permissions');
+    expect(text(tree)).not.toContain('Account receiving permissions');
     expect(text(tree)).not.toContain('This list replaces');
     expect(tree.root.findAllByType(AccountElement).map(node => node.props.address)).toEqual([owner, delegate]);
 });

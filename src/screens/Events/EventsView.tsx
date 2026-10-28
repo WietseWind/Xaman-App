@@ -112,6 +112,7 @@ class EventsView extends Component<Props, State> {
     private isScreenVisible: boolean;
     private navigationListener: EventSubscription | undefined;
     private isLoadingMoreDebouncedTimer?: ReturnType<typeof setTimeout>;
+    private segmentButtons = React.createRef<SegmentButtons>();
 
     static options() {
         return {
@@ -161,6 +162,8 @@ class EventsView extends Component<Props, State> {
             isLoadingMore,
             isLoadingMoreDebounced,
             filters,
+            activeSection,
+            plannedTransactions,
         } = this.state;
         const { timestamp } = this.props;
 
@@ -171,6 +174,8 @@ class EventsView extends Component<Props, State> {
             !isEqual(nextState.isLoadingMoreDebounced, isLoadingMoreDebounced) ||
             !isEqual(nextState.canLoadMore, canLoadMore) ||
             nextState.account !== account ||
+            nextState.activeSection !== activeSection ||
+            this.hasAuthorisations(nextState.plannedTransactions) !== this.hasAuthorisations(plannedTransactions) ||
             !isEqual(nextState.filters, filters) ||
             !isEqual(nextProps.timestamp, timestamp)
         );
@@ -181,7 +186,8 @@ class EventsView extends Component<Props, State> {
 
         // console.log('appeared')
         this.isScreenVisible = true;
-        
+        this.segmentButtons.current?.revealActive();
+
         // check if we need to reload the screen
         if (this.forceReload) {
             // console.log('reloading')
@@ -1031,12 +1037,39 @@ class EventsView extends Component<Props, State> {
         }
     };
 
+    hasAuthorisations = (items?: State['plannedTransactions']) => {
+        const { plannedTransactions } = this.state;
+        return (items || plannedTransactions).some((item) => item.Type === LedgerEntryTypes.Delegate);
+    };
+
     applyDefaults = () => {
-        const { transactions, pendingRequests, plannedTransactions } = this.state;
+        const { transactions, pendingRequests, plannedTransactions, activeSection } = this.state;
+
+        if (activeSection === EventSections.AUTHORISATIONS && !this.hasAuthorisations(plannedTransactions)) {
+            this.setState({ activeSection: EventSections.ALL }, this.applyDefaults);
+            return;
+        }
 
         this.setState({
             dataSource: this.buildDataSource(transactions, pendingRequests, plannedTransactions),
         });
+    };
+
+    sectionButtons = () => {
+        const { activeSection } = this.state;
+        const buttons = [
+            { label: Localize.t('events.eventTypeAll'), value: EventSections.ALL },
+            { label: Localize.t('events.eventTypePlanned'), value: EventSections.PLANNED },
+            { label: Localize.t('events.eventTypeRequests'), value: EventSections.REQUESTS },
+            { label: Localize.t('events.eventTypeOwned'), value: EventSections.OWNED },
+        ];
+        if (this.hasAuthorisations() || activeSection === EventSections.AUTHORISATIONS) {
+            buttons.push({
+                label: Localize.t('delegation.authorisations'),
+                value: EventSections.AUTHORISATIONS,
+            });
+        }
+        return buttons;
     };
 
     applyFilters = (paramFilters?: FilterProps | boolean) => {
@@ -1513,6 +1546,7 @@ class EventsView extends Component<Props, State> {
                 />
                 {/* <Text>{ activeSection}</Text> */}
                 <SegmentButtons
+                    ref={this.segmentButtons}
                     activeButton={activeSection}
                     key={`eventsview-segmentbuttons-${timestamp}`}
                     containerStyle={[
@@ -1520,28 +1554,7 @@ class EventsView extends Component<Props, State> {
                         AppStyles.marginTopNegativeSml,
                         AppStyles.leftSelf,
                     ]}
-                    buttons={[
-                        {
-                            label: Localize.t('events.eventTypeAll'),
-                            value: EventSections.ALL,
-                        },
-                        {
-                            label: Localize.t('events.eventTypePlanned'),
-                            value: EventSections.PLANNED,
-                        },
-                        {
-                            label: Localize.t('events.eventTypeRequests'),
-                            value: EventSections.REQUESTS,
-                        },
-                        {
-                            label: Localize.t('events.eventTypeOwned'),
-                            value: EventSections.OWNED,
-                        },
-                        {
-                            label: Localize.t('delegation.authorisations'),
-                            value: EventSections.AUTHORISATIONS,
-                        },
-                    ]}
+                    buttons={this.sectionButtons()}
                     onItemPress={this.onSectionChange}
                 />
                 {/* <Text>{isLoadingMore && 'isloadingmore'}</Text> */}

@@ -1888,6 +1888,8 @@
     "authorisations": "Baimenak",
     "owner": "Kontua emateko baimenak",
     "delegate": "Kontua baimenak jasotzeko",
+    "ownerRevoke": "Baimenak kentzen dituen kontua",
+    "delegateRevoke": "Baimenak galtzen dituen kontua",
     "explanation": "Beste kontu bati zure ordez jarduten uzten diozu erabilera bakoitza onartu gabe. Bere gakoek hemen zerrendatutako baimen guztiak erabil ditzakete.",
     "wholeTransaction": "Ordezkariak baimen honek onartzen dituen transakzio-balio guztiak aukeratzen ditu. Ez duzu erabilera bakoitza onartzen.",
     "replacesPermissions": "Zerrenda honek ordezkari honen baimen guztiak ordezkatzen ditu. Zerrendatzen ez diren aurreko baimenak kendu egingo dira.",

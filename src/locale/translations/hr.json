@@ -1784,6 +1784,8 @@
     "authorisations": "Ovlaštenja",
     "owner": "Dopuštenja za dodjelu računa",
     "delegate": "Račun prima dopuštenja",
+    "ownerRevoke": "Račun koji opoziva ovlaštenja",
+    "delegateRevoke": "Račun koji gubi ovlaštenja",
     "explanation": "Dopuštate drugom računu da djeluje umjesto vas bez odobravanja svake upotrebe. Njegovi ključevi mogu koristiti sva dopuštenja navedena ovdje.",
     "wholeTransaction": "Delegat odabire sve vrijednosti transakcije dopuštene ovim dopuštenjem. Ne odobravate svaku upotrebu.",
     "replacesPermissions": "Ovaj popis zamjenjuje sva dopuštenja za ovog delegata. Prethodna dopuštenja koja nisu navedena bit će opozvana.",
