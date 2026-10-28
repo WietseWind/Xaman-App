@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import EventEmitter from 'events';
 import Realm from 'realm';
 
-import { Platform } from 'react-native';
+import { InteractionManager, Platform } from 'react-native';
 
 import { binary, XrplDefinitions } from 'xrpl-accountlib';
 
@@ -49,7 +49,7 @@ import {
 
 import { Amendments } from '@common/libs/ledger/types/ledger';
 import {
-    createNetworkDefinitions, DEFINITION_CACHE_VERSION, NetworkDefinitions, normalizeDefinitions,
+    createNetworkDefinitions, DEFINITION_CACHE_VERSION, NetworkDefinitions,
 } from '@common/libs/ledger/utils/normalizeDefinitions';
 
 /* Types  ==================================================================== */
@@ -71,6 +71,18 @@ declare interface NetworkService {
     off<U extends keyof NetworkServiceEvent>(event: U, listener: NetworkServiceEvent[U]): this;
     emit<U extends keyof NetworkServiceEvent>(event: U, ...args: Parameters<NetworkServiceEvent[U]>): boolean;
 }
+type DefinitionSnapshot = {
+    source: unknown;
+    nativeAsset: string;
+    definitions: NetworkDefinitions;
+    version?: number;
+    checkedAt?: number;
+    endpoint?: string;
+};
+
+const DEFINITIONS_TTL_MS = 60 * 60 * 1000;
+const DEFINITIONS_RETRY_MS = 60 * 1000;
+
 /* Service  ==================================================================== */
 class NetworkService extends EventEmitter {
     public network?: NetworkModel;
@@ -80,12 +92,14 @@ class NetworkService extends EventEmitter {
     private networkReserve?: { base: number; owner: number };
     private lastNetworkErrorId?: Realm.BSON.ObjectId;
     private connectedEndpoint?: string;
-    private definitionsCache?: {
-        network: string;
-        source: unknown;
-        nativeAsset: string;
-        definitions: NetworkDefinitions;
-    };
+    private definitionsCache = new Map<string, DefinitionSnapshot>();
+    private definitionsPreparation = new Map<string, Promise<DefinitionSnapshot | undefined>>();
+    private definitionsRequests = new Map<string, {
+        connection?: XrplClient;
+        endpoint: string;
+        promise: Promise<void>;
+    }>();
+    private definitionsRefreshTimer?: ReturnType<typeof setTimeout>;
 
     private static _ORIGIN = `/xaman/${GetAppVersionCode()}/${Platform.OS}`;
     private static _TIMEOUT_SECONDS = 40;
@@ -130,6 +144,7 @@ class NetworkService extends EventEmitter {
             try {
                 // set the current network
                 this.network = coreSettings.network;
+                this.prepareNetworkDefinitions(this.network);
 
                 // set current network reserve
                 this.networkReserve = {
@@ -250,6 +265,10 @@ class NetworkService extends EventEmitter {
      */
     setConnectionStatus = (status: NetworkStateStatus) => {
         this.status = status;
+        if (status !== NetworkStateStatus.Connected) {
+            clearTimeout(this.definitionsRefreshTimer);
+            this.definitionsRefreshTimer = undefined;
+        }
 
         // send event
         this.emit('stateChange', status);
@@ -325,29 +344,55 @@ class NetworkService extends EventEmitter {
     /**
      * Get current network definitions
      */
-    getRawNetworkDefinitions = () => {
-        const data = normalizeDefinitions(
-            this.network?.definitions || binary.DEFAULT_DEFINITIONS,
-            this.network?.nativeAsset?.asset,
-        );
-        data.TRANSACTION_TYPES.SignIn = 999;
-        return data;
-    };
+    getRawNetworkDefinitions = () => this.getDefinitionSnapshot(this.network).definitions.rawDefinitions;
 
-    /**
-     * Normalize cached data as well as new replies. Never mutate the package snapshot or the stored schema.
-     */
-    getNetworkDefinitions = (): XrplDefinitions => {
-        const network = this.network?.id?.toString() || 'bundled';
-        const nativeAsset = this.network?.nativeAsset?.asset || 'XRP';
-        const source = this.network?.definitionsString || this.network?.definitions || binary.DEFAULT_DEFINITIONS;
-        if (this.definitionsCache?.network === network && this.definitionsCache.source === source &&
-            this.definitionsCache.nativeAsset === nativeAsset) return this.definitionsCache.definitions;
+    private getDefinitionSnapshot = (network?: NetworkModel): DefinitionSnapshot => {
+        const key = network?.id?.toString() || 'bundled';
+        const nativeAsset = network?.nativeAsset?.asset || 'XRP';
+        const source = network?.definitionsString || network?.definitions || binary.DEFAULT_DEFINITIONS;
+        const cached = this.definitionsCache.get(key);
+        if (cached?.source === source && cached.nativeAsset === nativeAsset) return cached;
         const definitions = createNetworkDefinitions(
             typeof source === 'string' ? JSON.parse(source) : source, nativeAsset,
         );
-        this.definitionsCache = { network, source, nativeAsset, definitions };
-        return definitions;
+        const raw = definitions.rawDefinitions;
+        const snapshot = { source, nativeAsset, definitions, version: raw.__xamanDefinitionVersion,
+            checkedAt: raw.__xamanDefinitionsCheckedAt, endpoint: raw.__xamanDefinitionsEndpoint };
+        this.definitionsCache.set(key, snapshot);
+        return snapshot;
+    };
+
+    /** Keep parsed schemas for every visited network, including when switching back. */
+    getNetworkDefinitions = (): XrplDefinitions => this.getDefinitionSnapshot(this.network).definitions;
+
+    /** Preparation is deferred past interactions; it does not run on a separate JS worker. */
+    private prepareNetworkDefinitions = (network?: NetworkModel): Promise<DefinitionSnapshot | undefined> => {
+        const key = network?.id?.toString() || 'bundled';
+        const pending = this.definitionsPreparation.get(key);
+        if (pending) return pending;
+        const promise = new Promise<DefinitionSnapshot | undefined>((resolve) => {
+            InteractionManager.runAfterInteractions(() => {
+                try {
+                    resolve(this.getDefinitionSnapshot(network));
+                } catch (error) {
+                    this.logger.warn('Unable to prepare cached network definitions', error);
+                    resolve(undefined);
+                }
+            });
+        }).finally(() => this.definitionsPreparation.delete(key));
+        this.definitionsPreparation.set(key, promise);
+        return promise;
+    };
+
+    private scheduleDefinitionsRefresh = (delay: number) => {
+        clearTimeout(this.definitionsRefreshTimer);
+        if (this.status !== NetworkStateStatus.Connected || !this.connection) return;
+        const network = this.network?.id.toString();
+        const { connection } = this;
+        this.definitionsRefreshTimer = setTimeout(() => {
+            if (this.network?.id.toString() === network && this.connection === connection &&
+                this.status === NetworkStateStatus.Connected) this.updateNetworkDefinitions();
+        }, Math.max(1, delay));
     };
 
     /**
@@ -468,6 +513,7 @@ class NetworkService extends EventEmitter {
             try {
                 // nothing has been changed
                 if (network.id.equals(this.getNetwork().id) && network.defaultNode === this.getNetwork().defaultNode) {
+                    resolve();
                     return;
                 }
 
@@ -478,6 +524,7 @@ class NetworkService extends EventEmitter {
                 // change network
                 this.connectedEndpoint = undefined;
                 this.network = network;
+                this.prepareNetworkDefinitions(network);
 
                 // update cached reserve
                 this.networkReserve = {
@@ -648,49 +695,61 @@ class NetworkService extends EventEmitter {
     /**
      * Updates the network definitions and persists them to the `NetworkRepository`.
      */
-    updateNetworkDefinitions = async () => {
-        try {
-            const network = this.getNetwork();
-            const request: ServerDefinitionsRequest = {
-                command: 'server_definitions',
-            };
-
-            let definitionsHash = '';
+    updateNetworkDefinitions = (): Promise<void> => {
+        const network = this.getNetwork();
+        const key = network.id.toString();
+        const endpoint = this.getConnectedEndpoint();
+        const { connection } = this;
+        const pending = this.definitionsRequests.get(key);
+        if (pending?.connection === connection && pending?.endpoint === endpoint) return pending.promise;
+        const isCurrent = () => this.network?.id.toString() === key && this.connection === connection &&
+            this.getConnectedEndpoint() === endpoint;
+        const promise = (async () => {
             try {
-                const cached = network.definitions;
-                // Older app versions discarded metadata. Ask for a full reply even if its hash is unchanged.
-                if (cached?.__xamanDefinitionVersion === DEFINITION_CACHE_VERSION) {
-                    createNetworkDefinitions(cached, network.nativeAsset?.asset);
-                    definitionsHash = cached.hash || '';
-                    if (definitionsHash) request.hash = definitionsHash;
+                const cached = await this.prepareNetworkDefinitions(network);
+                if (!isCurrent()) return;
+                const now = Date.now();
+                const validCache = cached?.version === DEFINITION_CACHE_VERSION;
+                const currentCache = validCache && cached.endpoint === endpoint;
+                const age = now - (cached?.checkedAt ?? NaN);
+                if (currentCache && age >= 0 && age < DEFINITIONS_TTL_MS) {
+                    this.scheduleDefinitionsRefresh(DEFINITIONS_TTL_MS - age);
+                    return;
                 }
-            } catch {
-                // Corrupt or incomplete cache: obtain a complete schema without a conditional hash.
+                // A valid previous schema can use a hash check even when its freshness/endpoint record is missing.
+                const hash = validCache ? cached.definitions.rawDefinitions.hash : undefined;
+                const request: ServerDefinitionsRequest = { command: 'server_definitions' };
+                if (hash) request.hash = hash;
+                const response = await this.send<ServerDefinitionsRequest, ServerDefinitionsResponse>(request);
+                if (!isCurrent()) return;
+                const envelope = response as ServerDefinitionsResponse;
+                const reply = isPlainObject(envelope?.result) ? envelope.result : response;
+                if (!isPlainObject(reply) || response?.error || reply.error || reply.status === 'error' ||
+                    typeof reply.hash !== 'string' || !reply.hash) throw new Error('Invalid server definitions reply');
+                const unchanged = hash && reply.hash === hash && !reply.FIELDS;
+                // Network I/O is async. Defer the remaining schema work past screen interactions as well.
+                await new Promise<void>((resolve) => { InteractionManager.runAfterInteractions(resolve); });
+                if (!isCurrent()) return;
+                const definitions = unchanged && cached ? cached.definitions
+                    : createNetworkDefinitions(reply, network.nativeAsset?.asset);
+                const checkedAt = Date.now();
+                const data = { ...definitions.rawDefinitions, __xamanDefinitionVersion: DEFINITION_CACHE_VERSION,
+                    __xamanDefinitionsCheckedAt: checkedAt, __xamanDefinitionsEndpoint: endpoint };
+                const source = JSON.stringify(data);
+                // Persist the complete schema and freshness record together. Expiry never deletes usable data.
+                NetworkRepository.update({ id: network.id, definitionsString: source });
+                this.definitionsCache.set(key, { source, nativeAsset: network.nativeAsset?.asset || 'XRP',
+                    definitions, version: DEFINITION_CACHE_VERSION, checkedAt, endpoint });
+                this.scheduleDefinitionsRefresh(DEFINITIONS_TTL_MS);
+            } catch (error) {
+                this.logger.warn('Unable to refresh network definitions; keeping cached schema', error);
+                if (isCurrent()) this.scheduleDefinitionsRefresh(DEFINITIONS_RETRY_MS);
             }
-
-            const response = await this.send<ServerDefinitionsRequest, ServerDefinitionsResponse>(request);
-            const envelope = response as ServerDefinitionsResponse;
-            const definitionsResp = isPlainObject(envelope?.result) ? envelope.result : response;
-            if (!isPlainObject(definitionsResp) || response?.error || definitionsResp.error ||
-                definitionsResp.status === 'error' ||
-                typeof definitionsResp.hash !== 'string' || !definitionsResp.hash) {
-                this.logger.warn('server_definitions got invalid response:', response);
-                return;
-            }
-            if (definitionsHash && definitionsResp.hash === definitionsHash && !definitionsResp.FIELDS) return;
-
-            const definitions = normalizeDefinitions(definitionsResp, network.nativeAsset?.asset);
-            // Build before writing; an invalid reply must not replace a usable cache.
-            createNetworkDefinitions(definitions, network.nativeAsset?.asset);
-            definitions.__xamanDefinitionVersion = DEFINITION_CACHE_VERSION;
-            this.logger.debug(`Updating network [${network.networkId}] definitions ${definitionsResp.hash} `);
-            NetworkRepository.update({
-                id: network.id,
-                definitionsString: JSON.stringify(definitions),
-            });
-        } catch (error) {
-            this.logger.error('updateNetworkDefinitions: ', error);
-        }
+        })().finally(() => {
+            if (this.definitionsRequests.get(key)?.promise === promise) this.definitionsRequests.delete(key);
+        });
+        this.definitionsRequests.set(key, { connection, endpoint, promise });
+        return promise;
     };
 
     /**

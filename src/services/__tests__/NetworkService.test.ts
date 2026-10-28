@@ -1,6 +1,8 @@
+import { InteractionManager } from 'react-native';
 import NetworkRepository from '@store/repositories/network';
+import CoreRepository from '@store/repositories/core';
 
-import NetworkService from '../NetworkService';
+import NetworkService, { NetworkStateStatus } from '../NetworkService';
 
 import * as FeeUtils from '@common/utils/fee';
 
@@ -58,13 +60,27 @@ describe('NetworkService', () => {
             isFeatureEnabled: jest.fn(), ...extra,
         });
         beforeEach(() => {
+            jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate'] });
+            jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((callback: any) => {
+                callback();
+                return { then: Promise.resolve().then.bind(Promise.resolve()), cancel: jest.fn() } as any;
+            });
+            (networkService as any).definitionsCache.clear();
             jest.replaceProperty(networkService, 'network', network() as any);
             send = jest.spyOn(networkService, 'send');
-            update = jest.spyOn(NetworkRepository, 'update').mockImplementation(jest.fn());
+            update = jest.spyOn(NetworkRepository, 'update').mockImplementation((data) => {
+                if (networkService.network?.id === data.id) {
+                    networkService.network!.definitionsString = data.definitionsString;
+                }
+                return data as any;
+            });
         });
         afterEach(() => {
             send.mockRestore();
             update.mockRestore();
+            jest.mocked(InteractionManager.runAfterInteractions).mockRestore();
+            jest.clearAllTimers();
+            jest.useRealTimers();
             jest.clearAllMocks();
         });
 
@@ -76,8 +92,10 @@ describe('NetworkService', () => {
             await networkService.updateNetworkDefinitions();
             expect(send).toHaveBeenCalledWith({ command: 'server_definitions' });
             const stored = JSON.parse(update.mock.calls[0][0].definitionsString);
-            expect(stored).toEqual({ ...normalizeDefinitions(reply),
-                __xamanDefinitionVersion: DEFINITION_CACHE_VERSION });
+            const expected = normalizeDefinitions(reply);
+            expected.TRANSACTION_TYPES.SignIn = 999;
+            expect(stored).toEqual({ ...expected, __xamanDefinitionVersion: DEFINITION_CACHE_VERSION,
+                __xamanDefinitionsCheckedAt: Date.now(), __xamanDefinitionsEndpoint: '' });
             expect(createNetworkDefinitions(stored).field.TransactionType.associatedType).toBeDefined();
         });
 
@@ -93,14 +111,16 @@ describe('NetworkService', () => {
             },
         );
 
-        it('accepts a hash-only response only for a complete current cache', async () => {
+        it('accepts a hash-only response only for a complete expired cache', async () => {
             const cached = { ...normalizeDefinitions(xrplReply),
-                __xamanDefinitionVersion: DEFINITION_CACHE_VERSION };
+                __xamanDefinitionVersion: DEFINITION_CACHE_VERSION,
+                __xamanDefinitionsCheckedAt: Date.now() - 61 * 60 * 1000, __xamanDefinitionsEndpoint: '' };
             jest.replaceProperty(networkService, 'network', network({ definitions: cached }) as any);
             send.mockResolvedValue({ hash: cached.hash });
             await networkService.updateNetworkDefinitions();
             expect(send).toHaveBeenCalledWith({ command: 'server_definitions', hash: cached.hash });
-            expect(update).not.toHaveBeenCalled();
+            expect(update).toHaveBeenCalledTimes(1);
+            expect(JSON.parse(update.mock.calls[0][0].definitionsString).__xamanDefinitionsCheckedAt).toBe(Date.now());
         });
 
         it('fetches full metadata for an old cache even when the server hash is unchanged', async () => {
@@ -117,6 +137,17 @@ describe('NetworkService', () => {
             expect(stored.TRANSACTION_FLAGS_INDICES.AccountSet).toEqual(stored.ACCOUNT_SET_FLAGS);
         });
 
+        it('uses a small hash check for a complete older cache without a freshness record', async () => {
+            const cached = { ...normalizeDefinitions(xrplReply), __xamanDefinitionVersion: DEFINITION_CACHE_VERSION };
+            jest.replaceProperty(networkService, 'network',
+                network({ definitionsString: JSON.stringify(cached) }) as any);
+            send.mockResolvedValue({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledWith({ command: 'server_definitions', hash: cached.hash });
+            expect(networkService.getNetworkDefinitions().getHash()).toBe(cached.hash);
+            expect(JSON.parse(update.mock.calls[0][0].definitionsString).__xamanDefinitionsCheckedAt).toBe(Date.now());
+        });
+
         it('does not send a hash from an incomplete or corrupt cache', async () => {
             const current = network({ definitions: { hash: 'old',
                 __xamanDefinitionVersion: DEFINITION_CACHE_VERSION } });
@@ -124,7 +155,7 @@ describe('NetworkService', () => {
             send.mockResolvedValue(xrplReply);
             await networkService.updateNetworkDefinitions();
             expect(send).toHaveBeenLastCalledWith({ command: 'server_definitions' });
-            Object.defineProperty(current, 'definitions', { get: () => { throw new Error('Invalid JSON'); } });
+            (current as any).definitionsString = '{invalid JSON';
             await networkService.updateNetworkDefinitions();
             expect(send).toHaveBeenLastCalledWith({ command: 'server_definitions' });
             expect(update).toHaveBeenCalledTimes(2);
@@ -159,6 +190,213 @@ describe('NetworkService', () => {
             expect(networkService.getNetworkDefinitions()).not.toBe(other);
             expect(networkService.getNetworkDefinitions().transactionNames).toContain('FutureTransaction');
         });
+
+        const fresh = (extra = {}) => ({ ...normalizeDefinitions(xrplReply),
+            __xamanDefinitionVersion: DEFINITION_CACHE_VERSION,
+            __xamanDefinitionsCheckedAt: Date.now(), __xamanDefinitionsEndpoint: '', ...extra });
+        const settle = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
+
+        it('uses a fresh persistent cache across app boots without any definitions request', async () => {
+            const stored = JSON.stringify(fresh({ __xamanDefinitionsCheckedAt: Date.now() - 30 * 60 * 1000 }));
+            jest.replaceProperty(networkService, 'network', network({ definitionsString: stored }) as any);
+            await networkService.updateNetworkDefinitions();
+            const parsed = networkService.getNetworkDefinitions();
+            expect(networkService.getRawNetworkDefinitions()).toBe((parsed as any).rawDefinitions);
+            // A new process has the same Realm string, but no parsed objects.
+            (networkService as any).definitionsCache.clear();
+            await networkService.updateNetworkDefinitions();
+            expect(networkService.getNetworkDefinitions().getHash()).toBe(parsed.getHash());
+            expect(send).not.toHaveBeenCalled();
+            expect(update).not.toHaveBeenCalled();
+        });
+
+        it('checks an expired hash, renews freshness, and retains the parsed instance', async () => {
+            const cached = fresh({ __xamanDefinitionsCheckedAt: Date.now() - 60 * 60 * 1000 });
+            jest.replaceProperty(networkService, 'network',
+                network({ definitionsString: JSON.stringify(cached) }) as any);
+            const parsed = networkService.getNetworkDefinitions();
+            send.mockResolvedValue({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledWith({ command: 'server_definitions', hash: cached.hash });
+            expect(networkService.getNetworkDefinitions()).toBe(parsed);
+            (networkService as any).definitionsCache.clear();
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledTimes(1);
+            expect(networkService.getRawNetworkDefinitions().FIELDS).toEqual(cached.FIELDS);
+        });
+
+        it('keeps expired definitions usable when offline and does not extend their freshness', async () => {
+            const stored = JSON.stringify(fresh({ __xamanDefinitionsCheckedAt: Date.now() - 61 * 60 * 1000 }));
+            jest.replaceProperty(networkService, 'network', network({ definitionsString: stored }) as any);
+            const parsed = networkService.getNetworkDefinitions();
+            send.mockRejectedValue(new Error('offline'));
+            await networkService.updateNetworkDefinitions();
+            expect(networkService.getNetworkDefinitions()).toBe(parsed);
+            expect(networkService.network!.definitionsString).toBe(stored);
+            expect(update).not.toHaveBeenCalled();
+        });
+
+        it('does not treat a timestamp in the future as fresh after a clock change', async () => {
+            const cached = fresh({ __xamanDefinitionsCheckedAt: Date.now() + 60 * 60 * 1000 });
+            jest.replaceProperty(networkService, 'network',
+                network({ definitionsString: JSON.stringify(cached) }) as any);
+            send.mockResolvedValue({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledTimes(1);
+        });
+
+        it('keeps parsed definitions for both networks when switching back, even with the same hash', () => {
+            const a = network({ id: 'network-a', definitionsString: JSON.stringify(fresh()) });
+            const b = network({ id: 'network-b', nativeAsset: { asset: 'XAH' },
+                definitionsString: JSON.stringify({ ...normalizeDefinitions(xahauReply), hash: fresh().hash }) });
+            jest.replaceProperty(networkService, 'network', a as any);
+            const parsedA = networkService.getNetworkDefinitions();
+            jest.replaceProperty(networkService, 'network', b as any);
+            const parsedB = networkService.getNetworkDefinitions();
+            expect(parsedB.transactionFlagsIndices!.AccountSet.asfAllowTrustLineClawback).toBe(17);
+            jest.replaceProperty(networkService, 'network', a as any);
+            expect(networkService.getNetworkDefinitions()).toBe(parsedA);
+            expect(parsedA.transactionFlagsIndices!.AccountSet.asfAllowTrustLineClawback).toBe(16);
+            jest.replaceProperty(networkService, 'network', b as any);
+            expect(networkService.getNetworkDefinitions()).toBe(parsedB);
+        });
+
+        it('shares one pending request for the same network, node and connection', async () => {
+            let answer!: (value: any) => void;
+            send.mockReturnValue(new Promise(resolve => { answer = resolve; }));
+            const first = networkService.updateNetworkDefinitions();
+            const second = networkService.updateNetworkDefinitions();
+            expect(second).toBe(first);
+            await settle();
+            expect(send).toHaveBeenCalledTimes(1);
+            answer(xrplReply);
+            await first;
+            expect(update).toHaveBeenCalledTimes(1);
+            const ready = networkService.getNetworkDefinitions();
+            await networkService.updateNetworkDefinitions();
+            expect(send).toHaveBeenCalledTimes(1);
+            expect(networkService.getNetworkDefinitions()).toBe(ready);
+        });
+
+        it('ignores a delayed response from the previous network', async () => {
+            let answer!: (value: any) => void;
+            send.mockReturnValue(new Promise(resolve => { answer = resolve; }));
+            const pending = networkService.updateNetworkDefinitions();
+            await settle();
+            jest.replaceProperty(networkService, 'network', network({ id: 'network-b',
+                definitionsString: JSON.stringify(normalizeDefinitions(xahauReply)) }) as any);
+            answer(xrplReply);
+            await pending;
+            expect(update).not.toHaveBeenCalled();
+            expect(networkService.getNetworkDefinitions().transactionNames).toContain('ClaimReward');
+        });
+
+        it('a new connection starts its own check and an old reply cannot cancel or replace it', async () => {
+            let oldAnswer!: (value: any) => void;
+            let newAnswer!: (value: any) => void;
+            send.mockReturnValueOnce(new Promise(resolve => { oldAnswer = resolve; }))
+                .mockReturnValueOnce(new Promise(resolve => { newAnswer = resolve; }));
+            const old = networkService.updateNetworkDefinitions();
+            await settle();
+            const priorConnection = networkService.connection;
+            jest.replaceProperty(networkService, 'connection', {} as any);
+            const next = networkService.updateNetworkDefinitions();
+            await settle();
+            expect(send).toHaveBeenCalledTimes(2);
+            oldAnswer(xrplReply);
+            await old;
+            expect(networkService.updateNetworkDefinitions()).toBe(next);
+            const changed = { ...normalizeDefinitions(xrplReply), hash: 'new-connection-hash' };
+            newAnswer(changed);
+            await next;
+            expect(update).toHaveBeenCalledTimes(1);
+            expect(networkService.getNetworkDefinitions().getHash()).toBe(changed.hash);
+            jest.replaceProperty(networkService, 'connection', priorConnection);
+        });
+
+        it('checks a new node even while the same connection has an older request pending', async () => {
+            let oldAnswer!: (value: any) => void;
+            send.mockReturnValueOnce(new Promise(resolve => { oldAnswer = resolve; }))
+                .mockResolvedValueOnce(xrplReply);
+            const old = networkService.updateNetworkDefinitions();
+            await settle();
+            (networkService as any).connectedEndpoint = 'wss://other.example';
+            await networkService.updateNetworkDefinitions();
+            oldAnswer(xrplReply);
+            await old;
+            expect(send).toHaveBeenCalledTimes(2);
+            expect(update).toHaveBeenCalledTimes(1);
+            expect(JSON.parse(update.mock.calls[0][0].definitionsString).__xamanDefinitionsEndpoint)
+                .toBe('wss://other.example');
+            (networkService as any).connectedEndpoint = undefined;
+        });
+
+        it('refreshes an expired active network, and cancels the timer when disconnected', async () => {
+            const cached = fresh();
+            jest.replaceProperty(networkService, 'network',
+                network({ definitionsString: JSON.stringify(cached) }) as any);
+            const priorConnection = networkService.connection;
+            jest.replaceProperty(networkService, 'connection', {} as any);
+            networkService.setConnectionStatus(NetworkStateStatus.Connected);
+            send.mockResolvedValue({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(send).not.toHaveBeenCalled();
+            await jest.advanceTimersByTimeAsync(60 * 60 * 1000);
+            expect(send).toHaveBeenCalledTimes(1);
+            networkService.setConnectionStatus(NetworkStateStatus.Disconnected);
+            await jest.advanceTimersByTimeAsync(2 * 60 * 60 * 1000);
+            expect(send).toHaveBeenCalledTimes(1);
+            jest.replaceProperty(networkService, 'connection', priorConnection);
+        });
+
+
+        it('returns from a network switch before preparing definitions after interactions', async () => {
+            const tasks: Array<() => void> = [];
+            jest.mocked(InteractionManager.runAfterInteractions).mockImplementation((callback: any) => {
+                tasks.push(callback);
+                return { cancel: jest.fn(), then: jest.fn() } as any;
+            });
+            const core = jest.spyOn(CoreRepository, 'setDefaultNetwork').mockImplementation(jest.fn());
+            const connect = jest.spyOn(networkService, 'connect').mockImplementation(jest.fn());
+            const destroy = jest.spyOn(networkService, 'destroyConnection').mockImplementation(jest.fn());
+            const selected = network({ id: { toString: () => 'switched', equals: () => false },
+                name: 'Selected network', defaultNode: { endpoint: '' }, definitionsString: JSON.stringify(fresh()) });
+            await networkService.switchNetwork(selected as any);
+            expect(connect).toHaveBeenCalledTimes(1);
+            expect(tasks).toHaveLength(1);
+            const refresh = networkService.updateNetworkDefinitions();
+            expect(tasks).toHaveLength(1); // the same preparation is shared with the refresh
+            expect(send).not.toHaveBeenCalled();
+            tasks.shift()!();
+            await refresh;
+            expect(send).not.toHaveBeenCalled();
+            expect(networkService.getNetworkDefinitions().getHash()).toBe(fresh().hash);
+            core.mockRestore();
+            connect.mockRestore();
+            destroy.mockRestore();
+        });
+
+        it('retries a failed refresh after one minute while retaining the stale schema', async () => {
+            const cached = fresh({ __xamanDefinitionsCheckedAt: Date.now() - 61 * 60 * 1000 });
+            jest.replaceProperty(networkService, 'network',
+                network({ definitionsString: JSON.stringify(cached) }) as any);
+            const priorConnection = networkService.connection;
+            jest.replaceProperty(networkService, 'connection', {} as any);
+            networkService.setConnectionStatus(NetworkStateStatus.Connected);
+            const parsed = networkService.getNetworkDefinitions();
+            send.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(networkService.getNetworkDefinitions()).toBe(parsed);
+            expect(update).not.toHaveBeenCalled();
+            await jest.advanceTimersByTimeAsync(59 * 1000);
+            expect(send).toHaveBeenCalledTimes(1);
+            await jest.advanceTimersByTimeAsync(1000);
+            expect(send).toHaveBeenCalledTimes(2);
+            expect(update).toHaveBeenCalledTimes(1);
+            networkService.setConnectionStatus(NetworkStateStatus.Disconnected);
+            jest.replaceProperty(networkService, 'connection', priorConnection);
+        });
+
     });
 
     describe('calculate fee', () => {
