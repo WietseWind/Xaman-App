@@ -17,6 +17,8 @@ class DelegateSet extends BaseGenuineTransaction {
 
     public readonly ___translatedDelegations: string[];
     public readonly ___dangerPerms: string[] = [];
+    /** Permissions shown while reviewing a revoke. They are not part of the signed transaction. */
+    public revokedPermissions?: unknown[];
 
     public static Fields: { [key: string]: FieldConfig } = {
         Authorize: { type: AccountID },

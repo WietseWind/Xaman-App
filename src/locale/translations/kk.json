@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Ол %{authorize} мекенжайына қол қою рұқсаттарын авторизациялайды.",
     "itSetsThesePermissions": "Ол келесі рұқсат(тар)ды делегаттайды: %{permissions}",
     "permissionsGranted": "Беретін қол қою рұқсаттары",
+    "permissionsHeld": "Берілген қол қою рұқсаттары",
+    "permissionsToRevoke": "Қайтарып алынатын қол қою рұқсаттары",
     "itRemovesTheAccountAuthorize": "Келесі шотқа барлық авторизация(лар)ды толық жою (қайтарып алу):",
     "itRemoves": "Ол келесі шотқа барлық авторизация(лар)ды толық жояды (қайтарып алады): %{authorize}."
   },

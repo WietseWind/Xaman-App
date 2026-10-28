@@ -82,12 +82,26 @@ it('explains that revocation affects only this account pair and does not show a 
     const tree = renderer.create(<DelegationDetails owner={owner} authorize={delegate} mode="revoke"
         permissions={[]} transactionTypes={defs.rawDefinitions.TRANSACTION_TYPES} />);
     expect(text(tree)).toContain('Other delegations are unchanged');
+    expect(text(tree)).not.toContain('Signing permissions to grant');
+    expect(text(tree)).not.toContain('Signing permissions granted');
     expect(text(tree)).toContain('Account revoking permissions');
     expect(text(tree)).toContain('Account losing permissions');
     expect(text(tree)).not.toContain('Account granting permissions');
     expect(text(tree)).not.toContain('Account receiving permissions');
     expect(text(tree)).not.toContain('This list replaces');
     expect(tree.root.findAllByType(AccountElement).map(node => node.props.address)).toEqual([owner, delegate]);
+});
+
+it('names held permissions on a ledger object and lists the permissions a revoke will remove', () => {
+    const held = renderer.create(<DelegationDetails owner={owner} authorize={delegate} mode="object"
+        permissions={permissions(['NFTokenModify'])} transactionTypes={{ NFTokenModify: 61 }} />);
+    expect(text(held)).toContain('Signing permissions granted');
+    expect(text(held)).not.toContain('Signing permissions to grant');
+    const revoke = renderer.create(<DelegationDetails owner={owner} authorize={delegate} mode="revoke"
+        permissions={permissions(['NFTokenModify'])} transactionTypes={{ NFTokenModify: 61 }} />);
+    expect(text(revoke)).toContain('Signing permissions to revoke');
+    expect(text(revoke)).toContain('Modify NFT');
+    expect(text(revoke)).not.toContain('Signing permissions to grant');
 });
 
 it('uses the same component and pinned permission definitions for review, history and ledger objects', () => {

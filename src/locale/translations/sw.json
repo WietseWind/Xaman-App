@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "It authorizes signing permissions kwa%{authorize}.",
     "itSetsThesePermissions": "It delegates ile following permission(s):%{permissions}",
     "permissionsGranted": "Signing permissions kwa grant",
+    "permissionsHeld": "Ruhusa za sahihi zilizotolewa",
+    "permissionsToRevoke": "Ruhusa za sahihi zitakazobatilishwa",
     "itRemovesTheAccountAuthorize": "Fully remove (retract) all authorization(s) to the following account:",
     "itRemoves": "It fully removes (retract(s)) all authorization(s) to the following account: %{authorize}."
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "%{authorize} に署名権限を承認します。",
     "itSetsThesePermissions": "次の権限を委任します： %{permissions}",
     "permissionsGranted": "付与する署名権限",
+    "permissionsHeld": "付与済みの署名権限",
+    "permissionsToRevoke": "取り消す署名権限",
     "itRemovesTheAccountAuthorize": "次のアカウントへのすべての承認を完全に削除（取り消し）します：",
     "itRemoves": "次のアカウントへのすべての承認を完全に削除（取り消し）します： %{authorize} 。"
   },

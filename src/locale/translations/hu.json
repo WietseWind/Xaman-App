@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Aláírási engedélyeket engedélyez ide: %{authorize}.",
     "itSetsThesePermissions": "A következő engedély(eke)t delegálja: %{permissions}",
     "permissionsGranted": "Megadandó aláírási engedélyek",
+    "permissionsHeld": "Megadott aláírási engedélyek",
+    "permissionsToRevoke": "Visszavonandó aláírási engedélyek",
     "itRemovesTheAccountAuthorize": "Fully remove (retract) all authorization(s) to the following account:",
     "itRemoves": "It fully removes (retract(s)) all authorization(s) to the following account: %{authorize}."
   },

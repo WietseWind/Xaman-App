@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Se valtuuttaa allekirjoitusluvat osoitteelle %{authorize}.",
     "itSetsThesePermissions": "Se delegoi seuraavat luvat: %{permissions}",
     "permissionsGranted": "Myönnettävät allekirjoitusluvat",
+    "permissionsHeld": "Myönnetyt allekirjoitusluvat",
+    "permissionsToRevoke": "Peruttavat allekirjoitusluvat",
     "itRemovesTheAccountAuthorize": "Poista (peruuta) kaikki valtuutukset kokonaan seuraavalta tililtä:",
     "itRemoves": "Se poistaa (peruuttaa) kokonaan kaikki valtuutukset seuraavalta tililtä: %{authorize}."
   },

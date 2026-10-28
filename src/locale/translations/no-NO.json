@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Den autoriserer signeringstillatelser til %{authorize}.",
     "itSetsThesePermissions": "Den delegerer følgende tillatelse(r): %{permissions}",
     "permissionsGranted": "Signeringstillatelser å gi",
+    "permissionsHeld": "Gitte signeringstillatelser",
+    "permissionsToRevoke": "Signeringstillatelser som tilbakekalles",
     "itRemovesTheAccountAuthorize": "Fjern fullstendig (tilbakekall) alle autorisasjon(er) til følgende konto:",
     "itRemoves": "Den fjerner fullstendig (tilbakekaller) alle autorisasjon(er) til følgende konto: %{authorize}."
   },

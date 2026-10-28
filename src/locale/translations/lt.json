@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Ji autorizuoja pasirašymo leidimus %{authorize}.",
     "itSetsThesePermissions": "Ji deleguoja šį(-ius) leidimą(-us): %{permissions}",
     "permissionsGranted": "Pasirašymo leidimai suteikti",
+    "permissionsHeld": "Suteikti pasirašymo leidimai",
+    "permissionsToRevoke": "Atšaukiami pasirašymo leidimai",
     "itRemovesTheAccountAuthorize": "Visiškai pašalina (atšaukia) visas autorizacijas šiai sąskaitai:",
     "itRemoves": "Ji visiškai pašalina (atšaukia) visas autorizacijas šiai sąskaitai: %{authorize}."
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Dit magtig teken toestemmings aan %{authorize}.",
     "itSetsThesePermissions": "Dit delegeer die volgende toestemming(s): %{permissions}",
     "permissionsGranted": "Teken toestemmings om te verleen",
+    "permissionsHeld": "Tekenmagtigings verleen",
+    "permissionsToRevoke": "Tekenmagtigings om te herroep",
     "itRemovesTheAccountAuthorize": "Verwyder volledig (herroep) alle magtiging(s) aan die volgende rekening:",
     "itRemoves": "Dit verwyder volledig (herroep) alle magtiging(s) aan die volgende rekening: %{authorize}."
   },

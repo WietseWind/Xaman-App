@@ -36,9 +36,13 @@ const DelegationDetails = ({ owner, authorize, permissions, transactionTypes, na
                 : <Text style={styles.value}>{Localize.t('txDelegateSet.empty')}</Text>}
             {mode === 'grant' && <InfoMessage type="warning" label={Localize.t('delegation.replacesPermissions')} />}
             {mode !== 'revoke' && <Text style={styles.value}>{Localize.t('delegation.wholeTransaction')}</Text>}
-            {mode !== 'revoke' && (
+            {(mode !== 'revoke' || values.length > 0) && (
                 <>
-                    <Text style={styles.label}>{Localize.t('txDelegateSet.permissionsGranted')}</Text>
+                    <Text style={styles.label}>{Localize.t(mode === 'revoke'
+                        ? 'txDelegateSet.permissionsToRevoke'
+                        : mode === 'object'
+                            ? 'txDelegateSet.permissionsHeld'
+                            : 'txDelegateSet.permissionsGranted')}</Text>
                     {values.length === 0 && (
                         <Text style={styles.value}>{Localize.t('global.noInformationToShow')}</Text>
                     )}

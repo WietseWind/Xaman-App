@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "ھي اڪائونٽ اختيار سيٽ ڪري ٿو",
     "itSetsThesePermissions": "ھي اھي اجازتون سيٽ ڪري ٿو",
     "permissionsGranted": "اجازتون ڏنيون ويون",
+    "permissionsHeld": "ڏنل صحيح جون اجازتون",
+    "permissionsToRevoke": "واپس وٺڻ جون صحيح جون اجازتون",
     "itRemovesTheAccountAuthorize": "ھي اڪائونٽ اختيار هٽائي ٿو",
     "itRemoves": "ھي هٽائي ٿو"
   },

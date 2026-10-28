@@ -45,6 +45,8 @@ export class Payload {
     payload!: PayloadReferenceType;
     origin!: PayloadOrigin;
     generated!: boolean;
+    /** Display-only permissions for a revoke opened from a Delegate object. Not signed. */
+    revokedPermissions?: unknown[];
     risk!: { __warn_user: boolean } & { [key: string]: number | boolean };
 
     /**
@@ -395,6 +397,10 @@ export class Payload {
         // NOTE: THIS SHOULD NEVER HAPPEN
         if (craftedTransaction.TransactionType && craftedTransaction.TransactionType !== this.getTransactionType()) {
             throw new Error('Parsed transaction have invalid transaction type!');
+        }
+
+        if (this.revokedPermissions && craftedTransaction.Type === TransactionTypes.DelegateSet) {
+            (craftedTransaction as { revokedPermissions?: unknown[] }).revokedPermissions = this.revokedPermissions;
         }
 
         return craftedTransaction;

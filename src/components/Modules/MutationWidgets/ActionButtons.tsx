@@ -704,6 +704,9 @@ class ActionButtons extends PureComponent<Props, State> {
 
             // generate payload
             const payload = Payload.build(craftedTxJson);
+            if (item.Type === LedgerEntryTypes.Delegate && item.Permissions?.length) {
+                payload.revokedPermissions = item.Permissions;
+            }
 
             Navigator.showModal<ReviewTransactionModalProps>(
                 AppScreens.Modal.ReviewTransaction,

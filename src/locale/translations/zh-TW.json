@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "It authorizes signing permissions to %{authorize}.",
     "itSetsThesePermissions": "It delegates the following permission(s): %{permissions}",
     "permissionsGranted": "權限已授予",
+    "permissionsHeld": "已授予的簽名權限",
+    "permissionsToRevoke": "將撤銷的簽名權限",
     "itRemovesTheAccountAuthorize": "Fully remove (retract) all authorization(s) to the following account:",
     "itRemoves": "It fully removes (retract(s)) all authorization(s) to the following account: %{authorize}."
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Autoryzuje uprawnienia do podpisywania dla %{authorize}.",
     "itSetsThesePermissions": "Deleguje następujące uprawnienia: %{permissions}",
     "permissionsGranted": "Uprawnienia do podpisywania do przyznania",
+    "permissionsHeld": "Przyznane uprawnienia do podpisywania",
+    "permissionsToRevoke": "Uprawnienia do podpisywania do odebrania",
     "itRemovesTheAccountAuthorize": "Całkowicie usuń (cofnij) wszystkie autoryzacje dla następującego konta:",
     "itRemoves": "Całkowicie usuwa (cofa) wszystkie autoryzacje dla następującego konta: %{authorize}."
   },

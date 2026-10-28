@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Autorizira dozvole za potpisivanje za %{authorize}.",
     "itSetsThesePermissions": "Delegira sljedeću(e) dozvolu(e): %{permissions}",
     "permissionsGranted": "Dozvole za potpisivanje za odobravanje",
+    "permissionsHeld": "Dodijeljena ovlaštenja za potpisivanje",
+    "permissionsToRevoke": "Ovlaštenja za potpisivanje koja se opozivaju",
     "itRemovesTheAccountAuthorize": "Potpuno uklonite (povucite) sve autorizacije za sljedeći račun:",
     "itRemoves": "Potpuno uklanja (povlači) sve autorizacije za sljedeći račun: %{authorize}."
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "It authorizes signing permissions to %{authorize}.",
     "itSetsThesePermissions": "It delegates the following permission(s): %{permissions}",
     "permissionsGranted": "Signing permissions to grant",
+    "permissionsHeld": "మంజూరు చేసిన సంతక అనుమతులు",
+    "permissionsToRevoke": "ఉపసంహరించే సంతక అనుమతులు",
     "itRemovesTheAccountAuthorize": "Fully remove (retract) all authorization(s) to the following account:",
     "itRemoves": "It fully removes (retract(s)) all authorization(s) to the following account: %{authorize}."
   },

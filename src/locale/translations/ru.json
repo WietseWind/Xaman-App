@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Она авторизует права подписи для %{authorize}.",
     "itSetsThesePermissions": "Она делегирует следующие разрешения: %{permissions}",
     "permissionsGranted": "Права подписи для предоставления",
+    "permissionsHeld": "Предоставленные права подписи",
+    "permissionsToRevoke": "Отзываемые права подписи",
     "itRemovesTheAccountAuthorize": "Полностью удалить (отозвать) все авторизации для следующего аккаунта:",
     "itRemoves": "Она полностью удаляет (отзывает) все авторизации для следующего аккаунта: %{authorize}."
   },

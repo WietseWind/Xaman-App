@@ -36,12 +36,14 @@ afterEach(() => jest.restoreAllMocks());
 
 it('opens a review for the exact principal and delegate with an empty permission list', async () => {
     const view = create();
-    const build = jest.spyOn(Payload, 'build').mockReturnValue({} as any);
+    const payload = {} as { revokedPermissions?: unknown[] };
+    const build = jest.spyOn(Payload, 'build').mockReturnValue(payload as any);
     await view.setAvailableActions();
     expect(view.state.availableActions).toEqual(['REMOVE_DELEGATION']);
     await view.onActionButtonPress('REMOVE_DELEGATION' as any);
     expect(build).toHaveBeenCalledWith({ TransactionType: 'DelegateSet', Account: owner,
         Authorize: delegate, Permissions: [] });
+    expect(payload.revokedPermissions).toEqual(entry.Permissions);
     expect(Navigator.showModal).toHaveBeenCalledTimes(1);
 });
 

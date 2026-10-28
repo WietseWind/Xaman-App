@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Het autoriseert ondertekeningsrechten aan %{authorize} .",
     "itSetsThesePermissions": "Het delegeert de volgende rechten: %{permissions}",
     "permissionsGranted": "Ondertekeningsrechten om te verlenen",
+    "permissionsHeld": "Verleende ondertekeningsrechten",
+    "permissionsToRevoke": "In te trekken ondertekeningsrechten",
     "itRemovesTheAccountAuthorize": "Alle autorisatie(s) volledig verwijderen (intrekken) voor het volgende account:",
     "itRemoves": "Het verwijdert (trekt in) alle autorisatie(s) volledig voor het volgende account: %{authorize} ."
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Вона надає дозволи на підписання %{authorize}.",
     "itSetsThesePermissions": "Вона делегує наступний(і) дозвіл(и): %{permissions}",
     "permissionsGranted": "Дозволи на підписання для надання",
+    "permissionsHeld": "Надані дозволи на підписання",
+    "permissionsToRevoke": "Дозволи на підписання, які відкликаються",
     "itRemovesTheAccountAuthorize": "Повністю видалити (відкликати) всі авторизації для наступного акаунта:",
     "itRemoves": "Вона повністю видаляє (відкликає) всі авторизації для наступного акаунта: %{authorize}."
   },

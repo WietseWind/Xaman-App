@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Elle autorise les permissions de signature à %{authorize}.",
     "itSetsThesePermissions": "Elle délègue la ou les permission(s) suivante(s) : %{permissions}",
     "permissionsGranted": "Permissions de signature à accorder",
+    "permissionsHeld": "Autorisations de signature accordées",
+    "permissionsToRevoke": "Autorisations de signature à retirer",
     "itRemovesTheAccountAuthorize": "Supprimer complètement (rétracter) toutes les autorisation(s) au compte suivant :",
     "itRemoves": "Elle supprime complètement (rétracte) toutes les autorisation(s) au compte suivant : %{authorize}."
   },

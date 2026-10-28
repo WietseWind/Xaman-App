@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Bu %{authorize} ga imzolash ruxsatlarini beradi.",
     "itSetsThesePermissions": "Quyidagi ruxsat(lar)ni topshiradi: %{permissions}",
     "permissionsGranted": "Berilgan ruxsatlar",
+    "permissionsHeld": "Berilgan imzo ruxsatlari",
+    "permissionsToRevoke": "Bekor qilinadigan imzo ruxsatlari",
     "itRemovesTheAccountAuthorize": "Quyidagi hisobga barcha avtorizatsiya(lar)ni to'liq olib tashlaydi (bekor qiladi):",
     "itRemoves": "Quyidagi hisobga barcha avtorizatsiya(lar)ni to'liq olib tashlaydi (bekor qiladi): %{unauthorize}"
   },

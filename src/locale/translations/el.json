@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Εξουσιοδοτεί άδειες υπογραφής στο %{authorize}.",
     "itSetsThesePermissions": "Αναθέτει τις ακόλουθες άδειες: %{permissions}",
     "permissionsGranted": "Παραχωρήθηκαν άδειες",
+    "permissionsHeld": "Παραχωρημένες άδειες υπογραφής",
+    "permissionsToRevoke": "Άδειες υπογραφής προς ανάκληση",
     "itRemovesTheAccountAuthorize": "Πλήρης αφαίρεση (ανάκληση) όλων των εξουσιοδοτήσεων στον ακόλουθο λογαριασμό:",
     "itRemoves": "Αφαιρεί πλήρως (ανακαλεί) όλες τις εξουσιοδοτήσεις στον ακόλουθο λογαριασμό: %{authorize}."
   },

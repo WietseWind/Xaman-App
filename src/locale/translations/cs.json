@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Nastavuje autorizaci účtu na",
     "itSetsThesePermissions": "Nastavuje tato oprávnění",
     "permissionsGranted": "Udělená oprávnění",
+    "permissionsHeld": "Udělená oprávnění k podpisu",
+    "permissionsToRevoke": "Oprávnění k podpisu k odvolání",
     "itRemovesTheAccountAuthorize": "Odstraňuje autorizaci účtu",
     "itRemoves": "Odstraňuje"
   },
