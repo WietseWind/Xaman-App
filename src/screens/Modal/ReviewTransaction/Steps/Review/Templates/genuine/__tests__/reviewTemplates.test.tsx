@@ -215,10 +215,14 @@ describe('Review templates', () => {
             const jsonSection = template.findByProps({ testID: 'universal-transaction-json' });
             expect(jsonSection.findAllByType(UniversalTransactionWarning)).toHaveLength(0);
             expect(template.findAllByType(UniversalTransactionWarning)).toHaveLength(1);
-            expect(texts(tree!)).toEqual(expect.arrayContaining([
+            const shown = texts(tree!);
+            expect(shown).toEqual(expect.arrayContaining([
                 'XChainBridge.LockingChainDoor',
                 'XChainBridge.IssuingChainDoor',
             ]));
+            expect(shown.join(' ')).toContain('no specific screen');
+            expect(shown.join(' ')).not.toContain('Extra fields');
+            expect(shown.join(' ')).not.toContain('cannot fully decode');
         });
 
         it('shows no fee picker for an inner transaction without Fee under the fallback template', async () => {

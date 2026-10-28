@@ -39,6 +39,19 @@ import { InstanceTypes } from '@common/libs/ledger/types/enums';
 // behind it, so they keep Header's status-bar margin.
 const iosModalHeaderStyle = { marginTop: 0 };
 
+// Keep the details page as wide as the screen. A long signature must wrap, not scroll sideways.
+const styles = StyleService.create({
+    scroll: {
+        flex: 1,
+        alignSelf: 'stretch',
+        width: '100%',
+    },
+    scrollContent: {
+        width: '100%',
+        maxWidth: '100%',
+    },
+});
+
 /* Component ==================================================================== */
 class TransactionDetailsView extends Component<Props & { componentType: ComponentTypes }, State> {
     static screenName = AppScreens.Transaction.Details;
@@ -248,7 +261,12 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                     componentType={componentType}
                 />
 
-                <ScrollView>
+                <ScrollView
+                    style={styles.scroll}
+                    contentContainerStyle={styles.scrollContent}
+                    alwaysBounceHorizontal={false}
+                    showsHorizontalScrollIndicator={false}
+                >
                     {item.InstanceType === InstanceTypes.FallbackTransaction && (
                         <View style={AppStyles.paddingSml}>
                             <UniversalTransactionWarning />

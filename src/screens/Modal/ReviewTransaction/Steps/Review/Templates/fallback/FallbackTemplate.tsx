@@ -90,7 +90,7 @@ class FallbackTemplate extends Component<Props, State> {
                 <UniversalTransactionWarning />
 
                 {/* Fields Xaman has no screen for, including nested values. */}
-                <ExtraFields transaction={transaction} />
+                <ExtraFields transaction={transaction} omitIntro />
 
                 <View style={[AppStyles.row, styles.label]}>
                     <View style={[AppStyles.flex1, AppStyles.centerContent]}>

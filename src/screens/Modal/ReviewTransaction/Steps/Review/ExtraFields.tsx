@@ -45,17 +45,25 @@ const fieldRows = (name: string, value: unknown): { name: string; value: unknown
     return [{ name, value }];
 };
 
-/** Hex that decodes as readable text can be tapped to show the original bytes. */
-const ExtraFields = ({ transaction }: { transaction: BaseTransaction }) => {
+/**
+ * Hex that decodes as readable text can be tapped to show the original bytes.
+ * An unknown transaction type already shows the no-screen warning, so it does not
+ * repeat the extra-fields title or the "cannot fully decode" warning.
+ */
+const ExtraFields = ({ transaction, omitIntro = false }: { transaction: BaseTransaction; omitIntro?: boolean }) => {
     const fields = transaction.ExtraFields;
     if (!fields.length) return null;
 
     return (
         <View testID="payload-extra-fields">
-            <Text style={styles.label}>{Localize.t('payload.extraFields')}</Text>
-            <View style={styles.extraFieldsWarning}>
-                <InfoMessage type="warning" label={Localize.t('payload.extraFieldsWarning')} />
-            </View>
+            {!omitIntro && (
+                <>
+                    <Text style={styles.label}>{Localize.t('payload.extraFields')}</Text>
+                    <View style={styles.extraFieldsWarning}>
+                        <InfoMessage type="warning" label={Localize.t('payload.extraFieldsWarning')} />
+                    </View>
+                </>
+            )}
             {fields.flatMap(({ name, value }) => fieldRows(name, value)).map((field) => (
                 <View key={field.name} style={styles.contentBox}>
                     <Text selectable style={[styles.value, AppStyles.bold]}>{field.name}</Text>

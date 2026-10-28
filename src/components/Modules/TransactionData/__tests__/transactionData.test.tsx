@@ -30,12 +30,13 @@ describe('universal transaction data', () => {
         const text = tree.root.findAllByType(Text).map((node) => node.props.children).flat().join(' ');
         expect(text).toContain('DefinitionOnly');
         expect(text).toContain(account);
-        expect(text).toContain('HookParameterValue');
-        expect(text).toContain(hex);
-        expect(tree.root.findAllByType(Text).filter((node) => node.props.children === `"${hex}"`))
-            .toHaveLength(1);
-        expect(tree.root.findAllByType(Text).find((node) => node.props.children === `"${hex}"`)!
-            .props.numberOfLines).toBeUndefined();
+        expect(text.replace(/\u200b/g, '')).toContain('HookParameterValue');
+        expect(text.replace(/\u200b/g, '')).toContain(hex);
+        const shownHex = tree.root.findAllByType(Text)
+            .find((node) => String(node.props.children).replace(/\u200b/g, '') === `"${hex}"`);
+        expect(shownHex).toBeTruthy();
+        expect(String(shownHex!.props.children)).toContain('\u200b');
+        expect(shownHex!.props.numberOfLines).toBeUndefined();
         for (const node of tree.root.findAllByType(JsonTree)) expect(node.instance.state.collapsed).toBe(false);
     });
 
