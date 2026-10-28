@@ -45,4 +45,22 @@ describe('Extra fields review', () => {
         expect(warning.props.label).toContain('Only sign if you understand');
         expect(warning.props.label).toContain('Stop if someone promises');
     });
+
+    it('lists an unimplemented nested object one field at a time', () => {
+        const transaction = {
+            ExtraFields: [{
+                name: 'FutureObject',
+                value: { FutureChild: 1, FutureNested: { FutureChild: 2 }, Items: ['aa'] },
+            }],
+        } as any;
+        const text = renderer.create(<ExtraFields transaction={transaction} />).root
+            .findAllByType(Text).map((node) => node.props.children).join(' ');
+        expect(text).toContain('FutureObject.FutureChild');
+        expect(text).toContain('1');
+        expect(text).toContain('FutureObject.FutureNested.FutureChild');
+        expect(text).toContain('2');
+        expect(text).toContain('FutureObject.Items[0]');
+        expect(text).toContain('aa');
+        expect(text).not.toContain('{');
+    });
 });

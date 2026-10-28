@@ -10,6 +10,7 @@ import { FallbackTemplate } from '../Steps/Review/Templates/fallback';
 import * as NativeTemplates from '../Steps/Review/Templates/genuine';
 import DetailsView from '@screens/Events/Details/DetailsView';
 import TransactionData from '@components/Modules/TransactionData';
+import UniversalTransactionWarning from '@components/Modules/TransactionData/UniversalTransactionWarning';
 
 jest.mock('@services/NetworkService');
 jest.mock('@components/General', () => ({ Header: () => null }));
@@ -78,6 +79,8 @@ describe('universal transaction routing', () => {
         const tree = renderer.create(details.render());
         expect(tree.root.findByType(TransactionData).props.history).toBe(true);
         expect(tree.root.findByType(TransactionData).props.transaction.JsonRaw).toEqual(history);
+        expect(tree.root.findByType(TransactionData).findAllByType(UniversalTransactionWarning)).toHaveLength(0);
+        expect(tree.root.findAllByType(UniversalTransactionWarning)).toHaveLength(1);
     });
 
     it('does not add universal warnings or JSON to the native transaction details page', () => {

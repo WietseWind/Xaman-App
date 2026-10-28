@@ -23,6 +23,7 @@ import { Header } from '@components/General';
 
 import * as MutationWidgets from '@components/Modules/MutationWidgets';
 import TransactionData from '@components/Modules/TransactionData';
+import UniversalTransactionWarning from '@components/Modules/TransactionData/UniversalTransactionWarning';
 // eslint-disable-next-line import/no-cycle
 import { Transaction } from '@components/Modules/EventsList/EventListItems';
 
@@ -249,7 +250,10 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
 
                 <ScrollView>
                     {item.InstanceType === InstanceTypes.FallbackTransaction && (
-                        <TransactionData transaction={item} history />
+                        <View style={AppStyles.paddingSml}>
+                            <UniversalTransactionWarning />
+                            <TransactionData transaction={item} history />
+                        </View>
                     )}
                     {widgetsList.map((widget: WidgetKey, index) => {
                         return React.createElement((MutationWidgets as WidgetComponents)[widget], {

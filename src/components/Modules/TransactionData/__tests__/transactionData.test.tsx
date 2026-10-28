@@ -7,6 +7,7 @@ import { TransactionFactory } from '@common/libs/ledger/factory';
 import { InfoMessage } from '@components/General/InfoMessage';
 import JsonTree from '@components/General/JsonTree/JsonTree';
 import TransactionData from '../TransactionData';
+import UniversalTransactionWarning from '../UniversalTransactionWarning';
 
 jest.mock('@services/NetworkService');
 
@@ -22,14 +23,10 @@ beforeEach(() => jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnV
 afterEach(() => jest.restoreAllMocks());
 
 describe('universal transaction data', () => {
-    it('shows the warning and every nested signed field, including full hex and the account', () => {
+    it('shows every nested signed field, including full hex and the account, without the warning', () => {
         const transaction = TransactionFactory.fromJson(raw as any);
         const tree = renderer.create(<TransactionData transaction={transaction} />);
-        const warning = tree.root.findByType(InfoMessage);
-        expect(warning.props.type).toBe('warning');
-        expect(warning.props.label).toContain('no specific screen');
-        expect(warning.props.label).toContain('Check all fields');
-        expect(warning.props.label).toContain('Only sign');
+        expect(tree.root.findAllByType(InfoMessage)).toHaveLength(0);
         const text = tree.root.findAllByType(Text).map((node) => node.props.children).flat().join(' ');
         expect(text).toContain('DefinitionOnly');
         expect(text).toContain(account);
@@ -53,6 +50,16 @@ describe('universal transaction data', () => {
         expect(text).toContain('false');
         expect(text).toContain('value');
         expect(transaction.JsonRaw).toEqual(history);
+    });
+
+    it('keeps the no-screen warning out of the JSON tree', () => {
+        const tree = renderer.create(<UniversalTransactionWarning />);
+        const warning = tree.root.findByType(InfoMessage);
+        expect(warning.props.type).toBe('warning');
+        expect(warning.props.label).toContain('no specific screen');
+        expect(warning.props.label).toContain('Check all fields');
+        expect(warning.props.label).toContain('Only sign');
+        expect(tree.root.findAllByType(JsonTree)).toHaveLength(0);
     });
 
     it('keeps the existing JSON tree truncation default for other screens', () => {

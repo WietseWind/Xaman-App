@@ -12,6 +12,7 @@ import { AMMClawback, Batch, FallbackTransaction, LedgerStateFix } from '@common
 
 import { AmountText, JsonTree } from '@components/General';
 import { AccountElement, CurrencyElement, FeePicker } from '@components/Modules';
+import UniversalTransactionWarning from '@components/Modules/TransactionData/UniversalTransactionWarning';
 
 import AMMClawbackTemplate from '../AMMClawback';
 import LedgerStateFixTemplate from '../LedgerStateFix';
@@ -211,6 +212,13 @@ describe('Review templates', () => {
             expect(template.props.transaction).toBeInstanceOf(FallbackTransaction);
             const [json] = template.findAllByType(JsonTree);
             expect(json.props.data).toEqual(xChainCommit);
+            const jsonSection = template.findByProps({ testID: 'universal-transaction-json' });
+            expect(jsonSection.findAllByType(UniversalTransactionWarning)).toHaveLength(0);
+            expect(template.findAllByType(UniversalTransactionWarning)).toHaveLength(1);
+            expect(texts(tree!)).toEqual(expect.arrayContaining([
+                'XChainBridge.LockingChainDoor',
+                'XChainBridge.IssuingChainDoor',
+            ]));
         });
 
         it('shows no fee picker for an inner transaction without Fee under the fallback template', async () => {
