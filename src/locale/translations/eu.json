@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Sinadura baimenak %{authorize} -ri ematen dizkio.",
     "itSetsThesePermissions": "Ondorengo baimen(ak) delegatzen ditu: %{permissions}",
     "permissionsGranted": "Eman beharreko sinadura baimenak",
+    "permissionsHeld": "Emandako sinadura baimenak",
+    "permissionsToRevoke": "Ezeztu beharreko sinadura baimenak",
     "itRemovesTheAccountAuthorize": "Ondorengo kontuari baimenen guztiak guztiz kendu (atzera egin):",
     "itRemoves": "Ondorengo kontuari baimenen guztiak guztiz kentzen (atzera egiten) ditu: %{authorize}."
   },

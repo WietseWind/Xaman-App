@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Li otorize pèmisyon siyati bay %{authorize}.",
     "itSetsThesePermissions": "Li delegE pèmisyon sa yo: %{permissions}",
     "permissionsGranted": "Pèmisyon bay",
+    "permissionsHeld": "Otorizasyon siyati yo ki deja akòde",
+    "permissionsToRevoke": "Otorizasyon siyati ki pral retire",
     "itRemovesTheAccountAuthorize": "Retire totalman (revoke) tout otorizasyon bay kont sa a:",
     "itRemoves": "Li retire totalman (revoke) tout otorizasyon bay kont sa a: %{authorize}."
   },

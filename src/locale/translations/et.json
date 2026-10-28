@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "See volitab allkirjastamise load kontole %{authorize} .",
     "itSetsThesePermissions": "See delegeerib järgmise(d) loa(d): %{permissions}",
     "permissionsGranted": "Antavad allkirjastamise load",
+    "permissionsHeld": "Antud allkirjastamise load",
+    "permissionsToRevoke": "Tühistatavad allkirjastamise load",
     "itRemovesTheAccountAuthorize": "Eemalda täielikult (võta tagasi) kõik volitused järgmisele kontole:",
     "itRemoves": "See eemaldab täielikult (võtab tagasi) kõik volitused järgmisele kontole: %{authorize} ."
   },

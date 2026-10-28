@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "এটি %{authorize} কে স্বাক্ষর অনুমতি প্রদান করে।",
     "itSetsThesePermissions": "এটি নিম্নলিখিত অনুমতি(গুলি) প্রত্যায়োজন করে: %{permissions}",
     "permissionsGranted": "প্রদান করতে স্বাক্ষর অনুমতি",
+    "permissionsHeld": "প্রদত্ত স্বাক্ষর অনুমতি",
+    "permissionsToRevoke": "প্রত্যাহার করার স্বাক্ষর অনুমতি",
     "itRemovesTheAccountAuthorize": "নিম্নলিখিত অ্যাকাউন্টে সমস্ত অনুমোদন(গুলি) সম্পূর্ণরূপে সরান (প্রত্যাহার):",
     "itRemoves": "এটি নিম্নলিখিত অ্যাকাউন্টে সমস্ত অনুমোদন(গুলি) সম্পূর্ণরূপে সরিয়ে দেয় (প্রত্যাহার করে): %{authorize}।"
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "یہ %{authorize} کو دستخط کی اجازتیں دیتی ہے۔",
     "itSetsThesePermissions": "یہ درج ذیل اجازت(یں) سونپتی ہے: %{permissions}",
     "permissionsGranted": "دینے کے لیے دستخط کی اجازتیں",
+    "permissionsHeld": "دی گئی دستخط کی اجازتیں",
+    "permissionsToRevoke": "منسوخ کی جانے والی دستخط کی اجازتیں",
     "itRemovesTheAccountAuthorize": "درج ذیل اکاؤنٹ کی تمام اجازت(یں) مکمل طور پر ہٹائیں (واپس لیں):",
     "itRemoves": "یہ درج ذیل اکاؤنٹ کی تمام اجازت(یں) مکمل طور پر ہٹاتی ہے (واپس لیتی ہے): %{authorize}۔"
   },

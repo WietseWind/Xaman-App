@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "它授权签名权限给 %{authorize} 。",
     "itSetsThesePermissions": "它委托以下权限： %{permissions}",
     "permissionsGranted": "要授予的签名权限",
+    "permissionsHeld": "已授予的签名权限",
+    "permissionsToRevoke": "将撤销的签名权限",
     "itRemovesTheAccountAuthorize": "完全移除（撤销）以下账户的所有授权：",
     "itRemoves": "它完全移除（撤销）以下账户的所有授权： %{authorize} 。"
   },

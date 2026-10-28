@@ -11,7 +11,9 @@ const Delegation = ({ item }: Props) => {
     const transaction = item as any;
     const types = item.Type === LedgerEntryTypes.Delegate ? item.PermissionTransactionTypes
         : transaction.SigningDefinitions?.rawDefinitions?.TRANSACTION_TYPES || {};
-    const permissions = transaction.Permissions || [];
+    const permissions = transaction.Permissions?.length
+        ? transaction.Permissions
+        : transaction.revokedPermissions || [];
     const nativeAsset = item.Type === LedgerEntryTypes.Delegate ? item.PermissionNativeAsset
         : transaction.SigningDefinitions?.rawDefinitions?.native_currency_code;
     return (

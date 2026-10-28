@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Sie autorisiert Signierberechtigungen für %{authorize}.",
     "itSetsThesePermissions": "Sie delegiert folgende Berechtigung(en): %{permissions}",
     "permissionsGranted": "Zu gewährende Signierberechtigungen",
+    "permissionsHeld": "Gewährte Signierberechtigungen",
+    "permissionsToRevoke": "Zu entziehende Signierberechtigungen",
     "itRemovesTheAccountAuthorize": "Alle Autorisierung(en) für folgendes Konto vollständig entfernen (widerrufen):",
     "itRemoves": "Sie entfernt (widerruft) vollständig alle Autorisierung(en) für folgendes Konto: %{authorize}."
   },

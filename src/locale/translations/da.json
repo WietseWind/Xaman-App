@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Det autoriserer underskriftstilladelser til %{authorize}.",
     "itSetsThesePermissions": "Det delegerer følgende tilladelse(r): %{permissions}.",
     "permissionsGranted": "Underskriftstilladelser at give",
+    "permissionsHeld": "Givne underskriftstilladelser",
+    "permissionsToRevoke": "Underskriftstilladelser der tilbagekaldes",
     "itRemovesTheAccountAuthorize": "Fjern fuldstændigt (tilbagekald) alle autorisationer til den delegerede konto.",
     "itRemoves": "Det fjerner fuldstændigt (tilbagekalder) alle autorisationer til den delegerede konto."
   },

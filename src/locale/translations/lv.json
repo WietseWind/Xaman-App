@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Tā autorizē parakstīšanas atļaujas uz %{authorize}.",
     "itSetsThesePermissions": "Tā deleģē šādas atļaujas: %{permissions}",
     "permissionsGranted": "Parakstīšanas atļaujas piešķirt",
+    "permissionsHeld": "Piešķirtās parakstīšanas atļaujas",
+    "permissionsToRevoke": "Atsaucamās parakstīšanas atļaujas",
     "itRemovesTheAccountAuthorize": "Pilnībā noņemt (atsaukt) visas autorizācijas šādam kontam:",
     "itRemoves": "Tas pilnībā noņem (atsauc) visas autorizācijas šādam kontam: %{authorize}."
   },

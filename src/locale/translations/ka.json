@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "ის ავტორიზებს ხელმოწერის ნებართვებს %{authorize}-სთვის",
     "itSetsThesePermissions": "ის გადასცემს შემდეგ ნებართვა(ებ)ს: %{permissions}",
     "permissionsGranted": "ხელმოწერის ნებართვები მინიჭებისთვის",
+    "permissionsHeld": "მინიჭებული ხელმოწერის ნებართვები",
+    "permissionsToRevoke": "გასაუქმებელი ხელმოწერის ნებართვები",
     "itRemovesTheAccountAuthorize": "სრულად წაშალეთ (გაიწვიეთ უკან) ყველა ავტორიზაცია შემდეგ ანგარიშზე:",
     "itRemoves": "ის სრულად შლის (იწვევს უკან) ყველა ავტორიზაციას შემდეგ ანგარიშზე: %{authorize}."
   },

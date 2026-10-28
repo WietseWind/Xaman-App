@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Ini mengotorisasi izin penandatanganan ke  %{authorize} .",
     "itSetsThesePermissions": "Ini mendelegasikan izin berikut:  %{permissions} ",
     "permissionsGranted": "Izin penandatanganan untuk diberikan",
+    "permissionsHeld": "Izin penandatanganan yang diberikan",
+    "permissionsToRevoke": "Izin penandatanganan yang akan dicabut",
     "itRemovesTheAccountAuthorize": "Hapus sepenuhnya (tarik) semua otorisasi ke akun berikut:",
     "itRemoves": "Ini sepenuhnya menghapus (menarik) semua otorisasi ke akun berikut:  %{authorize} ."
   },

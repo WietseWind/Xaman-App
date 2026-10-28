@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "تفوض أذونات التوقيع لـ %{authorize}.",
     "itSetsThesePermissions": "تفوض الأذونات التالية: %{permissions}",
     "permissionsGranted": "أذونات التوقيع للمنح",
+    "permissionsHeld": "أذونات التوقيع الممنوحة",
+    "permissionsToRevoke": "أذونات التوقيع المراد إلغاؤها",
     "itRemovesTheAccountAuthorize": "إزالة (سحب) جميع التفويضات بالكامل للحساب التالي:",
     "itRemoves": "يزيل (يسحب) بالكامل جميع التفويضات للحساب التالي: %{authorize}."
   },

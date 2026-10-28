@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Тя оторизира разрешения за подписване на %{authorize}.",
     "itSetsThesePermissions": "Тя делегира следното/ите разрешение/я: %{permissions}",
     "permissionsGranted": "Разрешения за подписване за предоставяне",
+    "permissionsHeld": "Предоставени разрешения за подписване",
+    "permissionsToRevoke": "Разрешения за подписване за отнемане",
     "itRemovesTheAccountAuthorize": "Напълно премахва (оттегля) всички оторизации на следния акаунт:",
     "itRemoves": "Напълно премахва (оттегля) всички оторизации на следния акаунт: %{authorize}"
   },

@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Autorizează permisiunile de semnare către %{authorize}.",
     "itSetsThesePermissions": "Delegă următoarele permisiuni: %{permissions}",
     "permissionsGranted": "Permisiuni de semnare de acordat",
+    "permissionsHeld": "Permisiuni de semnare acordate",
+    "permissionsToRevoke": "Permisiuni de semnare de revocat",
     "itRemovesTheAccountAuthorize": "Elimină complet (retrage) toate autorizațiile către următorul cont:",
     "itRemoves": "Elimină complet (retrage) toate autorizațiile către următorul cont"
   },

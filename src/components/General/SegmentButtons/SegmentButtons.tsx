@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { FlatList, ViewStyle } from 'react-native';
+import { FlatList, View, ViewStyle } from 'react-native';
 
 import { ButtonItem, SegmentButtonType } from './ButtonItem';
 
@@ -18,6 +18,9 @@ interface Props {
 /* Component ==================================================================== */
 class SegmentButtons extends PureComponent<Props, State> {
     private list = React.createRef<FlatList<SegmentButtonType>>();
+    private contentWidth = 0;
+    private viewportWidth = 0;
+    private offset = 0;
 
     componentDidMount() {
         this.revealActive();
@@ -39,7 +42,29 @@ class SegmentButtons extends PureComponent<Props, State> {
         if (!list || !buttons.length || buttons[buttons.length - 1].value !== activeButton) {
             return;
         }
-        requestAnimationFrame(() => this.list.current?.scrollToEnd({ animated: false }));
+        if (!this.contentWidth || !this.viewportWidth) {
+            return;
+        }
+        // Include the trailing spacer. scrollToEnd stops on the last tab and hides that space.
+        const target = Math.max(0, this.contentWidth - this.viewportWidth);
+        if (Math.abs(this.offset - target) <= 1) {
+            return;
+        }
+        list.scrollToOffset({ offset: target, animated: false });
+    };
+
+    onLayout = (event: { nativeEvent: { layout: { width: number } } }) => {
+        this.viewportWidth = event.nativeEvent.layout.width;
+        this.revealActive();
+    };
+
+    onContentSizeChange = (width: number) => {
+        this.contentWidth = width;
+        this.revealActive();
+    };
+
+    onScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+        this.offset = event.nativeEvent.contentOffset.x;
     };
 
     onItemPress = (item: SegmentButtonType) => {
@@ -66,8 +91,11 @@ class SegmentButtons extends PureComponent<Props, State> {
                 data={buttons}
                 renderItem={this.renderItem}
                 style={[styles.container, containerStyle]}
-                contentContainerStyle={styles.content}
-                onContentSizeChange={this.revealActive}
+                ListFooterComponent={<View style={styles.trailing} />}
+                onLayout={this.onLayout}
+                onContentSizeChange={this.onContentSizeChange}
+                onScroll={this.onScroll}
+                scrollEventThrottle={16}
             />
         );
     }

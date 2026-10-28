@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Nó ủy quyền quyền ký cho %{authorize} .",
     "itSetsThesePermissions": "Nó ủy quyền (các) quyền sau: %{permissions}",
     "permissionsGranted": "Quyền ký để cấp",
+    "permissionsHeld": "Quyền ký đã cấp",
+    "permissionsToRevoke": "Quyền ký sẽ thu hồi",
     "itRemovesTheAccountAuthorize": "Xóa hoàn toàn (thu hồi) tất cả ủy quyền cho tài khoản sau:",
     "itRemoves": "Nó xóa hoàn toàn (thu hồi) tất cả ủy quyền cho tài khoản sau: %{authorize} ."
   },

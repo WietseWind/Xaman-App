@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Autorizuje oprávnenia na podpisovanie pre %{authorize}.",
     "itSetsThesePermissions": "Deleguje nasledujúce oprávnenia: %{permissions}",
     "permissionsGranted": "Oprávnenia na podpisovanie na udelenie",
+    "permissionsHeld": "Udelené oprávnenia na podpisovanie",
+    "permissionsToRevoke": "Oprávnenia na podpisovanie na odvolanie",
     "itRemovesTheAccountAuthorize": "Úplne odstrániť (odvolať) všetky autorizácie pre nasledujúci účet:",
     "itRemoves": "Úplne odstraňuje (odvoláva) všetky autorizácie pre nasledujúci účet: %{authorize}."
   },

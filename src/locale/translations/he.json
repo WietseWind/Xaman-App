@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "היא מאשרת הרשאות חתימה ל-%{authorize}.",
     "itSetsThesePermissions": "היא מאצילה את ההרשאות הבאות: %{permissions}",
     "permissionsGranted": "הרשאות חתימה להענקה",
+    "permissionsHeld": "הרשאות חתימה שהוענקו",
+    "permissionsToRevoke": "הרשאות חתימה לביטול",
     "itRemovesTheAccountAuthorize": "הסרה מלאה (ביטול) של כל האישורים לחשבון הבא:",
     "itRemoves": "היא מסירה לחלוטין (מבטלת) את כל האישורים לחשבון הבא: %{authorize}."
   },

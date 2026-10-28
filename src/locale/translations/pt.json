@@ -1447,6 +1447,8 @@
     "itSetsAccountAuthorizeTo": "Autoriza permissões de assinatura para %{authorize}.",
     "itSetsThesePermissions": "Delega a(s) seguinte(s) permissão(ões): %{permissions}",
     "permissionsGranted": "Permissões de assinatura a conceder",
+    "permissionsHeld": "Permissões de assinatura concedidas",
+    "permissionsToRevoke": "Permissões de assinatura a revogar",
     "itRemovesTheAccountAuthorize": "Remover totalmente (retratar) toda(s) a(s) autorização(ões) para a seguinte conta:",
     "itRemoves": "It fully removes (retract(s)) all authorization(s) to the following account: %{authorize}."
   },
