@@ -1788,7 +1788,6 @@
     "wholeTransaction": "Delegat odabire sve vrijednosti transakcije dopuštene ovim dopuštenjem. Ne odobravate svaku upotrebu.",
     "replacesPermissions": "Ovaj popis zamjenjuje sva dopuštenja za ovog delegata. Prethodna dopuštenja koja nisu navedena bit će opozvana.",
     "revokeExplanation": "Time se uklanjaju sva dopuštenja samo za ovog delegata. Ostale delegacije su nepromijenjene. Dovršene transakcije se ne poništavaju.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman ne može objasniti ovo specifično dopuštenje. Može omogućiti široki pristup vašem računu.",
     "unknownRisk": "Ako ne razumijete ovu dozvolu, nemojte nastaviti. Ne vjerujte obećanjima o nagradama.",
     "granularRisk": "Ovo se dopuštenje može više puta koristiti dok ga ne opozovete. Dodijelite ga samo računu kojem vjerujete.",

@@ -1788,7 +1788,6 @@
     "wholeTransaction": "A megbízott kiválasztja az engedély által engedélyezett összes tranzakciós értéket. Ön nem hagyja jóvá az egyes felhasználásokat.",
     "replacesPermissions": "Ez a lista felváltja a meghatalmazott összes engedélyét. A listán nem szereplő korábbi engedélyek visszavonásra kerülnek.",
     "revokeExplanation": "Ezzel eltávolítja az összes engedélyt csak a felhatalmazott számára. A többi delegáció változatlan. A befejezett tranzakciók nem vonhatók vissza.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "A Xaman nem tudja megmagyarázni ezt a konkrét engedélyt. Széles körű hozzáférést biztosíthat fiókjához.",
     "unknownRisk": "Ha nem érti ezt az engedélyt, ne folytassa. Ne bízz a jutalom ígéreteiben.",
     "granularRisk": "Ez az engedély többször is felhasználható, amíg vissza nem vonja. Csak egy megbízható fióknak adja meg.",

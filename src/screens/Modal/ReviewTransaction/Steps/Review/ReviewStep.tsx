@@ -20,7 +20,6 @@ import { Button, InfoMessage, JsonTree, KeyboardAwareScrollView, Spacer, SwipeBu
 import { AccountPicker } from '@components/Modules';
 
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
-import { transactionHasCriticalDelegation } from '@common/libs/ledger/utils/delegationDetails';
 
 import { AppInfo, SignerLabel, SignForAccount } from '@components/Modules/ReviewTransaction';
 import { ReviewHeader } from '@screens/Modal/ReviewTransaction/Shared';
@@ -171,59 +170,29 @@ class ReviewStep extends Component<Props, State> {
         });
     };
 
-    confirmBeforeAccept = (text: string, continueTestID: string, cancelTestID: string) => {
+    onScamAcceptSwipe = () => {
         const { onAccept } = this.context;
 
         Navigator.showAlertModal({
             type: 'warning',
             title: Localize.t('global.alertDanger'),
-            text,
+            text: Localize.t('payload.scamAcceptConfirm'),
             buttons: SCAM_ACCEPT_CONFIRM_BUTTONS.map((button) =>
                 button.action === 'continue'
                     ? {
-                          testID: continueTestID,
+                          testID: button.testID,
                           text: Localize.t('global.continue'),
                           onPress: onAccept,
                           light: button.light,
                       }
                     : {
-                          testID: cancelTestID,
+                          testID: button.testID,
                           text: Localize.t('global.cancel'),
                           type: 'dismiss' as const,
                           light: button.light,
                       },
             ),
         });
-    };
-
-    onScamAcceptSwipe = () => {
-        this.confirmBeforeAccept(
-            Localize.t('payload.scamAcceptConfirm'),
-            'scam-accept-continue-button',
-            'scam-accept-cancel-button',
-        );
-    };
-
-    onDelegationAcceptSwipe = () => {
-        this.confirmBeforeAccept(
-            Localize.t('delegation.acceptConfirm'),
-            'delegation-accept-continue-button',
-            'delegation-accept-cancel-button',
-        );
-    };
-
-    onAcceptSwipe = () => {
-        const { onAccept, transaction } = this.context;
-        const { isScamCounterpart } = this.state;
-        if (isScamCounterpart) {
-            this.onScamAcceptSwipe();
-            return;
-        }
-        if (transactionHasCriticalDelegation(transaction)) {
-            this.onDelegationAcceptSwipe();
-            return;
-        }
-        onAccept();
     };
 
     onScamCancelPress = async () => {
@@ -275,10 +244,10 @@ class ReviewStep extends Component<Props, State> {
     };
 
     getSwipeButtonColor = (): string | undefined => {
-        const { coreSettings, transaction } = this.context;
+        const { coreSettings } = this.context;
         const { isScamCounterpart } = this.state;
 
-        if (isScamCounterpart || transactionHasCriticalDelegation(transaction)) {
+        if (isScamCounterpart) {
             return StyleService.value('$red');
         }
 
@@ -387,6 +356,7 @@ class ReviewStep extends Component<Props, State> {
             isLoading,
             canEditAmount,
             setSource,
+            onAccept,
             onClose,
             coreSettings,
         } = this.context;
@@ -700,7 +670,9 @@ class ReviewStep extends Component<Props, State> {
                                                         color={this.getSwipeButtonColor()}
                                                         isLoading={isLoading}
                                                         isDisabled={!canSlideToAccept(!!isReady, scamCheckPending)}
-                                                        onSwipeSuccess={this.onAcceptSwipe}
+                                                        onSwipeSuccess={
+                                                            isScamCounterpart ? this.onScamAcceptSwipe : onAccept
+                                                        }
                                                         label={Localize.t('global.slideToAccept')}
                                                         accessibilityLabel={Localize.t('global.accept')}
                                                         onPanResponderGrant={this.toggleCannotScroll}

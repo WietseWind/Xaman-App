@@ -1878,7 +1878,6 @@
     "wholeTransaction": "Valtuutettu valitsee kaikki tämän luvan sallimat tapahtumaarvot. Et hyväksy jokaista käyttöä.",
     "replacesPermissions": "Tämä luettelo korvaa kaikki tämän edustajan käyttöoikeudet. Aiemmat luvat, joita ei ole listattu, peruutetaan.",
     "revokeExplanation": "Tämä poistaa kaikki käyttöoikeudet vain tälle edustajalle. Muut valtuuskunnat ovat ennallaan. Valmistuneita tapahtumia ei peruuteta.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman ei voi selittää tätä erityistä lupaa. Se voi antaa laajan pääsyn tilillesi.",
     "unknownRisk": "Jos et ymmärrä tätä lupaa, älä jatka. Älä luota palkintolupauksiin.",
     "granularRisk": "Tätä lupaa voidaan käyttää toistuvasti, kunnes peruutat sen. Myönnä se vain tilille, johon luotat.",

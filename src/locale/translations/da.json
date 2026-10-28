@@ -1788,7 +1788,6 @@
     "wholeTransaction": "Den delegerede vælger alle transaktionsværdier, der er tilladt af denne tilladelse. Du godkender ikke hver brug.",
     "replacesPermissions": "Denne liste erstatter alle tilladelser for denne delegerede. Tidligere tilladelser, der ikke er angivet, vil blive tilbagekaldt.",
     "revokeExplanation": "Dette fjerner kun alle tilladelser for denne delegerede. Øvrige delegationer er uændrede. Gennemførte transaktioner tilbageføres ikke.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman kan ikke forklare denne specifikke tilladelse. Det kan give bred adgang til din konto.",
     "unknownRisk": "Hvis du ikke forstår denne tilladelse, skal du ikke fortsætte. Stol ikke på løfter om belønninger.",
     "granularRisk": "Denne tilladelse kan bruges gentagne gange, indtil du tilbagekalder den. Giv det kun til en konto, du har tillid til.",

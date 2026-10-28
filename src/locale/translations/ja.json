@@ -1944,7 +1944,6 @@
     "wholeTransaction": "デリゲートは、この権限で許可されているすべてのトランザクション値を選択します。毎回の使用を承認するものではありません。",
     "replacesPermissions": "このリストは、この代理人のすべての権限を置き換えます。リストされていない以前の権限は取り消されます。",
     "revokeExplanation": "これにより、この代理人のみのすべての権限が削除されます。他の代表団には変更はない。完了したトランザクションは取り消されません。",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman はこの特定の許可を説明できません。アカウントへの広範囲のアクセスが許可される可能性があります。",
     "unknownRisk": "この許可を理解できない場合は、続行しないでください。報酬の約束を信用しないでください。",
     "granularRisk": "この権限は、取り消すまで繰り返し使用できます。信頼できるアカウントにのみ許可してください。",

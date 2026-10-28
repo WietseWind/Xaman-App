@@ -1903,7 +1903,6 @@
     "wholeTransaction": "Delege a chwazi tout valè tranzaksyon yo otorize sa a. Ou pa apwouve chak itilizasyon.",
     "replacesPermissions": "Lis sa a ranplase tout otorizasyon pou delege sa a. Yo pral revoke otorizasyon anvan yo ki pa nan lis la.",
     "revokeExplanation": "Sa a retire tout otorizasyon pou delege sa a sèlman. Lòt delegasyon yo pa chanje. Tranzaksyon ki fèt yo pa ranvèse.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman pa ka eksplike pèmisyon espesifik sa a. Li ka bay gwo aksè nan kont ou.",
     "unknownRisk": "Si ou pa konprann pèmisyon sa a, pa kontinye. Pa fè konfyans pwomès rekonpans yo.",
     "granularRisk": "Ou ka itilize pèmisyon sa a plizyè fwa jiskaske ou revoke li. Bay li sèlman nan yon kont ou fè konfyans.",

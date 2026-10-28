@@ -1907,7 +1907,6 @@
     "wholeTransaction": "Įgaliotasis pasirenka visas operacijų vertes, kurias leidžia šis leidimas. Jūs nepatvirtinate kiekvieno naudojimo.",
     "replacesPermissions": "Šis sąrašas pakeičia visus šio įgaliotinio leidimus. Ankstesni leidimai, neįtraukti į sąrašą, bus atšaukti.",
     "revokeExplanation": "Tai pašalins visus leidimus tik šiam įgaliotiniui. Kitos delegacijos nesikeičia. Užbaigtos operacijos neatšaukiamos.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman negali paaiškinti šio konkretaus leidimo. Tai gali suteikti plačią prieigą prie jūsų paskyros.",
     "unknownRisk": "Jei nesuprantate šio leidimo, nepradėkite. Nepasitikėk pažadais apie atlygį.",
     "granularRisk": "Šis leidimas gali būti naudojamas pakartotinai, kol jį atšauksite. Suteikite jį tik paskyrai, kuria pasitikite.",

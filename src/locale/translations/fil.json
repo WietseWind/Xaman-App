@@ -1788,7 +1788,6 @@
     "wholeTransaction": "Pinipili ng delegado ang lahat ng halaga ng transaksyon na pinapayagan ng pahintulot na ito. Hindi mo aprubahan ang bawat paggamit.",
     "replacesPermissions": "Pinapalitan ng listahang ito ang lahat ng pahintulot para sa delegadong ito. Ang mga naunang pahintulot na hindi nakalista ay babawiin.",
     "revokeExplanation": "Inaalis nito ang lahat ng pahintulot para sa delegadong ito lamang. Ang ibang mga delegasyon ay hindi nagbabago. Ang mga nakumpletong transaksyon ay hindi nababaligtad.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Hindi maipaliwanag ni Xaman ang partikular na pahintulot na ito. Maaari itong magbigay ng malawak na access sa iyong account.",
     "unknownRisk": "Kung hindi mo naiintindihan ang pahintulot na ito, huwag magpatuloy. Huwag magtiwala sa mga pangako ng mga gantimpala.",
     "granularRisk": "Ang pahintulot na ito ay maaaring gamitin nang paulit-ulit hanggang sa bawiin mo ito. Ibigay lang ito sa isang account na pinagkakatiwalaan mo.",

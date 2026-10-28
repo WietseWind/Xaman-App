@@ -1892,7 +1892,6 @@
     "wholeTransaction": "Ordezkariak baimen honek onartzen dituen transakzio-balio guztiak aukeratzen ditu. Ez duzu erabilera bakoitza onartzen.",
     "replacesPermissions": "Zerrenda honek ordezkari honen baimen guztiak ordezkatzen ditu. Zerrendatzen ez diren aurreko baimenak kendu egingo dira.",
     "revokeExplanation": "Honek ordezkari honen baimen guztiak kentzen ditu soilik. Beste ordezkaritzak ez dira aldatu. Osatutako transakzioak ez dira itzultzen.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xamanek ezin du baimen zehatz hau azaldu. Zure konturako sarbide zabala eman dezake.",
     "unknownRisk": "Baimen hau ulertzen ez baduzu, ez jarraitu. Ez fidatu sarien promesetan.",
     "granularRisk": "Baimen hau behin eta berriz erabil daiteke ezeztatu arte. Eman konfiantzazko kontu bati soilik.",

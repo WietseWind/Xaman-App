@@ -1875,7 +1875,6 @@
     "wholeTransaction": "Delegaat valib kõik selle loaga lubatud tehinguväärtused. Te ei kiida iga kasutust heaks.",
     "replacesPermissions": "See loend asendab kõik selle delegaadi õigused. Eelmised load, mida loendis ei olnud, tühistatakse.",
     "revokeExplanation": "See eemaldab kõik õigused ainult sellelt delegaadilt. Muud delegatsioonid on muutmata. Lõpetatud tehinguid ei tühistata.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman ei saa seda konkreetset luba selgitada. See võib anda laia juurdepääsu teie kontole.",
     "unknownRisk": "Kui te sellest loast aru ei saa, ärge jätkake. Ärge usaldage preemiate lubadusi.",
     "granularRisk": "Seda luba saab kasutada korduvalt, kuni selle tühistate. Andke see ainult usaldusväärsele kontole.",

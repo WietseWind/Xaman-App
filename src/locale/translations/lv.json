@@ -1875,7 +1875,6 @@
     "wholeTransaction": "Delegāts izvēlas visas darījumu vērtības, ko atļauj šī atļauja. Jūs neapstiprināt katru lietošanas veidu.",
     "replacesPermissions": "Šis saraksts aizstāj visas šī pārstāvja atļaujas. Iepriekšējās atļaujas, kas nav norādītas sarakstā, tiks atsauktas.",
     "revokeExplanation": "Tādējādi tiek noņemtas visas atļaujas tikai šim pilnvarotajam. Pārējās delegācijas paliek nemainīgas. Pabeigtie darījumi netiek atsaukti.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman nevar izskaidrot šo konkrēto atļauju. Tas var nodrošināt plašu piekļuvi jūsu kontam.",
     "unknownRisk": "Ja nesaprotat šo atļauju, neturpiniet. Neuzticieties atlīdzības solījumiem.",
     "granularRisk": "Šo atļauju var izmantot atkārtoti, līdz to atsaucat. Piešķiriet to tikai kontam, kuram uzticaties.",

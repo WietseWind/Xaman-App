@@ -1875,7 +1875,6 @@
     "wholeTransaction": "يختار المفوض جميع قيم المعاملات المسموح بها بموجب هذا الإذن. أنت لا توافق على كل استخدام.",
     "replacesPermissions": "تحل هذه القائمة محل كافة الأذونات لهذا المفوض. سيتم إلغاء الأذونات السابقة غير المدرجة.",
     "revokeExplanation": "يؤدي هذا إلى إزالة كافة الأذونات لهذا المفوض فقط. الوفود الأخرى لم تتغير. لا يتم عكس المعاملات المكتملة.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "لا يستطيع Xaman شرح هذا الإذن المحدد. قد يمنح وصولاً واسعًا إلى حسابك.",
     "unknownRisk": "إذا لم تفهم هذا الإذن، فلا تتابع. لا تثق بالوعود بالمكافآت.",
     "granularRisk": "يمكن استخدام هذا الإذن بشكل متكرر حتى تقوم بإلغائه. امنحها فقط إلى الحساب الذي تثق به.",

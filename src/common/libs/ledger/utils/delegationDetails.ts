@@ -121,29 +121,6 @@ export const delegationPermissionDetail = (
 export const delegationPermissionValues = (permissions?: unknown[]): unknown[] =>
     (permissions || []).map((entry: any) => entry?.Permission?.PermissionValue ?? entry?.PermissionValue);
 
-/** True when the sign screen already shows a red permission warning. */
-export const hasCriticalDelegation = (
-    permissions: unknown[] | undefined,
-    transactionTypes: Record<string, number>,
-    nativeAsset?: string,
-): boolean => delegationPermissionValues(permissions).some((value) => (
-    delegationPermissionDetail(value, transactionTypes, nativeAsset).critical
-));
-
-export const transactionHasCriticalDelegation = (transaction?: {
-    Type?: string;
-    Permissions?: unknown[];
-    SigningDefinitions?: unknown;
-} | null): boolean => {
-    if (transaction?.Type !== 'DelegateSet') {
-        return false;
-    }
-    const raw = (transaction.SigningDefinitions as {
-        rawDefinitions?: { TRANSACTION_TYPES?: Record<string, number>; native_currency_code?: string };
-    } | undefined)?.rawDefinitions;
-    return hasCriticalDelegation(transaction.Permissions, raw?.TRANSACTION_TYPES || {}, raw?.native_currency_code);
-};
-
 export const delegationDescription = (
     owner: string,
     authorize: string,

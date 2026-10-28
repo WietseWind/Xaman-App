@@ -1887,7 +1887,6 @@
     "wholeTransaction": "委托人选择该权限允许的所有交易值。您不批准每次使用。",
     "replacesPermissions": "此列表替换该委托的所有权限。之前未列出的权限将被撤销。",
     "revokeExplanation": "这仅删除该委托的所有权限。其他代表团不变。已完成的交易不会被撤销。",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman 无法解释此特定权限。它可能会为您的帐户提供广泛的访问权限。",
     "unknownRisk": "如果您不理解此权限，请不要继续。不要相信奖励的承诺。",
     "granularRisk": "该权限可以重复使用，直到您撤销为止。仅将其授予您信任的帐户。",

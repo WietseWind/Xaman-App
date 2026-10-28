@@ -1788,7 +1788,6 @@
     "wholeTransaction": "Temsilci bu iznin izin verdiği tüm işlem değerlerini seçer. Her kullanımı onaylamıyorsunuz.",
     "replacesPermissions": "Bu liste, bu temsilciye ait tüm izinlerin yerine geçer. Listelenmeyen önceki izinler iptal edilecek.",
     "revokeExplanation": "Bu, yalnızca bu temsilciye ait tüm izinleri kaldırır. Diğer delegasyonlarda değişiklik yok. Tamamlanan işlemler geri alınmaz.",
-    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman bu özel izni açıklayamıyor. Hesabınıza geniş erişim sağlayabilir.",
     "unknownRisk": "Bu izni anlamıyorsanız devam etmeyin. Ödül vaatlerine güvenmeyin.",
     "granularRisk": "Bu izin, siz iptal edene kadar tekrar tekrar kullanılabilir. Bunu yalnızca güvendiğiniz bir hesaba verin.",
