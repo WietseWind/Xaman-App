@@ -1,7 +1,9 @@
 import Check from '@common/libs/ledger/objects/Check/Check.class';
 import Escrow from '@common/libs/ledger/objects/Escrow/Escrow.class';
-import { TransactionTypes } from '@common/libs/ledger/types/enums';
+import { InstanceTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
+import { definitionAccountAddresses } from '@common/libs/ledger/utils/definitionFields';
+import type { XrplDefinitions } from 'xrpl-accountlib';
 
 export const SCAM_DANGER_LEVELS = ['PROBABLE', 'HIGH_PROBABILITY', 'CONFIRMED'];
 
@@ -44,7 +46,11 @@ const pushAddress = (bucket: string[], value: unknown) => {
     }
 };
 
-export const collectSignRequestCounterparties = (transaction: any, sourceAddress?: string): string[] => {
+export const collectSignRequestCounterparties = (
+    transaction: any,
+    sourceAddress?: string,
+    definitions?: XrplDefinitions,
+): string[] => {
     const addresses: string[] = [];
 
     pushAddress(addresses, transaction?.Destination);
@@ -60,6 +66,15 @@ export const collectSignRequestCounterparties = (transaction: any, sourceAddress
     pushAddress(addresses, transaction?.TakerPays?.issuer);
     pushAddress(addresses, transaction?.TakerGets?.issuer);
     pushAddress(addresses, transaction?.SendMax?.issuer);
+
+    if (transaction?.InstanceType === InstanceTypes.FallbackTransaction ||
+        (definitions && !Object.values(TransactionTypes).includes(transaction?.TransactionType))) {
+        const schema = definitions || transaction.SigningDefinitions;
+        if (schema) {
+            addresses.push(...definitionAccountAddresses(transaction.JsonForSigning || transaction, schema)
+                .filter((address) => address !== sourceAddress));
+        }
+    }
 
     return [...new Set(addresses)];
 };
@@ -155,6 +170,7 @@ export const resolveScamSignRequest = async (
     sourceAddress: string | undefined,
     payloadRiskWarn: boolean,
     lookup: ScamSignRequestLookup,
+    definitions?: XrplDefinitions,
 ): Promise<{ isScam: boolean; cancelCraft?: CancelCraft }> => {
     // Batch inners are decoded by the model; scanned raw JSON can still be wrapped.
     const type = transaction?.Type || transaction?.TransactionType;
@@ -162,7 +178,8 @@ export const resolveScamSignRequest = async (
     if (type === TransactionTypes.Batch) {
         const results = await Promise.all(
             (transaction.RawTransactions || []).map((entry: any) =>
-                resolveScamSignRequest(entry.RawTransaction || entry, sourceAddress, false, lookup),
+                resolveScamSignRequest(entry.RawTransaction || entry, sourceAddress, false, lookup,
+                    transaction.SigningDefinitions || definitions),
             ),
         );
         innerIsScam = results.some((result) => result.isScam);
@@ -244,7 +261,7 @@ export const resolveScamSignRequest = async (
     }
 
     const addresses = [
-        ...collectSignRequestCounterparties(transaction, sourceAddress),
+        ...collectSignRequestCounterparties(transaction, sourceAddress, definitions),
         ...offerNodes.flatMap((node) => collectLedgerOfferCounterparties(node, sourceAddress)),
         ...extraCounterparties,
     ].filter((address, index, all) => address && address !== sourceAddress && all.indexOf(address) === index);

@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Extra fält",
     "extraFieldsWarning": "Xaman kan inte avkoda dessa fält helt. Signera bara om du förstår dem och förväntade dig denna begäran. Avbryt om någon lovar dig belöningar eller förmåner.",
+    "universalTransactionWarning": "Xaman har ingen särskild skärm för den här transaktionstypen. Kontrollera alla fält. Signera bara om du förstår och förväntade dig denna begäran. Avbryt om någon lovar belöningar.",
+    "universalTransactionUnavailable": "Det valda nätverket stöder inte den här transaktionstypen.",
     "definitionsChanged": "Nätverksuppgifterna har ändrats. Stäng begäran och granska den igen.",
     "payloadHandledByAnotherClient": "Nyttolast hanteras av en annan klient",
     "payloadNotFound": "Nyttolast hittades inte",

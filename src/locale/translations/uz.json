@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Qo‘shimcha maydonlar",
     "extraFieldsWarning": "Xaman bu maydonlarni to‘liq dekodlay olmaydi. Faqat ularni tushunsangiz va bu so‘rovni kutgan bo‘lsangiz imzolang. Kimdir mukofot yoki foyda va’da qilsa, to‘xtang.",
+    "universalTransactionWarning": "Xamanda bu tranzaksiya turi uchun maxsus ekran yo‘q. Barcha maydonlarni tekshiring. Faqat ushbu so‘rovni tushunsangiz va kutgan bo‘lsangiz imzolang. Kimdir mukofot va’da qilsa, to‘xtang.",
+    "universalTransactionUnavailable": "Tanlangan tarmoq bu tranzaksiya turini qo‘llab-quvvatlamaydi.",
     "definitionsChanged": "Tarmoq ma’lumotlari o‘zgardi. So‘rovni yopib, qayta tekshiring.",
     "payloadHandledByAnotherClient": "Boshqa mijoz tomonidan boshqariladigan tulov yuki",
     "payloadNotFound": "Tulov topilmadi",

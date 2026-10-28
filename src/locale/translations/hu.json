@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "További mezők",
     "extraFieldsWarning": "A Xaman nem tudja teljesen dekódolni ezeket a mezőket. Csak akkor írj alá, ha érted őket és számítottál erre a kérésre. Állj meg, ha valaki jutalmat vagy előnyt ígér.",
+    "universalTransactionWarning": "A Xaman nem rendelkezik külön képernyővel ehhez a tranzakciótípushoz. Ellenőrizzen minden mezőt. Csak akkor írja alá, ha érti és várta ezt a kérést. Álljon meg, ha valaki jutalmat ígér.",
+    "universalTransactionUnavailable": "A kiválasztott hálózat nem támogatja ezt a tranzakciótípust.",
     "definitionsChanged": "A hálózati adatok megváltoztak. Zárd be a kérést, és ellenőrizd újra.",
     "payloadHandledByAnotherClient": "Adattartalom másik kliens által kezelve",
     "payloadNotFound": "Adattartalom nem található",

@@ -225,6 +225,18 @@ describe('NetworkService', () => {
             expect(networkService.getRawNetworkDefinitions().FIELDS).toEqual(cached.FIELDS);
         });
 
+        it('can check for a new transaction type before the normal expiry without a full download', async () => {
+            const cached = fresh();
+            jest.replaceProperty(networkService, 'network',
+                network({ definitionsString: JSON.stringify(cached) }) as any);
+            send.mockResolvedValue({ hash: cached.hash });
+            await networkService.updateNetworkDefinitions();
+            expect(send).not.toHaveBeenCalled();
+            await networkService.updateNetworkDefinitions(true);
+            expect(send).toHaveBeenCalledWith({ command: 'server_definitions', hash: cached.hash });
+            expect(update).toHaveBeenCalledTimes(1);
+        });
+
         it('keeps expired definitions usable when offline and does not extend their freshness', async () => {
             const stored = JSON.stringify(fresh({ __xamanDefinitionsCheckedAt: Date.now() - 61 * 60 * 1000 }));
             jest.replaceProperty(networkService, 'network', network({ definitionsString: stored }) as any);

@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "שדות נוספים",
     "extraFieldsWarning": "Xaman לא יכול לפענח שדות אלה במלואם. יש לחתום רק אם הם מובנים לכם וציפיתם לבקשה הזו. עצרו אם מישהו מבטיח לכם תגמולים או הטבות.",
+    "universalTransactionWarning": "ל-Xaman אין מסך ייעודי לסוג עסקה זה. בדקו את כל השדות. חתמו רק אם אתם מבינים את הבקשה וציפיתם לה. עצרו אם מישהו מבטיח תגמולים.",
+    "universalTransactionUnavailable": "הרשת שנבחרה אינה תומכת בסוג עסקה זה.",
     "definitionsChanged": "פרטי הרשת השתנו. סגרו את הבקשה ובדקו אותה שוב.",
     "payloadHandledByAnotherClient": "מטען מטופל על ידי לקוח אחר",
     "payloadNotFound": "מטען לא נמצא",

@@ -14,6 +14,17 @@ export default StyleService.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    fullRow: {
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+    },
+    fullValue: {
+        flexShrink: 1,
+    },
+    fullContent: {
+        flexShrink: 1,
+        minWidth: 0,
+    },
     propertyText: {
         fontFamily: AppFonts.base.familyMono,
         fontSize: AppFonts.small.size,

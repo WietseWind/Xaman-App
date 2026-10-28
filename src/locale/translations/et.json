@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Lisaväljad",
     "extraFieldsWarning": "Xaman ei saa neid lisavälju täielikult dekodeerida. Allkirjasta vaid siis, kui mõistad neid ja ootasid seda päringut. Peatu, kui keegi lubab sulle tasu või hüvesid.",
+    "universalTransactionWarning": "Xamanil ei ole selle tehingutüübi jaoks eraldi vaadet. Kontrolli kõiki välju. Allkirjasta ainult siis, kui mõistad seda taotlust ja ootasid seda. Peatu, kui keegi lubab preemiaid.",
+    "universalTransactionUnavailable": "Valitud võrk ei toeta seda tehingutüüpi.",
     "definitionsChanged": "Võrguandmed on muutunud. Sulge päring ja vaata see uuesti üle.",
     "payloadHandledByAnotherClient": "Tasuline koormus teise kliendi poolt",
     "payloadNotFound": "Payload ei leitud",

@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "追加フィールド",
     "extraFieldsWarning": "Xaman はこれらの追加フィールドを完全には解読できません。内容を理解し、予期したリクエストである場合のみ署名してください。報酬や利益を約束された場合は中止してください。",
+    "universalTransactionWarning": "Xamanには、この取引タイプ専用の画面がありません。すべてのフィールドを確認してください。内容を理解し、想定していた要求である場合のみ署名してください。誰かが報酬を約束している場合は中止してください。",
+    "universalTransactionUnavailable": "選択したネットワークは、この取引タイプに対応していません。",
     "definitionsChanged": "ネットワーク情報が変わりました。このリクエストを閉じ、再度確認してください。",
     "payloadHandledByAnotherClient": "別のクライアントによって処理されるペイロード",
     "payloadNotFound": "ペイロードが見つかりません",

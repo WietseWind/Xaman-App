@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Papildu lauki",
     "extraFieldsWarning": "Xaman nevar pilnībā atkodēt šos laukus. Parakstiet tikai tad, ja tos saprotat un gaidījāt šo pieprasījumu. Apstājieties, ja kāds sola atlīdzību vai labumus.",
+    "universalTransactionWarning": "Xaman nav īpaša ekrāna šim darījuma veidam. Pārbaudiet visus laukus. Parakstiet tikai tad, ja saprotat šo pieprasījumu un to gaidījāt. Apstājieties, ja kāds sola atlīdzību.",
+    "universalTransactionUnavailable": "Izvēlētais tīkls neatbalsta šo darījuma veidu.",
     "definitionsChanged": "Tīkla dati ir mainījušies. Aizveriet pieprasījumu un pārskatiet to vēlreiz.",
     "payloadHandledByAnotherClient": "Datu ievades pieprasījums ",
     "payloadNotFound": "Datu ievade nav atrodama",

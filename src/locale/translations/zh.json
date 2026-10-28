@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "额外字段",
     "extraFieldsWarning": "Xaman 无法完整解码这些额外字段。仅在您理解这些字段并预期收到此请求时签名。若有人向您承诺奖励或利益，请停止操作。",
+    "universalTransactionWarning": "Xaman 没有此交易类型的专用界面。请检查所有字段。只有在理解且预期收到此请求时才签名。如果有人承诺奖励，请停止。",
+    "universalTransactionUnavailable": "所选网络不支持此交易类型。",
     "definitionsChanged": "网络信息已更改。请关闭此请求并重新检查。",
     "payloadHandledByAnotherClient": "其他客户处理的有效负载",
     "payloadNotFound": "找不到支付数据",

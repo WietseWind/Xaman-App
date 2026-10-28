@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "추가 필드",
     "extraFieldsWarning": "Xaman은 이 추가 필드를 완전히 해석할 수 없습니다. 내용을 이해하고 예상한 요청인 경우에만 서명하세요. 누군가 보상이나 혜택을 약속한다면 중단하세요.",
+    "universalTransactionWarning": "Xaman에는 이 거래 유형을 위한 전용 화면이 없습니다. 모든 필드를 확인하세요. 이 요청을 이해하고 예상한 경우에만 서명하세요. 누군가 보상을 약속하면 중단하세요.",
+    "universalTransactionUnavailable": "선택한 네트워크는 이 거래 유형을 지원하지 않습니다.",
     "definitionsChanged": "네트워크 정보가 변경되었습니다. 요청을 닫고 다시 확인하세요.",
     "payloadHandledByAnotherClient": "다른 클라이언트가 처리하는 페이로드",
     "payloadNotFound": "페이로드를 찾을 수 없습니다.",

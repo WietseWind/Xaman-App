@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Zusätzliche Felder",
     "extraFieldsWarning": "Xaman kann diese Felder nicht vollständig dekodieren. Signiere nur, wenn du sie verstehst und diese Anfrage erwartet hast. Stopp, wenn dir jemand Belohnungen oder Vorteile verspricht.",
+    "universalTransactionWarning": "Xaman hat keine spezielle Ansicht für diesen Transaktionstyp. Prüfe alle Felder. Unterschreibe nur, wenn du diese Anfrage verstehst und erwartet hast. Stoppe, wenn jemand Belohnungen verspricht.",
+    "universalTransactionUnavailable": "Das ausgewählte Netzwerk unterstützt diesen Transaktionstyp nicht.",
     "definitionsChanged": "Die Netzwerkdaten haben sich geändert. Schließe die Anfrage und prüfe sie erneut.",
     "payloadHandledByAnotherClient": "Nutzdaten von anderem Clienten abgewickelt",
     "payloadNotFound": "Nutzdaten nicht gefunden",

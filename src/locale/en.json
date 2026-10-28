@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Extra fields",
     "extraFieldsWarning": "Xaman cannot fully decode these extra fields. Only sign if you understand them and expected this request. Stop if someone promises you rewards or benefits.",
+    "universalTransactionWarning": "Xaman has no specific screen for this transaction type. Check all fields. Only sign if you understand and expected this request. Stop if someone promises rewards.",
+    "universalTransactionUnavailable": "The selected network does not support this transaction type.",
     "definitionsChanged": "Network details changed. Close this request and review it again.",
     "payloadHandledByAnotherClient": "Payload handled by another client",
     "payloadNotFound": "Payload not found",

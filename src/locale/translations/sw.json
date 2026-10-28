@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Sehemu za ziada",
     "extraFieldsWarning": "Xaman haiwezi kufasiri sehemu hizi kikamilifu. Tia sahihi tu ukizielewa na ulitarajia ombi hili. Simama mtu akikuahidi zawadi au manufaa.",
+    "universalTransactionWarning": "Xaman haina skrini maalumu kwa aina hii ya muamala. Kagua sehemu zote. Saini tu ikiwa unaelewa na ulitarajia ombi hili. Simama ikiwa mtu anaahidi zawadi.",
+    "universalTransactionUnavailable": "Mtandao uliochaguliwa hauauni aina hii ya muamala.",
     "definitionsChanged": "Taarifa za mtandao zimebadilika. Funga ombi hili na ulikague tena.",
     "payloadHandledByAnotherClient": "Payload handled by another client",
     "payloadNotFound": "Payload si found",

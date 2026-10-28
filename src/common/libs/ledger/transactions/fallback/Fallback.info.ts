@@ -1,6 +1,7 @@
 import { AccountModel } from '@store/models';
 
 import Fallback from './Fallback.class';
+import Localize from '@locale';
 
 /* Types ==================================================================== */
 import { MutationsMixinType } from '@common/libs/ledger/mixin/types';
@@ -17,7 +18,7 @@ class FallbackInfo extends ExplainerAbstract<Fallback, MutationsMixinType> {
     }
 
     generateDescription(): string {
-        return `This is an ${this.item.TransactionType} transaction`;
+        return `${Localize.t('events.transactionType')}: ${this.item.TransactionType}`;
     }
 
     getParticipants() {

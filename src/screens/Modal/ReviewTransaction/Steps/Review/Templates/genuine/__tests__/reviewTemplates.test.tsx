@@ -210,7 +210,7 @@ describe('Review templates', () => {
             const [template] = tree!.root.findAllByType(FallbackTemplate);
             expect(template.props.transaction).toBeInstanceOf(FallbackTransaction);
             const [json] = template.findAllByType(JsonTree);
-            expect(json.props.data).toEqual(omit(xChainCommit, 'Account'));
+            expect(json.props.data).toEqual(xChainCommit);
         });
 
         it('shows no fee picker for an inner transaction without Fee under the fallback template', async () => {

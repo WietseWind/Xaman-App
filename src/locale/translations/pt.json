@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Campos adicionais",
     "extraFieldsWarning": "O Xaman não consegue descodificar totalmente estes campos. Assina apenas se os compreenderes e esperavas este pedido. Para se alguém te prometer recompensas ou vantagens.",
+    "universalTransactionWarning": "O Xaman não tem um ecrã específico para este tipo de transação. Verifique todos os campos. Assine apenas se compreender e esperar este pedido. Pare se alguém prometer recompensas.",
+    "universalTransactionUnavailable": "A rede selecionada não suporta este tipo de transação.",
     "definitionsChanged": "Os dados da rede mudaram. Fecha o pedido e volta a verificá-lo.",
     "payloadHandledByAnotherClient": "Payload gerido por outro cliente",
     "payloadNotFound": "Payload não encontrado",

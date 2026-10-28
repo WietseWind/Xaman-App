@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Câmpuri suplimentare",
     "extraFieldsWarning": "Xaman nu poate decoda complet aceste câmpuri. Semnați doar dacă le înțelegeți și vă așteptați la această cerere. Opriți-vă dacă cineva vă promite recompense sau beneficii.",
+    "universalTransactionWarning": "Xaman nu are un ecran dedicat acestui tip de tranzacție. Verificați toate câmpurile. Semnați numai dacă înțelegeți și așteptați această cerere. Opriți-vă dacă cineva promite recompense.",
+    "universalTransactionUnavailable": "Rețeaua selectată nu acceptă acest tip de tranzacție.",
     "definitionsChanged": "Datele rețelei s-au schimbat. Închideți cererea și verificați-o din nou.",
     "payloadHandledByAnotherClient": "Conținut manipulat de un alt client.",
     "payloadNotFound": "Conținut neidentificat",

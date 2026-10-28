@@ -1321,6 +1321,8 @@
   "payload": {
     "extraFields": "Mga dagdag na field",
     "extraFieldsWarning": "Hindi lubusang ma-decode ng Xaman ang mga field na ito. Pumirma lang kung nauunawaan mo ang mga ito at inaasahan ang kahilingang ito. Huminto kung may nangakong gantimpala o benepisyo.",
+    "universalTransactionWarning": "Walang partikular na screen ang Xaman para sa ganitong uri ng transaksyon. Suriin ang lahat ng field. Pumirma lamang kung nauunawaan at inaasahan mo ang kahilingang ito. Huminto kung may nangangako ng mga gantimpala.",
+    "universalTransactionUnavailable": "Hindi sinusuportahan ng napiling network ang ganitong uri ng transaksyon.",
     "definitionsChanged": "Nagbago ang detalye ng network. Isara ang kahilingan at suriin itong muli.",
     "payloadHandledByAnotherClient": "Ang paghawak ng payload ng ibang kliyente",
     "payloadNotFound": "Magbayad ng karga hindi natagpuan",
