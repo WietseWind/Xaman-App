@@ -8,6 +8,10 @@ const styles = StyleService.create({
         paddingVertical: AppSizes.paddingSml,
         flexGrow: 0,
     },
+    // Horizontal lists ignore trailing style padding, so the last tab would sit on the screen edge.
+    content: {
+        paddingRight: AppSizes.paddingSml,
+    },
     button: {
         borderRadius: AppSizes.scale(75) / 5,
         marginRight: AppSizes.paddingExtraSml,

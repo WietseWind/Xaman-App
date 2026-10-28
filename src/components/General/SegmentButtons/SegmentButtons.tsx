@@ -40,6 +40,7 @@ class SegmentButtons extends PureComponent<Props, State> {
                 data={buttons}
                 renderItem={this.renderItem}
                 style={[styles.container, containerStyle]}
+                contentContainerStyle={styles.content}
             />
         );
     }
