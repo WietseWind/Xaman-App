@@ -1,5 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
+import { Icon } from '@components/General/Icon';
+import { AppStyles } from '@theme';
 import renderer from 'react-test-renderer';
 import { binary } from 'xrpl-accountlib';
 import NetworkService from '@services/NetworkService';
@@ -51,6 +53,19 @@ it('shows both resolving account blocks and all ten permissions with no text tru
     expect(text(tree)).toContain('Previous permissions not listed will be revoked');
     expect(text(tree)).toContain('Create more of your issued tokens');
     tree.root.findAllByType(Text).forEach(node => expect(node.props.numberOfLines).toBeUndefined());
+});
+
+it('uses the red icon color for a critical permission and the normal color otherwise', () => {
+    const critical = renderer.create(<DelegationDetails owner={owner} authorize={delegate} mode="grant"
+        permissions={permissions(['Payment'])} transactionTypes={{ Payment: 0 }} />);
+    expect(critical.root.findByType(Icon).props.style).toEqual(
+        expect.arrayContaining([AppStyles.imgColorRed]),
+    );
+    const safe = renderer.create(<DelegationDetails owner={owner} authorize={delegate} mode="grant"
+        permissions={permissions(['NFTokenModify'])} transactionTypes={{ NFTokenModify: 61 }} />);
+    expect(safe.root.findByType(Icon).props.style).not.toEqual(
+        expect.arrayContaining([AppStyles.imgColorRed]),
+    );
 });
 
 it('gives an explicit warning for a future permission while retaining the general delegation explanation', () => {

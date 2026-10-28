@@ -1887,6 +1887,7 @@
     "wholeTransaction": "Mjumbe huchagua thamani zote za muamala zinazoruhusiwa na ruhusa hii. Hauidhinishi kila matumizi.",
     "replacesPermissions": "Orodha hii inachukua nafasi ya ruhusa zote za mjumbe huyu. Ruhusa za awali ambazo hazijaorodheshwa zitabatilishwa.",
     "revokeExplanation": "Hii itaondoa ruhusa zote za mjumbe huyu pekee. Wajumbe wengine hawajabadilika. Shughuli zilizokamilishwa hazirudishwi.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman hawezi kueleza ruhusa hii mahususi. Inaweza kutoa ufikiaji mpana kwa akaunti yako.",
     "unknownRisk": "Ikiwa huelewi ruhusa hii, usiendelee. Usiamini ahadi za malipo.",
     "granularRisk": "Ruhusa hii inaweza kutumika mara kwa mara hadi utakapobatilisha. Ipe akaunti unayoamini pekee.",

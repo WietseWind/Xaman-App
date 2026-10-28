@@ -44,7 +44,11 @@ const DelegationDetails = ({ owner, authorize, permissions, transactionTypes, na
                             <View key={`${index}-${detail.name}`} style={styles.permission}
                                 testID={`delegation-permission-${index}`}>
                                 <View style={styles.heading}>
-                                    <Icon name={detail.icon} size={22} style={styles.icon} />
+                                    <Icon
+                                        name={detail.icon}
+                                        size={22}
+                                        style={[styles.icon, detail.critical && AppStyles.imgColorRed]}
+                                    />
                                     <Text selectable style={[styles.title, detail.critical && AppStyles.colorRed]}>
                                         {detail.action}
                                     </Text>

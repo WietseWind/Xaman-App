@@ -1788,6 +1788,7 @@
     "wholeTransaction": "El delegat tria tots els valors de transacció permesos per aquest permís. No aproveu cada ús.",
     "replacesPermissions": "Aquesta llista substitueix tots els permisos d'aquest delegat. Els permisos anteriors que no figuren a la llista seran revocats.",
     "revokeExplanation": "Això elimina tots els permisos només per a aquest delegat. La resta de delegacions no canvien. Les transaccions realitzades no es reverteixen.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman no pot explicar aquest permís específic. Pot donar accés ampli al vostre compte.",
     "unknownRisk": "Si no enteneu aquest permís, no continueu. No confieu en les promeses de recompenses.",
     "granularRisk": "Aquest permís es pot utilitzar repetidament fins que el revoquis. Concediu-lo només a un compte en el qual confieu.",

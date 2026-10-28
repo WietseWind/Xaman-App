@@ -1886,6 +1886,7 @@
     "wholeTransaction": "Delegasi memilih semua nilai transaksi yang diizinkan oleh izin ini. Anda tidak menyetujui setiap penggunaan.",
     "replacesPermissions": "Daftar ini menggantikan semua izin untuk delegasi ini. Izin sebelumnya yang tidak tercantum akan dicabut.",
     "revokeExplanation": "Ini menghapus semua izin untuk delegasi ini saja. Delegasi lain tidak berubah. Transaksi yang telah selesai tidak dapat dibatalkan.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman tidak bisa menjelaskan izin khusus ini. Ini mungkin memberikan akses luas ke akun Anda.",
     "unknownRisk": "Jika Anda tidak memahami izin ini, jangan lanjutkan. Jangan percaya janji imbalan.",
     "granularRisk": "Izin ini dapat digunakan berulang kali hingga Anda mencabutnya. Berikan hanya ke akun yang Anda percayai.",
