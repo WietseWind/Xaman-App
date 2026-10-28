@@ -1872,6 +1872,7 @@
     "wholeTransaction": "De gemachtigde kiest alle transactiewaarden die deze toestemming toelaat. U keurt niet elk gebruik afzonderlijk goed.",
     "replacesPermissions": "Deze lijst vervangt alle machtigingen voor deze gemachtigde. Eerdere machtigingen die niet in de lijst staan, worden ingetrokken.",
     "revokeExplanation": "Hierdoor worden alleen alle machtigingen voor deze gemachtigde verwijderd. Andere delegaties zijn ongewijzigd. Voltooide transacties worden niet teruggedraaid.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman kan deze specifieke toestemming niet uitleggen. Deze toestemming kan ruime toegang tot uw account geven.",
     "unknownRisk": "Als u deze toestemming niet begrijpt, ga dan niet verder. Vertrouw geen beloften van beloningen.",
     "granularRisk": "Deze toestemming kan herhaaldelijk worden gebruikt totdat u deze intrekt. Verleen het alleen aan een account dat u vertrouwt.",

@@ -1891,6 +1891,7 @@
     "wholeTransaction": "Người được ủy quyền chọn tất cả các giá trị giao dịch được quyền này cho phép. Bạn không chấp thuận mỗi lần sử dụng.",
     "replacesPermissions": "Danh sách này thay thế tất cả các quyền cho người đại diện này. Các quyền trước đó không được liệt kê sẽ bị thu hồi.",
     "revokeExplanation": "Thao tác này sẽ chỉ xóa tất cả các quyền dành cho người được ủy quyền này. Các phái đoàn khác không thay đổi. Các giao dịch đã hoàn thành không bị đảo ngược.",
+    "acceptConfirm": "This delegation includes a dangerous permission. The other account can use it without asking you again. Are you sure you want to accept it?",
     "unknownPermission": "Xaman không thể giải thích sự cho phép cụ thể này. Nó có thể cung cấp quyền truy cập rộng rãi vào tài khoản của bạn.",
     "unknownRisk": "Nếu bạn không hiểu sự cho phép này, đừng tiếp tục. Đừng tin vào lời hứa về phần thưởng.",
     "granularRisk": "Quyền này có thể được sử dụng nhiều lần cho đến khi bạn thu hồi nó. Chỉ cấp nó cho tài khoản mà bạn tin tưởng.",
