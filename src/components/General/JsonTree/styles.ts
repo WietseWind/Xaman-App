@@ -14,16 +14,28 @@ export default StyleService.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    fullTree: {
+        alignSelf: 'stretch',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+    },
     fullRow: {
         flexWrap: 'wrap',
         alignItems: 'flex-start',
+        maxWidth: '100%',
+        minWidth: 0,
     },
     fullValue: {
         flexShrink: 1,
+        minWidth: 0,
+        maxWidth: '100%',
     },
     fullContent: {
+        flexGrow: 1,
         flexShrink: 1,
         minWidth: 0,
+        maxWidth: '100%',
     },
     propertyText: {
         fontFamily: AppFonts.base.familyMono,

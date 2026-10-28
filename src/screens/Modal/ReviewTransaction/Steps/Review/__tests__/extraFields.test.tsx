@@ -45,4 +45,35 @@ describe('Extra fields review', () => {
         expect(warning.props.label).toContain('Only sign if you understand');
         expect(warning.props.label).toContain('Stop if someone promises');
     });
+
+    it('omits the extra-fields title and warning when the whole transaction type is unknown', () => {
+        const transaction = {
+            ExtraFields: [{ name: 'Sponsee', value: 'rQHGELnuopj4fWjsrbMA53ViqRLt5bS8Hb' }],
+        } as any;
+        const text = renderer.create(<ExtraFields transaction={transaction} omitIntro />).root
+            .findAllByType(Text).map((node) => node.props.children).join(' ');
+        expect(text).toContain('Sponsee');
+        expect(text).not.toContain('Extra fields');
+        expect(text).not.toContain('cannot fully decode');
+        expect(renderer.create(<ExtraFields transaction={transaction} />).root.findAllByType(InfoMessage))
+            .toHaveLength(1);
+    });
+
+    it('lists an unimplemented nested object one field at a time', () => {
+        const transaction = {
+            ExtraFields: [{
+                name: 'FutureObject',
+                value: { FutureChild: 1, FutureNested: { FutureChild: 2 }, Items: ['aa'] },
+            }],
+        } as any;
+        const text = renderer.create(<ExtraFields transaction={transaction} />).root
+            .findAllByType(Text).map((node) => node.props.children).join(' ');
+        expect(text).toContain('FutureObject.FutureChild');
+        expect(text).toContain('1');
+        expect(text).toContain('FutureObject.FutureNested.FutureChild');
+        expect(text).toContain('2');
+        expect(text).toContain('FutureObject.Items[0]');
+        expect(text).toContain('aa');
+        expect(text).not.toContain('{');
+    });
 });

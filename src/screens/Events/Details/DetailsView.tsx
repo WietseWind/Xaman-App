@@ -23,6 +23,7 @@ import { Header } from '@components/General';
 
 import * as MutationWidgets from '@components/Modules/MutationWidgets';
 import TransactionData from '@components/Modules/TransactionData';
+import UniversalTransactionWarning from '@components/Modules/TransactionData/UniversalTransactionWarning';
 // eslint-disable-next-line import/no-cycle
 import { Transaction } from '@components/Modules/EventsList/EventListItems';
 
@@ -37,6 +38,19 @@ import { InstanceTypes } from '@common/libs/ledger/types/enums';
 // iOS modals already sit below the status bar. Android full-screen modals draw
 // behind it, so they keep Header's status-bar margin.
 const iosModalHeaderStyle = { marginTop: 0 };
+
+// Keep the details page as wide as the screen. A long signature must wrap, not scroll sideways.
+const styles = StyleService.create({
+    scroll: {
+        flex: 1,
+        alignSelf: 'stretch',
+        width: '100%',
+    },
+    scrollContent: {
+        width: '100%',
+        maxWidth: '100%',
+    },
+});
 
 /* Component ==================================================================== */
 class TransactionDetailsView extends Component<Props & { componentType: ComponentTypes }, State> {
@@ -217,6 +231,23 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
             'TransferRateWidget',
             'ValidatedLedgerWidget',
         ];
+        // Title, result, date, amount, reserve, from and transaction id stay above the universal JSON.
+        const summaryEnd = widgetsList.indexOf('IdentifierWidget') + 1;
+        const summaryWidgets = widgetsList.slice(0, summaryEnd);
+        const detailWidgets = widgetsList.slice(summaryEnd);
+        const renderWidget = (widget: WidgetKey, index: number) => React.createElement(
+            (MutationWidgets as WidgetComponents)[widget],
+            {
+                key: `${index}-${widget}`,
+                item,
+                account,
+                explainer,
+                advisory,
+                componentType,
+                cachedTokenDetails,
+                TransactionComponent: Transaction,
+            },
+        );
 
         return (
             <View key={`txdetailsview-${timestamp}`} style={AppStyles.container}>
@@ -247,22 +278,20 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                     componentType={componentType}
                 />
 
-                <ScrollView>
+                <ScrollView
+                    style={styles.scroll}
+                    contentContainerStyle={styles.scrollContent}
+                    alwaysBounceHorizontal={false}
+                    showsHorizontalScrollIndicator={false}
+                >
+                    {summaryWidgets.map(renderWidget)}
                     {item.InstanceType === InstanceTypes.FallbackTransaction && (
-                        <TransactionData transaction={item} history />
+                        <View testID="universal-transaction-details" style={AppStyles.paddingSml}>
+                            <UniversalTransactionWarning />
+                            <TransactionData transaction={item} history />
+                        </View>
                     )}
-                    {widgetsList.map((widget: WidgetKey, index) => {
-                        return React.createElement((MutationWidgets as WidgetComponents)[widget], {
-                            key: `${index}-${widget}`,
-                            item,
-                            account,
-                            explainer,
-                            advisory,
-                            componentType,
-                            cachedTokenDetails,
-                            TransactionComponent: Transaction,
-                        });
-                    })}
+                    {detailWidgets.map((widget, index) => renderWidget(widget, summaryEnd + index))}
                 </ScrollView>
             </View>
         );

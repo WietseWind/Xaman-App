@@ -13,6 +13,13 @@ import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { AppColors } from '@theme';
 import styles from './styles';
 
+// Unbroken ledger values (signatures, blobs) have no spaces, so iOS will not wrap them.
+// A zero-width space gives the line a break without changing the characters that are shown.
+const BREAK = '\u200b';
+const breakLongToken = (value: string) => (
+    value.length > 40 ? value.replace(/[^\s]{16}/g, (chunk) => `${chunk}${BREAK}`) : value
+);
+
 /* Types ==================================================================== */
 export interface Props {
     propertyName?: string;
@@ -142,7 +149,7 @@ class JsonTree extends PureComponent<Props, State> {
                         ? [styles.textValue, styles.fullValue, valueColor ? { color: valueColor } : undefined]
                         : [styles.textValue, valueColor ? { color: valueColor } : undefined]}
                 >
-                    {valueString}
+                    {showFullValues ? breakLongToken(valueString!) : valueString}
                 </Text>
                 {comma && <Text style={styles.propertyText}>,</Text>}
             </View>
@@ -186,7 +193,7 @@ class JsonTree extends PureComponent<Props, State> {
 
         return (
             <View style={showFullValues
-                ? [styles.container, styles.fullContent, level > 0 && containerStyle]
+                ? [styles.container, styles.fullTree, styles.fullContent, level > 0 && containerStyle]
                 : [styles.container, level > 0 && containerStyle]}>
                 {level > 0 && <View style={styles.seperatorLine} />}
                 <View style={showFullValues
