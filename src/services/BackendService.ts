@@ -59,12 +59,15 @@ const lastHashes: { [key: string]: [string, any] } = {};
  */
 class BackendService {
     private rates: Map<string, RatesType>;
+    private rateRequests: Map<string, Promise<RatesType>>;
+    private rateGeneration = 0;
 
     private logger: LoggerInstance;
 
     constructor() {
         this.logger = LoggerService.createLogger('Backend');
         this.rates = new Map();
+        this.rateRequests = new Map();
     }
 
     public initialize = () => {
@@ -734,7 +737,9 @@ class BackendService {
      * Drop cached fiat rates. A network switch must not keep another native asset's price.
      */
     onNetworkChange = () => {
+        this.rateGeneration++;
         this.rates.clear();
+        this.rateRequests.clear();
     };
 
     /**
@@ -757,6 +762,11 @@ class BackendService {
             }
         }
 
+        // Each consumer keeps its own UI callback, but shares the same network request.
+        const pending = this.rateRequests.get(cacheKey);
+        if (pending) return pending;
+        const generation = this.rateGeneration;
+
         const headers: { [key: string]: string } = {
             'Cache-Control': 'no-cache',
         };
@@ -764,7 +774,7 @@ class BackendService {
             headers['X-Xaman-Net'] = networkKey;
         }
 
-        return ApiService.fetch(Endpoints.Rates, 'GET', { currency: currencyCode }, undefined, headers).then(
+        const request = ApiService.fetch(Endpoints.Rates, 'GET', { currency: currencyCode }, undefined, headers).then(
             (response: XamanBackend.CurrencyRateResponse) => {
                 const rate = {
                     rate: get(response, nativeAsset, 0),
@@ -772,10 +782,16 @@ class BackendService {
                     symbol: get(response, '__meta.currency.symbol'),
                     lastSync: moment().unix(),
                 };
-                this.rates.set(cacheKey, rate);
+                // A reply from before a network switch still resolves for its original callers.
+                if (generation === this.rateGeneration) this.rates.set(cacheKey, rate);
                 return rate;
             },
-        );
+        ).finally(() => {
+            // An old reply must not remove a newer request after switching away and back.
+            if (this.rateRequests.get(cacheKey) === request) this.rateRequests.delete(cacheKey);
+        });
+        this.rateRequests.set(cacheKey, request);
+        return request;
     };
 
     /**
