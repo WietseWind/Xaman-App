@@ -70,6 +70,27 @@ afterEach(async () => {
     jest.restoreAllMocks();
 });
 
+it('waits for the exact reservation release without a navigation timer', async () => {
+    const first = reserve();
+    let settled = false;
+    const waiting = Navigator.waitForModalReservation(review).then(() => { settled = true; });
+    await flush();
+    expect(settled).toBe(false);
+    first.release();
+    const next = reserve();
+    await waiting;
+    expect(settled).toBe(true);
+    let nextSettled = false;
+    const nextWaiting = Navigator.waitForModalReservation(review).then(() => { nextSettled = true; });
+    first.release(); await flush();
+    expect(nextSettled).toBe(false);
+    next.release(); await nextWaiting;
+});
+
+it('does not wait when no modal reservation exists', async () => {
+    await expect(Navigator.waitForModalReservation(review)).resolves.toBeUndefined();
+});
+
 it('blocks competing Review dispatch before appearance and through owner cleanup after native completion', async () => {
     const lease = reserve();
     expect(Navigator.reserveModal(review)).toBeUndefined();

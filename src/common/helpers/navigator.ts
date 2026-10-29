@@ -26,7 +26,7 @@ export type AppScreenKeys<T = typeof AppScreens, L0 = T[keyof T]> =
 type EnforcedProps<P extends { [K in keyof P]: any }> = P;
 
 const allScreens = new Set();
-const modalReservations = new Map<AppScreenKeys, symbol>();
+const modalReservations = new Map<AppScreenKeys, { token: symbol; released: Promise<void> }>();
 const pendingReviewShows = new Map<AppScreenKeys, symbol>();
 const pendingOverlayEntries = new Set<Promise<void>>();
 
@@ -523,13 +523,22 @@ const Navigator = {
         if (NavigationService.getCurrentModal() === modal || modalReservations.has(modal) ||
             pendingReviewShows.has(modal)) return undefined;
         const token = Symbol(modal);
-        modalReservations.set(modal, token);
+        let settle: () => void = () => undefined;
+        const released = new Promise<void>((resolve) => { settle = resolve; });
+        const reservation = { token, released };
+        modalReservations.set(modal, reservation);
         return {
             token,
             release: () => {
-                if (modalReservations.get(modal) === token) modalReservations.delete(modal);
+                if (modalReservations.get(modal) !== reservation) return;
+                modalReservations.delete(modal);
+                settle();
             },
         };
+    },
+
+    waitForModalReservation(modal: AppScreenKeys): Promise<void> {
+        return modalReservations.get(modal)?.released ?? Promise.resolve();
     },
 
     /**
@@ -548,7 +557,7 @@ const Navigator = {
         reservation: symbol | undefined = undefined,
     ): Promise<string | boolean> {
         const currentScreen = NavigationService.getCurrentModal();
-        const owner = modalReservations.get(modal);
+        const owner = modalReservations.get(modal)?.token;
         if ((owner && owner !== reservation) || (reservation && owner !== reservation)) {
             return Promise.resolve(false);
         }

@@ -279,27 +279,44 @@ class PushNotificationsService extends EventEmitter {
      * @param screenType - screen type
      */
     routeUser = async (screen: AppScreenKeys, passProps: any, options: any, screenType?: ComponentTypes) => {
-        // check if we need to close any overlay
         const currentOverlay = NavigationService.getCurrentOverlay();
+        const interruptedAddToken = currentOverlay === AppScreens.Overlay.AddToken;
+        const routeRoot = interruptedAddToken ? NavigationService.getCurrentRoot() : undefined;
+        let rootChanged = false;
+        const onRootChange = () => { rootChanged = true; };
+        const releaseGuard = () => {
+            if (interruptedAddToken) NavigationService.off('setRoot', onRootChange);
+        };
+        const canRoute = () => !interruptedAddToken || (!rootChanged &&
+            NavigationService.getCurrentRoot() === routeRoot &&
+            NavigationService.getCurrentOverlay() !== AppScreens.Overlay.Lock);
+        if (interruptedAddToken) NavigationService.on('setRoot', onRootChange);
 
-        if (currentOverlay && currentOverlay !== AppScreens.Overlay.Lock) {
-            // dismiss any overlay if NOT lock screen
-            await Navigator.dismissOverlay();
-        }
+        try {
+            if (currentOverlay && currentOverlay !== AppScreens.Overlay.Lock) {
+                await Navigator.dismissOverlay();
+            }
+            if (interruptedAddToken) {
+                // Unmount cancels AddToken's pending Review. Its own native cleanup releases this lease.
+                await Navigator.waitForModalReservation(AppScreens.Modal.ReviewTransaction);
+                if (!canRoute()) {
+                    releaseGuard();
+                    return;
+                }
+            }
 
-        // no screen type provided, guessing ...
-        if (!screenType) {
-            screenType = NavigationService.getComponentType(screen);
-        }
-
-        if (screenType === ComponentTypes.Modal) {
-            setTimeout(() => {
-                Navigator.showModal(screen, passProps, options);
-            }, 10);
-        } else if (screenType === ComponentTypes.Screen) {
-            setTimeout(() => {
-                Navigator.push(screen, passProps, options);
-            }, 10);
+            const type = screenType ?? NavigationService.getComponentType(screen);
+            if (type === ComponentTypes.Modal || type === ComponentTypes.Screen) {
+                setTimeout(() => {
+                    releaseGuard();
+                    if (!canRoute()) return;
+                    if (type === ComponentTypes.Modal) Navigator.showModal(screen, passProps, options);
+                    else Navigator.push(screen, passProps, options);
+                }, 10);
+            } else releaseGuard();
+        } catch (error) {
+            releaseGuard();
+            throw error;
         }
     };
 
