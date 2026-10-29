@@ -22,18 +22,19 @@ import { Navigator } from '@common/helpers/navigator';
 import type { AccountTxTransaction } from '@common/libs/ledger/types/methods/accountTx';
 import { LedgerObjectFactory, TransactionFactory } from '@common/libs/ledger/factory';
 import { TransactionTypes, LedgerEntryTypes } from '@common/libs/ledger/types/enums';
-import { MPToken, NFTokenOffer } from '@common/libs/ledger/objects';
+import { NFTokenOffer } from '@common/libs/ledger/objects';
 import { Payload } from '@common/libs/payload';
 
 import { LedgerObjects } from '@common/libs/ledger/objects/types';
 import { LedgerMarker } from '@common/libs/ledger/types/common';
 import { Transactions } from '@common/libs/ledger/transactions/types';
-import { LedgerEntry } from '@common/libs/ledger/types/ledger';
+import { LedgerEntry, MPToken as MPTokenEntry } from '@common/libs/ledger/types/ledger';
 
 import { MixingTypes } from '@common/libs/ledger/mixin/types';
 import { FilterProps } from '@screens/Modal/FilterEvents/EventsFilterModal';
 
 import ResolverService from '@services/ResolverService';
+import NetworkService from '@services/NetworkService';
 
 import {
     AccountService,
@@ -101,8 +102,25 @@ enum DataSourceType {
 
 /* Cache ==================================================================== */
 
-// console.log('eventscache')
-const EventCache: Record<string, any> = {};
+const EventCache = new Map<string, Promise<any>>();
+
+// Cache the pending lookup too, so rows on the same page do not all fetch it.
+const getEventLedgerData = (request: { command: string; ledger_index?: number | string; mpt_issuance?: string }) => {
+    const network = NetworkService.getNetwork();
+    const key = JSON.stringify([network.id?.toString() || network.key, NetworkService.getConnectedEndpoint(),
+        request.command, request.ledger_index, request.mpt_issuance]);
+    const cached = EventCache.get(key);
+    if (cached) return cached;
+    const lookup = LedgerService.getLedgerEntry(request).then((response) => {
+        if (!response || typeof response !== 'object' || 'error' in response) EventCache.delete(key);
+        return response;
+    }).catch((error) => {
+        EventCache.delete(key);
+        throw error;
+    });
+    EventCache.set(key, lookup);
+    return lookup;
+};
 
 /* Component ==================================================================== */
 class EventsView extends Component<Props, State> {
@@ -336,12 +354,11 @@ class EventsView extends Component<Props, State> {
                 if (r[ri]?.LedgerEntryType === 'Credential') {
                     if (r[ri]?.PreviousTxnLgrSeq) {
                         try {
-                            const o = EventCache?.[r[ri].PreviousTxnLgrSeq] ?? await LedgerService.getLedgerEntry({
+                            const o = await getEventLedgerData({
                                 command: 'ledger',
                                 ledger_index: r[ri].PreviousTxnLgrSeq,
                             });
                             const { close_time_iso } = (o as any)?.ledger || {};
-                            Object.assign(EventCache, { [r[ri].PreviousTxnLgrSeq]: o });
                             Object.assign(r[ri], {
                                 Date: close_time_iso,
                             });
@@ -354,21 +371,16 @@ class EventsView extends Component<Props, State> {
                 if (r[ri]?.LedgerEntryType === 'MPToken') {
                     try {
                         const [issuance, ledger] = await Promise.all([
-                            EventCache?.[(r[ri] as unknown as MPToken)?.MPTokenIssuanceID] ??
-                            LedgerService.getLedgerEntry({
+                            getEventLedgerData({
                                 command: 'ledger_entry',
                                 ledger_index: 'validated',
-                                mpt_issuance: (r[ri] as unknown as MPToken)?.MPTokenIssuanceID,
+                                mpt_issuance: (r[ri] as MPTokenEntry)?.MPTokenIssuanceID,
                             }),
-                            EventCache?.[r[ri].PreviousTxnLgrSeq] ??
-                            LedgerService.getLedgerEntry({
+                            getEventLedgerData({
                                 command: 'ledger',
                                 ledger_index: r[ri].PreviousTxnLgrSeq,
                             }),
                         ]);
-
-                        Object.assign(EventCache, { [(r[ri] as unknown as MPToken)?.MPTokenIssuanceID]: issuance });
-                        Object.assign(EventCache, { [r[ri].PreviousTxnLgrSeq]: ledger });
 
                         const { close_time_iso } = (ledger as any)?.ledger || {};
                         if (close_time_iso) {
@@ -613,6 +625,11 @@ class EventsView extends Component<Props, State> {
                                 }
                             }
 
+                            // These rows will not be displayed, so do not load their MPT details.
+                            if (typeof transaction.meta !== 'object' ||
+                                !['tesSUCCESS', 'tecHOOK_REJECTED'].includes(transaction.meta?.TransactionResult) ||
+                                blocked) return null;
+
                             const mptTokenAuth =
                                 transaction?.tx?.TransactionType === 'MPTokenAuthorize' &&
                                     transaction.tx?.MPTokenIssuanceID
@@ -631,24 +648,18 @@ class EventsView extends Component<Props, State> {
                                     : null;
 
                             if (mptTokenAuth || mptTokenPayment) {                                
-                                const o = EventCache?.[mptTokenAuth || mptTokenPayment] ??
-                                    await LedgerService.getLedgerEntry({
-                                        command: 'ledger_entry',
-                                        ledger_index: 'validated',
-                                        mpt_issuance: mptTokenAuth || mptTokenPayment,
-                                    });
-                                Object.assign(EventCache, { [mptTokenAuth || mptTokenPayment]: o });
+                                const o = await getEventLedgerData({
+                                    command: 'ledger_entry',
+                                    ledger_index: 'validated',
+                                    mpt_issuance: mptTokenAuth || mptTokenPayment,
+                                });
                                 if (!transaction.meta?._attachments) {
                                     Object.assign(transaction.meta, { _attachments: {} });
                                 }
                                 Object.assign(transaction.meta._attachments, { MPTokenIssuance: o?.node });
                             }
 
-                            return typeof transaction.meta === 'object' &&
-                                (
-                                    transaction?.meta.TransactionResult === 'tesSUCCESS' ||
-                                    transaction?.meta.TransactionResult === 'tecHOOK_REJECTED'
-                                ) && !blocked ? transaction : null;
+                            return transaction;
                         }),
                     )).filter(t => t !== null) as AccountTxTransaction[];
                     // await Promise.all(
