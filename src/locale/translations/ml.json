@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നതിന് ഞങ്ങൾക്ക് നിങ്ങളുടെ അനുമതി ആവശ്യമാണ്",
     "needPermissionToAccessCamera": "ക്യാമറ ആക്‌സസ്സുചെയ്യാൻ അനുമതി ആവശ്യമാണ്.",
     "pleaseApproveCameraPermission": "ക്യാമറ അനുമതികൾ അംഗീകരിക്കുക",
+    "cameraPreviewUnavailable": "ക്യാമറ പ്രിവ്യൂ ആരംഭിക്കാനായില്ല.",
+    "cameraPreviewUnavailableHint": "ക്യാമറ ഉപയോഗിക്കുന്ന മറ്റ് ആപ്പ് അടച്ച് വീണ്ടും ശ്രമിക്കുക.",
     "looksLikeYouAreOffline": "നിങ്ങൾ ഓഫ്‌ലൈനിലാണെന്ന് തോന്നുന്നു (ഇന്റർനെറ്റ് കണക്ഷനില്ല)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL നോഡിലേക്ക് കണക്റ്റുചെയ്യാനായില്ല. നിങ്ങളുടെ ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക",
     "pressBackAgainToExit": "പുറത്തുകടക്കാൻ വീണ്ടും അമർത്തുക",

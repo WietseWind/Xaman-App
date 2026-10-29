@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Ons het u toestemming nodig om U kamera te gebruik",
     "needPermissionToAccessCamera": "Benodig toestemming om toegang tot die kamera te kry.",
     "pleaseApproveCameraPermission": "Keur kamera-toestemmings goed",
+    "cameraPreviewUnavailable": "Die kameravoorskou kon nie begin nie.",
+    "cameraPreviewUnavailableHint": "Maak enige ander app wat die kamera gebruik toe, en probeer weer.",
     "looksLikeYouAreOffline": "Dit lyk asof U vanlyn is (geen internetverbinding nie)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Kan nie aan XRPL-node koppel nie. Gaan U internetverbinding na en probeer weer.",
     "pressBackAgainToExit": "Druk weer terug en verlaat",

@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "אנחנו צריכים את רשותך להשתמש במצלמה שלך",
     "needPermissionToAccessCamera": "זקוק להרשאה כדי לגשת למצלמה.",
     "pleaseApproveCameraPermission": "נא לאשר את הרשאות המצלמה",
+    "cameraPreviewUnavailable": "לא ניתן היה להפעיל את תצוגת המצלמה.",
+    "cameraPreviewUnavailableHint": "סגרו כל אפליקציה אחרת שמשתמשת במצלמה, ואז נסו שוב.",
     "looksLikeYouAreOffline": "נראה שאתה לא מקוון (אין חיבור לאינטרנט)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "לא ניתן להתחבר לצומת XRPL, בדוק את חיבור האינטרנט שלך ונסה שוב",
     "pressBackAgainToExit": "לחצו שוב כדי לצאת",

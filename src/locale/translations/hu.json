@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Szükségünk van az engedélyére a kamera használatához",
     "needPermissionToAccessCamera": "Engedély szükséges a kamera eléréséhez.",
     "pleaseApproveCameraPermission": "Kérem, engedélyezze a kamera használatát",
+    "cameraPreviewUnavailable": "A kamera előnézete nem indult el.",
+    "cameraPreviewUnavailableHint": "Zárjon be minden más alkalmazást, amely a kamerát használja, majd próbálja újra.",
     "looksLikeYouAreOffline": "Úgy tűnik, offline módban van (nincs internetkapcsolat)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Nem sikerült csatlakozni az XRPL csomóponthoz, kérem ellenőrizze az internetkapcsolatát és próbálja újra",
     "pressBackAgainToExit": "Nyomja meg újra a vissza gombot a kilépéshez",

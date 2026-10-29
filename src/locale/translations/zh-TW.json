@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "我們需要您的權限才能使用相機",
     "needPermissionToAccessCamera": "需要相機存取權限。",
     "pleaseApproveCameraPermission": "請批准相機權限",
+    "cameraPreviewUnavailable": "無法啟動相機預覽。",
+    "cameraPreviewUnavailableHint": "請關閉正在使用相機的其他 App，然後再試一次。",
     "looksLikeYouAreOffline": "看起來您已離線(無網路連線)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "無法連接網路節點,請檢查您的網路連線並重試",
     "pressBackAgainToExit": "再按一次返回以離開",

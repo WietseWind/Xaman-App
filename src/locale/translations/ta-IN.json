@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "உங்கள் கேமராவைப் பயன்படுத்த எங்களுக்கு உங்கள் அனுமதி தேவை",
     "needPermissionToAccessCamera": "கேமராவை அணுக அனுமதி தேவை.",
     "pleaseApproveCameraPermission": "கேமரா அனுமதிகளை அங்கீகரிக்கவும்",
+    "cameraPreviewUnavailable": "கேமரா முன்னோட்டத்தைத் தொடங்க முடியவில்லை.",
+    "cameraPreviewUnavailableHint": "கேமராவைப் பயன்படுத்தும் மற்ற செயலியை மூடிவிட்டு மீண்டும் முயற்சிக்கவும்.",
     "looksLikeYouAreOffline": "நீங்கள் ஆஃப்லைனில் இருப்பது போல் தெரிகிறது (இணைய இணைப்பு இல்லை)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL கணு இணைக்க முடியவில்லை. உங்கள் இணைய இணைப்பை சரிபார்த்து மீண்டும் முயற்சிக்கவும்",
     "pressBackAgainToExit": "வெளியேற மீண்டும் அழுத்தவும்",

@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "カメラを使用するには許可が必要です",
     "needPermissionToAccessCamera": "カメラへのアクセス許可が必要です。",
     "pleaseApproveCameraPermission": "カメラへのアクセスを許可してください。",
+    "cameraPreviewUnavailable": "カメラのプレビューを開始できませんでした。",
+    "cameraPreviewUnavailableHint": "カメラを使用している他のアプリを終了して、もう一度お試しください。",
     "looksLikeYouAreOffline": "オフラインのようです（インターネット接続がありません）",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPLノードに接続できません。接続を確認して再試行してください",
     "pressBackAgainToExit": "もう一度押すと終了します",

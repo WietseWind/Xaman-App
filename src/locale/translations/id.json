@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Kami membutuhkan izin Anda untuk menggunakan kamera Anda",
     "needPermissionToAccessCamera": "Perlu izin untuk mengakses Kamera.",
     "pleaseApproveCameraPermission": "Sila luluskan kebenaran menggunakan kamera",
+    "cameraPreviewUnavailable": "Pratinjau kamera tidak dapat dimulai.",
+    "cameraPreviewUnavailableHint": "Tutup aplikasi lain yang sedang menggunakan kamera, lalu coba lagi.",
     "looksLikeYouAreOffline": "Sepertinya anda sedang offline (tidak ada koneksi internet)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Tidak dapat terhubung ke node XRPL, Periksa koneksi internet Anda dan coba lagi",
     "pressBackAgainToExit": "Tekan butang kembali sekali lagi untuk keluar",

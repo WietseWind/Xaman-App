@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Kameranızı kullanmak için izninize ihtiyacımız var",
     "needPermissionToAccessCamera": "Kameraya erişmek için izin gerekiyor.",
     "pleaseApproveCameraPermission": "Lütfen kamera izinlerini onaylayın",
+    "cameraPreviewUnavailable": "Kamera önizlemesi başlatılamadı.",
+    "cameraPreviewUnavailableHint": "Kamerayı kullanan başka bir uygulamayı kapatın ve yeniden deneyin.",
     "looksLikeYouAreOffline": "Çevrimdışı görünüyorsun (İnternet Bağlantısı yok)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL düğümüne bağlanılamıyor, lütfen internet bağlantınızı kontrol edip tekrar deneyin",
     "pressBackAgainToExit": "Çıkmak için tekrar geri tuşuna basın",

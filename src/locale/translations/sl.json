@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Potrebujemo vaše dovoljenje za uporabo kamere",
     "needPermissionToAccessCamera": "Potrebujemo dovoljenje za dostop do kamere.",
     "pleaseApproveCameraPermission": "Prosimo, odobrite dovoljenja za kamero",
+    "cameraPreviewUnavailable": "Predogleda kamere ni bilo mogoče zagnati.",
+    "cameraPreviewUnavailableHint": "Zaprite drugo aplikacijo, ki uporablja kamero, in poskusite znova.",
     "looksLikeYouAreOffline": "Izgleda, da ste brez internetne povezave",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Povezave z XRPL vozliščem ni mogoče vzpostaviti. Prosimo, preverite vašo internetno povezavo in poskusite znova",
     "pressBackAgainToExit": "Za izhod znova pritisnite nazaj",

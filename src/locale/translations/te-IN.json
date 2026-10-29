@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "మీ కెమెరాను ఉపయోగించడానికి మాకు మీ అనుమతి అవసరం\r\n",
     "needPermissionToAccessCamera": "కెమెరాను యాక్సెస్ చేయడానికి అనుమతి అవసరం.\r\n",
     "pleaseApproveCameraPermission": "దయచేసి కెమెరా అనుమతులను ఆమోదించండి",
+    "cameraPreviewUnavailable": "కెమెరా ప్రివ్యూ ప్రారంభం కాలేదు.",
+    "cameraPreviewUnavailableHint": "కెమెరాను ఉపయోగిస్తున్న ఇతర యాప్‌ను మూసి మళ్లీ ప్రయత్నించండి.",
     "looksLikeYouAreOffline": "మీరు ఆఫ్‌లైన్‌లో ఉన్నట్లు ఉన్నారు\r\n",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL నోడ్‌కు కనెక్ట్ చేయడం సాధ్యం కాలేదు, దయచేసి మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి",
     "pressBackAgainToExit": "నిష్క్రమించడానికి మళ్ళీ తిరిగి నొక్కండి\r\n",

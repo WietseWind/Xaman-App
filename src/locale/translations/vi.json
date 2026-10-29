@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Chúng tôi cần bạn cho phép để sử dụng máy ảnh của bạn",
     "needPermissionToAccessCamera": "Cần sự cho phép để truy cập camera.",
     "pleaseApproveCameraPermission": "Vui lòng phê duyệt quyền đối với máy ảnh",
+    "cameraPreviewUnavailable": "Không thể bắt đầu xem trước camera.",
+    "cameraPreviewUnavailableHint": "Hãy đóng ứng dụng khác đang dùng camera, rồi thử lại.",
     "looksLikeYouAreOffline": "Có vẻ như bạn đang ngoại tuyến (không có kết nối Internet)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Không thể kết nối với nút XRPL, Vui lòng kiểm tra kết nối internet của bạn và thử lại",
     "pressBackAgainToExit": "Nhấn lại lần nữa để thoát",

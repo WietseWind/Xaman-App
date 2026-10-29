@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "\r\nSizning kamerangizdan foydalanish uchun sizning ruxsatingiz kerak",
     "needPermissionToAccessCamera": "Kameraga kirish uchun ruxsat kerak.",
     "pleaseApproveCameraPermission": "Iltimos kamera ruxsatini tasdiqlang",
+    "cameraPreviewUnavailable": "Kamera ko'rinishini ishga tushirib bo'lmadi.",
+    "cameraPreviewUnavailableHint": "Kameradan foydalanayotgan boshqa ilovani yoping va qayta urinib ko'ring.",
     "looksLikeYouAreOffline": "Internetga ulanmagansiz shakilik(Internet aloqasi yo'q)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL tizimiga ulanib bo'lmadi. Iltimos, Internetga ulanishni tekshiring va qaytadan urining",
     "pressBackAgainToExit": "\r\nChiqish uchun yana bir marta bosing",

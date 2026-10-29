@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "نحتاج إلى إذنك لاستخدام الكاميرا",
     "needPermissionToAccessCamera": "بحاجة إلى إذن للوصول إلى الكاميرا.",
     "pleaseApproveCameraPermission": "يرجى الموافقة على أذونات الكاميرا",
+    "cameraPreviewUnavailable": "تعذر بدء معاينة الكاميرا.",
+    "cameraPreviewUnavailableHint": "أغلق أي تطبيق آخر يستخدم الكاميرا، ثم حاول مرة أخرى.",
     "looksLikeYouAreOffline": "يبدو أنك حاليا (أي اتصال الإنترنت)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "غير قادر على الاتصال بعقدة XRPL ، يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى",
     "pressBackAgainToExit": "اضغط مرة أخرى للخروج",

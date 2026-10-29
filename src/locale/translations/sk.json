@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Potrebujeme vaše povolenie použiť fotoaparát",
     "needPermissionToAccessCamera": "Potrebujem povolenie na prístup k fotoaparátu.",
     "pleaseApproveCameraPermission": "Prosím schvaľte oprávnenia pre fotoaparát",
+    "cameraPreviewUnavailable": "Náhľad kamery sa nepodarilo spustiť.",
+    "cameraPreviewUnavailableHint": "Zatvorte inú aplikáciu, ktorá používa kameru, a skúste to znova.",
     "looksLikeYouAreOffline": "Vyzerá to, že ste offline",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Nie je možné pripojiť sa k XRPL uzlu, skontrolujte prosím pripojenie na internet a skúste to znova",
     "pressBackAgainToExit": "Ak chcete skončiť, znova stlačte tlačidlo Späť",

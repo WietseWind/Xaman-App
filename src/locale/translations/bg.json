@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Трябва ни вашето разрешение да използваме камерата ви",
     "needPermissionToAccessCamera": "Трябва разрешение за достъп до камерата.",
     "pleaseApproveCameraPermission": "Моля, одобрете разрешенията на камерата",
+    "cameraPreviewUnavailable": "Прегледът на камерата не можа да започне.",
+    "cameraPreviewUnavailableHint": "Затворете друго приложение, което използва камерата, и опитайте отново.",
     "looksLikeYouAreOffline": "Изглежда, че сте офлайн (няма връзка с интернет)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Не може да се свърже с XRPL node, моля, проверете Вашата интернет връзка и опитайте отново",
     "pressBackAgainToExit": "Натиснете отново, за да излезете.",

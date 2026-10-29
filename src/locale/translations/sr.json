@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Потребна нам је ваша дозвола за употребу ваше камере",
     "needPermissionToAccessCamera": "Потребна ми је дозвола за приступ камери.",
     "pleaseApproveCameraPermission": "Молимо вас одобрите нам кориштење камере.",
+    "cameraPreviewUnavailable": "Преглед камере није могао да се покрене.",
+    "cameraPreviewUnavailableHint": "Затворите другу апликацију која користи камеру, па покушајте поново.",
     "looksLikeYouAreOffline": "Изгледа да си офлајн",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Није могуће повезати се са XRPL сервером, проверите своју интернет везу и покушајте поново.",
     "pressBackAgainToExit": "Притисните поново да бисте изашли",

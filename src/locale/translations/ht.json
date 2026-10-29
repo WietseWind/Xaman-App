@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Nou bezwen pèmisyon ou pou itilize kamera ou",
     "needPermissionToAccessCamera": "Bezwen pèmisyon pou jwenn kamera.",
     "pleaseApproveCameraPermission": "Tanpri apwouve otorizasyon kamera",
+    "cameraPreviewUnavailable": "Apèsi kamera a pa t kapab kòmanse.",
+    "cameraPreviewUnavailableHint": "Fèmen nenpòt lòt aplikasyon k ap itilize kamera a, epi eseye ankò.",
     "looksLikeYouAreOffline": "Sanble ou offline (pa gen koneksyon entènèt)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Kapab konekte nan ne XRPL, Tanpri tcheke koneksyon entènèt ou epi eseye ankò",
     "pressBackAgainToExit": "Peze tounen ankò sòti",

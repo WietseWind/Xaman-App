@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Necesitamo-lo teu permiso para usa-la cámara",
     "needPermissionToAccessCamera": "Precísase permiso para acceder á Cámara.",
     "pleaseApproveCameraPermission": "Por favor acepte os permisos da cámara",
+    "cameraPreviewUnavailable": "Non se puido iniciar a vista previa da cámara.",
+    "cameraPreviewUnavailableHint": "Pecha calquera outra app que estea a usar a cámara e téntao de novo.",
     "looksLikeYouAreOffline": "Semella que estás desconectado (sin conexión a internet)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Non se pode conectar ó nodo de XRPL, Por favor comproba a túa conexión a internet e proba de novo",
     "pressBackAgainToExit": "Pulsa atrás outra vez para saír",

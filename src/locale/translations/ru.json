@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Нам необходимо Ваше разрешение на использование Вашей камеры",
     "needPermissionToAccessCamera": "Требуется разрешение на доступ к камере. ",
     "pleaseApproveCameraPermission": "Пожалуйста, утвердите разрешения доступа к камере",
+    "cameraPreviewUnavailable": "Не удалось запустить предпросмотр камеры.",
+    "cameraPreviewUnavailableHint": "Закройте другое приложение, которое использует камеру, и попробуйте снова.",
     "looksLikeYouAreOffline": "Похоже, Вы не в сети (отсутствует подключение к Интернету)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Не удалось подключиться к узлу XRPL, проверьте соединение с Интернетом и повторите попытку",
     "pressBackAgainToExit": "Повторно нажмите назад, чтобы выйти",
