@@ -7,7 +7,7 @@ import { Camera, Code, useCameraDevice, useCameraPermission, useCodeScanner } fr
 
 import { AppColors, AppStyles } from '@theme';
 
-import { cameraScannerPhase } from './cameraScannerPhase';
+import { cameraErrorStopsPreview, cameraScannerPhase } from './cameraScannerPhase';
 import { cameraTorchState } from './torch';
 
 interface Props extends React.PropsWithChildren {
@@ -93,7 +93,11 @@ const CameraScanner = ({
                 audio={false}
                 torch={cameraTorchState(torchEnabled, hasTorch)}
                 codeScanner={codeScanner}
-                onError={() => setPreviewFailed(true)}
+                onError={(error) => {
+                    if (cameraErrorStopsPreview(error)) {
+                        setPreviewFailed(true);
+                    }
+                }}
             />
             {children}
         </View>

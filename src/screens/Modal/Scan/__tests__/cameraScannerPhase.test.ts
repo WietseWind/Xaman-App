@@ -1,4 +1,4 @@
-import { cameraScannerPhase } from '../cameraScannerPhase';
+import { cameraErrorStopsPreview, cameraScannerPhase } from '../cameraScannerPhase';
 
 describe('cameraScannerPhase', () => {
     it('asks for permission before it tries to show a preview', () => {
@@ -27,6 +27,19 @@ describe('cameraScannerPhase', () => {
             hasPermission: true,
             hasDevice: true,
             previewFailed: true,
+        })).toBe('unavailable');
+    });
+
+    it('treats a stopped camera session as a failed preview', () => {
+        expect(cameraErrorStopsPreview({
+            nativeEvent: {
+                message: 'The camera preview stopped because the camera is not available.',
+            },
+        })).toBe(true);
+        expect(cameraScannerPhase({
+            hasPermission: true,
+            hasDevice: true,
+            previewFailed: cameraErrorStopsPreview(undefined),
         })).toBe('unavailable');
     });
 });
