@@ -814,15 +814,6 @@ class ScanModal extends Component<Props, State> {
                     <Spacer size={15} />
                     <Button
                         secondary
-                        testID="scan-camera-settings-button"
-                        label={Localize.t('global.approvePermissions')}
-                        onPress={this.requestPermissions}
-                        style={{ backgroundColor: AppColors.silver }}
-                        icon="IconSettings"
-                    />
-                    <Spacer size={15} />
-                    <Button
-                        secondary
                         testID="scan-camera-unavailable-close-button"
                         label={Localize.t('global.close')}
                         onPress={this.onClose}

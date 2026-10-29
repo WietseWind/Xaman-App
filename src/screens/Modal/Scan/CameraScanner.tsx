@@ -2,13 +2,32 @@
  * Back-camera QR preview. Visual chrome stays in ScanModal.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
-import { Camera, Code, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
+import { AppState, StyleSheet, View, ViewStyle } from 'react-native';
+import { Camera, Code, useCameraDevice, useCodeScanner } from 'react-native-vision-camera';
 
 import { AppColors, AppStyles } from '@theme';
 
-import { cameraErrorStopsPreview, cameraScannerPhase } from './cameraScannerPhase';
+import {
+    CameraAuthorization,
+    cameraErrorStopsPreview,
+    cameraScannerPhase,
+    nextCameraAuthorization,
+    shouldRequestCameraPermission,
+} from './cameraScannerPhase';
 import { cameraTorchState } from './torch';
+
+const readCameraAuthorization = (): CameraAuthorization => {
+    const status = Camera.getCameraPermissionStatus();
+    if (
+        status === 'granted' ||
+        status === 'denied' ||
+        status === 'not-determined' ||
+        status === 'restricted'
+    ) {
+        return status;
+    }
+    return 'not-determined';
+};
 
 interface Props extends React.PropsWithChildren {
     onRead: (data: string) => void;
@@ -35,27 +54,46 @@ const CameraScanner = ({
     onHasTorchChange,
 }: Props) => {
     const device = useCameraDevice('back');
-    const { hasPermission, requestPermission } = useCameraPermission();
+    const [permissionStatus, setPermissionStatus] = useState(readCameraAuthorization);
     const [previewFailed, setPreviewFailed] = useState(false);
+    const [holdFallback, setHoldFallback] = useState(false);
     const [attempt, setAttempt] = useState(0);
     const hasTorch = !!device?.hasTorch;
     const phase = cameraScannerPhase({
-        hasPermission,
+        permissionStatus,
         hasDevice: !!device,
         previewFailed,
+        holdFallback,
     });
 
     useEffect(() => {
-        if (!hasPermission) {
-            requestPermission();
+        const subscription = AppState.addEventListener('change', () => {
+            setPermissionStatus((current) => nextCameraAuthorization(current, readCameraAuthorization()));
+        });
+        return () => subscription.remove();
+    }, []);
+
+    useEffect(() => {
+        if (!shouldRequestCameraPermission(permissionStatus)) {
+            return undefined;
         }
-    }, [hasPermission, requestPermission]);
+        let cancelled = false;
+        Camera.requestCameraPermission().then((result) => {
+            if (!cancelled) {
+                setPermissionStatus(result === 'granted' ? 'granted' : 'denied');
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [permissionStatus]);
 
     useEffect(() => {
         onHasTorchChange?.(hasTorch);
     }, [hasTorch, onHasTorchChange]);
 
     const retry = useCallback(() => {
+        setHoldFallback(true);
         setPreviewFailed(false);
         setAttempt((value) => value + 1);
     }, []);
@@ -79,27 +117,32 @@ const CameraScanner = ({
         return notAuthorizedView;
     }
 
-    if (phase === 'unavailable' || !device) {
-        return renderUnavailable?.(retry) ?? notAuthorizedView;
-    }
+    const showFallback = phase === 'unavailable' || !device;
 
     return (
         <View style={[AppStyles.flex1, style]}>
-            <Camera
-                key={attempt}
-                style={[StyleSheet.absoluteFill, styles.noDevice]}
-                device={device}
-                isActive
-                audio={false}
-                torch={cameraTorchState(torchEnabled, hasTorch)}
-                codeScanner={codeScanner}
-                onError={(error) => {
-                    if (cameraErrorStopsPreview(error)) {
-                        setPreviewFailed(true);
-                    }
-                }}
-            />
-            {children}
+            {!!device && !previewFailed && (
+                <Camera
+                    key={attempt}
+                    style={[StyleSheet.absoluteFill, styles.noDevice]}
+                    device={device}
+                    isActive
+                    audio={false}
+                    torch={cameraTorchState(torchEnabled, hasTorch)}
+                    codeScanner={codeScanner}
+                    onStarted={() => {
+                        setHoldFallback(false);
+                        setPreviewFailed(false);
+                    }}
+                    onError={(error) => {
+                        if (cameraErrorStopsPreview(error)) {
+                            setHoldFallback(false);
+                            setPreviewFailed(true);
+                        }
+                    }}
+                />
+            )}
+            {showFallback ? renderUnavailable?.(retry) ?? notAuthorizedView : children}
         </View>
     );
 };
