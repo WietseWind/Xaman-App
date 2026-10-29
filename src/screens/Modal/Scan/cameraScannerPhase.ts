@@ -1,19 +1,45 @@
 export type CameraScannerPhase = 'permission' | 'preview' | 'unavailable';
 
-/** Permission first. A granted camera that has no device or whose preview failed is not a silent blank screen. */
+export type CameraAuthorization = 'granted' | 'denied' | 'not-determined' | 'restricted';
+
+/**
+ * iOS only shows the system camera prompt when the status is not-determined.
+ * Granted and denied must not call requestAccess again.
+ */
+export const shouldRequestCameraPermission = (status: CameraAuthorization): boolean =>
+    status === 'not-determined';
+
+/** A granted camera must not be asked again when iOS briefly reports not-determined. */
+export const nextCameraAuthorization = (
+    current: CameraAuthorization,
+    reported: CameraAuthorization,
+): CameraAuthorization => {
+    if (current === 'granted' && reported === 'not-determined') {
+        return current;
+    }
+    return reported;
+};
+
+/**
+ * Permission only when the system has not granted the camera.
+ * A granted camera whose preview is down, or a retry still in flight, stays on the
+ * fallback instead of flashing a blank preview or asking again.
+ */
 export const cameraScannerPhase = ({
-    hasPermission,
+    permissionStatus,
     hasDevice,
     previewFailed,
+    holdFallback = false,
 }: {
-    hasPermission: boolean;
+    permissionStatus: CameraAuthorization;
     hasDevice: boolean;
     previewFailed: boolean;
+    holdFallback?: boolean;
 }): CameraScannerPhase => {
-    if (!hasPermission) {
+    if (permissionStatus !== 'granted') {
         return 'permission';
     }
-    if (!hasDevice || previewFailed) {
+    if (!hasDevice || previewFailed || holdFallback) {
         return 'unavailable';
     }
     return 'preview';

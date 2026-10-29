@@ -1,32 +1,54 @@
-import { cameraErrorStopsPreview, cameraScannerPhase } from '../cameraScannerPhase';
+import {
+    cameraErrorStopsPreview,
+    cameraScannerPhase,
+    nextCameraAuthorization,
+    shouldRequestCameraPermission,
+} from '../cameraScannerPhase';
 
 describe('cameraScannerPhase', () => {
-    it('asks for permission before it tries to show a preview', () => {
+    it('asks for permission only when the system has not granted the camera', () => {
+        expect(shouldRequestCameraPermission('not-determined')).toBe(true);
+        expect(shouldRequestCameraPermission('granted')).toBe(false);
+        expect(shouldRequestCameraPermission('denied')).toBe(false);
+        expect(shouldRequestCameraPermission('restricted')).toBe(false);
+        expect(nextCameraAuthorization('granted', 'not-determined')).toBe('granted');
+        expect(nextCameraAuthorization('granted', 'denied')).toBe('denied');
         expect(cameraScannerPhase({
-            hasPermission: false,
-            hasDevice: false,
+            permissionStatus: 'not-determined',
+            hasDevice: true,
+            previewFailed: false,
+        })).toBe('permission');
+        expect(cameraScannerPhase({
+            permissionStatus: 'denied',
+            hasDevice: true,
             previewFailed: false,
         })).toBe('permission');
     });
 
-    it('shows the live preview only when a camera is available and has not failed', () => {
+    it('shows the live preview only when access is already granted and the preview has not failed', () => {
         expect(cameraScannerPhase({
-            hasPermission: true,
+            permissionStatus: 'granted',
             hasDevice: true,
             previewFailed: false,
         })).toBe('preview');
     });
 
-    it('does not leave a blank screen when the camera is missing or the preview fails', () => {
+    it('keeps a granted camera on the fallback instead of a permission prompt', () => {
         expect(cameraScannerPhase({
-            hasPermission: true,
+            permissionStatus: 'granted',
             hasDevice: false,
             previewFailed: false,
         })).toBe('unavailable');
         expect(cameraScannerPhase({
-            hasPermission: true,
+            permissionStatus: 'granted',
             hasDevice: true,
             previewFailed: true,
+        })).toBe('unavailable');
+        expect(cameraScannerPhase({
+            permissionStatus: 'granted',
+            hasDevice: true,
+            previewFailed: false,
+            holdFallback: true,
         })).toBe('unavailable');
     });
 
@@ -37,7 +59,7 @@ describe('cameraScannerPhase', () => {
             },
         })).toBe(true);
         expect(cameraScannerPhase({
-            hasPermission: true,
+            permissionStatus: 'granted',
             hasDevice: true,
             previewFailed: cameraErrorStopsPreview(undefined),
         })).toBe('unavailable');

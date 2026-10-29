@@ -119,19 +119,23 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
    }
  
    /**
-@@ -257,6 +273,7 @@
+@@ -257,8 +273,11 @@
  
      // Start/Stop session
      if configuration.isActive {
 +      allowPreviewWhileNotExclusiveFullscreen()
        captureSession.startRunning()
-       delegate?.onCameraStarted()
+-      delegate?.onCameraStarted()
++      if captureSession.isRunning {
++        delegate?.onCameraStarted()
++      }
      } else {
-@@ -310,8 +327,81 @@
-   }
+       captureSession.stopRunning()
+       delegate?.onCameraStopped()
+@@ -311,7 +330,81 @@
  
    // pragma MARK: Notifications
-+
+ 
 +  /**
 +   iOS 16+ can keep the preview running when this app is not the only fullscreen scene.
 +   Without the system entitlement this stays unsupported and the interruption path reports it.
@@ -160,7 +164,7 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
 +  }
 +
 +  /// A stopped preview used to stay black behind the crosshairs, because this interruption is not an error.
-+  @objc
+   @objc
 +  func sessionWasInterrupted(notification: Notification) {
 +    guard (notification.object as? AVCaptureSession) === captureSession else {
 +      return
@@ -180,14 +184,15 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
 +        self.captureSession.startRunning()
 +        if self.captureSession.isRunning {
 +          self.interruptionRestarts = 0
++          self.delegate?.onCameraStarted()
 +        }
 +      }
 +      return
 +    }
 +    delegate?.onError(.unknown(message: "The camera preview stopped because the camera is not available."))
 +  }
- 
-   @objc
++
++  @objc
 +  func sessionInterruptionEnded(notification: Notification) {
 +    guard (notification.object as? AVCaptureSession) === captureSession else {
 +      return
