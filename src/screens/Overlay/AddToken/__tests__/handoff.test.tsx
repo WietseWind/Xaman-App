@@ -216,6 +216,32 @@ it('waits again when a second gesture starts before the reply continuation runs'
 });
 
 it.each(['cancel', 'account', 'network', 'unmount'])(
+    'does not create a second drag waiter after an already-resolved wait is invalidated by %s', async (stop) => {
+        const gateway = deferred();
+        jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+        const { view, panel } = setup();
+        let settled = false;
+        const adding = view.onAddPress().then(() => { settled = true; });
+        panel.isDragActive = true; gateway.resolve({}); await flush();
+        panel.isDragActive = false; view.onPanelDragEnd();
+        panel.isDragActive = true;
+        if (stop === 'cancel') view.onCancelPress();
+        else if (stop === 'unmount') view.componentWillUnmount();
+        else if (stop === 'network') networkChange();
+        else {
+            jest.mocked(CoreRepository.getSettings).mockReturnValue({ account: { address: 'rOther' } } as any);
+            settingsChange();
+        }
+        await flush();
+        expect(settled).toBe(true);
+        expect((view as any).panelDragWaiter).toBeUndefined();
+        expect(Payload.build).not.toHaveBeenCalled();
+        await adding;
+        if (stop !== 'unmount') { view.onPanelSlideDown(); view.componentWillUnmount(); }
+    },
+);
+
+it.each(['cancel', 'account', 'network', 'unmount'])(
     'settles the drag waiter without a release after %s and rejects late drag events', async (stop) => {
         const gateway = deferred();
         jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);

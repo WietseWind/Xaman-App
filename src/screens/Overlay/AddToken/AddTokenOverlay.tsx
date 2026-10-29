@@ -476,7 +476,7 @@ class AddTokenOverlay extends Component<Props, State> {
 
         if (!this.mounted || attempt !== this.requestAttempt) return;
         // A reply must not override a header gesture that the user has not finished.
-        while (this.actionPanelRef.current?.isDragActive) {
+        while (this.mounted && attempt === this.requestAttempt && this.actionPanelRef.current?.isDragActive) {
             const continueAdd = await new Promise<boolean>((resolve) => { this.panelDragWaiter = resolve; });
             if (!continueAdd) return;
         }
