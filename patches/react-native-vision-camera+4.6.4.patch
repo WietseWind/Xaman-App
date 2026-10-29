@@ -82,7 +82,33 @@ diff --git a/node_modules/react-native-vision-camera/android/src/main/java/com/m
 diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift b/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift
 --- a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift
 +++ b/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift
-@@ -33,6 +33,8 @@
+@@ -9,6 +9,25 @@
+ import AVFoundation
+ import Foundation
+ 
++// preview-restart-decision:begin
++enum PreviewRestartDecision {
++  case resumed
++  case reportStopped
++  case leave
++}
++
++/// startRunning has already returned. A session that is still stopped is the black preview.
++func previewRestartDecision(sessionActive: Bool, sessionRunning: Bool) -> PreviewRestartDecision {
++  if !sessionActive {
++    return .leave
++  }
++  if sessionRunning {
++    return .resumed
++  }
++  return .reportStopped
++}
++// preview-restart-decision:end
++
+ /**
+  A fully-featured Camera Session supporting preview, video, photo, frame processing, and code scanning outputs.
+  All changes to the session have to be controlled via the `configure` function.
+@@ -33,6 +52,8 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
    var recordingSession: RecordingSession?
    var didCancelRecording = false
    var orientationManager = OrientationManager()
@@ -91,7 +117,7 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
  
    // Callbacks
    weak var delegate: CameraSessionDelegate?
-@@ -63,6 +65,14 @@
+@@ -63,6 +84,14 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
                                             selector: #selector(audioSessionInterrupted),
                                             name: AVAudioSession.interruptionNotification,
                                             object: AVAudioSession.sharedInstance)
@@ -106,7 +132,7 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
    }
  
    private func initialize() {
-@@ -83,6 +93,12 @@
+@@ -83,6 +112,12 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
      NotificationCenter.default.removeObserver(self,
                                                name: AVAudioSession.interruptionNotification,
                                                object: AVAudioSession.sharedInstance)
@@ -119,7 +145,7 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
    }
  
    /**
-@@ -257,8 +273,11 @@
+@@ -257,8 +292,11 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
  
      // Start/Stop session
      if configuration.isActive {
@@ -132,7 +158,7 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
      } else {
        captureSession.stopRunning()
        delegate?.onCameraStopped()
-@@ -311,7 +330,81 @@
+@@ -311,6 +349,99 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
  
    // pragma MARK: Notifications
  
@@ -164,7 +190,7 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
 +  }
 +
 +  /// A stopped preview used to stay black behind the crosshairs, because this interruption is not an error.
-   @objc
++  @objc
 +  func sessionWasInterrupted(notification: Notification) {
 +    guard (notification.object as? AVCaptureSession) === captureSession else {
 +      return
@@ -182,9 +208,17 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
 +        guard self.configuration?.isActive == true, !self.captureSession.isRunning else { return }
 +        self.allowPreviewWhileNotExclusiveFullscreen()
 +        self.captureSession.startRunning()
-+        if self.captureSession.isRunning {
++        switch previewRestartDecision(
++          sessionActive: self.configuration?.isActive == true,
++          sessionRunning: self.captureSession.isRunning
++        ) {
++        case .resumed:
 +          self.interruptionRestarts = 0
 +          self.delegate?.onCameraStarted()
++        case .reportStopped:
++          self.delegate?.onError(.unknown(message: "The camera preview stopped because the camera is not available."))
++        case .leave:
++          break
 +        }
 +      }
 +      return
@@ -207,10 +241,20 @@ diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swif
 +      guard self.configuration?.isActive == true, !self.captureSession.isRunning else { return }
 +      self.allowPreviewWhileNotExclusiveFullscreen()
 +      self.captureSession.startRunning()
++      switch previewRestartDecision(
++        sessionActive: self.configuration?.isActive == true,
++        sessionRunning: self.captureSession.isRunning
++      ) {
++      case .resumed:
++        self.delegate?.onCameraStarted()
++      case .reportStopped:
++        self.delegate?.onError(.unknown(message: "The camera preview stopped because the camera is not available."))
++      case .leave:
++        break
++      }
 +    }
 +  }
 +
-+  @objc
+   @objc
    func sessionRuntimeError(notification: Notification) {
      VisionLogger.log(level: .error, message: "Unexpected Camera Runtime Error occured!")
-     guard let error = notification.userInfo?[AVCaptureSessionErrorKey] as? AVError else {
