@@ -46,8 +46,9 @@ import { Props, State } from './types';
 
 interface AddContext {
     account: string;
+    networkModelId: string;
     networkKey: string;
-    node: string;
+    networkId: number;
 }
 
 interface ReviewHandoff {
@@ -141,21 +142,36 @@ class AddTokenOverlay extends Component<Props, State> {
         this.cancelAdd();
     }
 
-    private contextMatches = (context: AddContext) => {
+    private captureContext = (): AddContext | undefined => {
         try {
             const { account } = this.props;
             const connection = NetworkService.getConnectionDetails();
-            return CoreRepository.getSettings()?.account?.address === context.account &&
-                account.address === context.account && connection.networkKey === context.networkKey &&
-                connection.node === context.node;
+            const networkModelId = NetworkService.getNetwork()?.id?.toString();
+            if (!networkModelId || !account.address || !connection.networkKey ||
+                !Number.isFinite(connection.networkId)) return undefined;
+            return {
+                account: account.address, networkModelId, networkKey: connection.networkKey,
+                networkId: connection.networkId,
+            };
         } catch {
-            // Logout/account deletion can invalidate a Realm account while a reply is pending.
+            // Account/network deletion can invalidate Realm objects while a reply is pending.
+            return undefined;
+        }
+    };
+
+    private contextMatches = (context: AddContext) => {
+        try {
+            const current = this.captureContext();
+            return Boolean(current && CoreRepository.getSettings()?.account?.address === context.account &&
+                current.account === context.account && current.networkModelId === context.networkModelId &&
+                current.networkKey === context.networkKey && current.networkId === context.networkId);
+        } catch {
             return false;
         }
     };
 
     private onNetworkChange = () => {
-        if (this.addContext) this.cancelAndClose();
+        if (this.addContext && !this.contextMatches(this.addContext)) this.cancelAndClose();
     };
 
     private onSettingsChange = () => {
@@ -303,7 +319,7 @@ class AddTokenOverlay extends Component<Props, State> {
             }));
             handoff.listeners.push(Navigation.events().registerModalDismissedListener((event) => {
                 if (event.componentId !== reviewId) return;
-                if (handoff.appeared) this.finishHandoff(handoff);
+                if (handoff.appeared || Platform.OS === 'android') this.finishHandoff(handoff);
                 else handoff.cancelled = true;
             }));
             handoff.listeners.push(Navigation.events().registerCommandListener((name, params) => {
@@ -315,14 +331,14 @@ class AddTokenOverlay extends Component<Props, State> {
                     }
                 } else if (name === 'setRoot' || name === 'dismissAllModals' ||
                     (name === 'dismissModal' && params.componentId === reviewId)) {
-                    if (name !== 'dismissModal') terminalCommands.set(params.commandId, name);
+                    terminalCommands.set(params.commandId, name);
                     this.cancelAdd();
                 }
             }));
             handoff.listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
                 if (terminalCommands.get(event.commandId) !== event.commandName) return;
-                if (event.commandName === 'setRoot' && Platform.OS === 'android') {
-                    // Android destroys its modal stack when the root changes.
+                if (Platform.OS === 'android') {
+                    // These completed commands remove the accepted Android modal, even before first appearance.
                     this.finishHandoff(handoff);
                 } else if ((event.commandName === 'setRoot' || event.commandName === 'dismissAllModals') &&
                     handoff.cancelled) {
@@ -349,10 +365,6 @@ class AddTokenOverlay extends Component<Props, State> {
             if (result === false) {
                 // The existing Review belongs to another request.
                 this.finishHandoff(handoff);
-            } else if (Platform.OS === 'android' && !handoff.appeared) {
-                // Android's canceled enter animation completes without a DidAppear event.
-                handoff.cancelled = true;
-                this.dismissCancelledReview(handoff);
             }
         }).catch(() => this.finishHandoff(handoff));
     };
@@ -414,6 +426,9 @@ class AddTokenOverlay extends Component<Props, State> {
             return;
         }
 
+        const context = this.captureContext();
+        if (!context || !this.contextMatches(context)) return;
+
         // if trustline is already exist return
         if (
             AccountRepository.hasCurrency(account, {
@@ -425,9 +440,6 @@ class AddTokenOverlay extends Component<Props, State> {
             return;
         }
 
-        const connection = NetworkService.getConnectionDetails();
-        const context = { account: account.address, networkKey: connection.networkKey, node: connection.node };
-        if (!this.contextMatches(context)) return;
         const attempt = ++this.requestAttempt;
         this.addContext = context;
         this.phase = 'requesting';

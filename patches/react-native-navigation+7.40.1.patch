@@ -230,7 +230,6 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
      return NO;
  }
  
-
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
@@ -242,3 +241,139 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/
  }
  
  - (RNNOverlayWindow *)findWindowByRootViewController:(UIViewController *)viewController {
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java
+@@ -8,6 +8,7 @@
+ import com.reactnativenavigation.options.Options;
+ import com.reactnativenavigation.react.CommandListener;
+ import com.reactnativenavigation.utils.ScreenAnimationListener;
++import com.reactnativenavigation.utils.Functions.FuncR;
+ import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController;
+ 
+ import androidx.annotation.Nullable;
+@@ -41,6 +42,10 @@
+     }
+ 
+     void showModal(ViewController<?> appearing, ViewController<?> disappearing, CommandListener listener) {
++        showModal(appearing, disappearing, listener, () -> !appearing.isDestroyed());
++    }
++
++    void showModal(ViewController<?> appearing, ViewController<?> disappearing, CommandListener listener, FuncR<Boolean> isActive) {
+         if (modalsLayout == null) {
+             listener.onError("Can not show modal before activity is created");
+             return;
+@@ -52,39 +57,68 @@
+         appearing.setWaitForRender(enterAnimationOptions.waitForRender);
+         modalsLayout.setVisibility(View.VISIBLE);
+         modalsLayout.addView(appearing.getView(), matchParentLP());
++        ScreenAnimationListener animationListener = createListener(appearing, disappearing, listener, isActive);
++        Runnable showWhenActive = () -> {
++            // A root change/dismissal can destroy the controller while React is rendering.
++            // ModalAnimator reads its view before onStart, so guard before entering it.
++            if (appearing.isDestroyed() || !isActive.run()) {
++                animationListener.onCancel();
++                return;
++            }
++            modalAnimator.show(appearing, disappearing, options.animations.showModal, animationListener);
++        };
+ 
+         if (enterAnimationOptions.enabled.isTrueOrUndefined()) {
+             if (enterAnimationOptions.shouldWaitForRender().isTrue()) {
+-                appearing.addOnAppearedListener(() -> modalAnimator.show(appearing, disappearing, options.animations.showModal, createListener(appearing, disappearing, listener)));
++                appearing.addOnAppearedListener(showWhenActive);
+             } else {
+-                modalAnimator.show(appearing, disappearing, options.animations.showModal, createListener(appearing, disappearing, listener));
++                showWhenActive.run();
+             }
+         } else {
+             if (enterAnimationOptions.waitForRender.isTrue()) {
+-                appearing.addOnAppearedListener(() -> onShowModalEnd(appearing, disappearing, listener));
++                appearing.addOnAppearedListener(animationListener::onEnd);
+             } else {
+-                onShowModalEnd(appearing, disappearing, listener);
++                animationListener.onEnd();
+             }
+         }
+     }
+ 
+ 
+     @NotNull
+-    private ScreenAnimationListener createListener(ViewController<?> toAdd, ViewController<?> toRemove, CommandListener listener) {
++    private ScreenAnimationListener createListener(ViewController<?> toAdd, ViewController<?> toRemove, CommandListener listener, FuncR<Boolean> isActive) {
+         return new ScreenAnimationListener() {
++            private boolean completed;
++
++            private void completePresentation() {
++                if (completed) return;
++                completed = true;
++                if (toAdd.isDestroyed() || !isActive.run()) {
++                    listener.onError("Modal presentation cancelled");
++                    return;
++                }
++                onShowModalEnd(toAdd, toRemove, listener);
++            }
++
+             @Override
+             public void onStart() {
++                if (completed) return;
++                if (toAdd.isDestroyed() || !isActive.run()) {
++                    completePresentation();
++                    return;
++                }
+                 toAdd.getView().setAlpha(1);
+             }
+ 
+             @Override
+             public void onEnd() {
+-                onShowModalEnd(toAdd, toRemove, listener);
++                completePresentation();
+             }
+ 
+             @Override
+             public void onCancel() {
+-                listener.onSuccess(toAdd.getId());
++                // Canceling an animation does not cancel a live modal presentation.
++                // Finish its lifecycle; removed controllers instead reject above.
++                completePresentation();
+             }
+         };
+     }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
+@@ -61,7 +61,8 @@
+         ViewController<?> toRemove = isEmpty() ? root : peek();
+         modals.add(viewController);
+         viewController.setOverlay(overlay);
+-        presenter.showModal(viewController, toRemove, listener);
++        presenter.showModal(viewController, toRemove, listener,
++                () -> modals.contains(viewController) && !viewController.isDestroyed());
+     }
+ 
+     public boolean dismissModal(String componentId, @Nullable ViewController<?> root, CommandListener listener) {
+@@ -111,8 +112,8 @@
+                     }
+                 });
+             } else {
+-                modals.get(0).destroy();
+-                modals.remove(0);
++                ViewController<?> removed = modals.remove(0);
++                removed.destroy();
+             }
+         }
+     }
+@@ -174,10 +175,11 @@
+     }
+ 
+     public void destroy() {
+-        for (ViewController<?> modal : modals) {
++        ArrayList<ViewController<?>> removed = new ArrayList<>(modals);
++        modals.clear();
++        for (ViewController<?> modal : removed) {
+             modal.destroy();
+         }
+-        modals.clear();
+     }
+ 
+     public void onConfigurationChanged(Configuration newConfig) {

@@ -30,7 +30,7 @@ jest.mock('@services/BackendService', () => ({ __esModule: true, default: { getC
 jest.mock('@services/LedgerService', () => ({ __esModule: true, default: { getGatewayBalances: jest.fn() } }));
 jest.mock('@services/NetworkService', () => ({
     __esModule: true, default: {
-        getConnectionDetails: jest.fn(), getNetworkReserve: () => ({ OwnerReserve: 1 }),
+        getConnectionDetails: jest.fn(), getNetwork: jest.fn(), getNetworkReserve: () => ({ OwnerReserve: 1 }),
         getNativeAsset: () => 'XRP', on: jest.fn(), off: jest.fn(),
     },
 }));
@@ -43,7 +43,8 @@ const reviewId = AppScreens.Modal.ReviewTransaction;
 const account = { address: 'rAccount' };
 const currency = { id: 2, issuer: 'rIssuer', currency: 'USD' };
 const details = { issuer: { id: 1, currencies: { usd: currency } } };
-const connection = { networkKey: 'MAINNET', node: 'wss://node' };
+const networkModel = { id: 'network-model-mainnet' };
+const connection = { networkKey: 'MAINNET', networkId: 0, node: 'wss://node' };
 const deferred = () => {
     let resolve: (value: any) => void = () => undefined;
     let reject: (reason: Error) => void = () => undefined;
@@ -89,7 +90,8 @@ const pressBack = () => [...backHandlers].reverse().some((handler) => handler())
 const settingsChange = () => {
     jest.mocked(CoreRepository.on).mock.calls.find(([event]) => event === 'updateSettings')![1]();
 };
-const networkChange = () => {
+const networkChange = (network = { id: 'network-model-testnet' }) => {
+    jest.mocked(NetworkService.getNetwork).mockReturnValue(network as any);
     jest.mocked(NetworkService.on).mock.calls.find(([event]) => event === 'networkChange')![1]({} as any);
 };
 const setup = () => {
@@ -139,6 +141,7 @@ beforeEach(() => {
     });
     jest.mocked(CoreRepository.getSettings).mockReturnValue({ account } as any);
     jest.mocked(NetworkService.getConnectionDetails).mockReturnValue(connection as any);
+    jest.mocked(NetworkService.getNetwork).mockReturnValue(networkModel as any);
     jest.mocked(NavigationService.getCurrentOverlay).mockReturnValue(AppScreens.Overlay.AddToken);
     jest.mocked(LedgerService.getGatewayBalances).mockResolvedValue({ obligations: { USD: '2000000000' } } as any);
     jest.mocked(BackendService.getCuratedIOUs).mockResolvedValue({ details } as any);
@@ -265,15 +268,61 @@ it.each(['account', 'network', 'missing-account', 'invalid-account'])('cancels l
     view.componentWillUnmount();
 });
 
-it('rechecks context after gateway completion even without a settings event', async () => {
+it('cancels a different network model with the same network key and numeric ID', async () => {
     const gateway = deferred();
     jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
     const { view } = setup(); const adding = view.onAddPress();
-    jest.mocked(NetworkService.getConnectionDetails).mockReturnValue({ ...connection, node: 'wss://other-node' } as any);
+    jest.mocked(NetworkService.getNetwork).mockReturnValue({ id: 'different-model-same-network-key' } as any);
     gateway.resolve({}); await adding;
     view.onPanelSlideDown();
     expect(Navigator.showModal).not.toHaveBeenCalled();
     expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(1);
+    view.componentWillUnmount();
+});
+
+it('allows same-chain node failover while the gateway request is pending', async () => {
+    const gateway = deferred();
+    jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+    const { view, slideDown } = setup(); const adding = view.onAddPress();
+    jest.mocked(NetworkService.getConnectionDetails).mockReturnValue({
+        ...connection, node: 'wss://failover-node',
+    } as any);
+    networkChange(networkModel);
+    settingsChange();
+    expect(slideDown).not.toHaveBeenCalled();
+    gateway.resolve({}); await adding;
+    view.onPanelSlideDown();
+    expect(Navigator.showModal).toHaveBeenCalledTimes(1);
+    appear();
+    expect(Navigation.dismissModal).not.toHaveBeenCalled();
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    view.componentWillUnmount();
+});
+
+it('cancels a changed numeric chain ID even when the model and key stay the same', async () => {
+    const gateway = deferred();
+    jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+    const { view } = setup(); const adding = view.onAddPress();
+    jest.mocked(NetworkService.getConnectionDetails).mockReturnValue({ ...connection, networkId: 1 } as any);
+    networkChange(networkModel);
+    gateway.resolve({}); await adding;
+    view.onPanelSlideDown();
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    view.componentWillUnmount();
+});
+
+it.each(['missing', 'invalid'])('fails closed when the network Realm model is %s', async (state) => {
+    const gateway = deferred();
+    jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+    const { view } = setup(); const adding = view.onAddPress();
+    if (state === 'missing') jest.mocked(NetworkService.getNetwork).mockReturnValue(undefined as any);
+    else jest.mocked(NetworkService.getNetwork).mockImplementation(() => { throw new Error('invalid network'); });
+    expect(settingsChange).not.toThrow();
+    gateway.resolve({}); await adding;
+    view.onPanelSlideDown();
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
     view.componentWillUnmount();
 });
 
@@ -323,12 +372,51 @@ it.each(['false', 'reject', 'throw'])('cleans %s show without closing another Re
     view.componentWillUnmount();
 });
 
-it('cleans a canceled Android enter that completes without appearance', async () => {
+it('retains the cover when Android show success arrives before its appearance event', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
     const { view } = await startPresentation();
     show.resolve(reviewId); await flush();
-    expect(Navigation.dismissModal).toHaveBeenCalledWith(reviewId);
+    expect(Navigation.dismissModal).not.toHaveBeenCalled();
+    expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
+    expect(releaseReservation).not.toHaveBeenCalled();
+    appear(); await flush();
     expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    expect(Navigation.dismissModal).not.toHaveBeenCalled();
+    expect(releaseReservation).toHaveBeenCalledTimes(1);
+    expect(navigationListenerCount()).toBe(0);
+    view.componentWillUnmount();
+});
+
+it('cleans an explicit native presentation-cancel rejection without appearance', async () => {
+    const { view } = await startPresentation();
+    show.reject(new Error('Modal presentation cancelled')); await flush();
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    expect(Navigation.dismissModal).not.toHaveBeenCalled();
+    expect(releaseReservation).toHaveBeenCalledTimes(1);
+    expect(navigationListenerCount()).toBe(0);
+    view.componentWillUnmount();
+});
+
+it('cleans Android native removal before appearance without inferring from show success', async () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
+    const { view } = await startPresentation();
+    [...modalDismissed].forEach((listener) => listener({ componentId: reviewId }));
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    expect(Navigation.dismissModal).not.toHaveBeenCalled();
+    expect(releaseReservation).toHaveBeenCalledTimes(1);
+    expect(navigationListenerCount()).toBe(0);
+    show.resolve(reviewId); await flush();
+    expect(Navigation.dismissModal).not.toHaveBeenCalled();
+    view.componentWillUnmount();
+});
+
+it.each(['dismissModal', 'dismissAllModals'])('cleans a completed Android %s before appearance', async (name) => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
+    const { view } = await startPresentation();
+    command(name, { componentId: reviewId });
+    [...completed].forEach((listener) => listener({ commandName: name, commandId: `${name}-command` }));
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    expect(releaseReservation).toHaveBeenCalledTimes(1);
     expect(navigationListenerCount()).toBe(0);
     view.componentWillUnmount();
 });
@@ -501,7 +589,7 @@ it('invalidates a gateway request through an A-B-A network change', async () => 
     const gateway = deferred();
     jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
     const { view } = setup(); const adding = view.onAddPress();
-    networkChange(); networkChange();
+    networkChange(); networkChange(networkModel);
     gateway.resolve({}); await adding;
     view.onPanelSlideDown();
     expect(Payload.build).not.toHaveBeenCalled();
