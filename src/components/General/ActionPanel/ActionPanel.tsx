@@ -26,6 +26,7 @@ interface Props extends React.PropsWithChildren {
     testID?: string;
     contentStyle?: ViewStyle | ViewStyle[];
     onCloseRequest?: () => void;
+    onDragEnd?: () => void;
     lockAfterCloseRequest?: boolean;
     onSlideDown?: () => void;
 }
@@ -139,6 +140,10 @@ class ActionPanel extends Component<Props, State> {
         };
     }
 
+    public get isDragActive(): boolean {
+        return this.isDragging;
+    }
+
     public slideUp = () => {
         // A tap can close the sheet before the deferred open runs.
         if (this.dismissed || this.closeRequested) {
@@ -221,9 +226,15 @@ class ActionPanel extends Component<Props, State> {
     };
 
     private onPanResponderRelease = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        const wasDragging = this.isDragging;
         this.isDragging = false;
         this.startedOnHeader = false;
         this.animateToIndex(this.getTargetIndex(this.currentY, gestureState.vy));
+        // Report the user's chosen target first, so a close request can cancel pending work.
+        if (wasDragging) {
+            const { onDragEnd } = this.props;
+            onDragEnd?.();
+        }
     };
 
     private getTargetIndex = (y: number, vy: number) => {

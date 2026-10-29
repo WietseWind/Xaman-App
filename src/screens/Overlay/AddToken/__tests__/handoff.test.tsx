@@ -98,12 +98,13 @@ const setup = () => {
     const view = new AddTokenOverlay({ account, componentId: ownId } as any);
     jest.spyOn(view, 'setState').mockImplementation((update: any) => { Object.assign(view.state, update); });
     const slideDown = jest.fn(() => view.onPanelCloseRequest());
-    (view as any).actionPanelRef = { current: { slideDown } };
+    const panel = { slideDown, isDragActive: false };
+    (view as any).actionPanelRef = { current: panel };
     view.componentDidMount();
     Object.assign(view.state, {
         dataSource: details, selectedPartyId: 1, selectedCurrencyId: 2, isLoading: false,
     });
-    return { view, slideDown };
+    return { view, slideDown, panel };
 };
 const startPresentation = async () => {
     const result = setup();
@@ -155,6 +156,89 @@ afterEach(() => {
     jest.clearAllTimers(); jest.useRealTimers(); jest.restoreAllMocks();
     if (platform) Object.defineProperty(Platform, 'OS', platform);
 });
+
+it('holds a gateway reply until the active drag settles open, then adds once', async () => {
+    const gateway = deferred();
+    jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+    const { view, panel, slideDown } = setup();
+    const adding = view.onAddPress();
+    panel.isDragActive = true;
+    gateway.resolve({ obligations: { USD: '3000000000' } }); await flush();
+    expect(Payload.build).not.toHaveBeenCalled();
+    expect(slideDown).not.toHaveBeenCalled();
+    expect(view.state.isLoadingTokenInfo).toBe(true);
+    expect(view.state.isHandoffPending).toBe(false);
+    expect(jest.getTimerCount()).toBe(0);
+    panel.isDragActive = false;
+    view.onPanelDragEnd();
+    view.onPanelDragEnd();
+    await adding;
+    expect(Payload.build).toHaveBeenCalledTimes(1);
+    expect(TrustSet).toHaveBeenCalledWith(expect.objectContaining({
+        LimitAmount: { issuer: currency.issuer, currency: 'USD', value: '3000000000' },
+    }));
+    expect(slideDown).toHaveBeenCalledTimes(1);
+    view.onPanelSlideDown(); appear(); view.componentWillUnmount();
+});
+
+it.each(['release', 'terminate'])('honors a real close target on drag %s before applying the reply', async () => {
+    const gateway = deferred();
+    jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+    const { view, panel, slideDown } = setup();
+    const adding = view.onAddPress(); panel.isDragActive = true;
+    gateway.resolve({}); await flush();
+    // ActionPanel applies the release/termination target before its end notification.
+    panel.isDragActive = false;
+    view.onPanelCloseRequest();
+    view.onPanelDragEnd();
+    await adding;
+    expect(Payload.build).not.toHaveBeenCalled();
+    expect(slideDown).not.toHaveBeenCalled();
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+    view.onPanelSlideDown();
+    expect(Navigation.dismissOverlay).toHaveBeenCalledWith(ownId);
+    view.componentWillUnmount();
+});
+
+it('waits again when a second gesture starts before the reply continuation runs', async () => {
+    const gateway = deferred();
+    jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+    const { view, panel } = setup();
+    const adding = view.onAddPress(); panel.isDragActive = true;
+    gateway.resolve({}); await flush();
+    panel.isDragActive = false; view.onPanelDragEnd();
+    panel.isDragActive = true; await flush();
+    expect(Payload.build).not.toHaveBeenCalled();
+    panel.isDragActive = false; view.onPanelDragEnd();
+    await adding;
+    expect(Payload.build).toHaveBeenCalledTimes(1);
+    view.onPanelSlideDown(); appear(); view.componentWillUnmount();
+});
+
+it.each(['cancel', 'account', 'network', 'unmount'])(
+    'settles the drag waiter without a release after %s and rejects late drag events', async (stop) => {
+        const gateway = deferred();
+        jest.mocked(LedgerService.getGatewayBalances).mockReturnValue(gateway.promise);
+        const { view, panel } = setup();
+        const adding = view.onAddPress(); panel.isDragActive = true;
+        gateway.resolve({}); await flush();
+        if (stop === 'cancel') view.onCancelPress();
+        else if (stop === 'unmount') view.componentWillUnmount();
+        else if (stop === 'network') networkChange();
+        else {
+            jest.mocked(CoreRepository.getSettings).mockReturnValue({ account: { address: 'rOther' } } as any);
+            settingsChange();
+        }
+        const writes = jest.mocked(view.setState).mock.calls.length;
+        await adding;
+        panel.isDragActive = false; view.onPanelDragEnd(); await flush();
+        expect(view.setState).toHaveBeenCalledTimes(writes);
+        expect(Payload.build).not.toHaveBeenCalled();
+        expect(Navigator.showModal).not.toHaveBeenCalled();
+        expect(jest.getTimerCount()).toBe(0);
+        if (stop !== 'unmount') { view.onPanelSlideDown(); view.componentWillUnmount(); }
+    },
+);
 
 it('opens Review at real close completion, with the same TrustSet and no navigation timer', async () => {
     const { view, slideDown } = setup();

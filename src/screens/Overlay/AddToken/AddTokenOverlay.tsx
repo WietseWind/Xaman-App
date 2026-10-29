@@ -92,6 +92,7 @@ class AddTokenOverlay extends Component<Props, State> {
     private mountTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
     private overlayWaiter?: EventSubscription;
     private waitingForOverlayShows = false;
+    private panelDragWaiter?: (continueAdd: boolean) => void;
 
     static options() {
         return {
@@ -178,11 +179,22 @@ class AddTokenOverlay extends Component<Props, State> {
         if (this.addContext && !this.contextMatches(this.addContext)) this.cancelAndClose();
     };
 
+    private finishPanelDrag = (continueAdd: boolean) => {
+        const waiter = this.panelDragWaiter;
+        this.panelDragWaiter = undefined;
+        waiter?.(continueAdd);
+    };
+
+    onPanelDragEnd = () => {
+        this.finishPanelDrag(this.mounted && this.phase === 'requesting');
+    };
+
     private cancelAdd = () => {
         if (this.phase === 'transferred') return;
         this.requestAttempt++;
         this.pendingPayload = undefined;
         this.phase = 'cancelled';
+        this.finishPanelDrag(false);
         if (this.handoff) {
             this.handoff.cancelled = true;
             if (this.handoff.appeared) this.dismissCancelledReview(this.handoff);
@@ -463,6 +475,12 @@ class AddTokenOverlay extends Component<Props, State> {
         }
 
         if (!this.mounted || attempt !== this.requestAttempt) return;
+        // A reply must not override a header gesture that the user has not finished.
+        while (this.actionPanelRef.current?.isDragActive) {
+            const continueAdd = await new Promise<boolean>((resolve) => { this.panelDragWaiter = resolve; });
+            if (!continueAdd) return;
+        }
+        if (!this.mounted || attempt !== this.requestAttempt) return;
         if (!this.contextMatches(context)) {
             this.cancelAndClose();
             return;
@@ -641,6 +659,7 @@ class AddTokenOverlay extends Component<Props, State> {
             <ActionPanel
                 height={AppSizes.heightPercentageToDP(90)}
                 onCloseRequest={this.onPanelCloseRequest}
+                onDragEnd={this.onPanelDragEnd}
                 lockAfterCloseRequest
                 onSlideDown={this.onPanelSlideDown}
                 testID="add-asset-overlay"

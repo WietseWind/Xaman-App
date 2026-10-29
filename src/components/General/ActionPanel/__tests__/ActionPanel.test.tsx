@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, InteractionManager, TouchableWithoutFeedback } from 'react-native';
+import { Animated, InteractionManager, PanResponder, TouchableWithoutFeedback } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import ActionPanel from '../ActionPanel';
@@ -45,6 +45,56 @@ describe('ActionPanel', () => {
             jest.advanceTimersByTime(50);
         });
     };
+
+    it.each([['release', 0], ['terminate', 0], ['release', 1], ['terminate', 1]])(
+        'reports a header %s after its actual target %s is selected', (ending, target) => {
+            let handlers: any;
+            jest.spyOn(PanResponder, 'create').mockImplementation((callbacks) => {
+                handlers = callbacks;
+                return { panHandlers: {} } as any;
+            });
+            const events: string[] = [];
+            const onCloseRequest = jest.fn(() => events.push('close'));
+            const onDragEnd = jest.fn(() => events.push('end'));
+            let tree: renderer.ReactTestRenderer;
+            act(() => {
+                tree = renderer.create(
+                    <ActionPanel height={300} onCloseRequest={onCloseRequest} onDragEnd={onDragEnd} />,
+                );
+            });
+            flushOpenDelay();
+            const panel = tree!.root.instance;
+            expect(panel.isDragActive).toBe(false);
+            act(() => { handlers.onPanResponderGrant(); });
+            expect(panel.isDragActive).toBe(true);
+            expect(onCloseRequest).not.toHaveBeenCalled();
+            // Native Animated.Value positions are fixture inputs; target selection stays real.
+            panel.currentY = panel.state.snapPoints[Number(target)].y;
+            act(() => {
+                const callback = ending === 'release'
+                    ? handlers.onPanResponderRelease : handlers.onPanResponderTerminate;
+                callback({}, { vy: 0 });
+            });
+            expect(panel.isDragActive).toBe(false);
+            expect(panel.currentIndex).toBe(target);
+            expect(events).toEqual(target === 0 ? ['close', 'end'] : ['end']);
+            expect(onDragEnd).toHaveBeenCalledTimes(1);
+            act(() => { tree!.unmount(); });
+        },
+    );
+
+    it('does not report a drag end for a programmatic close or unmount', () => {
+        const onDragEnd = jest.fn();
+        let tree: renderer.ReactTestRenderer;
+        act(() => { tree = renderer.create(<ActionPanel height={300} onDragEnd={onDragEnd} />); });
+        flushOpenDelay();
+        const panel = tree!.root.instance;
+        act(() => { panel.slideDown(); });
+        flushOpenDelay();
+        act(() => { tree!.unmount(); });
+        expect(panel.isDragActive).toBe(false);
+        expect(onDragEnd).not.toHaveBeenCalled();
+    });
 
     it('does not dismiss when the open animation finishes', () => {
         const onSlideDown = jest.fn();
