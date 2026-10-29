@@ -18,3 +18,15 @@ export const cameraScannerPhase = ({
     }
     return 'preview';
 };
+
+/**
+ * A vision-camera error means the preview session stopped.
+ * Leaving the camera view mounted is the black crosshair screen.
+ */
+export const cameraErrorStopsPreview = (error: unknown): boolean => {
+    // Camera.onError already means the session stopped. An empty payload is the same failure.
+    if (error === undefined) {
+        return true;
+    }
+    return true;
+};

@@ -78,3 +78,134 @@ diff --git a/node_modules/react-native-vision-camera/android/src/main/java/com/m
    }
  
    // Required for NativeEventEmitter, this is just a dummy implementation:
+
+diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift b/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift
+--- a/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift
++++ b/node_modules/react-native-vision-camera/ios/Core/CameraSession.swift
+@@ -33,6 +33,8 @@
+   var recordingSession: RecordingSession?
+   var didCancelRecording = false
+   var orientationManager = OrientationManager()
++  /// One automatic restart after iOS stops a just-started preview. A second stop is reported.
++  private var interruptionRestarts = 0
+ 
+   // Callbacks
+   weak var delegate: CameraSessionDelegate?
+@@ -63,6 +65,14 @@
+                                            selector: #selector(audioSessionInterrupted),
+                                            name: AVAudioSession.interruptionNotification,
+                                            object: AVAudioSession.sharedInstance)
++    NotificationCenter.default.addObserver(self,
++                                           selector: #selector(sessionWasInterrupted),
++                                           name: .AVCaptureSessionWasInterrupted,
++                                           object: captureSession)
++    NotificationCenter.default.addObserver(self,
++                                           selector: #selector(sessionInterruptionEnded),
++                                           name: .AVCaptureSessionInterruptionEnded,
++                                           object: captureSession)
+   }
+ 
+   private func initialize() {
+@@ -83,6 +93,12 @@
+     NotificationCenter.default.removeObserver(self,
+                                               name: AVAudioSession.interruptionNotification,
+                                               object: AVAudioSession.sharedInstance)
++    NotificationCenter.default.removeObserver(self,
++                                              name: .AVCaptureSessionWasInterrupted,
++                                              object: captureSession)
++    NotificationCenter.default.removeObserver(self,
++                                              name: .AVCaptureSessionInterruptionEnded,
++                                              object: captureSession)
+   }
+ 
+   /**
+@@ -257,6 +273,7 @@
+ 
+     // Start/Stop session
+     if configuration.isActive {
++      allowPreviewWhileNotExclusiveFullscreen()
+       captureSession.startRunning()
+       delegate?.onCameraStarted()
+     } else {
+@@ -310,8 +327,81 @@
+   }
+ 
+   // pragma MARK: Notifications
++
++  /**
++   iOS 16+ can keep the preview running when this app is not the only fullscreen scene.
++   Without the system entitlement this stays unsupported and the interruption path reports it.
++   */
++  private func allowPreviewWhileNotExclusiveFullscreen() {
++    if #available(iOS 16.0, *) {
++      if captureSession.isMultitaskingCameraAccessSupported {
++        captureSession.isMultitaskingCameraAccessEnabled = true
++      }
++    }
++  }
++
++  private func previewBlocked(by reason: AVCaptureSession.InterruptionReason?) -> Bool {
++    switch reason {
++    case .videoDeviceNotAvailableWithMultipleForegroundApps,
++         .videoDeviceInUseByAnotherClient,
++         .videoDeviceNotAvailableInBackground,
++         .videoDeviceNotAvailableDueToSystemPressure:
++      return true
++    default:
++      if #available(iOS 26.0, *), reason == .sensitiveContentMitigationActivated {
++        return true
++      }
++      return false
++    }
++  }
++
++  /// A stopped preview used to stay black behind the crosshairs, because this interruption is not an error.
++  @objc
++  func sessionWasInterrupted(notification: Notification) {
++    guard (notification.object as? AVCaptureSession) === captureSession else {
++      return
++    }
++    let raw = (notification.userInfo?[AVCaptureSessionInterruptionReasonKey] as? NSNumber)?.intValue ?? -1
++    let reason = AVCaptureSession.InterruptionReason(rawValue: raw)
++    NSLog("VisionCamera session interrupted reason=%d", raw)
++    guard previewBlocked(by: reason) else {
++      return
++    }
++    if interruptionRestarts < 1 && configuration?.isActive == true {
++      interruptionRestarts += 1
++      CameraQueues.cameraQueue.asyncAfter(deadline: .now() + 0.4) { [weak self] in
++        guard let self else { return }
++        guard self.configuration?.isActive == true, !self.captureSession.isRunning else { return }
++        self.allowPreviewWhileNotExclusiveFullscreen()
++        self.captureSession.startRunning()
++        if self.captureSession.isRunning {
++          self.interruptionRestarts = 0
++        }
++      }
++      return
++    }
++    delegate?.onError(.unknown(message: "The camera preview stopped because the camera is not available."))
++  }
+ 
+   @objc
++  func sessionInterruptionEnded(notification: Notification) {
++    guard (notification.object as? AVCaptureSession) === captureSession else {
++      return
++    }
++    interruptionRestarts = 0
++    NSLog("VisionCamera session interruption ended")
++    guard configuration?.isActive == true, !captureSession.isRunning else {
++      return
++    }
++    CameraQueues.cameraQueue.async { [weak self] in
++      guard let self else { return }
++      guard self.configuration?.isActive == true, !self.captureSession.isRunning else { return }
++      self.allowPreviewWhileNotExclusiveFullscreen()
++      self.captureSession.startRunning()
++    }
++  }
++
++  @objc
+   func sessionRuntimeError(notification: Notification) {
+     VisionLogger.log(level: .error, message: "Unexpected Camera Runtime Error occured!")
+     guard let error = notification.userInfo?[AVCaptureSessionErrorKey] as? AVError else {
