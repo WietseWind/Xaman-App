@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Mums reikia jūsų leidimo naudoti jūsų fotoaparatą",
     "needPermissionToAccessCamera": "Norint pasiekti kamerą reikia leidimo",
     "pleaseApproveCameraPermission": "Patvirtinkite leidimą naudoti kamerą",
+    "cameraPreviewUnavailable": "Nepavyko paleisti kameros peržiūros.",
+    "cameraPreviewUnavailableHint": "Uždarykite kitą programą, kuri naudoja kamerą, ir bandykite dar kartą.",
     "looksLikeYouAreOffline": "Panašu, kad esate neprisijungęs/-usi (nėra interneto ryšio)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Nepavyko prisijungti prie XRPL mazgo. Patikrinkite interneto ryšį ir bandykite dar kartą",
     "pressBackAgainToExit": "Dar kartą paspauskite atgal, kad išeitumėte",

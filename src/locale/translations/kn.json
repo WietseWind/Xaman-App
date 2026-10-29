@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ಬಳಸಲು ನಮಗೆ ನಿಮ್ಮ ಅನುಮತಿ ಬೇಕು",
     "needPermissionToAccessCamera": "ಕ್ಯಾಮೆರಾ ಪ್ರವೇಶಿಸಲು ಅನುಮತಿ ಬೇಕು.",
     "pleaseApproveCameraPermission": "ಕ್ಯಾಮೆರಾ ಅನುಮತಿಗಳನ್ನು ದಯವಿಟ್ಟು ಅನುಮೋದಿಸಿ",
+    "cameraPreviewUnavailable": "ಕ್ಯಾಮೆರಾ ಪೂರ್ವವೀಕ್ಷಣೆ ಪ್ರಾರಂಭವಾಗಲಿಲ್ಲ.",
+    "cameraPreviewUnavailableHint": "ಕ್ಯಾಮೆರಾ ಬಳಸುತ್ತಿರುವ ಇತರ ಆ್ಯಪ್ ಮುಚ್ಚಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "looksLikeYouAreOffline": "ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಂತೆ ತೋರುತ್ತಿದೆ",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL ನೋಡ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ, ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
     "pressBackAgainToExit": "ನಿರ್ಗಮಿಸಲು ಮತ್ತೆ ಒತ್ತಿರಿ",

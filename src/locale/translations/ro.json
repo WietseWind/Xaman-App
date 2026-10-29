@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Avem nevoie de permisiunea dvs. pentru a utiliza camera",
     "needPermissionToAccessCamera": "Este necesară permisiunea de acces la cameră.",
     "pleaseApproveCameraPermission": "Vă rugăm să aprobați permisiunile pentru cameră",
+    "cameraPreviewUnavailable": "Previzualizarea camerei nu a putut fi pornită.",
+    "cameraPreviewUnavailableHint": "Închide orice altă aplicație care folosește camera, apoi încearcă din nou.",
     "looksLikeYouAreOffline": "Se pare că sunteți offline (fără conexiune la internet)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Nu se poate conecta la nodul de rețea. Vă rugăm să verificați conexiunea la internet și să încercați din nou",
     "pressBackAgainToExit": "Apăsați înapoi din nou pentru a ieși",

@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "我们需要您的许可才能使用您的相机",
     "needPermissionToAccessCamera": "需要访问摄像头的权限。",
     "pleaseApproveCameraPermission": "请允许摄像头权限",
+    "cameraPreviewUnavailable": "无法启动相机预览。",
+    "cameraPreviewUnavailableHint": "请关闭正在使用相机的其他应用，然后重试。",
     "looksLikeYouAreOffline": "看起来你离线",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "无法连接到XRPL节点，请检查您的网络连接并重试",
     "pressBackAgainToExit": "再按一次退出",

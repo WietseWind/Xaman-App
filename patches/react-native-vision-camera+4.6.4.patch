@@ -1,3 +1,20 @@
+diff --git a/node_modules/react-native-vision-camera/ios/React/CameraView.swift b/node_modules/react-native-vision-camera/ios/React/CameraView.swift
+--- a/node_modules/react-native-vision-camera/ios/React/CameraView.swift
++++ b/node_modules/react-native-vision-camera/ios/React/CameraView.swift
+@@ -140,9 +140,11 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegate, FpsSampleCollectorDelegate {
+   }
+ 
+   override public func layoutSubviews() {
++    super.layoutSubviews()
+     if let previewView {
+-      previewView.frame = frame
+-      previewView.bounds = bounds
++      // `frame` is in the superview's coordinates. Using it shifts the preview
++      // outside this view, which leaves a blank white camera on some iOS layouts.
++      previewView.frame = bounds
+     }
+   }
+ 
 diff --git a/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/react/CameraDevicesManager.kt b/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/react/CameraDevicesManager.kt
 --- a/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/react/CameraDevicesManager.kt
 +++ b/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/react/CameraDevicesManager.kt

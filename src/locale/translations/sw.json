@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Tunahitaji ruhusa yako ya kutumia kamera yako",
     "needPermissionToAccessCamera": "Tunahitaji ruhusa ya kufikia Kamera.",
     "pleaseApproveCameraPermission": "Tafadhali idhinisha ruhusa za kamera",
+    "cameraPreviewUnavailable": "Hakikisho la kamera halikuweza kuanza.",
+    "cameraPreviewUnavailableHint": "Funga programu nyingine inayotumia kamera, kisha ujaribu tena.",
     "looksLikeYouAreOffline": "Inaonekana uko nje ya mtandao (hakuna muunganisho wa mtandao)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Haiwezi kuunganisha kwenye node ya mtandao, Tafadhali angalia muunganisho wako wa mtandao na ujaribu tena",
     "pressBackAgainToExit": "Bonyeza nyuma tena ili kutoka",

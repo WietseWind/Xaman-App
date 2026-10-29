@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Χρειαζόμαστε την άδειά σας για να χρησιμοποιήσουμε την κάμερά σας",
     "needPermissionToAccessCamera": "Χρειάζεται η άδειά σας για πρόσβαση στην Κάμερα",
     "pleaseApproveCameraPermission": "Παρακαλούμε εγκρίνετε τα δικαιώματα για την κάμερα",
+    "cameraPreviewUnavailable": "Η προεπισκόπηση της κάμερας δεν ξεκίνησε.",
+    "cameraPreviewUnavailableHint": "Κλείστε οποιαδήποτε άλλη εφαρμογή χρησιμοποιεί την κάμερα και δοκιμάστε ξανά.",
     "looksLikeYouAreOffline": "Φαίνεται ότι είστε εκτός σύνδεσης",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Δεν είναι δυνατή η σύνδεση με τον κόμβο XRPL. Ελέγξτε τη σύνδεση σας με το διαδίκτυο και προσπαθήστε ξανά",
     "pressBackAgainToExit": "Πατήστε πίσω ξανά για έξοδο",

@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "اسان کي توهان جو ڪئميرا استعمال ڪرڻ لاءِ توهان جي اجازت گهربل آهي",
     "needPermissionToAccessCamera": "ڪئميرا تائين رسائي جي اجازت جي ضرورت آهي.",
     "pleaseApproveCameraPermission": "مهرباني ڪري ڪئميرا جي اجازتن کي منظور ڪيو",
+    "cameraPreviewUnavailable": "ڪئميرا جو ڏيک شروع نه ٿي سگهيو.",
+    "cameraPreviewUnavailableHint": "ڪئميرا استعمال ڪندڙ ٻي ائپ بند ڪري ٻيهر ڪوشش ڪريو.",
     "looksLikeYouAreOffline": "تون آهين لائن (ڪو به انٽرنيٽ ڪنيڪشن) وانگر لڳندي",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": " نوڊ XRPL  کي ڳنڍي نه ٿي سگھيا. مهرباني ڪري پنهنجو انٽرنيٽ ڪنيڪشن پڙتال ڪريو ۽ ٻيهر ڪوشش ڪريو",
     "pressBackAgainToExit": "ٻاھرواپس نڪرڻ لاءِ ٻيهر ٻيهر دٻايو",

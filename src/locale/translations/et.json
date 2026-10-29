@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Me vajame teie luba, et kasutada teie kaamerat",
     "needPermissionToAccessCamera": "Vajan ligipääsu kaamerale.",
     "pleaseApproveCameraPermission": "Palun kinnitage kaamera õigused",
+    "cameraPreviewUnavailable": "Kaamera eelvaadet ei õnnestunud käivitada.",
+    "cameraPreviewUnavailableHint": "Sulgege teine kaamerat kasutav rakendus ja proovige uuesti.",
     "looksLikeYouAreOffline": "Paistab, et sa oled võrgust väljas",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Ühendumine XRPL sõlmega nurjus, palun kontrolli oma internetiühendust ja proovi uuesti",
     "pressBackAgainToExit": "Väljumiseks vajuta uuesti Tagasi ",

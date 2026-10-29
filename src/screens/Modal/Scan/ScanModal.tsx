@@ -783,6 +783,56 @@ class ScanModal extends Component<Props, State> {
         Linking.openSettings();
     };
 
+    renderCameraUnavailable = (retry: () => void) => {
+        return (
+            <ImageBackground
+                resizeMode="cover"
+                source={
+                    StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
+                }
+                style={[AppStyles.container, AppStyles.paddingSml]}
+            >
+                <View style={[AppStyles.flex1, AppStyles.centerContent]}>
+                    <Icon name="IconCamera" size={150} style={styles.scanIconTransparent} />
+                </View>
+                <View style={[AppStyles.flex1, AppStyles.centerAligned, AppStyles.stretchSelf]}>
+                    <Text style={[AppStyles.p, AppStyles.bold, AppStyles.textCenterAligned]}>
+                        {Localize.t('global.cameraPreviewUnavailable')}
+                    </Text>
+                    <Spacer />
+                    <Text style={[AppStyles.subtext, AppStyles.bold, AppStyles.textCenterAligned]}>
+                        {Localize.t('global.cameraPreviewUnavailableHint')}
+                    </Text>
+                    <Spacer size={50} />
+                    <Button
+                        testID="scan-camera-retry-button"
+                        style={{ backgroundColor: AppColors.green }}
+                        label={Localize.t('global.tryAgain')}
+                        onPress={retry}
+                        icon="IconCheck"
+                    />
+                    <Spacer size={15} />
+                    <Button
+                        secondary
+                        testID="scan-camera-settings-button"
+                        label={Localize.t('global.approvePermissions')}
+                        onPress={this.requestPermissions}
+                        style={{ backgroundColor: AppColors.silver }}
+                        icon="IconSettings"
+                    />
+                    <Spacer size={15} />
+                    <Button
+                        secondary
+                        testID="scan-camera-unavailable-close-button"
+                        label={Localize.t('global.close')}
+                        onPress={this.onClose}
+                        icon="IconX"
+                    />
+                </View>
+            </ImageBackground>
+        );
+    };
+
     renderNotAuthorizedView = () => {
         return (
             <ImageBackground
@@ -869,6 +919,7 @@ class ScanModal extends Component<Props, State> {
                 <CameraScanner
                     onRead={this.onReadCode}
                     notAuthorizedView={this.renderNotAuthorizedView()}
+                    renderUnavailable={this.renderCameraUnavailable}
                     torchEnabled={torchEnabled}
                     onHasTorchChange={this.onHasTorchChange}
                 >

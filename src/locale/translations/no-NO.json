@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Vi trenger din tillatelse til å bruke ditt kamera",
     "needPermissionToAccessCamera": "Trenger tillatelse til å bruke kamera.",
     "pleaseApproveCameraPermission": "Vennligst godkjenn kamera-tilgang",
+    "cameraPreviewUnavailable": "Forhåndsvisningen av kameraet kunne ikke startes.",
+    "cameraPreviewUnavailableHint": "Lukk andre apper som bruker kameraet, og prøv igjen.",
     "looksLikeYouAreOffline": "Ser ut som vi ikke har nett",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Klarer ikke å koble til XRPL noden, vennligst sjekk tilkoblingen til Internet og prøv igjen",
     "pressBackAgainToExit": "Trykk tilbake en gang til for å gå avslutte",

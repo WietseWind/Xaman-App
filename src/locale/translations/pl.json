@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Potrzebujemy Twojego pozwolenia na użycie aparatu",
     "needPermissionToAccessCamera": "Potrzeba pozwolenia na użycie aparatu.",
     "pleaseApproveCameraPermission": "Proszę zezwól na użycie aparatu",
+    "cameraPreviewUnavailable": "Nie udało się uruchomić podglądu aparatu.",
+    "cameraPreviewUnavailableHint": "Zamknij inną aplikację, która używa aparatu, i spróbuj ponownie.",
     "looksLikeYouAreOffline": "Wygląda na to, że jesteś offline",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Nie można połączyć się z węzłem XRPL. Sprawdź połączenie internetowe i spróbuj ponownie",
     "pressBackAgainToExit": "Naciśnij ponownie, aby wyjść",

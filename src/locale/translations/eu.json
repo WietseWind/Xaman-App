@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Zure baimena behar dugu zure kamera erabiltzeko",
     "needPermissionToAccessCamera": "Kamera atzitzeko baimena behar duzu.",
     "pleaseApproveCameraPermission": "Mesedez onartu kameraren baimenak",
+    "cameraPreviewUnavailable": "Ezin izan da kameraren aurrebista abiarazi.",
+    "cameraPreviewUnavailableHint": "Itxi kamera erabiltzen ari den beste edozein aplikazio eta saiatu berriro.",
     "looksLikeYouAreOffline": "Konexiorik gabe zaudela ematen du (Interneteko konexiorik ez)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Ezin da XRPL nodoarekin konektatu. Egiaztatu Interneteko konexioa eta saiatu berriro",
     "pressBackAgainToExit": "Sakatu berriro atzera irteteko",

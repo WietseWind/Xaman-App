@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "თქვენი კამერას გამოსაყენებლად თქვენი ნებართვა გვჭირდება",
     "needPermissionToAccessCamera": "კამერასთან წვდომისათვის საჭიროა ნებართვა. ",
     "pleaseApproveCameraPermission": "გთხოვთ დაეთანხმეთ კამერის გამოყენების ნებართვებს",
+    "cameraPreviewUnavailable": "კამერის გადახედვა ვერ დაიწყო.",
+    "cameraPreviewUnavailableHint": "დახურეთ სხვა აპი, რომელიც კამერას იყენებს, და სცადეთ თავიდან.",
     "looksLikeYouAreOffline": "როგორც ჩანს თქვენ ოფლაინ ხართ (ინტერნეტთან კავშირი გაწყვეტილია) ",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL კვანძთან დაკავშირება ვერ ხერხდება, გთხოვთ შეამოწმოთ ინტერნეტთან კავშირი და სცადოთ ხელახლა",
     "pressBackAgainToExit": "გასასვლელად დააჭირეთ ისევ უკან",

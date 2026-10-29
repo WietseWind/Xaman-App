@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Tarvitsemme lupasi käyttää kameraa",
     "needPermissionToAccessCamera": "Tarvitsee luvan kameran käyttämiseen.",
     "pleaseApproveCameraPermission": "Hyväksy kameran käyttöoikeudet",
+    "cameraPreviewUnavailable": "Kameran esikatselua ei voitu käynnistää.",
+    "cameraPreviewUnavailableHint": "Sulje muu kameraa käyttävä sovellus ja yritä uudelleen.",
     "looksLikeYouAreOffline": "Olet näköjään offline-tilassa",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Yhteyden muodostus XRPL-noodiin ei onnistu. Tarkista Internet-yhteys ja yritä uudelleen",
     "pressBackAgainToExit": "Paina toisen kerran takaisin poistuaksesi",

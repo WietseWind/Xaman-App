@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Бізге камераны пайдалануға рұқсат қажет",
     "needPermissionToAccessCamera": "Камераға кіруге рұқсат қажет.",
     "pleaseApproveCameraPermission": "Камера рұқсаттарын растаңыз",
+    "cameraPreviewUnavailable": "Камера алдын ала көрінісі іске қосылмады.",
+    "cameraPreviewUnavailableHint": "Камераны пайдаланып жатқан басқа қолданбаны жауып, қайта көріңіз.",
     "looksLikeYouAreOffline": "Сіз желіден тыс болып көрінесіз (Интернет байланысы жоқ)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL түйініне қосылу мүмкін емес, интернет байланысын тексеріп, әрекетті қайталаңыз",
     "pressBackAgainToExit": "Шығу үшін артқа түймесін қайтадан басыңыз",

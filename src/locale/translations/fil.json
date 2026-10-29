@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Kami ay humihingi ng pahintulot sa paggamit ng iyong kamera",
     "needPermissionToAccessCamera": "Kailangan ng pahintulot upang ma-access ang Camera.",
     "pleaseApproveCameraPermission": "Mangyaring aprubahan ang mga pahintulot sa camera",
+    "cameraPreviewUnavailable": "Hindi masimulan ang preview ng camera.",
+    "cameraPreviewUnavailableHint": "Isara ang ibang app na gumagamit ng camera, pagkatapos subukan muli.",
     "looksLikeYouAreOffline": "Mukhang ikaw ay offline (walang koneksyon sa internet)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Hindi makakonekta sa XRPL node, Mangyaring suriin ang iyong koneksyon sa internet at subukang muli",
     "pressBackAgainToExit": "Pindutin muli muli upang lumabas",

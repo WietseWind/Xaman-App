@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Mums vajadzīga jūsu atļauja izmantot jūsu telefona fotokameru",
     "needPermissionToAccessCamera": "Nepieciešama atļauja, lai piekļūtu telefona kamerai.",
     "pleaseApproveCameraPermission": "Lūdzu, apstipriniet piekļuvi telefona kamerai",
+    "cameraPreviewUnavailable": "Kameras priekšskatījumu neizdevās startēt.",
+    "cameraPreviewUnavailableHint": "Aizveriet citu lietotni, kas izmanto kameru, un mēģiniet vēlreiz.",
     "looksLikeYouAreOffline": "Izskatās, ka esi bezsaistē (nav interneta savienojuma)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Neizdevās pieslēgties XRPL mezglam, Lūdzu pārbaudiet savu interneta pieslēgumu un mēģiniet vēlreiz",
     "pressBackAgainToExit": "Nospied vēlreiz pogu atpakaļ, lai aizvērtu aplikāciju",

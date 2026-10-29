@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "Necessitem el teu permís per utilitzar la teva càmera.",
     "needPermissionToAccessCamera": "Cal autoritzar el permís per accedir a la càmera",
     "pleaseApproveCameraPermission": "Si us plau, aprovar permisos de càmeres",
+    "cameraPreviewUnavailable": "La vista prèvia de la càmera no s'ha pogut iniciar.",
+    "cameraPreviewUnavailableHint": "Tanca qualsevol altra app que faci servir la càmera i torna-ho a provar.",
     "looksLikeYouAreOffline": "Sembla que ets fora de línia (No hi ha connexió a internet)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "No és possible connectar amb el node d'XRPL. Si us plau, comprova la connexió a internet i torna-ho a provar",
     "pressBackAgainToExit": "Prem \"enrere\" de nou per sortir",

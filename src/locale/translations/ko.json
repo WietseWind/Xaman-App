@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "카메라 사용 허가가 필요합니다.",
     "needPermissionToAccessCamera": "카메라 액세스 허가가 필요합니다.",
     "pleaseApproveCameraPermission": "카메라 권한을 승인하십시오",
+    "cameraPreviewUnavailable": "카메라 미리보기를 시작할 수 없습니다.",
+    "cameraPreviewUnavailableHint": "카메라를 사용 중인 다른 앱을 닫은 다음 다시 시도하세요.",
     "looksLikeYouAreOffline": "오프라인인 것 같습니다. 인터넷이 연결되었는지 확인하세요.",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "XRPL 노드에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하십시오.",
     "pressBackAgainToExit": "종료하려면 뒤로가기 버튼을 눌러주세요.",

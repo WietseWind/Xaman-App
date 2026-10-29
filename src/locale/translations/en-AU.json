@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "We need your permission to use your camera",
     "needPermissionToAccessCamera": "Need permission to access Camera.",
     "pleaseApproveCameraPermission": "Please approve camera permissions",
+    "cameraPreviewUnavailable": "The camera preview could not be started.",
+    "cameraPreviewUnavailableHint": "Close any other app that is using the camera, then try again.",
     "looksLikeYouAreOffline": "Looks like you're offline (no internet connection)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Unable to connect to network node, Please check your internet connection and try again",
     "pressBackAgainToExit": "Press back again to exit",

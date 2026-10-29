@@ -333,6 +333,8 @@
     "weNeedYourPermissionToUseYourCamera": "We hebben uw toestemming nodig om uw camera te gebruiken",
     "needPermissionToAccessCamera": "Toestemming nodig voor toegang tot Camera.",
     "pleaseApproveCameraPermission": "Geef toestemming voor cameragebruik",
+    "cameraPreviewUnavailable": "Het camerabeeld kon niet worden gestart.",
+    "cameraPreviewUnavailableHint": "Sluit elke andere app die de camera gebruikt en probeer het opnieuw.",
     "looksLikeYouAreOffline": "Het lijkt erop dat u offline bent (geen internetverbinding)",
     "unableToConnectToXRPLNodePleaseCheckYourConnection": "Kan geen verbinding maken met blockchain node, controleer uw internetverbinding en probeer het opnieuw",
     "pressBackAgainToExit": "Druk nogmaals op terug om af te sluiten",
