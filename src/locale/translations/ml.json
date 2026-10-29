@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "പുതിയ പേയ്മെന്റ് ഓപ്ഷനുകൾ കണ്ടെത്തുക",
     "noPaymentOptionsFound": "പേയ്മെന്റ് ഓപ്ഷനുകളൊന്നും കണ്ടെത്തിയില്ല",
     "unableToFindTheOfferObject": "ഓഫർ ഒബ്ജക്റ്റ് കണ്ടെത്താൻ കഴിയുന്നില്ല!",
+    "offerCreatedEarlierInBatch": "ഈ ഓഫർ ഈ Batch-ലെ മുൻ ഘട്ടത്തിൽ സൃഷ്ടിക്കപ്പെടും.",
     "theIssuerCanBurnThisToken": "കുറിപ്പ്: ഇഷ്യുവറിന് ഈ ടോക്കൺ നശിപ്പിക്കാൻ കഴിയും.",
     "payloadForceNetworkError": "നിങ്ങൾ കണക്റ്റ് ചെയ്തിരിക്കുന്ന നെറ്റ്‌വർക്കിൽ ഈ പേലോഡ് ലഭ്യമല്ല",
     "pleaseSwitchToNetworkAndTryAgain": "ദയവായി %{network}-ലേക്ക് മാറി വീണ്ടും ശ്രമിക്കുക",

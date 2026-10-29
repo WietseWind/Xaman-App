@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Zoek nieuwe betalingsopties",
     "noPaymentOptionsFound": "Geen betalingsopties gevonden",
     "unableToFindTheOfferObject": "Kan het aanbieding object niet vinden!",
+    "offerCreatedEarlierInBatch": "Deze aanbieding wordt eerder in deze Batch aangemaakt.",
     "theIssuerCanBurnThisToken": "Let op: De uitgever kan dit token verbranden.",
     "payloadForceNetworkError": "Deze payload is niet beschikbaar op het netwerk waarmee u verbonden bent",
     "pleaseSwitchToNetworkAndTryAgain": "Schakel over naar %{network} en probeer het opnieuw",

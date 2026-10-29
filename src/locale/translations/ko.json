@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Find new payment options",
     "noPaymentOptionsFound": "No payment options found",
     "unableToFindTheOfferObject": "Unable to find the offer object!",
+    "offerCreatedEarlierInBatch": "이 제안은 이 Batch의 앞선 단계에서 생성됩니다.",
     "theIssuerCanBurnThisToken": "Note: The issuer can burn this token.",
     "payloadForceNetworkError": "This payload is not available on the network you are connected with",
     "pleaseSwitchToNetworkAndTryAgain": "Please switch to %{network} and try again",

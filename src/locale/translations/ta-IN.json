@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "புதிய கட்டண விருப்பங்களைக் கண்டறியவும்",
     "noPaymentOptionsFound": "கட்டண விருப்பங்கள் கிடைக்கவில்லை",
     "unableToFindTheOfferObject": "சலுகை பொருளைக் கண்டறிய முடியவில்லை!",
+    "offerCreatedEarlierInBatch": "இந்தச் சலுகை இந்த Batch-இல் முன்னதாக உருவாக்கப்படும்.",
     "theIssuerCanBurnThisToken": "குறிப்பு: வழங்குபவர் இந்த டோக்கனை பர்ன் செய்யலாம்.",
     "payloadForceNetworkError": "இந்த payload நீங்கள் இணைக்கப்பட்டுள்ள நெட்வொர்க்கில் கிடைக்கவில்லை",
     "pleaseSwitchToNetworkAndTryAgain": "%{network} க்கு மாறி மீண்டும் முயற்சிக்கவும்",

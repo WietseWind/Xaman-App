@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "نوان ادائيگي اختيار ڳوليو",
     "noPaymentOptionsFound": "ڪو به ادائيگي اختيار نه مليا",
     "unableToFindTheOfferObject": "آڇ جي شئي ڳولڻ جي قابل نه",
+    "offerCreatedEarlierInBatch": "هي آڇ هن Batch ۾ اڳئين مرحلي ۾ ٺاهي ويندي.",
     "theIssuerCanBurnThisToken": "جاري ڪندڙ ھن ٽوڪن کي ساڙي سگھي ٿو",
     "payloadForceNetworkError": "Payload نيٽ ورڪ غلطي تي مجبور ڪري ٿو",
     "pleaseSwitchToNetworkAndTryAgain": "مھرباني ڪري %{network} ڏانھن مٽايو ۽ ٻيهر ڪوشش ڪريو",

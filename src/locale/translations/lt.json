@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Rasti naujas mokėjimo parinktis",
     "noPaymentOptionsFound": "Mokėjimo parinkčių nerasta",
     "unableToFindTheOfferObject": "Nepavyko rasti pasiūlymo objekto!",
+    "offerCreatedEarlierInBatch": "Šis pasiūlymas bus sukurtas anksčiau šiame Batch.",
     "theIssuerCanBurnThisToken": "Pastaba: Emitentas gali sudeginti šį žetoną.",
     "payloadForceNetworkError": "Ši naudingoji apkrova nepasiekiama tinkle, prie kurio esate prisijungęs",
     "pleaseSwitchToNetworkAndTryAgain": "Perjunkite į %{network} ir bandykite dar kartą",

@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "იპოვეთ ახალი გადახდის ვარიანტები",
     "noPaymentOptionsFound": "გადახდის ვარიანტები ვერ მოიძებნა",
     "unableToFindTheOfferObject": "შეთავაზების ობიექტი ვერ მოიძებნა!",
+    "offerCreatedEarlierInBatch": "ეს შეთავაზება ამ Batch-ში უფრო ადრე შეიქმნება.",
     "theIssuerCanBurnThisToken": "შენიშვნა: გამომცემელს შეუძლია დაწვას ეს ტოკენი",
     "payloadForceNetworkError": "ეს payload არ არის ხელმისაწვდომი იმ ქსელზე რომელთანაც დაკავშირებული ხართ",
     "pleaseSwitchToNetworkAndTryAgain": "გთხოვთ გადართოთ %{network}-ზე და სცადოთ ხელახლა",

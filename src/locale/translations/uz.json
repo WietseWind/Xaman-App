@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Yangi to'lov variantlarini topish",
     "noPaymentOptionsFound": "To'lov variantlari topilmadi",
     "unableToFindTheOfferObject": "Taklif ob'ektini topib bo'lmadi!",
+    "offerCreatedEarlierInBatch": "Bu taklif ushbu Batch ichida oldinroq yaratiladi.",
     "theIssuerCanBurnThisToken": "Eslatma: Emitent ushbu tokenni yoqishi mumkin.",
     "payloadForceNetworkError": "Ushbu ma'lumot siz ulangan tarmoqda mavjud emas",
     "pleaseSwitchToNetworkAndTryAgain": "Iltimos %{network} ga o'ting va qaytadan urinib ko'ring",

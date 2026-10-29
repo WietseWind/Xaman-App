@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Αναζήτηση νέων επιλογών πληρωμής",
     "noPaymentOptionsFound": "Δεν βρέθηκαν επιλογές πληρωμής",
     "unableToFindTheOfferObject": "Αδυναμία εύρεσης του αντικειμένου προσφοράς!",
+    "offerCreatedEarlierInBatch": "Αυτή η προσφορά θα δημιουργηθεί νωρίτερα σε αυτό το Batch.",
     "theIssuerCanBurnThisToken": "Σημείωση: Ο εκδότης μπορεί να καταστρέψει αυτό το token.",
     "payloadForceNetworkError": "Αυτό το payload δεν είναι διαθέσιμο στο δίκτυο με το οποίο είστε συνδεδεμένοι",
     "pleaseSwitchToNetworkAndTryAgain": "Παρακαλούμε μεταβείτε στο %{network} και δοκιμάστε ξανά",

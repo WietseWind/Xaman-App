@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Tìm tùy chọn thanh toán mới",
     "noPaymentOptionsFound": "Không tìm thấy tùy chọn thanh toán",
     "unableToFindTheOfferObject": "Không thể tìm thấy đối tượng đề nghị!",
+    "offerCreatedEarlierInBatch": "Đề nghị này sẽ được tạo ở bước trước trong Batch này.",
     "theIssuerCanBurnThisToken": "Lưu ý: Nhà phát hành có thể đốt token này.",
     "payloadForceNetworkError": "Payload này không khả dụng trên mạng bạn đang kết nối",
     "pleaseSwitchToNetworkAndTryAgain": "Vui lòng chuyển sang %{network} và thử lại",

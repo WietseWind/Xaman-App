@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Find mpya malipo options",
     "noPaymentOptionsFound": "Hapana malipo options found",
     "unableToFindTheOfferObject": "Unable to find the offer object!",
+    "offerCreatedEarlierInBatch": "Ofa hii itaundwa mapema katika Batch hii.",
     "theIssuerCanBurnThisToken": "Note: The issuer can burn this token.",
     "payloadForceNetworkError": "This payload is not available on the network you are connected with",
     "pleaseSwitchToNetworkAndTryAgain": "Tafadhali switch kwa%{network}na try again",

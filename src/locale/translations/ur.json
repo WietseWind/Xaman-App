@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "نئے ادائیگی کے اختیارات تلاش کریں",
     "noPaymentOptionsFound": "کوئی ادائیگی کے اختیارات نہیں ملے",
     "unableToFindTheOfferObject": "پیشکش کا آبجیکٹ تلاش کرنے سے قاصر!",
+    "offerCreatedEarlierInBatch": "یہ پیشکش اس Batch میں پہلے بنائی جائے گی۔",
     "theIssuerCanBurnThisToken": "نوٹ: جاری کنندہ یہ ٹوکن جلا سکتا ہے۔",
     "payloadForceNetworkError": "یہ پے لوڈ اس نیٹ ورک پر دستیاب نہیں ہے جس سے آپ منسلک ہیں",
     "pleaseSwitchToNetworkAndTryAgain": "براہ کرم %{network} پر سوئچ کریں اور دوبارہ کوشش کریں",

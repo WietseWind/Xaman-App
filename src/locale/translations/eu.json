@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Bilatu ordainketa aukera berriak",
     "noPaymentOptionsFound": "Ez da ordainketa aukerarik aurkitu",
     "unableToFindTheOfferObject": "Ezin izan da eskaintza objektua aurkitu!",
+    "offerCreatedEarlierInBatch": "Eskaintza hau lehenago sortuko da Batch honetan.",
     "theIssuerCanBurnThisToken": "Oharra: Igortzaileak token hau erre dezake.",
     "payloadForceNetworkError": "Payload hau ez dago eskuragarri konektatuta zauden sarean",
     "pleaseSwitchToNetworkAndTryAgain": "Mesedez aldatu %{network} -ra eta saiatu berriro",

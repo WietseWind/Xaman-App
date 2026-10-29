@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "البحث عن خيارات دفع جديدة",
     "noPaymentOptionsFound": "لم يتم العثور على خيارات دفع",
     "unableToFindTheOfferObject": "تعذر العثور على كائن العرض!",
+    "offerCreatedEarlierInBatch": "سيتم إنشاء هذا العرض في خطوة سابقة ضمن هذا Batch.",
     "theIssuerCanBurnThisToken": "ملاحظة: يمكن للمُصدر حرق هذا الرمز.",
     "payloadForceNetworkError": "هذا الطلب غير متاح على الشبكة المتصل بها",
     "pleaseSwitchToNetworkAndTryAgain": "يرجى التبديل إلى %{network} والمحاولة مرة أخرى",

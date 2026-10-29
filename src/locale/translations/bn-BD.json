@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "নতুন পেমেন্ট অপশন খুঁজুন",
     "noPaymentOptionsFound": "কোন পেমেন্ট অপশন পাওয়া যায়নি",
     "unableToFindTheOfferObject": "অফার অবজেক্ট খুঁজে পাওয়া যাচ্ছে না",
+    "offerCreatedEarlierInBatch": "এই অফারটি এই Batch-এ আগের ধাপে তৈরি হবে।",
     "theIssuerCanBurnThisToken": "ইস্যুকারী এই টোকেন বার্ন করতে পারে",
     "payloadForceNetworkError": "পেলোড ফোর্স নেটওয়ার্ক ত্রুটি",
     "pleaseSwitchToNetworkAndTryAgain": "অনুগ্রহ করে নেটওয়ার্কে স্যুইচ করুন এবং আবার চেষ্টা করুন",

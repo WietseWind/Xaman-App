@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "מצא אפשרויות תשלום חדשות",
     "noPaymentOptionsFound": "לא נמצאו אפשרויות תשלום",
     "unableToFindTheOfferObject": "לא ניתן למצוא את אובייקט ההצעה!",
+    "offerCreatedEarlierInBatch": "הצעה זו תיווצר קודם ב-Batch הזה.",
     "theIssuerCanBurnThisToken": "שים לב: המנפיק יכול לשרוף טוקן זה.",
     "payloadForceNetworkError": "מטען זה אינו זמין ברשת שאליה אתה מחובר",
     "pleaseSwitchToNetworkAndTryAgain": "אנא עבור ל-%{network} ונסה שוב",

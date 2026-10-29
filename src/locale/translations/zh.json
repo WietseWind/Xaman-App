@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "查找新的付款选项",
     "noPaymentOptionsFound": "未找到付款选项",
     "unableToFindTheOfferObject": "无法找到报价对象！",
+    "offerCreatedEarlierInBatch": "此报价将在此 Batch 的前序步骤中创建。",
     "theIssuerCanBurnThisToken": "注意：发行人可以销毁此代币。",
     "payloadForceNetworkError": "此有效负载在您连接的网络上不可用",
     "pleaseSwitchToNetworkAndTryAgain": "请切换到 %{network} 并重试",

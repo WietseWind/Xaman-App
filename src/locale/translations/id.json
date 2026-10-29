@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Temukan opsi pembayaran baru",
     "noPaymentOptionsFound": "Tidak ada opsi pembayaran ditemukan",
     "unableToFindTheOfferObject": "Tidak dapat menemukan objek penawaran!",
+    "offerCreatedEarlierInBatch": "Penawaran ini akan dibuat lebih awal dalam Batch ini.",
     "theIssuerCanBurnThisToken": "Catatan: Penerbit dapat membakar token ini.",
     "payloadForceNetworkError": "Payload ini tidak tersedia di jaringan yang Anda hubungkan",
     "pleaseSwitchToNetworkAndTryAgain": "Harap beralih ke  %{network}  dan coba lagi",

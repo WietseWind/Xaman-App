@@ -27,6 +27,7 @@ import { utils } from 'xrpl-accountlib';
 import ExtraFields from '../../ExtraFields';
 import { AccountModel } from '@store/models';
 import { AccountRepository } from '@store/repositories';
+import { batchNFTokenOffersBefore } from './batchNFTokenOffers';
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
     transaction: Batch;
@@ -118,6 +119,9 @@ class BatchTemplate extends Component<Props, State> {
                 transaction: tx,
                 payload,
                 innerBatch: true,
+                batchCreatedNFTokenOffers: batchNFTokenOffersBefore(
+                    transaction.RawTransactions, index, transaction.JsonForSigning.Flags,
+                ),
                 forceRender: () => {
                     // console.log('forceRender');
                 },

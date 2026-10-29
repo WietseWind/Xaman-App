@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Знайти нові варіанти оплати",
     "noPaymentOptionsFound": "Варіанти оплати не знайдені",
     "unableToFindTheOfferObject": "Не вдалося знайти об'єкт пропозиції!",
+    "offerCreatedEarlierInBatch": "Цю пропозицію буде створено раніше в цьому Batch.",
     "theIssuerCanBurnThisToken": "Примітка: емітент може спалити цей токен.",
     "payloadForceNetworkError": "Цей payload недоступний у мережі, до якої ви підключені",
     "pleaseSwitchToNetworkAndTryAgain": "Будь ласка, переключіться на %{network} і спробуйте знову",

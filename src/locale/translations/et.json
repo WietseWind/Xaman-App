@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Otsi uusi maksevõimalusi",
     "noPaymentOptionsFound": "Maksevõimalusi ei leitud",
     "unableToFindTheOfferObject": "Ei leia pakkumise objekti!",
+    "offerCreatedEarlierInBatch": "See pakkumine luuakse selles Batch-tehingus varem.",
     "theIssuerCanBurnThisToken": "Märkus: Väljaandja saab seda tokenit põletada.",
     "payloadForceNetworkError": "See koormus ei ole saadaval võrgus, millega sa oled ühendatud",
     "pleaseSwitchToNetworkAndTryAgain": "Palun lülitu võrgule %{network} ja proovi uuesti",

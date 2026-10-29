@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Finn nye betalingsalternativer",
     "noPaymentOptionsFound": "Ingen betalingsalternativer funnet",
     "unableToFindTheOfferObject": "Kan ikke finne tilbudsobjektet!",
+    "offerCreatedEarlierInBatch": "Dette tilbudet opprettes tidligere i denne Batch.",
     "theIssuerCanBurnThisToken": "Merk: Utstederen kan brenne dette tokenet.",
     "payloadForceNetworkError": "Denne nyttelasten er ikke tilgjengelig på nettverket du er tilkoblet",
     "pleaseSwitchToNetworkAndTryAgain": "Vennligst bytt til %{network} og prøv igjen",

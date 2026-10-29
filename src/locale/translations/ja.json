@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "新しい支払いオプションを検索",
     "noPaymentOptionsFound": "支払いオプションが見つかりません",
     "unableToFindTheOfferObject": "オファーオブジェクトを見つけられません！",
+    "offerCreatedEarlierInBatch": "このオファーは、この Batch 内で先に作成されます。",
     "theIssuerCanBurnThisToken": "注意：発行者はこのトークンをバーンできます。",
     "payloadForceNetworkError": "このペイロードは接続中のネットワークでは利用できません",
     "pleaseSwitchToNetworkAndTryAgain": "%{network} に切り替えて再度お試しください",

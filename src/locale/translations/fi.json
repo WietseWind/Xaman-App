@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Etsi uusia maksuvaihtoehtoja",
     "noPaymentOptionsFound": "Maksuvaihtoehtoja ei löytynyt",
     "unableToFindTheOfferObject": "Tarjousobjektia ei löytynyt!",
+    "offerCreatedEarlierInBatch": "Tämä tarjous luodaan aiemmin tässä Batch-tapahtumassa.",
     "theIssuerCanBurnThisToken": "Huomautus: Myöntäjä voi polttaa tämän tokenin.",
     "payloadForceNetworkError": "Tämä payload ei ole saatavilla verkossa, johon olet yhteydessä",
     "pleaseSwitchToNetworkAndTryAgain": "Vaihda verkkoon %{network} ja yritä uudelleen",

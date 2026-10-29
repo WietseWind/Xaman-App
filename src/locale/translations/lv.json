@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Atrast jaunas maksājuma opcijas",
     "noPaymentOptionsFound": "Nav atrasts neviens maksājuma veids",
     "unableToFindTheOfferObject": "Neizdevās atrast piedāvājuma objektu!",
+    "offerCreatedEarlierInBatch": "Šis piedāvājums tiks izveidots agrāk šajā Batch.",
     "theIssuerCanBurnThisToken": "Piezīme: Izdevējs var sadedzināt šo tokenu.",
     "payloadForceNetworkError": "Šis slodzes dati nav pieejami tīklā, ar kuru esat savienots",
     "pleaseSwitchToNetworkAndTryAgain": "Lūdzu pārslēdzieties uz %{network} un mēģiniet vēlreiz",

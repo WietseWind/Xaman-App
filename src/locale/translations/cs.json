@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Najít nové platební možnosti",
     "noPaymentOptionsFound": "Nenalezeny žádné platební možnosti",
     "unableToFindTheOfferObject": "Nelze najít objekt nabídky",
+    "offerCreatedEarlierInBatch": "Tato nabídka vznikne dříve v této transakci Batch.",
     "theIssuerCanBurnThisToken": "Vydavatel může vypálit tento token",
     "payloadForceNetworkError": "Chyba sítě požadavku",
     "pleaseSwitchToNetworkAndTryAgain": "Prosím přepněte na síť %{network} a zkuste to znovu",

@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Chache nouvo opsyon peman",
     "noPaymentOptionsFound": "Pa gen opsyon peman jwenn",
     "unableToFindTheOfferObject": "Kapab jwenn objè ofri a!",
+    "offerCreatedEarlierInBatch": "Òf sa a pral kreye pi bonè nan Batch sa a.",
     "theIssuerCanBurnThisToken": "Nòt: Emetè a ka boule jeton sa a.",
     "payloadForceNetworkError": "Payload sa a pa disponib sou rezo w konekte ak li",
     "pleaseSwitchToNetworkAndTryAgain": "Tanpri chanje rezo ak %{network} epi eseye ankò",

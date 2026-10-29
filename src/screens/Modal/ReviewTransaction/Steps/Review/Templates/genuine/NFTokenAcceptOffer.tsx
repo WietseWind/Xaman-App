@@ -20,8 +20,28 @@ export interface Props extends Omit<TemplateProps, 'transaction'> {
 export interface State {}
 /* Component ==================================================================== */
 class NFTokenAcceptOfferTemplate extends Component<Props, State> {
+    renderOffer = (id: string, side: 'buy' | 'sell') => {
+        const { transaction, source, innerBatch, batchCreatedNFTokenOffers } = this.props;
+        return (
+            <ExpandableView
+                expanded
+                title={id}
+                titleStyle={styles.value}
+                containerStyle={styles.objectTemplateContainer}
+                contentContainerStyle={styles.objectTemplateChildContainer}
+            >
+                <NFTokenOfferTemplate
+                    transaction={transaction}
+                    source={source}
+                    nfTokenOffer={id}
+                    createdInBatch={Boolean(innerBatch && batchCreatedNFTokenOffers?.get(id.toUpperCase()) === side)}
+                />
+            </ExpandableView>
+        );
+    };
+
     render() {
-        const { transaction, source } = this.props;
+        const { transaction } = this.props;
 
         return (
             <>
@@ -30,19 +50,7 @@ class NFTokenAcceptOfferTemplate extends Component<Props, State> {
                         <Text style={styles.label}>
                             {Localize.t('global.accept')}: {Localize.t('global.sellOffer')}
                         </Text>
-                        <ExpandableView
-                            expanded
-                            title={transaction.NFTokenSellOffer}
-                            titleStyle={styles.value}
-                            containerStyle={styles.objectTemplateContainer}
-                            contentContainerStyle={styles.objectTemplateChildContainer}
-                        >
-                            <NFTokenOfferTemplate
-                                transaction={transaction}
-                                source={source}
-                                nfTokenOffer={transaction.NFTokenSellOffer}
-                            />
-                        </ExpandableView>
+                        {this.renderOffer(transaction.NFTokenSellOffer, 'sell')}
                     </>
                 )}
 
@@ -51,19 +59,7 @@ class NFTokenAcceptOfferTemplate extends Component<Props, State> {
                         <Text style={styles.label}>
                             {Localize.t('global.accept')}: {Localize.t('global.buyOffer')}
                         </Text>
-                        <ExpandableView
-                            expanded
-                            title={transaction.NFTokenBuyOffer}
-                            titleStyle={styles.value}
-                            containerStyle={styles.objectTemplateContainer}
-                            contentContainerStyle={styles.objectTemplateChildContainer}
-                        >
-                            <NFTokenOfferTemplate
-                                transaction={transaction}
-                                source={source}
-                                nfTokenOffer={transaction.NFTokenBuyOffer}
-                            />
-                        </ExpandableView>
+                        {this.renderOffer(transaction.NFTokenBuyOffer, 'buy')}
                     </>
                 )}
 

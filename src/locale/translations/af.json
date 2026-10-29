@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Vind nuwe betaling opsies",
     "noPaymentOptionsFound": "Geen betaling opsies gevind nie",
     "unableToFindTheOfferObject": "Kan nie die aanbod objek vind nie!",
+    "offerCreatedEarlierInBatch": "Hierdie aanbod sal vroeër in hierdie Batch geskep word.",
     "theIssuerCanBurnThisToken": "Let op: Die uitreiker kan hierdie token brand.",
     "payloadForceNetworkError": "Hierdie payload is nie beskikbaar op die netwerk waarmee jy verbind is nie",
     "pleaseSwitchToNetworkAndTryAgain": "Skakel asseblief na %{network} en probeer weer",

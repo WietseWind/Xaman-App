@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Buscar nuevas opciones de pago",
     "noPaymentOptionsFound": "No se encontraron opciones de pago",
     "unableToFindTheOfferObject": "No se puede encontrar el objeto de oferta",
+    "offerCreatedEarlierInBatch": "Esta oferta se creará antes en este Batch.",
     "theIssuerCanBurnThisToken": "Nota: El emisor puede quemar este token.",
     "payloadForceNetworkError": "Esta carga no está disponible en la red con la que estás conectado",
     "pleaseSwitchToNetworkAndTryAgain": "Por favor, cambia a %{network} e intenta de nuevo",

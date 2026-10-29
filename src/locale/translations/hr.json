@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Pronađi nove opcije plaćanja",
     "noPaymentOptionsFound": "Nisu pronađene opcije plaćanja",
     "unableToFindTheOfferObject": "Nije moguće pronaći objekt ponude!",
+    "offerCreatedEarlierInBatch": "Ova ponuda nastat će ranije u ovoj Batch transakciji.",
     "theIssuerCanBurnThisToken": "Napomena: Izdavatelj može spaliti ovaj token.",
     "payloadForceNetworkError": "Ovaj payload nije dostupan na mreži s kojom ste povezani",
     "pleaseSwitchToNetworkAndTryAgain": "Molimo prebacite se na %{network} i pokušajte ponovno",

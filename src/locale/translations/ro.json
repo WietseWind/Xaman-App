@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Găsește opțiuni noi de plată",
     "noPaymentOptionsFound": "Nu s-au găsit opțiuni de plată",
     "unableToFindTheOfferObject": "Nu se poate găsi obiectul ofertă!",
+    "offerCreatedEarlierInBatch": "Această ofertă va fi creată mai devreme în acest Batch.",
     "theIssuerCanBurnThisToken": "Notă: Emitentul poate arde acest token.",
     "payloadForceNetworkError": "Acest payload nu este disponibil pe rețeaua la care sunteți conectat",
     "pleaseSwitchToNetworkAndTryAgain": "Vă rugăm să comutați la %{network} și să încercați din nou",

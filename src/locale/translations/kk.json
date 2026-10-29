@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Жаңа төлем опцияларын табу",
     "noPaymentOptionsFound": "Төлем опциялары табылмады",
     "unableToFindTheOfferObject": "Ұсыныс объектін табу мүмкін емес!",
+    "offerCreatedEarlierInBatch": "Бұл ұсыныс осы Batch ішінде ертерек жасалады.",
     "theIssuerCanBurnThisToken": "Ескерту: Шығарушы бұл токенді жаға алады.",
     "payloadForceNetworkError": "Бұл жүктеме сіз қосылған желіде қол жетімді емес",
     "pleaseSwitchToNetworkAndTryAgain": "%{network} желісіне ауысып, қайталап көріңіз",

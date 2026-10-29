@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Trobar noves opcions de pagament",
     "noPaymentOptionsFound": "No s'han trobat opcions de pagament",
     "unableToFindTheOfferObject": "No es pot trobar l'objecte d'oferta!",
+    "offerCreatedEarlierInBatch": "Aquesta oferta es crearà abans en aquest Batch.",
     "theIssuerCanBurnThisToken": "Nota: L'emissor pot cremar aquest token.",
     "payloadForceNetworkError": "Aquesta càrrega útil no està disponible a la xarxa a la qual estàs connectat",
     "pleaseSwitchToNetworkAndTryAgain": "Si us plau, canvia a %{network} i torna-ho a intentar",

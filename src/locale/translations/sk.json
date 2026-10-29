@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Nájsť nové možnosti platby",
     "noPaymentOptionsFound": "Neboli nájdené žiadne možnosti platby",
     "unableToFindTheOfferObject": "Nepodarilo sa nájsť objekt ponuky!",
+    "offerCreatedEarlierInBatch": "Táto ponuka vznikne skôr v tejto transakcii Batch.",
     "theIssuerCanBurnThisToken": "Poznámka: Emitent môže tento token spáliť.",
     "payloadForceNetworkError": "Tento payload nie je dostupný v sieti, ku ktorej ste pripojení",
     "pleaseSwitchToNetworkAndTryAgain": "Prosím prepnite na %{network} a skúste znova",

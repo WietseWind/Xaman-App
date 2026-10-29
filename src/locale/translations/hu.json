@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Új fizetési opciók keresése",
     "noPaymentOptionsFound": "Nincs elérhető fizetési opció",
     "unableToFindTheOfferObject": "Unable to find the offer object!",
+    "offerCreatedEarlierInBatch": "Ez az ajánlat korábban jön létre ebben a Batch-ben.",
     "theIssuerCanBurnThisToken": "Note: The issuer can burn this token.",
     "payloadForceNetworkError": "This payload is not available on the network you are connected with",
     "pleaseSwitchToNetworkAndTryAgain": "Kérem, váltson %{network} hálózatra és próbálja újra",

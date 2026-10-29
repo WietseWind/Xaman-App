@@ -1366,6 +1366,7 @@
     "findNewPaymentOptions": "Hitta nya betalningsalternativ",
     "noPaymentOptionsFound": "Inga betalningsalternativ hittades",
     "unableToFindTheOfferObject": "Kan inte hitta erbjudandeobjektet!",
+    "offerCreatedEarlierInBatch": "Detta erbjudande skapas tidigare i denna Batch.",
     "theIssuerCanBurnThisToken": "Observera: Utfärdaren kan bränna denna token.",
     "payloadForceNetworkError": "Denna payload är inte tillgänglig på det nätverk du är ansluten till",
     "pleaseSwitchToNetworkAndTryAgain": "Växla till %{network} och försök igen",
