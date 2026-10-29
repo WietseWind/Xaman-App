@@ -139,14 +139,38 @@ it('clears only the destroyed Android pending show after its observed root compl
     await expect(Navigator.showModal(review, {})).resolves.toBe(review);
 });
 
-it('does not treat iOS root completion as proof that a pending render cannot present later', async () => {
+it.each(['dismissAllModals', 'dismissModal'])(
+    'clears a never-settling Android show after its completed %s, without clearing a newer show', async (name) => {
+        jest.replaceProperty(Platform, 'OS', 'android');
+        const old = deferred(); const next = deferred();
+        jest.mocked(Navigation.showModal).mockReturnValueOnce(old.promise).mockReturnValueOnce(next.promise);
+        const first = Navigator.showModal(review, {});
+        command('dismissModal', 'unrelated', AppScreens.Modal.Scan); completed('unrelated');
+        await expect(Navigator.showModal(review, {})).resolves.toBe(false);
+        command(name, 'owned-close', review);
+        await expect(Navigator.showModal(review, {})).resolves.toBe(false);
+        completed('not-observed');
+        await expect(Navigator.showModal(review, {})).resolves.toBe(false);
+        completed('owned-close');
+        const second = Navigator.showModal(review, {});
+        expect(Navigation.showModal).toHaveBeenCalledTimes(2);
+        old.resolve(review); await first;
+        await expect(Navigator.showModal(review, {})).resolves.toBe(false);
+        next.resolve(review); await second;
+        await expect(Navigator.showModal(review, {})).resolves.toBe(review);
+    },
+);
+
+it.each(['setRoot', 'dismissAllModals', 'dismissModal'])(
+    'does not treat iOS %s completion as proof that a pending render cannot present later', async (name) => {
     jest.replaceProperty(Platform, 'OS', 'ios');
     const native = deferred(); jest.mocked(Navigation.showModal).mockReturnValueOnce(native.promise);
     const show = Navigator.showModal(review, {});
-    command('setRoot', 'root'); completed('root');
+    command(name, 'root', review); completed('root');
     await expect(Navigator.showModal(review, {})).resolves.toBe(false);
     native.resolve(review); await show;
-});
+    },
+);
 
 it.each(['reject', 'throw'])('releases the pending Review guard after native failure (%s)', async (mode) => {
     const error = new Error('Native show failed');

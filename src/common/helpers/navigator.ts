@@ -39,7 +39,7 @@ const beginReviewShow = (modal: AppScreenKeys) => {
     const token = Symbol(modal);
     pendingReviewShows.set(modal, token);
     const listeners: EventSubscription[] = [];
-    const rootCommands = new Set<string>();
+    const terminalCommands = new Set<string>();
     const finish = () => {
         listeners.forEach((listener) => listener.remove());
         listeners.length = 0;
@@ -48,12 +48,16 @@ const beginReviewShow = (modal: AppScreenKeys) => {
     try {
         if (Platform.OS === 'android') {
             listeners.push(Navigation.events().registerCommandListener((name, params) => {
-                if (name === 'setRoot') rootCommands.add(params.commandId);
+                if (name === 'setRoot' || name === 'dismissAllModals' ||
+                    (name === 'dismissModal' && params.componentId === modal)) {
+                    terminalCommands.add(params.commandId);
+                }
             }));
             listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
-                // Android destroys pending modal views with its old root. Its show promise
-                // need not settle; an old finally must not clear a newer presentation.
-                if (rootCommands.has(event.commandId)) finish();
+                // Android can destroy a pending view before its render callback runs.
+                // Its show promise need not settle; only the completed owned close is terminal.
+                // An old finally must not clear a newer presentation.
+                if (terminalCommands.has(event.commandId)) finish();
             }));
         }
         return finish;
