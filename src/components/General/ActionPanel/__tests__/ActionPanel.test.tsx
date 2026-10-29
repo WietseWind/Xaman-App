@@ -131,4 +131,68 @@ describe('ActionPanel', () => {
         });
         expect(onSlideDown).toHaveBeenCalledTimes(1);
     });
+
+    it('reports a close request synchronously once and completion only when the close finishes', () => {
+        const onCloseRequest = jest.fn();
+        const onSlideDown = jest.fn();
+        let tree: renderer.ReactTestRenderer;
+        act(() => {
+            tree = renderer.create(
+                <ActionPanel height={300} onCloseRequest={onCloseRequest} onSlideDown={onSlideDown} />,
+            );
+        });
+        flushOpenDelay();
+        act(() => {
+            tree.root.findByType(TouchableWithoutFeedback).props.onPress();
+            tree.root.instance.slideDown();
+        });
+        expect(onCloseRequest).toHaveBeenCalledTimes(1);
+        expect(onSlideDown).not.toHaveBeenCalled();
+        flushOpenDelay();
+        act(() => { springCallbacks[1]({ finished: true }); });
+        expect(onSlideDown).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports a close reached through a snap/drag without changing the completion contract', () => {
+        const onCloseRequest = jest.fn();
+        const onSlideDown = jest.fn();
+        let tree: renderer.ReactTestRenderer;
+        act(() => {
+            tree = renderer.create(
+                <ActionPanel height={300} onCloseRequest={onCloseRequest} onSlideDown={onSlideDown} />,
+            );
+        });
+        flushOpenDelay();
+        act(() => { tree.root.instance.snapTo(0); });
+        flushOpenDelay();
+        expect(onCloseRequest).toHaveBeenCalledTimes(1);
+        expect(onSlideDown).not.toHaveBeenCalled();
+        act(() => { springCallbacks[1]({ finished: false }); });
+        expect(onSlideDown).not.toHaveBeenCalled();
+        act(() => { tree.root.instance.snapTo(0); });
+        flushOpenDelay();
+        act(() => { springCallbacks[2]({ finished: true }); });
+        expect(onCloseRequest).toHaveBeenCalledTimes(1);
+        expect(onSlideDown).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([false, true])('only locks a requested close when lockAfterCloseRequest=%s', (locked) => {
+        const onSlideDown = jest.fn();
+        let tree: renderer.ReactTestRenderer;
+        act(() => {
+            tree = renderer.create(
+                <ActionPanel height={300} lockAfterCloseRequest={locked} onSlideDown={onSlideDown} />,
+            );
+        });
+        flushOpenDelay();
+        const openY = jest.mocked(Animated.spring).mock.calls[0][1].toValue;
+        act(() => { tree.root.instance.slideDown(); });
+        flushOpenDelay();
+        const closedY = jest.mocked(Animated.spring).mock.calls[1][1].toValue;
+        act(() => { tree.root.instance.snapTo(1); });
+        flushOpenDelay();
+        expect(jest.mocked(Animated.spring).mock.calls[2][1].toValue).toBe(locked ? closedY : openY);
+        act(() => { springCallbacks[2]({ finished: true }); });
+        expect(onSlideDown).toHaveBeenCalledTimes(locked ? 1 : 0);
+    });
 });

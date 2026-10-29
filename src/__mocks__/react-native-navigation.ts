@@ -14,7 +14,9 @@ const Navigation = {
     registerComponent: jest.fn(),
     events: jest.fn(() => ({
         registerAppLaunchedListener: jest.fn(),
-        registerComponentDidAppearListener: jest.fn(),
+        registerComponentDidAppearListener: jest.fn(() => ({ remove: jest.fn() })),
+        registerCommandListener: jest.fn(() => ({ remove: jest.fn() })),
+        registerCommandCompletedListener: jest.fn(() => ({ remove: jest.fn() })),
         bindComponent: jest.fn(),
     })),
 };

@@ -2,7 +2,7 @@ import { get, merge } from 'lodash';
 import { Platform, InteractionManager } from 'react-native';
 
 import LoggerService, { LogEvents } from '@services/LoggerService';
-import { Navigation, Options, LayoutTabsChildren } from 'react-native-navigation';
+import { Navigation, Options, LayoutTabsChildren, EventSubscription } from 'react-native-navigation';
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
 import { iosGlassTabBar } from '@common/helpers/glassTabBar';
@@ -26,6 +26,96 @@ export type AppScreenKeys<T = typeof AppScreens, L0 = T[keyof T]> =
 type EnforcedProps<P extends { [K in keyof P]: any }> = P;
 
 const allScreens = new Set();
+const modalReservations = new Map<AppScreenKeys, symbol>();
+const pendingReviewShows = new Map<AppScreenKeys, symbol>();
+const pendingOverlayEntries = new Set<Promise<void>>();
+
+export interface ModalReservation {
+    token: symbol;
+    release: () => void;
+}
+
+const beginReviewShow = (modal: AppScreenKeys) => {
+    const token = Symbol(modal);
+    pendingReviewShows.set(modal, token);
+    const listeners: EventSubscription[] = [];
+    const rootCommands = new Set<string>();
+    const finish = () => {
+        listeners.forEach((listener) => listener.remove());
+        listeners.length = 0;
+        if (pendingReviewShows.get(modal) === token) pendingReviewShows.delete(modal);
+    };
+    try {
+        if (Platform.OS === 'android') {
+            listeners.push(Navigation.events().registerCommandListener((name, params) => {
+                if (name === 'setRoot') rootCommands.add(params.commandId);
+            }));
+            listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
+                // Android destroys pending modal views with its old root. Its show promise
+                // need not settle; an old finally must not clear a newer presentation.
+                if (rootCommands.has(event.commandId)) finish();
+            }));
+        }
+        return finish;
+    } catch (error) {
+        finish();
+        throw error;
+    }
+};
+
+// A native overlay promise can resolve before iOS delivers DidAppear. Keep the
+// entry visible to handoff callers until both boundaries have completed.
+const trackOverlayEntry = <T>(overlay: AppScreenKeys, show: () => Promise<T>): Promise<T> => {
+    let settle: () => void = () => undefined;
+    const pending = new Promise<void>((resolve) => { settle = resolve; });
+    pendingOverlayEntries.add(pending);
+    let appeared = false;
+    let resolved = false;
+    let finished = false;
+    const terminalCommands = new Set<string>();
+    const listeners: EventSubscription[] = [];
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        listeners.forEach((listener) => listener.remove());
+        pendingOverlayEntries.delete(pending);
+        settle();
+    };
+    const finishIfReady = () => {
+        if (resolved && appeared) finish();
+    };
+    try {
+        listeners.push(Navigation.events().registerComponentDidAppearListener((event) => {
+            if (event.componentId !== overlay) return;
+            appeared = true;
+            // Let all listeners, including NavigationService, finish tracking this event.
+            Promise.resolve().then(finishIfReady);
+        }));
+        listeners.push(Navigation.events().registerCommandListener((name, params) => {
+            if ((name === 'dismissOverlay' && params.componentId === overlay) ||
+                name === 'dismissAllOverlays') {
+                terminalCommands.add(params.commandId);
+            }
+        }));
+        listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
+            if (terminalCommands.has(event.commandId)) finish();
+        }));
+        return Promise.resolve(show()).then((result) => {
+            if (result === false) finish();
+            else {
+                resolved = true;
+                finishIfReady();
+            }
+            return result;
+        }, (error) => {
+            finish();
+            throw error;
+        });
+    } catch (error) {
+        finish();
+        throw error;
+    }
+};
 
 let iteration = 1;
 
@@ -369,7 +459,7 @@ const Navigator = {
         const currentOverlay = NavigationService.getCurrentOverlay();
 
         if (currentOverlay !== overlay) {
-            return Navigation.showOverlay({
+            return trackOverlayEntry(overlay, () => Navigation.showOverlay({
                 component: {
                     name: overlay,
                     id: overlay,
@@ -403,7 +493,7 @@ const Navigator = {
                         options || {},
                     ),
                 },
-            });
+            }));
         }
 
         return Promise.resolve(false);
@@ -425,6 +515,23 @@ const Navigator = {
         return Promise.resolve(false);
     },
 
+    pendingOverlayShows(): Promise<unknown>[] {
+        return [...pendingOverlayEntries];
+    },
+
+    reserveModal(modal: AppScreenKeys): ModalReservation | undefined {
+        if (NavigationService.getCurrentModal() === modal || modalReservations.has(modal) ||
+            pendingReviewShows.has(modal)) return undefined;
+        const token = Symbol(modal);
+        modalReservations.set(modal, token);
+        return {
+            token,
+            release: () => {
+                if (modalReservations.get(modal) === token) modalReservations.delete(modal);
+            },
+        };
+    },
+
     /**
      * Display a modal screen using React Navigation.
      *
@@ -438,24 +545,40 @@ const Navigator = {
         modal: AppScreenKeys,
         passProps: EnforcedProps<P>,
         options: Options = {},
+        reservation: symbol | undefined = undefined,
     ): Promise<string | boolean> {
         const currentScreen = NavigationService.getCurrentModal();
-        if (currentScreen !== modal) {
-            return Navigation.showModal({
-                stack: {
-                    id: modal,
-                    children: [
-                        {
-                            component: {
-                                name: modal,
-                                id: modal,
-                                options,
-                                passProps: Object.assign(passProps, { componentType: ComponentTypes.Modal }),
+        const owner = modalReservations.get(modal);
+        if ((owner && owner !== reservation) || (reservation && owner !== reservation)) {
+            return Promise.resolve(false);
+        }
+        const isReview = modal === AppScreens.Modal.ReviewTransaction;
+        if (currentScreen !== modal && (!isReview || !pendingReviewShows.has(modal))) {
+            const finishReviewShow = isReview ? beginReviewShow(modal) : () => undefined;
+            let show: Promise<string>;
+            try {
+                show = Navigation.showModal({
+                    stack: {
+                        id: modal,
+                        children: [
+                            {
+                                component: {
+                                    name: modal,
+                                    id: modal,
+                                    options,
+                                    passProps: Object.assign(passProps, { componentType: ComponentTypes.Modal }),
+                                },
                             },
-                        },
-                    ],
-                },
-            });
+                        ],
+                    },
+                });
+            } catch (error) {
+                finishReviewShow();
+                throw error;
+            }
+            return isReview
+                ? Promise.resolve(show).finally(finishReviewShow)
+                : show;
         }
 
         return Promise.resolve(false);

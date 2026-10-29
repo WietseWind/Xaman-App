@@ -10,6 +10,12 @@ describe('Navigator helper', () => {
 
     beforeAll(() => {
         navigationService.setCurrentScreen(AppScreens.TabBar.Home);
+        jest.spyOn(Navigation, 'events').mockReturnValue({
+            registerComponentListener: jest.fn(() => ({ remove: jest.fn() })),
+            registerComponentDidAppearListener: jest.fn(() => ({ remove: jest.fn() })),
+            registerCommandListener: jest.fn(() => ({ remove: jest.fn() })),
+            registerCommandCompletedListener: jest.fn(() => ({ remove: jest.fn() })),
+        } as any);
     });
 
     it('should include component type in passProps when presenting component', () => {

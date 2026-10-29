@@ -5,12 +5,15 @@
 import { find, first, get, isEmpty, values } from 'lodash';
 
 import React, { Component } from 'react';
-import { Alert, Image, InteractionManager, ScrollView, Text, View } from 'react-native';
-import { OptionsModalPresentationStyle } from 'react-native-navigation';
+import {
+    Alert, BackHandler, Image, InteractionManager, Platform, ScrollView, StyleSheet, Text, View,
+} from 'react-native';
+import { EventSubscription, Navigation, OptionsModalPresentationStyle } from 'react-native-navigation';
 
 import LedgerService from '@services/LedgerService';
 import NetworkService from '@services/NetworkService';
 import BackendService from '@services/BackendService';
+import NavigationService from '@services/NavigationService';
 
 import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
@@ -19,7 +22,7 @@ import { TrustSet } from '@common/libs/ledger/transactions';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
 
 import { Payload } from '@common/libs/payload';
-import { AccountRepository } from '@store/repositories';
+import { AccountRepository, CoreRepository } from '@store/repositories';
 
 import {
     ActionPanel,
@@ -41,11 +44,53 @@ import styles from './styles';
 /* types ==================================================================== */
 import { Props, State } from './types';
 
+interface AddContext {
+    account: string;
+    networkKey: string;
+    node: string;
+}
+
+interface ReviewHandoff {
+    token: string;
+    context: AddContext;
+    appeared: boolean;
+    willAppearConfirmed: boolean;
+    cancelled: boolean;
+    dismissStarted: boolean;
+    finished: boolean;
+    reservation: { token: symbol; release: () => void };
+    backHandler?: EventSubscription;
+    listeners: EventSubscription[];
+}
+
+interface ReviewLayout {
+    data?: { name?: string; passProps?: { addTokenHandoffId?: string } };
+    children?: ReviewLayout[];
+}
+
+const findReview = (layout?: ReviewLayout): ReviewLayout | undefined => {
+    if (layout?.data?.name === AppScreens.Modal.ReviewTransaction) return layout;
+    return layout?.children?.map(findReview).find(Boolean);
+};
+
+let handoffSequence = 0;
+
 /* Component ==================================================================== */
 class AddTokenOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.AddToken;
 
     private actionPanelRef: React.RefObject<ActionPanel>;
+    private mounted = false;
+    private phase: 'idle' | 'requesting' | 'closing' | 'presenting' | 'transferred' | 'cancelled' = 'idle';
+    private requestAttempt = 0;
+    private addContext?: AddContext;
+    private pendingPayload?: Payload;
+    private handoff?: ReviewHandoff;
+    private panelClosed = false;
+    private overlayDismissStarted = false;
+    private mountTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+    private overlayWaiter?: EventSubscription;
+    private waitingForOverlayShows = false;
 
     static options() {
         return {
@@ -67,6 +112,7 @@ class AddTokenOverlay extends Component<Props, State> {
             selectedCurrencyId: undefined,
             isLoading: true,
             isLoadingTokenInfo: false,
+            isHandoffPending: false,
             error: false,
         };
 
@@ -74,10 +120,245 @@ class AddTokenOverlay extends Component<Props, State> {
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(this.loadVettedTokens);
+        this.mounted = true;
+        NetworkService.on('networkChange', this.onNetworkChange);
+        CoreRepository.on('updateSettings', this.onSettingsChange);
+        this.mountTask = InteractionManager.runAfterInteractions(() => {
+            this.mountTask = undefined;
+            if (this.mounted && this.phase === 'idle') this.loadVettedTokens();
+        });
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+        this.mountTask?.cancel();
+        NetworkService.off('networkChange', this.onNetworkChange);
+        CoreRepository.off('updateSettings', this.onSettingsChange);
+        this.overlayWaiter?.remove();
+        this.overlayWaiter = undefined;
+        this.handoff?.backHandler?.remove();
+        if (this.handoff) this.handoff.backHandler = undefined;
+        this.cancelAdd();
+    }
+
+    private contextMatches = (context: AddContext) => {
+        try {
+            const { account } = this.props;
+            const connection = NetworkService.getConnectionDetails();
+            return CoreRepository.getSettings()?.account?.address === context.account &&
+                account.address === context.account && connection.networkKey === context.networkKey &&
+                connection.node === context.node;
+        } catch {
+            // Logout/account deletion can invalidate a Realm account while a reply is pending.
+            return false;
+        }
+    };
+
+    private onNetworkChange = () => {
+        if (this.addContext) this.cancelAndClose();
+    };
+
+    private onSettingsChange = () => {
+        if (this.addContext && !this.contextMatches(this.addContext)) this.cancelAndClose();
+    };
+
+    private cancelAdd = () => {
+        if (this.phase === 'transferred') return;
+        this.requestAttempt++;
+        this.pendingPayload = undefined;
+        this.phase = 'cancelled';
+        if (this.handoff) {
+            this.handoff.cancelled = true;
+            if (this.handoff.appeared) this.dismissCancelledReview(this.handoff);
+        }
+    };
+
+    private cancelAndClose = () => {
+        this.cancelAdd();
+        if (!this.mounted) return;
+        if (this.panelClosed && !this.handoff) this.dismissOwnOverlay();
+        else if (!this.panelClosed) this.actionPanelRef.current?.slideDown();
+    };
+
+    private dismissOwnOverlay = () => {
+        if (this.overlayDismissStarted || !this.mounted) return;
+        const pending = Navigator.pendingOverlayShows();
+        if (pending.length) {
+            if (!this.waitingForOverlayShows) {
+                this.waitingForOverlayShows = true;
+                Promise.allSettled(pending).then(() => {
+                    this.waitingForOverlayShows = false;
+                    this.dismissOwnOverlay();
+                });
+            }
+            return;
+        }
+        const { componentId } = this.props;
+        const currentOverlay = NavigationService.getCurrentOverlay();
+        if (currentOverlay && currentOverlay !== AddTokenOverlay.screenName && currentOverlay !== componentId) {
+            // iOS restores an overlay's previous key window. Remove us only after a newer overlay has closed.
+            if (!this.overlayWaiter) {
+                this.overlayWaiter = Navigation.events().registerCommandCompletedListener((event) => {
+                    if (event.commandName === 'dismissOverlay') this.dismissOwnOverlay();
+                });
+            }
+            return;
+        }
+        this.overlayWaiter?.remove();
+        this.overlayWaiter = undefined;
+        this.overlayDismissStarted = true;
+        // Another overlay may have appeared during this asynchronous handoff.
+        Navigation.dismissOverlay(componentId || AddTokenOverlay.screenName).catch(() => undefined);
+    };
+
+    private removeHandoffListeners = (handoff: ReviewHandoff) => {
+        handoff.backHandler?.remove();
+        handoff.backHandler = undefined;
+        handoff.listeners.forEach((listener) => listener.remove());
+        handoff.listeners = [];
+    };
+
+    private finishHandoff = (handoff: ReviewHandoff) => {
+        if (handoff.finished) return;
+        handoff.finished = true;
+        this.removeHandoffListeners(handoff);
+        handoff.reservation.release();
+        if (this.handoff !== handoff) return;
+        this.handoff = undefined;
+        this.dismissOwnOverlay();
+    };
+
+    private dismissCancelledReview = (handoff: ReviewHandoff) => {
+        if (handoff.finished || handoff.dismissStarted) return;
+        handoff.dismissStarted = true;
+        Navigation.dismissModal(AppScreens.Modal.ReviewTransaction)
+            .catch(() => undefined)
+            .finally(() => this.finishHandoff(handoff));
+    };
+
+    onPanelCloseRequest = () => {
+        // Only the prepared Add operation may turn a close into a Review handoff.
+        if (this.phase !== 'closing') this.cancelAdd();
+    };
+
+    onPanelSlideDown = () => {
+        if (this.panelClosed) return;
+        this.panelClosed = true;
+        const payload = this.pendingPayload;
+        const context = this.addContext;
+        this.pendingPayload = undefined;
+        if (!this.mounted || this.phase !== 'closing' || !payload || !context || !this.contextMatches(context)) {
+            this.cancelAdd();
+            this.dismissOwnOverlay();
+            return;
+        }
+
+        const reservation = Navigator.reserveModal(AppScreens.Modal.ReviewTransaction);
+        if (!reservation) {
+            this.cancelAdd();
+            this.dismissOwnOverlay();
+            return;
+        }
+        this.phase = 'presenting';
+        const handoff: ReviewHandoff = {
+            token: `add-token-${++handoffSequence}`, context, appeared: false, willAppearConfirmed: false,
+            cancelled: false,
+            dismissStarted: false, finished: false, listeners: [],
+            reservation,
+        };
+        this.handoff = handoff;
+        const reviewId = AppScreens.Modal.ReviewTransaction;
+        const terminalCommands = new Map<string, string>();
+        const matchesReview = (event: { componentId: string; passProps?: object }, allowClearedProps = false) => {
+            const token = get(event.passProps, 'addTokenHandoffId');
+            return event.componentId === reviewId && (token === handoff.token ||
+                (allowClearedProps && token === undefined && handoff.cancelled && handoff.willAppearConfirmed));
+        };
+        let backHandlerInstalled = false;
+        let show: Promise<string | boolean>;
+        try {
+            handoff.listeners.push(Navigation.events().registerComponentWillAppearListener((event) => {
+                if (!matchesReview(event) || handoff.finished || handoff.appeared) return;
+                handoff.willAppearConfirmed = true;
+                if (backHandlerInstalled || !this.mounted) return;
+                backHandlerInstalled = true;
+                // Review's Preflight Back handler mounts first. Own Back only while our cover is retained.
+                handoff.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+                    if (handoff.finished) return false;
+                    this.cancelAdd();
+                    return true;
+                });
+            }));
+            // Native appearance, not a fixed timeout, releases the full-screen input cover.
+            handoff.listeners.push(Navigation.events().registerComponentDidAppearListener((event) => {
+                if (!matchesReview(event, true) || handoff.finished || handoff.appeared) return;
+                handoff.appeared = true;
+                if (handoff.cancelled || !this.mounted || !this.contextMatches(context)) {
+                    handoff.cancelled = true;
+                    this.dismissCancelledReview(handoff);
+                } else {
+                    this.phase = 'transferred';
+                    this.finishHandoff(handoff);
+                }
+            }));
+            handoff.listeners.push(Navigation.events().registerModalDismissedListener((event) => {
+                if (event.componentId !== reviewId) return;
+                if (handoff.appeared) this.finishHandoff(handoff);
+                else handoff.cancelled = true;
+            }));
+            handoff.listeners.push(Navigation.events().registerCommandListener((name, params) => {
+                if (name === 'showModal') {
+                    const otherReview = findReview(params.layout);
+                    if (otherReview && otherReview.data?.passProps?.addTokenHandoffId !== handoff.token) {
+                        // Static Review IDs are shared. Yield before another command replaces their stored props.
+                        this.finishHandoff(handoff);
+                    }
+                } else if (name === 'setRoot' || name === 'dismissAllModals' ||
+                    (name === 'dismissModal' && params.componentId === reviewId)) {
+                    if (name !== 'dismissModal') terminalCommands.set(params.commandId, name);
+                    this.cancelAdd();
+                }
+            }));
+            handoff.listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
+                if (terminalCommands.get(event.commandId) !== event.commandName) return;
+                if (event.commandName === 'setRoot' && Platform.OS === 'android') {
+                    // Android destroys its modal stack when the root changes.
+                    this.finishHandoff(handoff);
+                } else if ((event.commandName === 'setRoot' || event.commandName === 'dismissAllModals') &&
+                    handoff.cancelled) {
+                    // Keep watching for a late native entry, but do not leave its input cover behind.
+                    this.dismissOwnOverlay();
+                }
+            }));
+
+            show = Navigator.showModal<ReviewTransactionModalProps<TrustSet> & { addTokenHandoffId: string }>(
+                reviewId,
+                { payload, addTokenHandoffId: handoff.token },
+                {
+                    modalPresentationStyle: OptionsModalPresentationStyle.fullScreen,
+                    animations: { showModal: { enter: { waitForRender: true } } },
+                },
+                reservation.token,
+            );
+        } catch {
+            this.finishHandoff(handoff);
+            return;
+        }
+        show.then((result) => {
+            if (this.handoff !== handoff) return;
+            if (result === false) {
+                // The existing Review belongs to another request.
+                this.finishHandoff(handoff);
+            } else if (Platform.OS === 'android' && !handoff.appeared) {
+                // Android's canceled enter animation completes without a DidAppear event.
+                handoff.cancelled = true;
+                this.dismissCancelledReview(handoff);
+            }
+        }).catch(() => this.finishHandoff(handoff));
+    };
+
     loadVettedTokens = async () => {
+        if (!this.mounted || this.phase !== 'idle') return;
         const { isLoading } = this.state;
 
         try {
@@ -89,6 +370,7 @@ class AddTokenOverlay extends Component<Props, State> {
             }
 
             const { details } = await BackendService.getCuratedIOUs({ promoted: true });
+            if (!this.mounted || this.phase !== 'idle') return;
 
             // set default selected party and currency to the first in the list
             const selectedParty = first(values(details));
@@ -109,17 +391,17 @@ class AddTokenOverlay extends Component<Props, State> {
                 selectedCurrencyId,
             });
         } catch {
+            if (!this.mounted || this.phase !== 'idle') return;
             this.setState({
                 error: true,
             });
         } finally {
-            this.setState({
-                isLoading: false,
-            });
+            if (this.mounted && this.phase === 'idle') this.setState({ isLoading: false });
         }
     };
 
     onAddPress = async () => {
+        if (!this.mounted || this.phase !== 'idle') return;
         const { account } = this.props;
         const { dataSource, selectedPartyId, selectedCurrencyId } = this.state;
 
@@ -143,6 +425,12 @@ class AddTokenOverlay extends Component<Props, State> {
             return;
         }
 
+        const connection = NetworkService.getConnectionDetails();
+        const context = { account: account.address, networkKey: connection.networkKey, node: connection.node };
+        if (!this.contextMatches(context)) return;
+        const attempt = ++this.requestAttempt;
+        this.addContext = context;
+        this.phase = 'requesting';
         this.setState({
             isLoadingTokenInfo: true,
         });
@@ -160,15 +448,18 @@ class AddTokenOverlay extends Component<Props, State> {
             }
         } catch {
             // ignore
-        } finally {
-            this.setState({
-                isLoadingTokenInfo: false,
-            });
         }
+
+        if (!this.mounted || attempt !== this.requestAttempt) return;
+        if (!this.contextMatches(context)) {
+            this.cancelAndClose();
+            return;
+        }
+        this.setState({ isLoadingTokenInfo: false });
 
         const trustSet = new TrustSet({
             TransactionType: TransactionTypes.TrustSet,
-            Account: account.address,
+            Account: context.account,
             Flags: 131072, // tfSetNoRipple
             LimitAmount: {
                 currency: selectedCurrency.currency,
@@ -185,22 +476,14 @@ class AddTokenOverlay extends Component<Props, State> {
             }),
         );
 
-        // slide down
-        this.actionPanelRef?.current?.slideDown();
-
-        setTimeout(() => {
-            Navigator.showModal<ReviewTransactionModalProps<TrustSet>>(
-                AppScreens.Modal.ReviewTransaction,
-                {
-                    payload,
-                },
-                { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
-            );
-        }, 800);
+        this.pendingPayload = payload;
+        this.phase = 'closing';
+        this.setState({ isHandoffPending: true });
+        this.actionPanelRef.current?.slideDown();
     };
 
     onCancelPress = () => {
-        this.actionPanelRef?.current?.slideDown();
+        this.cancelAndClose();
     };
 
     renderCurrencies = () => {
@@ -339,13 +622,15 @@ class AddTokenOverlay extends Component<Props, State> {
         );
     };
 
-    render() {
+    renderPanel = () => {
         const { selectedCurrencyId, isLoadingTokenInfo } = this.state;
 
         return (
             <ActionPanel
                 height={AppSizes.heightPercentageToDP(90)}
-                onSlideDown={Navigator.dismissOverlay}
+                onCloseRequest={this.onPanelCloseRequest}
+                lockAfterCloseRequest
+                onSlideDown={this.onPanelSlideDown}
                 testID="add-asset-overlay"
                 ref={this.actionPanelRef}
                 contentStyle={AppStyles.centerAligned}
@@ -412,6 +697,24 @@ class AddTokenOverlay extends Component<Props, State> {
                     />
                 </Footer>
             </ActionPanel>
+        );
+    };
+
+    render() {
+        const { isHandoffPending } = this.state;
+        return (
+            <View style={AppStyles.flex1}>
+                {this.renderPanel()}
+                {isHandoffPending && (
+                    <View
+                        testID="add-token-handoff-cover"
+                        collapsable={false}
+                        style={StyleSheet.absoluteFill}
+                        onStartShouldSetResponder={() => true}
+                        onResponderTerminationRequest={() => false}
+                    />
+                )}
+            </View>
         );
     }
 }

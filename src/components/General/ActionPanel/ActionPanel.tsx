@@ -25,6 +25,8 @@ interface Props extends React.PropsWithChildren {
     extraBottomInset?: boolean;
     testID?: string;
     contentStyle?: ViewStyle | ViewStyle[];
+    onCloseRequest?: () => void;
+    lockAfterCloseRequest?: boolean;
     onSlideDown?: () => void;
 }
 
@@ -147,8 +149,20 @@ class ActionPanel extends Component<Props, State> {
     };
 
     public slideDown = () => {
-        this.closeRequested = true;
+        this.requestClose();
         this.snapTo(0);
+    };
+
+    private requestClose = () => {
+        if (this.closeRequested) return;
+        this.closeRequested = true;
+        const { onCloseRequest } = this.props;
+        onCloseRequest?.();
+    };
+
+    private isCloseLocked = () => {
+        const { lockAfterCloseRequest } = this.props;
+        return this.closeRequested && lockAfterCloseRequest;
     };
 
     public snapTo = (index: number) => {
@@ -162,11 +176,13 @@ class ActionPanel extends Component<Props, State> {
     };
 
     private onStartShouldSetPanResponder = (event: GestureResponderEvent) => {
+        if (this.isCloseLocked()) return false;
         this.startedOnHeader = event.nativeEvent.locationY <= HEADER_CAPTURE_HEIGHT;
         return this.startedOnHeader;
     };
 
     private onMoveShouldSetPanResponder = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        if (this.isCloseLocked()) return false;
         // Do not steal vertical pans from nested ScrollViews.
         if (!this.startedOnHeader) {
             return false;
@@ -180,12 +196,14 @@ class ActionPanel extends Component<Props, State> {
     private onPanResponderTerminationRequest = () => !this.startedOnHeader;
 
     private onPanResponderGrant = () => {
+        if (this.isCloseLocked()) return;
         this.translateY.stopAnimation();
         this.dragStartY = this.currentY;
         this.isDragging = true;
     };
 
     private onPanResponderMove = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        if (this.isCloseLocked()) return;
         const { boundaries } = this.state;
         const maxY = AppSizes.screen.height;
 
@@ -242,17 +260,18 @@ class ActionPanel extends Component<Props, State> {
 
     private animateToIndex = (index: number) => {
         const { snapPoints } = this.state;
-        const point = snapPoints[index];
+        const targetIndex = this.isCloseLocked() ? 0 : index;
+        const point = snapPoints[targetIndex];
 
         if (!point) {
             return;
         }
 
-        if (index === 0) {
-            this.closeRequested = true;
+        if (targetIndex === 0) {
+            this.requestClose();
         }
 
-        this.currentIndex = index;
+        this.currentIndex = targetIndex;
 
         Animated.spring(this.translateY, {
             toValue: point.y,
@@ -268,7 +287,7 @@ class ActionPanel extends Component<Props, State> {
             // The sheet starts off-screen, and that position is not a close animation.
             // A close that interrupts the open spring is an animation to index 0 and must
             // still remove the overlay. Otherwise the invisible backdrop keeps eating taps.
-            if (index === 0) {
+            if (targetIndex === 0) {
                 this.notifyDismissed();
             }
         });
@@ -320,6 +339,7 @@ class ActionPanel extends Component<Props, State> {
                     ]}
                 >
                     <View style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}>
+                        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                         <View style={styles.panelHeader} {...this.panResponder.panHandlers}>
                             <View style={styles.panelHandle} />
                         </View>
