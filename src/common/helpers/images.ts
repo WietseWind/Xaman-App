@@ -56,6 +56,8 @@ export const Images = {
     ImageBlankNFT: buildImageSource('ImageBlankNFT', 'image_blank_nft'),
     ImageBlankNFTLight: buildImageSource('ImageBlankNFTLight', 'image_blank_nft_light'),
     ImageArrowUp: buildImageSource('ImageArrowUp', 'image_arrow_up'),
+    ImageIdentifyTangem: buildImageSource('ImageIdentifyTangem', 'image_identify_tangem'),
+    ImageIdentifyTangemLight: buildImageSource('ImageIdentifyTangemLight', 'image_identify_tangem_light'),
     // Xaman
     XamanLogo: buildImageSource('XamanLogo', 'xaman_logo'),
     XamanLogoLight: buildImageSource('XamanLogoLight', 'xaman_logo_light'),
@@ -98,6 +100,7 @@ export const Images = {
     IconEdit: buildImageSource('IconEdit', 'icon_edit'),
     IconProfile: buildImageSource('IconProfile', 'icon_profile'),
     IconScan: buildImageSource('IconScan', 'icon_scan'),
+    IconScanCard: buildImageSource('IconScanCard', 'icon_scan_card'),
     IconSettings: buildImageSource('IconSettings', 'icon_settings'),
     IconPlus: buildImageSource('IconPlus', 'icon_plus'),
     IconMinus: buildImageSource('IconMinus', 'icon_minus'),

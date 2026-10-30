@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.Nullable;
 import com.reactnativenavigation.react.CommandListenerAdapter;
@@ -296,7 +297,7 @@ public class LaunchActivity extends NavigationActivity {
     private int resolveNavigatorBackgroundColor() {
         int tabsId = getResources().getIdentifier("bottomTabs", "id", getPackageName());
         View tabs = tabsId != 0 ? findViewById(tabsId) : null;
-        int fromTabs = opaqueColorFrom(tabs);
+        int fromTabs = opaqueTabsContainerColor(tabs);
         if (fromTabs != Color.TRANSPARENT) {
             return fromTabs;
         }
@@ -308,6 +309,26 @@ public class LaunchActivity extends NavigationActivity {
             return night == Configuration.UI_MODE_NIGHT_YES ? Color.BLACK : Color.WHITE;
         }
         return Color.TRANSPARENT;
+    }
+
+    private int opaqueTabsContainerColor(View tabs) {
+        // RNN applies the current tab color to BottomTabsContainer, while the
+        // inner bottomTabs view is transparent (or retains an older color).
+        ViewParent parent = tabs == null ? null : tabs.getParent();
+        while (parent instanceof View && !(parent instanceof CoordinatorLayout)) {
+            View view = (View) parent;
+            Drawable background = view.getBackground();
+            if (background instanceof ColorDrawable) {
+                int color = ((ColorDrawable) background).getColor();
+                if (Color.alpha(color) == 0xFF) {
+                    return color;
+                }
+            }
+            parent = view.getParent();
+        }
+        // Keep the old inner-view lookup if there is no opaque tab container.
+        // Do not reuse the navigator root's previously painted inset color.
+        return opaqueColorFrom(tabs);
     }
 
     private int opaqueColorFrom(View view) {

@@ -16,6 +16,8 @@ import { AppScreens } from '@common/constants';
 
 import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
+import { hasTangemIdentifyExit } from '@common/utils/tangemIdentifyNavigation';
+import { captureTangemIdentifyRoute, TangemIdentifyRoute } from '@common/helpers/tangemIdentifyRoute';
 
 import Localize from '@locale';
 import { Payment, PaymentValidation } from '@common/libs/ledger/transactions';
@@ -76,14 +78,26 @@ class LinkingService {
         });
     };
 
-    routeUser = async (screen: AppScreenKeys, passProps: any, options: any, screenType?: ComponentTypes) => {
+    routeUser = async (
+        screen: AppScreenKeys,
+        passProps: any,
+        options: any,
+        screenType?: ComponentTypes,
+        presentationDelay?: number,
+        inheritedIdentify?: TangemIdentifyRoute,
+    ) => {
+        const delay = presentationDelay ?? 10;
         const currentOverlay = NavigationService.getCurrentOverlay();
+        const identifyInitially = !!inheritedIdentify?.needsPreparation() || hasTangemIdentifyExit();
+        const presentationAt = Date.now() + delay;
         const interruptedAddToken = currentOverlay === AppScreens.Overlay.AddToken;
         const routeRoot = interruptedAddToken ? NavigationService.getCurrentRoot() : undefined;
         let rootChanged = false;
+        let identify = inheritedIdentify;
         const onRootChange = () => { rootChanged = true; };
         const releaseGuard = () => {
             if (interruptedAddToken) NavigationService.off('setRoot', onRootChange);
+            identify?.release();
         };
         const canRoute = () => !interruptedAddToken || (!rootChanged &&
             NavigationService.getCurrentRoot() === routeRoot &&
@@ -91,8 +105,20 @@ class LinkingService {
         if (interruptedAddToken) NavigationService.on('setRoot', onRootChange);
 
         try {
+            // Delayed routes also record context before a new Identify can open.
+            if (!identify && (hasTangemIdentifyExit() || delay > 0)) {
+                identify = captureTangemIdentifyRoute();
+            }
+            if (inheritedIdentify && !await inheritedIdentify.prepare()) {
+                releaseGuard();
+                return;
+            }
             if (currentOverlay && currentOverlay !== AppScreens.Overlay.Lock) {
                 await Navigator.dismissOverlay();
+            }
+            if (identify?.needsPreparation() && !await identify.prepare()) {
+                releaseGuard();
+                return;
             }
             if (interruptedAddToken) {
                 // Unmount cancels AddToken's pending Review. Its own native cleanup releases this lease.
@@ -105,12 +131,26 @@ class LinkingService {
 
             const type = screenType ?? NavigationService.getComponentType(screen);
             if (type === ComponentTypes.Modal || type === ComponentTypes.Screen) {
-                setTimeout(() => {
-                    releaseGuard();
-                    if (!canRoute()) return;
-                    if (type === ComponentTypes.Modal) Navigator.showModal(screen, passProps, options);
-                    else Navigator.push(screen, passProps, options);
-                }, 10);
+                const present = async () => {
+                    try {
+                        if (!identify && hasTangemIdentifyExit()) identify = captureTangemIdentifyRoute();
+                        if (identify?.needsPreparation() && !await identify.prepare()) return;
+                        if (!canRoute()) return;
+                        if (type === ComponentTypes.Modal) Navigator.showModal(screen, passProps, options);
+                        else Navigator.push(screen, passProps, options);
+                    } finally {
+                        releaseGuard();
+                    }
+                };
+                const remainingDelay = identifyInitially
+                    ? Math.max(0, presentationAt - Date.now()) : delay;
+                if (remainingDelay > 0) {
+                    setTimeout(() => {
+                        present().catch((error) => {
+                            Alert.alert(Localize.t('global.error'), error?.message);
+                        });
+                    }, remainingDelay);
+                } else await present();
             } else releaseGuard();
         } catch (error) {
             releaseGuard();
@@ -118,7 +158,39 @@ class LinkingService {
         }
     };
 
-    handlePayloadReference = async (uuid: string) => {
+    private showDeepLinkModal = (
+        screen: AppScreenKeys,
+        passProps: any,
+        options: any,
+        delay?: number,
+        identify?: TangemIdentifyRoute,
+    ): Promise<void> => {
+        const presentationDelay = delay ?? 0;
+        if (identify || hasTangemIdentifyExit()) {
+            return this.routeUser(screen, passProps, options, ComponentTypes.Modal, presentationDelay, identify);
+        }
+        // Retain the existing direct presentation and delays outside Identify.
+        if (presentationDelay > 0) {
+            const delayedIdentify = captureTangemIdentifyRoute();
+            setTimeout(() => {
+                const present = async () => {
+                    try {
+                        if (delayedIdentify.needsPreparation() && !await delayedIdentify.prepare()) return;
+                        Navigator.showModal(screen, passProps, options);
+                    } finally {
+                        delayedIdentify.release();
+                    }
+                };
+                present().catch((error) => { Alert.alert(Localize.t('global.error'), error?.message); });
+            }, presentationDelay);
+            return Promise.resolve();
+        }
+        return Navigator.showModal(screen, passProps, options).then(() => undefined);
+    };
+
+    handlePayloadReference = async (uuid: string, entryIdentify?: TangemIdentifyRoute) => {
+        const identify = entryIdentify?.fork();
+        let identifyTransferred = false;
         try {
             // check if uuid is valid uuidv4 string
             if (!StringTypeCheck.isValidUUID(uuid)) {
@@ -129,14 +201,22 @@ class LinkingService {
             const payload = await Payload.from(uuid, PayloadOrigin.DEEP_LINK);
 
             // review the transaction
+            identifyTransferred = true;
             await this.routeUser(
                 AppScreens.Modal.ReviewTransaction,
                 { payload },
                 { modalPresentationStyle: 'fullScreen' },
                 ComponentTypes.Modal,
+                10,
+                identify,
             );
         } catch (error: any) {
+            if (!identifyTransferred && identify && !await identify.prepare()) return;
             Alert.alert(Localize.t('global.error'), error?.message, [{ text: 'OK' }], { cancelable: false });
+        } finally {
+            // routeUser owns its presentation guard after scheduling the timer.
+            // An invalid UUID or failed fetch never transfers that ownership.
+            if (!identifyTransferred) identify?.release();
         }
     };
 
@@ -165,7 +245,22 @@ class LinkingService {
         );
     };
 
-    handleXrplDestination = async (destination: XrplDestination & PayId): Promise<any> => {
+    handleXrplDestination = async (
+        destination: XrplDestination & PayId,
+        entryIdentify?: TangemIdentifyRoute,
+    ): Promise<any> => {
+        const identify = entryIdentify?.fork();
+        try {
+            return await this.routeXrplDestination(destination, identify);
+        } finally {
+            identify?.release();
+        }
+    };
+
+    private routeXrplDestination = async (
+        destination: XrplDestination & PayId,
+        identify?: TangemIdentifyRoute,
+    ): Promise<any> => {
         if (destination.payId) {
             await this.routeUser(
                 AppScreens.Transaction.Payment,
@@ -176,6 +271,8 @@ class LinkingService {
                 },
                 {},
                 ComponentTypes.Screen,
+                10,
+                identify?.fork(),
             );
             return;
         }
@@ -183,6 +280,7 @@ class LinkingService {
         const { to, tag } = NormalizeDestination(destination);
 
         const _continue = async () => {
+            if (identify && !await identify.prepare()) return;
             // console.log('c', to, tag);
             // console.log('continue');
             // Traditional regular payment
@@ -290,6 +388,7 @@ class LinkingService {
                 // console.log(validation);
             } catch (error: any) {
                 // console.log(error);
+                if (identify && !await identify.prepare()) return;
                 Alert.alert(Localize.t('global.error'), error?.message, [{ text: 'OK' }], { cancelable: false });
                 return;
             }
@@ -309,7 +408,7 @@ class LinkingService {
                 true, // Pathfinding
             );
 
-            Navigator.showModal(
+            await this.showDeepLinkModal(
                 AppScreens.Modal.ReviewTransaction,
                 {
                     payload,
@@ -317,6 +416,8 @@ class LinkingService {
                     // onClose: (e) => console.log('lolno', e), // Done here
                 },
                 { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                0,
+                identify?.fork(),
             );
         };
 
@@ -327,6 +428,11 @@ class LinkingService {
             if (destination.network !== currentNetwork?.key) {
                 const wantsNetwork = await NetworkRepository.findBy('key', destination.network.toUpperCase());
                 if (wantsNetwork?.[0]?.key) {
+                    if (identify && !await identify.prepare()) return;
+                    // Once the confirmation is shown, Continue is a new user
+                    // action. Its route still checks any newly opened Identify.
+                    identify?.release();
+                    identify = undefined;
                     // eslint-disable-next-line consistent-return
                     return Navigator.showAlertModal({
                         type: 'warning',
@@ -363,42 +469,55 @@ class LinkingService {
         return _continue();
     };
 
-    handleXAPPLink = async (url: string, parsed: { xapp: string; params: any }) => {
+    handleXAPPLink = async (
+        url: string,
+        parsed: { xapp: string; params: any },
+        entryIdentify?: TangemIdentifyRoute,
+    ) => {
         const { xapp, params } = parsed;
 
         if (!xapp) return;
 
-        let delay = 0;
-        // if already in xapp try to load the xApp from notification
-        if (NavigationService.getCurrentModal() === AppScreens.Modal.XAppBrowser) {
-            await Navigator.dismissModal();
-            // looks like a bug in navigation library, need to add a delay before showing the modal
-            delay = 300;
-        }
+        const identify = entryIdentify?.fork();
+        let identifyTransferred = false;
+        try {
+            let delay = 0;
+            // if already in xapp try to load the xApp from notification
+            if (NavigationService.getCurrentModal() === AppScreens.Modal.XAppBrowser) {
+                await Navigator.dismissModal();
+                // looks like a bug in navigation library, need to add a delay before showing the modal
+                delay = 300;
+            }
 
-        setTimeout(() => {
-            this.routeUser(
-                AppScreens.Modal.XAppBrowser,
-                {
-                    identifier: xapp,
-                    origin: XAppOrigin.DEEP_LINK,
-                    originData: { url },
-                    params,
-                },
-                {
-                    modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
-                    modalPresentationStyle: OptionsModalPresentationStyle.fullScreen,
-                },
-                ComponentTypes.Modal,
-            );
-        }, delay);
+            setTimeout(() => {
+                this.routeUser(
+                    AppScreens.Modal.XAppBrowser,
+                    {
+                        identifier: xapp,
+                        origin: XAppOrigin.DEEP_LINK,
+                        originData: { url },
+                        params,
+                    },
+                    {
+                        modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
+                        modalPresentationStyle: OptionsModalPresentationStyle.fullScreen,
+                    },
+                    ComponentTypes.Modal,
+                    10,
+                    identify,
+                ).catch((error) => { Alert.alert(Localize.t('global.error'), error?.message); });
+            }, delay);
+            identifyTransferred = true;
+        } finally {
+            if (!identifyTransferred) identify?.release();
+        }
     };
 
     handleAlternativeSeedCodec = (parsed: {
         name: string;
         alphabet: string | boolean;
         params?: Record<string, unknown>;
-    }) => {
+    }, identify?: TangemIdentifyRoute) => {
         const { alphabet } = parsed;
         if (alphabet) {
             this.routeUser(
@@ -408,6 +527,8 @@ class LinkingService {
                 },
                 {},
                 ComponentTypes.Screen,
+                10,
+                identify?.fork(),
             );
         }
     };
@@ -444,7 +565,7 @@ class LinkingService {
         }
     };
 
-    handleTransactionTemplate = (parsed: any) => {
+    handleTransactionTemplate = (parsed: any, entryIdentify?: TangemIdentifyRoute) => {
         let errorMsg = Localize.t('scan.theQRIsNotWhatWeExpect');
 
         try {
@@ -487,15 +608,15 @@ class LinkingService {
                     payload.meta.force_network = templateNetwork.key;
                 }
 
-                setTimeout(() => {
-                    Navigator.showModal(
-                        AppScreens.Modal.ReviewTransaction,
-                        {
-                            payload,
-                        },
-                        { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
-                    );
-                }, 800);
+                this.showDeepLinkModal(
+                    AppScreens.Modal.ReviewTransaction,
+                    { payload },
+                    { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                    800,
+                    entryIdentify?.fork(),
+                ).catch((error) => {
+                    Alert.alert(Localize.t('global.error'), error?.message);
+                });
 
                 return;
             }
@@ -515,15 +636,15 @@ class LinkingService {
                     payload.meta.force_network = templateNetwork.key;
                 }
 
-                setTimeout(() => {
-                    Navigator.showModal(
-                        AppScreens.Modal.ReviewTransaction,
-                        {
-                            payload,
-                        },
-                        { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
-                    );
-                }, 800);
+                this.showDeepLinkModal(
+                    AppScreens.Modal.ReviewTransaction,
+                    { payload },
+                    { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                    800,
+                    entryIdentify?.fork(),
+                ).catch((error) => {
+                    Alert.alert(Localize.t('global.error'), error?.message);
+                });
 
                 return;
             }
@@ -533,38 +654,52 @@ class LinkingService {
             //
         }
 
+        const identify = entryIdentify?.fork();
         setTimeout(() => {
-            Prompt(Localize.t('global.error'), errorMsg, [{ text: 'OK' }], {
-                cancelable: false,
-                type: 'default',
-            });
+            const present = async () => {
+                try {
+                    if (identify && !await identify.prepare()) return;
+                    Prompt(Localize.t('global.error'), errorMsg, [{ text: 'OK' }], {
+                        cancelable: false,
+                        type: 'default',
+                    });
+                } finally {
+                    identify?.release();
+                }
+            };
+            present().catch((error) => { Alert.alert(Localize.t('global.error'), error?.message); });
         }, 800);
     };
 
-    handle = (url: string) => {
+    private onAsyncDeepLinkError = (error: any) => {
+        Alert.alert(Localize.t('global.error'), error?.message);
+    };
+
+    handle = (url: string, identify?: TangemIdentifyRoute) => {
         const detected = new StringTypeDetector(url);
         const parsed = new StringDecoder(detected).getAny();
+        const identifyArgs: [] | [TangemIdentifyRoute] = identify ? [identify] : [];
 
         // the screen will handle the content
         switch (detected.getType()) {
             case StringType.XrplTransactionTemplate:
-                this.handleTransactionTemplate(parsed);
+                this.handleTransactionTemplate(parsed, ...identifyArgs);
                 break;
             case StringType.XummPayloadReference:
-                this.handlePayloadReference(parsed.uuid);
+                this.handlePayloadReference(parsed.uuid, ...identifyArgs).catch(this.onAsyncDeepLinkError);
                 break;
             case StringType.XrplSignedTransaction:
                 this.handleSignedTransaction(parsed.txblob);
                 break;
             case StringType.XrplDestination:
             case StringType.PayId:
-                this.handleXrplDestination(parsed);
+                this.handleXrplDestination(parsed, ...identifyArgs).catch(this.onAsyncDeepLinkError);
                 break;
             case StringType.XummXapp:
-                this.handleXAPPLink(url, parsed);
+                this.handleXAPPLink(url, parsed, ...identifyArgs).catch(this.onAsyncDeepLinkError);
                 break;
             case StringType.XrplAltFamilySeedAlphabet:
-                this.handleAlternativeSeedCodec(parsed);
+                this.handleAlternativeSeedCodec(parsed, ...identifyArgs);
                 break;
             case StringType.XummFeature:
                 this.handleXamanFeature(parsed);
@@ -578,7 +713,17 @@ class LinkingService {
         // ignore if the app is not initialized or not url
         if (!url || typeof url !== 'string') return;
 
-        this.handle(url);
+        if (hasTangemIdentifyExit()) {
+            const identify = captureTangemIdentifyRoute();
+            try {
+                // Includes confirmation prompts that precede the destination route.
+                if (await identify.prepare()) this.handle(url, identify);
+            } catch (error: any) {
+                Alert.alert(Localize.t('global.error'), error?.message);
+            } finally {
+                identify.release();
+            }
+        } else this.handle(url);
     };
 }
 
