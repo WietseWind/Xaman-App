@@ -344,6 +344,60 @@ it('shows a navigation failure after transferring a fetched payload to a new Ide
     expect(Navigator.showModal).not.toHaveBeenCalled();
 });
 
+it.each(['payload', 'payment'])('reports async %s error cleanup when a new Identify cannot pop', async (kind) => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const operation = deferred();
+    if (kind === 'payload') {
+        jest.mocked(Payload.from).mockReturnValueOnce(operation.promise as any);
+        const run = LinkingService.handlePayloadReference;
+        jest.spyOn(LinkingService, 'handlePayloadReference').mockImplementation((...args) => {
+            const result = run(...args);
+            // Observe rejection without changing it: a missing production catch
+            // must fail the alert assertion instead of crashing the test runner.
+            result.catch(() => undefined);
+            return result;
+        });
+    } else {
+        jest.mocked(PaymentValidation).mockReturnValueOnce(operation.promise as any);
+        const run = LinkingService.handleXrplDestination;
+        jest.spyOn(LinkingService, 'handleXrplDestination').mockImplementation((...args) => {
+            const result = run(...args);
+            result.catch(() => undefined);
+            return result;
+        });
+    }
+    const pending = owner();
+    const url = kind === 'payload'
+        ? 'https://xaman.app/sign/12345678-1234-4234-8234-123456789012'
+        : 'https://xaman.app/?to=rKymSQrwRF8DcwEzyAgNLMaaSKYSMfJNDY&amount=1';
+    const entry = LinkingService.handleDeepLink({ url });
+    pending.cleanup.resolve(); await entry; await flush();
+    const next = owner();
+    operation.reject(new Error('Original operation failed')); await flush();
+    expect(next.requestExit).toHaveBeenCalledTimes(1);
+    next.cleanup.reject(new Error('Identify pop failed')); await flush();
+    expect(alert).toHaveBeenCalledTimes(1);
+    expect(alert).toHaveBeenCalledWith(expect.any(String), 'Identify pop failed');
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+});
+
+it('reports an async xApp preparation rejection at actual deep-link dispatch', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const run = LinkingService.handleXAPPLink;
+    jest.spyOn(LinkingService, 'handleXAPPLink').mockImplementation((...args) => {
+        const result = run(...args);
+        result.catch(() => undefined);
+        return result;
+    });
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({ url: 'https://xaman.app/detect/xapp:xaman.swapper' });
+    jest.mocked(Navigation.events).mockImplementation(() => { throw new Error('Native listener unavailable'); });
+    pending.cleanup.resolve(); await entry; await flush();
+    expect(alert).toHaveBeenCalledTimes(1);
+    expect(alert).toHaveBeenCalledWith(expect.any(String), 'Native listener unavailable');
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+});
+
 it.each(['lock', 'root', 'success'])('keeps the xApp entry guard during its close delay: %s', async (change) => {
     jest.spyOn(NavigationService, 'getCurrentModal').mockReturnValue(AppScreens.Modal.XAppBrowser);
     const pending = owner();

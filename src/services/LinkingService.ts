@@ -671,6 +671,10 @@ class LinkingService {
         }, 800);
     };
 
+    private onAsyncDeepLinkError = (error: any) => {
+        Alert.alert(Localize.t('global.error'), error?.message);
+    };
+
     handle = (url: string, identify?: TangemIdentifyRoute) => {
         const detected = new StringTypeDetector(url);
         const parsed = new StringDecoder(detected).getAny();
@@ -682,17 +686,17 @@ class LinkingService {
                 this.handleTransactionTemplate(parsed, ...identifyArgs);
                 break;
             case StringType.XummPayloadReference:
-                this.handlePayloadReference(parsed.uuid, ...identifyArgs);
+                this.handlePayloadReference(parsed.uuid, ...identifyArgs).catch(this.onAsyncDeepLinkError);
                 break;
             case StringType.XrplSignedTransaction:
                 this.handleSignedTransaction(parsed.txblob);
                 break;
             case StringType.XrplDestination:
             case StringType.PayId:
-                this.handleXrplDestination(parsed, ...identifyArgs);
+                this.handleXrplDestination(parsed, ...identifyArgs).catch(this.onAsyncDeepLinkError);
                 break;
             case StringType.XummXapp:
-                this.handleXAPPLink(url, parsed, ...identifyArgs);
+                this.handleXAPPLink(url, parsed, ...identifyArgs).catch(this.onAsyncDeepLinkError);
                 break;
             case StringType.XrplAltFamilySeedAlphabet:
                 this.handleAlternativeSeedCodec(parsed, ...identifyArgs);
