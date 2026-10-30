@@ -211,6 +211,7 @@
     "ticketCount": "Antall billetter",
     "finishAfter": "Fullfør Etter",
     "cancelAfter": "Avbryt Etter",
+    "condition": "Vilkår",
     "expireAfter": "Utløp Etter",
     "settleDelay": "Oppgjørsforsinkelse",
     "channel": "Kanal",

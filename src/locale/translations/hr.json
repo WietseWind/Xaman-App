@@ -211,6 +211,7 @@
     "ticketCount": "Broj ulaznica",
     "finishAfter": "Izvrši nakon",
     "cancelAfter": "Otkaži nakon",
+    "condition": "Uvjet",
     "expireAfter": "Ističe nakon",
     "settleDelay": "Riješiti odgodu",
     "channel": "Kanal",

@@ -211,6 +211,7 @@
     "ticketCount": "तिकिट संख्या",
     "finishAfter": "नंतर समाप्त",
     "cancelAfter": "नंतर रद्द करा",
+    "condition": "अट",
     "expireAfter": "नंतर कालबाह्य होईल",
     "settleDelay": "Settle Delay",
     "channel": "Channel",

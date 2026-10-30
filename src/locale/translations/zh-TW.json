@@ -211,6 +211,7 @@
     "ticketCount": "Ticket 數量",
     "finishAfter": "完成時間之後",
     "cancelAfter": "取消時間之後",
+    "condition": "條件",
     "expireAfter": "到期時間之後",
     "settleDelay": "結算延遲",
     "channel": "通道",

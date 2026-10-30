@@ -211,6 +211,7 @@
     "ticketCount": "Nombre de tiquets",
     "finishAfter": "Finalitzar després de",
     "cancelAfter": "Cancel·la després de",
+    "condition": "Condició",
     "expireAfter": "Caducarà després de",
     "settleDelay": "Endarreriment en l'assentament",
     "channel": "Canal",

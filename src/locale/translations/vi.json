@@ -211,6 +211,7 @@
     "ticketCount": "Số lượng vé",
     "finishAfter": "Kết thúc sau",
     "cancelAfter": "Hủy sau",
+    "condition": "Điều kiện",
     "expireAfter": "Hết hạn sau",
     "settleDelay": "Settle Delay",
     "channel": "Channel",

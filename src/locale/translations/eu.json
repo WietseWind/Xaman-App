@@ -211,6 +211,7 @@
     "ticketCount": "Sarreren kopurua",
     "finishAfter": "Amaitu ondoren",
     "cancelAfter": "Utzi ondoren",
+    "condition": "Baldintza",
     "expireAfter": "Iraungi ondoren",
     "settleDelay": "Likidazio atzerapena",
     "channel": "Kanala",

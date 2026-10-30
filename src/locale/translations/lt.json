@@ -211,6 +211,7 @@
     "ticketCount": "Bilietų skaičius",
     "finishAfter": "Baigti Po",
     "cancelAfter": "Atšaukti po",
+    "condition": "Sąlyga",
     "expireAfter": "Galiojimas baigiasi po",
     "settleDelay": "Atsiskaitymo vėlavimas",
     "channel": "Kanalas",

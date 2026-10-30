@@ -211,6 +211,7 @@
     "ticketCount": "Kaartjie Telling",
     "finishAfter": "voleindig  agterna",
     "cancelAfter": "Kanselleer agterna",
+    "condition": "Voorwaarde",
     "expireAfter": "Verval agterna",
     "settleDelay": "Skikking Vertraging",
     "channel": "Kanaal",

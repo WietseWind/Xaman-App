@@ -211,6 +211,7 @@
     "ticketCount": "Pileti arv",
     "finishAfter": "Lõpeta pärast",
     "cancelAfter": "Loobu pärast",
+    "condition": "Tingimus",
     "expireAfter": "Aegumine pärast",
     "settleDelay": "Settle Delay",
     "channel": "Channel",

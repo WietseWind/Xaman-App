@@ -211,6 +211,7 @@
     "ticketCount": "Ticket szám",
     "finishAfter": "Befejezés után",
     "cancelAfter": "Törlés után",
+    "condition": "Feltétel",
     "expireAfter": "Lejárat után",
     "settleDelay": "Elszámolási késleltetés",
     "channel": "Csatorna",

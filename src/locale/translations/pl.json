@@ -211,6 +211,7 @@
     "ticketCount": "Liczba biletów",
     "finishAfter": "Zakończ Po",
     "cancelAfter": "Anuluj Po",
+    "condition": "Warunek",
     "expireAfter": "Wygasa po",
     "settleDelay": "Opóźnienie rozliczenia",
     "channel": "Kanał",

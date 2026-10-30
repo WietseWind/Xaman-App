@@ -211,6 +211,7 @@
     "ticketCount": "Кількість квитків",
     "finishAfter": "Завершити після",
     "cancelAfter": "Скасувати після",
+    "condition": "Умова",
     "expireAfter": "Термін дії закінчується після",
     "settleDelay": "Затримка розрахунку",
     "channel": "Канал",

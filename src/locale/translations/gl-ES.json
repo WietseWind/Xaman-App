@@ -211,6 +211,7 @@
     "ticketCount": "Reconto de entradas",
     "finishAfter": "Rematar Tras",
     "cancelAfter": "Cancelar Tras",
+    "condition": "Condición",
     "expireAfter": "Expirar Tras",
     "settleDelay": "Resolver o atraso",
     "channel": "Canle",

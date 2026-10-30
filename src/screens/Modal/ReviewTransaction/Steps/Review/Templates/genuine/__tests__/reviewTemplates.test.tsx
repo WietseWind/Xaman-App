@@ -8,13 +8,20 @@ import NetworkService from '@services/NetworkService';
 import ResolverService from '@services/ResolverService';
 import DataStorage from '@store/storage';
 
-import { AMMClawback, Batch, FallbackTransaction, LedgerStateFix } from '@common/libs/ledger/transactions';
+import {
+    AMMClawback,
+    Batch,
+    EscrowCreate,
+    FallbackTransaction,
+    LedgerStateFix,
+} from '@common/libs/ledger/transactions';
 
 import { AmountText, JsonTree } from '@components/General';
 import { AccountElement, CurrencyElement, FeePicker } from '@components/Modules';
 import UniversalTransactionWarning from '@components/Modules/TransactionData/UniversalTransactionWarning';
 
 import AMMClawbackTemplate from '../AMMClawback';
+import EscrowCreateTemplate from '../EscrowCreate';
 import LedgerStateFixTemplate from '../LedgerStateFix';
 import BatchTemplate from '../Batch';
 import { FallbackTemplate } from '../../fallback';
@@ -188,6 +195,43 @@ describe('Review templates', () => {
             );
 
             expect(texts(tree)).toEqual(expect.arrayContaining(['Fix type', '9']));
+        });
+    });
+
+    describe('EscrowCreate', () => {
+        const condition = 'A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100';
+        const escrowCreate = {
+            TransactionType: 'EscrowCreate',
+            Account: Holder,
+            Destination: Issuer,
+            Amount: '10000',
+            DestinationTag: 23480,
+            FinishAfter: 847321303,
+            CancelAfter: 849308503,
+            Condition: condition,
+            Fee: '12',
+            Sequence: 5,
+        };
+
+        it('shows the condition in the field list', () => {
+            const tree = render(EscrowCreateTemplate, new EscrowCreate(escrowCreate as any));
+
+            expect(texts(tree)).toEqual(expect.arrayContaining([
+                'Finish After',
+                'Cancel After',
+                'Condition',
+                condition,
+            ]));
+        });
+
+        it('leaves the condition row out when the escrow has none', () => {
+            const withoutCondition = { ...escrowCreate };
+            delete withoutCondition.Condition;
+            const tree = render(EscrowCreateTemplate, new EscrowCreate(withoutCondition as any));
+
+            expect(texts(tree)).toEqual(expect.arrayContaining(['Finish After', 'Cancel After']));
+            expect(texts(tree)).not.toContain('Condition');
+            expect(texts(tree)).not.toContain(condition);
         });
     });
 

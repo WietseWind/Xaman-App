@@ -211,6 +211,7 @@
     "ticketCount": "Contagem de tickets",
     "finishAfter": "Terminar após",
     "cancelAfter": "Cancelar após",
+    "condition": "Condição",
     "expireAfter": "Expira após",
     "settleDelay": "Atraso De Liquidação",
     "channel": "Canal",

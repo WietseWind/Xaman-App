@@ -211,6 +211,7 @@
     "ticketCount": "Antal forespørgsler",
     "finishAfter": "Afslut efter",
     "cancelAfter": "Annullér efter",
+    "condition": "Betingelse",
     "expireAfter": "Udløb efter",
     "settleDelay": "Afregningsforsinkelse",
     "channel": "Kanal",

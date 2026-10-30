@@ -211,6 +211,7 @@
     "ticketCount": "Transakciju apzīmējumu skaits",
     "finishAfter": "Beidzas pēc",
     "cancelAfter": "Atcelt pēc",
+    "condition": "Nosacījums",
     "expireAfter": "Beidzas derīgums Pēc",
     "settleDelay": "Settle Delay",
     "channel": "Kanāls",

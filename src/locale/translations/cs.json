@@ -211,6 +211,7 @@
     "ticketCount": "Počet tiketů",
     "finishAfter": "Dokončit po",
     "cancelAfter": "Zrušit po",
+    "condition": "Podmínka",
     "expireAfter": "Ukončit platnost k",
     "settleDelay": "Prodleva vypořádání",
     "channel": "Kanál",

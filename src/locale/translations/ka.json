@@ -211,6 +211,7 @@
     "ticketCount": "ბილეთების რაოდენობა",
     "finishAfter": "დასრულება შემდეგ",
     "cancelAfter": "გაუქმება შემდეგ",
+    "condition": "პირობა",
     "expireAfter": "იწურება შემდეგ",
     "settleDelay": "შეფერხება",
     "channel": "არხი",

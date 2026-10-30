@@ -211,6 +211,7 @@
     "ticketCount": "Nombre de tickets",
     "finishAfter": "Terminer après",
     "cancelAfter": "Annuler après",
+    "condition": "Condition",
     "expireAfter": "Expire après",
     "settleDelay": "Délai de règlement",
     "channel": "Canal",

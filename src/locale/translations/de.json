@@ -211,6 +211,7 @@
     "ticketCount": "Ticketanzahl",
     "finishAfter": "Beenden nach",
     "cancelAfter": "Abbrechen nach",
+    "condition": "Bedingung",
     "expireAfter": "Verfällt nach",
     "settleDelay": "Verzögerung festsetzen",
     "channel": "Kanal",

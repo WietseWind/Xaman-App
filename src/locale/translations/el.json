@@ -211,6 +211,7 @@
     "ticketCount": "Μέτρηση εισιτηρίων",
     "finishAfter": "Εκτέλεση μετά από",
     "cancelAfter": "Ακύρωση μετά από",
+    "condition": "Συνθήκη",
     "expireAfter": "Λήξη Μετά Από",
     "settleDelay": "Ηρεμια Delay",
     "channel": "Κανάλι",

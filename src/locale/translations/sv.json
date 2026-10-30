@@ -211,6 +211,7 @@
     "ticketCount": "Ärendeantal",
     "finishAfter": "Slutför efter",
     "cancelAfter": "Avbryt efter",
+    "condition": "Villkor",
     "expireAfter": "Upphör efter",
     "settleDelay": "Settle Delay",
     "channel": "Kanal",

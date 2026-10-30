@@ -211,6 +211,7 @@
     "ticketCount": "티켓 카운트",
     "finishAfter": "이후 완료",
     "cancelAfter": "이후 취소",
+    "condition": "조건",
     "expireAfter": "이후 만료",
     "settleDelay": "Settle 지연",
     "channel": "채널",

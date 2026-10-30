@@ -211,6 +211,7 @@
     "ticketCount": "Пребројавање ",
     "finishAfter": "Обради после",
     "cancelAfter": "Откажи после",
+    "condition": "Услов",
     "expireAfter": "Истиче након ",
     "settleDelay": "Решите кашњење",
     "channel": "Канал",

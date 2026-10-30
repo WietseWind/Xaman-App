@@ -211,6 +211,7 @@
     "ticketCount": "Билеттер саны",
     "finishAfter": "Кейін Аяқтау",
     "cancelAfter": "Кейін Болдырмау",
+    "condition": "Шарт",
     "expireAfter": "Қолданылу Мерзімі",
     "settleDelay": "Кешіктіруді Реттеу",
     "channel": "Арна",

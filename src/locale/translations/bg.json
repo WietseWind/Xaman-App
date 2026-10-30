@@ -211,6 +211,7 @@
     "ticketCount": "Брой на билети",
     "finishAfter": "Завърши след",
     "cancelAfter": "Отказ след",
+    "condition": "Условие",
     "expireAfter": "Изтича след",
     "settleDelay": "Settle Delay",
     "channel": "Канал",
