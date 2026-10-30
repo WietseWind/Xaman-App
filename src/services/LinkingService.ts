@@ -16,6 +16,8 @@ import { AppScreens } from '@common/constants';
 
 import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
+import { hasTangemIdentifyExit } from '@common/utils/tangemIdentifyNavigation';
+import { captureTangemIdentifyRoute } from '@common/helpers/tangemIdentifyRoute';
 
 import Localize from '@locale';
 import { Payment, PaymentValidation } from '@common/libs/ledger/transactions';
@@ -76,14 +78,24 @@ class LinkingService {
         });
     };
 
-    routeUser = async (screen: AppScreenKeys, passProps: any, options: any, screenType?: ComponentTypes) => {
+    routeUser = async (
+        screen: AppScreenKeys,
+        passProps: any,
+        options: any,
+        screenType?: ComponentTypes,
+        presentationDelay = 10,
+    ) => {
         const currentOverlay = NavigationService.getCurrentOverlay();
+        const identifyInitially = hasTangemIdentifyExit();
+        const presentationAt = Date.now() + presentationDelay;
         const interruptedAddToken = currentOverlay === AppScreens.Overlay.AddToken;
         const routeRoot = interruptedAddToken ? NavigationService.getCurrentRoot() : undefined;
         let rootChanged = false;
+        let identify: ReturnType<typeof captureTangemIdentifyRoute> | undefined;
         const onRootChange = () => { rootChanged = true; };
         const releaseGuard = () => {
             if (interruptedAddToken) NavigationService.off('setRoot', onRootChange);
+            identify?.release();
         };
         const canRoute = () => !interruptedAddToken || (!rootChanged &&
             NavigationService.getCurrentRoot() === routeRoot &&
@@ -91,8 +103,14 @@ class LinkingService {
         if (interruptedAddToken) NavigationService.on('setRoot', onRootChange);
 
         try {
+            // Delayed routes also record context before a new Identify can open.
+            if (hasTangemIdentifyExit() || presentationDelay > 0) identify = captureTangemIdentifyRoute();
             if (currentOverlay && currentOverlay !== AppScreens.Overlay.Lock) {
                 await Navigator.dismissOverlay();
+            }
+            if (identify?.needsPreparation() && !await identify.prepare()) {
+                releaseGuard();
+                return;
             }
             if (interruptedAddToken) {
                 // Unmount cancels AddToken's pending Review. Its own native cleanup releases this lease.
@@ -105,17 +123,59 @@ class LinkingService {
 
             const type = screenType ?? NavigationService.getComponentType(screen);
             if (type === ComponentTypes.Modal || type === ComponentTypes.Screen) {
-                setTimeout(() => {
-                    releaseGuard();
-                    if (!canRoute()) return;
-                    if (type === ComponentTypes.Modal) Navigator.showModal(screen, passProps, options);
-                    else Navigator.push(screen, passProps, options);
-                }, 10);
+                const present = async () => {
+                    try {
+                        if (!identify && hasTangemIdentifyExit()) identify = captureTangemIdentifyRoute();
+                        if (identify?.needsPreparation() && !await identify.prepare()) return;
+                        if (!canRoute()) return;
+                        if (type === ComponentTypes.Modal) Navigator.showModal(screen, passProps, options);
+                        else Navigator.push(screen, passProps, options);
+                    } finally {
+                        releaseGuard();
+                    }
+                };
+                const remainingDelay = identifyInitially
+                    ? Math.max(0, presentationAt - Date.now()) : presentationDelay;
+                if (remainingDelay > 0) {
+                    setTimeout(() => {
+                        present().catch((error) => {
+                            Alert.alert(Localize.t('global.error'), error?.message);
+                        });
+                    }, remainingDelay);
+                } else await present();
             } else releaseGuard();
         } catch (error) {
             releaseGuard();
             throw error;
         }
+    };
+
+    private showDeepLinkModal = (
+        screen: AppScreenKeys,
+        passProps: any,
+        options: any,
+        delay = 0,
+    ): Promise<void> => {
+        if (hasTangemIdentifyExit()) {
+            return this.routeUser(screen, passProps, options, ComponentTypes.Modal, delay);
+        }
+        // Retain the existing direct presentation and delays outside Identify.
+        if (delay > 0) {
+            const identify = captureTangemIdentifyRoute();
+            setTimeout(() => {
+                const present = async () => {
+                    try {
+                        if (identify.needsPreparation() && !await identify.prepare()) return;
+                        Navigator.showModal(screen, passProps, options);
+                    } finally {
+                        identify.release();
+                    }
+                };
+                present().catch((error) => { Alert.alert(Localize.t('global.error'), error?.message); });
+            }, delay);
+            return Promise.resolve();
+        }
+        return Navigator.showModal(screen, passProps, options).then(() => undefined);
     };
 
     handlePayloadReference = async (uuid: string) => {
@@ -309,7 +369,7 @@ class LinkingService {
                 true, // Pathfinding
             );
 
-            Navigator.showModal(
+            await this.showDeepLinkModal(
                 AppScreens.Modal.ReviewTransaction,
                 {
                     payload,
@@ -487,15 +547,14 @@ class LinkingService {
                     payload.meta.force_network = templateNetwork.key;
                 }
 
-                setTimeout(() => {
-                    Navigator.showModal(
-                        AppScreens.Modal.ReviewTransaction,
-                        {
-                            payload,
-                        },
-                        { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
-                    );
-                }, 800);
+                this.showDeepLinkModal(
+                    AppScreens.Modal.ReviewTransaction,
+                    { payload },
+                    { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                    800,
+                ).catch((error) => {
+                    Alert.alert(Localize.t('global.error'), error?.message);
+                });
 
                 return;
             }
@@ -515,15 +574,14 @@ class LinkingService {
                     payload.meta.force_network = templateNetwork.key;
                 }
 
-                setTimeout(() => {
-                    Navigator.showModal(
-                        AppScreens.Modal.ReviewTransaction,
-                        {
-                            payload,
-                        },
-                        { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
-                    );
-                }, 800);
+                this.showDeepLinkModal(
+                    AppScreens.Modal.ReviewTransaction,
+                    { payload },
+                    { modalPresentationStyle: OptionsModalPresentationStyle.fullScreen },
+                    800,
+                ).catch((error) => {
+                    Alert.alert(Localize.t('global.error'), error?.message);
+                });
 
                 return;
             }
@@ -578,7 +636,17 @@ class LinkingService {
         // ignore if the app is not initialized or not url
         if (!url || typeof url !== 'string') return;
 
-        this.handle(url);
+        if (hasTangemIdentifyExit()) {
+            const identify = captureTangemIdentifyRoute();
+            try {
+                // Includes confirmation prompts that precede the destination route.
+                if (await identify.prepare()) this.handle(url);
+            } catch (error: any) {
+                Alert.alert(Localize.t('global.error'), error?.message);
+            } finally {
+                identify.release();
+            }
+        } else this.handle(url);
     };
 }
 

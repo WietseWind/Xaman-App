@@ -430,26 +430,33 @@ class AccountSettingsView extends Component<Props, State> {
                                 {Localize.t('global.address')}
                             </Text>
 
-                            <Text numberOfLines={1} selectable style={styles.address}>
+                            <Text
+                                selectable
+                                textBreakStrategy="simple"
+                                style={[styles.address, styles.cardDetailValue]}
+                            >
                                 {account.address}
                             </Text>
                         </View>
 
                         {account.type === AccountTypes.Tangem && (
                             <View style={styles.row}>
-                                <Text numberOfLines={1} style={styles.label} testID="tangem-card-id">
+                                <Text style={[styles.label, styles.cardIdLabel]} testID="tangem-card-id">
                                     {Localize.t('account.cardId')}
                                 </Text>
-
-                                <Text selectable style={styles.address} numberOfLines={1}>
+                                <Text
+                                    selectable
+                                    textBreakStrategy="simple"
+                                    style={[styles.address, styles.cardDetailValue]}
+                                >
                                     {GetCardId(account.additionalInfo!)}
                                 </Text>
                                 <Button
                                     testID="identify-tangem-button"
                                     style={styles.identifyButton}
                                     label={Localize.t('account.identify')}
+                                    icon="IconScanCard"
                                     onPress={this.showIdentifyTangemCard}
-                                    light
                                     roundedMini
                                     nonBlock
                                 />
