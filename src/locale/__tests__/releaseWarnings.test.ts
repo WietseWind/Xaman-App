@@ -9,6 +9,16 @@ describe('5.4.0 warning copy', () => {
         expect(warning).not.toContain('deleted permanently');
     });
 
+    it('tells a Tangem card account it can be added again with the same card', () => {
+        const warning = Localize.t('account.accountRemoveTangemWarning');
+
+        expect(warning).toContain('removed from this device');
+        expect(warning).toContain('add a new account');
+        expect(warning).toContain('Tangem card');
+        expect(warning).toContain('same card');
+        expect(warning).not.toContain('account secret');
+    });
+
     it('warns that the destination is not currently active, without the cut-off sentence', () => {
         const warning = Localize.t('send.destinationNotExistCreationWarning', {
             nativeAsset: 'XAH',

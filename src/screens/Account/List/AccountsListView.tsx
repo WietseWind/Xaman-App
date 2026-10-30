@@ -16,6 +16,7 @@ import Vault from '@common/libs/vault';
 
 import { AppScreens } from '@common/constants';
 
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 import { Images } from '@common/helpers/images';
 
@@ -282,7 +283,7 @@ class AccountListView extends Component<Props, State> {
                             styles.accountLabel,
                             hasPro && styles.accountLabelDark,
                         ]}>
-                            {item.label}
+                            {accountListLabel(item)}
                         </Text>
                         <View style={styles.accessLevelContainer}>
                             <Icon size={13} name={accessLevelIcon} style={AppStyles.imgColorGrey} />

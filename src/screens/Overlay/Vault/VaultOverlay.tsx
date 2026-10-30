@@ -22,6 +22,7 @@ import { InstanceTypes } from '@common/libs/ledger/types/enums';
 import Vault from '@common/libs/vault';
 
 import { GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
+import { startTangemOfflineSession } from '@common/utils/tangemSession';
 
 import Keyboard from '@common/helpers/keyboard';
 import { Navigator } from '@common/helpers/navigator';
@@ -502,7 +503,7 @@ class VaultOverlay extends Component<Props, State> {
             const tangemSignOptions = GetSignOptions(tangemCard, preparedTx.hashToSign);
 
             // start tangem session
-            await RNTangemSdk.startSession({ attestationMode: 'offline' }).catch((e) => {
+            await startTangemOfflineSession().catch((e) => {
                 LoggerService.recordError('Unexpected error in startSession TangemSDK', e);
             });
 

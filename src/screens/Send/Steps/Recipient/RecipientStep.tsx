@@ -16,6 +16,7 @@ import { ContactModel, AccountModel } from '@store/models';
 import { AppScreens } from '@common/constants';
 
 import { Toast } from '@common/helpers/interface';
+import { accountListLabel, sortAccountsByLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
@@ -272,12 +273,14 @@ class RecipientStep extends Component<Props, State> {
 
             // search for accounts
             accounts.forEach((item) => {
+                const name = accountListLabel(item);
+
                 if (
-                    item.label?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
+                    name.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
                     item.address?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1
                 ) {
                     searchResult.push({
-                        name: item.label,
+                        name,
                         address: item.address,
                         source: 'accounts',
                     });
@@ -393,16 +396,16 @@ class RecipientStep extends Component<Props, State> {
 
         const dataSource = [];
 
-        const myAccountList = remove(Array.from(accounts), (n) => {
+        const myAccountList = sortAccountsByLabel(remove(Array.from(accounts), (n) => {
             // remove source account from list
             return n.address !== source?.address;
-        });
+        }));
 
         if (myAccountList && myAccountList?.length !== 0) {
             dataSource.push({
                 title: Localize.t('account.myAccounts'),
                 data: flatMap(myAccountList, (a) => {
-                    return { name: a.label, address: a.address };
+                    return { name: accountListLabel(a), address: a.address };
                 }),
             });
         }

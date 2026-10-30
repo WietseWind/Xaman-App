@@ -26,6 +26,7 @@ import {
     GetWalletDerivedPublicKey,
     TangemCardMatchesAccount,
 } from '@common/utils/tangem';
+import { startTangemOfflineSession } from '@common/utils/tangemSession';
 
 import { AppScreens } from '@common/constants';
 
@@ -249,8 +250,7 @@ class AccountImportView extends Component<Props, State> {
         }
 
         try {
-            await RNTangemSdk.startSession({
-                attestationMode: 'offline',
+            await startTangemOfflineSession({
                 defaultDerivationPaths: DefaultDerivationPaths,
             }).catch(() => {
                 // The scan below still runs. Offline mode matches the other Tangem entry points.

@@ -81,6 +81,9 @@ const styles = StyleService.create({
         textAlign: 'right',
         color: '$grey',
     },
+    identifyButton: {
+        marginLeft: AppSizes.padding,
+    },
     descriptionText: {
         padding: AppSizes.paddingSml,
         fontFamily: AppFonts.base.familyBold,

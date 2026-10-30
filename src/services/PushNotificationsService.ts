@@ -296,6 +296,10 @@ class PushNotificationsService extends EventEmitter {
             if (currentOverlay && currentOverlay !== AppScreens.Overlay.Lock) {
                 await Navigator.dismissOverlay();
             }
+            // Identify holds the NFC sheet. Leave it before a notification presents another screen.
+            if (NavigationService.getCurrentScreen() === AppScreens.Account.Edit.IdentifyTangemCard) {
+                await Navigator.pop();
+            }
             if (interruptedAddToken) {
                 // Unmount cancels AddToken's pending Review. Its own native cleanup releases this lease.
                 await Navigator.waitForModalReservation(AppScreens.Modal.ReviewTransaction);

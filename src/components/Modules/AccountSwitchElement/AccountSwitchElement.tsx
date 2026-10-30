@@ -3,6 +3,8 @@ import { Text, View, ViewStyle } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 
+import { accountListLabel } from '@common/helpers/accountListLabel';
+
 import { AccountModel } from '@store/models';
 
 import { Navigator } from '@common/helpers/navigator';
@@ -109,7 +111,7 @@ class AccountSwitchElement extends Component<Props, State> {
             >
                 <View style={AppStyles.flex1}>
                     <Text style={styles.accountLabelText} numberOfLines={1}>
-                        {account.label}
+                        {accountListLabel(account)}
                     </Text>
                     <Text
                         testID="account-address-text"

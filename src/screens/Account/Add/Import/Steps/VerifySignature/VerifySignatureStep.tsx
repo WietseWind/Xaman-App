@@ -12,6 +12,7 @@ import RNTangemSdk, { Card, OptionsSign } from 'tangem-sdk-react-native';
 import { SHA256 } from '@common/libs/crypto';
 import { Images } from '@common/helpers/images';
 import { GetWalletDerivedPublicKey, GetSignOptions } from '@common/utils/tangem';
+import { startTangemOfflineSession } from '@common/utils/tangemSession';
 
 import { ProfileRepository } from '@store/repositories';
 
@@ -48,7 +49,7 @@ class VerifySignatureStep extends Component<Props, State> {
     }
 
     componentDidMount(): void {
-        RNTangemSdk.startSession({ attestationMode: 'offline' }).catch(() => {
+        startTangemOfflineSession().catch(() => {
             // ignore
         });
     }
