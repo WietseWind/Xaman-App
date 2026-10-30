@@ -211,6 +211,7 @@
     "ticketCount": "Bilet Sayısı",
     "finishAfter": "Sonrasında Bitir",
     "cancelAfter": "Sonrasında İptal Et",
+    "condition": "Koşul",
     "expireAfter": "Sonrasında Süre Dolsun",
     "settleDelay": "Yerleşim Gecikmesi",
     "channel": "Kanal",

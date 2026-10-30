@@ -211,6 +211,7 @@
     "ticketCount": "عدد التذاكر",
     "finishAfter": "الانتهاء بعد",
     "cancelAfter": "يتم الإلغاء بعد",
+    "condition": "الشرط",
     "expireAfter": "ينتهي بعد",
     "settleDelay": "تأخير التسوية",
     "channel": "القناة",

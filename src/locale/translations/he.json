@@ -211,6 +211,7 @@
     "ticketCount": "ספירת כרטיסים",
     "finishAfter": "סיום לאחר",
     "cancelAfter": "ביטול אחרי",
+    "condition": "תנאי",
     "expireAfter": "פג תוקף לאחר",
     "settleDelay": "עיכוב הסדרה",
     "channel": "ערוץ",

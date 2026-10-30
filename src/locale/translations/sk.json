@@ -211,6 +211,7 @@
     "ticketCount": "Počet lístkov",
     "finishAfter": "Dokončiť po",
     "cancelAfter": "Zrušiť po",
+    "condition": "Podmienka",
     "expireAfter": "Exspirovať po",
     "settleDelay": "Settle Delay",
     "channel": "Kanál",

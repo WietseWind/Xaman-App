@@ -211,6 +211,7 @@
     "ticketCount": " Tiket Bilangin",
     "finishAfter": "Tapusin Pagkatapos",
     "cancelAfter": "Kanselahin Pagkatapos",
+    "condition": "Kondisyon",
     "expireAfter": "mag-expire pagkatapos",
     "settleDelay": "Ayusin ang pagkaantala",
     "channel": "Channel",

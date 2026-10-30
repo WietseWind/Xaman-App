@@ -211,6 +211,7 @@
     "ticketCount": "チケット枚数",
     "finishAfter": "後に終了",
     "cancelAfter": "あとでキャンセル",
+    "condition": "条件",
     "expireAfter": "期限切れ",
     "settleDelay": "決済遅延",
     "channel": "チャンネル",

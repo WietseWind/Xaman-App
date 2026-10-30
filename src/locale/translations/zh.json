@@ -211,6 +211,7 @@
     "ticketCount": "票据数量",
     "finishAfter": "完成后",
     "cancelAfter": "之后取消",
+    "condition": "条件",
     "expireAfter": "何时过期",
     "settleDelay": "结算延迟",
     "channel": "通道",

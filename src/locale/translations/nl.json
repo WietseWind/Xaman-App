@@ -211,6 +211,7 @@
     "ticketCount": "Ticket Aantal",
     "finishAfter": "Afronden Na",
     "cancelAfter": "Annuleren Na",
+    "condition": "Voorwaarde",
     "expireAfter": "Vervalt Na",
     "settleDelay": "Settle Delay",
     "channel": "Channel",

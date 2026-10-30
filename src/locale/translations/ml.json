@@ -211,6 +211,7 @@
     "ticketCount": "ടിക്കറ്റ് എണ്ണം",
     "finishAfter": "ശേഷം പൂര്ത്തിയാക്കുക",
     "cancelAfter": "പിന്നീട് റദ്ദാക്കുക",
+    "condition": "വ്യവസ്ഥ",
     "expireAfter": "ശേഷം കാലഹരണപ്പെടും",
     "settleDelay": "സെറ്റിൽ കാലതാമസം",
     "channel": "ചാനൽ",

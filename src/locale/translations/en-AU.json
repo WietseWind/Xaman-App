@@ -211,6 +211,7 @@
     "ticketCount": "Ticket Count",
     "finishAfter": "Finish After",
     "cancelAfter": "Cancel After",
+    "condition": "Condition",
     "expireAfter": "Expire After",
     "settleDelay": "Settle Delay",
     "channel": "Channel",

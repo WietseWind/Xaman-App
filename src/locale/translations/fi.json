@@ -211,6 +211,7 @@
     "ticketCount": "Lippujen määrä",
     "finishAfter": "Tee loppuun",
     "cancelAfter": "Peruuta jälkeen",
+    "condition": "Ehto",
     "expireAfter": "Päättymisaika",
     "settleDelay": "Selvitysviive",
     "channel": "Kanava",

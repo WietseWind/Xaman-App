@@ -211,6 +211,7 @@
     "ticketCount": "Contatore Ticket",
     "finishAfter": "Finire Dopo",
     "cancelAfter": "Cancella Dopo",
+    "condition": "Condizione",
     "expireAfter": "Scadrà Dopo",
     "settleDelay": "Ritardo di Pagamento",
     "channel": "Canale",

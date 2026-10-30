@@ -211,6 +211,7 @@
     "ticketCount": "ಟಿಕೆಟ್ ಎಣಿಕೆ",
     "finishAfter": "ನಂತರ ಮುಗಿಸಿ",
     "cancelAfter": "ನಂತರ ರದ್ದುಮಾಡಿ",
+    "condition": "ಷರತ್ತು",
     "expireAfter": "ನಂತರ ಮುಕ್ತಾಯ",
     "settleDelay": "Settle Delay",
     "channel": "Channel",

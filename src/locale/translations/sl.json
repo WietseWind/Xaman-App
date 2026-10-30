@@ -211,6 +211,7 @@
     "ticketCount": "Število prijav",
     "finishAfter": "Končaj po",
     "cancelAfter": "Prekliči po",
+    "condition": "Pogoj",
     "expireAfter": "Poteče po",
     "settleDelay": "Zakasnitev poravnave",
     "channel": "Kanal",
