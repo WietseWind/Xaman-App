@@ -1,7 +1,10 @@
 import { Navigation } from 'react-native-navigation';
+import { Alert } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
+import { Payload } from '@common/libs/payload';
+import { PaymentValidation } from '@common/libs/ledger/transactions';
 import { registerTangemIdentifyExit, hasTangemIdentifyExit } from '@common/utils/tangemIdentifyNavigation';
 import LinkingService from '../LinkingService';
 import PushNotificationsService from '../PushNotificationsService';
@@ -9,11 +12,13 @@ import NavigationService, { ComponentTypes, RootType } from '../NavigationServic
 
 jest.mock('@common/helpers/navigator', () => ({ Navigator: {
     showModal: jest.fn(async () => 'modal'), push: jest.fn(async () => 'screen'),
-    dismissOverlay: jest.fn(async () => undefined), waitForModalReservation: jest.fn(async () => undefined),
+    dismissOverlay: jest.fn(async () => undefined), dismissModal: jest.fn(async () => undefined),
+    waitForModalReservation: jest.fn(async () => undefined),
 } }));
-jest.mock('@common/libs/payload', () => ({ Payload: {
-    build: jest.fn((json) => ({ json, meta: {} })), from: jest.fn(),
-} }));
+jest.mock('@common/libs/payload', () => ({
+    Payload: { build: jest.fn((json) => ({ json, meta: {} })), from: jest.fn() },
+    PayloadOrigin: { DEEP_LINK: 'DEEPLINK' }, XAppOrigin: { DEEP_LINK: 'DEEPLINK' },
+}));
 jest.mock('@common/libs/ledger/transactions', () => ({
     Payment: jest.fn((json) => ({ JsonForSigning: json })),
     PaymentValidation: jest.fn(async () => undefined),
@@ -245,7 +250,125 @@ it('waits before dispatching a deep link that can show an immediate confirmation
     const entry = LinkingService.handleDeepLink({ url: 'xumm://example' });
     expect(handle).not.toHaveBeenCalled();
     pending.cleanup.resolve(); await entry;
-    expect(handle).toHaveBeenCalledWith('xumm://example');
+    expect(handle).toHaveBeenCalledWith('xumm://example', expect.objectContaining({ prepare: expect.any(Function) }));
+});
+
+it.each(['lock', 'root', 'success'])('keeps the actual template entry guard through its delay: %s', async (change) => {
+    const jsonhex = Buffer.from(JSON.stringify({
+        TransactionType: 'TrustSet', Account: 'rKymSQrwRF8DcwEzyAgNLMaaSKYSMfJNDY',
+    }), 'utf8').toString('hex');
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({ url: `https://xaman.app/detect/${jsonhex}` });
+    pending.cleanup.resolve(); await entry; await flush();
+    expect(hasTangemIdentifyExit()).toBe(false);
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+    if (change === 'lock') requestLock();
+    if (change === 'root') {
+        root = RootType.OnboardingRoot; NavigationService.emit('setRoot', root);
+        root = RootType.DefaultRoot; NavigationService.emit('setRoot', root);
+    }
+    jest.advanceTimersByTime(799); await flush();
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1); await flush();
+    expect(Navigator.showModal).toHaveBeenCalledTimes(change === 'success' ? 1 : 0);
+});
+
+it.each(['lock', 'root', 'success', 'failure'])('keeps the payload entry guard during fetch: %s', async (change) => {
+    const result = deferred();
+    jest.mocked(Payload.from).mockReturnValueOnce(result.promise as any);
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({
+        url: 'https://xaman.app/sign/12345678-1234-4234-8234-123456789012',
+    });
+    pending.cleanup.resolve(); await entry; await flush();
+    expect(Payload.from).toHaveBeenCalledTimes(1);
+    expect(hasTangemIdentifyExit()).toBe(false);
+    if (change === 'lock') requestLock();
+    if (change === 'root') {
+        commands.forEach((listener) => listener('setRoot', {}));
+        const next = owner();
+        expect(next.requestExit).not.toHaveBeenCalled();
+    }
+    if (change === 'failure') {
+        result.reject(new Error('Fetch failed'));
+    } else result.resolve();
+    await flush(); jest.advanceTimersByTime(10); await flush();
+    expect(Navigator.showModal).toHaveBeenCalledTimes(change === 'success' ? 1 : 0);
+});
+
+it('keeps the entry guard during payment validation after Identify has closed', async () => {
+    const validation = deferred();
+    jest.mocked(PaymentValidation).mockReturnValueOnce(validation.promise as any);
+    jest.spyOn(LinkingService, 'handle').mockImplementation((_url, identify) => {
+        LinkingService.handleXrplDestination({ address: 'rReceiver', amount: '1' } as any, identify);
+    });
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({ url: 'payment-link' });
+    pending.cleanup.resolve(); await entry; await flush();
+    expect(PaymentValidation).toHaveBeenCalledTimes(1);
+    requestLock(); validation.resolve(); await flush();
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+});
+
+it.each(['lock', 'root'])('suppresses an invalidated payload fetch error after %s', async (change) => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const result = deferred();
+    jest.mocked(Payload.from).mockReturnValueOnce(result.promise as any);
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({
+        url: 'https://xaman.app/sign/12345678-1234-4234-8234-123456789012',
+    });
+    pending.cleanup.resolve(); await entry; await flush();
+    if (change === 'lock') requestLock();
+    else commands.forEach((listener) => listener('setRoot', {}));
+    result.reject(new Error('Fetch failed')); await flush();
+    expect(alert).not.toHaveBeenCalled();
+});
+
+it('shows a navigation failure after transferring a fetched payload to a new Identify owner', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const result = deferred();
+    jest.mocked(Payload.from).mockReturnValueOnce(result.promise as any);
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({
+        url: 'https://xaman.app/sign/12345678-1234-4234-8234-123456789012',
+    });
+    pending.cleanup.resolve(); await entry; await flush();
+    const next = owner();
+    result.resolve(); await flush();
+    expect(next.requestExit).toHaveBeenCalledTimes(1);
+    next.cleanup.reject(new Error('Identify pop failed')); await flush();
+    expect(alert).toHaveBeenCalledWith(
+        expect.any(String), 'Identify pop failed', [{ text: 'OK' }], { cancelable: false },
+    );
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+});
+
+it.each(['lock', 'root', 'success'])('keeps the xApp entry guard during its close delay: %s', async (change) => {
+    jest.spyOn(NavigationService, 'getCurrentModal').mockReturnValue(AppScreens.Modal.XAppBrowser);
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({ url: 'https://xaman.app/detect/xapp:xaman.swapper' });
+    pending.cleanup.resolve(); await entry; await flush();
+    expect(Navigator.dismissModal).toHaveBeenCalledTimes(1);
+    if (change === 'lock') requestLock();
+    if (change === 'root') commands.forEach((listener) => listener('setRoot', {}));
+    jest.advanceTimersByTime(299); await flush();
+    expect(Navigator.showModal).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1); await flush();
+    jest.advanceTimersByTime(10); await flush();
+    expect(Navigator.showModal).toHaveBeenCalledTimes(change === 'success' ? 1 : 0);
+});
+
+it('drops a delayed invalid-template prompt after the interrupted entry loses its context', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const jsonhex = Buffer.from(JSON.stringify({
+        TransactionType: 'Payment', Account: 'rKymSQrwRF8DcwEzyAgNLMaaSKYSMfJNDY',
+    }), 'utf8').toString('hex');
+    const pending = owner();
+    const entry = LinkingService.handleDeepLink({ url: `https://xaman.app/detect/${jsonhex}` });
+    pending.cleanup.resolve(); await entry; await flush();
+    requestLock(); jest.advanceTimersByTime(800); await flush();
+    expect(alert).not.toHaveBeenCalled();
 });
 
 it('drops a waiting deep-link entry after a lock/unlock', async () => {
