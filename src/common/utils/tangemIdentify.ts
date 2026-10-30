@@ -43,3 +43,31 @@ export const identifyScannedTangemSerial = (
 
     return { outcome: 'unknown' };
 };
+
+export const tangemIdentifySessionLog = ({
+    lookingForSerial,
+    lookingForAddress,
+    scannedSerial,
+    scannedAddress,
+    outcome,
+}: {
+    lookingForSerial: string;
+    lookingForAddress: string;
+    scannedSerial: string;
+    scannedAddress: string;
+    outcome: TangemIdentifyOutcome;
+}): string => {
+    let finding = 'Not in Xaman';
+
+    if (outcome.outcome === 'match') {
+        finding = 'Correct card';
+    } else if (outcome.outcome === 'known') {
+        const name = outcome.account.label || outcome.account.address;
+        finding = `In Xaman, different card: ${name} ${outcome.account.address}`;
+    }
+
+    return (
+        `Identify Tangem card: looking for ${lookingForSerial} ${lookingForAddress}, ` +
+        `scanned: ${scannedSerial} ${scannedAddress} = ${finding}`
+    );
+};

@@ -1,6 +1,6 @@
 import { AccountTypes } from '@store/types';
 
-import { identifyScannedTangemSerial } from '../tangemIdentify';
+import { identifyScannedTangemSerial, tangemIdentifySessionLog } from '../tangemIdentify';
 
 const tangem = (address: string, cardId: string, label = address) => ({
     address,
@@ -29,5 +29,42 @@ describe('identifyScannedTangemSerial', () => {
 
     it('says the card is new when no imported account has that serial', () => {
         expect(identifyScannedTangemSerial('CCC', 'AAA', accounts)).toEqual({ outcome: 'unknown' });
+    });
+
+    it('writes a session line for each finding', () => {
+        const base = {
+            lookingForSerial: 'AAA',
+            lookingForAddress: 'rSelected',
+            scannedSerial: 'AAA',
+            scannedAddress: 'rSelected',
+        };
+
+        expect(
+            tangemIdentifySessionLog({
+                ...base,
+                outcome: { outcome: 'match' },
+            }),
+        ).toBe('Identify Tangem card: looking for AAA rSelected, scanned: AAA rSelected = Correct card');
+
+        expect(
+            tangemIdentifySessionLog({
+                ...base,
+                scannedSerial: 'BBB',
+                scannedAddress: 'rOther',
+                outcome: { outcome: 'known', account: accounts[1] },
+            }),
+        ).toBe(
+            'Identify Tangem card: looking for AAA rSelected, ' +
+                'scanned: BBB rOther = In Xaman, different card: Travel rOther',
+        );
+
+        expect(
+            tangemIdentifySessionLog({
+                ...base,
+                scannedSerial: 'CCC',
+                scannedAddress: 'rNew',
+                outcome: { outcome: 'unknown' },
+            }),
+        ).toBe('Identify Tangem card: looking for AAA rSelected, scanned: CCC rNew = Not in Xaman');
     });
 });

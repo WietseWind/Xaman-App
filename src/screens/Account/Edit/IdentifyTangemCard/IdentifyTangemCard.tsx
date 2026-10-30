@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 
+import * as AccountLib from 'xrpl-accountlib';
+
 import RNTangemSdk from 'tangem-sdk-react-native';
 
 import LoggerService from '@services/LoggerService';
@@ -10,8 +12,13 @@ import { AccountModel } from '@store/models';
 
 import { accountListLabel } from '@common/helpers/accountListLabel';
 import { AppScreens } from '@common/constants';
-import { GetCardId } from '@common/utils/tangem';
-import { identifyScannedTangemSerial, TangemAccountRef, TangemIdentifyOutcome } from '@common/utils/tangemIdentify';
+import { GetCardId, GetWalletDerivedPublicKey } from '@common/utils/tangem';
+import {
+    identifyScannedTangemSerial,
+    tangemIdentifySessionLog,
+    TangemAccountRef,
+    TangemIdentifyOutcome,
+} from '@common/utils/tangemIdentify';
 
 import { Button } from '@components/General/Button';
 import { Footer } from '@components/General/Footer';
@@ -120,6 +127,7 @@ class IdentifyTangemCardView extends Component<Props, State> {
             });
 
             const card = await RNTangemSdk.scanCard();
+            const { account } = this.props;
 
             if (!this.mounted) {
                 return;
@@ -127,20 +135,34 @@ class IdentifyTangemCardView extends Component<Props, State> {
 
             let accounts: TangemAccountRef[] = [];
             try {
-                accounts = Array.from(AccountRepository.getAccounts()).map((account) => ({
-                    address: account.address,
-                    label: account.label,
-                    type: account.type,
-                    additionalInfo: account.additionalInfo,
+                accounts = Array.from(AccountRepository.getAccounts()).map((item) => ({
+                    address: item.address,
+                    label: item.label,
+                    type: item.type,
+                    additionalInfo: item.additionalInfo,
                 }));
             } catch (error) {
                 LoggerService.recordError('Tangem identify could not read accounts', error);
             }
 
-            const outcome = identifyScannedTangemSerial(
-                card?.cardId || GetCardId(card),
-                this.serial,
-                accounts,
+            const scannedSerial = card?.cardId || GetCardId(card);
+            const outcome = identifyScannedTangemSerial(scannedSerial, this.serial, accounts);
+            let scannedAddress = 'unknown';
+
+            try {
+                scannedAddress = AccountLib.utils.deriveAddress(GetWalletDerivedPublicKey(card));
+            } catch (error) {
+                LoggerService.recordError('Tangem identify could not derive the scanned address', error);
+            }
+
+            LoggerService.createLogger('Identify').debug(
+                tangemIdentifySessionLog({
+                    lookingForSerial: this.serial,
+                    lookingForAddress: account.address,
+                    scannedSerial,
+                    scannedAddress,
+                    outcome,
+                }),
             );
 
             this.setState({
