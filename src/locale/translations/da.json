@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Utilstrækkeligt beløb. Beløb, der kan indløses: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "En (ikke udløbet) Check kan kun annulleres af den konto, der har oprettet den, eller af modtagerkontoen.",
     "accountDeleteExchangeSupportWarning": "Bemærk: Når du sletter din XRP-ledger konto og sender den resterende saldo til en Exchange (kryptovalutabørs), skal du sørge for, at modtager-Exchangen understøtter indbetalinger med AccountDelete-transaktioner. Det gælder ikke for alle Exchanges. Du kan derfor skulle igennem en support-procedure med Exchangen for at sikre, at midlerne går ind på din konto.",
+    "escrowIrrevocableConditionWarning": "Denne escrow kan ikke annulleres. For at frigive den senere skal betingelsen opfyldes. Fortsæt kun, hvis du stoler på, at betingelsen kan opfyldes, eller at modparten leverer det nødvendige i tide.",
     "notVettedTokenTradeWarning": "Handel er på egen risiko! Den token, du er ved at handle med, er *** ikke blevet undersøgt * * *\r\n\r\nAlle kan oprette en token, herunder lave falske versioner af eksisterende tokens, som hævder at repræsentere projekter. Hvis du bytter denne token, kan du måske ikke sælge den tilbage. Du risikerer at sætte dine aktiver / opsparinger i fare!",
     "forcedSignersAccountsDoesNotExist": "Denne anmodning kan kun underskrives af\n\n%{accounts}\n\ndu har ikke denne konto.",
     "tradeEntireTokenWorthWarning": "Advarsel: mængden af %{currency} er lig med eller større end din samlede beholdning af dette token.",

@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Недовољан износ, готовински износ: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "Чек (који није истекао) може да откаже само рачун који га је креирао или одредишни рачун.",
     "accountDeleteExchangeSupportWarning": "Напомена: приликом брисања XRP рачуна главне књиге и слања преосталог стања на мењачницу, уверите се да одредишна мењачница подржава депозите користећи АццоунтДелете трансакције. Не врше све размене, што резултира поступком подршке размени да би се ваша средства књижила на ваш рачун",
+    "escrowIrrevocableConditionWarning": "Овај escrow се не може отказати. Касније ослобађање захтева да услов буде испуњен. Наставите само ако верујете да услов може бити испуњен или да ће друга страна на време дати оно што је потребно.",
     "notVettedTokenTradeWarning": "Тргуј по свом ризику! Токен који сте се о трговини ** није проверен * *.\n\nСвако може да створи токен, укључујући креирање лажних верзија постојећих токена који тврде да представљају пројекте. Ако замените овај токен, можда нећете бити у могућности да га прода назад. Ви сте потенцијално стављање своје имовине/уштеде у ризику!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",

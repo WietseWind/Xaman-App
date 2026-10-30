@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Kantite lajan ensifizan, montan kasab: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "Yon chèk (ki pa ekspire) kapab sèlman anile pa kont lan ki te kreye li oswa kont destinasyon an.",
     "accountDeleteExchangeSupportWarning": "Remak: lè efase kont XRP Ledger ou epi voye balans ki rete a nan yon echanj, asire w ke echanj destinasyon an sipòte depo lè l sèvi avèk tranzaksyon AccountDelete. Se pa tout echanj fè, ki rezilta nan yon pwosedi sipò ak echanj la jwenn lajan ou kredite nan kont ou",
+    "escrowIrrevocableConditionWarning": "Eskwo sa a pa ka anile. Pou lage l pita, kondisyon an dwe satisfè. Kontinye sèlman si ou fè konfyans kondisyon an ka satisfè, oswa lòt pati a pral bay sa ki nesesè a lè.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Demann sa a ka sèlman siyen pa\n\n %{accounts}\n\nKont sa a (yo) pa egziste nan Xaman ou.",
     "tradeEntireTokenWorthWarning": "Atansyon: kantite %{currency} egal oswa pi wo pase total balans ou. Sa ap echanje tout jeton ou an.",

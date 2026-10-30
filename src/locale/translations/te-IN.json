@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "తగిన మొత్తము, క్యాష్ చేయదగిన మొత్తం: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "(గడువు ముగియని) చెక్ అది సృష్టించిన ఖాతా లేదా గమ్యం ఖాతా ద్వారా మాత్రమే రద్దు చేయబడుతుంది.",
     "accountDeleteExchangeSupportWarning": "గమనిక: మీ XRP లెడ్జర్ ఖాతాను తొలగించి, మిగిలిన బ్యాలెన్స్‌ను ఎక్స్ఛేంజికి పంపేటప్పుడు, గమ్యం మార్పిడి 'అకౌంట్ డిలీట్' లావాదేవీల ద్వారా డిపాజిట్లకు మద్దతు ఇస్తుందని నిర్ధారించుకోండి. అన్ని ఎక్స్ఛేంజీలు చేయవు, ఇది మీ నిధులను మీ ఖాతాకు జమ చేయడానికి ఎక్స్ఛేంజ్తో మద్దతు టికెట్ తెరవవలసిన అవసరానికి దారితీయవచ్చు.",
+    "escrowIrrevocableConditionWarning": "ఈ ఎస్క్రోను రద్దు చేయలేరు. తర్వాత విడుదల చేయాలంటే షరతు నెరవేరాలి. షరతు నెరవేరుతుందని లేదా ఇతర పక్షం అవసరమైనది సమయానికి ఇస్తుందని నమ్మితేనే కొనసాగండి.",
     "notVettedTokenTradeWarning": "మీ స్వంత పూచీతో వ్యాపారం చేయండి! మీరు వర్తకం చేయబోతున్న టోకెన్ **వెట్ చేయబడలేదు**.\r\n\r\nప్రాజెక్ట్‌లకు ప్రాతినిధ్యం వహిస్తున్నట్లు క్లెయిమ్ చేసే ప్రస్తుత టోకెన్‌ల నకిలీ వెర్షన్‌లను సృష్టించడంతోపాటు ఎవరైనా టోకెన్‌ను సృష్టించవచ్చు. మీరు ఈ టోకెన్‌ను వ్యాపారం చేస్తే, మీరు దానిని తిరిగి విక్రయించలేకపోవచ్చు. మీరు సంభావ్యంగా మీ ఆస్తులు/పొదుపులను ప్రమాదంలో పడేస్తున్నారు!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",

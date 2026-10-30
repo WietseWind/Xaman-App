@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "अपुरी रक्कम, रोख रक्कम: %{amount} %{currency}\r\n",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "ए (कालबाह्य न झालेला) चेक केवळ तयार केलेल्या खात्याने किंवा गंतव्य खाते रद्द केले जाऊ शकते.",
     "accountDeleteExchangeSupportWarning": "टीपः आपले एक्सआरपी लेजर खाते हटवताना आणि उर्वरित शिल्लक एक्सचेंजला पाठविताना, गंतव्य एक्सचेंज खाते हटविणार्‍या व्यवहाराचा वापर करुन ठेवींचे समर्थन करते याची खात्री करा. सर्व एक्सचेंजेस करत नाहीत, ज्याचा परिणाम असा होतो की एक्सचेंजसह समर्थन प्रक्रियेचा परिणाम आपल्या खात्यात आपल्या खात्यात जमा होईल",
+    "escrowIrrevocableConditionWarning": "हे एस्क्रो रद्द करता येत नाही. नंतर सोडण्यासाठी अट पूर्ण व्हावी लागते. अट पूर्ण होऊ शकते किंवा दुसरी बाजू वेळेत आवश्यक गोष्ट देईल यावर विश्वास असल्यासच पुढे जा.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",

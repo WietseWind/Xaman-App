@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "كمية غير كافية ، المبلغ القابل للصرف: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "A (غير منتهية الصلاحية) الاختيار لا يمكن إلغاؤها من قبل الحساب الذي أنشأه أو حساب الوجهة.",
     "accountDeleteExchangeSupportWarning": "ملاحظة: عند حذف حساب دفتر الأستاذ XRP الخاص بك وإرسال الرصيد المتبقي إلى البورصة ، تأكد من أن بورصة الوجهة تدعم الودائع باستخدام AccountDelete معاملات. لا تفعل كل عمليات التبادل ، مما يؤدي إلى إجراء دعم مع البورصة للحصول على أموالك في حسابك",
+    "escrowIrrevocableConditionWarning": "لا يمكن إلغاء هذا الضمان. يتطلب تحريره لاحقًا استيفاء الشرط. تابع فقط إذا كنت تثق بإمكانية استيفاء الشرط، أو بأن الطرف الآخر سيقدّم المطلوب في الوقت المناسب.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "يمكن التوقيع على هذا الطلب فقط من قبل \n\n%{accounts}\n\nهذه الحسابات غير موجودة مع حق الوصول للتوقيع.",
     "tradeEntireTokenWorthWarning": "تحذير: مبلغ %{currency} يساوي أو أعلى من رصيدك %{currency} لهذا الأصل. إذا تم تنفيذ هذا العرض، ستقوم بتصفية موضعك %{currency} بالكامل.",

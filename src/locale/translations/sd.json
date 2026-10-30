@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "ناڪافي رقم, ٻاهر ڪڍو رقم: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "هڪ (غير مدي وارو) چيڪ صرف ان اڪائونٽ تان منسوخ ڪري سگھجي ٿو جيڪو ان کي ٺاهي يا منزل وارو اڪائونٽ.",
     "accountDeleteExchangeSupportWarning": "ياداشت: جڏهن توهان جي ايڪس آر پي ليجر اڪائونٽ کي خارج ڪندي ۽ ايڪسچينج ۾ باقي بيلنس موڪليندي ، پڪ ڪريو ته منزل ايڪسچينج AccountDelete ٽرانزيڪشن کي استعمال ڪندي جمعن جي حمايت ڪندو آهي نه سڀئي تبادلا ڪن ، جنهن جو نتيجو توهان جي پئسن جي اڪائونٽ ۾ پنهنجو فنڊ حاصل ڪرڻ لاءِ ايڪسچينج سان سپورٽ طريقيڪار آهي",
+    "escrowIrrevocableConditionWarning": "هن ايسڪرو کي منسوخ نٿو ڪري سگهجي. بعد ۾ ڇڏڻ لاءِ شرط پورو ٿيڻ گهرجي. صرف تڏهن اڳتي وڌو جڏهن توهان کي ڀروسو هجي ته شرط پورو ٿي سگهي ٿو، يا ٻيو طرف گهربل شيءِ وقت تي ڏيندو.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "مجبور دستخط ڪندڙ اڪائونٽ موجود نه آھي",
     "tradeEntireTokenWorthWarning": "مڪمل ٽوڪن جي قيمت واپار جي خبرداري",

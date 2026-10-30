@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "ಸಾಕಷ್ಟು ಮೊತ್ತ, ಕ್ಯಾಶಬಲ್ ಮೊತ್ತ: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "ಎ (ಅವಧಿ ಮೀರದ) ಚೆಕ್ ಅನ್ನು ರಚಿಸಿದ ಖಾತೆ ಅಥವಾ ಗಮ್ಯಸ್ಥಾನ ಖಾತೆಯಿಂದ ಮಾತ್ರ ರದ್ದುಗೊಳಿಸಬಹುದು.",
     "accountDeleteExchangeSupportWarning": "ಗಮನಿಸಿ: ನಿಮ್ಮ ಎಕ್ಸ್‌ಆರ್‌ಪಿ ಲೆಡ್ಜರ್ ಖಾತೆಯನ್ನು ಅಳಿಸುವಾಗ ಮತ್ತು ಉಳಿದ ಮೊತ್ತವನ್ನು ವಿನಿಮಯ ಕೇಂದ್ರಕ್ಕೆ ಕಳುಹಿಸುವಾಗ, ಗಮ್ಯಸ್ಥಾನ ವಿನಿಮಯವು ಅಕೌಂಟ್‌ಲೀಟ್ ವಹಿವಾಟುಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಠೇವಣಿಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ. ಎಲ್ಲಾ ವಿನಿಮಯ ಕೇಂದ್ರಗಳು ಮಾಡುವುದಿಲ್ಲ, ಅದು ನಿಮ್ಮ ಹಣವನ್ನು ನಿಮ್ಮ ಖಾತೆಗೆ ಜಮಾ ಮಾಡಲು ವಿನಿಮಯದೊಂದಿಗೆ ಬೆಂಬಲ ಕಾರ್ಯವಿಧಾನಕ್ಕೆ ಕಾರಣವಾಗುತ್ತದೆ",
+    "escrowIrrevocableConditionWarning": "ಈ ಎಸ್ಕ್ರೋವನ್ನು ರದ್ದುಗೊಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಂತರ ಬಿಡುಗಡೆ ಮಾಡಲು ಷರತ್ತು ಪೂರೈಸಬೇಕು. ಷರತ್ತು ಪೂರೈಸಬಹುದು ಅಥವಾ ಇನ್ನೊಂದು ಪಕ್ಷ ಅಗತ್ಯವನ್ನು ಸಮಯಕ್ಕೆ ನೀಡುತ್ತದೆ ಎಂದು ನಂಬಿದರೆ ಮಾತ್ರ ಮುಂದುವರಿಯಿರಿ.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",

@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Yetarli bo'lmagan miqdor, naqd pul: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "Chekni (muddati tugamagan) faqat uni yaratgan yoki maqsadli hisob qaydnomasi bekor qilishi mumkin.",
     "accountDeleteExchangeSupportWarning": "Eslatma: XRP ledgeringizni o'chirishda va qolgan qoldiqni birjaga yuborishda, maqsadli almashinuv AccountDelete operatsiyalari yordamida depozitlarni qo'llab-quvvatlashiga ishonch hosil qiling. Hamma almashinuvlar amalga oshirilmaydi, natijada sizning mablag'laringizni hisobingizga olish uchun birjani qo'llab-quvvatlash jarayoni amalga oshiriladi",
+    "escrowIrrevocableConditionWarning": "Bu eskrouni bekor qilib bo‘lmaydi. Keyinroq ozod qilish uchun shart bajarilishi kerak. Shart bajarilishiga yoki qarshi tomon keraklisini o‘z vaqtida berishiga ishonsangizgina davom eting.",
     "notVettedTokenTradeWarning": "O'z xavfi savdo! Agar savdo haqida belgi * * vetted qilinmagan**.\r\n\r\nHar bir inson, shu jumladan, loyihalarni taqdim etishni talab qiladigan mavjud belgilarning soxta versiyalarini yaratishi mumkin. Agar siz ushbu tovarni sotsangiz, uni qaytarib sotolmaysiz. Potentsial xavfi sizning aktivlar/omonat qo'yib bor!",
     "forcedSignersAccountsDoesNotExist": "Bu so'rovni faqat quyidagilar imzolashi mumkin\n\n%{accounts}\n\nBu hisoblar hali mavjud emas yoki ular faollashtirilmagan.",
     "tradeEntireTokenWorthWarning": "Ogohlantirish: %{currency} miqdori sizning butun %{currency} balansingizga teng yoki undan ortiq.",

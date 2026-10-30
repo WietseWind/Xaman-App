@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "অপর্যাপ্ত পরিমাণ, নগদ পরিমাণ: %{amount} %{currency}\r\n",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "এ (মেয়াদোত্তীর্ণ না হওয়া) চেক কেবলমাত্র সেই অ্যাকাউন্ট বা গন্তব্য অ্যাকাউন্ট তৈরি করে তা বাতিল করা যেতে পারে।",
     "accountDeleteExchangeSupportWarning": "নোট: যখন আপনার XRP খতিয়ান অ্যাকাউন্ট মোছা এবং একটি বিনিময় বাকি ভারসাম্য পাঠানোর, নিশ্চিত করুন গন্তব্য বিনিময় সমর্থন AccountDelete লেনদেনের ব্যবহার আমানত আছে। সমস্ত এক্সচেঞ্জগুলি করে না, যা আপনার অ্যাকাউন্টে আপনার তহবিল জমা দেওয়ার জন্য এক্সচেঞ্জের সাথে একটি সহায়তা পদ্ধতির ফলাফল করে",
+    "escrowIrrevocableConditionWarning": "এই এস্ক্রো বাতিল করা যাবে না। পরে ছাড়তে হলে শর্ত পূরণ করতে হবে। শুধু তখনই এগোন যখন আপনি বিশ্বাস করেন শর্ত পূরণ হতে পারে, অথবা অন্য পক্ষ সময়মতো প্রয়োজনীয়টা দেবে।",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "এই অনুরোধ শুধুমাত্র স্বাক্ষর করা যেতে পারে\n\n%{accounts}\n\nএই অ্যাকাউন্টগুলি স্বাক্ষর অ্যাক্সেস সহ উপস্থিত নেই।",
     "tradeEntireTokenWorthWarning": "সতর্কতা: %{currency} এর পরিমাণ আপনার এই সম্পদের %{currency} ব্যালেন্সের সমান বা বেশি",

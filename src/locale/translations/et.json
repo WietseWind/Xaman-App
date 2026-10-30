@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Ebapiisav summa, väljastatav summa:  %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "Mitteaegunud kontrolli saab tühistada ainult kontoga, mis lõi selle või sihtkoha konto.",
     "accountDeleteExchangeSupportWarning": "Märkus: XRPL konto kustutamisel ja ülejäänud saldo saatmisel vahetusele veenduge, et sihtkoha vahetus toetab hoiuseid, mis kasutavad raamatupidamisega seotud tehinguid. Mitte kõik vahetused ei tee seda. Selle tulemusena võib teil vaja minna tehnilisetoe abi, et saada oma kontole krediteeritud raha.",
+    "escrowIrrevocableConditionWarning": "Seda escrow’d ei saa tühistada. Hilisem vabastamine nõuab tingimuse täitmist. Jätka ainult siis, kui usaldad, et tingimus on täidetav või et teine pool annab vajaliku õigel ajal.",
     "notVettedTokenTradeWarning": "Vaheta omal vastutusel! Token, mida kavatsed vahetada, **ei ole kontrollitud**.\r\n\r\nIgaüks saab luua tokeni, sealhulgas võltsversioone olemasolevatest tokenitest, mis väidavad, et esindavad projekte. Kui vahetad seda tokenit, ei pruugi sa suuta seda tagasi müüa. Sa võid potentsiaalselt ohustada oma varasid/säästusid!",
     "forcedSignersAccountsDoesNotExist": "Seda taotlust saavad allkirjastada ainult \n\n %{accounts} \n\nNeed kontod ei ole olemas allkirjastamisõigusega.",
     "tradeEntireTokenWorthWarning": "Hoiatus: %{currency} summa võrdub või ületab sinu %{currency} saldot selle vara puhul. Kui see pakkumine täidetakse, likvideerid täielikult oma %{currency} positsiooni.",

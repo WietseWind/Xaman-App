@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "סכום לא מספיק, סכום הניתן במזומן: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "צ'ק (שלא פג תוקפו) יכול לבטל רק על ידי החשבון שיצר אותו או חשבון היעד.",
     "accountDeleteExchangeSupportWarning": "הערה: בעת מחיקת חשבון ספר XRP ושליחת היתרה הנותרת לבורסה, וודא כי בורסת היעד תומכת בהפקדות באמצעות עסקאות מחק מחיקה. לא כל הבורסות עושות זאת, מה שמביא להליך תמיכה עם הבורסה כדי לזכות את כספיך בחשבונך",
+    "escrowIrrevocableConditionWarning": "לא ניתן לבטל את ה-escrow הזה. שחרור מאוחר יותר מחייב שהתנאי יתקיים. המשיכו רק אם אתם סומכים על כך שהתנאי יכול להתקיים, או שהצד השני יספק את הנדרש בזמן.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "ניתן לחתום על בקשה זו רק על ידי\n\n%{accounts}\n\nחשבונות אלה אינם קיימים עם גישה לחתימה.",
     "tradeEntireTokenWorthWarning": "אזהרה: כמות %{currency} שווה או גבוהה מיתרת %{currency} שלך של נכס זה.",

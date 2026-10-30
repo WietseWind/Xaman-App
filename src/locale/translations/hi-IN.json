@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "अपर्याप्त राशि, आवरण योग्य राशि: %{amount} %{currency}\r\n",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "ए (नॉन एक्सपायर्ड) चेक केवल उसी खाते से रद्द किया जा सकता है जिसने इसे या गंतव्य खाता बनाया था.",
     "accountDeleteExchangeSupportWarning": "ध्यान दें: जब आपके एक्सआरपी खाता बही खाते को हटा दिया जाता है और शेष राशि को एक एक्सचेंज में भेज दिया जाता है, तो सुनिश्चित करें कि गंतव्य एक्सचेंज खाताधारक लेनदेन का उपयोग करके जमा का समर्थन करता है। सभी एक्सचेंज नहीं करते हैं, जिसके परिणामस्वरूप आपके खाते में आपके फंड जमा करने के लिए एक्सचेंज के साथ एक समर्थन प्रक्रिया होती है",
+    "escrowIrrevocableConditionWarning": "इस एस्क्रो को रद्द नहीं किया जा सकता। बाद में जारी करने के लिए शर्त पूरी होनी चाहिए। तभी आगे बढ़ें जब आपको भरोसा हो कि शर्त पूरी हो सकती है, या दूसरा पक्ष समय पर ज़रूरी चीज़ देगा।",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "यह अनुरोध केवल \n\n%{accounts}\n\nद्वारा हस्ताक्षरित किया जा सकता है",
     "tradeEntireTokenWorthWarning": "चेतावनी: %{currency} की राशि आपके संपूर्ण टोकन मूल्य के बराबर या अधिक है",
