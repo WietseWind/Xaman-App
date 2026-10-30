@@ -19,6 +19,7 @@ import AccountList from './Account/List';
 import AccountEdit from './Account/Edit';
 import AccountChangePassphrase from './Account/Edit/ChangePassphrase';
 import AccountChangeTangemSecurity from './Account/Edit/ChangeTangemSecurity';
+import AccountIdentifyTangemCard from './Account/Edit/IdentifyTangemCard';
 import AccountCipherMigrationView from './Account/Migration/CipherMigration';
 
 // Modals
@@ -114,6 +115,7 @@ export {
     AccountEdit,
     AccountChangePassphrase,
     AccountChangeTangemSecurity,
+    AccountIdentifyTangemCard,
     AccountImport,
     AccountGenerate,
     AccountCipherMigrationView,

@@ -26,6 +26,7 @@ import { PickerModalProps } from '@screens/Global/Picker';
 import { AccountImportViewProps } from '@screens/Account/Add/Import';
 import { ChangePassphraseViewProps } from '@screens/Account/Edit/ChangePassphrase';
 import { ChangeTangemSecurityViewProps } from '@screens/Account/Edit/ChangeTangemSecurity';
+import { IdentifyTangemCardViewProps } from '@screens/Account/Edit/IdentifyTangemCard';
 import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { PassphraseAuthenticationOverlayProps } from '@screens/Overlay/PassphraseAuthentication';
 
@@ -237,6 +238,12 @@ class AccountSettingsView extends Component<Props, State> {
         Navigator.push<ChangePassphraseViewProps>(AppScreens.Account.Edit.ChangePassphrase, { account });
     };
 
+    showIdentifyTangemCard = () => {
+        const { account } = this.state;
+
+        Navigator.push<IdentifyTangemCardViewProps>(AppScreens.Account.Edit.IdentifyTangemCard, { account });
+    };
+
     showChangeTangemSecurity = () => {
         const { account } = this.props;
         Navigator.push<ChangeTangemSecurityViewProps>(AppScreens.Account.Edit.ChangeTangemSecurityEnforce, { account });
@@ -291,13 +298,16 @@ class AccountSettingsView extends Component<Props, State> {
     };
 
     onRemovePress = () => {
+        const { account } = this.state;
+        const tangemCard = account.type === AccountTypes.Tangem;
+
         Prompt(
             Localize.t('global.warning'),
-            Localize.t('account.accountRemoveWarning'),
+            Localize.t(tangemCard ? 'account.accountRemoveTangemWarning' : 'account.accountRemoveWarning'),
             [
                 { text: Localize.t('global.cancel') },
                 {
-                    text: Localize.t('global.doIt'),
+                    text: Localize.t(tangemCard ? 'global.ok' : 'global.doIt'),
                     onPress: this.onAccountRemoveRequest,
                     style: 'destructive',
                 },
@@ -420,20 +430,36 @@ class AccountSettingsView extends Component<Props, State> {
                                 {Localize.t('global.address')}
                             </Text>
 
-                            <Text numberOfLines={1} selectable style={styles.address}>
+                            <Text
+                                selectable
+                                textBreakStrategy="simple"
+                                style={[styles.address, styles.cardDetailValue]}
+                            >
                                 {account.address}
                             </Text>
                         </View>
 
                         {account.type === AccountTypes.Tangem && (
                             <View style={styles.row}>
-                                <Text numberOfLines={1} style={styles.label} testID="tangem-card-id">
+                                <Text style={[styles.label, styles.cardIdLabel]} testID="tangem-card-id">
                                     {Localize.t('account.cardId')}
                                 </Text>
-
-                                <Text selectable style={styles.address}>
+                                <Text
+                                    selectable
+                                    textBreakStrategy="simple"
+                                    style={[styles.address, styles.cardDetailValue]}
+                                >
                                     {GetCardId(account.additionalInfo!)}
                                 </Text>
+                                <Button
+                                    testID="identify-tangem-button"
+                                    style={styles.identifyButton}
+                                    label={Localize.t('account.identify')}
+                                    icon="IconScanCard"
+                                    onPress={this.showIdentifyTangemCard}
+                                    roundedMini
+                                    nonBlock
+                                />
                             </View>
                         )}
 
@@ -500,7 +526,7 @@ class AccountSettingsView extends Component<Props, State> {
                             </TouchableDebounce>
                         )}
                         {/* <Text style={styles.descriptionText}>{Localize.t('account.passwordOptionDesc')}</Text> */}
-                        {account.accessLevel === AccessLevels.Full && (
+                        {account.accessLevel === AccessLevels.Full && account.type !== AccountTypes.Tangem && (
                             <Fragment key="security">
                                 {/* Encryption Label */}
                                 <View style={styles.row}>

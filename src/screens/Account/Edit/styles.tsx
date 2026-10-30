@@ -81,6 +81,19 @@ const styles = StyleService.create({
         textAlign: 'right',
         color: '$grey',
     },
+    identifyButton: {
+        marginLeft: AppSizes.paddingExtraSml,
+    },
+    cardIdLabel: {
+        paddingRight: AppSizes.paddingExtraSml,
+        maxWidth: '28%',
+    },
+    cardDetailValue: {
+        flex: 1,
+        textAlign: 'right',
+        fontSize: AppFonts.small.size,
+        writingDirection: 'ltr',
+    },
     descriptionText: {
         padding: AppSizes.paddingSml,
         fontFamily: AppFonts.base.familyBold,

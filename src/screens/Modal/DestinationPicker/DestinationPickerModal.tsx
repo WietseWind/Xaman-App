@@ -17,6 +17,7 @@ import { AppScreens } from '@common/constants';
 import { Destination } from '@common/libs/ledger/parser/types';
 
 import { Toast } from '@common/helpers/interface';
+import { accountListLabel, sortAccountsByLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { tryNormalizeDestination } from '@common/utils/codec';
@@ -193,12 +194,14 @@ class DestinationPickerModal extends Component<Props, State> {
 
             // search for accounts
             accounts.forEach((item) => {
+                const name = accountListLabel(item);
+
                 if (
-                    item.label?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
+                    name.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
                     item.address?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1
                 ) {
                     searchResult.push({
-                        name: item.label,
+                        name,
                         address: item.address,
                         source: 'accounts',
                     });
@@ -280,8 +283,8 @@ class DestinationPickerModal extends Component<Props, State> {
         if (accounts && accounts.length !== 0) {
             dataSource.push({
                 title: Localize.t('account.myAccounts'),
-                data: flatMap(accounts, (a) => {
-                    return { name: a.label, address: a.address };
+                data: flatMap(sortAccountsByLabel(Array.from(accounts)), (a) => {
+                    return { name: accountListLabel(a), address: a.address };
                 }),
             });
         }

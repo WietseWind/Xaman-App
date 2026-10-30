@@ -1,5 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
 
+import { readableAppVersion } from './readableAppVersion';
+
 const { AppUtilsModule } = NativeModules;
 
 /**
@@ -20,7 +22,11 @@ const GetAppBuildNumber = (): string => {
  * Get a readable app version, combination of app version code and build number
  */
 const GetAppReadableVersion = (): string => {
-    return `${GetAppVersionCode()}.${GetAppBuildNumber()}`;
+    return readableAppVersion(
+        GetAppVersionCode(),
+        GetAppBuildNumber(),
+        Platform.OS === 'android' ? 'android' : 'ios',
+    );
 };
 
 /**
