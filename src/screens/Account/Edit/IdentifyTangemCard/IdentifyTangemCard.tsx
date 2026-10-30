@@ -206,7 +206,7 @@ class IdentifyTangemCardView extends Component<Props, State> {
             }
 
             stage = 'scan';
-            const card = await RNTangemSdk.scanCard({ initialMessage: Localize.t('account.tangemScanHint') });
+            const card = await RNTangemSdk.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } });
             const { account } = this.props;
 
             if (!this.mounted || this.exiting) {

@@ -102,7 +102,15 @@ const expectFullText = (tree: ReactTestRenderer, value: string) => {
 beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(RNTangemSdk.startSession).mockReset().mockResolvedValue(undefined);
-    jest.mocked(RNTangemSdk.scanCard).mockReset().mockResolvedValue({ cardId: selectedSerial } as any);
+    jest.mocked(RNTangemSdk.scanCard).mockReset().mockImplementation(async (options) => {
+        const message = options?.initialMessage;
+        // Both installed native parsers expect a map. Android's getMap throws
+        // before NFC starts when a translated string is supplied directly.
+        if (message !== undefined && (!message || typeof message !== 'object' || Array.isArray(message))) {
+            throw Object.assign(new Error('initialMessage must be a map'), { code: '9999' });
+        }
+        return { cardId: selectedSerial } as any;
+    });
     jest.mocked(RNTangemSdk.stopSession).mockReset().mockResolvedValue(undefined);
     jest.mocked(Navigation.pop).mockReset().mockResolvedValue(componentId);
     jest.mocked(AccountRepository.getAccounts).mockReturnValue([selected, other] as any);
@@ -226,8 +234,10 @@ describe('Tangem Identify owns the start/scan/stop lifecycle', () => {
         });
         expect(RNTangemSdk.scanCard).toHaveBeenCalledTimes(1);
         expect(RNTangemSdk.scanCard).toHaveBeenCalledWith({
-            initialMessage: Localize.t('account.tangemScanHint'),
+            initialMessage: { body: Localize.t('account.tangemScanHint') },
         });
+        expect(text(tree, Localize.t('account.tangemRightCard'))).toBeDefined();
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 
     it('waits for a pending start on exit, stops its acquired session and never starts a late scan', async () => {
