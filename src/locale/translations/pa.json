@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "ਨਾਕਾਫੀ ਰਕਮ, ਕੈਸ਼ੇਬਲ ਰਕਮ: %{amount} %{currency}\r\n",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "ਇੱਕ (ਗ਼ੈਰ ਮਿਆਦ ਪੁੱਗੀ) ਚੈੱਕ ਸਿਰਫ ਉਸ ਖਾਤੇ ਦੁਆਰਾ ਰੱਦ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ ਜਿਸਨੇ ਇਸਨੂੰ ਬਣਾਇਆ ਜਾਂ ਮੰਜ਼ਿਲ ਖਾਤਾ ਬਣਾਇਆ.",
     "accountDeleteExchangeSupportWarning": "ਨੋਟ: ਜਦੋਂ ਤੁਹਾਡੇ ਐਕਸਆਰਪੀ ਲੇਜਰ ਖਾਤੇ ਨੂੰ ਮਿਟਾਉਣਾ ਅਤੇ ਬਾਕੀ ਬਕਾਇਆ ਐਕਸਚੇਂਜ ਤੇ ਭੇਜਣਾ, ਇਹ ਸੁਨਿਸ਼ਚਿਤ ਕਰੋ ਕਿ ਮੰਜ਼ਿਲ ਐਕਸਚੇਂਜ ਅਕਾਉਂਟ ਡਿਲੀਟ ਟ੍ਰਾਂਜੈਕਸ਼ਨਾਂ ਦੀ ਵਰਤੋਂ ਨਾਲ ਜਮ੍ਹਾਂ ਰਕਮ ਦਾ ਸਮਰਥਨ ਕਰਦਾ ਹੈ. ਸਾਰੇ ਐਕਸਚੇਂਜ ਨਹੀਂ ਕਰਦੇ, ਜਿਸਦੇ ਨਤੀਜੇ ਵਜੋਂ ਤੁਹਾਡੇ ਫੰਡਾਂ ਨੂੰ ਤੁਹਾਡੇ ਖਾਤੇ ਵਿੱਚ ਜਮਾਂ ਕਰਾਉਣ ਲਈ ਐਕਸਚੇਂਜ ਦੇ ਨਾਲ ਇੱਕ ਸਹਾਇਤਾ ਵਿਧੀ ਹੁੰਦੀ ਹੈ",
+    "escrowIrrevocableConditionWarning": "ਇਸ ਐਸਕ੍ਰੋ ਨੂੰ ਰੱਦ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਬਾਅਦ ਵਿੱਚ ਛੱਡਣ ਲਈ ਸ਼ਰਤ ਪੂਰੀ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ। ਸਿਰਫ਼ ਤਾਂ ਹੀ ਅੱਗੇ ਵਧੋ ਜੇ ਤੁਹਾਨੂੰ ਭਰੋਸਾ ਹੈ ਕਿ ਸ਼ਰਤ ਪੂਰੀ ਹੋ ਸਕਦੀ ਹੈ, ਜਾਂ ਦੂਜੀ ਧਿਰ ਲੋੜੀਂਦਾ ਸਮੇਂ ਸਿਰ ਦੇਵੇਗੀ।",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",

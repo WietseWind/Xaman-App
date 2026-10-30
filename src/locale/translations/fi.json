@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Riittämätön määrä, muutettavissa oleva määrä: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "(Vanhentumattoman) tarkistuksen voi peruuttaa vain se tili, joka on luonut sen tai kohdetilin.",
     "accountDeleteExchangeSupportWarning": "Huomautus: kun poistat XRP-tilikirjan tilin ja lähetät jäljellä olevan saldon pörssiin, varmista, että määräpaikan pörssi tukee talletuksia, joissa käytetään Tilinlopetus-transaktioita. Kaikki pörssit eivät niin tee, mikä johtaa tukimenettelyyn pörssin kanssa, että varat hyvitetään tilillesi",
+    "escrowIrrevocableConditionWarning": "Tätä escrow’ta ei voi peruuttaa. Sen vapauttaminen myöhemmin edellyttää, että ehto täyttyy. Jatka vain, jos luotat siihen, että ehto voidaan täyttää tai että vastapuoli toimittaa tarvittavan ajoissa.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Tämä pyyntö voidaan allekirjoittaa vain tilillä\r\n\r\n %{accounts}\r\n\r\nTämä tili ei ole Xaman-sovelluksessasi.",
     "tradeEntireTokenWorthWarning": "Varoitus: %{currency} määrä on yhtä suuri tai suurempi kuin hallussasi oleva määrä",

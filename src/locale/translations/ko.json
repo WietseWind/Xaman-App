@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "금액 부족, 현금화 가능 금액: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "(만료되지 않은) Check는 그 Check를 발행한 계정이나 목적지 계정에서만 취소할 수 있습니다.",
     "accountDeleteExchangeSupportWarning": "주: XRP 원장 계정을 삭제하고 잔액을 거래소로 보내는 경우, 그 거래소가 계정 삭제 트랜잭션의 잔액 입금을 지원하는지 확인합니다. 모든 거래소가 거래소로 입금된 자금이 내 계정에 들어오도록 지원하는 것은 아닙니다.",
+    "escrowIrrevocableConditionWarning": "이 에스크로는 취소할 수 없습니다. 나중에 해제하려면 조건이 충족되어야 합니다. 조건을 충족할 수 있다고 믿거나, 상대가 필요한 것을 제때 제공할 것이라고 믿을 때만 계속하세요.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",

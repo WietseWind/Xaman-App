@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "અપૂરતી રકમ, કેશ કરવા યોગ્ય રકમ: %{amount} %{currency}\r\n",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "એ (નિવૃત્ત થયેલ) ચેક ફક્ત તે ખાતા દ્વારા રદ કરી શકાય છે જેણે તેને બનાવ્યું અથવા લક્ષ્યસ્થાન ખાતું.",
     "accountDeleteExchangeSupportWarning": "નોંધ: જ્યારે તમારા XRP ખાતાવહી એકાઉન્ટ કાઢી નાખવાથી અને વિનિમય બાકી સિલક મોકલવા માટે, ખાતરી કરો ગંતવ્ય વિનિમય ને સપોર્ટ એકાઉન્ટ ડિલીટ વ્યવહારો મદદથી થાપણો બનાવે છે. બધા વિનિમય કરતા નથી, જે તમારા ભંડોળને તમારા ખાતામાં જમા કરવા માટે વિનિમય સાથે સપોર્ટ પ્રક્રિયામાં પરિણમે છે",
+    "escrowIrrevocableConditionWarning": "આ એસ્ક્રો રદ કરી શકાતું નથી. પછી છોડવા માટે શરત પૂરી થવી જોઈએ. શરત પૂરી થઈ શકે અથવા બીજી પાર્ટી જરૂરી વસ્તુ સમયસર આપશે તેમ વિશ્વાસ હોય તો જ આગળ વધો.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "જરૂરી હસ્તાક્ષરકર્તાઓના એકાઉન્ટ્સ અસ્તિત્વમાં નથી",
     "tradeEntireTokenWorthWarning": "તમે સંપૂર્ણ ટોકન મૂલ્યનો વેપાર કરી રહ્યાં છો",

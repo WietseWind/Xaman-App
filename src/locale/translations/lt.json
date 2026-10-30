@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Nepakankama suma, išgryninama suma: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "(Negaliojantis) check gali būti atšauktas tik sąskaitos, kuri jį sukūrė, arba paskirties sąskaitos.",
     "accountDeleteExchangeSupportWarning": "Pastaba: kai trinate sąskaitą ir siunčiate likusį balansą į biržą, įsitikinkite, kad paskirties birža palaiko įnešimus naudojant AccountDelete operacijas. Ne visos biržos tai daro, kas lemia palaikymo procedūrą su birža, kad lėšos būtų įskaitytos į jūsų sąskaitą",
+    "escrowIrrevocableConditionWarning": "Šio escrow negalima atšaukti. Vėlesniam paleidimui sąlyga turi būti įvykdyta. Tęskite tik jei pasitikite, kad sąlyga gali būti įvykdyta arba kita šalis laiku pateiks tai, ko reikia.",
     "notVettedTokenTradeWarning": "Prekiauk savo rizika! Žetonas, kuriuo ketinate prekiauti **nebuvo patikrintas**.\n\nBet kas gali sukurti žetoną, įskaitant esamų žetonų netikrų versijų kūrimą, kurie teigia atstovaujantys projektams. Jei prekiausite šiuo žetonu, galbūt negalėsite jo atgal parduoti. Potencialiai rizikuojate savo turtu/santaupomis!",
     "forcedSignersAccountsDoesNotExist": "Šis prašymas gali būti pasirašytas tik \n\n%{accounts}\n\nŠios sąskaitos nėra su pasirašymo prieiga.",
     "tradeEntireTokenWorthWarning": "Įspėjimas: %{currency} suma lygi arba didesnė už jūsų %{currency} šio turto balansą. Jei šis pasiūlymas bus įvykdytas, visiškai likviduosite savo %{currency} poziciją.",

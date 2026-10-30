@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Nedostatočná suma, peňažná čiastka: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "Šek (ktorého platnosť nevypršala) môže zrušiť iba účet ktorý ho vytvoril alebo cieľový účet.",
     "accountDeleteExchangeSupportWarning": "Poznámka: Pri odstraňovaní účtu hlavnej knihy XRP a odosielaní zostávajúceho zostatku na burzu sa uistite, že cieľová burza podporuje vklady pomocou transakcií AccountDelete. Nie všetky výmeny fungujú tak, čo vedie k postupu podpory výmeny, aby sa prostriedky pripísali na váš účet",
+    "escrowIrrevocableConditionWarning": "Toto escrow nemožno zrušiť. Neskoršie uvoľnenie vyžaduje splnenie podmienky. Pokračujte len vtedy, ak veríte, že podmienku možno splniť, alebo že protistrana včas dodá, čo treba.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Túto žiadosť môžu podpísať iba\n\n%{accounts}\n\nTieto účty nie sú prítomné s prístupom na podpisovanie.",
     "tradeEntireTokenWorthWarning": "Upozornenie: suma %{currency} sa rovná alebo je vyššia ako váš zostatok %{currency} tohto aktíva. Uistite sa, že vykonávate takúto výmenu vedome alebo upravte sumu.",

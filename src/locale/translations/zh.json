@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "金额不足，可兑现金额： %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "（未过期的）支票只能由创建它的帐户或目标帐户取消。",
     "accountDeleteExchangeSupportWarning": "注意：当删除您的 XRP Ledger 账户并将剩余余额发送到交易所时，请确保目标交易所支持使用 AccountDelete 交易进行存款。并非所有交易所都支持，这可能需要与交易所进行支持程序才能将资金记入您的账户",
+    "escrowIrrevocableConditionWarning": "此托管无法取消。以后释放资金必须满足该条件。仅当您相信条件可以实现，或对方会按时提供所需内容时再继续。",
     "notVettedTokenTradeWarning": "风险自负！您即将交易的代币**未经审核**。\r\n\r\n任何人都可以创建代币，包括创建声称代表项目的现有代币的假版本。如果您交易此代币，您可能无法将其卖回。您可能会使您的资产/储蓄面临风险！",
     "forcedSignersAccountsDoesNotExist": "此请求只能由以下账户签名\n\n%{accounts}\n\n这些账户不具有签名访问权限。",
     "tradeEntireTokenWorthWarning": "警告： %{currency} 的数量等于或高于您此资产的 %{currency} 余额。如果此报价被执行，您将完全清算您的 %{currency} 头寸。",

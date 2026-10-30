@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Nepietiekama summa, izmaksājama naudas summa: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "Pārbaudi (nepabeigtu)var atcelt tikai kontā, kurā tā uzsākta  vai galamērķa kontā.",
     "accountDeleteExchangeSupportWarning": "Piezīme: kad dzēšat savu XRP virsgrāmatas kontu un sūtat atlikušo bilanci uz biržu, pārliecinieties, ka galamērķa birža atbalsta ieskaitījumus, izmantojot konta dzēšanas un bilances pārskaitīšanas transakcijas. Ne visas biržas to atbalsta, kā rezultātā atbalsta procedūra nepieciešama, lai saņemtu savus naudas līdzekļus kontā",
+    "escrowIrrevocableConditionWarning": "Šo escrow nevar atcelt. Lai to vēlāk atbrīvotu, nosacījumam jābūt izpildītam. Turpiniet tikai tad, ja uzticaties, ka nosacījumu var izpildīt vai ka otra puse laikus sniegs vajadzīgo.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Šo pieprasījumu var parakstīt tikai \n\n %{accounts} \n\nŠie konti nav pieejami ar parakstīšanas piekļuvi.",
     "tradeEntireTokenWorthWarning": "Brīdinājums: %{currency} summa ir vienāda vai lielāka par jūsu %{currency} šī aktīva bilanci. Ja šis piedāvājums tiks izpildīts, jūs pilnībā likvidēsiet savu %{currency} pozīciju.",

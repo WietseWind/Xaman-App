@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "ناکافی رقم ، قابل رقم رقم: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": " (غیر میعاد ختم) چیک صرف اس اکاؤنٹ کے ذریعہ منسوخ کیا جاسکتا ہے جس نے اسے بنایا ہو یا منزل مقصود۔",
     "accountDeleteExchangeSupportWarning": "نوٹ: جب آپ کے XRP لیجر اکاؤنٹ کو حذف کرتے ہوئے اور بقایا بیلنس کو ایکسچینج میں بھیجتے ہیں تو ، یقینی بنائیں کہ منزل کا تبادلہ اکاؤنٹ ڈیلیٹ ٹرانزیکشنز کا استعمال کرکے ذخائر کی حمایت کرتا ہے۔ تمام ایکسچینجز نہیں کرتے ہیں ، جس کے نتیجے میں آپ کے فنڈز کو آپ کے اکاؤنٹ میں جمع کروانے کے لئے تبادلے میں مدد کا طریقہ کار برآمد ہوتا ہے",
+    "escrowIrrevocableConditionWarning": "اس ایسکرو کو منسوخ نہیں کیا جا سکتا۔ بعد میں جاری کرنے کے لیے شرط پوری ہونی چاہیے۔ صرف اسی صورت میں آگے بڑھیں جب آپ کو یقین ہو کہ شرط پوری ہو سکتی ہے، یا دوسری فریق مطلوبہ چیز بروقت دے گی۔",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "This request can only be signed by \n\n%{accounts}\n\nThis accounts are not present with signing access.",
     "tradeEntireTokenWorthWarning": "انتباہ: %{currency} کی رقم اس اثاثے کے آپ کے %{currency} بیلنس کے برابر یا زیادہ ہے۔ اگر یہ پیشکش عمل میں آئی، تو آپ اپنی %{currency} پوزیشن کو مکمل طور پر ختم کر دیں گے۔",

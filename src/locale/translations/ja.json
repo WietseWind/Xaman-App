@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "不十分な金額、現金化可能な金額： %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "（未期限切れ）Checkは、作成者または宛先アカウントのみがキャンセルできます。",
     "accountDeleteExchangeSupportWarning": "注: XRP Ledgerアカウントを削除し、残りの残高を取引所に送信する場合は、宛先の取引所が'AccountDelete'トランザクションを使用した入金をサポートfしていることを確認してください。すべての取引所が対応しているわけではありません。この場合、取引所のサポートチームに連絡して、お客様の口座に資金を入金してもらう必要があります。",
+    "escrowIrrevocableConditionWarning": "このエスクローはキャンセルできません。後で解放するには条件を満たす必要があります。条件を満たせると信頼できる場合、または相手が必要なものを期限内に用意する場合にのみ続行してください。",
     "notVettedTokenTradeWarning": "ご自身の責任で取引してください！あなたが取引しようとしているトークンは、**検証されていません**。\r\n\r\n誰でもトークンを作成することができ、プロジェクトを代表していると主張する既存のトークンの偽バージョンを作成することもできます。このトークンを取引すると、売り戻すことができなくなる可能性があります。あなたの資産/貯蓄を危険にさらす可能性があります！",
     "forcedSignersAccountsDoesNotExist": "このリクエストは以下のアカウントでのみ署名できます\n\n%{accounts}\n\nこれらのアカウントは署名アクセス権を持っていません。",
     "tradeEntireTokenWorthWarning": "警告： %{currency} の金額は、この資産の %{currency} 残高と同じかそれ以上です。このオファーが実行されると、 %{currency} ポジションを完全に清算することになります。",

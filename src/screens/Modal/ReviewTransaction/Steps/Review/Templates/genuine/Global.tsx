@@ -4,6 +4,9 @@ import { InteractionManager, Text, View } from 'react-native';
 
 import { MutatedTransaction, SignableTransaction, Transactions } from '@common/libs/ledger/transactions/types';
 
+import {
+    escrowNeedsIrrevocableConditionWarning,
+} from '@common/libs/ledger/transactions/genuine/EscrowCreate/escrowCreateWarning';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
 import { AmountParser } from '@common/libs/ledger/parser/common';
 
@@ -72,6 +75,10 @@ class GlobalTemplate extends Component<Props, State> {
             if (!find(AccountRepository.getSignableAccounts(), (o) => o.address === transaction.Destination)) {
                 warnings.push(Localize.t('payload.accountDeleteExchangeSupportWarning'));
             }
+        }
+
+        if (escrowNeedsIrrevocableConditionWarning(transaction)) {
+            warnings.push(Localize.t('payload.escrowIrrevocableConditionWarning'));
         }
 
         if (warnings.length > 0) {

@@ -1375,6 +1375,7 @@
     "insufficientCashAmount": "Utilstrekkelig beløp, tilgjengelig beløp: %{amount} %{currency}",
     "nonExpiredCheckCanOnlyCancelByCreatedAccount": "En (gyldig) sjekk kan bare bli kansellert av kontoen som opprettet den eller mottakerkontoen.",
     "accountDeleteExchangeSupportWarning": "Merk: Når du sletter XRP kontoen og sender den gjenværende saldoen til en kryptobank, må du sørge for at destinasjonsbanken støtter innskudd ved hjelp av AccountDelete-transaksjoner. Ikke alle børser gjør det, noe som resulterer i en supportsak med banken for å få pengene dine kreditert til kontoen din.",
+    "escrowIrrevocableConditionWarning": "Denne escrowen kan ikke kanselleres. For å frigi den senere må vilkåret oppfylles. Fortsett bare hvis du stoler på at vilkåret kan oppfylles, eller at motparten gir det som trengs i tide.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Denne forespørselen kan bare signeres av \n\n%{accounts}\n\nDisse kontoene er ikke tilstede med signeringstilgang.",
     "tradeEntireTokenWorthWarning": "Advarsel: mengden %{currency} er lik eller høyere enn din %{currency}-saldo for dette tokenet. Hvis dette tilbudet utføres, vil du fullt ut likvidere din %{currency}-posisjon.",
