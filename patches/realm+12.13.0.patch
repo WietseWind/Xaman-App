@@ -10,3 +10,27 @@ index bd53972e7e..db49c3f6d6 100644
  
  target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
  
+diff --git a/node_modules/realm/binding/jsi/react_scheduler.cpp b/node_modules/realm/binding/jsi/react_scheduler.cpp
+--- a/node_modules/realm/binding/jsi/react_scheduler.cpp
++++ b/node_modules/realm/binding/jsi/react_scheduler.cpp
+@@ -57,8 +57,20 @@
+     void invoke(realm::util::UniqueFunction<void()>&& func) override
+     {
++#ifdef __ANDROID__
++        // Legacy priority scheduling is JS-thread confined. Enter the runtime
++        // queue first, preserving upstream task ownership if either hop is dropped.
++        auto js_call_invoker = m_js_call_invoker;
++        js_call_invoker->invokeAsync([js_call_invoker, ptr = func.release()] {
++            js_call_invoker->invokeAsync(
++                facebook::react::SchedulerPriority::NormalPriority, [ptr] {
++                    (realm::util::UniqueFunction<void()>(ptr))();
++                });
++        });
++#else
+         m_js_call_invoker->invokeAsync(
+             // Using normal priority to avoid blocking rendering, user-input and other higher priority tasks
+             facebook::react::SchedulerPriority::NormalPriority, [ptr = func.release()] {
+                 (realm::util::UniqueFunction<void()>(ptr))();
+             });
++#endif
+     }
