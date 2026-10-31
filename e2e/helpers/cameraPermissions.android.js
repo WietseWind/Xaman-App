@@ -1,0 +1,228 @@
+const assert = require('assert');
+const { execFileSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const { device } = require('detox');
+const { takeNamedScreenshot } = require('./artifacts');
+const {
+    androidHasTestId,
+    androidDumpIncludes,
+    androidReadTextByTestId,
+    clickAndroidLabel,
+    clickByTestId,
+    enterAndroidPasscode,
+    tapByTestIdIfPresent,
+    waitUntilAndroidRnReady,
+    waitUntilAndroidTestId,
+} = require('./tapById');
+
+const APP = 'com.xrpllabs.xumm';
+const CAMERA = 'android.permission.CAMERA';
+const CASES = ['first-use-grant', 'first-use-deny', 'blocked-settings-return', 'granted-preview-and-close'];
+const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms); });
+
+const adb = (...args) => {
+    const serial = process.env.ANDROID_SERIAL || device.id;
+    // These tests reset runtime permissions. Never select a USB phone implicitly.
+    assert(/^emulator-\d+$/.test(serial), 'Camera permission tests require an Android emulator');
+    assert.strictEqual(serial, device.id, 'Camera permission emulator must be the Detox device');
+    return execFileSync('adb', ['-s', serial, ...args], { encoding: 'utf8', timeout: 15000 });
+};
+
+const waitUntil = async (condition, description, timeout = 15000) => {
+    const end = Date.now() + timeout;
+    do {
+        if (await condition()) return;
+        await sleep(300);
+    } while (Date.now() < end);
+    throw new Error(`Camera permission check timed out: ${description}`);
+};
+
+const cameraPermission = () => {
+    const user = adb('shell', 'am', 'get-current-user').trim();
+    const dump = adb('shell', 'dumpsys', 'package', APP);
+    const blocks = dump.split(/\n\s*User /);
+    const block = blocks.find(value => value.startsWith(`${user}:`) && value.includes('runtime permissions:'));
+    assert(block, 'Current Android user permission state must exist');
+    const row = block.match(/android\.permission\.CAMERA: granted=(true|false), flags=\[([^\]]*)\]/);
+    assert(row, 'Android must report CAMERA permission and flags');
+    return { granted: row[1] === 'true', flags: row[2].split('|').map(flag => flag.trim()).filter(Boolean) };
+};
+
+const systemPrompt = async () => {
+    const shown = (await androidDumpIncludes('permissioncontroller')) &&
+        ((await androidHasTestId('permission_allow_foreground_only_button')) ||
+            (await androidHasTestId('permission_allow_button')));
+    return shown;
+};
+
+const noSystemPrompt = async (duration = 1500) => {
+    const end = Date.now() + duration;
+    do {
+        assert(!(await systemPrompt()), 'Camera permission must not open another system prompt automatically');
+        await sleep(300);
+    } while (Date.now() < end);
+};
+
+const snapshot = (caseName, stage, events) => {
+    const permission = cameraPermission();
+    const cameraAppOps = adb('shell', 'appops', 'get', APP, 'CAMERA').trim();
+    events.push({ stage, permission, cameraAppOps });
+    takeNamedScreenshot(`camera-${caseName}-${events.length}-${stage}`);
+    return permission;
+};
+
+const restart = async () => {
+    await device.launchApp({
+        newInstance: true,
+        // Camera is deliberately absent: each case tests a real OS decision.
+        permissions: { notifications: 'YES' },
+        // Exclude separate destructive native vault tests from this E2E launch.
+        launchArgs: { detoxEnableSynchronization: 0, class: 'com.xrpllabs.xumm.DetoxTest' },
+    });
+    await device.disableSynchronization();
+    await waitUntilAndroidRnReady();
+    if (await androidHasTestId('lock-overlay')) {
+        assert(process.env.E2E_PASSCODE, 'Set E2E_PASSCODE for retained test accounts');
+        await enterAndroidPasscode(process.env.E2E_PASSCODE);
+        await waitUntil(async () => !(await androidHasTestId('lock-overlay')), 'app unlock');
+    }
+    await tapByTestIdIfPresent('close-change-log-button', 1000);
+    await clickByTestId('tab-Home');
+};
+
+const resetPermission = async () => {
+    await device.terminateApp();
+    adb('shell', 'pm', 'revoke', '--user', 'current', APP, CAMERA);
+    adb('shell', 'pm', 'clear-permission-flags', '--user', 'current', APP, CAMERA, 'user-set', 'user-fixed');
+    const permission = cameraPermission();
+    assert(!permission.granted, 'Fresh fixture must not grant Camera');
+    assert(!permission.flags.includes('USER_SET') && !permission.flags.includes('USER_FIXED'),
+        'Fresh fixture must remove previous Camera decisions');
+    await restart();
+};
+
+const openScanner = async () => {
+    // The existing tab listener debounces all bottom-tab presses for 300ms.
+    // Let the preceding Home selection settle before the real center press.
+    await sleep(450);
+    const selected = await androidDumpIncludes('content-desc="selected, , tab, 3 out of 5"');
+    await clickByTestId(selected ? 'selected, , tab, 3 out of 5' : ', tab, 3 out of 5');
+    await waitUntilAndroidTestId('scan-qr-button', 10000);
+    await clickByTestId('scan-qr-button');
+    await waitUntil(async () => {
+        const shown = (await systemPrompt()) || (await androidHasTestId('scan-modal'));
+        return shown;
+    }, 'scanner or its actual system permission prompt');
+};
+
+const chooseSystemPermission = async (allow, caseName, events) => {
+    await waitUntil(systemPrompt, 'actual Android camera permission prompt');
+    snapshot(caseName, allow ? 'system-grant-prompt' : 'system-deny-prompt', events);
+    const message = await androidReadTextByTestId('permission_message');
+    assert(/camera|pictures|photos|video/i.test(message || ''), 'System prompt must request Camera access');
+    events[events.length - 1].systemPromptMessage = message;
+    const ids = allow
+        ? ['permission_allow_foreground_only_button', 'permission_allow_button']
+        : ['permission_deny_button', 'permission_deny_and_dont_ask_again_button'];
+    let selected;
+    for (const id of ids) {
+        if (await androidHasTestId(id)) { selected = id; break; }
+    }
+    assert(selected, 'Expected real Android permission decision button');
+    await clickByTestId(selected);
+    await waitUntil(async () => !(await systemPrompt()), 'OS permission dialog dismissal');
+    await waitUntil(() => cameraPermission().granted === allow, 'native CAMERA grant result');
+};
+
+const permissionFallback = async () => {
+    await waitUntilAndroidTestId('scan-permission-approve-button', 15000);
+    await waitUntilAndroidTestId('scan-permission-close-button', 15000);
+    assert(!cameraPermission().granted, 'Permission fallback must correspond to a native denial');
+    await noSystemPrompt();
+};
+
+const previewControls = async () => {
+    await waitUntilAndroidTestId('scan-camera-preview', 15000);
+    await waitUntilAndroidTestId('scan-close-button', 15000);
+    await waitUntilAndroidTestId('scan-clipboard-button', 15000);
+    assert(cameraPermission().granted, 'Preview controls require native Camera access');
+    assert(!(await androidHasTestId('scan-permission-approve-button')), 'Granted camera must leave permission UI');
+    assert(!(await androidHasTestId('scan-camera-retry-button')), 'Working emulator camera must leave failure UI');
+    await noSystemPrompt();
+};
+
+const closeScanner = async permission => {
+    await clickByTestId(permission ? 'scan-permission-close-button' : 'scan-close-button');
+    await waitUntil(async () => !(await androidHasTestId('scan-modal')), 'native scanner dismissal');
+};
+
+const grantInSettings = async () => {
+    await clickByTestId('scan-permission-approve-button');
+    await waitUntil(() => androidDumpIncludes('package="com.android.settings"'), 'actual Android app Settings');
+    await waitUntil(() => clickAndroidLabel('Permissions'), 'Settings Permissions row');
+    await waitUntil(() => clickAndroidLabel('Camera'), 'Settings Camera row');
+    await waitUntil(() => clickAndroidLabel('Allow only while using the app'), 'Settings Camera grant choice');
+    await waitUntil(() => cameraPermission().granted, 'Camera granted through Settings');
+    // Camera settings → permission list → app info → the still-open scanner.
+    for (let i = 0; i < 3; i += 1) {
+        adb('shell', 'input', 'keyevent', 'KEYCODE_BACK');
+        await sleep(350);
+    }
+    await previewControls();
+};
+
+const runCameraPermissionCase = async caseName => {
+    assert.strictEqual(device.getPlatform(), 'android');
+    assert(CASES.includes(caseName), `Unknown camera permission case: ${caseName}`);
+    const events = [];
+    let passed = false;
+    try {
+        await resetPermission();
+        snapshot(caseName, 'fresh-permission-flags', events);
+        await openScanner();
+        if (caseName === 'first-use-deny' || caseName === 'blocked-settings-return') {
+            await chooseSystemPermission(false, caseName, events);
+            await permissionFallback();
+            snapshot(caseName, 'denied-without-prompt-loop', events);
+            await closeScanner(true);
+            if (caseName === 'blocked-settings-return') {
+                await openScanner();
+                await chooseSystemPermission(false, caseName, events);
+                await permissionFallback();
+                assert(cameraPermission().flags.includes('USER_FIXED'),
+                    'Two real OS denials must make Camera blocked on this Android runtime');
+                await closeScanner(true);
+                await openScanner();
+                await permissionFallback();
+                snapshot(caseName, 'blocked-no-system-prompt', events);
+                await grantInSettings();
+                snapshot(caseName, 'settings-return-preview', events);
+                await closeScanner(false);
+            }
+        } else {
+            await chooseSystemPermission(true, caseName, events);
+            await previewControls();
+            snapshot(caseName, 'granted-preview', events);
+            await closeScanner(false);
+            if (caseName === 'granted-preview-and-close') {
+                await openScanner();
+                await previewControls();
+                snapshot(caseName, 'granted-reopen-without-prompt', events);
+                await closeScanner(false);
+            }
+        }
+        passed = true;
+    } finally {
+        const output = path.resolve(process.env.E2E_ARTIFACTS_DIR || path.join(__dirname, '../artifacts'));
+        fs.mkdirSync(output, { recursive: true });
+        fs.writeFileSync(path.join(output, `camera-${caseName}.json`), JSON.stringify({
+            caseName,
+            passed,
+            events,
+            scope: 'Actual emulator OS permission/UI; no SDK mocks, physical camera or optical QR decode claim',
+        }, null, 2));
+    }
+};
+
+module.exports = { runCameraPermissionCase };
