@@ -255,8 +255,8 @@ const getBottomTabIconOptions = (
 ): Options['bottomTab'] => {
     const { icon, iconSelected, scale } = icons[tabKey];
     const glassSideIcon = iosGlassTabBar && tabKey !== AppScreens.TabBar.Actions;
-    // UIImage.scale is inverse: a larger scale paints a smaller icon.
-    const imageScale = glassSideIcon ? scale / 0.8 : scale;
+    // UIImage.scale is inverse: keep the 20% reduction, then shrink another 10%.
+    const imageScale = glassSideIcon ? scale / 0.72 : scale;
     const foreground = glassSideIcon ? StyleService.value('$textPrimary') : undefined;
     return {
         icon: { scale: imageScale, ...icon },
