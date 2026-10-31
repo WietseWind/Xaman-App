@@ -32,6 +32,10 @@ Global bottom bar:
 - Native RNN currently preserves original image colours. Unselected stays #848CB8;
   selected is black in the light app and white in the dark app. All three variants
   are exported at every density. StyleService chooses the existing Light variant.
+- On the iPhone glass bar, navigator.ts tints both states of the four side icons
+  with the current label colour and reduces their image size by 20%. Regular bars
+  keep the original PNG colours and sizes. Both initial tabs and theme refresh use
+  this rule.
 - The centre Xaman action button is excluded and unchanged.
 
 Category selection API:

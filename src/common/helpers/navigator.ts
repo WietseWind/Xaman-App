@@ -249,6 +249,22 @@ const getBottomTabStyles = () => {
     });
 };
 
+const getBottomTabIconOptions = (
+    icons: ReturnType<typeof getTabBarIcons>,
+    tabKey: string,
+): Options['bottomTab'] => {
+    const { icon, iconSelected, scale } = icons[tabKey];
+    const glassSideIcon = iosGlassTabBar && tabKey !== AppScreens.TabBar.Actions;
+    // UIImage.scale is inverse: a larger scale paints a smaller icon.
+    const imageScale = glassSideIcon ? scale / 0.8 : scale;
+    const foreground = glassSideIcon ? StyleService.value('$textPrimary') : undefined;
+    return {
+        icon: { scale: imageScale, ...icon },
+        selectedIcon: { scale: imageScale, ...iconSelected },
+        ...(glassSideIcon ? { iconColor: foreground, selectedIconColor: foreground } : {}),
+    };
+};
+
 const androidIconSize = (icons: ReturnType<typeof getTabBarIcons>, tabKey: string) => {
     if (Platform.OS !== 'android') {
         return {};
@@ -309,14 +325,7 @@ const Navigator = {
                         bottomTab: {
                             selectTabOnPress: tab !== 'Actions',
                             text: tab !== 'Actions' ? Localize.t(`global.${tab.toLowerCase()}`) : '',
-                            icon: {
-                                scale: TabBarIcons[get(AppScreens.TabBar, tab)].scale,
-                                ...TabBarIcons[get(AppScreens.TabBar, tab)].icon,
-                            },
-                            selectedIcon: {
-                                scale: TabBarIcons[get(AppScreens.TabBar, tab)].scale,
-                                ...TabBarIcons[get(AppScreens.TabBar, tab)].iconSelected,
-                            },
+                            ...getBottomTabIconOptions(TabBarIcons, get(AppScreens.TabBar, tab)),
                             testID: `tab-${tab}`,
                             ...bottomTabStyles,
                             ...androidIconSize(TabBarIcons, get(AppScreens.TabBar, tab)),
@@ -769,14 +778,7 @@ const Navigator = {
                     bottomTab: {
                         ...currentBottomTab,
                         text: tab !== 'Actions' ? Localize.t(`global.${tab.toLowerCase()}`) : '',
-                        icon: {
-                            scale: TabBarIcons[getTab].scale,
-                            ...TabBarIcons[getTab].icon,
-                        },
-                        selectedIcon: {
-                            scale: TabBarIcons[getTab].scale,
-                            ...TabBarIcons[getTab].iconSelected,
-                        },
+                        ...getBottomTabIconOptions(TabBarIcons, getTab),
                         ...bottomTabStyles,
                         ...androidIconSize(TabBarIcons, getTab),
                     },
