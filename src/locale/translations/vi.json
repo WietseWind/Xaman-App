@@ -406,6 +406,8 @@
     "operationLimit": "Giới hạn thao tác",
     "connectedTo": "Đã kết nối với:",
     "connected": "Đã kết nối",
+    "connecting": "Đang kết nối",
+    "disconnected": "Đã ngắt kết nối",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Dữ liệu",

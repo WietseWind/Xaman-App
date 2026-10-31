@@ -406,6 +406,8 @@
     "operationLimit": "Операция лимиті",
     "connectedTo": "Қосылған:",
     "connected": "Қосылған",
+    "connecting": "Қосылуда",
+    "disconnected": "Ажыратылған",
     "hooks": "Hooks",
     "blob": "Блоб",
     "data": "Деректер",

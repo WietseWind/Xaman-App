@@ -406,6 +406,8 @@
     "operationLimit": "Művelet limit",
     "connectedTo": "Csatlakozva:",
     "connected": "Csatlakozva",
+    "connecting": "Csatlakozás",
+    "disconnected": "Kapcsolat bontva",
     "hooks": "Hookok",
     "blob": "Blob",
     "data": "Adat",

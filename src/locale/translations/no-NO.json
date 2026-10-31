@@ -406,6 +406,8 @@
     "operationLimit": "Operasjonsgrense",
     "connectedTo": "Tilkoblet til:",
     "connected": "Tilkoblet",
+    "connecting": "Kobler til",
+    "disconnected": "Frakoblet",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

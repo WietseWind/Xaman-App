@@ -406,6 +406,8 @@
     "operationLimit": "حد العمليات",
     "connectedTo": "متصل بـ:",
     "connected": "متصل",
+    "connecting": "جارٍ الاتصال",
+    "disconnected": "غير متصل",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "البيانات",

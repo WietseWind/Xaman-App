@@ -406,6 +406,8 @@
     "operationLimit": "Kikomo cha uendeshaji",
     "connectedTo": "Imeunganishwa na:",
     "connected": "Imeunganishwa",
+    "connecting": "Inaunganisha",
+    "disconnected": "Muunganisho umekatika",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

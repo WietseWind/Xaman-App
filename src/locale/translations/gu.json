@@ -406,6 +406,8 @@
     "operationLimit": "ઓપરેશન મર્યાદા",
     "connectedTo": "કનેક્ટેડ:",
     "connected": "કનેક્ટેડ",
+    "connecting": "કનેક્ટ થઈ રહ્યું છે",
+    "disconnected": "ડિસ્કનેક્ટ થયેલ",
     "hooks": "Hooks",
     "blob": "બ્લોબ",
     "data": "ડેટા",

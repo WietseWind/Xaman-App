@@ -406,6 +406,8 @@
     "operationLimit": "Лимит операций",
     "connectedTo": "Подключено к:",
     "connected": "Подключено",
+    "connecting": "Подключение",
+    "disconnected": "Отключено",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Данные",

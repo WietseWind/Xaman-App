@@ -406,6 +406,8 @@
     "operationLimit": "Operasie limiet",
     "connectedTo": "Gekoppel aan:",
     "connected": "Gekoppel",
+    "connecting": "Verbind tans",
+    "disconnected": "Ontkoppel",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

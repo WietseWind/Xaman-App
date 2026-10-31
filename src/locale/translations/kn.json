@@ -406,6 +406,8 @@
     "operationLimit": "Operation limit",
     "connectedTo": "Connected to:",
     "connected": "Connected",
+    "connecting": "ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ",
+    "disconnected": "ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

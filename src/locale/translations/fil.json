@@ -406,6 +406,8 @@
     "operationLimit": "Limitasyon ng operasyon",
     "connectedTo": "Nakakonekta sa:",
     "connected": "Nakakonekta",
+    "connecting": "Kumokonekta",
+    "disconnected": "Hindi nakakonekta",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

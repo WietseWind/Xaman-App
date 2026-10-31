@@ -406,6 +406,8 @@
     "operationLimit": "Eragiketa muga",
     "connectedTo": "Konektatuta hona:",
     "connected": "Konektatuta",
+    "connecting": "Konektatzen",
+    "disconnected": "Deskonektatuta",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Datuak",

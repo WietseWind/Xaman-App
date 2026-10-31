@@ -406,6 +406,8 @@
     "operationLimit": "செயல்பாட்டு வரம்பு",
     "connectedTo": "இதனுடன் இணைக்கப்பட்டது:",
     "connected": "இணைக்கப்பட்டது",
+    "connecting": "இணைக்கிறது",
+    "disconnected": "இணைப்பு துண்டிக்கப்பட்டது",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "தரவு",

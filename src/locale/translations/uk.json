@@ -406,6 +406,8 @@
     "operationLimit": "Ліміт операцій",
     "connectedTo": "Підключено до:",
     "connected": "Підключено",
+    "connecting": "Підключення",
+    "disconnected": "Відключено",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Дані",

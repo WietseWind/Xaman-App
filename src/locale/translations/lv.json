@@ -406,6 +406,8 @@
     "operationLimit": "Operācijas limits",
     "connectedTo": "Savienots ar:",
     "connected": "Savienots",
+    "connecting": "Savienojas",
+    "disconnected": "Atvienots",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Dati",

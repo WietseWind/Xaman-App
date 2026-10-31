@@ -406,6 +406,8 @@
     "operationLimit": "Operatsiya chegarasi",
     "connectedTo": "Ulangan:",
     "connected": "Ulangan",
+    "connecting": "Ulanmoqda",
+    "disconnected": "Uzilgan",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Ma'lumot",

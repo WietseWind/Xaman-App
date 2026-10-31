@@ -406,6 +406,8 @@
     "operationLimit": "İşlem sınırı",
     "connectedTo": "Bağlı:",
     "connected": "Bağlı",
+    "connecting": "Bağlanıyor",
+    "disconnected": "Bağlantı kesildi",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Veri",

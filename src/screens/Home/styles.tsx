@@ -1,6 +1,7 @@
 import StyleService from '@services/StyleService';
 
-import { AppSizes, AppFonts } from '@theme';
+import { AppSizes, AppFonts, AppColors } from '@theme';
+import { ColorLuminance } from '@common/utils/color';
 
 /* Styles ==================================================================== */
 const styles = StyleService.create({
@@ -104,25 +105,48 @@ const styles = StyleService.create({
 
     networkDetailsContainer: {
         flexDirection: 'row',
-        alignContent: 'center',
         alignItems: 'center',
-        backgroundColor: '$contrast',
-        borderRadius: 12,
+        minHeight: 18,
         marginTop: -8,
-        paddingHorizontal: AppSizes.paddingExtraSml,
-        paddingVertical: 5,
+        paddingHorizontal: 12,
         marginHorizontal: AppSizes.paddingSml,
         marginBottom: AppSizes.paddingExtraSml + 3,
     },
+    networkStatusIndicator: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+    },
+    networkConnected: {
+        backgroundColor: StyleService.select({ light: '$darkGreen', dark: '$green' }),
+    },
+    networkConnecting: {
+        width: 7,
+        height: 7,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        borderColor: StyleService.select({ light: ColorLuminance(AppColors.orange, -0.4), dark: '$orange' }),
+        borderRightColor: '$transparent',
+    },
+    networkDisconnected: {
+        borderRadius: 1,
+        backgroundColor: StyleService.select({ light: '$darkRed', dark: '$red' }),
+        transform: [{ rotate: '45deg' }],
+    },
     networkTextLabel: {
-        color: '$silver',
-        fontFamily: AppFonts.base.familyBold,
-        fontSize: AppFonts.small.size,
+        color: '$textSecondary',
+        fontFamily: AppFonts.base.family,
+        fontSize: 11,
+        maxWidth: '40%',
+        flexShrink: 1,
     },
     networkTextContent: {
-        color: '$textContrast',
-        fontFamily: AppFonts.base.familyMonoBold,
-        fontSize: AppFonts.subtext.size * 0.8,
+        color: '$textSecondary',
+        fontFamily: AppFonts.base.familyMono,
+        fontSize: 11,
+        flex: 1,
+        marginLeft: 7,
+        marginRight: 8,
     },
     accountSwitchConainer: {
         backgroundColor: '$tint',

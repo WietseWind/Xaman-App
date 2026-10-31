@@ -406,6 +406,8 @@
     "operationLimit": "Operacijos limitas",
     "connectedTo": "Prisijungta prie:",
     "connected": "Prisijungta",
+    "connecting": "Jungiamasi",
+    "disconnected": "Atsijungta",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Duomenys",

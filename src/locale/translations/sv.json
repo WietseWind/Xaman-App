@@ -406,6 +406,8 @@
     "operationLimit": "Operationsgräns",
     "connectedTo": "Ansluten till:",
     "connected": "Ansluten",
+    "connecting": "Ansluter",
+    "disconnected": "Frånkopplad",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

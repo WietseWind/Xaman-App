@@ -406,6 +406,8 @@
     "operationLimit": "ऑपरेशन मर्यादा",
     "connectedTo": "यास कनेक्ट केले:",
     "connected": "कनेक्ट केले",
+    "connecting": "कनेक्ट होत आहे",
+    "disconnected": "डिस्कनेक्ट झाले",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "डेटा",

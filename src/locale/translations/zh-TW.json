@@ -406,6 +406,8 @@
     "operationLimit": "操作限制",
     "connectedTo": "已連接至:",
     "connected": "已連接",
+    "connecting": "連線中",
+    "disconnected": "已中斷連線",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "資料",

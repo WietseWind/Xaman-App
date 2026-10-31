@@ -406,6 +406,8 @@
     "operationLimit": "Batas operasi",
     "connectedTo": "Terhubung ke:",
     "connected": "Terhubung",
+    "connecting": "Menghubungkan",
+    "disconnected": "Terputus",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Data",

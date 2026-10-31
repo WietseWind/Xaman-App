@@ -406,6 +406,8 @@
     "operationLimit": "Όριο λειτουργίας",
     "connectedTo": "Συνδεδεμένο σε:",
     "connected": "Συνδεδεμένο",
+    "connecting": "Σύνδεση σε εξέλιξη",
+    "disconnected": "Αποσυνδέθηκε",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Δεδομένα",

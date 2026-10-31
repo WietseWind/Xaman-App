@@ -406,6 +406,8 @@
     "operationLimit": "Limit operácií",
     "connectedTo": "Pripojené k:",
     "connected": "Pripojené",
+    "connecting": "Pripájanie",
+    "disconnected": "Odpojené",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Dáta",

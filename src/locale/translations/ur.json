@@ -406,6 +406,8 @@
     "operationLimit": "آپریشن کی حد",
     "connectedTo": "سے منسلک:",
     "connected": "منسلک",
+    "connecting": "کنیکٹ ہو رہا ہے",
+    "disconnected": "منقطع",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "ڈیٹا",

@@ -406,6 +406,8 @@
     "operationLimit": "Operationslimit",
     "connectedTo": "Verbunden mit:",
     "connected": "Verbunden",
+    "connecting": "Verbindung wird hergestellt",
+    "disconnected": "Getrennt",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Daten",

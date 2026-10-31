@@ -406,6 +406,8 @@
     "operationLimit": "Лимит на операции",
     "connectedTo": "Свързан към:",
     "connected": "Свързан",
+    "connecting": "Свързване",
+    "disconnected": "Прекъсната връзка",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Данни",

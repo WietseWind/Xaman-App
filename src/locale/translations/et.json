@@ -406,6 +406,8 @@
     "operationLimit": "Toimingu limiit",
     "connectedTo": "Ühendatud:",
     "connected": "Ühendatud",
+    "connecting": "Ühendamine",
+    "disconnected": "Ühendus katkenud",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Andmed",

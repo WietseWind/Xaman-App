@@ -406,6 +406,8 @@
     "operationLimit": "מגבלת פעולה",
     "connectedTo": "מחובר אל:",
     "connected": "מחובר",
+    "connecting": "מתחבר",
+    "disconnected": "מנותק",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "נתונים",

@@ -406,6 +406,8 @@
     "operationLimit": "Límit d'operació",
     "connectedTo": "Connectat a:",
     "connected": "Connectat",
+    "connecting": "Connectant",
+    "disconnected": "Desconnectat",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Dades",

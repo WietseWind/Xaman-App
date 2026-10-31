@@ -406,6 +406,8 @@
     "operationLimit": "آپريشن جي حد",
     "connectedTo": "سان ڳنڍيل:",
     "connected": "ڳنڍيل",
+    "connecting": "ڳنڍجي رهيو آهي",
+    "disconnected": "ڪنيڪشن ڪٽيل",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "ڊيٽا",

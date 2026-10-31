@@ -48,8 +48,18 @@ export default StyleService.create({
         paddingRight: 5,
         paddingLeft: 7,
     },
+    actionsContainer: {
+        flexShrink: 1,
+    },
     addTokenButton: {
         paddingLeft: 8,
         paddingRight: 7,
+        backgroundColor: '$transparent',
+        flexShrink: 1,
+    },
+    addTokenText: {
+        fontSize: AppFonts.scaleFontSize(13),
+        paddingHorizontal: 0,
+        flexShrink: 1,
     },
 });

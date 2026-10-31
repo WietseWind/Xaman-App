@@ -406,6 +406,8 @@
     "operationLimit": "ਕਾਰਜ ਸੀਮਾ",
     "connectedTo": "ਨਾਲ ਜੁੜਿਆ:",
     "connected": "ਜੁੜਿਆ",
+    "connecting": "ਕਨੈਕਟ ਹੋ ਰਿਹਾ ਹੈ",
+    "disconnected": "ਡਿਸਕਨੈਕਟ ਕੀਤਾ ਗਿਆ",
     "hooks": "Hooks",
     "blob": "ਬਲੌਬ",
     "data": "ਡੇਟਾ",

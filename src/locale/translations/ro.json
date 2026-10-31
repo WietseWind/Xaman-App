@@ -406,6 +406,8 @@
     "operationLimit": "Limită de operațiuni",
     "connectedTo": "Conectat la:",
     "connected": "Conectat",
+    "connecting": "Se conectează",
+    "disconnected": "Deconectat",
     "hooks": "Hook-uri",
     "blob": "Blob",
     "data": "Date",

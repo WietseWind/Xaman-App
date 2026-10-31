@@ -406,6 +406,8 @@
     "operationLimit": "অপারেশন সীমা",
     "connectedTo": "সংযুক্ত:",
     "connected": "সংযুক্ত",
+    "connecting": "সংযোগ হচ্ছে",
+    "disconnected": "সংযোগ বিচ্ছিন্ন",
     "hooks": "Hooks",
     "blob": "ব্লব",
     "data": "ডেটা",

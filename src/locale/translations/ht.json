@@ -406,6 +406,8 @@
     "operationLimit": "Limit operasyon",
     "connectedTo": "Konekte ak:",
     "connected": "Konekte",
+    "connecting": "Ap konekte",
+    "disconnected": "Dekonekte",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Done",

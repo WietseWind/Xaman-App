@@ -406,6 +406,8 @@
     "operationLimit": "പ്രവർത്തന പരിധി",
     "connectedTo": "ഇതിലേക്ക് കണക്റ്റുചെയ്തിരിക്കുന്നു:",
     "connected": "കണക്റ്റുചെയ്തു",
+    "connecting": "ബന്ധിപ്പിക്കുന്നു",
+    "disconnected": "ബന്ധം വിച്ഛേദിച്ചു",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "ഡാറ്റ",

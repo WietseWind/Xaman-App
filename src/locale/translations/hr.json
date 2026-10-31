@@ -406,6 +406,8 @@
     "operationLimit": "Ograničenje operacija",
     "connectedTo": "Povezano na:",
     "connected": "Povezano",
+    "connecting": "Povezivanje",
+    "disconnected": "Veza prekinuta",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "Podaci",

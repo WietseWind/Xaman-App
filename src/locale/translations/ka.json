@@ -406,6 +406,8 @@
     "operationLimit": "ოპერაციის ლიმიტი",
     "connectedTo": "დაკავშირებულია:",
     "connected": "დაკავშირებული",
+    "connecting": "კავშირი მყარდება",
+    "disconnected": "კავშირი გაწყვეტილია",
     "hooks": "Hooks",
     "blob": "Blob",
     "data": "მონაცემები",

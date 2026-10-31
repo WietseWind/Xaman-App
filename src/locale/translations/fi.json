@@ -406,6 +406,8 @@
     "operationLimit": "Toimintoraja",
     "connectedTo": "Yhdistetty:",
     "connected": "Yhdistetty",
+    "connecting": "Yhdistetään",
+    "disconnected": "Yhteys katkaistu",
     "hooks": "Hookit",
     "blob": "Blob",
     "data": "Data",
