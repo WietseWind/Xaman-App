@@ -114,9 +114,32 @@ async function has(id, timeout = 1000) {
     }
 }
 
+async function stableFrame(id) {
+    const deadline = Date.now() + 10000;
+    let previous;
+    let stable = 0;
+    do {
+        const attributes = await view(id).getAttributes();
+        const current = JSON.stringify(attributes.frame);
+        stable = current === previous && attributes.visible !== false && attributes.enabled !== false ? stable + 1 : 0;
+        if (stable >= 3) return;
+        previous = current;
+        await pause(100);
+    } while (Date.now() < deadline);
+    throw new Error(`Native frame did not settle for ${id}`);
+}
+
 async function tap(id) {
-    await waitFor(view(id)).toBeVisible(100).withTimeout(15000);
-    await view(id).tap(id.startsWith('scan-') ? { x: 8, y: 8 } : undefined);
+    await waitFor(view(id)).toBeVisible(id.startsWith('scan-') ? 100 : 75).withTimeout(15000);
+    await stableFrame(id);
+    const corner = id.startsWith('scan-') || id === 'auto-lock-button';
+    await view(id).tap(corner ? { x: 8, y: 8 } : undefined);
+}
+
+async function screenReady(incoming, outgoing) {
+    if (outgoing) await waitFor(view(outgoing)).not.toBeVisible(75).withTimeout(15000);
+    await waitFor(view(incoming)).toBeVisible(75).withTimeout(15000);
+    await stableFrame(incoming);
 }
 
 async function unlock() {
@@ -139,10 +162,16 @@ async function relaunch(udid, permission) {
 }
 
 async function openScanner() {
-    if (!(await has('home-tab-view', 1000))) await tap('tab-Home');
-    await exists('home-tab-view');
+    try {
+        await waitFor(view('home-tab-view')).toBeVisible(75).withTimeout(1000);
+    } catch {
+        await tap('tab-Home');
+    }
+    await waitFor(view('home-tab-view')).toBeVisible(75).withTimeout(15000);
+    await waitFor(element(by.id('tab-Home').and(by.traits(['selected'])))).toExist().withTimeout(15000);
+    await stableFrame('tab-Home');
     await tap('tab-Actions');
-    await exists('home-actions-overlay');
+    await screenReady('home-actions-overlay');
     await tap('scan-qr-button');
     await exists('scan-modal');
 }
@@ -219,19 +248,20 @@ function autoLockMinutes(label) {
     return value;
 }
 
-async function setAutoLock(minutes) {
+async function setAutoLock(minutes, beforeChange) {
     await tap('tab-Settings');
-    await exists('settings-tab-screen');
+    await screenReady('settings-tab-screen', 'home-tab-view');
     await tap('security-button');
-    await exists('security-settings-screen');
+    await screenReady('security-settings-screen', 'settings-tab-screen');
     const previous = autoLockMinutes((await view('auto-lock-button').getAttributes()).label);
+    if (beforeChange) beforeChange(previous);
     await tap('auto-lock-button');
-    await exists('picker-modal');
+    await screenReady('picker-modal', 'security-settings-screen');
     await view('picker-item-list').scrollTo(minutes >= 1440 ? 'bottom' : 'top');
     let found = false;
     for (let attempt = 0; attempt < 6; attempt += 1) {
         try {
-            await waitFor(view(`${minutes}-item`)).toBeVisible(100).withTimeout(700);
+            await waitFor(view(`${minutes}-item`)).toBeVisible(75).withTimeout(700);
             found = true;
             break;
         } catch {
@@ -240,22 +270,35 @@ async function setAutoLock(minutes) {
     }
     assert(found, 'The requested auto-lock policy must be visible in the real picker');
     await tap(`${minutes}-item`);
-    await exists('security-settings-screen');
+    await waitFor(view('picker-modal')).not.toExist().withTimeout(15000);
+    await screenReady('security-settings-screen');
     assert.strictEqual(autoLockMinutes((await view('auto-lock-button').getAttributes()).label), minutes);
     await tap('back-button');
-    await exists('settings-tab-screen');
+    await waitFor(view('security-settings-screen')).not.toExist().withTimeout(15000);
+    await screenReady('settings-tab-screen');
     await tap('tab-Home');
-    await exists('home-tab-view');
+    await screenReady('home-tab-view', 'settings-tab-screen');
+    await waitFor(element(by.id('tab-Home').and(by.traits(['selected'])))).toExist().withTimeout(15000);
     return previous;
 }
 
 async function lockedCameraSession(udid, report) {
-    const previous = await setAutoLock(0);
-    report.previousAutoLockMinutes = previous;
+    let previous;
     let failure;
+    let unlockFailed = false;
     try {
+        await setAutoLock(0, (value) => {
+            previous = value;
+            report.previousAutoLockMinutes = value;
+        });
         await openScanner();
         assert.strictEqual(nativeAuthorization(udid), 2);
+        await screenReady('scan-modal', 'home-actions-overlay');
+        await waitFor(view('scan-camera-paused-view')).not.toExist().withTimeout(15000);
+        const readyCamera = await has('scan-camera-retry-button', 3000)
+            ? 'scan-camera-retry-button' : 'scan-camera-preview';
+        await waitFor(view(readyCamera)).toBeVisible(100).withTimeout(15000);
+        await stableFrame(readyCamera);
         report.beforeLockScreenshot = snapshot(udid, 'locked-camera-session-before');
         await device.sendToHome();
         await device.launchApp({ newInstance: false, launchArgs: { detoxEnableSynchronization: 0 } });
@@ -270,24 +313,48 @@ async function lockedCameraSession(udid, report) {
         assert.strictEqual(cameraDialog(recognize(locked)), null,
             'Lock must not open a new system camera permission prompt');
         report.scope = 'Native lock/pause UI gates and TCC; simulator cannot prove physical sensor release';
-        await unlock();
+        try {
+            await unlock();
+        } catch (error) {
+            unlockFailed = true;
+            throw error;
+        }
         await waitFor(view('scan-camera-paused-view')).not.toExist().withTimeout(15000);
         await assertGrantedAndClose(udid, 'locked-camera-session-resumed', report);
     } catch (error) {
         failure = error;
     } finally {
         try {
-            if (failure) {
-                // Release any session before cleanup, retaining the test account and OS.
-                await device.terminateApp();
-                await device.launchApp({ newInstance: true, launchArgs: { detoxEnableSynchronization: 0 } });
-                await device.disableSynchronization();
-                await unlock();
+            // Release any session before failure cleanup, retaining the test account and OS.
+            if (failure) await device.terminateApp();
+            if (previous !== undefined) {
+                if (unlockFailed) {
+                    report.autoLockPolicyRestorePending = 'No second unlock attempt after authentication failure';
+                } else {
+                    let restoreAllowed = true;
+                    if (failure) {
+                        await device.launchApp({ newInstance: true, launchArgs: { detoxEnableSynchronization: 0 } });
+                        await device.disableSynchronization();
+                        try {
+                            await unlock();
+                        } catch (error) {
+                            report.cleanupError = error.stack || String(error);
+                            report.autoLockPolicyRestorePending = 'No second cleanup unlock attempt';
+                            restoreAllowed = false;
+                            await device.terminateApp();
+                        }
+                    }
+                    if (restoreAllowed) {
+                        await setAutoLock(previous);
+                        report.autoLockPolicyRestored = true;
+                    }
+                }
             }
-            await setAutoLock(previous);
-            report.autoLockPolicyRestored = true;
         } catch (error) {
             report.cleanupError = error.stack || String(error);
+            if (previous !== undefined && !report.autoLockPolicyRestored) {
+                report.autoLockPolicyRestorePending = true;
+            }
             if (!failure) failure = error;
         }
     }
