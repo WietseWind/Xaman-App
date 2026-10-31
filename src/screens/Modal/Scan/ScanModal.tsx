@@ -154,24 +154,48 @@ class ScanModal extends Component<Props, State> {
 
     routeUser = async (screen: AppScreenKeys, passProps?: any, options?: any) => {
         if (this.closing || AuthenticationService.isLocked) return;
-        // close scan modal
-        await Navigator.dismissModal();
-
-        // got to the root, this is for fallback option
+        let interrupted = false;
+        let queued = false;
+        let released = false;
+        const onLock = (status: LockStatus) => {
+            if (status !== LockStatus.LOCKED) return;
+            interrupted = true;
+            released = true;
+            AuthenticationService.off('lockStateChange', onLock);
+        };
+        const release = () => {
+            if (released) return;
+            released = true;
+            AuthenticationService.off('lockStateChange', onLock);
+        };
+        const canRoute = () => !interrupted && !AuthenticationService.isLocked;
+        AuthenticationService.on('lockStateChange', onLock);
         try {
-            await Navigator.popToRoot();
-        } catch {
-            // ignore
-        }
+            if (!canRoute()) return;
+            // This route owns Scan's dismissal, including its normal unmount.
+            await Navigator.dismissModal();
+            if (!canRoute()) return;
 
-        if (screen.indexOf('modal.') !== -1) {
+            // go to the root, this is for fallback option
+            try {
+                await Navigator.popToRoot();
+            } catch {
+                // ignore
+            }
+            if (!canRoute()) return;
+
             setTimeout(() => {
-                Navigator.showModal(screen, passProps, options);
+                try {
+                    if (!canRoute()) return;
+                    if (screen.indexOf('modal.') !== -1) Navigator.showModal(screen, passProps, options);
+                    else Navigator.push(screen, passProps, options);
+                } finally {
+                    release();
+                }
             }, 10);
-        } else {
-            setTimeout(() => {
-                Navigator.push(screen, passProps, options);
-            }, 10);
+            queued = true;
+        } finally {
+            if (!queued) release();
         }
     };
 

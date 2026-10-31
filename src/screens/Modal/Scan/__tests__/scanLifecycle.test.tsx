@@ -345,6 +345,7 @@ it.each(['resolve', 'reject'])('ignores a late translation %s after Close', asyn
 
 it('routes a normal payload through its owned dismissal even when that dismissal unmounts Scan', async () => {
     jest.useFakeTimers();
+    const listenersBefore = AuthenticationService.listenerCount('lockStateChange');
     mount(); appear();
     const payload = { request_json: { TransactionType: 'Payment' } } as Payload;
     jest.spyOn(Payload, 'from').mockResolvedValueOnce(payload);
@@ -363,6 +364,41 @@ it('routes a normal payload through its owned dismissal even when that dismissal
         AppScreens.Modal.ReviewTransaction, { payload }, { modalPresentationStyle: 'fullScreen' },
     );
     expect(Alert.alert).not.toHaveBeenCalled();
+    expect(AuthenticationService.listenerCount('lockStateChange')).toBe(listenersBefore);
+});
+
+it.each(['dismiss', 'pop', 'timer'])(
+    'cancels a queued route when lock and unlock occur during %s', async (stage) => {
+        jest.useFakeTimers();
+        mount(); appear();
+        const before = AuthenticationService.listenerCount('lockStateChange');
+        const pending = deferred();
+        if (stage === 'dismiss') jest.mocked(Navigator.dismissModal).mockReturnValueOnce(pending.promise);
+        const pop = jest.spyOn(Navigator, 'popToRoot').mockResolvedValue(undefined as any);
+        if (stage === 'pop') pop.mockReturnValueOnce(pending.promise);
+        jest.spyOn(Navigator, 'showModal').mockResolvedValue(undefined as any);
+        let routing: Promise<void>;
+        act(() => { routing = modal.routeUser(AppScreens.Modal.ReviewTransaction, { publicFixture: true }); });
+        if (stage !== 'dismiss') await flush();
+        act(() => {
+            locked = true; AuthenticationService.emit('lockStateChange', LockStatus.LOCKED);
+            locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED);
+        });
+        expect(AuthenticationService.listenerCount('lockStateChange')).toBe(before);
+        await act(async () => { pending.resolve('dismissed'); await routing!; });
+        act(() => jest.advanceTimersByTime(10));
+        expect(Navigator.showModal).not.toHaveBeenCalled();
+        if (stage === 'dismiss') expect(pop).not.toHaveBeenCalled();
+        expect(AuthenticationService.listenerCount('lockStateChange')).toBe(before);
+    },
+);
+
+it('releases the owned route listener after native dismissal fails', async () => {
+    mount(); appear();
+    const before = AuthenticationService.listenerCount('lockStateChange');
+    jest.mocked(Navigator.dismissModal).mockRejectedValueOnce(new Error('native dismiss failed'));
+    await expect(modal.routeUser(AppScreens.Modal.ReviewTransaction)).rejects.toThrow('native dismiss failed');
+    expect(AuthenticationService.listenerCount('lockStateChange')).toBe(before);
 });
 
 it('applies a normal translation reply and retains the existing re-render and close flow', async () => {
