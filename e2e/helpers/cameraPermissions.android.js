@@ -85,6 +85,17 @@ const systemPrompt = async () => {
     return shown;
 };
 
+const dismissFailedSystemPrompt = () => {
+    const activities = adb('shell', 'dumpsys', 'activity', 'activities');
+    const permissionActivity =
+        /(?:topResumedActivity|mResumedActivity)[^\n]*permissioncontroller[^\n]*GrantPermissionsActivity/;
+    if (!permissionActivity.test(activities)) return false;
+    // A failed input can leave the OS dialog above Launcher after the app stops.
+    // Dismiss only that foreground dialog before ending this test's process.
+    adb('shell', 'input', 'keyevent', 'KEYCODE_BACK');
+    return true;
+};
+
 const noSystemPrompt = async (duration = 1500) => {
     const end = Date.now() + duration;
     do {
@@ -144,12 +155,40 @@ const openScanner = async () => {
     }, 'scanner or its actual system permission prompt');
 };
 
+const settleSystemPermissionDialog = async () => {
+    // The Android permission window can move after its accessibility nodes first
+    // appear. Wait for that native window to settle before reading tap bounds.
+    // The ordinary app driver keeps this timeout at zero for animated RN views.
+    const manager = device.deviceDriver.invocationManager;
+    const setIdleTimeout = value => manager.execute({
+        target: {
+            type: 'Invocation',
+            value: {
+                target: { type: 'Class', value: 'androidx.test.uiautomator.Configurator' },
+                method: 'getInstance',
+                args: [],
+            },
+        },
+        method: 'setWaitForIdleTimeout',
+        args: [{ type: 'Integer', value }],
+    });
+    const started = Date.now();
+    await setIdleTimeout(1000);
+    try {
+        await device.getUiDevice().waitForIdle();
+    } finally {
+        await setIdleTimeout(0);
+    }
+    return Date.now() - started;
+};
+
 const chooseSystemPermission = async (allow, caseName, events) => {
     await waitUntil(systemPrompt, 'actual Android camera permission prompt');
     snapshot(caseName, allow ? 'system-grant-prompt' : 'system-deny-prompt', events);
     const message = await androidReadTextByTestId('permission_message');
     assert(/camera|pictures|photos|video/i.test(message || ''), 'System prompt must request Camera access');
     events[events.length - 1].systemPromptMessage = message;
+    events[events.length - 1].nativeDialogIdleWaitMs = await settleSystemPermissionDialog();
     const ids = allow
         ? ['permission_allow_foreground_only_button', 'permission_allow_button']
         : ['permission_deny_button', 'permission_deny_and_dont_ask_again_button'];
@@ -337,6 +376,9 @@ const runCameraPermissionCase = async (caseName, options = {}) => {
         passed = true;
     } catch (error) {
         try {
+            if (dismissFailedSystemPrompt()) {
+                events.push({ stage: 'failed-case-system-permission-dialog-dismissed' });
+            }
             await device.terminateApp();
             await cameraSession(false);
             events.push({ stage: 'failed-case-native-camera-released' });
