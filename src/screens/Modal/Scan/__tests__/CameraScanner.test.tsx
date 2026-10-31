@@ -423,3 +423,87 @@ it('replaces a failed camera, ignores old lifecycle callbacks and accepts fresh 
     act(() => latest.codeScanner.onCodeScanned([{ value: 'unmounted-qr' }]));
     expect(onRead).toHaveBeenCalledTimes(1);
 });
+
+it('keeps permanent-denial Settings routing after a permission-controller visibility epoch', async () => {
+    setStatus('denied');
+    let epoch = 0;
+    let shown = true;
+    const policy = (captured?: number) => shown && (captured === undefined || captured === epoch);
+    const pending = deferred();
+    jest.mocked(PermissionsAndroid.request).mockReturnValueOnce(pending.promise);
+    mount(true, policy, epoch);
+    shown = false; epoch++;
+    act(() => tree!.update(scannerElement(false, policy, epoch)));
+    await act(async () => pending.resolve(PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN));
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    shown = true;
+    act(() => tree!.update(scannerElement(true, policy, epoch)));
+    await flush();
+    expect(permission().findByType(Text).props.children).toBe('Settings');
+    approve(); await flush();
+    expect(Linking.openSettings).toHaveBeenCalledTimes(1);
+    expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
+});
+
+it('keeps a fresh native grant ahead of an old permanent-denial result after hiding', async () => {
+    setStatus('denied');
+    let epoch = 0;
+    let shown = true;
+    const policy = (captured?: number) => shown && (captured === undefined || captured === epoch);
+    const pending = deferred();
+    jest.mocked(PermissionsAndroid.request).mockReturnValueOnce(pending.promise);
+    mount(true, policy, epoch);
+    shown = false; epoch++;
+    act(() => tree!.update(scannerElement(false, policy, epoch)));
+    setStatus('granted');
+    await act(async () => pending.resolve(PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN));
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    shown = true;
+    act(() => tree!.update(scannerElement(true, policy, epoch)));
+    await flush();
+    expect(camera().props.isActive).toBe(true);
+    expect(tree!.root.findAllByProps({ testID: 'permission' })).toHaveLength(0);
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
+});
+
+it('does not read or retain permanent-denial metadata after unmount', async () => {
+    setStatus('denied');
+    const pending = deferred();
+    jest.mocked(PermissionsAndroid.request).mockReturnValueOnce(pending.promise);
+    mount();
+    act(() => tree!.unmount()); tree = undefined;
+    const statusReads = jest.mocked(Camera.getCameraPermissionStatus).mock.calls.length;
+    await act(async () => pending.resolve(PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN));
+    expect(Camera.getCameraPermissionStatus).toHaveBeenCalledTimes(statusReads);
+    expect(removeAppState).toHaveBeenCalledTimes(1);
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    expect(onRead).not.toHaveBeenCalled();
+    expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
+});
+
+it('keeps permanent denial as metadata while locked and opens Settings only after unlock press', async () => {
+    setStatus('denied');
+    let epoch = 0;
+    let unlocked = true;
+    const policy = (captured?: number) => unlocked && (captured === undefined || captured === epoch);
+    const pending = deferred();
+    jest.mocked(PermissionsAndroid.request).mockReturnValueOnce(pending.promise);
+    mount(true, policy, epoch);
+    unlocked = false; epoch++;
+    act(() => tree!.update(scannerElement(false, policy, epoch)));
+    await act(async () => pending.resolve(PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN));
+    expect(tree!.root.findByProps({ testID: 'scan-camera-paused-view' })).toBeDefined();
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    expect(onRead).not.toHaveBeenCalled();
+    unlocked = true;
+    act(() => tree!.update(scannerElement(true, policy, epoch)));
+    await flush();
+    expect(permission().findByType(Text).props.children).toBe('Settings');
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    approve(); await flush();
+    expect(Linking.openSettings).toHaveBeenCalledTimes(1);
+    expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
+});

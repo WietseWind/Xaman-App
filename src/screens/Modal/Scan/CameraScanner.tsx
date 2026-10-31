@@ -174,6 +174,14 @@ const CameraScanner = ({
                 const result = Platform.OS === 'android'
                     ? await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA)
                     : await Camera.requestCameraPermission();
+                if (Platform.OS === 'android' && mounted.current && inFlight.current === token &&
+                    result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN &&
+                    authorization.current !== 'granted' && readCameraAuthorization() !== 'granted') {
+                    // A permission activity can hide this screen. Retain only its
+                    // owned denial metadata; preview access still needs the guards below.
+                    blocked.current = true;
+                    setAndroidBlocked(true);
+                }
                 if (!mounted.current || inFlight.current !== token || !allowed(requestActivity) ||
                     activity.current !== requestActivity) return;
                 if (permissionEpoch.current !== epoch) {
