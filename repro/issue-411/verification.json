@@ -1,0 +1,75 @@
+{
+  "issue": 411,
+  "version": "5.4.0",
+  "build": 416,
+  "production_source_commit": "25c2fdd96b00153e874259662b25df1e5b461667",
+  "e2e_driver_commit": "425288d609f77d12501956ecb56fed88257e64da",
+  "verified_date": "2026-10-31",
+  "permission_behavior": {
+    "android_denied": "One initial native request; explicit retry after ordinary denial.",
+    "android_not_determined": "One initial native request; explicit retry after ordinary denial.",
+    "android_permanently_blocked": "Explicit Settings action; no automatic request loop.",
+    "ios_not_determined": "One initial native request.",
+    "ios_denied_or_restricted": "Explicit Settings action."
+  },
+  "checks": {
+    "android_debug_e2e": {
+      "scenarios": 74,
+      "steps": 823,
+      "hooks": 148,
+      "failed": 0,
+      "skipped": 0,
+      "native_camera_cases": 5
+    },
+    "ios_release_simulator_e2e": {
+      "scenarios": 74,
+      "steps": 823,
+      "hooks": 148,
+      "failed": 0,
+      "skipped": 0,
+      "native_camera_cases": 5
+    },
+    "jest": {
+      "passed": 2069,
+      "snapshots_passed": 60,
+      "existing_skipped_tests": 7
+    },
+    "camera_and_lifecycle_targeted_tests": 59,
+    "realm_actual_source_cpp_contract": {
+      "passed": 38,
+      "original_android_thread_checks_failed": 5,
+      "original_non_android_passed": 19
+    },
+    "typecheck": "pass",
+    "touched_app_and_new_helper_lint": "pass",
+    "locales": "pass",
+    "endpoints": "pass",
+    "existing_helper_lint": "21 existing errors on unchanged lines in account.js and tapById.js; no added errors.",
+    "android_native_realm_debug_and_release_compile": "pass",
+    "android_realm_16kb_elf_and_apk_alignment": "pass",
+    "android_native_scratch_stress": {
+      "writes": 100,
+      "priority_tasks": 100000,
+      "exact_notifications": true,
+      "duplicate_tasks": 0,
+      "scratch_database_deleted": true
+    },
+    "physical_android_camera": "Preview starts; app lock stops native camera; unlock resumes; Close stops. Microphone remains denied. Original lock setting restored.",
+    "protected_android_app_release_files_unchanged": 22
+  },
+  "artifacts": {
+    "camera_source_sha256": "82817ac60884490f21bae31d63470813a0c8b59d4f8f67071cd49c3b12b74947",
+    "realm_source_sha256": "ff3d4f84806844a1d5fa0572450b919532aa9d347ec85fab2b6f1fce213de7b0",
+    "android_debug_apk_sha256": "260f33627cc8301fe352e655a68aac993d1208b0808d393b4e49d91d34af6477",
+    "android_debug_realm_build_id": "b6fdf4a115a2095be301f324da5b31967f167cf9",
+    "android_release_realm_build_id": "a7758a94a672fe70ea054cb03a1984673fc8fe56",
+    "ios_release_javascript_sha256": "c8800f15f66f3ab3baf1169c1301beb6534dcafc9e0b37b7410967f56e0785b7",
+    "ios_release_executable_sha256": "945640b18ba5374e8f56844b6fb8b715a5c5eb77e47df8bc3ed550536db30c5c"
+  },
+  "limits": [
+    "No optical QR decode or physical iOS camera check is claimed. The iOS simulator has no camera sensor.",
+    "The iOS Settings test opens actual Settings and applies a controlled native permission grant. The OS restarted the app; mounted-screen return is covered by component tests.",
+    "The bounded Realm stress also passed before the fix. The earlier native full-run crash and deterministic thread-contract failures provide the before-fix evidence.",
+    "Android full E2E used Debug; the native Realm Release library was compiled separately. No new signed Android app Release or TestFlight archive was published."
+  ]
+}
