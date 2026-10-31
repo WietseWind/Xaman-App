@@ -12,7 +12,7 @@ import { AccountModel } from '@store/models';
 import { AccessLevels } from '@store/types';
 
 import { Images } from '@common/helpers/images';
-import { accountListLabel, sortAccountsByLabel } from '@common/helpers/accountListLabel';
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { AppScreens } from '@common/constants';
@@ -244,7 +244,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
             );
         }
 
-        return sortAccountsByLabel(accounts ? Array.from(accounts) : []).map((account) => {
+        return (accounts ? Array.from(accounts) : []).map((account) => {
             return this.renderRow(account);
         });
     };
