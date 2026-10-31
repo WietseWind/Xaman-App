@@ -156,7 +156,7 @@ it.each([
     },
 );
 
-it('shows Add account alongside an encryption upgrade notice', () => {
+it('preserves the encryption upgrade requirement before adding another account', () => {
     jest.mocked(AccountRepository.getAccounts).mockReturnValue(listSource([account()]) as any);
     const screen = new AccountList({});
     Object.assign(screen.state, { loadingAccountDetails: false, isMigrationRequired: true });
@@ -164,8 +164,19 @@ it('shows Add account alongside an encryption upgrade notice', () => {
         tree = renderer.create(screen.render());
     });
     const buttons = tree.root.findAllByType(Button);
-    expect(buttons.some((node) => node.props.testID === 'add-account-button')).toBe(true);
+    expect(buttons.some((node) => node.props.testID === 'add-account-button')).toBe(false);
     expect(buttons.some((node) => node.props.testID === 'update-encryption-button')).toBe(true);
+});
+
+it('keeps Add account available when encryption is current', () => {
+    jest.mocked(AccountRepository.getAccounts).mockReturnValue(listSource([account()]) as any);
+    const screen = new AccountList({});
+    Object.assign(screen.state, { loadingAccountDetails: false, isMigrationRequired: false });
+    act(() => { tree = renderer.create(screen.render()); });
+    const add = tree.root.findAllByType(Button).find((node) => node.props.testID === 'add-account-button');
+    expect(add).toBeDefined();
+    act(() => add!.props.onPress());
+    expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Add, {});
 });
 
 it('does not read an invalidated Realm account while returning from account removal', () => {

@@ -434,7 +434,7 @@ class AccountListView extends Component<Props, State> {
                                 </View>
                             </View>
                         ) : (
-                            !loadingAccountDetails && (
+                            !loadingAccountDetails && !isMigrationRequired && (
                                 <View style={styles.rowAddContainer}>
                                     <Button
                                         testID="add-account-button"
