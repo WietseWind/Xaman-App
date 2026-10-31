@@ -1,61 +1,17 @@
 import StyleService from '@services/StyleService';
-import { AppSizes, AppFonts } from '@theme';
+import { AppFonts } from '@theme';
 
-/* Styles ==================================================================== */
-const styles = StyleService.create({
-    container: {
-        position: 'relative',
-        flex: 1,
-        flexDirection: 'column',
-        // backgroundColor: AppColors.grey,
-    },
-    rowIcon: {
-        tintColor: '$blue',
-        marginRight: -10,
-    },
-    header: {
-        paddingVertical: AppSizes.paddingSml / 1.5,
-        borderBottomWidth: 0,
-        borderTopWidth: 0,
-        backgroundColor: '$tint',
-        marginTop: AppSizes.paddingSml / 2,
-        marginBottom: AppSizes.paddingSml / 2,
-    },
-    row: {
-        width: '100%',
-        paddingHorizontal: AppSizes.paddingSml,
-        paddingVertical: AppSizes.paddingSml,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '$background',
-        // borderBottomWidth: StyleSheet.hairlineWidth,
-        // borderTopWidth: StyleSheet.hairlineWidth,
-        // borderColor: '$tint',
-    },
-    label: {
-        fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.subtext.size,
-        color: '$textPrimary',
-    },
-    destructionLabel: {
-        fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.subtext.size,
-        color: '$red',
-        textAlign: 'center',
-    },
+export default StyleService.create({
+    container: { flex: 1, backgroundColor: '$background' },
     value: {
         fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.subtext.size,
-        textAlign: 'right',
-        color: '$textSecondary',
-    },
-    descriptionText: {
-        padding: AppSizes.paddingSml,
-        fontFamily: AppFonts.base.family,
         fontSize: AppFonts.base.size,
-        fontWeight: 'bold',
-        color: '$textPrimary',
+        color: '$textSecondary',
+        textAlign: 'right',
+    },
+    identifier: {
+        fontFamily: AppFonts.base.familyMono,
+        fontSize: AppFonts.small.size,
+        writingDirection: 'ltr',
     },
 });
-
-export default styles;
