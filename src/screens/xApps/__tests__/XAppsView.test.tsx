@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act, ReactTestRenderer } from 'react-test-renderer';
-import { InteractionManager, ScrollView, StyleSheet, Text } from 'react-native';
+import { InteractionManager, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 import { Navigation } from 'react-native-navigation';
 import BackendService from '@services/BackendService';
 import NetworkService from '@services/NetworkService';
@@ -8,6 +8,8 @@ import StyleService from '@services/StyleService';
 import Localize from '@locale';
 import { getXAppCategoryIcon } from '@common/helpers/xappCategoryIcon';
 import XAppsView, { Sections } from '../XAppsView';
+
+let mockUseRealSearchBar = false;
 
 jest.mock('@services/BackendService', () => ({ __esModule: true, default: { getXAppStoreListings: jest.fn() } }));
 jest.mock('@services/NetworkService', () => {
@@ -24,7 +26,11 @@ jest.mock('@components/General', () => {
     const ReactModule = require('react');
     class SearchBar extends ReactModule.Component {
         focus = jest.fn();
-        render() { return ReactModule.createElement('SearchBar', this.props); }
+        render() {
+            const Component = mockUseRealSearchBar
+                ? jest.requireActual('@components/General/SearchBar').SearchBar : 'SearchBar';
+            return ReactModule.createElement(Component, this.props);
+        }
     }
     return { Header: 'Header', TouchableDebounce: 'TouchableDebounce', Icon: 'Icon', SearchBar };
 });
@@ -80,6 +86,7 @@ const switchNetwork = async (next: typeof networkA) => {
 
 beforeEach(() => {
     jest.useFakeTimers(); jest.clearAllMocks();
+    mockUseRealSearchBar = false;
     requests = []; mountTasks = []; cancelMount = jest.fn(); removeNavigation = jest.fn(); network = networkA;
     jest.mocked(BackendService.getXAppStoreListings).mockImplementation(() => {
         const request = deferred(); requests.push(request); return request.promise;
@@ -169,6 +176,33 @@ it('reapplies the current query to new data when a refresh finishes', async () =
     expect(view.state.searchQuery).toBe('swap');
     expect(ids(view)).toEqual(['app.new-swap', 'app.swapper']);
     expect(tree!.root.findByType('SearchBar').props.defaultValue).toBe('swap');
+});
+
+it('keeps the real input and MoonPay results consistent after blur, tab return and async refresh', async () => {
+    mockUseRealSearchBar = true;
+    const moonpay = app('moonpay.buy', 'MoonPay Buy', 'Onramp');
+    const moonpaySell = app('moonpay.sell', 'MoonPay Sell', 'Offramp');
+    const view = mount();
+    await reply(0, response(catalog([moonpay, beta, alpha])));
+    act(() => view.toggleSearchBar());
+    const input = () => tree!.root.findByType(TextInput);
+    const resultIds = () => list().dataSource
+        .flatMap(({ data }: any) => data.map(({ identifier }: any) => identifier));
+    act(() => input().props.onChangeText('moo'));
+    expect(input().props.value).toBe('moo');
+    expect(resultIds()).toEqual(['moonpay.buy']);
+
+    // A native tab switch retains this screen and the input's internal state.
+    act(() => input().props.onBlur());
+    act(() => view.componentDidAppear());
+    expect(requests).toHaveLength(2);
+    expect(input().props.value).toBe('moo');
+    expect(resultIds()).toEqual(['moonpay.buy']);
+
+    await reply(1, response(catalog([beta, moonpaySell, alpha, moonpay])));
+    expect(input().props.value).toBe('moo');
+    expect(list().searching).toBe(true);
+    expect(resultIds()).toEqual(['moonpay.sell', 'moonpay.buy']);
 });
 
 it('keeps the current category selection when an in-flight refresh completes', async () => {
