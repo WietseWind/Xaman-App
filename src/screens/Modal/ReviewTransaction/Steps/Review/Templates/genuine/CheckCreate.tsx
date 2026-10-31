@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
-import { NetworkService, StyleService } from '@services';
+import { NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { CheckCreate } from '@common/libs/ledger/transactions';
 

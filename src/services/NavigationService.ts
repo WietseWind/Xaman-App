@@ -17,6 +17,7 @@ import {
     BottomTabLongPressedEvent,
     BottomTabPressedEvent,
     ModalDismissedEvent,
+    CommandCompletedEvent,
 } from 'react-native-navigation';
 
 import { Toast, VibrateHapticFeedback } from '@common/helpers/interface';
@@ -62,6 +63,9 @@ class NavigationService extends EventEmitter {
     private backHandlerClickCount: number;
     private backHandlerClickCountTimeout?: ReturnType<typeof setTimeout>;
     private launchSplashHidden: boolean;
+    private overlayGeneration = 0;
+    private overlayShows = new Map<string, { name: AppScreenKeys; generation: number }>();
+    private overlayDismissals = new Map<string, Array<{ name: AppScreenKeys; generation: number }>>();
 
     constructor() {
         super();
@@ -84,6 +88,7 @@ class NavigationService extends EventEmitter {
                 Navigation.events().registerComponentDidAppearListener(this.componentDidAppear);
                 Navigation.events().registerComponentWillAppearListener(this.componentWillAppear);
                 Navigation.events().registerCommandListener(this.navigatorCommandListener);
+                Navigation.events().registerCommandCompletedListener(this.navigatorCommandCompleted);
                 Navigation.events().registerModalDismissedListener(this.modalDismissedListener);
                 Navigation.events().registerBottomTabLongPressedListener(this.bottomTabLongPressedListener);
                 Navigation.events().registerBottomTabPressedListener(this.debouncedBottomTabPressedListener);
@@ -107,6 +112,8 @@ class NavigationService extends EventEmitter {
         this.currentScreen = undefined;
         this.modals = [];
         this.overlays = [];
+        this.overlayShows.clear();
+        this.overlayDismissals.clear();
         this.backHandlerClickCount = 0;
         this.launchSplashHidden = false;
 
@@ -208,9 +215,7 @@ class NavigationService extends EventEmitter {
     };
 
     onOverlayDismissed = (componentName: AppScreenKeys) => {
-        if (componentName === last(this.overlays)) {
-            this.pullCurrentOverlay();
-        }
+        this.overlays = this.overlays.filter((overlay) => overlay !== componentName);
     };
 
     hideLaunchSplashOnce = () => {
@@ -273,8 +278,35 @@ class NavigationService extends EventEmitter {
 
     navigatorCommandListener = (name: string, params: any) => {
         switch (name) {
+            case 'showOverlay': {
+                // RNN's parsed layout contains the native ID and registered component name.
+                const { layout } = params;
+                const componentName = layout?.data?.name as AppScreenKeys | undefined;
+                if (layout?.id && componentName) {
+                    this.overlayShows.forEach((entry, id) => {
+                        if (entry.name === componentName) this.overlayShows.delete(id);
+                    });
+                    this.overlayShows.set(layout.id, { name: componentName, generation: ++this.overlayGeneration });
+                }
+                break;
+            }
             case 'dismissOverlay':
-                this.onOverlayDismissed(params.componentId);
+                if (params.commandId) {
+                    this.overlayDismissals.set(params.commandId, [this.overlayShows.get(params.componentId) ?? {
+                        name: params.componentId, generation: 0,
+                    }]);
+                }
+                this.onOverlayDismissed(this.overlayShows.get(params.componentId)?.name ?? params.componentId);
+                break;
+            case 'dismissAllOverlays':
+                if (params.commandId) {
+                    const shown = [...this.overlayShows.values()];
+                    this.overlayDismissals.set(params.commandId, [
+                        ...shown,
+                        ...this.overlays.filter((overlay) => !shown.some((entry) => entry.name === overlay))
+                            .map((overlay) => ({ name: overlay, generation: 0 })),
+                    ]);
+                }
                 break;
             case 'setRoot':
                 this.onRootChange(params.layout.root.id);
@@ -282,6 +314,20 @@ class NavigationService extends EventEmitter {
             default:
                 break;
         }
+    };
+
+    navigatorCommandCompleted = ({ commandId }: CommandCompletedEvent) => {
+        const dismissed = this.overlayDismissals.get(commandId);
+        if (!dismissed) return;
+        this.overlayDismissals.delete(commandId);
+        dismissed.forEach((entry) => {
+            const current = [...this.overlayShows.values()].find((show) => show.name === entry.name);
+            if ((current?.generation ?? 0) === entry.generation) {
+                // Foreground events can re-add an overlay while native dismissal is running.
+                // Reconcile at completion without removing a newer presentation of the same name.
+                this.onOverlayDismissed(entry.name);
+            }
+        });
     };
 
     /**

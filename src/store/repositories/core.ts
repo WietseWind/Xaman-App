@@ -13,6 +13,11 @@ import NetworkModel from '@store/models/objects/network';
 
 import BaseRepository from './base';
 
+type AuthenticationSettings = Pick<
+    CoreModel,
+    'passcodeFailedAttempts' | 'lastPasscodeFailedTimestamp' | 'lastUnlockedTimestamp'
+>;
+
 /* Events  ==================================================================== */
 export type CoreRepositoryEvent = {
     updateSettings: (settings: CoreModel, changes: Partial<CoreModel>) => void;
@@ -50,6 +55,17 @@ class CoreRepository extends BaseRepository<CoreModel> {
         } else {
             this.create(settings);
         }
+    };
+
+    /** Commit authentication state synchronously; callers must observe storage failures before unlocking. */
+    saveAuthenticationSettings = (changes: Partial<AuthenticationSettings>): void => {
+        const settings = this.getSettings();
+        if (!settings) throw new Error('Authentication settings are unavailable');
+        // Unlike safeWrite, do not defer a nested transaction and acknowledge an uncommitted change.
+        this.realm.write(() => {
+            assign(settings, changes);
+        });
+        this.emit('updateSettings', settings, changes);
     };
 
     /**
@@ -170,6 +186,17 @@ class CoreRepository extends BaseRepository<CoreModel> {
         } catch (e) {
             return '';
         }
+    };
+
+    /** Persist an already hashed passcode as the rekey transaction's commit record. */
+    savePasscodeHash = (passcode: string): void => {
+        if (!passcode) throw new Error('Empty passcode hash');
+        const settings = this.getSettings();
+        // Do not defer this commit: recovery uses the persisted hash to choose its target.
+        this.realm.write(() => {
+            settings.passcode = passcode;
+        });
+        this.emit('updateSettings', settings, { passcode });
     };
 
     /**

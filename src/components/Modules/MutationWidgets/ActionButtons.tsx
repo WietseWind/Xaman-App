@@ -24,7 +24,10 @@ import { Props as ReviewTransactionModalProps } from '@screens/Modal/ReviewTrans
 
 import Localize from '@locale';
 
+import { nftOfferActions } from './nftOfferActions';
+
 import styles from './styles';
+import { filterActionsForScamAdvisory } from './scamActionFilter';
 /* Types ==================================================================== */
 import { Props } from './types';
 import { AppStyles } from '@theme/index';
@@ -260,21 +263,15 @@ class ActionButtons extends PureComponent<Props, State> {
                 }
                 break;
             case LedgerEntryTypes.Delegate:
-                availableActions.push(ActionTypes.REMOVE_DELEGATION);
+                // A delegate may see the object in its directory, but only the granting account can revoke it.
+                if (item.Account === account.address && item.isOnCurrentNetwork()) {
+                    availableActions.push(ActionTypes.REMOVE_DELEGATION);
+                }
                 break;
             case LedgerEntryTypes.NFTokenOffer:
-                if (item.Owner === account.address) {
-                    availableActions.push(ActionTypes.CANCEL_OFFER);
-                } else if (!item.Destination || item.Destination === account.address) {
-                    if (item.Flags?.lsfSellNFToken) {
-                        if (item.Destination === account.address) {
-                            availableActions.push(ActionTypes.CANCEL_NFTOKEN_OFFER);
-                        }
-                        availableActions.push(ActionTypes.ACCEPT_NFTOKEN_OFFER);
-                    } else {
-                        availableActions.push(ActionTypes.SELL_NFTOKEN);
-                    }
-                }
+                nftOfferActions(item, account.address).forEach((action) => {
+                    availableActions.push(ActionTypes[action]);
+                });
                 break;
             case LedgerEntryTypes.URIToken:
             case TransactionTypes.URITokenMint:
@@ -382,6 +379,16 @@ class ActionButtons extends PureComponent<Props, State> {
 
         if (actionType === ActionTypes.OPEN_XAPP) {
             this.onOpenXAppPress();
+            return;
+        }
+
+        if (actionType === ActionTypes.REMOVE_DELEGATION && item.Type === LedgerEntryTypes.Delegate &&
+            !item.isOnCurrentNetwork()) {
+            Navigator.showAlertModal({
+                type: 'warning',
+                text: Localize.t('payload.definitionsChanged'),
+                buttons: [{ text: Localize.t('global.ok'), onPress: () => {}, light: false }],
+            });
             return;
         }
 
@@ -515,7 +522,9 @@ class ActionButtons extends PureComponent<Props, State> {
                 }
                 break;
             case ActionTypes.REMOVE_DELEGATION:
-                if (item.Type === LedgerEntryTypes.Delegate) {
+                if (item.Type === LedgerEntryTypes.Delegate && item.Account === account.address &&
+                    item.isOnCurrentNetwork() &&
+                    AccountRepository.getSpendableAccounts().some(acc => acc.address === account.address)) {
                     Object.assign(craftedTxJson, {
                         TransactionType: TransactionTypes.DelegateSet,
                         Account: item.Account,
@@ -695,6 +704,9 @@ class ActionButtons extends PureComponent<Props, State> {
 
             // generate payload
             const payload = Payload.build(craftedTxJson);
+            if (item.Type === LedgerEntryTypes.Delegate && item.Permissions?.length) {
+                payload.revokedPermissions = item.Permissions;
+            }
 
             Navigator.showModal<ReviewTransactionModalProps>(
                 AppScreens.Modal.ReviewTransaction,
@@ -711,13 +723,15 @@ class ActionButtons extends PureComponent<Props, State> {
 
     renderActionButtons = () => {
         const { availableActions } = this.state;
-        const { item } = this.props;
+        const { item, advisory } = this.props;
 
         if (!availableActions) {
             return null;
         }
 
-        return availableActions.map((type, index) => {
+        const visibleActions = filterActionsForScamAdvisory(availableActions, advisory);
+
+        return visibleActions.map((type, index) => {
             const key = `action-button-${index}-${(item as any)?.hash}`;
 
             return (
@@ -733,10 +747,12 @@ class ActionButtons extends PureComponent<Props, State> {
     };
 
     render() {
-        const { componentType } = this.props;
+        const { componentType, advisory } = this.props;
         const { availableActions } = this.state;
 
-        if (!availableActions || availableActions.length === 0 || componentType === ComponentTypes.Modal) {
+        const visibleActions = filterActionsForScamAdvisory(availableActions || [], advisory);
+
+        if (!availableActions || visibleActions.length === 0 || componentType === ComponentTypes.Modal) {
             return null;
         }
 

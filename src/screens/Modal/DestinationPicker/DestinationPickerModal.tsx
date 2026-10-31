@@ -17,6 +17,7 @@ import { AppScreens } from '@common/constants';
 import { Destination } from '@common/libs/ledger/parser/types';
 
 import { Toast } from '@common/helpers/interface';
+import { accountListLabel, sortAccountsByLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { tryNormalizeDestination } from '@common/utils/codec';
@@ -34,6 +35,7 @@ import { FlaggedDestinationOverlayProps } from '@screens/Overlay/FlaggedDestinat
 
 import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
+import { appendServerMatches } from './appendServerMatches';
 
 /* types ==================================================================== */
 export interface Props {
@@ -192,12 +194,14 @@ class DestinationPickerModal extends Component<Props, State> {
 
             // search for accounts
             accounts.forEach((item) => {
+                const name = accountListLabel(item);
+
                 if (
-                    item.label?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
+                    name.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
                     item.address?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1
                 ) {
                     searchResult.push({
-                        name: item.label,
+                        name,
                         address: item.address,
                         source: 'accounts',
                     });
@@ -207,45 +211,22 @@ class DestinationPickerModal extends Component<Props, State> {
             // if text length is more than 4 do server lookup
             if (searchText?.length >= 4) {
                 BackendService.lookup(searchText)
-                    .then((res: any) => {
-                        if (!isEmpty(res) && res.error !== true) {
-                            if (!isEmpty(res.matches)) {
-                                res.matches.forEach(async (element: any) => {
-                                    // if payid in result, then look for payId in local source as well
-                                    if (element.source === 'payid') {
-                                        const internalResult = await ResolverService.getAccountName(
-                                            element.account,
-                                            element.tag,
-                                            true,
-                                        );
+                    .then(async (res: any) => {
+                        if (!isEmpty(res) && res.error !== true && !isEmpty(res.matches)) {
+                            await appendServerMatches(
+                                searchResult,
+                                res.matches,
+                                sequence,
+                                () => this.sequence,
+                                (account, tag) => ResolverService.getAccountName(account, tag, true),
+                            );
+                        }
 
-                                        // found in local source
-                                        if (internalResult.name) {
-                                            searchResult.push({
-                                                name: internalResult.name || '',
-                                                address: element.account,
-                                                tag: element.tag,
-                                                source: internalResult.source,
-                                            });
-
-                                            return;
-                                        }
-                                    }
-
-                                    searchResult.push({
-                                        name: element.alias === element.account ? '' : element.alias,
-                                        address: element.account,
-                                        source: element.source,
-                                        tag: element.tag,
-                                        kycApproved: element.kycApproved,
-                                    });
-                                });
-                            }
+                        if (sequence === this.sequence) {
+                            this.setSearchResult(searchResult);
                         }
                     })
-                    .catch(() => {})
-                    .finally(() => {
-                        // this will make sure the latest call will apply
+                    .catch(() => {
                         if (sequence === this.sequence) {
                             this.setSearchResult(searchResult);
                         }
@@ -302,8 +283,8 @@ class DestinationPickerModal extends Component<Props, State> {
         if (accounts && accounts.length !== 0) {
             dataSource.push({
                 title: Localize.t('account.myAccounts'),
-                data: flatMap(accounts, (a) => {
-                    return { name: a.label, address: a.address };
+                data: flatMap(sortAccountsByLabel(Array.from(accounts)), (a) => {
+                    return { name: accountListLabel(a), address: a.address };
                 }),
             });
         }

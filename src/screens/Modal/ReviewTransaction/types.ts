@@ -38,6 +38,7 @@ export interface State {
 }
 
 export interface ContextProps extends State {
+    canEditAmount: () => boolean;
     timestamp?: number;
     setTransaction: (tx: SignableMutatedTransaction) => void;
     setAccounts: (accounts: AccountModel[]) => void;

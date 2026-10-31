@@ -9,6 +9,8 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 
 import * as AccountLib from 'xrpl-accountlib';
 
+import RNTangemSdk from 'tangem-sdk-react-native';
+
 import { XAppOrigin } from '@common/libs/payload';
 
 import { Toast } from '@common/helpers/interface';
@@ -18,7 +20,13 @@ import { SHA256 } from '@common/libs/crypto';
 
 import Vault from '@common/libs/vault';
 
-import { GetCardId, GetWalletDerivedPublicKey } from '@common/utils/tangem';
+import {
+    DefaultDerivationPaths,
+    GetCardId,
+    GetWalletDerivedPublicKey,
+    TangemCardMatchesAccount,
+} from '@common/utils/tangem';
+import { startTangemOfflineSession } from '@common/utils/tangemSession';
 
 import { AppScreens } from '@common/constants';
 
@@ -49,6 +57,7 @@ import NetworkService from '@services/NetworkService';
 
 /* types ==================================================================== */
 import { ImportSteps, Props, SecretTypes, State } from './types';
+import { shouldFinishTangemUpgrade, stateForSecretType } from './tangemUpgradeReset';
 
 /* Component ==================================================================== */
 class AccountImportView extends Component<Props, State> {
@@ -95,6 +104,7 @@ class AccountImportView extends Component<Props, State> {
             importedAccount: undefined,
             passphrase: undefined,
             tangemSignature: undefined,
+            scannedTangemCard: undefined,
             secretType: SecretTypes.SecretNumbers,
             upgradeAccount: props.upgradeAccount,
             alternativeSeedAlphabet: props.alternativeSeedAlphabet,
@@ -223,8 +233,116 @@ class AccountImportView extends Component<Props, State> {
         });
     };
 
+    tangemCardRejected = () => {
+        Alert.alert(Localize.t('global.error'), Localize.t('account.tangemCardDoesNotMatchReadOnly'), [
+            {
+                text: Localize.t('global.ok'),
+                onPress: () => Navigator.pop(),
+            },
+        ]);
+    };
+
+    beginTangemUpgrade = async () => {
+        const { upgradeAccount } = this.state;
+
+        if (!upgradeAccount?.address) {
+            return;
+        }
+
+        try {
+            await startTangemOfflineSession({
+                defaultDerivationPaths: DefaultDerivationPaths,
+            }).catch(() => {
+                // The scan below still runs. Offline mode matches the other Tangem entry points.
+            });
+
+            const card = await RNTangemSdk.scanCard();
+            const publicKey = GetWalletDerivedPublicKey(card);
+            const address = AccountLib.utils.deriveAddress(publicKey);
+
+            if (!TangemCardMatchesAccount(address, upgradeAccount.address)) {
+                this.tangemCardRejected();
+                return;
+            }
+
+            const importedAccount = new AccountLib.XRPL_Account({
+                address,
+                keypair: { publicKey, privateKey: null },
+            });
+
+            this.setState(
+                {
+                    scannedTangemCard: card,
+                    importedAccount,
+                    account: {
+                        type: AccountTypes.Tangem,
+                        publicKey,
+                        address,
+                        encryptionLevel: EncryptionLevels.Physical,
+                        accessLevel: AccessLevels.Full,
+                        additionalInfoString: JSON.stringify(card),
+                    },
+                },
+                () => {
+                    this.goNext('VerifySignature');
+                },
+            );
+        } catch (error: any) {
+            if (error?.message === 'The user cancelled the operation') {
+                return;
+            }
+            this.tangemCardRejected();
+        }
+    };
+
+    finishTangemUpgrade = async () => {
+        const { account, upgradeAccount, tangemSignature, scannedTangemCard } = this.state;
+
+        if (!upgradeAccount?.address || !scannedTangemCard) {
+            return;
+        }
+
+        if (!TangemCardMatchesAccount(account.address, upgradeAccount.address)) {
+            this.tangemCardRejected();
+            return;
+        }
+
+        try {
+            if (tangemSignature) {
+                await BackendService.addAccount(
+                    upgradeAccount.address,
+                    tangemSignature,
+                    GetCardId(scannedTangemCard),
+                ).catch(() => {
+                    // The local account still becomes a Tangem account if the backend is unreachable.
+                });
+            }
+
+            const updated = await AccountRepository.update({
+                address: upgradeAccount.address,
+                type: AccountTypes.Tangem,
+                accessLevel: AccessLevels.Full,
+                encryptionLevel: EncryptionLevels.Physical,
+                publicKey: account.publicKey,
+                additionalInfoString: JSON.stringify(scannedTangemCard),
+            });
+
+            const settings = CoreRepository.getSettings();
+            if (settings?.account?.address === updated.address) {
+                CoreRepository.saveSettings({ account: updated });
+            }
+
+            Navigator.pop();
+        } catch (error) {
+            Alert.alert(
+                Localize.t('global.error'),
+                `${Localize.t('global.unexpectedErrorOccurred')} - ${(error as Error)?.message || 'Unknown error'}`,
+            );
+        }
+    };
+
     setSecretType = (type: SecretTypes, callback?: any) => {
-        this.setState({ secretType: type }, () => {
+        this.setState((state) => stateForSecretType(state, type), () => {
             if (typeof callback === 'function') {
                 callback();
             }
@@ -251,12 +369,25 @@ class AccountImportView extends Component<Props, State> {
     };
 
     goNext = async (nextStep?: ImportSteps) => {
-        const { account, upgradeAccount, importedAccount, alternativeSeedAlphabet, currentStep, prevSteps } =
-            this.state;
+        const {
+            account, upgradeAccount, importedAccount, alternativeSeedAlphabet, currentStep, prevSteps,
+            secretType, scannedTangemCard,
+        } = this.state;
 
         // we are in the last screen, just import the account and close the screen
         if (currentStep === 'FinishStep') {
             await this.importAccount();
+            return;
+        }
+
+        // Tangem upgrade follows the selected secret type, not a card left over from Back.
+        if (shouldFinishTangemUpgrade({
+            nextStep,
+            hasUpgradeAccount: !!upgradeAccount,
+            secretType,
+            hasScannedCard: !!scannedTangemCard,
+        })) {
+            await this.finishTangemUpgrade();
             return;
         }
 
@@ -544,6 +675,7 @@ class AccountImportView extends Component<Props, State> {
                     setAdditionalInfo: this.setAdditionalInfo,
                     setTangemSignature: this.setTangemSignature,
                     setSecretType: this.setSecretType,
+                    beginTangemUpgrade: this.beginTangemUpgrade,
                 }}
             >
                 <Step />

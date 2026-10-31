@@ -9,6 +9,8 @@ import React, { PureComponent } from 'react';
 import { TextInput, TextStyle, ReturnKeyTypeOptions } from 'react-native';
 
 import Localize from '@locale';
+import { noAutofillProps } from '../TextInput/noAutofill';
+import { AmountInputEditingContext } from './EditingContext';
 
 /* Types ==================================================================== */
 export enum AmountValueType {
@@ -40,7 +42,10 @@ const MAX_IOU_PRECISION = 16;
 
 /* Component ==================================================================== */
 class AmountInput extends PureComponent<Props, State> {
+    static contextType = AmountInputEditingContext;
+    declare context: React.ContextType<typeof AmountInputEditingContext>;
     declare readonly props: Props & Required<Pick<Props, keyof typeof AmountInput.defaultProps>>;
+    private focused = false;
 
     static defaultProps: Partial<Props> = {
         fractional: true,
@@ -60,6 +65,23 @@ class AmountInput extends PureComponent<Props, State> {
         const { value } = this.state;
         return value;
     };
+
+    componentDidUpdate() {
+        if (!this.canEdit()) this.focused = false;
+    }
+
+    componentWillUnmount() {
+        this.focused = false;
+    }
+
+    canEdit = () => {
+        const { editable } = this.props;
+        return this.context() && editable !== false;
+    };
+
+    onFocus = () => { this.focused = this.canEdit(); };
+
+    onBlur = () => { this.focused = false; };
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State): Partial<State> | null {
         if (nextProps.value !== prevState.value) {
@@ -157,26 +179,26 @@ class AmountInput extends PureComponent<Props, State> {
     };
 
     onValueChange = (value: string) => {
+        // Autofill can deliver text to a field behind an authentication overlay.
+        // Never turn a credential such as test123 into a transaction amount.
+        if (!this.canEdit()) {
+            this.focused = false;
+            return;
+        }
+        if (!this.focused || /[^0-9.,\s]/.test(value)) return;
         const { onChange, fractional, valueType } = this.props;
 
         const formatted = AmountInput.format(value, valueType, fractional);
         const clean = AmountInput.normalize(formatted);
 
-        this.setState(
-            {
-                formatted,
-                value: clean,
-            },
-            () => {
-                if (typeof onChange === 'function') {
-                    onChange(clean);
-                }
-            },
-        );
+        // Apply an accepted edit before authentication can start. Deferring the
+        // model update to a render callback could lose the last typed amount.
+        if (typeof onChange === 'function') onChange(clean);
+        this.setState({ formatted, value: clean });
     };
 
     render() {
-        const { editable, style, testID, returnKeyType, placeholderTextColor, forwardedRef } = this.props;
+        const { style, testID, returnKeyType, placeholderTextColor, forwardedRef } = this.props;
         const { formatted } = this.state;
 
         return (
@@ -184,14 +206,18 @@ class AmountInput extends PureComponent<Props, State> {
                 testID={testID}
                 ref={forwardedRef}
                 keyboardType="decimal-pad"
-                autoCapitalize="words"
+                autoCapitalize="none"
+                onFocus={this.onFocus}
+                onBlur={this.onBlur}
                 onChangeText={this.onValueChange}
                 returnKeyType={returnKeyType || 'done'}
                 placeholder="0"
                 style={style}
                 value={formatted}
-                editable={editable}
+                editable={this.canEdit()}
                 placeholderTextColor={placeholderTextColor}
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...noAutofillProps}
             />
         );
     }

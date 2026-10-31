@@ -59,6 +59,8 @@ import { ShareAccountOverlayProps } from '@screens/Overlay/ShareAccount';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import NodeConnection from './NodeConnection';
+import { shouldApplyAccountUpdate } from './accountUpdateGuard';
 import onboardingStyles from '../Onboarding/styles';
 import { AccountGenerateViewProps } from '@screens/Account/Add/Generate';
 import { AccountImportViewProps } from '@screens/Account/Add/Import';
@@ -73,7 +75,6 @@ export interface State {
     isSpendable: boolean;
     isSignable: boolean;
     selectedNetwork: NetworkModel;
-    connectedNode: string;
     developerMode: boolean;
     discreetMode: boolean;
     experimentalUI?: boolean;
@@ -106,7 +107,6 @@ class HomeView extends Component<Props, State> {
             isSpendable: false,
             isSignable: false,
             selectedNetwork: coreSettings.network,
-            connectedNode: coreSettings.network?.defaultNode?.endpoint || '',
             developerMode: coreSettings.developerMode,
             discreetMode: coreSettings.discreetMode,
             experimentalUI: undefined,
@@ -120,9 +120,6 @@ class HomeView extends Component<Props, State> {
         AccountRepository.on('accountUpdate', this.onAccountUpdate);
         // update discreetMode and developerMode on change
         CoreRepository.on('updateSettings', this.onCoreSettingsUpdate);
-        // live socket node (failover) for the developer-mode "Connected to" label
-        NetworkService.on('connect', this.onNetworkConnect);
-        this.onNetworkConnect();
 
         // listen for screen appear event
         this.navigationListener = Navigation.events().bindComponent(this);
@@ -174,7 +171,6 @@ class HomeView extends Component<Props, State> {
 
         AccountRepository.off('accountUpdate', this.onAccountUpdate);
         CoreRepository.off('updateSettings', this.onCoreSettingsUpdate);
-        NetworkService.off('connect', this.onNetworkConnect);
 
         if (this.nfcChangeListener) {
             this.nfcChangeListener.remove();
@@ -228,33 +224,16 @@ class HomeView extends Component<Props, State> {
                 {
                     developerMode: coreSettings.developerMode,
                     selectedNetwork: coreSettings.network,
-                    connectedNode:
-                        NetworkService.getConnectedEndpoint() ||
-                        coreSettings.network?.defaultNode?.endpoint ||
-                        '',
                 },
                 this.updateAccountStatus,
             );
         }
     };
 
-    onNetworkConnect = () => {
-        const { connectedNode } = this.state;
-        const nextNode = NetworkService.getConnectedEndpoint();
-
-        if (!nextNode || nextNode === connectedNode) {
-            return;
-        }
-
-        this.setState({
-            connectedNode: nextNode,
-        });
-    };
-
     onAccountUpdate = (updatedAccount: AccountModel) => {
         const { account } = this.state;
 
-        if (updatedAccount?.isValid() && updatedAccount.address === account.address) {
+        if (shouldApplyAccountUpdate(updatedAccount, account)) {
             // update the UI
             this.setState(
                 {
@@ -632,20 +611,13 @@ class HomeView extends Component<Props, State> {
     };
 
     renderNetworkDetails = () => {
-        const { developerMode, selectedNetwork, connectedNode, experimentalUI } = this.state;
+        const { developerMode, selectedNetwork, experimentalUI } = this.state;
 
         if (!developerMode || !selectedNetwork || typeof experimentalUI === 'undefined' || experimentalUI) {
             return null;
         }
 
-        return (
-            <View style={styles.networkDetailsContainer}>
-                <Text style={styles.networkTextLabel}>{Localize.t('global.connectedTo')} </Text>
-                <Text adjustsFontSizeToFit numberOfLines={1} style={styles.networkTextContent}>
-                    {connectedNode || selectedNetwork.defaultNode.endpoint}
-                </Text>
-            </View>
-        );
+        return <NodeConnection fallbackEndpoint={selectedNetwork.defaultNode.endpoint} />;
     };
 
     renderAccountAddress = () => {

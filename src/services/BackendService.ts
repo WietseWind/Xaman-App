@@ -59,12 +59,15 @@ const lastHashes: { [key: string]: [string, any] } = {};
  */
 class BackendService {
     private rates: Map<string, RatesType>;
+    private rateRequests: Map<string, Promise<RatesType>>;
+    private rateGeneration = 0;
 
     private logger: LoggerInstance;
 
     constructor() {
         this.logger = LoggerService.createLogger('Backend');
         this.rates = new Map();
+        this.rateRequests = new Map();
     }
 
     public initialize = () => {
@@ -73,6 +76,8 @@ class BackendService {
                 // listen for ledger transaction submit
                 LedgerService.on('submitTransaction', this.onLedgerTransactionSubmit);
                 NetworkService.on('preSubmitTxEvent', this.addSignedTxBlob);
+                NetworkService.off('networkChange', this.onNetworkChange);
+                NetworkService.on('networkChange', this.onNetworkChange);
 
                 // resolve
                 resolve();
@@ -573,6 +578,19 @@ class BackendService {
         feeHooks: number;
         feePercentage: number;
         suggested: string;
+        submitCondition?: {
+            minMovedShare?: number;
+            field?: string;
+            amount?: string | { currency: string; issuer: string; value: string };
+            allRequiredInnerSucceeded?: boolean;
+            requiredInner?: number[];
+            inner?: Array<{
+                index: number;
+                minMovedShare: number;
+                field: string;
+                amount: string | { currency: string; issuer: string; value: string };
+            }>;
+        };
     }> => {
         const body = {
             txJson,
@@ -582,11 +600,13 @@ class BackendService {
 
         this.logger.warn(`Fetching service fee for ${txJson?.Account} @ ${payloadUuid}`);
 
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
         try {
             const pr = await Promise.race([
                 ApiService.fetch(Endpoints.ServiceFee, 'POST', null, body),
                 new Promise((resolve) => {
-                    setTimeout(() => {
+                    timeoutId = setTimeout(() => {
                         resolve({});
                     }, 6_000);
                 }),
@@ -597,6 +617,10 @@ class BackendService {
             }
         } catch (error) {
             // No fee
+        } finally {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
         }
 
         // Default, so we know if we get a 0 drop Fee payment there has been a timeout on
@@ -710,46 +734,64 @@ class BackendService {
     };
 
     /**
-     * Gets the exchange rate for a currency.
+     * Drop cached fiat rates. A network switch must not keep another native asset's price.
+     */
+    onNetworkChange = () => {
+        this.rateGeneration++;
+        this.rates.clear();
+        this.rateRequests.clear();
+    };
+
+    /**
+     * Gets the exchange rate for a currency against the current native asset.
      * @param {string} currencyCode - The currency code.
      * @returns {Promise} A promise that resolves with the exchange rate data.
      */
     getCurrencyRate = (currencyCode: string): Promise<RatesType> => {
-        return new Promise((resolve, reject) => {
-            // get current network asset
-            const nativeAsset = NetworkService.getNativeAsset();
+        // Captured once. ApiService reads X-Xaman-Net after an await, and the response can
+        // arrive after a switch. The cache entry and the field we read must stay this asset.
+        const nativeAsset = NetworkService.getNativeAsset();
+        const networkKey = NetworkService.getNetwork()?.key ?? '';
+        const cacheKey = `${currencyCode}-${networkKey}-${nativeAsset}`;
 
-            // get cache key
-            const cacheKey = `${currencyCode}-${nativeAsset}`;
-
-            // check the cached version before requesting from backend
-            if (this.rates.has(cacheKey)) {
-                // calculate passed seconds from the latest sync
-                const passedSeconds = moment().diff(moment.unix(this.rates.get(cacheKey)!.lastSync), 'second');
-
-                // if the latest rate fetch is already less than 60 second return cached value
-                if (passedSeconds <= 60) {
-                    resolve(this.rates.get(cacheKey)!);
-                    return;
-                }
+        const cached = this.rates.get(cacheKey);
+        if (cached) {
+            const passedSeconds = moment().diff(moment.unix(cached.lastSync), 'second');
+            if (passedSeconds <= 60) {
+                return Promise.resolve(cached);
             }
+        }
 
-            // fetch/update the rate from backend
-            ApiService.fetch(Endpoints.Rates, 'GET', {
-                currency: currencyCode,
-            })
-                .then((response: XamanBackend.CurrencyRateResponse) => {
-                    const rate = {
-                        rate: get(response, NetworkService.getNativeAsset(), 0),
-                        code: currencyCode,
-                        symbol: get(response, '__meta.currency.symbol'),
-                        lastSync: moment().unix(),
-                    };
-                    this.rates.set(cacheKey, rate);
-                    resolve(rate);
-                })
-                .catch(reject);
+        // Each consumer keeps its own UI callback, but shares the same network request.
+        const pending = this.rateRequests.get(cacheKey);
+        if (pending) return pending;
+        const generation = this.rateGeneration;
+
+        const headers: { [key: string]: string } = {
+            'Cache-Control': 'no-cache',
+        };
+        if (networkKey) {
+            headers['X-Xaman-Net'] = networkKey;
+        }
+
+        const request = ApiService.fetch(Endpoints.Rates, 'GET', { currency: currencyCode }, undefined, headers).then(
+            (response: XamanBackend.CurrencyRateResponse) => {
+                const rate = {
+                    rate: get(response, nativeAsset, 0),
+                    code: currencyCode,
+                    symbol: get(response, '__meta.currency.symbol'),
+                    lastSync: moment().unix(),
+                };
+                // A reply from before a network switch still resolves for its original callers.
+                if (generation === this.rateGeneration) this.rates.set(cacheKey, rate);
+                return rate;
+            },
+        ).finally(() => {
+            // An old reply must not remove a newer request after switching away and back.
+            if (this.rateRequests.get(cacheKey) === request) this.rateRequests.delete(cacheKey);
         });
+        this.rateRequests.set(cacheKey, request);
+        return request;
     };
 
     /**

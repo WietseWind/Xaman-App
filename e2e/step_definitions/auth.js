@@ -4,12 +4,13 @@ const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { clickByTestId, waitUntilAndroidTestId, enterAndroidPasscode, androidTypeText } = require('../helpers/tapById');
 
-let passcode = process.env.E2E_PASSCODE || '167349';
+const { getCurrentTestPasscode, setCurrentTestPasscode } = require('../helpers/testCredentials');
 
 const passphrase = '&uHCnPv4T=#~;Ca';
 const newPassphrase = '4b<8xu8HbP)%hzpgh';
 
 Then('I enter my passcode', async () => {
+    const passcode = getCurrentTestPasscode();
     if (device.getPlatform() === 'android') {
         await waitUntilAndroidTestId('1-key', 10000);
         await new Promise((resolve) => { setTimeout(resolve, 800); });
@@ -24,6 +25,7 @@ Then('I enter my passcode', async () => {
 });
 
 Then('I type my passcode', async () => {
+    const passcode = getCurrentTestPasscode();
     if (device.getPlatform() === 'android') {
         try {
             await waitUntilAndroidTestId('1-key', 10000);
@@ -68,7 +70,8 @@ Then('I type my passcode', async () => {
 });
 
 Then('I type my new passcode', async () => {
-    passcode = '958347';
+    const passcode = '958347';
+    setCurrentTestPasscode(passcode);
     if (device.getPlatform() === 'android') {
         await enterAndroidPasscode(passcode);
         return;

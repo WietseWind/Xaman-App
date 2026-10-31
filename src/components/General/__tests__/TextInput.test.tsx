@@ -22,7 +22,7 @@ describe('[TextInput]', () => {
 
         expect(input.props.autoComplete).toBe('off');
         expect(input.props.textContentType).toBe('none');
-        expect(input.props.importantForAutofill).toBe('no');
+        expect(input.props.importantForAutofill).toBe('noExcludeDescendants');
         expect(input.props.autoCorrect).toBe(false);
         expect(input.props.spellCheck).toBe(false);
         expect(noAutofillProps.textContentType).toBe('none');

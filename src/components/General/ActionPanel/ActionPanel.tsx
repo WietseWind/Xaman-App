@@ -25,6 +25,9 @@ interface Props extends React.PropsWithChildren {
     extraBottomInset?: boolean;
     testID?: string;
     contentStyle?: ViewStyle | ViewStyle[];
+    onCloseRequest?: () => void;
+    onDragEnd?: () => void;
+    lockAfterCloseRequest?: boolean;
     onSlideDown?: () => void;
 }
 
@@ -51,9 +54,9 @@ class ActionPanel extends Component<Props, State> {
     private currentY: number;
     private dragStartY: number;
     private currentIndex: number;
-    private isOpening: boolean;
     private isDragging: boolean;
     private dismissed: boolean;
+    private closeRequested: boolean;
     private startedOnHeader: boolean;
     private slideTimeout?: ReturnType<typeof setTimeout>;
 
@@ -72,9 +75,9 @@ class ActionPanel extends Component<Props, State> {
         this.currentY = screenHeight;
         this.dragStartY = screenHeight;
         this.currentIndex = 0;
-        this.isOpening = true;
         this.isDragging = false;
         this.dismissed = false;
+        this.closeRequested = false;
         this.startedOnHeader = false;
 
         this.translateY.addListener(({ value }) => {
@@ -137,12 +140,34 @@ class ActionPanel extends Component<Props, State> {
         };
     }
 
+    public get isDragActive(): boolean {
+        return this.isDragging;
+    }
+
     public slideUp = () => {
+        // A tap can close the sheet before the deferred open runs.
+        if (this.dismissed || this.closeRequested) {
+            return;
+        }
+
         this.snapTo(1);
     };
 
     public slideDown = () => {
+        this.requestClose();
         this.snapTo(0);
+    };
+
+    private requestClose = () => {
+        if (this.closeRequested) return;
+        this.closeRequested = true;
+        const { onCloseRequest } = this.props;
+        onCloseRequest?.();
+    };
+
+    private isCloseLocked = () => {
+        const { lockAfterCloseRequest } = this.props;
+        return this.closeRequested && lockAfterCloseRequest;
     };
 
     public snapTo = (index: number) => {
@@ -156,11 +181,13 @@ class ActionPanel extends Component<Props, State> {
     };
 
     private onStartShouldSetPanResponder = (event: GestureResponderEvent) => {
+        if (this.isCloseLocked()) return false;
         this.startedOnHeader = event.nativeEvent.locationY <= HEADER_CAPTURE_HEIGHT;
         return this.startedOnHeader;
     };
 
     private onMoveShouldSetPanResponder = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        if (this.isCloseLocked()) return false;
         // Do not steal vertical pans from nested ScrollViews.
         if (!this.startedOnHeader) {
             return false;
@@ -174,12 +201,14 @@ class ActionPanel extends Component<Props, State> {
     private onPanResponderTerminationRequest = () => !this.startedOnHeader;
 
     private onPanResponderGrant = () => {
+        if (this.isCloseLocked()) return;
         this.translateY.stopAnimation();
         this.dragStartY = this.currentY;
         this.isDragging = true;
     };
 
     private onPanResponderMove = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        if (this.isCloseLocked()) return;
         const { boundaries } = this.state;
         const maxY = AppSizes.screen.height;
 
@@ -197,9 +226,15 @@ class ActionPanel extends Component<Props, State> {
     };
 
     private onPanResponderRelease = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        const wasDragging = this.isDragging;
         this.isDragging = false;
         this.startedOnHeader = false;
         this.animateToIndex(this.getTargetIndex(this.currentY, gestureState.vy));
+        // Report the user's chosen target first, so a close request can cancel pending work.
+        if (wasDragging) {
+            const { onDragEnd } = this.props;
+            onDragEnd?.();
+        }
     };
 
     private getTargetIndex = (y: number, vy: number) => {
@@ -236,13 +271,18 @@ class ActionPanel extends Component<Props, State> {
 
     private animateToIndex = (index: number) => {
         const { snapPoints } = this.state;
-        const point = snapPoints[index];
+        const targetIndex = this.isCloseLocked() ? 0 : index;
+        const point = snapPoints[targetIndex];
 
         if (!point) {
             return;
         }
 
-        this.currentIndex = index;
+        if (targetIndex === 0) {
+            this.requestClose();
+        }
+
+        this.currentIndex = targetIndex;
 
         Animated.spring(this.translateY, {
             toValue: point.y,
@@ -255,11 +295,10 @@ class ActionPanel extends Component<Props, State> {
                 return;
             }
 
-            if (this.isOpening && index > 0) {
-                this.isOpening = false;
-            }
-
-            if (index === 0 && !this.isOpening) {
+            // The sheet starts off-screen, and that position is not a close animation.
+            // A close that interrupts the open spring is an animation to index 0 and must
+            // still remove the overlay. Otherwise the invisible backdrop keeps eating taps.
+            if (targetIndex === 0) {
                 this.notifyDismissed();
             }
         });
@@ -311,6 +350,7 @@ class ActionPanel extends Component<Props, State> {
                     ]}
                 >
                     <View style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}>
+                        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                         <View style={styles.panelHeader} {...this.panResponder.panHandlers}>
                             <View style={styles.panelHandle} />
                         </View>

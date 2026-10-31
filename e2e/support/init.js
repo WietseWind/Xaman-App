@@ -11,6 +11,7 @@ const detox = require('detox/internals');
 const { device, element, by, waitFor } = require('detox');
 const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
+const { getCurrentTestPasscode } = require('../helpers/testCredentials');
 
 const {
     setDeviceUdid,
@@ -114,7 +115,7 @@ async function dismissIosLockIfPresent() {
     } catch (e) {
         return;
     }
-    const pin = String(process.env.E2E_PASSCODE || '167349');
+    const pin = getCurrentTestPasscode();
     for (let i = 0; i < pin.length; i += 1) {
         await element(by.id(`${pin[i]}-key`)).tap();
     }

@@ -13,6 +13,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
 
 import { GetCardEnforcedSecurity, GetCardSecurityOptions, TangemSecurity } from '@common/utils/tangem';
+import { startTangemOfflineSession } from '@common/utils/tangemSession';
 
 import { AccountRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
@@ -63,9 +64,7 @@ class ChangeTangemSecurityView extends Component<Props, State> {
     }
 
     componentDidMount() {
-        RNTangemSdk.startSession({
-            attestationMode: 'offline',
-        }).catch((e) => {
+        startTangemOfflineSession().catch((e) => {
             LoggerService.recordError('Unexpected error TangemSDK startSession', e);
         });
     }

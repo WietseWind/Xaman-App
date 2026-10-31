@@ -70,55 +70,50 @@ public class Keychain {
     public void setItem(@NonNull final String alias,
                         @NonNull final String username,
                         @NonNull final String password) throws CryptoFailedException {
+        synchronized (PrefsStorage.STORAGE_LOCK) {
+            // get latest cipher storage
+            final CipherStorage storage = getCipherStorageForEncryption();
 
-        // get latest cipher storage
-        final CipherStorage storage = getCipherStorageForEncryption();
+            // encrypt with cipher storage
+            final EncryptionResult result = storage.encrypt(alias, username, password);
 
-        // encrypt with cipher storage
-        final EncryptionResult result = storage.encrypt(alias, username, password);
-
-        // set in prefs storage
-        prefsStorage.storeEncryptedEntry(alias, result);
+            // set in prefs storage
+            prefsStorage.storeEncryptedEntry(alias, result);
+        }
     }
 
     public Map<String, String> getItem(@NonNull final String alias) throws CryptoFailedException {
-        final ResultSet resultSet = prefsStorage.getEncryptedEntry(alias);
+        synchronized (PrefsStorage.STORAGE_LOCK) {
+            final ResultSet resultSet = prefsStorage.getEncryptedEntry(alias);
 
-        // no entry found for given name
-        if (resultSet == null) {
-            return null;
+            // no entry found for given name
+            if (resultSet == null) {
+                return null;
+            }
+
+            final String storageName = resultSet.cipherStorageName;
+
+            CipherStorage cipher = getCipherStorageByName(storageName);
+
+            final DecryptionResult decryptionResult = decryptToResult(alias, cipher, resultSet);
+
+            Map<String, String> item = new HashMap<>();
+
+            item.put(Maps.USERNAME, decryptionResult.username);
+            item.put(Maps.PASSWORD, decryptionResult.password);
+
+            return item;
         }
-
-        final String storageName = resultSet.cipherStorageName;
-
-        CipherStorage cipher = getCipherStorageByName(storageName);
-
-        final DecryptionResult decryptionResult = decryptToResult(alias, cipher, resultSet);
-
-        Map<String, String> item = new HashMap<>();
-
-        item.put(Maps.USERNAME, decryptionResult.username);
-        item.put(Maps.PASSWORD, decryptionResult.password);
-
-        return item;
     }
 
     public void deleteItem(@NonNull final String alias) throws KeyStoreAccessException {
-        KeyStoreAccessException keystoreError = null;
-        final ResultSet resultSet = prefsStorage.getEncryptedEntry(alias);
-
-        if (resultSet != null) {
-            try {
-                final CipherStorage cipherStorage = getCipherStorageByName(resultSet.cipherStorageName);
-                cipherStorage.removeKey(alias);
-            } catch (KeyStoreAccessException e) {
-                keystoreError = e;
-            }
-        }
-
-        prefsStorage.removeEntry(alias);
-        if (keystoreError != null) {
-            throw keystoreError;
+        synchronized (PrefsStorage.STORAGE_LOCK) {
+            // If this fails, retain the Keystore key for the still-durable
+            // ciphertext. Deleting the key first makes a failed purge permanent.
+            prefsStorage.removeEntry(alias);
+            // Both wrappers use the same alias namespace. Also clean up a key
+            // left by a prior failed purge whose preferences retry has completed.
+            getCipherStorageForEncryption().removeKey(alias);
         }
     }
 
@@ -133,20 +128,22 @@ public class Keychain {
     }
 
     /*
-      Note: this will clear the entire keychain storage, including the generated keys.
-      Prefs are always emptied even when a Keystore alias is already gone.
+     * Persist an empty ciphertext store first; do not destroy any Keystore key
+     * when the preferences wipe fails. Keystore cleanup remains best effort
+     * when the device Keystore itself is unavailable.
      */
     public void clear() {
-        final Set<String> entries = prefsStorage.getAllEntries();
-
-        for (String entry : entries) {
-            try {
-                deleteItem(entry);
-            } catch (Exception ignored) {
-                prefsStorage.removeEntry(entry);
+        synchronized (PrefsStorage.STORAGE_LOCK) {
+            final Set<String> entries = prefsStorage.clearAll();
+            for (String entry : entries) {
+                try {
+                    // CBC and GCM use the same AndroidKeyStore alias namespace.
+                    getCipherStorageForEncryption().removeKey(entry);
+                } catch (KeyStoreAccessException ignored) {
+                    // No ciphertext remains after the acknowledged wipe.
+                }
             }
         }
-        prefsStorage.clearAll();
     }
 
     private void addCipherStorageToMap(@NonNull final CipherStorage cipherStorage) {

@@ -56,6 +56,7 @@ RCT_EXPORT_MODULE();
     @"appVersion": [self getAppVersion],
     @"buildNumber": [self getBuildNumber],
     @"isDebug": @(self.isDebug),
+    @"isTestFlight": @(self.isTestFlight),
   };
 }
 
@@ -73,6 +74,12 @@ RCT_EXPORT_MODULE();
   #else
     return NO;
   #endif
+}
+
+// TestFlight installs use a sandbox App Store receipt. App Store installs do not.
+- (BOOL) isTestFlight {
+  NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
+  return [receiptURL.lastPathComponent isEqualToString:@"sandboxReceipt"];
 }
 
 RCT_EXPORT_METHOD(restartBundle) {

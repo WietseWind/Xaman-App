@@ -99,6 +99,11 @@ class InactiveAccount extends PureComponent<Props, State> {
     };
 
     renderRegularKeyItem = ({ item }: { item: AccountModel }) => {
+        // the account can be removed while the list still holds it
+        if (!item?.isValid()) {
+            return null;
+        }
+
         return <RegularKeyItem account={item} />;
     };
 
@@ -121,7 +126,7 @@ class InactiveAccount extends PureComponent<Props, State> {
                 <FlatList
                     data={regularKeyAccounts}
                     renderItem={this.renderRegularKeyItem}
-                    keyExtractor={(item) => item.address}
+                    keyExtractor={(item, index) => (item?.isValid() ? item.address : `${index}`)}
                 />
             </View>
         );

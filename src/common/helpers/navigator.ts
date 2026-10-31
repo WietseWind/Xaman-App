@@ -2,9 +2,11 @@ import { get, merge } from 'lodash';
 import { Platform, InteractionManager } from 'react-native';
 
 import LoggerService, { LogEvents } from '@services/LoggerService';
-import { Navigation, Options, LayoutTabsChildren } from 'react-native-navigation';
+import { Navigation, Options, LayoutTabsChildren, EventSubscription } from 'react-native-navigation';
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
+import { iosGlassTabBar } from '@common/helpers/glassTabBar';
+import { runSetRootOnce, setRootLatch } from '@common/helpers/setRootLatch';
 
 import { AppScreens } from '@common/constants';
 
@@ -24,9 +26,102 @@ export type AppScreenKeys<T = typeof AppScreens, L0 = T[keyof T]> =
 type EnforcedProps<P extends { [K in keyof P]: any }> = P;
 
 const allScreens = new Set();
+const modalReservations = new Map<AppScreenKeys, { token: symbol; released: Promise<void> }>();
+const pendingReviewShows = new Map<AppScreenKeys, symbol>();
+const pendingOverlayEntries = new Set<Promise<void>>();
+
+export interface ModalReservation {
+    token: symbol;
+    release: () => void;
+}
+
+const beginReviewShow = (modal: AppScreenKeys) => {
+    const token = Symbol(modal);
+    pendingReviewShows.set(modal, token);
+    const listeners: EventSubscription[] = [];
+    const terminalCommands = new Set<string>();
+    const finish = () => {
+        listeners.forEach((listener) => listener.remove());
+        listeners.length = 0;
+        if (pendingReviewShows.get(modal) === token) pendingReviewShows.delete(modal);
+    };
+    try {
+        if (Platform.OS === 'android') {
+            listeners.push(Navigation.events().registerCommandListener((name, params) => {
+                if (name === 'setRoot' || name === 'dismissAllModals' ||
+                    (name === 'dismissModal' && params.componentId === modal)) {
+                    terminalCommands.add(params.commandId);
+                }
+            }));
+            listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
+                // Android can destroy a pending view before its render callback runs.
+                // Its show promise need not settle; only the completed owned close is terminal.
+                // An old finally must not clear a newer presentation.
+                if (terminalCommands.has(event.commandId)) finish();
+            }));
+        }
+        return finish;
+    } catch (error) {
+        finish();
+        throw error;
+    }
+};
+
+// A native overlay promise can resolve before iOS delivers DidAppear. Keep the
+// entry visible to handoff callers until both boundaries have completed.
+const trackOverlayEntry = <T>(overlay: AppScreenKeys, show: () => Promise<T>): Promise<T> => {
+    let settle: () => void = () => undefined;
+    const pending = new Promise<void>((resolve) => { settle = resolve; });
+    pendingOverlayEntries.add(pending);
+    let appeared = false;
+    let resolved = false;
+    let finished = false;
+    const terminalCommands = new Set<string>();
+    const listeners: EventSubscription[] = [];
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        listeners.forEach((listener) => listener.remove());
+        pendingOverlayEntries.delete(pending);
+        settle();
+    };
+    const finishIfReady = () => {
+        if (resolved && appeared) finish();
+    };
+    try {
+        listeners.push(Navigation.events().registerComponentDidAppearListener((event) => {
+            if (event.componentId !== overlay) return;
+            appeared = true;
+            // Let all listeners, including NavigationService, finish tracking this event.
+            Promise.resolve().then(finishIfReady);
+        }));
+        listeners.push(Navigation.events().registerCommandListener((name, params) => {
+            if ((name === 'dismissOverlay' && params.componentId === overlay) ||
+                name === 'dismissAllOverlays') {
+                terminalCommands.add(params.commandId);
+            }
+        }));
+        listeners.push(Navigation.events().registerCommandCompletedListener((event) => {
+            if (terminalCommands.has(event.commandId)) finish();
+        }));
+        return Promise.resolve(show()).then((result) => {
+            if (result === false) finish();
+            else {
+                resolved = true;
+                finishIfReady();
+            }
+            return result;
+        }, (error) => {
+            finish();
+            throw error;
+        });
+    } catch (error) {
+        finish();
+        throw error;
+    }
+};
 
 let iteration = 1;
-let setRoot = false;
 
 /* Constants ==================================================================== */
 const getDefaultOptions = (): Options => {
@@ -53,7 +148,7 @@ const getDefaultOptions = (): Options => {
             backgroundColor: StyleService.value('$background'),
             translucent: false,
             animate: false,
-            drawBehind: false,
+            drawBehind: iosGlassTabBar,
             tabsAttachMode: 'onSwitchToTab',
             titleDisplayMode: 'alwaysShow',
             elevation: 10,
@@ -154,6 +249,22 @@ const getBottomTabStyles = () => {
     });
 };
 
+const getBottomTabIconOptions = (
+    icons: ReturnType<typeof getTabBarIcons>,
+    tabKey: string,
+): Options['bottomTab'] => {
+    const { icon, iconSelected, scale } = icons[tabKey];
+    const glassSideIcon = iosGlassTabBar && tabKey !== AppScreens.TabBar.Actions;
+    // UIImage.scale is inverse: a larger scale paints a smaller icon.
+    const imageScale = glassSideIcon ? scale / 0.8 : scale;
+    const foreground = glassSideIcon ? StyleService.value('$textPrimary') : undefined;
+    return {
+        icon: { scale: imageScale, ...icon },
+        selectedIcon: { scale: imageScale, ...iconSelected },
+        ...(glassSideIcon ? { iconColor: foreground, selectedIconColor: foreground } : {}),
+    };
+};
+
 const androidIconSize = (icons: ReturnType<typeof getTabBarIcons>, tabKey: string) => {
     if (Platform.OS !== 'android') {
         return {};
@@ -188,7 +299,7 @@ const Navigator = {
             tabsLength: Object.keys(AppScreens.TabBar).length,
             tabKeys: Object.keys(AppScreens.TabBar).join(','),
             startDefaultIteration: typeof iteration === 'undefined' ? 0 : iteration,
-            setRoot: setRoot ? 'true' : 'false',
+            setRoot: setRootLatch.current ? 'true' : 'false',
         });
 
         Object.keys(AppScreens.TabBar).forEach((tab) => {
@@ -214,14 +325,7 @@ const Navigator = {
                         bottomTab: {
                             selectTabOnPress: tab !== 'Actions',
                             text: tab !== 'Actions' ? Localize.t(`global.${tab.toLowerCase()}`) : '',
-                            icon: {
-                                scale: TabBarIcons[get(AppScreens.TabBar, tab)].scale,
-                                ...TabBarIcons[get(AppScreens.TabBar, tab)].icon,
-                            },
-                            selectedIcon: {
-                                scale: TabBarIcons[get(AppScreens.TabBar, tab)].scale,
-                                ...TabBarIcons[get(AppScreens.TabBar, tab)].iconSelected,
-                            },
+                            ...getBottomTabIconOptions(TabBarIcons, get(AppScreens.TabBar, tab)),
                             testID: `tab-${tab}`,
                             ...bottomTabStyles,
                             ...androidIconSize(TabBarIcons, get(AppScreens.TabBar, tab)),
@@ -232,8 +336,7 @@ const Navigator = {
         });
 
         InteractionManager.runAfterInteractions(async () => {
-            if (!setRoot) {
-                setRoot = true;
+            await runSetRootOnce(async () => {
                 await Navigation.setRoot({
                     root: {
                         bottomTabs: {
@@ -242,7 +345,7 @@ const Navigator = {
                         },
                     },
                 });
-            }
+            });
         });
     },
 
@@ -369,7 +472,7 @@ const Navigator = {
         const currentOverlay = NavigationService.getCurrentOverlay();
 
         if (currentOverlay !== overlay) {
-            return Navigation.showOverlay({
+            return trackOverlayEntry(overlay, () => Navigation.showOverlay({
                 component: {
                     name: overlay,
                     id: overlay,
@@ -403,7 +506,7 @@ const Navigator = {
                         options || {},
                     ),
                 },
-            });
+            }));
         }
 
         return Promise.resolve(false);
@@ -425,6 +528,32 @@ const Navigator = {
         return Promise.resolve(false);
     },
 
+    pendingOverlayShows(): Promise<unknown>[] {
+        return [...pendingOverlayEntries];
+    },
+
+    reserveModal(modal: AppScreenKeys): ModalReservation | undefined {
+        if (NavigationService.getCurrentModal() === modal || modalReservations.has(modal) ||
+            pendingReviewShows.has(modal)) return undefined;
+        const token = Symbol(modal);
+        let settle: () => void = () => undefined;
+        const released = new Promise<void>((resolve) => { settle = resolve; });
+        const reservation = { token, released };
+        modalReservations.set(modal, reservation);
+        return {
+            token,
+            release: () => {
+                if (modalReservations.get(modal) !== reservation) return;
+                modalReservations.delete(modal);
+                settle();
+            },
+        };
+    },
+
+    waitForModalReservation(modal: AppScreenKeys): Promise<void> {
+        return modalReservations.get(modal)?.released ?? Promise.resolve();
+    },
+
     /**
      * Display a modal screen using React Navigation.
      *
@@ -438,24 +567,40 @@ const Navigator = {
         modal: AppScreenKeys,
         passProps: EnforcedProps<P>,
         options: Options = {},
+        reservation: symbol | undefined = undefined,
     ): Promise<string | boolean> {
         const currentScreen = NavigationService.getCurrentModal();
-        if (currentScreen !== modal) {
-            return Navigation.showModal({
-                stack: {
-                    id: modal,
-                    children: [
-                        {
-                            component: {
-                                name: modal,
-                                id: modal,
-                                options,
-                                passProps: Object.assign(passProps, { componentType: ComponentTypes.Modal }),
+        const owner = modalReservations.get(modal)?.token;
+        if ((owner && owner !== reservation) || (reservation && owner !== reservation)) {
+            return Promise.resolve(false);
+        }
+        const isReview = modal === AppScreens.Modal.ReviewTransaction;
+        if (currentScreen !== modal && (!isReview || !pendingReviewShows.has(modal))) {
+            const finishReviewShow = isReview ? beginReviewShow(modal) : () => undefined;
+            let show: Promise<string>;
+            try {
+                show = Navigation.showModal({
+                    stack: {
+                        id: modal,
+                        children: [
+                            {
+                                component: {
+                                    name: modal,
+                                    id: modal,
+                                    options,
+                                    passProps: Object.assign(passProps, { componentType: ComponentTypes.Modal }),
+                                },
                             },
-                        },
-                    ],
-                },
-            });
+                        ],
+                    },
+                });
+            } catch (error) {
+                finishReviewShow();
+                throw error;
+            }
+            return isReview
+                ? Promise.resolve(show).finally(finishReviewShow)
+                : show;
         }
 
         return Promise.resolve(false);
@@ -466,6 +611,10 @@ const Navigator = {
      *
      * @return {Promise<string | boolean>} A promise that resolves to either string or false
      */
+    currentModal(): string | undefined {
+        return NavigationService.getCurrentModal();
+    },
+
     dismissModal(): Promise<string | boolean> {
         const currentModal = NavigationService.getCurrentModal();
 
@@ -629,14 +778,7 @@ const Navigator = {
                     bottomTab: {
                         ...currentBottomTab,
                         text: tab !== 'Actions' ? Localize.t(`global.${tab.toLowerCase()}`) : '',
-                        icon: {
-                            scale: TabBarIcons[getTab].scale,
-                            ...TabBarIcons[getTab].icon,
-                        },
-                        selectedIcon: {
-                            scale: TabBarIcons[getTab].scale,
-                            ...TabBarIcons[getTab].iconSelected,
-                        },
+                        ...getBottomTabIconOptions(TabBarIcons, getTab),
                         ...bottomTabStyles,
                         ...androidIconSize(TabBarIcons, getTab),
                     },

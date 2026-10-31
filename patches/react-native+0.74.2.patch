@@ -18,6 +18,32 @@ index 0eae618..c21cd86 100644
    __weak __typeof(self) weakSelf = self;
    __block RCTNetworkTask *task;
    RCTURLRequestProgressBlock uploadProgressBlock = ^(int64_t progress, int64_t total) {
+diff --git a/node_modules/react-native/React/CoreModules/RCTActionSheetManager.mm b/node_modules/react-native/React/CoreModules/RCTActionSheetManager.mm
+index f8df74b..0c9761a 100644
+--- a/node_modules/react-native/React/CoreModules/RCTActionSheetManager.mm
++++ b/node_modules/react-native/React/CoreModules/RCTActionSheetManager.mm
+@@ -106,15 +106,15 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
+     if (controller == nil) {
+       RCTLogError(
+           @"Tried to display action sheet but there is no application window. options: %@", @{
+-            @"title" : title,
+-            @"message" : message,
++            @"title" : title ?: @"(null)",
++            @"message" : message ?: @"(null)",
+             @"options" : buttons,
+             @"cancelButtonIndex" : @(cancelButtonIndex),
+             @"destructiveButtonIndices" : destructiveButtonIndices,
+-            @"anchor" : anchor,
+-            @"tintColor" : tintColor,
+-            @"cancelButtonTintColor" : cancelButtonTintColor,
+-            @"disabledButtonIndices" : disabledButtonIndices,
++            @"anchor" : anchor ?: @"(null)",
++            @"tintColor" : tintColor ?: @"(null)",
++            @"cancelButtonTintColor" : cancelButtonTintColor ?: @"(null)",
++            @"disabledButtonIndices" : disabledButtonIndices ?: @"(null)",
+           });
+       return;
+     }
 diff --git a/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm b/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
 index 3fd7238..2268e5e 100644
 --- a/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm

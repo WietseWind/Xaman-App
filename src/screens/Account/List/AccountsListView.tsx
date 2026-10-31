@@ -16,6 +16,7 @@ import Vault from '@common/libs/vault';
 
 import { AppScreens } from '@common/constants';
 
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 import { Images } from '@common/helpers/images';
 
@@ -25,7 +26,7 @@ import { AccessLevels, EncryptionLevels } from '@store/types';
 
 import StyleService from '@services/StyleService';
 
-import { Button, Icon, Header, SortableFlatList, Spacer, LoadingIndicator } from '@components/General';
+import { Button, Icon, Header, Spacer, LoadingIndicator } from '@components/General';
 import { ProBadge } from '@components/Modules';
 
 import Localize from '@locale';
@@ -36,6 +37,7 @@ import { AccountSettingsViewProps } from '@screens/Account/Edit';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import ReorderableAccountList from './ReorderableAccountList';
 
 /* types ==================================================================== */
 
@@ -43,7 +45,7 @@ export interface Props {}
 
 export interface State {
     accounts: Realm.Results<AccountModel>;
-    dataSource: any;
+    dataSource: AccountModel[];
     signableAccount: Array<AccountModel>;
     reorderEnabled: boolean;
     isMigrationRequired: boolean;
@@ -78,7 +80,7 @@ class AccountListView extends Component<Props, State> {
 
         this.state = {
             accounts,
-            dataSource: accounts,
+            dataSource: Array.from(accounts),
             signableAccount: AccountRepository.getSignableAccounts(),
             reorderEnabled: false,
             isMigrationRequired: false,
@@ -92,7 +94,7 @@ class AccountListView extends Component<Props, State> {
         const { accounts } = this.state;
         this.navigationListener = Navigation.events().bindComponent(this);
 
-        BackendService.getMultiAddressNativeInfo(accounts.map(a => a.address)).then(nativeAccountInfo => {
+        BackendService.getMultiAddressNativeInfo(accounts.map((a) => a.address)).then((nativeAccountInfo) => {
             this.setState({
                 nativeAccountInfo,
                 fetchingPro: false,
@@ -117,23 +119,25 @@ class AccountListView extends Component<Props, State> {
 
     getAccountDetails = () => {
         const { accounts, signableAccount } = this.state;
-        const accountDetails = accounts.map(account => {
-            const isRegularKeyFor = this.isRegularKey(account);
-            const isSignable = find(signableAccount, { address: account.address });
-            return {
-                _key: account.address,
-                isRegularKeyFor,
-                isSignable,
-            };
-        }).reduce((acc, itm) => {
-            Object.assign(acc, {
-                [itm._key]: {
-                    ...itm,
-                    _key: undefined,
-                },
-            });
-            return acc;
-        }, {});
+        const accountDetails = accounts
+            .map((account) => {
+                const isRegularKeyFor = this.isRegularKey(account);
+                const isSignable = find(signableAccount, { address: account.address });
+                return {
+                    _key: account.address,
+                    isRegularKeyFor,
+                    isSignable,
+                };
+            })
+            .reduce((acc, itm) => {
+                Object.assign(acc, {
+                    [itm._key]: {
+                        ...itm,
+                        _key: undefined,
+                    },
+                });
+                return acc;
+            }, {});
         this.setState({
             accountDetails,
             loadingAccountDetails: false,
@@ -143,13 +147,14 @@ class AccountListView extends Component<Props, State> {
     loadAccounts = () => {
         const accounts = AccountRepository.getAccounts().sorted([['order', false]]);
 
-        this.setState({
-            accounts,
-            dataSource: accounts,
-            signableAccount: AccountRepository.getSignableAccounts(),
-        });
-
-        this.getAccountDetails();
+        this.setState(
+            {
+                accounts,
+                dataSource: Array.from(accounts),
+                signableAccount: AccountRepository.getSignableAccounts(),
+            },
+            this.getAccountDetails,
+        );
     };
 
     checkMigrationRequired = () => {
@@ -230,12 +235,7 @@ class AccountListView extends Component<Props, State> {
     };
 
     renderItem = ({ item }: { item: AccountModel }) => {
-        const {
-            reorderEnabled,
-            fetchingPro,
-            nativeAccountInfo,
-            accountDetails,
-        } = this.state;
+        const { reorderEnabled, fetchingPro, nativeAccountInfo, accountDetails } = this.state;
 
         if (!item?.isValid()) return null;
 
@@ -270,44 +270,39 @@ class AccountListView extends Component<Props, State> {
         }
 
         const hasPro = signable && nativeAccountInfo && nativeAccountInfo?.[item?.address]?.hasPro;
+        const statusLabelStyle = [styles.accessLevelLabel, hasPro && styles.proSecondary];
+        const statusIconStyle = [styles.statusIcon, hasPro && styles.proStatusIcon];
 
         return (
-            <View style={[
-                styles.rowContainer,
-                hasPro && styles.hasProBorder,
-            ]}>
+            <View style={[styles.rowContainer, hasPro && styles.hasProBorder]}>
                 <View style={[AppStyles.row, styles.rowHeader, AppStyles.centerContent]}>
-                    <View style={AppStyles.flex6}>
-                        <Text numberOfLines={1} style={[
-                            styles.accountLabel,
-                            hasPro && styles.accountLabelDark,
-                        ]}>
-                            {item.label}
+                    <View style={styles.accountHeading}>
+                        <Text style={[styles.accountLabel, hasPro && styles.accountLabelDark]}>
+                            {accountListLabel(item)}
                         </Text>
                         <View style={styles.accessLevelContainer}>
-                            <Icon size={13} name={accessLevelIcon} style={AppStyles.imgColorGrey} />
-                            <Text numberOfLines={1} style={styles.accessLevelLabel}>
-                                {accessLevelLabel}
-                            </Text>
+                            <Icon size={13} name={accessLevelIcon} style={statusIconStyle} />
+                            <Text style={statusLabelStyle}>{accessLevelLabel}</Text>
                             {item.hidden && (
                                 <>
-                                    <Text style={styles.accessLevelLabel}> </Text>
-                                    <Icon size={13} name="IconEyeOff" style={AppStyles.imgColorGrey} />
-                                    <Text style={styles.accessLevelLabel}>{Localize.t('global.hidden')}</Text>
+                                    <Text style={statusLabelStyle}> </Text>
+                                    <Icon size={13} name="IconEyeOff" style={statusIconStyle} />
+                                    <Text style={statusLabelStyle}>{Localize.t('global.hidden')}</Text>
                                 </>
                             )}
                         </View>
                     </View>
-                    <View style={AppStyles.flex2}>
+                    <View style={styles.editContainer}>
                         {reorderEnabled ? (
                             <View style={AppStyles.rightAligned}>
                                 <Icon size={20} name="IconReorderHandle" style={AppStyles.imgColorGrey} />
                             </View>
                         ) : (
                             <Button
-                                // light
                                 roundedMini
                                 light
+                                allowFontScaling
+                                style={styles.editButton}
                                 icon="IconEdit"
                                 iconSize={15}
                                 textStyle={styles.buttonEditText}
@@ -320,24 +315,23 @@ class AccountListView extends Component<Props, State> {
                         )}
                     </View>
                 </View>
-                <View style={[AppStyles.row, styles.subRow]}>
-                    <View style={AppStyles.flex1}>
-                        <Text style={[AppStyles.smalltext, AppStyles.bold, AppStyles.colorGrey, styles.subLabel]}>
-                            {Localize.t('global.address')}:
-                        </Text>
-                        <Text style={[AppStyles.monoSubText, AppStyles.colorBlue]}>{item.address}</Text>
-                        <View style={[styles.proBadge]}>
-                            { fetchingPro && <LoadingIndicator /> }
-                            { !fetchingPro && <ProBadge hasPro={hasPro ? 1 : 0} /> }
-                        </View>
-                    </View>
+                <Text
+                    selectable={!reorderEnabled}
+                    style={[styles.address, hasPro && styles.accountLabelDark]}
+                >
+                    {item.address}
+                </Text>
+                <View style={styles.proBadge}>
+                    {fetchingPro && <LoadingIndicator size="small" />}
+                    {!fetchingPro && <ProBadge hasPro={hasPro ? 1 : 0} />}
                 </View>
             </View>
         );
     };
 
     render() {
-        const { accounts, dataSource, reorderEnabled, isMigrationRequired, loadingAccountDetails } = this.state;
+        const { accounts, dataSource, reorderEnabled, isMigrationRequired, loadingAccountDetails } =
+            this.state;
 
         return (
             <View testID="accounts-list-screen" style={AppStyles.container}>
@@ -369,35 +363,37 @@ class AccountListView extends Component<Props, State> {
                 {accounts.isEmpty() ? (
                     <ImageBackground
                         resizeMode="cover"
-                        source={
-                            StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
-                        }
-                        style={[AppStyles.contentContainer, AppStyles.paddingHorizontal, AppStyles.paddingBottom]}
+                        source={StyleService.getImageIfLightModeIfDarkMode(
+                            'BackgroundShapesLight',
+                            'BackgroundShapes',
+                        )}
+                        style={[
+                            AppStyles.contentContainer,
+                            AppStyles.paddingHorizontal,
+                            AppStyles.paddingBottom,
+                        ]}
                     >
-                        <Image style={AppStyles.emptyIcon} source={StyleService.getImage('ImageFirstAccount')} />
+                        <Image
+                            style={AppStyles.emptyIcon}
+                            source={StyleService.getImage('ImageFirstAccount')}
+                        />
                         <Spacer size={10} />
-                        <Text style={[
-                            AppStyles.emptyText,
-                            AppStyles.p,
-                        ]}>{Localize.t('home.emptyAccountAddFirstAccount')}</Text>
+                        <Text style={[AppStyles.emptyText, AppStyles.p]}>
+                            {Localize.t('home.emptyAccountAddFirstAccount')}
+                        </Text>
                         <Button
                             label={Localize.t('home.addAccount')}
                             icon="IconPlus"
                             iconStyle={AppStyles.imgColorWhite}
                             nonBlock
-                            style={[
-                                AppStyles.marginBottom,
-                            ]}
+                            style={[AppStyles.marginBottom]}
                             onPress={() => {
                                 Navigator.push<AccountAddViewProps>(AppScreens.Account.Add, {});
                             }}
                         />
                     </ImageBackground>
                 ) : (
-                    <View style={[
-                        AppStyles.flex1,
-                        AppStyles.windowSize,
-                    ]}>
+                    <View style={styles.list}>
                         {isMigrationRequired && !reorderEnabled && !loadingAccountDetails ? (
                             <View style={styles.rowMigrationContainer}>
                                 <Text style={[AppStyles.subtext, AppStyles.bold]}>
@@ -409,7 +405,7 @@ class AccountListView extends Component<Props, State> {
                                 </Text>
                                 <Spacer size={20} />
                                 <Button
-                                    testID="add-account-button"
+                                    testID="update-encryption-button"
                                     label={Localize.t('account.updateEncryption')}
                                     icon="IconChevronRight"
                                     iconPosition="right"
@@ -422,52 +418,55 @@ class AccountListView extends Component<Props, State> {
                                     }}
                                 />
                             </View>
-                        ) : reorderEnabled ? (
+                        ) : null}
+                        {reorderEnabled ? (
                             <View style={styles.rowAddContainer}>
                                 <View style={AppStyles.paddingHorizontalSml}>
                                     <Text
-                                        adjustsFontSizeToFit
-                                        numberOfLines={2}
-                                        style={[AppStyles.subtext, AppStyles.bold, AppStyles.textCenterAligned]}
+                                        style={[
+                                            AppStyles.subtext,
+                                            AppStyles.bold,
+                                            AppStyles.textCenterAligned,
+                                        ]}
                                     >
                                         {Localize.t('account.tapAndHoldToReorder')}
                                     </Text>
                                 </View>
                             </View>
-                        ) : !loadingAccountDetails && (
-                            <View style={styles.rowAddContainer}>
-                                <Button
-                                    testID="add-account-button"
-                                    label={Localize.t('home.addAccount')}
-                                    icon="IconPlus"
-                                    roundedSmall
-                                    secondary
-                                    onPress={() => {
-                                        Navigator.push<AccountAddViewProps>(AppScreens.Account.Add, {});
-                                    }}
-                                />
-                            </View>
+                        ) : (
+                            !loadingAccountDetails && !isMigrationRequired && (
+                                <View style={styles.rowAddContainer}>
+                                    <Button
+                                        testID="add-account-button"
+                                        label={Localize.t('home.addAccount')}
+                                        icon="IconPlus"
+                                        roundedSmall
+                                        style={styles.addButton}
+                                        allowFontScaling
+                                        onPress={() => {
+                                            Navigator.push<AccountAddViewProps>(AppScreens.Account.Add, {});
+                                        }}
+                                    />
+                                </View>
+                            )
                         )}
 
-                        { loadingAccountDetails && (
+                        {loadingAccountDetails && (
                             <View style={AppStyles.paddingTop}>
                                 <LoadingIndicator size="large" />
                             </View>
-                        ) }
-                        
-                        { !loadingAccountDetails && (
-                            <SortableFlatList
-                                testID="account-list-scroll"
-                                itemHeight={styles.rowContainer.height}
-                                separatorHeight={10}
-                                dataSource={dataSource}
-                                keyExtractor={this.itemKeyExtractor}
-                                renderItem={this.renderItem}
-                                onDataChange={this.onAccountReorder}
-                                onItemPress={this.onItemPress}
+                        )}
+
+                        {!loadingAccountDetails && (
+                            <ReorderableAccountList
+                                data={dataSource.filter(item => item?.isValid())}
                                 sortable={reorderEnabled}
+                                keyExtractor={(item) => item.address}
+                                renderItem={(item) => this.renderItem({ item })}
+                                onPress={this.onItemPress}
+                                onReorder={this.onAccountReorder}
                             />
-                        ) }
+                        )}
                     </View>
                 )}
             </View>

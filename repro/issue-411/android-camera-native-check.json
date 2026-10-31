@@ -1,0 +1,97 @@
+{
+  "issue": 411,
+  "version": "5.4.0 (414)",
+  "source_commit": "87d31c4defa02b3f0815ac2aa82d92a183c4870c",
+  "scope": "Physical Android camera service and Camera AppOps, not optical QR decoding",
+  "before": {
+    "camera_permission": "true",
+    "microphone_permission": "false",
+    "active_client_section_matches_app": true,
+    "appops_reports_running": true,
+    "lock_overlay_visible": true,
+    "scan_preview_mounted": true,
+    "finding": "Real camera active while app lock overlay is visible"
+  },
+  "after": {
+    "camera_granted": true,
+    "microphone_granted": false,
+    "original_auto_lock_restored_minutes": 1,
+    "before": {
+      "stage": "final-unlocked-camera-running",
+      "lock_overlay_visible": false,
+      "scan_preview_mounted": true,
+      "camera_paused_view": false,
+      "active_camera_client": true,
+      "appops_reports_running": true
+    },
+    "locked": {
+      "stage": "final-locked-camera-stopped",
+      "lock_overlay_visible": true,
+      "scan_preview_mounted": false,
+      "camera_paused_view": true,
+      "active_camera_client": false,
+      "appops_reports_running": false
+    },
+    "resumed": {
+      "stage": "final-unlocked-camera-resumed",
+      "lock_overlay_visible": false,
+      "scan_preview_mounted": true,
+      "camera_paused_view": false,
+      "active_camera_client": true,
+      "appops_reports_running": true
+    },
+    "closed": {
+      "stage": "final-close-camera-stopped",
+      "lock_overlay_visible": false,
+      "scan_preview_mounted": false,
+      "camera_paused_view": false,
+      "active_camera_client": false,
+      "appops_reports_running": false
+    }
+  },
+  "final_build_416": {
+    "version": "5.4.0 (416)",
+    "source_commit": "25c2fdd96b00153e874259662b25df1e5b461667",
+    "android_apk_sha256": "260f33627cc8301fe352e655a68aac993d1208b0808d393b4e49d91d34af6477",
+    "realm_source_sha256": "ff3d4f84806844a1d5fa0572450b919532aa9d347ec85fab2b6f1fce213de7b0",
+    "realm_native_build_id": "b6fdf4a115a2095be301f324da5b31967f167cf9",
+    "checks": {
+      "camera_granted": true,
+      "microphone_granted": false,
+      "original_auto_lock_restored_minutes": 1,
+      "before": {
+        "stage": "final-unlocked-camera-running",
+        "lock_overlay_visible": false,
+        "scan_preview_mounted": true,
+        "camera_paused_view": false,
+        "active_camera_client": true,
+        "appops_reports_running": true
+      },
+      "locked": {
+        "stage": "final-locked-camera-stopped",
+        "lock_overlay_visible": true,
+        "scan_preview_mounted": false,
+        "camera_paused_view": true,
+        "active_camera_client": false,
+        "appops_reports_running": false
+      },
+      "resumed": {
+        "stage": "final-unlocked-camera-resumed",
+        "lock_overlay_visible": false,
+        "scan_preview_mounted": true,
+        "camera_paused_view": false,
+        "active_camera_client": true,
+        "appops_reports_running": true
+      },
+      "closed": {
+        "stage": "final-close-camera-stopped",
+        "lock_overlay_visible": false,
+        "scan_preview_mounted": false,
+        "camera_paused_view": false,
+        "active_camera_client": false,
+        "appops_reports_running": false
+      }
+    },
+    "camera_source_sha256": "82817ac60884490f21bae31d63470813a0c8b59d4f8f67071cd49c3b12b74947"
+  }
+}

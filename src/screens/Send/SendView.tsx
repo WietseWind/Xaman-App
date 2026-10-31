@@ -20,6 +20,8 @@ import { Navigator } from '@common/helpers/navigator';
 import Memo from '@common/libs/ledger/parser/common/memo';
 
 import { CalculateAvailableBalance } from '@common/utils/balance';
+import { mptDisplayToRaw, mptScaleFromCache } from '@common/utils/mptAmount';
+import { mptAmountMessage } from './mptAmountMessage';
 
 import { AmountParser } from '@common/libs/ledger/parser/common';
 import {
@@ -32,6 +34,7 @@ import {
 } from '@common/libs/ledger/transactions';
 import { AmountType, Destination } from '@common/libs/ledger/parser/types';
 import { SignMixin } from '@common/libs/ledger/mixin';
+import { cappedServiceFeeDrops, incomingXrpDrops } from '@common/libs/ledger/serviceFee/rules';
 
 // components
 import { Header } from '@components/General';
@@ -108,6 +111,8 @@ class SendView extends Component<Props, State> {
     componentDidMount() {
         const { accounts } = this.state;
 
+        NetworkService.on('networkChange', this.onNetworkChange);
+
         // go back if no spendable account is available
         if (accounts.length === 0) {
             this.closeTimeout = setTimeout(() => {
@@ -120,6 +125,8 @@ class SendView extends Component<Props, State> {
     componentWillUnmount() {
         const { isLoading, payment, check, remit } = this.state;
 
+        NetworkService.off('networkChange', this.onNetworkChange);
+
         if (this.closeTimeout) clearTimeout(this.closeTimeout);
 
         // abort the transaction if already running
@@ -129,6 +136,18 @@ class SendView extends Component<Props, State> {
             remit.abort();
         }
     }
+
+    onNetworkChange = () => {
+        const { token } = this.state;
+
+        // Native send stores the asset code from when the screen opened.
+        // The label reads the live asset, so keep the code on the same network.
+        if (typeof token === 'string') {
+            this.setState({
+                token: NetworkService.getNativeAsset(),
+            });
+        }
+    };
 
     setSource = (source: AccountModel) => {
         this.setState({ source });
@@ -153,8 +172,13 @@ class SendView extends Component<Props, State> {
         this.setState({ serviceFeeAmount: serviceFee });
     };
 
+    onServiceFeeQuote = (quote: { submitCondition?: any }) => {
+        const { payment } = this.state;
+        payment.setServiceFeeSubmitCondition(quote?.submitCondition);
+    };
+
     setFee = (selectedFee: FeeItem, serviceFee: FeeItem) => {
-        const { token, source } = this.state;
+        const { token, source, payment } = this.state;
         this.setState({ selectedFee });
 
         // console.log('SendView Service Fee Amount Set', serviceFeeAmount.value);
@@ -163,20 +187,21 @@ class SendView extends Component<Props, State> {
             // this.setState({ serviceFeeAmount: serviceFee });
             this.setServiceFee(serviceFee);
 
-            const isNativeAsset = (typeof token === 'string' && token === NetworkService.getNativeAsset());
+            const isNativeAsset = typeof token === 'string' && token === NetworkService.getNativeAsset();
             if (!isNativeAsset) {
-                const fee = Number(serviceFee?.value || 0) / 1_000_000;
                 const avail = CalculateAvailableBalance(source!);
-                const spendable = (Math.floor(Number(avail) * 1_000_000) - 100) / 1_000_000;
-                if (spendable < fee) {
-                    this.logger.debug(`Service fee: ${fee} is higher than spendable: ${spendable}`);
+                const spendableDrops = Math.floor(Number(avail) * 1_000_000);
+                const incoming = incomingXrpDrops(payment.JsonForSigning).toNumber();
+                const capped = cappedServiceFeeDrops(Number(serviceFee?.value || 0), spendableDrops, incoming);
+                if (capped < Number(serviceFee?.value || 0)) {
+                    this.logger.debug(`Service fee capped from ${serviceFee.value} to ${capped}`);
                     this.setServiceFee({
-                        type: 'LOW',
-                        value: String(Math.floor(Number(avail) * 1_000_000) - 100),
+                        type: serviceFee.type || 'LOW',
+                        value: String(capped),
                     });
                 }
             }
-        };
+        }
     };
 
     setIssuerFee = (issuerFee: number) => {
@@ -212,6 +237,16 @@ class SendView extends Component<Props, State> {
         this.setState({ scanResult: result });
     };
 
+    getMPTWireAmount = () => {
+        const { token, amount } = this.state;
+        if (typeof token === 'string') throw new Error('Expected MPT');
+        try {
+            return mptDisplayToRaw(amount, mptScaleFromCache(token.limit_peer));
+        } catch (error) {
+            throw new Error(mptAmountMessage(error));
+        }
+    };
+
     getPaymentJsonForFee = () => {
         const { token, amount, destination, source, memo, credentials, altTxTypeTo } = this.state;
 
@@ -235,6 +270,15 @@ class SendView extends Component<Props, State> {
             });
         }
 
+        let mptValue = '0';
+        if (typeof token !== 'string' && token?.isMPToken()) {
+            try {
+                mptValue = this.getMPTWireAmount();
+            } catch {
+                // Quote an empty draft while editing; send() validates again before signing.
+            }
+        }
+
         // set the amount
         if (typeof token === 'string') {
             Object.assign(txJson, {
@@ -244,14 +288,14 @@ class SendView extends Component<Props, State> {
             Object.assign(txJson, {
                 Amount: token?.isMPToken()
                     ? {
-                        mpt_issuance_id: token.currency.currencyCode,
-                        value: amount,
-                    }
+                          mpt_issuance_id: token.currency.currencyCode,
+                          value: mptValue,
+                      }
                     : {
-                        currency: token.currency.currencyCode,
-                        issuer: token.currency.issuer,
-                        value: amount,
-                    },
+                          currency: token.currency.currencyCode,
+                          issuer: token.currency.issuer,
+                          value: amount,
+                      },
             });
         }
 
@@ -318,8 +362,7 @@ class SendView extends Component<Props, State> {
 
         this.changeStep(Steps.Submitting);
 
-        const txType = (altTxTypeTo && altTxTypeTo !== '' ? altTxTypeTo.split(':')[0] : 'payment')
-            .toLocaleLowerCase();
+        const txType = (altTxTypeTo && altTxTypeTo !== '' ? altTxTypeTo.split(':')[0] : 'payment').toLocaleLowerCase();
 
         const _tx = txType === 'remit' ? remit : txType === 'check' ? check : payment;
 
@@ -376,8 +419,9 @@ class SendView extends Component<Props, State> {
         });
 
         try {
-            const txType = (altTxTypeTo && altTxTypeTo !== '' ? altTxTypeTo.split(':')[0] : 'payment')
-                .toLocaleLowerCase();
+            const txType = (
+                altTxTypeTo && altTxTypeTo !== '' ? altTxTypeTo.split(':')[0] : 'payment'
+            ).toLocaleLowerCase();
             const _tx = txType === 'remit' ? remit : txType === 'check' ? check : payment;
 
             this.logger.debug(`Sending TXType: ${txType}`);
@@ -409,7 +453,7 @@ class SendView extends Component<Props, State> {
                     _tx.SendMax = am;
                     this.logger.debug('Check');
                 } else if (_tx instanceof Remit) {
-                    _tx.Amounts = [ am ];
+                    _tx.Amounts = [am];
                     this.logger.debug('Remit');
                 } else {
                     _tx.Amount = am;
@@ -434,38 +478,21 @@ class SendView extends Component<Props, State> {
                     }
                 }
 
-                // set the amount, fix AssetScale for MPT
-                let mpTokenAmount = 0;
-                if (token?.isMPToken()) {
-                    try {
-                        const mptIssuanceDetails = JSON.parse(
-                            String(token?.limit_peer || '|{}').split('|')?.[1] || '{}',
-                        );
-                        if (mptIssuanceDetails && typeof mptIssuanceDetails === 'object') {
-                            if (mptIssuanceDetails?.AssetScale && Number(mptIssuanceDetails?.AssetScale || 0) > 1) {
-                                mpTokenAmount = Number(amount);
-                                mpTokenAmount *= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                            }
-                        }
-                    } catch {
-                        //
-                    }
-                }
                 const am = token?.isMPToken()
                     ? {
-                        mpt_issuance_id: token.currency.currencyCode,
-                        value: String(mpTokenAmount || amount),
-                    }
+                          mpt_issuance_id: token.currency.currencyCode,
+                          value: this.getMPTWireAmount(),
+                      }
                     : {
-                        currency: token.currency.currencyCode,
-                        issuer: token.currency.issuer,
-                        value: amount,
-                    };
+                          currency: token.currency.currencyCode,
+                          issuer: token.currency.issuer,
+                          value: amount,
+                      };
 
                 if (_tx instanceof CheckCreate) {
                     _tx.SendMax = am as AmountType;
                 } else if (_tx instanceof Remit) {
-                    _tx.Amounts = [ am as AmountType ];
+                    _tx.Amounts = [am as AmountType];
                 } else {
                     _tx.Amount = am as AmountType;
                 }
@@ -636,6 +663,7 @@ class SendView extends Component<Props, State> {
                     setAmount: this.setAmount,
                     setToken: this.setToken,
                     setFee: this.setFee,
+                    onServiceFeeQuote: this.onServiceFeeQuote,
                     setServiceFee: this.setServiceFee,
                     setMemo: this.setMemo,
                     setCredentials: this.setCredentials,
@@ -682,7 +710,7 @@ class SendView extends Component<Props, State> {
     };
 
     render() {
-        const {timestamp} = this.props;
+        const { timestamp } = this.props;
 
         return (
             <View

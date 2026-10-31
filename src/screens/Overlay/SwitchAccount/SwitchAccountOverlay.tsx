@@ -12,6 +12,7 @@ import { AccountModel } from '@store/models';
 import { AccessLevels } from '@store/types';
 
 import { Images } from '@common/helpers/images';
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { AppScreens } from '@common/constants';
@@ -179,7 +180,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
                     <View style={[AppStyles.row, AppStyles.flex3, AppStyles.centerAligned]}>
                         <View style={AppStyles.flex3}>
                             <Text numberOfLines={1} style={[styles.accountLabel, styles.accountLabelSelected]}>
-                                {account.label}
+                                {accountListLabel(account)}
                             </Text>
                             <Text style={[styles.accountAddress, styles.accountAddressSelected]}>
                                 {discreetMode ? '••••••••••••••••••••••••••••••••' : account.address}
@@ -210,7 +211,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
                 <View style={[AppStyles.row, AppStyles.centerAligned, styles.accountRow, { height: ROW_ITEM_HEIGHT }]}>
                     <View style={AppStyles.flex3}>
                         <Text numberOfLines={1} style={styles.accountLabel}>
-                            {account.label}
+                            {accountListLabel(account)}
                         </Text>
                         <Text style={styles.accountAddress}>
                             {discreetMode ? '••••••••••••••••••••••••••••••••' : account.address}
@@ -243,7 +244,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
             );
         }
 
-        return accounts?.map((account) => {
+        return (accounts ? Array.from(accounts) : []).map((account) => {
             return this.renderRow(account);
         });
     };
@@ -286,6 +287,7 @@ class SwitchAccountOverlay extends Component<Props, State> {
                     )}
                 </View>
                 <ScrollView
+                    testID="switch-account-scroll"
                     style={AppStyles.flex1}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom }}

@@ -18,7 +18,7 @@ import { Navigator } from '@common/helpers/navigator';
 
 import { SetFlagSecure, GetAppVersionCode, GetAppReadableVersion } from '@common/helpers/app';
 
-import { TouchableDebounce, Header, Icon, Switch, MultiPressDetector } from '@components/General';
+import { Header, Switch, MultiPressDetector } from '@components/General';
 
 import Localize from '@locale';
 
@@ -29,7 +29,8 @@ import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { ChangeLogOverlayProps } from '@screens/Overlay/ChangeLog';
 
 // style
-import { AppStyles } from '@theme';
+import { SettingsRow, SettingsSection } from '../SettingsSection';
+import sectionStyles from '../sectionStyles';
 import styles from './styles';
 
 /* types ==================================================================== */
@@ -264,161 +265,62 @@ class AdvancedSettingsView extends Component<Props, State> {
 
     render() {
         const { coreSettings, profile } = this.state;
-
         return (
             <View testID="advanced-settings-screen" style={styles.container}>
                 <Header
-                    leftComponent={{
-                        testID: 'back-button',
-                        icon: 'IconChevronLeft',
-                        onPress: Navigator.pop,
-                    }}
+                    leftComponent={{ testID: 'back-button', icon: 'IconChevronLeft', onPress: Navigator.pop }}
                     centerComponent={{ text: Localize.t('global.advanced') }}
                 />
-
-                <ScrollView>
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                        AppStyles.marginTopNone,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.networks')}</Text>
-                        </View>
-                    </View>
-
-                    <TouchableDebounce
-                        testID="network-settings-button"
-                        style={styles.row}
-                        onPress={this.showNetworkSettings}
-                    >
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.networkSettings')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
-
-                    {/* push notification section */}
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('settings.pushNotifications')}</Text>
-                        </View>
-                    </View>
-
-                    <TouchableDebounce style={styles.row} onPress={this.reRegisterPushToken}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.reRegisterForPushNotifications')}
-                            </Text>
-                        </View>
-                    </TouchableDebounce>
-
-                    {/* release information section */}
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('settings.releaseInformation')}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.version')}
-                            </Text>
-                        </View>
-
-                        <MultiPressDetector pressThreshold={3} onMultiPress={this.showDeveloperSettings}>
-                            <Text selectable style={styles.value}>
-                                {GetAppReadableVersion()}
-                            </Text>
-                        </MultiPressDetector>
-                    </View>
-                    <TouchableDebounce style={styles.row} onPress={this.showChangeLog}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.viewChangeLog')}
-                            </Text>
-                        </View>
-
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
-
-                    {/* debug section */}
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.debug')}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex1}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.deviceUUID')}
-                            </Text>
-                        </View>
-
-                        <View style={AppStyles.flex2}>
-                            <Text selectable numberOfLines={1} adjustsFontSizeToFit style={styles.value}>
-                                {profile?.deviceUUID ? profile.deviceUUID.toUpperCase() : '—'}
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.developerMode')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
+                <ScrollView contentContainerStyle={sectionStyles.content}>
+                    <SettingsSection title={Localize.t('global.networks')}>
+                        <SettingsRow
+                            testID="network-settings-button"
+                            label={Localize.t('settings.networkSettings')}
+                            onPress={this.showNetworkSettings}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('settings.pushNotifications')}>
+                        <SettingsRow
+                            label={Localize.t('settings.reRegisterForPushNotifications')}
+                            onPress={this.reRegisterPushToken}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('settings.releaseInformation')}>
+                        <SettingsRow label={Localize.t('global.version')}>
+                            <MultiPressDetector pressThreshold={3} onMultiPress={this.showDeveloperSettings}>
+                                <Text selectable style={styles.value}>
+                                    {GetAppReadableVersion()}
+                                </Text>
+                            </MultiPressDetector>
+                        </SettingsRow>
+                        <SettingsRow
+                            label={Localize.t('settings.viewChangeLog')}
+                            onPress={this.showChangeLog}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.debug')}>
+                        <SettingsRow
+                            label={Localize.t('global.deviceUUID')}
+                            value={profile?.deviceUUID ? profile.deviceUUID.toUpperCase() : '—'}
+                            valueStyle={styles.identifier}
+                            selectableValue
+                        />
+                        <SettingsRow label={Localize.t('settings.developerMode')}>
                             <Switch
                                 testID="developer-mode-switch"
                                 checked={coreSettings.developerMode}
                                 onChange={this.onDeveloperModeChangeRequest}
                             />
-                        </View>
-                    </View>
-                    <TouchableDebounce style={styles.row} onPress={this.showSessionLogs}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.sessionLog')}
-                            </Text>
-                        </View>
-
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
+                        </SettingsRow>
+                        <SettingsRow
+                            label={Localize.t('settings.sessionLog')}
+                            onPress={this.showSessionLogs}
+                        />
+                    </SettingsSection>
                 </ScrollView>
             </View>
         );
     }
 }
 
-/* Export Component ==================================================================== */
 export default AdvancedSettingsView;

@@ -63,6 +63,7 @@
 		A2ED131C252F113A002AFC09 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2ED131B252F113A002AFC09 /* StoreKit.framework */; };
 		A2F4F39528802A4600444302 /* UniqueIdProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F4F39428802A4600444302 /* UniqueIdProvider.m */; };
 		A2F4F398288168CB00444302 /* Clipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F4F397288168CB00444302 /* Clipboard.m */; };
+		A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A2SC0E012710000200A75B9A /* SceneDelegate.m */; };
 		CE2349EA1CF53D755A66BD4C /* libPods-Xaman-XamanTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AB54F464B5BCA7B88FD9167 /* libPods-Xaman-XamanTests.a */; };
 /* End PBXBuildFile section */
 
@@ -173,6 +174,8 @@
 		A2F4F39428802A4600444302 /* UniqueIdProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UniqueIdProvider.m; sourceTree = "<group>"; };
 		A2F4F396288168BC00444302 /* Clipboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Clipboard.h; sourceTree = "<group>"; };
 		A2F4F397288168CB00444302 /* Clipboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Clipboard.m; sourceTree = "<group>"; };
+		A2SC0E012710000100A75B9A /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = Xaman/SceneDelegate.h; sourceTree = "<group>"; };
+		A2SC0E012710000200A75B9A /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SceneDelegate.m; path = Xaman/SceneDelegate.m; sourceTree = "<group>"; };
 		B712F110E060129D749043CD /* Pods-Xaman.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Xaman.debug.xcconfig"; path = "Target Support Files/Pods-Xaman/Pods-Xaman.debug.xcconfig"; sourceTree = "<group>"; };
 		CA7812F0C935F7652256C087 /* Pods-Xaman-XamanTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Xaman-XamanTests.debug.xcconfig"; path = "Target Support Files/Pods-Xaman-XamanTests/Pods-Xaman-XamanTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E970B0A9270522FB0AF008B0 /* libPods-Xaman.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Xaman.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -234,6 +237,8 @@
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
+				A2SC0E012710000100A75B9A /* SceneDelegate.h */,
+				A2SC0E012710000200A75B9A /* SceneDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				A2B145CA243E935F00E952B6 /* LaunchScreen.storyboard */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -966,6 +971,7 @@
 				A2AFF13C243E79C30007005E /* UIView+QRCode.m in Sources */,
 				A2805CE224D1982400B5552E /* LocalNotification.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */,
 				A2BE295B2C0C977600F66E10 /* InAppPurchase+ProductRequestHandler.m in Sources */,
 				A2AFF13B243E79C30007005E /* QRCode.m in Sources */,
 				A2AFF13F243E79C30007005E /* CIColor+QRCode.m in Sources */,
@@ -1173,7 +1179,7 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 194;
+				CURRENT_PROJECT_VERSION = 420;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -1184,7 +1190,7 @@
 				INFOPLIST_FILE = Xaman/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.3.0;
+				MARKETING_VERSION = 5.4.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1209,13 +1215,13 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 194;
+				CURRENT_PROJECT_VERSION = 420;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				INFOPLIST_FILE = Xaman/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.3.0;
+				MARKETING_VERSION = 5.4.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

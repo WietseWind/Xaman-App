@@ -38,6 +38,7 @@ interface Props {
     payload?: Payload;
     showHooksFee?: boolean;
     onSelect?: (txFee: any, serviceFee: any) => void;
+    onQuote?: (quote: { submitCondition?: any }) => void;
     sendAmountDrops?: number;
 }
 
@@ -97,14 +98,10 @@ class FeePicker extends Component<Props, State> {
     }
 
     fetchServiceFee = (isFallback = false): Promise<void> => {
-        const {
-            txJson,
-            source,
-            payload,
-        } = this.props;
+        const { txJson, source, payload, onQuote } = this.props;
 
         const noFee = () => {
-            // console.log('nofee')
+            onQuote?.({});
             this.setState({
                 selectedServiceFee: {
                     type: 'LOW',
@@ -123,29 +120,28 @@ class FeePicker extends Component<Props, State> {
             source &&
             source?.accessLevel !== AccessLevels.Full &&
             source.type !== AccountTypes.Regular &&
-            source.type !== AccountTypes.Tangem            
+            source.type !== AccountTypes.Tangem
         ) {
             // We don't know what is going to sign this
             return Promise.resolve(noFee());
         }
 
-        const payloadUuid = payload
-            ? payload?.getPayloadUUID()
-            : undefined;
-        
+        const payloadUuid = payload ? payload?.getPayloadUUID() : undefined;
+
         // when it's retry with fallback then we don't include txJson
         return BackendService.getServiceFee(!isFallback ? txJson : undefined, payloadUuid)
             .then((res) => {
                 // console.log('Picked backend service service fee', res);
+                onQuote?.(res);
                 const { availableFees } = res;
 
                 // console.log(availableFees?.[0])
-                
+
                 if (Array.isArray(availableFees) && availableFees.length > 0) {
                     this.setState({
                         selectedServiceFee: availableFees[0],
                     });
-                };
+                }
             })
             .catch(() => {});
     };
@@ -175,11 +171,12 @@ class FeePicker extends Component<Props, State> {
                     });
 
                     // set the suggested fee by default
-                    this.onSelect(find(availableFees, {
-                        type: selectedTxFee && selectedTxFee?.type
-                            ? selectedTxFee.type
-                            : suggested,
-                    })!, selectedServiceFee);
+                    this.onSelect(
+                        find(availableFees, {
+                            type: selectedTxFee && selectedTxFee?.type ? selectedTxFee.type : suggested,
+                        })!,
+                        selectedServiceFee,
+                    );
                 })
                 .catch(() => {
                     // if it's not a retry fallback then let's try again
@@ -232,10 +229,9 @@ class FeePicker extends Component<Props, State> {
             return 0;
         }
 
-        return new AmountParser(
-            Number(selectedTxFee.value) +
-            Number(selectedServiceFee?.value || 0),
-        ).dropsToNative().toString();
+        return new AmountParser(Number(selectedTxFee.value) + Number(selectedServiceFee?.value || 0))
+            .dropsToNative()
+            .toString();
     };
 
     getNormalizedHooksFee = () => {
@@ -283,22 +279,10 @@ class FeePicker extends Component<Props, State> {
         const { containerStyle, textStyle } = this.props;
 
         return (
-            <View style={[
-                styles.outerContainer,
-                AppStyles.row,
-                containerStyle,
-            ]}>
-                <View style={[
-                    styles.loaderContainer,
-                ]}>
-                    <LoadingIndicator
-                        style={styles.loader}
-                        size='small'
-                    />
-                    <Text style={[
-                        styles.loaderText,
-                        textStyle,
-                    ]}>{Localize.t('global.loading')}...&nbsp;</Text>
+            <View style={[styles.outerContainer, AppStyles.row, containerStyle]}>
+                <View style={[styles.loaderContainer]}>
+                    <LoadingIndicator style={styles.loader} size="small" />
+                    <Text style={[styles.loaderText, textStyle]}>{Localize.t('global.loading')}...&nbsp;</Text>
                 </View>
             </View>
         );
@@ -321,10 +305,7 @@ class FeePicker extends Component<Props, State> {
         }
 
         return (
-            <View style={[
-                styles.outerContainer,
-                containerStyle,
-            ]}>
+            <View style={[styles.outerContainer, containerStyle]}>
                 {/* <Text style={ AppStyles.colorWhite}>{ JSON.stringify(selectedServiceFee) }</Text> */}
                 <TouchableDebounce activeOpacity={0.8} style={AppStyles.row} onPress={this.showFeeSelectOverlay}>
                     <View style={[AppStyles.flex1, AppStyles.row, AppStyles.centerAligned]}>
@@ -364,11 +345,7 @@ class FeePicker extends Component<Props, State> {
                     <View style={AppStyles.paddingTopSml}>
                         <InfoMessage
                             type="info"
-                            labelStyle={[
-                                AppStyles.baseText,
-                                AppStyles.smalltext,
-                                AppStyles.colorBlue,
-                            ]}
+                            labelStyle={[AppStyles.baseText, AppStyles.smalltext, AppStyles.colorBlue]}
                             label={selectedServiceFee?.note || 'No note'}
                         />
                     </View>

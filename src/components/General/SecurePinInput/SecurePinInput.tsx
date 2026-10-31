@@ -4,6 +4,8 @@
     <SecurePinInput />
  *
  */
+import { noAutofillProps } from '../TextInput/noAutofill';
+
 import React, { Component } from 'react';
 import {
     View,
@@ -327,6 +329,8 @@ class SecurePinInput extends Component<Props, State> {
                 >
                     {!virtualKeyboard && (
                         <TextInput
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...noAutofillProps}
                             ref={this.inputRef}
                             testID="pin-input"
                             returnKeyType="done"

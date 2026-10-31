@@ -32,10 +32,12 @@ exports[`[SecurePinInput] renders correctly 1`] = `
 >
   <TextInput
     accessible={true}
+    autoComplete="off"
     autoCorrect={false}
     caretHidden={true}
     disableFullscreenUI={true}
     display="none"
+    importantForAutofill="noExcludeDescendants"
     keyboardType="number-pad"
     maxLength={6}
     onKeyPress={[Function]}
@@ -43,6 +45,7 @@ exports[`[SecurePinInput] renders correctly 1`] = `
     secureTextEntry={true}
     spellCheck={false}
     testID="pin-input"
+    textContentType="none"
     value=""
   />
   <View

@@ -1,31 +1,19 @@
-/**
- * XApps list view
- */
-
+/** xApp directory and its local presentation controls. */
 import Fuse from 'fuse.js';
-import { get, flatMap, sortBy, countBy } from 'lodash';
-
+import { countBy, sortBy } from 'lodash';
 import React, { Component } from 'react';
-import { View, InteractionManager } from 'react-native';
-
+import { View, Text, InteractionManager } from 'react-native';
 import { Navigation, EventSubscription } from 'react-native-navigation';
 
 import { AppScreens } from '@common/constants';
-
 import BackendService from '@services/BackendService';
-
-import { Header, Button, TouchableDebounce, Icon, SearchBar, SegmentButtons } from '@components/General';
-import { SegmentButtonType } from '@components/General/SegmentButtons';
-
+import NetworkService from '@services/NetworkService';
+import { Header, TouchableDebounce, Icon, SearchBar } from '@components/General';
 import { AppsList, HeaderMessage, CategoryChips, MessageType } from '@components/Modules/XAppStore';
 import { CategoryChipItem } from '@components/Modules/XAppStore/CategoryChips/ChipButton';
-
 import Localize from '@locale';
-
-import { AppStyles } from '@theme';
 import styles from './styles';
 
-/* types ==================================================================== */
 export enum Sections {
     Home = 'Home',
     Recent = 'Recent',
@@ -33,15 +21,10 @@ export enum Sections {
     Categories = 'Categories',
 }
 
-export type SectionData = {
-    title?: string;
-    data: XamanBackend.AppCategory[];
-};
-
+export type SectionData = { title?: string; data: XamanBackend.AppCategory[] };
 export interface Props {
     timestamp?: number;
 }
-
 export interface State {
     message?: MessageType;
     activeSection: Sections;
@@ -50,323 +33,267 @@ export interface State {
     dataSource: SectionData[];
     isLoading: boolean;
     searchEnabled: boolean;
+    searchQuery: string;
 }
 
-/* Component ==================================================================== */
+type SectionButton = { label: string; value: Sections };
+
 class XAppsView extends Component<Props, State> {
     static screenName = AppScreens.TabBar.XApps;
 
-    private searchBarRef: React.RefObject<SearchBar>;
+    private searchBarRef = React.createRef<SearchBar>();
     private navigationListener?: EventSubscription;
+    private mountTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+    private focusFrame?: number;
+    private mounted = false;
+    private requestEpoch = 0;
+    private networkContext?: string;
 
     constructor(props: Props) {
         super(props);
-
         this.state = {
             activeSection: Sections.Home,
             message: undefined,
             categories: undefined,
             dataSource: [
-                {
-                    title: Localize.t('xapp.ourSuggestions'),
-                    data: Array(4).fill(undefined),
-                },
-                {
-                    title: Localize.t('xapp.popular'),
-                    data: Array(4).fill(undefined),
-                },
+                { title: Localize.t('xapp.ourSuggestions'), data: Array(4).fill(undefined) },
+                { title: Localize.t('xapp.popular'), data: Array(4).fill(undefined) },
             ],
             categoryFilter: undefined,
             searchEnabled: false,
+            searchQuery: '',
             isLoading: false,
         };
-
-        this.searchBarRef = React.createRef();
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(this.fetchStoreListings);
-
+        this.mounted = true;
+        this.networkContext = this.getNetworkContext();
+        NetworkService.on('networkChange', this.onNetworkChange);
+        this.mountTask = InteractionManager.runAfterInteractions(this.fetchStoreListings);
         this.navigationListener = Navigation.events().bindComponent(this);
     }
 
     componentWillUnmount() {
-        if (this.navigationListener) {
-            this.navigationListener.remove();
-        }
+        this.mounted = false;
+        this.requestEpoch++;
+        this.mountTask?.cancel();
+        this.cancelSearchFocus();
+        this.navigationListener?.remove();
+        NetworkService.off('networkChange', this.onNetworkChange);
     }
 
     componentDidAppear() {
         const { categories } = this.state;
-
-        // update the list if used and xApp and not in recently used apps list
-        if (categories) {
-            this.fetchStoreListings();
-        }
+        if (categories) this.fetchStoreListings();
     }
 
-    fetchStoreListings = () => {
-        return BackendService.getXAppStoreListings('message,featured,popular,recent,all')
-            .then((resp) => {
-                const { message, categories } = resp;
+    private getNetworkContext = (): string | undefined => {
+        try {
+            const network = NetworkService.getNetwork();
+            if (!network) return undefined;
+            // A peer failover on this same network does not change the catalog.
+            return JSON.stringify([network.id?.toString(), network.key, network.networkId]);
+        } catch {
+            return undefined;
+        }
+    };
 
-                this.setState({
-                    message,
-                    categories,
-                    dataSource: this.buildDataSource(categories),
-                    isLoading: false,
-                });
-                
-                return Promise.resolve();
-            })
-            .catch(() => {
-                this.setState({
-                    isLoading: false,
-                });
+    private onNetworkChange = () => {
+        const context = this.getNetworkContext();
+        if (context === this.networkContext) return;
+        this.networkContext = context;
+        this.requestEpoch++;
+        this.mountTask?.cancel();
+        this.setState({ categories: undefined, message: undefined, dataSource: [], isLoading: false }, () => {
+            if (this.mounted) this.fetchStoreListings();
+        });
+    };
 
-                return Promise.resolve();
-            });
+    fetchStoreListings = async (): Promise<void> => {
+        if (!this.mounted) return;
+        const context = this.getNetworkContext();
+        const epoch = ++this.requestEpoch;
+        this.networkContext = context;
+        if (!context) {
+            this.setState({ categories: undefined, message: undefined, dataSource: [], isLoading: false });
+            return;
+        }
+        this.setState({ isLoading: true });
+        const current = () => this.mounted && epoch === this.requestEpoch && context === this.getNetworkContext();
+        try {
+            const { message, categories } = await BackendService.getXAppStoreListings(
+                'message,featured,popular,recent,all',
+            );
+            if (!current()) return;
+            this.setState((state) => ({
+                message,
+                categories,
+                dataSource: this.dataForState(categories, state),
+                isLoading: false,
+            }));
+        } catch {
+            if (!current()) return;
+            this.setState((state) => ({
+                isLoading: false,
+                // A failed first request must finish the loading placeholders.
+                // A failed refresh keeps the last usable catalog and current view.
+                dataSource: state.categories ? this.dataForState(state.categories, state) : [],
+            }));
+        }
+    };
+
+    private dataForState = (categories: State['categories'], state: State): SectionData[] => {
+        return state.searchEnabled
+            ? this.getSearchData(categories, state.searchQuery)
+            : this.buildDataSource(categories, state.activeSection, state.categoryFilter);
     };
 
     getAlphabetSectionData = ({ all: apps }: XamanBackend.XAppStoreListingsCategories): SectionData[] => {
-        const alphabetAppCategoryMap: SectionData[] = [];
-
+        const sections: SectionData[] = [];
         sortBy(apps, 'title').forEach((item) => {
-            if (!item || !item.title) return;
-
-            const firstLetter = item.title.charAt(0).toUpperCase();
-
-            if (
-                alphabetAppCategoryMap.filter((r) => {
-                    return r.title === firstLetter;
-                }).length < 1
-            ) {
-                alphabetAppCategoryMap.push({ title: firstLetter, data: [] });
+            if (!item?.title) return;
+            const title = item.title.charAt(0).toUpperCase();
+            let section = sections.find((candidate) => candidate.title === title);
+            if (!section) {
+                section = { title, data: [] };
+                sections.push(section);
             }
-            alphabetAppCategoryMap
-                .filter((r) => {
-                    return r.title === firstLetter;
-                })[0]
-                .data.push(item);
+            section.data.push(item);
         });
-
-        return sortBy(alphabetAppCategoryMap, (section) => {
-            return section.title;
-        });
+        return sortBy(sections, 'title');
     };
 
-    getRecentSectionData = ({ recent: apps }: XamanBackend.XAppStoreListingsCategories): SectionData[] => {
-        return [
-            {
-                title: Localize.t('xapp.recentlyUsed'),
-                data: apps,
-            },
-        ];
-    };
+    getRecentSectionData = ({ recent }: XamanBackend.XAppStoreListingsCategories): SectionData[] => [
+        { title: Localize.t('xapp.recentlyUsed'), data: recent },
+    ];
 
-    getHomeSectionData = ({
-        featured: featuredApps,
-        popular: popularApps,
-    }: XamanBackend.XAppStoreListingsCategories): SectionData[] => {
-        return [
-            {
-                title: Localize.t('xapp.ourSuggestions'),
-                data: featuredApps,
-            },
-            {
-                title: Localize.t('xapp.popular'),
-                data: popularApps,
-            },
-        ];
-    };
+    getHomeSectionData = ({ featured, popular }: XamanBackend.XAppStoreListingsCategories): SectionData[] => [
+        { title: Localize.t('xapp.ourSuggestions'), data: featured },
+        { title: Localize.t('xapp.popular'), data: popular },
+    ];
 
-    getCategoriesFilteredData = ({ all: allXApps }: XamanBackend.XAppStoreListingsCategories) => {
-        const { categoryFilter } = this.state;
+    getCategoriesFilteredData = (
+        { all }: XamanBackend.XAppStoreListingsCategories,
+        categoryFilter?: string,
+    ): SectionData[] => [{ data: all.filter((app) => app.category === categoryFilter) }];
 
-        return [
-            {
-                data: allXApps.filter((app) => app.category === categoryFilter),
-            },
-        ];
-    };
-
-    buildDataSource = (categories?: XamanBackend.XAppStoreListingsCategories, section?: Sections): SectionData[] => {
+    buildDataSource = (
+        categories?: XamanBackend.XAppStoreListingsCategories,
+        section?: Sections,
+        categoryFilter?: string,
+    ): SectionData[] => {
         const { activeSection } = this.state;
-
-        if (!categories) {
-            return [];
-        }
-
+        if (!categories) return [];
         switch (section ?? activeSection) {
-            case Sections.Home:
-                return this.getHomeSectionData(categories);
-            case Sections.Recent:
-                return this.getRecentSectionData(categories);
-            case Sections.Alphabet:
-                return this.getAlphabetSectionData(categories);
-            case Sections.Categories:
-                return this.getCategoriesFilteredData(categories);
-            default:
-                return [];
+            case Sections.Home: return this.getHomeSectionData(categories);
+            case Sections.Recent: return this.getRecentSectionData(categories);
+            case Sections.Alphabet: return this.getAlphabetSectionData(categories);
+            case Sections.Categories: return this.getCategoriesFilteredData(categories, categoryFilter);
+            default: return [];
         }
+    };
+
+    private getSearchData = (categories: State['categories'], query: string): SectionData[] => {
+        if (!query || !categories) return [];
+        const matches = new Fuse(categories.all, {
+            keys: ['title', 'identifier'], minMatchCharLength: 2,
+            shouldSort: false, includeScore: false, threshold: 0.1,
+        }).search(query).map(({ item }) => item);
+        return matches.length ? [{ title: Localize.t('send.searchResults'), data: matches }] : [];
+    };
+
+    private cancelSearchFocus = () => {
+        if (this.focusFrame !== undefined) cancelAnimationFrame(this.focusFrame);
+        this.focusFrame = undefined;
     };
 
     toggleSearchBar = () => {
-        const { categories, searchEnabled } = this.state;
-
-        this.setState(
-            {
-                dataSource: searchEnabled ? this.buildDataSource(categories) : [],
-                searchEnabled: !searchEnabled,
-            },
-            () => {
-                if (!searchEnabled) {
-                    requestAnimationFrame(() => {
-                        this.searchBarRef?.current?.focus();
-                    });
-                }
-            },
-        );
-    };
-
-    onSectionItemPress = (item: SegmentButtonType) => {
-        const { categories } = this.state;
-
-        this.setState({
-            dataSource: this.buildDataSource(categories, item.value),
-            activeSection: item.value,
-        });
-    };
-
-    onSearchChange = (text: string) => {
-        const { categories } = this.state;
-
-        if (!text || !categories) {
-            this.setState({
-                dataSource: [],
-            });
-            return;
-        }
-
-        const appsFilter = new Fuse(get(categories, 'all'), {
-            keys: ['title', 'identifier'],
-            minMatchCharLength: 2,
-            shouldSort: false,
-            includeScore: false,
-            threshold: 0.1,
-        });
-
-        const filteredApps = flatMap(appsFilter.search(text), 'item') as XamanBackend.AppCategory[];
-
-        const dataSource =
-            filteredApps.length > 0
-                ? [
-                      {
-                          title: Localize.t('send.searchResults'),
-                          data: filteredApps,
-                      },
-                  ]
-                : [];
-
-        this.setState({
-            dataSource,
-        });
-    };
-
-    getSegmentButtons = () => {
-        return [
-            {
-                label: Localize.t('global.home'),
-                value: Sections.Home,
-            },
-            {
-                label: Localize.t('xapp.recent'),
-                value: Sections.Recent,
-            },
-            {
-                label: Localize.t('xapp.ADashZ'),
-                value: Sections.Alphabet,
-            },
-            {
-                label: Localize.t('xapp.categories'),
-                value: Sections.Categories,
-            },
-        ];
-    };
-
-    getCategoryChips = () => {
-        const { categories, categoryFilter } = this.state;
-
-        const categoriesCount = countBy(categories?.all, 'category');
-
-        return Object.keys(categoriesCount)
-            .sort((a, b) => {
-                return categoriesCount[b] - categoriesCount[a];
-            })
-            .map((category: string) => {
-                return {
-                    value: category,
-                    count: categoriesCount[category],
-                    active: category === categoryFilter,
-                };
-            });
-    };
-
-    onCategoryChipPress = (item: CategoryChipItem) => {
-        const { categories } = this.state;
-
-        const { value } = item;
-
-        this.setState(
-            {
-                categoryFilter: value,
-            },
-            () => {
-                this.setState({
-                    dataSource: this.buildDataSource(categories, Sections.Categories),
+        this.cancelSearchFocus();
+        this.setState((state) => {
+            const searchEnabled = !state.searchEnabled;
+            return {
+                searchEnabled,
+                searchQuery: '',
+                dataSource: searchEnabled ? [] : this.buildDataSource(
+                    state.categories, state.activeSection, state.categoryFilter,
+                ),
+            };
+        }, () => {
+            const { searchEnabled } = this.state;
+            if (searchEnabled) {
+                this.focusFrame = requestAnimationFrame(() => {
+                    this.focusFrame = undefined;
+                    const { searchEnabled: stillSearching } = this.state;
+                    if (this.mounted && stillSearching) this.searchBarRef.current?.focus();
                 });
-            },
-        );
+            }
+        });
+    };
+
+    onSectionItemPress = (item: SectionButton) => {
+        this.setState((state) => ({
+            activeSection: item.value,
+            dataSource: this.buildDataSource(state.categories, item.value, state.categoryFilter),
+        }));
+    };
+
+    onSearchChange = (searchQuery: string) => {
+        this.setState((state) => ({ searchQuery, dataSource: this.getSearchData(state.categories, searchQuery) }));
+    };
+
+    getSegmentButtons = (): SectionButton[] => [
+        { label: Localize.t('global.home'), value: Sections.Home },
+        { label: Localize.t('xapp.recent'), value: Sections.Recent },
+        { label: Localize.t('xapp.ADashZ'), value: Sections.Alphabet },
+        { label: Localize.t('xapp.categories'), value: Sections.Categories },
+    ];
+
+    getCategoryChips = (): CategoryChipItem[] => {
+        const { categories, categoryFilter } = this.state;
+        const counts = countBy(categories?.all, 'category');
+        return Object.keys(counts).sort((a, b) => counts[b] - counts[a]).map((category) => ({
+            value: category, count: counts[category], active: category === categoryFilter,
+        }));
+    };
+
+    onCategoryChipPress = ({ value }: CategoryChipItem) => {
+        this.setState((state) => ({
+            categoryFilter: value,
+            dataSource: this.buildDataSource(state.categories, Sections.Categories, value),
+        }));
     };
 
     onCategoryChipRemovePress = () => {
-        this.setState({
-            categoryFilter: undefined,
-            dataSource: [],
-        });
+        this.setState({ categoryFilter: undefined, dataSource: [] });
     };
 
     renderHeaderSearchButton = () => {
         const { searchEnabled } = this.state;
-
-        if (searchEnabled) {
-            return (
-                <Button
-                    onPress={this.toggleSearchBar}
-                    label={Localize.t('global.cancel')}
-                    light
-                    roundedMini
-                    icon="IconX"
-                    iconPosition="right"
-                />
-            );
-        }
-
         return (
-            <TouchableDebounce onPress={this.toggleSearchBar} hitSlop={{ left: 20, right: 20, bottom: 10, top: 10 }}>
-                <Icon name="IconSearch" size={20} style={styles.searchIcon} />
+            <TouchableDebounce
+                testID={searchEnabled ? 'xapps-search-cancel' : 'xapps-search-open'}
+                onPress={this.toggleSearchBar}
+                accessibilityRole="button"
+                accessibilityLabel={Localize.t(searchEnabled ? 'global.cancel' : 'global.search')}
+                style={styles.headerAction}
+            >
+                {searchEnabled && <Text style={styles.cancelText}>{Localize.t('global.cancel')}</Text>}
+                <Icon name={searchEnabled ? 'IconX' : 'IconSearch'} size={20} style={styles.searchIcon} />
             </TouchableDebounce>
         );
     };
 
     renderContent = () => {
-        const { message, dataSource, activeSection, categoryFilter, searchEnabled, isLoading } = this.state;
-
+        const {
+            message, dataSource, activeSection, categoryFilter, searchEnabled, searchQuery, isLoading,
+        } = this.state;
         if (searchEnabled) {
             return (
                 <>
                     <SearchBar
                         ref={this.searchBarRef}
+                        defaultValue={searchQuery}
                         clearButtonVisibility="never"
                         onChangeText={this.onSearchChange}
                         placeholder={Localize.t('global.search')}
@@ -376,15 +303,28 @@ class XAppsView extends Component<Props, State> {
                 </>
             );
         }
-
         return (
             <>
-                <SegmentButtons
-                    activeButton={activeSection}
-                    containerStyle={styles.segmentButtonsContainer}
-                    buttons={this.getSegmentButtons()}
-                    onItemPress={this.onSectionItemPress}
-                />
+                <View style={styles.tabs}>
+                    {this.getSegmentButtons().map((item) => (
+                        <TouchableDebounce
+                            key={item.value}
+                            testID={`xapps-section-${item.value}`}
+                            accessibilityRole="tab"
+                            accessibilityLabel={item.label}
+                            accessibilityState={{ selected: item.value === activeSection }}
+                            onPress={() => this.onSectionItemPress(item)}
+                            style={[styles.tab, item.value === Sections.Home && styles.homeTab,
+                                item.value === Sections.Alphabet && styles.alphabetTab,
+                                item.value === Sections.Categories && styles.categoryTab,
+                                item.value === activeSection && styles.activeTab]}
+                        >
+                            <Text style={[styles.tabText, item.value === activeSection && styles.activeTabText]}>
+                                {item.label}
+                            </Text>
+                        </TouchableDebounce>
+                    ))}
+                </View>
                 <CategoryChips
                     visible={activeSection === Sections.Categories}
                     categories={this.getCategoryChips()}
@@ -393,22 +333,18 @@ class XAppsView extends Component<Props, State> {
                     onChipRemovePress={this.onCategoryChipRemovePress}
                     onChipPress={this.onCategoryChipPress}
                 />
-                <HeaderMessage
-                    visible={activeSection === Sections.Home}
-                    message={message}
-                    containerStyle={styles.headerMessageContainer}
-                />
                 <AppsList
-                    visible={
-                        !!(
-                            activeSection !== Sections.Categories ||
-                            (activeSection === Sections.Categories && categoryFilter)
-                        )
-                    }
+                    visible={activeSection !== Sections.Categories || !!categoryFilter}
                     dataSource={dataSource}
                     onRefresh={this.fetchStoreListings}
                     refreshing={isLoading}
                     containerStyle={styles.appListContainer}
+                    ListHeaderComponent={activeSection === Sections.Home ? (
+                        <HeaderMessage visible message={message} containerStyle={styles.headerMessageContainer} />
+                    ) : undefined}
+                    emptyTitle={activeSection === Sections.Recent ? Localize.t('xapp.yourRecentXApps') : undefined}
+                    emptyBody={activeSection === Sections.Recent ? Localize.t('xapp.recentXAppsExplain') : undefined}
+                    emptyIcon={activeSection === Sections.Recent ? 'IconXAppRecent' : undefined}
                 />
             </>
         );
@@ -416,26 +352,20 @@ class XAppsView extends Component<Props, State> {
 
     render() {
         const { timestamp } = this.props;
-
         return (
-            <View testID="xapp-store-tab-view" style={AppStyles.tabContainer}>
+            <View testID="xapp-store-tab-view" style={styles.container}>
                 <Header
                     placement="left"
-                    containerStyle={AppStyles.headerContainer}
-                    leftComponent={{
-                        text: Localize.t('global.xapps'),
-                        textStyle: AppStyles.h3,
-                    }}
-                    rightComponent={{
-                        render: this.renderHeaderSearchButton,
-                    }}
+                    containerStyle={styles.headerContainer}
+                    leftComponent={{ text: Localize.t('global.xapps'), textStyle: styles.heading }}
+                    rightComponent={{ render: this.renderHeaderSearchButton }}
                 />
-
-                <View key={`xappsview-${timestamp}`} style={styles.contentContainer}>{this.renderContent()}</View>
+                <View key={`xappsview-${timestamp}`} style={styles.contentContainer}>
+                    {this.renderContent()}
+                </View>
             </View>
         );
     }
 }
 
-/* Export Component ==================================================================== */
 export default XAppsView;

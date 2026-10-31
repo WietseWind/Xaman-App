@@ -24,21 +24,10 @@ class BaseGenuineTransaction extends BaseTransaction {
 
     /**
      * serialize transaction object to the ledger tx json for signing
-     * Note: this method will remove any unrecognized field from transaction
+     * Model fields and serialized network fields are preserved. Unknown metadata is ignored.
      */
     get JsonForSigning(): TransactionJson {
-        // shallow copy and filter the fields
-        const tx = { ...this._tx } as TransactionJson;
-        Object.getOwnPropertyNames(this._tx).forEach((key: string) => {
-            if (
-                !Object.keys({
-                    ...BaseGenuineTransaction.CommonFields,
-                    ...(this.constructor as typeof BaseGenuineTransaction).Fields,
-                }).includes(key)
-            ) {
-                delete tx[key];
-            }
-        });
+        const tx = this.definitionJson(this._tx);
 
         if (this?._txFilter && typeof this._txFilter === 'function') {
             try {

@@ -1,0 +1,360 @@
+{
+  "IconXAppCategoryOnramp": {
+    "file": "icon_xapp_category_onramp",
+    "lucide": "arrow-down-left",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryTools": {
+    "file": "icon_xapp_category_tools",
+    "lucide": "sliders-horizontal",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryTrading": {
+    "file": "icon_xapp_category_trading",
+    "lucide": "arrow-left-right",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryDefi": {
+    "file": "icon_xapp_category_defi",
+    "lucide": "layers",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategorySecurity": {
+    "file": "icon_xapp_category_security",
+    "lucide": "shield",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryOfframp": {
+    "file": "icon_xapp_category_offramp",
+    "lucide": "arrow-up-right",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryGames": {
+    "file": "icon_xapp_category_games",
+    "lucide": "gamepad-2",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryNfts": {
+    "file": "icon_xapp_category_nfts",
+    "lucide": "images",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryPrivacy": {
+    "file": "icon_xapp_category_privacy",
+    "lucide": "lock-keyhole",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryUtilities": {
+    "file": "icon_xapp_category_utilities",
+    "lucide": "wrench",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryTokens": {
+    "file": "icon_xapp_category_tokens",
+    "lucide": "coins",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategorySocial": {
+    "file": "icon_xapp_category_social",
+    "lucide": "users",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategorySupport": {
+    "file": "icon_xapp_category_support",
+    "lucide": "message-circle",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppCategoryFallback": {
+    "file": "icon_xapp_category_fallback",
+    "lucide": "grid-2x2",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppInfo": {
+    "file": "icon_xapp_info",
+    "lucide": "info",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "IconXAppRecent": {
+    "file": "icon_xapp_recent",
+    "lucide": "clock-3",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons"
+  },
+  "ImageXAppTileScrim": {
+    "file": "image_xapp_tile_scrim",
+    "logical_width": 8,
+    "logical_height": 132,
+    "catalog": "Graphics"
+  },
+  "IconTabBarHome": {
+    "file": "icon_tabbar_home",
+    "lucide": "credit-card",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "icon home.png",
+      "2x": "icon home@2x.png",
+      "3x": "icon home@3x.png"
+    },
+    "native_color": "#848CB8"
+  },
+  "IconTabBarHomeSelected": {
+    "file": "icon_tabbar_home_selected",
+    "lucide": "credit-card",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "icon home dark.png",
+      "2x": "icon home dark@2x.png",
+      "3x": "icon home dark@3x.png"
+    },
+    "native_color": "#000000"
+  },
+  "IconTabBarHomeSelectedLight": {
+    "file": "icon_tabbar_home_selected_light",
+    "lucide": "credit-card",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "icon home light.png",
+      "2x": "icon home light@2x.png",
+      "3x": "icon home light@3x.png"
+    },
+    "native_color": "#FFFFFF"
+  },
+  "IconTabBarEvents": {
+    "file": "icon_tabbar_events",
+    "lucide": "list",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "ei.png",
+      "2x": "ei@2x.png",
+      "3x": "ei@3x.png"
+    },
+    "native_color": "#848CB8"
+  },
+  "IconTabBarEventsSelected": {
+    "file": "icon_tabbar_events_selected",
+    "lucide": "list",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "ed.png",
+      "2x": "ed@2x.png",
+      "3x": "ed@3x.png"
+    },
+    "native_color": "#000000"
+  },
+  "IconTabBarEventsSelectedLight": {
+    "file": "icon_tabbar_events_selected_light",
+    "lucide": "list",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "dl.png",
+      "2x": "dl@2x.png",
+      "3x": "dl@3x.png"
+    },
+    "native_color": "#FFFFFF"
+  },
+  "IconTabBarXapp": {
+    "file": "icon_tabbar_xapp",
+    "lucide": "layout-grid",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "xApps grey.png",
+      "2x": "xApps grey@2x.png",
+      "3x": "xApps grey@3x.png"
+    },
+    "native_color": "#848CB8"
+  },
+  "IconTabBarXappSelected": {
+    "file": "icon_tabbar_xapp_selected",
+    "lucide": "layout-grid",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "xapps.png",
+      "2x": "xapps@2x.png",
+      "3x": "xapps@3x.png"
+    },
+    "native_color": "#000000"
+  },
+  "IconTabBarXappSelectedLight": {
+    "file": "icon_tabbar_xapp_selected_light",
+    "lucide": "layout-grid",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "xapps light.png",
+      "2x": "xapps light@2x.png",
+      "3x": "xapps light@3x.png"
+    },
+    "native_color": "#FFFFFF"
+  },
+  "IconTabBarSettings": {
+    "file": "icon_tabbar_settings",
+    "lucide": "sliders-horizontal",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "s.png",
+      "2x": "s@2x.png",
+      "3x": "s@3x.png"
+    },
+    "native_color": "#848CB8"
+  },
+  "IconTabBarSettingsSelected": {
+    "file": "icon_tabbar_settings_selected",
+    "lucide": "sliders-horizontal",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "sdark.png",
+      "2x": "sdark@2x.png",
+      "3x": "sdark@3x.png"
+    },
+    "native_color": "#000000"
+  },
+  "IconTabBarSettingsSelectedLight": {
+    "file": "icon_tabbar_settings_selected_light",
+    "lucide": "sliders-horizontal",
+    "logical_width": 24,
+    "logical_height": 24,
+    "catalog": "Icons",
+    "ios_logical_width": 64,
+    "ios_logical_height": 64,
+    "android_logical_width": 48,
+    "android_logical_height": 48,
+    "paint_width": 60,
+    "paint_height": 42.6666666667,
+    "native_stroke_width": 3.2,
+    "ios_filenames": {
+      "1x": "slight.png",
+      "2x": "slight@2x.png",
+      "3x": "slight@3x.png"
+    },
+    "native_color": "#FFFFFF"
+  }
+}

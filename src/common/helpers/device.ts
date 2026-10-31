@@ -153,7 +153,7 @@ const getTabIconDisplayPt = (factor?: number): number => {
     const f = factor || 1;
     const seCenter = itemRow * CENTER_OF_ITEM_ROW;
     const fromSlot = seCenter * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
-    const chrome = Math.pow(Math.max(bar, itemRow) / itemRow, TAB_CHROME_EXPONENT);
+    const chrome = (Math.max(bar, itemRow) / itemRow) ** TAB_CHROME_EXPONENT;
     let pt = fromSlot * chrome;
     if (isCompactIos18At2x()) {
         const isCenter = (factor || 1) < 0.8;
@@ -206,16 +206,16 @@ const GetBottomTabIconDp = (factor?: number): number => {
  * Get the latest real time base on device CPU ticks
  * @returns Promise<number>
  */
-const GetElapsedRealtime = (): Promise<number> => {
-    return new Promise((resolve) => {
-        DeviceUtilsModule.getElapsedRealtime()
-            .then((ts: string) => {
-                return resolve(Number(ts));
-            })
-            .catch(() => {
-                throw new Error('Unable to fetch elapsed real time!');
-            });
-    });
+const GetElapsedRealtime = async (): Promise<number> => {
+    const ts: unknown = await DeviceUtilsModule.getElapsedRealtime();
+    if ((typeof ts !== 'number' && typeof ts !== 'string') || (typeof ts === 'string' && ts.trim() === '')) {
+        throw new Error('Invalid elapsed real time');
+    }
+    const realTime = Number(ts);
+    if (!Number.isFinite(realTime) || realTime < 0) {
+        throw new Error('Invalid elapsed real time');
+    }
+    return realTime;
 };
 
 /**

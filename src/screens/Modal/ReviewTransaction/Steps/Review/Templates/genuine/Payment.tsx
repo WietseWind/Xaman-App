@@ -1,8 +1,10 @@
+import BigNumber from 'bignumber.js';
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, InteractionManager } from 'react-native';
 
 import SummaryStepStyle from '@screens/Send/Steps/Summary/styles';
-import { BackendService, LedgerService, NetworkService, StyleService } from '@services';
+import { BackendService, LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 import { RatesType } from '@services/BackendService';
 
 import { CoreRepository } from '@store/repositories';
@@ -11,6 +13,7 @@ import { Payment } from '@common/libs/ledger/transactions';
 import { PathFindPathOption } from '@common/libs/ledger/types/methods';
 
 import { CalculateAvailableBalance } from '@common/utils/balance';
+import { MPT_MAX_AMOUNT, mptRawToDisplay } from '@common/utils/mptAmount';
 
 import { TrustLineModel } from '@store/models';
 
@@ -29,6 +32,9 @@ import { TemplateProps } from '../types';
 import { DecodeMPTokenIssuanceToIssuer } from '@common/utils/codec';
 import { MPToken, MPTokenIssuance } from '@common/libs/ledger/objects';
 import { ComponentTypes } from '@services/NavigationService';
+import { paymentReceivesAmount, showSpendableNextToSendMax } from './paymentReviewBalance';
+import { showMinimumReceiveFirst } from './paymentAmountPresentation';
+import { settleLedgerFetches } from '@screens/Modal/ReviewTransaction/settleLedgerFetches';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -46,16 +52,23 @@ export interface State {
     isLoadingIssuerFee: boolean;
     issuerFee: number;
     selectedPath?: PathFindPathOption;
+    mptLoading: boolean;
+    mptLookupKey: string;
     mptDetails?: MPToken;
     mptIssuanceDetails?: MPTokenIssuance;
     mptIssuanceError?: { error: string };
 }
+
+const mptLookupKey = (props: Props) =>
+    JSON.stringify([props.source?.address, props.transaction.Amount?.mpt_issuance_id]);
 
 /* Component ==================================================================== */
 class PaymentTemplate extends Component<Props, State> {
     amountInput: React.RefObject<typeof AmountInput | null>;
 
     private currentCurrency: TrustLineModel | undefined;
+    private mounted = false;
+    private mptGeneration = 0;
 
     constructor(props: Props) {
         super(props);
@@ -65,16 +78,7 @@ class PaymentTemplate extends Component<Props, State> {
 
         // console.log('transactiontransaction', transaction)
 
-        if (transaction.Amount?.currency && transaction.Amount?.issuer) {
-            this.currentCurrency = (source?.lines || [])
-                .filter(l => {
-                    return l.currency.currencyCode === transaction.Amount?.currency &&
-                        l.currency.issuer === transaction.Amount?.issuer;
-                })?.[0];
-
-            // console.log(this.currentCurrency?.balance);
-            // console.log(this.currentCurrency?.getFormattedCurrency());
-        };
+        this.bindCurrentCurrency(source, transaction);
 
         this.state = {
             account: undefined,
@@ -89,6 +93,8 @@ class PaymentTemplate extends Component<Props, State> {
             isLoadingIssuerFee: false,
             issuerFee: 0,
             selectedPath: undefined,
+            mptLoading: !!this.isMPTAmount(),
+            mptLookupKey: mptLookupKey(props),
             mptDetails: undefined,
             mptIssuanceDetails: undefined,
         };
@@ -97,7 +103,9 @@ class PaymentTemplate extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
         InteractionManager.runAfterInteractions(() => {
+            if (!this.mounted) return;
             // if native currency then show equal amount in selected currency
             this.fetchCurrencyRate();
 
@@ -112,11 +120,50 @@ class PaymentTemplate extends Component<Props, State> {
         });
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+        this.mptGeneration += 1;
+    }
+
     static getDerivedStateFromProps(nextProps: Props, prevState: State) {
-        if (nextProps.source?.address !== prevState.account) {
-            return { account: nextProps.source?.address };
+        const key = mptLookupKey(nextProps);
+        if (key !== prevState.mptLookupKey) {
+            const id = nextProps.transaction.Amount?.mpt_issuance_id;
+            return {
+                account: nextProps.source?.address,
+                mptLookupKey: key,
+                mptLoading: typeof id === 'string' && id.length === 48,
+                mptDetails: undefined,
+                mptIssuanceDetails: undefined,
+                mptIssuanceError: undefined,
+            };
         }
+        if (nextProps.source?.address !== prevState.account) return { account: nextProps.source?.address };
         return null;
+    }
+
+    bindCurrentCurrency = (source: Props['source'], transaction: Props['transaction']) => {
+        if (transaction.Amount?.currency && transaction.Amount?.issuer) {
+            this.currentCurrency = (source?.lines || []).filter((l) => {
+                return (
+                    l.currency.currencyCode === transaction.Amount?.currency &&
+                    l.currency.issuer === transaction.Amount?.issuer
+                );
+            })?.[0];
+        } else {
+            this.currentCurrency = undefined;
+        }
+    };
+
+    componentDidUpdate(prevProps: Props, prevState: State) {
+        const { source, transaction } = this.props;
+        if (prevProps.source?.address !== source?.address) {
+            this.bindCurrentCurrency(source, transaction);
+        }
+        const { mptLookupKey: key } = this.state;
+        if (prevState.mptLookupKey !== key) {
+            this.fetchMPTDetails();
+        }
     }
 
     isMPTAmount = () => {
@@ -128,57 +175,60 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
     fetchMPTDetails = async () => {
-        const { transaction } = this.props;
-        const { account } = this.state;
-
-        if (this.isMPTAmount()) {
-            const [issuance, mpt] = await Promise.all([
-                LedgerService.getLedgerEntry({
-                    command: 'ledger_entry',
-                    mpt_issuance: transaction?.Amount?.mpt_issuance_id,
-                }),
-                LedgerService.getLedgerEntry({
-                    command: 'ledger_entry',
-                    mptoken: {
-                        mpt_issuance_id: transaction?.Amount?.mpt_issuance_id,
-                        account,
-                    },
-                }),
-            ]);
-
-            if ((mpt as any)?.node) {
-                this.setState({
-                    mptDetails: (mpt as any).node as MPToken,
-                });
-            }
-
-            if ((issuance as any)?.node) {
-                this.setState({
-                    mptIssuanceDetails: (issuance as any).node as MPTokenIssuance,
-                });
-            } else if ((issuance as any)?.error) {
-                this.setState({
-                    mptIssuanceError: issuance as any,
-                });
-            }
-
-            this.setIsReady();
+        const generation = ++this.mptGeneration;
+        const key = mptLookupKey(this.props);
+        const { transaction, source, setReady } = this.props;
+        if (!this.mounted || !this.isMPTAmount() || !source?.address) return;
+        setReady(false);
+        this.setState({
+            mptLoading: true, mptDetails: undefined, mptIssuanceDetails: undefined, mptIssuanceError: undefined,
+        });
+        const fetched = await settleLedgerFetches([
+            LedgerService.getLedgerEntry({
+                command: 'ledger_entry', mpt_issuance: transaction.Amount?.mpt_issuance_id,
+            }),
+            LedgerService.getLedgerEntry({
+                command: 'ledger_entry',
+                mptoken: { mpt_issuance_id: transaction.Amount?.mpt_issuance_id, account: source.address },
+            }),
+        ]);
+        if (!this.mounted || generation !== this.mptGeneration || key !== mptLookupKey(this.props)) return;
+        if (!fetched.ok) {
+            this.setState({
+                mptLoading: false, mptIssuanceError: { error: 'fetch_failed' },
+            }, this.setIsReady);
+            return;
         }
+        const [issuance, holding] = fetched.values as any[];
+        // Issuers/new holders can legitimately have no MPToken object yet.
+        const holdingKnown = !!holding?.node || holding?.error === 'entryNotFound';
+        if (!issuance?.node || !holdingKnown) {
+            this.setState({
+                mptLoading: false,
+                mptIssuanceError: { error: issuance?.error || holding?.error || 'fetch_failed' },
+            }, this.setIsReady);
+            return;
+        }
+        this.setState({
+            mptLoading: false,
+            mptDetails: holding.node,
+            mptIssuanceDetails: issuance.node,
+            mptIssuanceError: undefined,
+        }, this.setIsReady);
     };
 
     setIsReady = () => {
-        const { payload, setReady } = this.props;
-        const { mptIssuanceDetails } = this.state;
-
-        // disable ready until user selects a payment option
+        const { payload, setReady, transaction } = this.props;
+        const { mptLoading, mptIssuanceDetails, mptLookupKey: key } = this.state;
         if (payload.isPathFinding()) {
             setReady(false);
+            return;
         }
-
         if (this.isMPTAmount()) {
-            if (mptIssuanceDetails) {                
-                setReady(true);
-            } else {
+            try {
+                mptRawToDisplay(transaction.Amount?.value ?? '0', mptIssuanceDetails?.AssetScale);
+                setReady(!mptLoading && !!mptIssuanceDetails && key === mptLookupKey(this.props));
+            } catch {
                 setReady(false);
             }
         }
@@ -338,13 +388,40 @@ class PaymentTemplate extends Component<Props, State> {
     };
 
 
-    renderAmountRate = () => {
-        const {
-            amount,
-            isLoadingRate,
-            currencyRate,
-            currencyName,
-        } = this.state;
+    renderSpendableBalance = (currency?: string, issuer?: string) => {
+        const { source } = this.props;
+
+        if (!source) {
+            return null;
+        }
+
+        if (!currency || currency === NetworkService.getNativeAsset()) {
+            return (
+                <Text style={[AppStyles.monoBold]}>
+                    {Localize.formatNumber(CalculateAvailableBalance(source))}{' '}
+                    {NetworkService.getNativeAsset()}
+                </Text>
+            );
+        }
+
+        const line = Array.from(source.lines || []).find(
+            (item) => item.currency.currencyCode === currency && item.currency.issuer === issuer,
+        );
+        const balance = line ? Math.floor(Number(line.balance || 0) * 100_000_000) / 100_000_000 : 0;
+
+        return (
+            <AmountText
+                value={balance}
+                style={[AppStyles.monoBold]}
+                currency={line?.getFormattedCurrency() || NormalizeCurrencyCode(currency)}
+                immutable
+            />
+        );
+    };
+
+    renderAmountRate = (displayAmount?: string) => {
+        const { amount, isLoadingRate, currencyRate, currencyName } = this.state;
+        const amountToDisplay = displayAmount ?? amount;
 
         if (isLoadingRate) {
             return (
@@ -355,8 +432,8 @@ class PaymentTemplate extends Component<Props, State> {
         }
 
         // only show rate for native asset
-        if (currencyRate && (amount || currencyName === NetworkService.getNativeAsset())) {
-            const rate = Number(amount || 1) * currencyRate.rate;
+        if (currencyRate && (amountToDisplay || currencyName === NetworkService.getNativeAsset())) {
+            const rate = Number(amountToDisplay || 1) * currencyRate.rate;
             if (rate > 0) {
                 return (
                     <View style={styles.rateContainer}>
@@ -389,22 +466,22 @@ class PaymentTemplate extends Component<Props, State> {
         } = this.state;
 
         const mptAmount = {
-            holding: 0,
-            transaction: 0,
-            availableForIssuance: 0,
+            holding: '0',
+            transaction: '0',
+            availableForIssuance: '0',
         };
 
         if (this.isMPTAmount()) {
-            mptAmount.holding = Number(mptDetails?.MPTAmount || 0);
-            mptAmount.transaction = Number(transaction?.Amount?.value || 0);
-
-            mptAmount.availableForIssuance = Number(mptIssuanceDetails?.MaximumAmount || 0) -
-                Number(mptIssuanceDetails?.OutstandingAmount || 0);
-
-            if ((mptIssuanceDetails?.AssetScale || 1) > 1) {
-                mptAmount.holding /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                mptAmount.transaction /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
-                mptAmount.availableForIssuance /= 10 ** (mptIssuanceDetails?.AssetScale || 1);
+            try {
+                const scale = mptIssuanceDetails?.AssetScale;
+                mptAmount.holding = mptRawToDisplay(mptDetails?.MPTAmount ?? '0', scale);
+                mptAmount.transaction = mptRawToDisplay(transaction.Amount?.value ?? '0', scale);
+                mptAmount.availableForIssuance = mptRawToDisplay(
+                    new BigNumber(mptIssuanceDetails?.MaximumAmount ?? MPT_MAX_AMOUNT)
+                        .minus(mptIssuanceDetails?.OutstandingAmount ?? '0'), scale,
+                );
+            } catch {
+                return <InfoMessage type="error" label={Localize.t('mptoken.errorLoading')} />;
             }
 
             if (!mptIssuanceDetails && !mptIssuanceError) {
@@ -434,6 +511,12 @@ class PaymentTemplate extends Component<Props, State> {
 
         const isNativeAsset = (currencyRate && amount) ||
             (currencyRate && !this.isMPTAmount() && currencyName === NetworkService.getNativeAsset());
+        const receivesAmount = paymentReceivesAmount(transaction.SendMax);
+        // Keep a user-entered amount editable; this presentation is for fixed receive caps.
+        const minimumReceiveFirst = !editableAmount && showMinimumReceiveFirst(transaction);
+        const displayAmount = minimumReceiveFirst ? transaction.DeliverMin!.value : amount;
+        const spendableNextToSendMax =
+            minimumReceiveFirst || showSpendableNextToSendMax(transaction.SendMax, Boolean(selectedPath));
 
         // TODO: better handling this part
         if (!account) {
@@ -471,7 +554,11 @@ class PaymentTemplate extends Component<Props, State> {
 
                 {/* Amount */}
                 <>
-                    <Text style={styles.label}>{Localize.t('global.amount')}</Text>
+                    <Text style={styles.label}>
+                        {minimumReceiveFirst
+                            ? Localize.t('global.deliverMin')
+                            : Localize.t(receivesAmount ? 'global.amountToReceive' : 'global.amount')}
+                    </Text>
                     <View style={[
                         styles.contentBox,
                         // AppStyles.borderGreen,
@@ -512,7 +599,7 @@ class PaymentTemplate extends Component<Props, State> {
                             ) : (
                                 <View>
                                     <AmountText
-                                        value={this.isMPTAmount() ? mptAmount.transaction : amount!}
+                                        value={this.isMPTAmount() ? mptAmount.transaction : displayAmount!}
                                         currency={transaction.Amount?.currency}
                                         style={styles.amountInput}
                                         immutable
@@ -533,7 +620,8 @@ class PaymentTemplate extends Component<Props, State> {
                             <View style={[
                                 AppStyles.flex1,
                                 AppStyles.flexStart,
-                            ]}>{this.renderAmountRate()}</View>
+                            ]}>{this.renderAmountRate(displayAmount)}</View>
+                            {!spendableNextToSendMax && (
                             <View style={[AppStyles.flex2, AppStyles.flexEnd]}>
                                 <Text style={[
                                     !isNativeAsset
@@ -558,11 +646,7 @@ class PaymentTemplate extends Component<Props, State> {
                                                 <Text style={[AppStyles.monoBold]}>
                                                     {
                                                         source.address === mptIssuanceDetails?.Issuer
-                                                            ? (
-                                                                (mptIssuanceDetails?.MaximumAmount || 0) > 0
-                                                                    ? mptAmount.availableForIssuance
-                                                                    : 'N/A (issuer)'
-                                                            )
+                                                            ? mptAmount.availableForIssuance
                                                             : mptAmount.holding
                                                     }{' '}
                                                 </Text>
@@ -575,6 +659,7 @@ class PaymentTemplate extends Component<Props, State> {
                                     }
                                 </Text>
                             </View>
+                            )}
                         </View>
                     </View>
                 </>
@@ -600,7 +685,7 @@ class PaymentTemplate extends Component<Props, State> {
                     </>
                 )}
 
-                {transaction.SendMax && !selectedPath && (
+                {transaction.SendMax && (!selectedPath || minimumReceiveFirst) && (
                     <>
                         <Text style={styles.label}>{Localize.t('global.sendMax')}</Text>
                         <View style={styles.contentBox}>
@@ -610,11 +695,20 @@ class PaymentTemplate extends Component<Props, State> {
                                 style={styles.amount}
                                 immutable
                             />
+                            <View style={[AppStyles.flexEnd, AppStyles.stretchSelf]}>
+                                <Text style={[AppStyles.textRightAligned, SummaryStepStyle.currencyBalance]}>
+                                    {Localize.t('global.available')}{': '}
+                                    {this.renderSpendableBalance(
+                                        transaction.SendMax.currency,
+                                        transaction.SendMax.issuer,
+                                    )}
+                                </Text>
+                            </View>
                         </View>
                     </>
                 )}
 
-                {transaction.DeliverMin && (
+                {transaction.DeliverMin && !minimumReceiveFirst && (
                     <>
                         <Text style={styles.label}>{Localize.t('global.deliverMin')}</Text>
                         <View style={styles.contentBox}>
@@ -622,6 +716,20 @@ class PaymentTemplate extends Component<Props, State> {
                                 value={transaction.DeliverMin.value}
                                 currency={transaction.DeliverMin.currency}
                                 style={styles.amount}
+                                immutable
+                            />
+                        </View>
+                    </>
+                )}
+
+                {minimumReceiveFirst && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.maximumReceiveLimit')}</Text>
+                        <View style={styles.contentBox}>
+                            <AmountText
+                                value={transaction.Amount!.value}
+                                currency={transaction.Amount!.currency}
+                                style={styles.value}
                                 immutable
                             />
                         </View>

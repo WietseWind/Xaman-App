@@ -109,3 +109,271 @@ index a9e2c53..066cb11 100644
  
          WindowInsetsCompat finalInsets = new WindowInsetsCompat.Builder()
                  .setInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime(),
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
+--- a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
+@@ -455,8 +455,26 @@ static NSString *const setDefaultOptions = @"setDefaultOptions";
+ 
+     __weak UIViewController *weakOverlayVC = overlayVC;
+     [overlayVC setReactViewReadyCallback:^{
+-      UIWindow *overlayWindow =
+-          [[RNNOverlayWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
++      UIWindowScene *windowScene = nil;
++      for (UIScene *connectedScene in UIApplication.sharedApplication.connectedScenes) {
++          if (![connectedScene isKindOfClass:[UIWindowScene class]]) {
++              continue;
++          }
++          if (windowScene == nil ||
++              connectedScene.activationState == UISceneActivationStateForegroundActive) {
++              windowScene = (UIWindowScene *)connectedScene;
++          }
++          if (connectedScene.activationState == UISceneActivationStateForegroundActive) {
++              break;
++          }
++      }
++
++      RNNOverlayWindow *overlayWindow = windowScene != nil
++          ? [[RNNOverlayWindow alloc] initWithWindowScene:windowScene]
++          : [[RNNOverlayWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
++      if (windowScene != nil) {
++          overlayWindow.frame = windowScene.coordinateSpace.bounds;
++      }
+       overlayWindow.rootViewController = weakOverlayVC;
+       if ([weakOverlayVC.resolveOptionsWithDefault.overlay.handleKeyboardEvents withDefault:NO]) {
+           [self->_overlayManager showOverlayWindowAsKeyWindow:overlayWindow];
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
+--- a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
+@@ -1,6 +1,35 @@
+ #import "RNNBottomTabsController.h"
+ #import "UITabBarController+RNNUtils.h"
+ 
++@interface RNNKeepVisibleTabAnimator : NSObject <UIViewControllerAnimatedTransitioning>
++@end
++
++@implementation RNNKeepVisibleTabAnimator
++
++- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext {
++    return 0;
++}
++
++- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext {
++    UIViewController *fromVC = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
++    UIViewController *toVC = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
++    UIView *fromView = fromVC.view;
++    UIView *toView = toVC.view;
++    UIView *container = transitionContext.containerView;
++    toView.frame = container.bounds;
++    [container addSubview:toView];
++    [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
++    // UIKit removes the outgoing page when the transition ends. Put it back
++    // inside the actions screen so the sheet covers that page, not an empty one.
++    if (fromView != nil && toView != nil) {
++        fromView.frame = toView.bounds;
++        fromView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++        [toView addSubview:fromView];
++    }
++}
++
++@end
++
+ @interface RNNBottomTabsController ()
+ @property(nonatomic, strong) BottomTabPresenter *bottomTabPresenter;
+ @property(nonatomic, strong) RNNDotIndicatorPresenter *dotIndicatorPresenter;
+@@ -13,6 +42,8 @@
+     NSUInteger _previousTabIndex;
+     BottomTabsBaseAttacher *_bottomTabsAttacher;
+     BOOL _tabBarNeedsRestore;
++    BOOL _restoreTabAfterOverlay;
++    NSUInteger _tabIndexToRestore;
+ }
+ 
+ - (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo
+@@ -68,6 +99,14 @@
+ 
+ - (void)viewDidLoad {
+     [super viewDidLoad];
++    [[NSNotificationCenter defaultCenter] addObserver:self
++                                             selector:@selector(releaseHeldTabSelection)
++                                                 name:@"RNNOverlayWindowDidDetach"
++                                               object:nil];
++}
++
++- (void)dealloc {
++    [[NSNotificationCenter defaultCenter] removeObserver:self];
+ }
+ 
+ - (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
+@@ -101,6 +140,16 @@
+     [_dotIndicatorPresenter bottomTabsDidLayoutSubviews:self];
+ }
+ 
++- (void)releaseHeldTabSelection {
++    if (!_restoreTabAfterOverlay) {
++        return;
++    }
++    _restoreTabAfterOverlay = NO;
++    if (_tabIndexToRestore < self.viewControllers.count && _tabIndexToRestore != self.selectedIndex) {
++        [self setSelectedIndex:_tabIndexToRestore];
++    }
++}
++
+ - (UIViewController *)getCurrentChild {
+     return self.selectedViewController;
+ }
+@@ -186,6 +235,8 @@
+         return YES;
+     }
+ 
++    // This tab only opens an overlay. Selecting it would replace the visible
++    // page with the empty Actions screen. Leave the current tab selected.
+     return NO;
+ }
+ 
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
+--- a/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayManager.m
+@@ -42,6 +42,7 @@
+     [overlayWindow setHidden:YES];
+     [overlayWindow setRootViewController:nil];
+     [_overlayWindows removeObject:overlayWindow];
++    [[NSNotificationCenter defaultCenter] postNotificationName:@"RNNOverlayWindowDidDetach" object:overlayWindow];
+ }
+ 
+ - (RNNOverlayWindow *)findWindowByRootViewController:(UIViewController *)viewController {
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalPresenter.java
+@@ -8,6 +8,7 @@
+ import com.reactnativenavigation.options.Options;
+ import com.reactnativenavigation.react.CommandListener;
+ import com.reactnativenavigation.utils.ScreenAnimationListener;
++import com.reactnativenavigation.utils.Functions.FuncR;
+ import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController;
+ 
+ import androidx.annotation.Nullable;
+@@ -41,6 +42,10 @@
+     }
+ 
+     void showModal(ViewController<?> appearing, ViewController<?> disappearing, CommandListener listener) {
++        showModal(appearing, disappearing, listener, () -> !appearing.isDestroyed());
++    }
++
++    void showModal(ViewController<?> appearing, ViewController<?> disappearing, CommandListener listener, FuncR<Boolean> isActive) {
+         if (modalsLayout == null) {
+             listener.onError("Can not show modal before activity is created");
+             return;
+@@ -52,39 +57,68 @@
+         appearing.setWaitForRender(enterAnimationOptions.waitForRender);
+         modalsLayout.setVisibility(View.VISIBLE);
+         modalsLayout.addView(appearing.getView(), matchParentLP());
++        ScreenAnimationListener animationListener = createListener(appearing, disappearing, listener, isActive);
++        Runnable showWhenActive = () -> {
++            // A root change/dismissal can destroy the controller while React is rendering.
++            // ModalAnimator reads its view before onStart, so guard before entering it.
++            if (appearing.isDestroyed() || !isActive.run()) {
++                animationListener.onCancel();
++                return;
++            }
++            modalAnimator.show(appearing, disappearing, options.animations.showModal, animationListener);
++        };
+ 
+         if (enterAnimationOptions.enabled.isTrueOrUndefined()) {
+             if (enterAnimationOptions.shouldWaitForRender().isTrue()) {
+-                appearing.addOnAppearedListener(() -> modalAnimator.show(appearing, disappearing, options.animations.showModal, createListener(appearing, disappearing, listener)));
++                appearing.addOnAppearedListener(showWhenActive);
+             } else {
+-                modalAnimator.show(appearing, disappearing, options.animations.showModal, createListener(appearing, disappearing, listener));
++                showWhenActive.run();
+             }
+         } else {
+             if (enterAnimationOptions.waitForRender.isTrue()) {
+-                appearing.addOnAppearedListener(() -> onShowModalEnd(appearing, disappearing, listener));
++                appearing.addOnAppearedListener(animationListener::onEnd);
+             } else {
+-                onShowModalEnd(appearing, disappearing, listener);
++                animationListener.onEnd();
+             }
+         }
+     }
+ 
+ 
+     @NotNull
+-    private ScreenAnimationListener createListener(ViewController<?> toAdd, ViewController<?> toRemove, CommandListener listener) {
++    private ScreenAnimationListener createListener(ViewController<?> toAdd, ViewController<?> toRemove, CommandListener listener, FuncR<Boolean> isActive) {
+         return new ScreenAnimationListener() {
++            private boolean completed;
++
++            private void completePresentation() {
++                if (completed) return;
++                completed = true;
++                if (toAdd.isDestroyed() || !isActive.run()) {
++                    listener.onError("Modal presentation cancelled");
++                    return;
++                }
++                onShowModalEnd(toAdd, toRemove, listener);
++            }
++
+             @Override
+             public void onStart() {
++                if (completed) return;
++                if (toAdd.isDestroyed() || !isActive.run()) {
++                    completePresentation();
++                    return;
++                }
+                 toAdd.getView().setAlpha(1);
+             }
+ 
+             @Override
+             public void onEnd() {
+-                onShowModalEnd(toAdd, toRemove, listener);
++                completePresentation();
+             }
+ 
+             @Override
+             public void onCancel() {
+-                listener.onSuccess(toAdd.getId());
++                // Canceling an animation does not cancel a live modal presentation.
++                // Finish its lifecycle; removed controllers instead reject above.
++                completePresentation();
+             }
+         };
+     }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
+@@ -61,7 +61,8 @@
+         ViewController<?> toRemove = isEmpty() ? root : peek();
+         modals.add(viewController);
+         viewController.setOverlay(overlay);
+-        presenter.showModal(viewController, toRemove, listener);
++        presenter.showModal(viewController, toRemove, listener,
++                () -> modals.contains(viewController) && !viewController.isDestroyed());
+     }
+ 
+     public boolean dismissModal(String componentId, @Nullable ViewController<?> root, CommandListener listener) {
+@@ -111,8 +112,8 @@
+                     }
+                 });
+             } else {
+-                modals.get(0).destroy();
+-                modals.remove(0);
++                ViewController<?> removed = modals.remove(0);
++                removed.destroy();
+             }
+         }
+     }
+@@ -174,10 +175,11 @@
+     }
+ 
+     public void destroy() {
+-        for (ViewController<?> modal : modals) {
++        ArrayList<ViewController<?>> removed = new ArrayList<>(modals);
++        modals.clear();
++        for (ViewController<?> modal : removed) {
+             modal.destroy();
+         }
+-        modals.clear();
+     }
+ 
+     public void onConfigurationChanged(Configuration newConfig) {

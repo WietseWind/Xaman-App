@@ -1,5 +1,6 @@
 package libs.ui;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -10,8 +11,6 @@ import androidx.annotation.NonNull;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
-
-import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
@@ -34,7 +33,14 @@ class BlurViewModule extends ViewGroupManager<BlurView> {
     @Override
     public @Nonnull BlurView createViewInstance(@Nonnull ThemedReactContext ctx) {
         BlurView blurView = new BlurView(ctx);
-        View decorView = Objects.requireNonNull(ctx.getCurrentActivity()).getWindow().getDecorView();
+        Activity activity = ctx.getCurrentActivity();
+
+        // no current activity (app in background or activity destroyed), return the view without blur
+        if (activity == null) {
+            return blurView;
+        }
+
+        View decorView = activity.getWindow().getDecorView();
         ViewGroup rootView = decorView.findViewById(android.R.id.content);
         Drawable windowBackground = decorView.getBackground();
 

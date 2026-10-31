@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { View, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
+import { AppState, View, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
 
 import {
     Navigation,
@@ -14,6 +14,7 @@ import {
 import { StringTypeDetector, StringDecoder, StringType, XrplDestination, PayId } from 'xumm-string-decode';
 
 import { StyleService, BackendService, NetworkService, LinkingService } from '@services';
+import AuthenticationService, { LockStatus } from '@services/AuthenticationService';
 
 import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
 
@@ -40,6 +41,7 @@ import styles from './styles';
 /* types ==================================================================== */
 import { Props, State } from './types';
 import CameraScanner from './CameraScanner';
+import { isTrustedXamanUrl, isXamanTangemUrl } from './trustedUrl';
 import { AccountSet, Invoke, TrustSet } from '@common/libs/ledger/transactions';
 import { ReviewTransactionModalProps } from '../ReviewTransaction';
 
@@ -52,6 +54,10 @@ class ScanModal extends Component<Props, State> {
     private backHandler: NativeEventSubscription | undefined;
     private shouldReadTimeout: NodeJS.Timeout | undefined;
     private navigationListener?: EventSubscription;
+    private mounted = false;
+    private closing = false;
+    private readGeneration = 0;
+    private cameraActivityEpoch = 0;
 
     static options() {
         return {
@@ -69,6 +75,9 @@ class ScanModal extends Component<Props, State> {
         this.state = {
             isLoading: false,
             coreSettings: CoreRepository.getSettings(),
+            torchEnabled: false,
+            hasTorch: false,
+            cameraVisible: false,
         };
 
         // flag to check if we need to read the QR
@@ -79,11 +88,20 @@ class ScanModal extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
+        AuthenticationService.on('lockStateChange', this.onAuthenticationChange);
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.onClose);
         this.navigationListener = Navigation.events().bindComponent(this);
     }
 
     componentWillUnmount() {
+        this.mounted = false;
+        this.closing = true;
+        this.screenVisible = false;
+        this.shouldRead = false;
+        this.readGeneration++;
+        this.cameraActivityEpoch++;
+        AuthenticationService.off('lockStateChange', this.onAuthenticationChange);
         if (this.backHandler) {
             this.backHandler.remove();
         }
@@ -96,47 +114,101 @@ class ScanModal extends Component<Props, State> {
     }
 
     componentDidAppear() {
+        if (!this.mounted || this.closing) return;
         this.screenVisible = true;
+        this.setState({ cameraVisible: !AuthenticationService.isLocked });
     }
 
     componentDidDisappear() {
         // disable qr code reading if component is not visible
         this.screenVisible = false;
+        this.readGeneration++;
+        this.cameraActivityEpoch++;
+        if (this.mounted) this.setState({ cameraVisible: false });
     }
 
     setShouldRead = (value: boolean) => {
-        this.shouldRead = value;
+        this.shouldRead = value && this.mounted && !this.closing;
+        if (!value) this.readGeneration++;
     };
 
-    routeUser = async (screen: AppScreenKeys, passProps?: any, options?: any) => {
-        // close scan modal
-        await Navigator.dismissModal();
+    canUseCamera = (epoch?: number) => this.mounted && this.screenVisible && !this.closing &&
+        !AuthenticationService.isLocked && (epoch === undefined || epoch === this.cameraActivityEpoch);
 
-        // got to the root, this is for fallback option
-        try {
-            await Navigator.popToRoot();
-        } catch {
-            // ignore
+    onAuthenticationChange = (status: LockStatus) => {
+        if (!this.mounted || this.closing) return;
+        if (status === LockStatus.LOCKED) {
+            // Invalidate work before React commits the paused camera view.
+            this.readGeneration++;
+            this.cameraActivityEpoch++;
+            const { isLoading } = this.state;
+            if (isLoading) this.shouldRead = true;
+            this.setState({ cameraVisible: false, torchEnabled: false, isLoading: false });
+        } else if (status === LockStatus.UNLOCKED) {
+            this.setState({ cameraVisible: this.screenVisible });
         }
+    };
 
-        if (screen.indexOf('modal.') !== -1) {
+    canContinueRead = (generation: number) => !this.closing && !AuthenticationService.isLocked &&
+        generation === this.readGeneration;
+
+    routeUser = async (screen: AppScreenKeys, passProps?: any, options?: any) => {
+        if (this.closing || AuthenticationService.isLocked) return;
+        let interrupted = false;
+        let queued = false;
+        let released = false;
+        const onLock = (status: LockStatus) => {
+            if (status !== LockStatus.LOCKED) return;
+            interrupted = true;
+            released = true;
+            AuthenticationService.off('lockStateChange', onLock);
+        };
+        const release = () => {
+            if (released) return;
+            released = true;
+            AuthenticationService.off('lockStateChange', onLock);
+        };
+        const canRoute = () => !interrupted && !AuthenticationService.isLocked;
+        AuthenticationService.on('lockStateChange', onLock);
+        try {
+            if (!canRoute()) return;
+            // This route owns Scan's dismissal, including its normal unmount.
+            await Navigator.dismissModal();
+            if (!canRoute()) return;
+
+            // go to the root, this is for fallback option
+            try {
+                await Navigator.popToRoot();
+            } catch {
+                // ignore
+            }
+            if (!canRoute()) return;
+
             setTimeout(() => {
-                Navigator.showModal(screen, passProps, options);
+                try {
+                    if (!canRoute()) return;
+                    if (screen.indexOf('modal.') !== -1) Navigator.showModal(screen, passProps, options);
+                    else Navigator.push(screen, passProps, options);
+                } finally {
+                    release();
+                }
             }, 10);
-        } else {
-            setTimeout(() => {
-                Navigator.push(screen, passProps, options);
-            }, 10);
+            queued = true;
+        } finally {
+            if (!queued) release();
         }
     };
 
     loadTranslation = (uuid: string) => {
+        if (this.closing || AuthenticationService.isLocked) return;
+        const generation = this.readGeneration;
         this.setState({
             isLoading: true,
         });
 
         BackendService.getTranslation(uuid)
             .then((res: any) => {
+                if (!this.canContinueRead(generation)) return;
                 const { meta, translation } = res;
 
                 if (meta && meta.valid) {
@@ -156,6 +228,7 @@ class ScanModal extends Component<Props, State> {
                 }
             })
             .catch(() => {
+                if (!this.canContinueRead(generation)) return;
                 // ignore
                 Prompt(
                     'Error',
@@ -165,6 +238,7 @@ class ScanModal extends Component<Props, State> {
                 );
             })
             .finally(() => {
+                if (!this.canContinueRead(generation)) return;
                 this.setState({
                     isLoading: false,
                 });
@@ -202,6 +276,8 @@ class ScanModal extends Component<Props, State> {
     };
 
     handlePayloadReference = async (uuid: string) => {
+        if (this.closing || AuthenticationService.isLocked) return;
+        const generation = this.readGeneration;
         // double check if uuid is valid string
         if (!StringTypeCheck.isValidUUID(uuid)) {
             return;
@@ -214,6 +290,7 @@ class ScanModal extends Component<Props, State> {
         try {
             // fetch the payload
             const payload = await Payload.from(uuid, PayloadOrigin.QR);
+            if (!this.canContinueRead(generation)) return;
 
             // review the transaction
             await this.routeUser(
@@ -224,6 +301,7 @@ class ScanModal extends Component<Props, State> {
                 { modalPresentationStyle: 'fullScreen' },
             );
         } catch (e: any) {
+            if (!this.canContinueRead(generation)) return;
             Prompt(Localize.t('global.error'), e.message, [{ text: 'OK', onPress: () => this.setShouldRead(true) }], {
                 cancelable: false,
                 type: 'default',
@@ -263,10 +341,9 @@ class ScanModal extends Component<Props, State> {
             }
 
             if (json?.TransactionType === 'TrustSet') {
-                const trustSet = new TrustSet(json);
-
+                // the template unaltered: sign() refuses a ledger field the review cannot show
                 const payload = Payload.build(
-                    trustSet.JsonForSigning,
+                    { ...json },
                     Localize.t('asset.addingAssetReserveDescription', {
                         ownerReserve: NetworkService.getNetworkReserve().OwnerReserve,
                         nativeAsset: NetworkService.getNativeAsset(),
@@ -303,10 +380,8 @@ class ScanModal extends Component<Props, State> {
                 __DEV__ &&
                 CoreRepository.isDeveloperModeEnabled()
             ) {
-                const transaction =
-                    json.TransactionType === 'Invoke' ? new Invoke(json) : new AccountSet(json);
-
-                const payload = Payload.build(transaction.JsonForSigning);
+                // the template unaltered: sign() refuses a ledger field the review cannot show
+                const payload = Payload.build({ ...json });
 
                 if (templateNetwork) {
                     payload.meta.force_network = templateNetwork.key;
@@ -576,22 +651,16 @@ class ScanModal extends Component<Props, State> {
 
     handleUndetectedType = (content?: string, clipboard?: boolean) => {
         // some users scan QR on tangem card, navigate them to the account add screen
-        if (content && ['https://xumm.app/tangem', 'https://xaman.app/tangem'].some((url) => content.startsWith(url))) {
-            this.routeUser(AppScreens.Account.Add);
+        if (content && isXamanTangemUrl(content)) {
+            this.routeUser(AppScreens.Account.Add, {});
             return;
         }
 
-        // To make sure users scanning our Knowledge Base / etc QRs with Xumm instead of OS (regular URLs)
-        if (
-            content &&
-            ['https://xumm.app', 'https://help.xumm.app', 'https://xaman.app', 'https://help.xaman.app'].some((url) =>
-                content.startsWith(url),
-            )
-        ) {
-            if (StringTypeCheck.isValidURL(content)) {
-                Linking.openURL(content);
-                return;
-            }
+        // Knowledge Base / site QRs: match hostname, not a URL prefix
+        // (https://xaman.app.evil.example/ must not pass)
+        if (content && isTrustedXamanUrl(content) && StringTypeCheck.isValidURL(content)) {
+            Linking.openURL(content);
+            return;
         }
 
         // show error message base on origin
@@ -720,7 +789,7 @@ class ScanModal extends Component<Props, State> {
 
         if (data) {
             // return if we don't need to read again
-            if (!this.shouldRead || !this.screenVisible) return;
+            if (!this.shouldRead || !this.canUseCamera() || AppState.currentState !== 'active') return;
 
             // should not read anymore until we decide about detect value
             this.setShouldRead(false);
@@ -736,12 +805,19 @@ class ScanModal extends Component<Props, State> {
     };
 
     checkClipboardContent = async () => {
-        // get clipboard content
-        const clipboardContent = await Clipboard.getString();
+        if (!this.canUseCamera() || !this.shouldRead) return;
+        const generation = this.readGeneration;
+        let clipboardContent: string;
+        try {
+            clipboardContent = await Clipboard.getString();
+        } catch {
+            return;
+        }
 
         if (clipboardContent) {
             // return if we don't need to read again
-            if (!this.shouldRead) return;
+            if (!this.canUseCamera() || !this.shouldRead ||
+                generation !== this.readGeneration || AppState.currentState !== 'active') return;
 
             // should not read anymore until we decide about detect value
             this.setShouldRead(false);
@@ -751,8 +827,34 @@ class ScanModal extends Component<Props, State> {
         }
     };
 
+    onHasTorchChange = (hasTorch: boolean) => {
+        this.setState((state) => {
+            if (state.hasTorch === hasTorch) {
+                return null;
+            }
+            return {
+                hasTorch,
+                torchEnabled: hasTorch ? state.torchEnabled : false,
+            };
+        });
+    };
+
+    toggleTorch = () => {
+        const { hasTorch, torchEnabled } = this.state;
+        if (!hasTorch) {
+            return;
+        }
+        this.setState({ torchEnabled: !torchEnabled });
+    };
+
     onClose = () => {
         const { onClose } = this.props;
+        // Native QR and clipboard replies can arrive before dismissal completes.
+        this.closing = true;
+        this.screenVisible = false;
+        this.setShouldRead(false);
+        if (this.shouldReadTimeout) clearTimeout(this.shouldReadTimeout);
+        if (this.mounted) this.setState({ cameraVisible: false, torchEnabled: false });
 
         // close scan modal
         Navigator.dismissModal();
@@ -765,13 +867,52 @@ class ScanModal extends Component<Props, State> {
         return true;
     };
 
-    requestPermissions = () => {
-        Linking.openSettings();
-    };
-
-    renderNotAuthorizedView = () => {
+    renderCameraUnavailable = (retry: () => void) => {
         return (
             <ImageBackground
+                testID="scan-camera-unavailable-view"
+                resizeMode="cover"
+                source={
+                    StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
+                }
+                style={[AppStyles.container, AppStyles.paddingSml]}
+            >
+                <View style={[AppStyles.flex1, AppStyles.centerContent]}>
+                    <Icon name="IconCamera" size={150} style={styles.scanIconTransparent} />
+                </View>
+                <View style={[AppStyles.flex1, AppStyles.centerAligned, AppStyles.stretchSelf]}>
+                    <Text style={[AppStyles.p, AppStyles.bold, AppStyles.textCenterAligned]}>
+                        {Localize.t('global.cameraPreviewUnavailable')}
+                    </Text>
+                    <Spacer />
+                    <Text style={[AppStyles.subtext, AppStyles.bold, AppStyles.textCenterAligned]}>
+                        {Localize.t('global.cameraPreviewUnavailableHint')}
+                    </Text>
+                    <Spacer size={50} />
+                    <Button
+                        testID="scan-camera-retry-button"
+                        style={{ backgroundColor: AppColors.green }}
+                        label={Localize.t('global.tryAgain')}
+                        onPress={retry}
+                        icon="IconCheck"
+                    />
+                    <Spacer size={15} />
+                    <Button
+                        secondary
+                        testID="scan-camera-unavailable-close-button"
+                        label={Localize.t('global.close')}
+                        onPress={this.onClose}
+                        icon="IconX"
+                    />
+                </View>
+            </ImageBackground>
+        );
+    };
+
+    renderNotAuthorizedView = (requestPermission: () => void, settingsRequired: boolean, requesting: boolean) => {
+        return (
+            <ImageBackground
+                testID="scan-camera-permission-view"
                 resizeMode="cover"
                 source={
                     StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
@@ -802,9 +943,10 @@ class ScanModal extends Component<Props, State> {
                     <Button
                         testID="scan-permission-approve-button"
                         style={{ backgroundColor: AppColors.green }}
-                        label={Localize.t('global.approvePermissions')}
-                        // nonBlock
-                        onPress={this.requestPermissions}
+                        label={Localize.t(settingsRequired ? 'global.settings' : 'global.approvePermissions')}
+                        isDisabled={requesting}
+                        isLoading={requesting}
+                        onPress={requestPermission}
                         icon="IconCheck"
                     />
                 </View>
@@ -814,7 +956,7 @@ class ScanModal extends Component<Props, State> {
 
     render() {
         const { type } = this.props;
-        const { isLoading } = this.state;
+        const { isLoading, torchEnabled, hasTorch, cameraVisible } = this.state;
 
         let description;
 
@@ -852,7 +994,16 @@ class ScanModal extends Component<Props, State> {
 
         return (
             <View testID="scan-modal" style={styles.container}>
-                <CameraScanner onRead={this.onReadCode} notAuthorizedView={this.renderNotAuthorizedView()}>
+                <CameraScanner
+                    onRead={this.onReadCode}
+                    visible={cameraVisible && !AuthenticationService.isLocked}
+                    canUseCamera={this.canUseCamera}
+                    activityEpoch={this.cameraActivityEpoch}
+                    renderNotAuthorized={this.renderNotAuthorizedView}
+                    renderUnavailable={this.renderCameraUnavailable}
+                    torchEnabled={torchEnabled}
+                    onHasTorchChange={this.onHasTorchChange}
+                >
                     <View style={styles.rectangleContainer}>
                         <View style={styles.topLeft} />
                         <View style={styles.topRight} />
@@ -870,6 +1021,25 @@ class ScanModal extends Component<Props, State> {
                     }
                     <Spacer size={20} />
                     <View style={AppStyles.centerSelf}>
+                        {hasTorch && (
+                            <>
+                                <Button
+                                    numberOfLines={1}
+                                    testID="scan-flashlight-button"
+                                    onPress={this.toggleTorch}
+                                    label={
+                                        torchEnabled
+                                            ? Localize.t('scan.flashlightOn')
+                                            : Localize.t('scan.flashlightOff')
+                                    }
+                                    icon="IconStar"
+                                    secondary={!torchEnabled}
+                                    roundedMini
+                                    style={[AppStyles.paddingHorizontal]}
+                                />
+                                <Spacer size={15} />
+                            </>
+                        )}
                         <Button
                             numberOfLines={1}
                             testID="scan-clipboard-button"

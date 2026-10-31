@@ -28,6 +28,14 @@ export default StyleService.create({
     dangerSelected: {
         borderColor: '$red',
     },
+    labelIcon: {
+        marginRight: 8,
+        tintColor: '$grey',
+    },
+    labelIconSelected: {
+        marginRight: 8,
+        tintColor: '$textPrimary',
+    },
     dot: {
         height: 26,
         width: 26,

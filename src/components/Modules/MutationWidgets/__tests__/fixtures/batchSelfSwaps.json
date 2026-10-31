@@ -1,0 +1,263 @@
+{
+    "note": "Issue #363: validated Mainnet Batch in ledger 107924712. AccountRoot fields unrelated to balance/sequence and other accounts' affected nodes are omitted.",
+    "parent": {
+        "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+        "TransactionType": "Batch",
+        "Flags": 65536,
+        "Fee": "100",
+        "Sequence": 2411,
+        "hash": "801C87C9C85FE5B293D6884656D0CC27FE25ACEF382474F891C91618CA1586D9",
+        "RawTransactions": [
+            {
+                "RawTransaction": {
+                    "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                    "Amount": {
+                        "currency": "524C555344000000000000000000000000000000",
+                        "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                        "value": "994673548.8615462"
+                    },
+                    "DeliverMin": {
+                        "currency": "524C555344000000000000000000000000000000",
+                        "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                        "value": "1.27604561"
+                    },
+                    "Destination": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                    "Fee": "0",
+                    "Flags": 1073872896,
+                    "SendMax": "1000000",
+                    "Sequence": 2412,
+                    "SigningPubKey": "",
+                    "SourceTag": 74920348,
+                    "TransactionType": "Payment"
+                }
+            },
+            {
+                "RawTransaction": {
+                    "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                    "Amount": {
+                        "currency": "524C555344000000000000000000000000000000",
+                        "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                        "value": "994673548.8615462"
+                    },
+                    "DeliverMin": {
+                        "currency": "524C555344000000000000000000000000000000",
+                        "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                        "value": "1.27604561"
+                    },
+                    "Destination": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                    "Fee": "0",
+                    "Flags": 1073872896,
+                    "SendMax": "1000000",
+                    "Sequence": 2413,
+                    "SigningPubKey": "",
+                    "SourceTag": 74920348,
+                    "TransactionType": "Payment"
+                }
+            }
+        ]
+    },
+    "innerResponses": [
+        {
+            "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+            "Amount": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "994673548.8615462"
+            },
+            "DeliverMax": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "994673548.8615462"
+            },
+            "DeliverMin": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "1.27604561"
+            },
+            "Destination": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+            "Fee": "0",
+            "Flags": 1073872896,
+            "SendMax": "1000000",
+            "Sequence": 2412,
+            "SigningPubKey": "",
+            "SourceTag": 74920348,
+            "TransactionType": "Payment",
+            "ctid": "C66ECCE800570000",
+            "date": 846371470,
+            "hash": "87707D72CACD3E1D66614EB7B906E679C57268B47E7A95544CFAE6BBE70EC782",
+            "inLedger": 107924712,
+            "ledger_index": 107924712,
+            "meta": {
+                "AffectedNodes": [
+                    {
+                        "ModifiedNode": {
+                            "FinalFields": {
+                                "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                                "Balance": "138335861",
+                                "Sequence": 2413
+                            },
+                            "LedgerEntryType": "AccountRoot",
+                            "LedgerIndex": "8C4F456312F02D5199BCB1FB8F657BF19675288E3F4EBF2AFCFB5A1253788404",
+                            "PreviousFields": {
+                                "Balance": "139335861",
+                                "Sequence": 2412
+                            },
+                            "PreviousTxnID": "801C87C9C85FE5B293D6884656D0CC27FE25ACEF382474F891C91618CA1586D9",
+                            "PreviousTxnLgrSeq": 107924712
+                        }
+                    },
+                    {
+                        "ModifiedNode": {
+                            "FinalFields": {
+                                "Balance": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                                    "value": "57.51090885604298"
+                                },
+                                "Flags": 1114112,
+                                "HighLimit": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                                    "value": "0"
+                                },
+                                "HighNode": "985",
+                                "LowLimit": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                                    "value": "1000000000"
+                                },
+                                "LowNode": "4"
+                            },
+                            "LedgerEntryType": "RippleState",
+                            "LedgerIndex": "F32B9C09C90FBCB9B58F37A855C23D152619E63218A0317C96999742BFA3C8A3",
+                            "PreviousFields": {
+                                "Balance": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                                    "value": "56.22430105083212"
+                                }
+                            },
+                            "PreviousTxnID": "D670268276CB6C58E0FF82B32F30B044811144F8A0BCE5F7ABA3AFCF0EDA3BAF",
+                            "PreviousTxnLgrSeq": 107923297
+                        }
+                    }
+                ],
+                "DeliveredAmount": {
+                    "currency": "524C555344000000000000000000000000000000",
+                    "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                    "value": "1.286607805210861"
+                },
+                "ParentBatchID": "801C87C9C85FE5B293D6884656D0CC27FE25ACEF382474F891C91618CA1586D9",
+                "TransactionIndex": 87,
+                "TransactionResult": "tesSUCCESS",
+                "delivered_amount": {
+                    "currency": "524C555344000000000000000000000000000000",
+                    "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                    "value": "1.286607805210861"
+                }
+            },
+            "validated": true
+        },
+        {
+            "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+            "Amount": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "994673548.8615462"
+            },
+            "DeliverMax": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "994673548.8615462"
+            },
+            "DeliverMin": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "1.27604561"
+            },
+            "Destination": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+            "Fee": "0",
+            "Flags": 1073872896,
+            "SendMax": "1000000",
+            "Sequence": 2413,
+            "SigningPubKey": "",
+            "SourceTag": 74920348,
+            "TransactionType": "Payment",
+            "ctid": "C66ECCE800580000",
+            "date": 846371470,
+            "hash": "2B0A11D88B5F9E7BDFF5A2A3F9652CC443F2A4DCFD684C18F11993D477C5CEE3",
+            "inLedger": 107924712,
+            "ledger_index": 107924712,
+            "meta": {
+                "AffectedNodes": [
+                    {
+                        "ModifiedNode": {
+                            "FinalFields": {
+                                "Account": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                                "Balance": "137335861",
+                                "Sequence": 2414
+                            },
+                            "LedgerEntryType": "AccountRoot",
+                            "LedgerIndex": "8C4F456312F02D5199BCB1FB8F657BF19675288E3F4EBF2AFCFB5A1253788404",
+                            "PreviousFields": {
+                                "Balance": "138335861",
+                                "Sequence": 2413
+                            },
+                            "PreviousTxnID": "87707D72CACD3E1D66614EB7B906E679C57268B47E7A95544CFAE6BBE70EC782",
+                            "PreviousTxnLgrSeq": 107924712
+                        }
+                    },
+                    {
+                        "ModifiedNode": {
+                            "FinalFields": {
+                                "Balance": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                                    "value": "58.79751666125384"
+                                },
+                                "Flags": 1114112,
+                                "HighLimit": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                                    "value": "0"
+                                },
+                                "HighNode": "985",
+                                "LowLimit": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ",
+                                    "value": "1000000000"
+                                },
+                                "LowNode": "4"
+                            },
+                            "LedgerEntryType": "RippleState",
+                            "LedgerIndex": "F32B9C09C90FBCB9B58F37A855C23D152619E63218A0317C96999742BFA3C8A3",
+                            "PreviousFields": {
+                                "Balance": {
+                                    "currency": "524C555344000000000000000000000000000000",
+                                    "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                                    "value": "57.51090885604298"
+                                }
+                            },
+                            "PreviousTxnID": "87707D72CACD3E1D66614EB7B906E679C57268B47E7A95544CFAE6BBE70EC782",
+                            "PreviousTxnLgrSeq": 107924712
+                        }
+                    }
+                ],
+                "DeliveredAmount": {
+                    "currency": "524C555344000000000000000000000000000000",
+                    "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                    "value": "1.286607805210861"
+                },
+                "ParentBatchID": "801C87C9C85FE5B293D6884656D0CC27FE25ACEF382474F891C91618CA1586D9",
+                "TransactionIndex": 88,
+                "TransactionResult": "tesSUCCESS",
+                "delivered_amount": {
+                    "currency": "524C555344000000000000000000000000000000",
+                    "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                    "value": "1.286607805210861"
+                }
+            },
+            "validated": true
+        }
+    ]
+}

@@ -6,11 +6,11 @@ import { filter, find, first, isEmpty } from 'lodash';
 import React, { Component } from 'react';
 import { Image, InteractionManager, Text, View } from 'react-native';
 
-import { NetworkService } from '@services';
+import NetworkService from '@services/NetworkService';
 
 import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
 import { NetworkType } from '@store/types';
-import { AccountModel } from '@store/models';
+import { AccountModel, NetworkModel } from '@store/models';
 
 import { AppScreens } from '@common/constants';
 
@@ -30,6 +30,7 @@ import styles from './styles';
 
 import { StepsContext } from '../../Context';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
+import { Payload } from '@common/libs/payload';
 /* types ==================================================================== */
 enum RequiredActionsType {
     SWITCH_NETWORK = 'SWITCH_NETWORK',
@@ -42,6 +43,13 @@ export interface Props {}
 export interface State {
     requiredAction?: RequiredActionsType;
     requiredActionData: any;
+    networkSwitchStatus: 'idle' | 'confirming' | 'switching';
+}
+
+interface NetworkSwitchRequest {
+    network: NetworkModel;
+    payload: Payload;
+    started: boolean;
 }
 
 /* Error ==================================================================== */
@@ -66,6 +74,11 @@ class PreflightError extends Error {
 class PreflightStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
+    private mounted = false;
+    private closing = false;
+    private mountTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+    private preflightAttempt = 0;
+    private networkSwitchRequest?: NetworkSwitchRequest;
 
     constructor(props: Props) {
         super(props);
@@ -73,26 +86,43 @@ class PreflightStep extends Component<Props, State> {
         this.state = {
             requiredAction: undefined,
             requiredActionData: undefined,
+            networkSwitchStatus: 'idle',
         };
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(this.runPreFlight);
+        this.mounted = true;
+        this.closing = false;
+        this.mountTask = InteractionManager.runAfterInteractions(this.runPreFlight);
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        this.closing = true;
+        this.preflightAttempt++;
+        this.networkSwitchRequest = undefined;
+        this.mountTask?.cancel();
     }
 
     /*
     Run all preflight checks and tasks
      */
     runPreFlight = () => {
+        const attempt = ++this.preflightAttempt;
+        const { payload } = this.context;
+        const isActive = () => {
+            const { payload: currentPayload } = this.context;
+            return this.mounted && !this.closing && attempt === this.preflightAttempt && currentPayload === payload;
+        };
         // necessary jobs in order
-        const jobs = [this.checkForcedNetwork, this.setTransaction, this.loadSingingAccount];
+        const jobs = [this.checkForcedNetwork, () => this.setTransaction(isActive), this.loadSingingAccount];
 
         // run them in waterfall
-        jobs.reduce((accumulator: any, callback) => {
-            return accumulator.then(callback);
+        return jobs.reduce((accumulator: Promise<void>, callback) => {
+            return accumulator.then(() => (isActive() ? callback() : undefined));
         }, Promise.resolve())
-            .then(this.onPreflightPass)
-            .catch(this.onPreflightReject);
+            .then(() => { if (isActive()) this.onPreflightPass(); })
+            .catch((error) => { if (isActive()) this.onPreflightReject(error); });
     };
 
     /*
@@ -128,18 +158,24 @@ class PreflightStep extends Component<Props, State> {
     /*
     Set the transaction and check if we can sign this transaction in the selected network
      */
-    setTransaction = (): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            const { payload, setTransaction } = this.context;
-
-            try {
-                setTransaction(payload.getTransaction());
-
-                resolve();
-            } catch (error: any) {
-                reject(error);
-            }
-        });
+    setTransaction = async (isActive = () => true): Promise<void> => {
+        const { payload, setTransaction } = this.context;
+        // Network switches reconnect asynchronously. Learn the network's current
+        // fields before taking the immutable review/signing definitions snapshot.
+        await NetworkService.updateNetworkDefinitions();
+        if (!isActive()) return;
+        // A newly introduced type can arrive before the normal cache expires. Check once before pinning it.
+        if (!payload.isPseudoTransaction() &&
+            !NetworkService.getNetworkDefinitions().transactionNames.includes(payload.getTransactionType())) {
+            await NetworkService.updateNetworkDefinitions(true);
+        }
+        if (!isActive()) return;
+        await this.checkForcedNetwork();
+        if (!isActive()) return;
+        const transaction = payload.getTransaction();
+        // Capture now, so fee estimation, review and both signers use one schema.
+        transaction.assertSigningContext();
+        setTransaction(transaction);
     };
 
     /*
@@ -147,7 +183,7 @@ class PreflightStep extends Component<Props, State> {
      */
     checkForcedNetwork = (): Promise<void> => {
         return new Promise<void>((resolve, reject) => {
-            const { payload, setError } = this.context;
+            const { payload } = this.context;
 
             try {
                 // check if any forced network applied
@@ -175,7 +211,7 @@ class PreflightStep extends Component<Props, State> {
                 // everything seems fine
                 resolve();
             } catch (error: any) {
-                setError(error);
+                reject(error);
             }
         });
     };
@@ -228,7 +264,9 @@ class PreflightStep extends Component<Props, State> {
                 if (
                     transaction &&
                     transaction.TransactionType === TransactionTypes.Batch &&
-                    transaction.innerBatchSigners().length === 1
+                    transaction.innerBatchSigners().length === 1 &&
+                    (!transaction.Account || transaction.isBatchInNeedOfMultipleSigners())
+                    // ^^ else the Batch Account signs (e.g. it submits for an inner account that already signed)
                 ) {
                     // Batch in need of one signer, set as preferred account
                     preferredAccount = find(availableAccounts, { address: transaction.innerBatchSigners()[0] });
@@ -301,37 +339,75 @@ class PreflightStep extends Component<Props, State> {
         });
     };
 
-    switchNetwork = async () => {
-        const { requiredActionData } = this.state;
+    switchNetwork = async (request: NetworkSwitchRequest) => {
+        if (!this.mounted || this.closing || this.networkSwitchRequest !== request || request.started) return;
+        const { payload } = this.context;
+        const { requiredAction, requiredActionData } = this.state;
+        if (payload !== request.payload || requiredAction !== RequiredActionsType.SWITCH_NETWORK ||
+            requiredActionData?.network !== request.network) {
+            this.finishNetworkSwitch(request);
+            return;
+        }
+        request.started = true;
+        this.setState({ networkSwitchStatus: 'switching' });
+        try {
+            await NetworkService.switchNetwork(request.network);
+            const { payload: currentPayload } = this.context;
+            if (this.mounted && this.networkSwitchRequest === request && currentPayload === request.payload) {
+                // Keep the button busy through reconnect/definitions and the new preflight checks.
+                await this.runPreFlight();
+            }
+        } catch (error: any) {
+            const { payload: currentPayload } = this.context;
+            if (this.mounted && this.networkSwitchRequest === request && currentPayload === request.payload) {
+                Prompt(Localize.t('global.error'), error?.message);
+            }
+        } finally {
+            this.finishNetworkSwitch(request);
+        }
+    };
 
-        // switch to the desired network
-        await NetworkService.switchNetwork(requiredActionData.network);
-
-        // re-run the preFlight
-        this.runPreFlight();
+    private finishNetworkSwitch = (request: NetworkSwitchRequest) => {
+        if (this.networkSwitchRequest !== request) return;
+        this.networkSwitchRequest = undefined;
+        if (this.mounted) this.setState({ networkSwitchStatus: 'idle' });
     };
 
     onSwitchNetworkPress = () => {
-        const { requiredActionData } = this.state;
-
-        // get currently connected network
-        const connectedNetwork = NetworkService.getNetwork();
+        if (!this.mounted || this.closing || this.networkSwitchRequest) return;
+        const { requiredAction, requiredActionData } = this.state;
+        const { payload, setError } = this.context;
+        if (requiredAction !== RequiredActionsType.SWITCH_NETWORK || !requiredActionData?.network) return;
+        const request = { network: requiredActionData.network, payload, started: false };
+        this.networkSwitchRequest = request;
+        this.setState({ networkSwitchStatus: 'confirming' });
+        const cancel = () => {
+            // Android can deliver onDismiss after a confirmation button press.
+            if (!request.started) this.finishNetworkSwitch(request);
+        };
 
         // ask user if they want to switch the network
-        Prompt(
-            Localize.t('global.switchNetwork'),
-            Localize.t('settings.nodeChangeWarning', {
-                from: `"${connectedNetwork.name}"`,
-                to: `"${requiredActionData.network.name}`,
-            }),
-            [
-                { text: Localize.t('global.cancel') },
-                {
-                    text: Localize.t('global.switch'),
-                    onPress: this.switchNetwork,
-                },
-            ],
-        );
+        try {
+            const connectedNetwork = NetworkService.getNetwork();
+            Prompt(
+                Localize.t('global.switchNetwork'),
+                Localize.t('settings.nodeChangeWarning', {
+                    from: `"${connectedNetwork.name}"`,
+                    to: `"${requiredActionData.network.name}"`,
+                }),
+                [
+                    { text: Localize.t('global.cancel'), onPress: cancel },
+                    {
+                        text: Localize.t('global.switch'),
+                        onPress: () => this.switchNetwork(request),
+                    },
+                ],
+                { type: 'default', cancelable: true, onDismiss: cancel },
+            );
+        } catch (error) {
+            this.finishNetworkSwitch(request);
+            setError(error as Error);
+        }
     };
 
     onAddAccountPress = async () => {
@@ -340,6 +416,16 @@ class PreflightStep extends Component<Props, State> {
 
         // push to the screen
         Navigator.push<AccountAddViewProps>(AppScreens.Account.Add, {});
+    };
+
+    onClose = () => {
+        if (this.closing) return;
+        this.closing = true;
+        this.preflightAttempt++;
+        this.networkSwitchRequest = undefined;
+        this.mountTask?.cancel();
+        const { onClose } = this.context;
+        onClose();
     };
 
     renderForcedSigners = () => {
@@ -389,7 +475,7 @@ class PreflightStep extends Component<Props, State> {
     };
 
     renderSwitchNetworkAction = () => {
-        const { requiredActionData } = this.state;
+        const { requiredActionData, networkSwitchStatus } = this.state;
         const { coreSettings } = this.context;
 
         // if forced_network type is not "Mainnet" then we should only offer switching if developer mode is on
@@ -414,10 +500,14 @@ class PreflightStep extends Component<Props, State> {
                 <Spacer size={30} />
                 {ShouldShowSwitchButton && (
                     <Button
+                        testID="preflight-switch-network"
                         secondary
                         roundedMini
                         label={Localize.t('global.switchNetwork')}
                         onPress={this.onSwitchNetworkPress}
+                        isDisabled={networkSwitchStatus !== 'idle'}
+                        isLoading={networkSwitchStatus === 'switching'}
+                        loadingIndicatorStyle="default"
                     />
                 )}
             </View>
@@ -425,7 +515,7 @@ class PreflightStep extends Component<Props, State> {
     };
 
     render() {
-        const { onClose, transaction } = this.context;
+        const { transaction } = this.context;
         const { requiredAction } = this.state;
 
         // no action is required
@@ -451,7 +541,7 @@ class PreflightStep extends Component<Props, State> {
 
         return (
             <View testID="preflight-error-view" style={styles.container}>
-                <ReviewHeader onClose={onClose} transaction={transaction} />
+                <ReviewHeader onClose={this.onClose} transaction={transaction} />
                 {ActionRenderer()}
             </View>
         );

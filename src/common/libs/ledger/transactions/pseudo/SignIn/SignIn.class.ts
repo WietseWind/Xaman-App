@@ -12,6 +12,13 @@ class SignIn extends BasePseudoTransaction {
     constructor(tx?: TransactionJson) {
         super(tx);
     }
+
+    unsignableFields(): string[] {
+        const tx = this.JsonForSigning;
+        // accountlib recognizes Channel + Amount without TransactionType as a
+        // claim. A login must never change into a claim through its extra fields.
+        return tx.Channel && tx.Amount ? ['Channel', 'Amount'] : super.unsignableFields();
+    }
 }
 
 /* Export ==================================================================== */

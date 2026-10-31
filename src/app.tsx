@@ -228,7 +228,7 @@ class Application {
                         });
                     }
                 });
-            });
+            }).catch(this.handleError);
         } else {
             Navigator.startOnboarding();
         }

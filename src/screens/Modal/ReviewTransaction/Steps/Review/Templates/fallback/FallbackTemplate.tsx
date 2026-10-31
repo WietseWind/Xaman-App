@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 
-import { FallbackTransaction } from '@common/libs/ledger/transactions';
+import { BaseTransaction } from '@common/libs/ledger/transactions/common';
+import TransactionData from '@components/Modules/TransactionData';
+import UniversalTransactionWarning from '@components/Modules/TransactionData/UniversalTransactionWarning';
 
 import { Clipboard } from '@common/helpers/clipboard';
 import { Toast } from '@common/helpers/interface';
@@ -9,20 +11,21 @@ import { Toast } from '@common/helpers/interface';
 import { AmountParser } from '@common/libs/ledger/parser/common';
 
 import { FeePicker } from '@components/Modules';
-import { Button, JsonTree } from '@components/General';
+import { Button } from '@components/General';
 
 import NetworkService from '@services/NetworkService';
 
 import Localize from '@locale';
 
 import { AppFonts, AppStyles } from '@theme';
+import ExtraFields from '../../ExtraFields';
 import styles from '../styles';
 
 import { TemplateProps } from '../types';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
-    transaction: FallbackTransaction;
+    transaction: BaseTransaction;
 }
 
 export interface State {
@@ -36,7 +39,9 @@ class FallbackTemplate extends Component<Props, State> {
 
         this.state = {
             transactionJsonData: undefined,
-            showFeePicker: typeof props.transaction?.Fee === 'undefined' && !props.payload.isMultiSign(),
+            // a Batch inner transaction is signed as received, so its fee is not picked here
+            showFeePicker:
+                !props.innerBatch && typeof props.transaction?.Fee === 'undefined' && !props.payload.isMultiSign(),
         };
     }
 
@@ -72,15 +77,6 @@ class FallbackTemplate extends Component<Props, State> {
         });
     };
 
-    getJsonDataFoeViewer = () => {
-        const { transactionJsonData } = this.state;
-        // remove `Account` from the json as we are showing it in more proper way
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { Account, ...jsonData } = transactionJsonData!;
-
-        return jsonData;
-    };
-
     render() {
         const { transaction, source } = this.props;
         const { transactionJsonData, showFeePicker } = this.state;
@@ -91,6 +87,11 @@ class FallbackTemplate extends Component<Props, State> {
 
         return (
             <>
+                <UniversalTransactionWarning />
+
+                {/* Fields Xaman has no screen for, including nested values. */}
+                <ExtraFields transaction={transaction} omitIntro />
+
                 <View style={[AppStyles.row, styles.label]}>
                     <View style={[AppStyles.flex1, AppStyles.centerContent]}>
                         <Text style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorGrey]}>
@@ -108,9 +109,9 @@ class FallbackTemplate extends Component<Props, State> {
                     />
                 </View>
 
-                {/* Transaction JSON */}
-                <View style={styles.jsonTreeContainer}>
-                    <JsonTree data={this.getJsonDataFoeViewer()} />
+                {/* Raw JSON stays below the warning. It is the developer view of the same fields. */}
+                <View testID="universal-transaction-json" style={styles.jsonTreeContainer}>
+                    <TransactionData transaction={transaction} />
                 </View>
 
                 {/* Fee picker  */}

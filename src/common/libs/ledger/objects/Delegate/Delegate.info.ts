@@ -7,7 +7,7 @@ import Delegate from './Delegate.class';
 /* Types ==================================================================== */
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
 import { OperationActions } from '@common/libs/ledger/parser/types';
-import NetworkService from '@services/NetworkService';
+import { delegationDescription } from '@common/libs/ledger/utils/delegationDetails';
 
 /* Descriptor ==================================================================== */
 class DelegateInfo extends ExplainerAbstract<Delegate> {
@@ -17,39 +17,17 @@ class DelegateInfo extends ExplainerAbstract<Delegate> {
 
     getEventsLabel(): string {
         return Localize.t('txDelegateSet.objectLabel');
-        // return `SomeDelegationLabel`;
     }
 
     generateDescription(): string {
-        const transactionDefinitions = NetworkService.getRawNetworkDefinitions()?.TRANSACTION_TYPES || {};
-
-        let msg = Localize.t('txDelegateSet.itSetsAccountAuthorizeTo', {
-            authorize: this.item.Authorize,
-        });
-
-        msg += '\n\n';
-
-        const perms = (this.item.Permissions || []).map((p) => {
-            const matchingTx = Object.keys(transactionDefinitions).filter(
-                (v) => transactionDefinitions[v] === p?.Permission?.PermissionValue,
-            )?.[0];
-
-            if (matchingTx) return matchingTx;
-
-            return p?.Permission?.PermissionValue;
-        });
-
-        msg += Localize.t('txDelegateSet.itSetsThesePermissions', {
-            permissions: `\n\n- ${perms.join('\n -')}`,
-        });
-
-        return msg;
+        return delegationDescription(this.item.Account, this.item.Authorize, this.item.Permissions || [],
+            this.item.PermissionTransactionTypes, 'object', this.item.PermissionNativeAsset);
     }
 
     getParticipants() {
         return {
-            start: { address: this.item.Authorize, tag: undefined },
-            end: { address: this.item.Account, tag: undefined },
+            start: { address: this.item.Account, tag: undefined },
+            end: { address: this.item.Authorize, tag: undefined },
         };
     }
 

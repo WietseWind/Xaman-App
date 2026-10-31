@@ -32,6 +32,7 @@ interface Props {
     showHooksFee?: boolean;
     payload?: Payload;
     onSelect?: (item: any) => void;
+    onQuote?: (quote: { submitCondition?: any }) => void;
 }
 
 interface State {
@@ -87,16 +88,15 @@ class ServiceFee extends Component<Props, State> {
     }
 
     fetchFees = (isFallback = false): Promise<void> => {
-        const { txJson, payload } = this.props;
+        const { txJson, payload, onQuote } = this.props;
 
-        const payloadUuid = payload
-            ? payload?.getPayloadUUID()
-            : undefined;
+        const payloadUuid = payload ? payload?.getPayloadUUID() : undefined;
 
         // when it's retry with fallback then we don't include txJson
         return BackendService.getServiceFee(!isFallback ? txJson : undefined, payloadUuid)
             .then((res) => {
                 // console.log('Picked backend service service fee', res);
+                onQuote?.(res);
                 const { availableFees, feeHooks, suggested, feePercentage } = res;
 
                 this.setState({
@@ -202,45 +202,26 @@ class ServiceFee extends Component<Props, State> {
             <View style={containerStyle}>
                 <TouchableDebounce activeOpacity={0.8} style={AppStyles.row}>
                     <View style={[AppStyles.flex1, AppStyles.row, AppStyles.centerAligned]}>
-                        {
-                            (
-                                String(this.getNormalizedFeePercentage()) === '0' &&
-                                String(this.getNormalizedFee()) === '0'
-                            ) && (
+                        {String(this.getNormalizedFeePercentage()) === '0' &&
+                            String(this.getNormalizedFee()) === '0' && (
                                 <Text style={textStyle}>{Localize.t('global.none')}</Text>
-                            )
-                        }
-                        {
-                            (
-                                String(this.getNormalizedFeePercentage()) !== '0'
-                            ) && (
+                            )}
+                        {String(this.getNormalizedFeePercentage()) !== '0' && (
+                            <Text style={textStyle}>{this.getNormalizedFeePercentage()}%</Text>
+                        )}
+                        {String(this.getNormalizedFeePercentage()) === '0' &&
+                            String(this.getNormalizedFee()) !== '0' && (
                                 <Text style={textStyle}>
-                                    {this.getNormalizedFeePercentage()}%
+                                    {this.getNormalizedFee()} {NetworkService.getNativeAsset()}
                                 </Text>
-                            )
-                        }
-                        {
-                            (
-                                String(this.getNormalizedFeePercentage()) === '0' &&
-                                String(this.getNormalizedFee()) !== '0'
-                            ) && (
-                                <Text style={textStyle}>
-                                    {this.getNormalizedFee()}{' '}
-                                    {NetworkService.getNativeAsset()}
-                                </Text>
-                            )
-                        }
+                            )}
                     </View>
                 </TouchableDebounce>
                 {selected?.note && (
                     <View style={AppStyles.paddingTopSml}>
                         <InfoMessage
                             type="info"
-                            labelStyle={[
-                                AppStyles.baseText,
-                                AppStyles.smalltext,
-                                AppStyles.colorBlue,
-                            ]}
+                            labelStyle={[AppStyles.baseText, AppStyles.smalltext, AppStyles.colorBlue]}
                             label={selected?.note || 'No note'}
                         />
                     </View>

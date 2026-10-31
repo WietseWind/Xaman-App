@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 
-import { Button, PillButton } from '@components/General';
+import { Button } from '@components/General';
 
 import Localize from '@locale';
 
@@ -12,6 +12,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
 import { AssetListFilterProps } from '@screens/Overlay/AssetListFilter';
 import { FiltersType } from '../ListFilter';
+import CategoryTabs from '../../CategoryTabs';
 
 /* Types ==================================================================== */
 interface Props {
@@ -128,7 +129,8 @@ class ListHeader extends PureComponent<Props> {
                         label={Localize.t('home.addAsset')}
                         onPress={this.onAddPress}
                         icon="IconPlus"
-                        iconSize={19}
+                        iconSize={16}
+                        textStyle={styles.addTokenText}
                         style={[
                             AppStyles.alignSelfStretch,
                             styles.listHeaderButton,
@@ -178,29 +180,10 @@ class ListHeader extends PureComponent<Props> {
             <View style={[
                 styles.container,
             ]}>
-                <PillButton
-                    style={[
-                    ]}
-                    active='TOKENS'
-                    items={[
-                        {
-                            id: 'TOKENS',
-                            label: Localize.t('global.assets'),
-                            onActivate: () => {
-                                this.onTitlePress(ASSETS_CATEGORY.Tokens);
-                            },
-                        },
-                        {
-                            id: 'NFT',
-                            label: Localize.t('global.nfts'),
-                            onActivate: () => {
-                                this.onTitlePress(ASSETS_CATEGORY.NFTs);
-                            },
-                        },
-                    ]}
-                />
+                <CategoryTabs active={ASSETS_CATEGORY.Tokens} onPress={this.onTitlePress} />
                 <View style={[
                     AppStyles.alignSelfStretch,
+                    styles.actionsContainer,
                 ]}>
                     {this.renderButtons()}
                 </View>
