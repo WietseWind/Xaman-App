@@ -97,7 +97,7 @@ const expectTab = (runtime: Runtime, options: any, tab: string, glass: boolean, 
     const names: Record<string, string> = { Home: 'Home', Events: 'Events', Actions: 'Actions',
         XApps: 'Xapp', Settings: 'Settings' };
     const image = `IconTabBar${names[tab]}`;
-    const scale = runtime.device.GetBottomTabScale(factor) / (glass && !center ? 0.8 : 1);
+    const scale = runtime.device.GetBottomTabScale(factor) / (glass && !center ? 0.72 : 1);
     expect(options.icon).toEqual({ ...runtime.StyleService.getImage(image), scale });
     expect(options.selectedIcon).toEqual({
         ...runtime.StyleService.getImage(center ? image : `${image}Selected`), scale,
