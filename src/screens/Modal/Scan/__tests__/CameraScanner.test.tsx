@@ -15,7 +15,7 @@ jest.mock('react-native-vision-camera', () => {
     return {
         Camera: Component,
         useCameraDevice: () => mockDevice,
-        useCodeScanner: (options: any) => options,
+        useCodeScanner: jest.requireActual('react-native-vision-camera/src/hooks/useCodeScanner').useCodeScanner,
     };
 });
 
@@ -309,7 +309,7 @@ it('blocks a retained Settings action immediately when policy locks, before Reac
     expect(Camera.requestCameraPermission).not.toHaveBeenCalled();
 });
 
-it('rejects captured callbacks across a same-turn lock and unlock, then accepts only the new session', () => {
+it('replaces the native view after a same-turn lock and unlock and keeps pre-commit read guards', () => {
     setStatus('granted');
     let unlocked = true;
     let epoch = 0;
@@ -326,7 +326,9 @@ it('rejects captured callbacks across a same-turn lock and unlock, then accepts 
     });
     expect(onRead).not.toHaveBeenCalled();
     expect(tree!.root.findByType(Camera)).not.toBe(oldView);
-    act(() => { old.onStarted(); old.codeScanner.onCodeScanned([{ value: 'old-session' }]); });
+    // The SDK's stable QR wrapper forwards to its latest handler. Native old-tag
+    // events are dropped by the bridge; check view replacement rather than call it after unmount.
+    act(() => { old.onStarted(); old.onError(new Error('old session error')); });
     expect(onRead).not.toHaveBeenCalled();
     expect(tree!.root.findAllByProps({ testID: 'unavailable' })).toHaveLength(0);
     act(() => camera().props.codeScanner.onCodeScanned([{ value: 'new-session' }]));
@@ -389,7 +391,7 @@ it('ignores a late request result after unmount and removes the AppState listene
     expect(Linking.openSettings).not.toHaveBeenCalled();
 });
 
-it('keeps the no-device fallback and retries a failed preview without accepting stale camera callbacks', () => {
+it('replaces a failed camera, ignores old lifecycle callbacks and accepts fresh QR data', () => {
     setStatus('granted');
     mockDevice = undefined; mount();
     expect(tree!.root.findByProps({ testID: 'unavailable' })).toBeDefined();
@@ -398,12 +400,15 @@ it('keeps the no-device fallback and retries a failed preview without accepting 
     act(() => tree!.update(
         <CameraScanner onRead={onRead} renderNotAuthorized={permissionView} renderUnavailable={unavailable} />,
     ));
+    const oldView = tree!.root.findByType(Camera);
     const old = camera().props;
     act(() => old.onError(new Error('preview stopped')));
+    expect(tree!.root.findAllByType(Camera)).toHaveLength(0);
     expect(tree!.root.findByProps({ testID: 'unavailable' })).toBeDefined();
     act(() => tree!.root.findByProps({ testID: 'unavailable' }).props.onTouchEnd());
+    expect(tree!.root.findByType(Camera)).not.toBe(oldView);
     expect(camera().props.torch).toBe('off');
-    act(() => { old.onStarted(); old.codeScanner.onCodeScanned([{ value: 'stale-qr' }]); });
+    act(() => old.onStarted());
     expect(onRead).not.toHaveBeenCalled();
     expect(tree!.root.findByProps({ testID: 'unavailable' })).toBeDefined();
     act(() => camera().props.onStarted());
@@ -411,7 +416,10 @@ it('keeps the no-device fallback and retries a failed preview without accepting 
     act(() => old.onError(new Error('stale error')));
     expect(tree!.root.findAllByProps({ testID: 'unavailable' })).toHaveLength(0);
     const latest = camera().props;
+    act(() => latest.codeScanner.onCodeScanned([{ value: 'fresh-retry-qr' }]));
+    expect(onRead).toHaveBeenCalledTimes(1);
+    expect(onRead).toHaveBeenCalledWith('fresh-retry-qr');
     act(() => tree!.unmount()); tree = undefined;
     act(() => latest.codeScanner.onCodeScanned([{ value: 'unmounted-qr' }]));
-    expect(onRead).not.toHaveBeenCalled();
+    expect(onRead).toHaveBeenCalledTimes(1);
 });
