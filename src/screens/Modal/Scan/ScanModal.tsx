@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { View, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
+import { AppState, View, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
 
 import {
     Navigation,
@@ -53,6 +53,9 @@ class ScanModal extends Component<Props, State> {
     private backHandler: NativeEventSubscription | undefined;
     private shouldReadTimeout: NodeJS.Timeout | undefined;
     private navigationListener?: EventSubscription;
+    private mounted = false;
+    private closing = false;
+    private readGeneration = 0;
 
     static options() {
         return {
@@ -72,6 +75,7 @@ class ScanModal extends Component<Props, State> {
             coreSettings: CoreRepository.getSettings(),
             torchEnabled: false,
             hasTorch: false,
+            cameraVisible: false,
         };
 
         // flag to check if we need to read the QR
@@ -82,11 +86,17 @@ class ScanModal extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.onClose);
         this.navigationListener = Navigation.events().bindComponent(this);
     }
 
     componentWillUnmount() {
+        this.mounted = false;
+        this.closing = true;
+        this.screenVisible = false;
+        this.shouldRead = false;
+        this.readGeneration++;
         if (this.backHandler) {
             this.backHandler.remove();
         }
@@ -99,19 +109,25 @@ class ScanModal extends Component<Props, State> {
     }
 
     componentDidAppear() {
+        if (!this.mounted || this.closing) return;
         this.screenVisible = true;
+        this.setState({ cameraVisible: true });
     }
 
     componentDidDisappear() {
         // disable qr code reading if component is not visible
         this.screenVisible = false;
+        this.readGeneration++;
+        if (this.mounted) this.setState({ cameraVisible: false });
     }
 
     setShouldRead = (value: boolean) => {
-        this.shouldRead = value;
+        this.shouldRead = value && this.mounted && !this.closing;
+        if (!value) this.readGeneration++;
     };
 
     routeUser = async (screen: AppScreenKeys, passProps?: any, options?: any) => {
+        if (this.closing) return;
         // close scan modal
         await Navigator.dismissModal();
 
@@ -134,12 +150,14 @@ class ScanModal extends Component<Props, State> {
     };
 
     loadTranslation = (uuid: string) => {
+        if (this.closing) return;
         this.setState({
             isLoading: true,
         });
 
         BackendService.getTranslation(uuid)
             .then((res: any) => {
+                if (this.closing) return;
                 const { meta, translation } = res;
 
                 if (meta && meta.valid) {
@@ -159,6 +177,7 @@ class ScanModal extends Component<Props, State> {
                 }
             })
             .catch(() => {
+                if (this.closing) return;
                 // ignore
                 Prompt(
                     'Error',
@@ -168,6 +187,7 @@ class ScanModal extends Component<Props, State> {
                 );
             })
             .finally(() => {
+                if (this.closing) return;
                 this.setState({
                     isLoading: false,
                 });
@@ -205,6 +225,7 @@ class ScanModal extends Component<Props, State> {
     };
 
     handlePayloadReference = async (uuid: string) => {
+        if (this.closing) return;
         // double check if uuid is valid string
         if (!StringTypeCheck.isValidUUID(uuid)) {
             return;
@@ -217,6 +238,7 @@ class ScanModal extends Component<Props, State> {
         try {
             // fetch the payload
             const payload = await Payload.from(uuid, PayloadOrigin.QR);
+            if (this.closing) return;
 
             // review the transaction
             await this.routeUser(
@@ -227,6 +249,7 @@ class ScanModal extends Component<Props, State> {
                 { modalPresentationStyle: 'fullScreen' },
             );
         } catch (e: any) {
+            if (this.closing) return;
             Prompt(Localize.t('global.error'), e.message, [{ text: 'OK', onPress: () => this.setShouldRead(true) }], {
                 cancelable: false,
                 type: 'default',
@@ -714,7 +737,7 @@ class ScanModal extends Component<Props, State> {
 
         if (data) {
             // return if we don't need to read again
-            if (!this.shouldRead || !this.screenVisible) return;
+            if (!this.shouldRead || !this.screenVisible || this.closing || AppState.currentState !== 'active') return;
 
             // should not read anymore until we decide about detect value
             this.setShouldRead(false);
@@ -730,12 +753,19 @@ class ScanModal extends Component<Props, State> {
     };
 
     checkClipboardContent = async () => {
-        // get clipboard content
-        const clipboardContent = await Clipboard.getString();
+        if (!this.mounted || this.closing || !this.screenVisible || !this.shouldRead) return;
+        const generation = this.readGeneration;
+        let clipboardContent: string;
+        try {
+            clipboardContent = await Clipboard.getString();
+        } catch {
+            return;
+        }
 
         if (clipboardContent) {
             // return if we don't need to read again
-            if (!this.shouldRead) return;
+            if (!this.mounted || this.closing || !this.screenVisible || !this.shouldRead ||
+                generation !== this.readGeneration || AppState.currentState !== 'active') return;
 
             // should not read anymore until we decide about detect value
             this.setShouldRead(false);
@@ -767,6 +797,12 @@ class ScanModal extends Component<Props, State> {
 
     onClose = () => {
         const { onClose } = this.props;
+        // Native QR and clipboard replies can arrive before dismissal completes.
+        this.closing = true;
+        this.screenVisible = false;
+        this.setShouldRead(false);
+        if (this.shouldReadTimeout) clearTimeout(this.shouldReadTimeout);
+        if (this.mounted) this.setState({ cameraVisible: false, torchEnabled: false });
 
         // close scan modal
         Navigator.dismissModal();
@@ -779,13 +815,10 @@ class ScanModal extends Component<Props, State> {
         return true;
     };
 
-    requestPermissions = () => {
-        Linking.openSettings();
-    };
-
     renderCameraUnavailable = (retry: () => void) => {
         return (
             <ImageBackground
+                testID="scan-camera-unavailable-view"
                 resizeMode="cover"
                 source={
                     StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
@@ -824,9 +857,10 @@ class ScanModal extends Component<Props, State> {
         );
     };
 
-    renderNotAuthorizedView = () => {
+    renderNotAuthorizedView = (requestPermission: () => void, settingsRequired: boolean, requesting: boolean) => {
         return (
             <ImageBackground
+                testID="scan-camera-permission-view"
                 resizeMode="cover"
                 source={
                     StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
@@ -857,9 +891,10 @@ class ScanModal extends Component<Props, State> {
                     <Button
                         testID="scan-permission-approve-button"
                         style={{ backgroundColor: AppColors.green }}
-                        label={Localize.t('global.approvePermissions')}
-                        // nonBlock
-                        onPress={this.requestPermissions}
+                        label={Localize.t(settingsRequired ? 'global.settings' : 'global.approvePermissions')}
+                        isDisabled={requesting}
+                        isLoading={requesting}
+                        onPress={requestPermission}
                         icon="IconCheck"
                     />
                 </View>
@@ -869,7 +904,7 @@ class ScanModal extends Component<Props, State> {
 
     render() {
         const { type } = this.props;
-        const { isLoading, torchEnabled, hasTorch } = this.state;
+        const { isLoading, torchEnabled, hasTorch, cameraVisible } = this.state;
 
         let description;
 
@@ -909,7 +944,8 @@ class ScanModal extends Component<Props, State> {
             <View testID="scan-modal" style={styles.container}>
                 <CameraScanner
                     onRead={this.onReadCode}
-                    notAuthorizedView={this.renderNotAuthorizedView()}
+                    visible={cameraVisible}
+                    renderNotAuthorized={this.renderNotAuthorizedView}
                     renderUnavailable={this.renderCameraUnavailable}
                     torchEnabled={torchEnabled}
                     onHasTorchChange={this.onHasTorchChange}

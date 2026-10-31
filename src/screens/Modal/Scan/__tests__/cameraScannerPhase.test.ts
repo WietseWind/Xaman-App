@@ -11,7 +11,12 @@ describe('cameraScannerPhase', () => {
         expect(shouldRequestCameraPermission('granted')).toBe(false);
         expect(shouldRequestCameraPermission('denied')).toBe(false);
         expect(shouldRequestCameraPermission('restricted')).toBe(false);
+        expect(shouldRequestCameraPermission('denied', 'android')).toBe(true);
+        expect(shouldRequestCameraPermission('not-determined', 'android')).toBe(true);
+        expect(shouldRequestCameraPermission('granted', 'android')).toBe(false);
+        expect(shouldRequestCameraPermission('restricted', 'android')).toBe(false);
         expect(nextCameraAuthorization('granted', 'not-determined')).toBe('granted');
+        expect(nextCameraAuthorization('granted', 'not-determined', 'android')).toBe('not-determined');
         expect(nextCameraAuthorization('granted', 'denied')).toBe('denied');
         expect(cameraScannerPhase({
             permissionStatus: 'not-determined',

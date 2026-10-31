@@ -14,4 +14,5 @@ export interface State {
     coreSettings: CoreModel;
     torchEnabled: boolean;
     hasTorch: boolean;
+    cameraVisible: boolean;
 }
