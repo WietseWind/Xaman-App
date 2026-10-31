@@ -51,7 +51,7 @@
   },
   "final_build_416": {
     "version": "5.4.0 (416)",
-    "source_commit": "e1270b318104b866a3e6c3f9faecab7c5215df84",
+    "source_commit": "25c2fdd96b00153e874259662b25df1e5b461667",
     "android_apk_sha256": "260f33627cc8301fe352e655a68aac993d1208b0808d393b4e49d91d34af6477",
     "realm_source_sha256": "ff3d4f84806844a1d5fa0572450b919532aa9d347ec85fab2b6f1fce213de7b0",
     "realm_native_build_id": "b6fdf4a115a2095be301f324da5b31967f167cf9",
@@ -91,6 +91,7 @@
         "active_camera_client": false,
         "appops_reports_running": false
       }
-    }
+    },
+    "camera_source_sha256": "82817ac60884490f21bae31d63470813a0c8b59d4f8f67071cd49c3b12b74947"
   }
 }
