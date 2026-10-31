@@ -51,11 +51,13 @@ export default class ReorderableAccountList<T> extends Component<Props<T>, { act
     private mounted = false;
     private touchActive = false;
     private generation = 0;
+    private keys: string[];
     private appStateListener?: ReturnType<typeof AppState.addEventListener>;
 
     constructor(props: Props<T>) {
         super(props);
         this.state = {};
+        this.keys = props.data.map(props.keyExtractor);
     }
 
     private panResponder = PanResponder.create({
@@ -79,12 +81,12 @@ export default class ReorderableAccountList<T> extends Component<Props<T>, { act
     shouldComponentUpdate(nextProps: Props<T>, nextState: { activeKey?: string }) {
         const { activeKey } = this.state;
         if (!this.drag || nextState.activeKey !== activeKey) return true;
-        const { data, keyExtractor, sortable } = this.props;
+        const { sortable } = this.props;
         // A pending Pro response must not resize cards under a held finger.
         // Apply same-account metadata when the drag ends; membership changes cancel it.
         return (
             nextProps.sortable !== sortable ||
-            nextProps.data.map(nextProps.keyExtractor).join('|') !== data.map(keyExtractor).join('|')
+            nextProps.data.map(nextProps.keyExtractor).join('|') !== this.keys.join('|')
         );
     }
 
@@ -93,10 +95,12 @@ export default class ReorderableAccountList<T> extends Component<Props<T>, { act
         const keys = data.map(keyExtractor);
         if (
             (!sortable && previous.sortable) ||
-            keys.join('|') !== previous.data.map(previous.keyExtractor).join('|')
+            keys.join('|') !== this.keys.join('|')
         ) {
             this.finish(false);
         }
+        // Removed Realm objects cannot be read again, including through previous props.
+        this.keys = keys;
         this.heights.forEach((_, key) => {
             if (!keys.includes(key)) this.heights.delete(key);
         });

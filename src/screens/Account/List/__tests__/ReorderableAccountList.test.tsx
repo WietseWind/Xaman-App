@@ -77,6 +77,33 @@ beforeEach(() => {
 });
 afterEach(() => jest.restoreAllMocks());
 
+it('returns from removal without reading the invalidated account through previous props', () => {
+    const retained = { key: 'A', valid: true };
+    const removed = { key: 'B', valid: true };
+    const keyExtractor = (item: typeof retained) => {
+        if (!item.valid) throw new Error('Invalid Realm object');
+        return item.key;
+    };
+    let tree: renderer.ReactTestRenderer;
+    const renderList = (data: typeof retained[]) => (
+        <ReorderableAccountList
+            data={data}
+            sortable={false}
+            keyExtractor={keyExtractor}
+            renderItem={(item) => <Text>{item.key}</Text>}
+            onPress={jest.fn()}
+            onReorder={jest.fn()}
+        />
+    );
+    act(() => { tree = renderer.create(renderList([retained, removed])); });
+    removed.valid = false;
+    expect(() => {
+        act(() => { tree!.update(renderList([retained])); });
+    }).not.toThrow();
+    expect(tree!.root.findByType(Text).props.children).toBe('A');
+    act(() => tree!.unmount());
+});
+
 it('lets ordinary scrolling pass through, then captures upward and downward moves after a hold', () => {
     const { list } = setup();
     expect(responder.onStartShouldSetPanResponder()).toBe(false);
