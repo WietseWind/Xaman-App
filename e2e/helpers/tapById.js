@@ -1,5 +1,6 @@
 const { execFileSync } = require('child_process');
 const { element, by, waitFor, device } = require('detox');
+const { getCurrentTestPasscode } = require('./testCredentials');
 
 const APP_ID = 'com.xrpllabs.xumm';
 const DUMP_NAME = 'xaman-detox-ui.xml';
@@ -775,7 +776,7 @@ const androidClearBlockingUi = async () => {
     await clickDumpLabel(xml, 'Close');
     await clickDumpLabel(xml, 'OK');
     if (xmlHasLockOverlay(xml) && pickNodeForTestId(xml, '1-key')) {
-        await enterAndroidPasscode(E2E_PASSCODE);
+        await enterAndroidPasscode(getCurrentTestPasscode());
     }
 };
 
@@ -1011,8 +1012,6 @@ const tapByTestIdIfPresent = async (testId, timeoutMs = 1500) => {
         return false;
     }
 };
-
-const E2E_PASSCODE = '167349';
 
 const xmlHasLockOverlay = (xml) => {
     if (!xml) {
@@ -1363,7 +1362,7 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
         }
         // Do not auto-unlock AuthenticateOverlay (same testID) during signing.
         if (unlockIfBlocking && xmlHasLockOverlay(lastXml) && pickNodeForTestId(lastXml, '1-key')) {
-            await enterAndroidPasscode(E2E_PASSCODE);
+            await enterAndroidPasscode(getCurrentTestPasscode());
             await sleep(400);
             cachedXml = '';
             cachedAt = 0;
@@ -1396,7 +1395,7 @@ const unlockAndroidPasscodeIfPresent = async () => {
         cachedAt = 0;
         const xml = await androidDumpXml();
         if (xmlHasLockOverlay(xml)) {
-            await enterAndroidPasscode(E2E_PASSCODE);
+            await enterAndroidPasscode(getCurrentTestPasscode());
             const goneBy = Date.now() + 5000;
             while (Date.now() < goneBy) {
                 cachedXml = '';

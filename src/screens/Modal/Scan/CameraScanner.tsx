@@ -45,6 +45,8 @@ interface Props extends React.PropsWithChildren {
     torchEnabled?: boolean;
     onHasTorchChange?: (hasTorch: boolean) => void;
     visible?: boolean;
+    canUseCamera?: (activityEpoch?: number) => boolean;
+    activityEpoch?: number;
 }
 
 const styles = StyleSheet.create({
@@ -62,6 +64,8 @@ const CameraScanner = ({
     torchEnabled = false,
     onHasTorchChange,
     visible = true,
+    canUseCamera,
+    activityEpoch = 0,
 }: Props) => {
     const device = useCameraDevice('back');
     const [permissionStatus, setPermissionStatus] = useState(readCameraAuthorization);
@@ -71,6 +75,7 @@ const CameraScanner = ({
     const [appActive, setAppActive] = useState(AppState.currentState === 'active');
     const [requesting, setRequesting] = useState(false);
     const [androidBlocked, setAndroidBlocked] = useState(false);
+    const [sessionEpoch, setSessionEpoch] = useState(0);
     const mounted = useRef(true);
     const active = useRef(appActive);
     const shown = useRef(visible);
@@ -81,7 +86,23 @@ const CameraScanner = ({
     const inFlight = useRef<symbol>();
     const onReadCurrent = useRef(onRead);
     const liveCamera = useRef<symbol>();
-    const cameraToken = useMemo(() => Symbol('camera'), [attempt, device?.id, permissionStatus]);
+    const sessionGeneration = useRef(0);
+    const policy = useRef(canUseCamera);
+    const activity = useRef(activityEpoch);
+    policy.current = canUseCamera;
+    activity.current = activityEpoch;
+    const allowed = useCallback((epoch?: number) => {
+        try {
+            return policy.current ? policy.current(epoch) === true : true;
+        } catch {
+            return false;
+        }
+    }, []);
+    const cameraAllowed = allowed();
+    const renderedGeneration = sessionGeneration.current;
+    const cameraToken = useMemo(() => Symbol('camera'), [
+        attempt, device?.id, permissionStatus, sessionEpoch, appActive, visible, cameraAllowed, activityEpoch,
+    ]);
     shown.current = visible;
     onReadCurrent.current = onRead;
     const hasTorch = !!device?.hasTorch;
@@ -91,28 +112,39 @@ const CameraScanner = ({
         previewFailed,
         holdFallback,
     });
-    liveCamera.current = permissionStatus === 'granted' && !!device && !previewFailed ? cameraToken : undefined;
+    liveCamera.current = permissionStatus === 'granted' && !!device && !previewFailed &&
+        appActive && visible && cameraAllowed ? cameraToken : undefined;
     const settingsRequired = permissionStatus === 'restricted' ||
         (Platform.OS === 'ios' && permissionStatus === 'denied') || androidBlocked;
+
+    const refreshAuthorization = useCallback(() => {
+        if (!mounted.current || !allowed()) return;
+        const next = nextCameraAuthorization(authorization.current, readCameraAuthorization(), Platform.OS);
+        if (next !== authorization.current) {
+            permissionEpoch.current += 1;
+            authorization.current = next;
+            setPermissionStatus(next);
+            if (next === 'granted') {
+                blocked.current = false;
+                setAndroidBlocked(false);
+                setPreviewFailed(false);
+                setHoldFallback(false);
+            }
+        }
+    }, [allowed]);
 
     useEffect(() => {
         mounted.current = true;
         const subscription = AppState.addEventListener('change', (state) => {
-            active.current = state === 'active';
-            setAppActive(active.current);
-            if (!active.current) return;
-            const next = nextCameraAuthorization(authorization.current, readCameraAuthorization(), Platform.OS);
-            if (next !== authorization.current) {
-                permissionEpoch.current += 1;
-                authorization.current = next;
-                setPermissionStatus(next);
-                if (next === 'granted') {
-                    blocked.current = false;
-                    setAndroidBlocked(false);
-                    setPreviewFailed(false);
-                    setHoldFallback(false);
-                }
+            const nextActive = state === 'active';
+            if (active.current !== nextActive) {
+                sessionGeneration.current += 1;
+                liveCamera.current = undefined;
+                setSessionEpoch((value) => value + 1);
             }
+            active.current = nextActive;
+            setAppActive(nextActive);
+            if (nextActive) refreshAuthorization();
         });
         return () => {
             mounted.current = false;
@@ -121,13 +153,14 @@ const CameraScanner = ({
             inFlight.current = undefined;
             subscription.remove();
         };
-    }, []);
+    }, [refreshAuthorization]);
 
     const requestPermission = useCallback(() => {
-        if (!mounted.current || !active.current || !shown.current || inFlight.current ||
+        if (!mounted.current || !active.current || !shown.current || !allowed() || inFlight.current ||
             authorization.current === 'granted') return;
         const token = Symbol('permission');
         const epoch = ++permissionEpoch.current;
+        const requestActivity = activity.current;
         const needsSettings = authorization.current === 'restricted' || blocked.current ||
             (Platform.OS === 'ios' && authorization.current === 'denied');
         inFlight.current = token;
@@ -141,7 +174,8 @@ const CameraScanner = ({
                 const result = Platform.OS === 'android'
                     ? await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA)
                     : await Camera.requestCameraPermission();
-                if (!mounted.current || inFlight.current !== token) return;
+                if (!mounted.current || inFlight.current !== token || !allowed(requestActivity) ||
+                    activity.current !== requestActivity) return;
                 if (permissionEpoch.current !== epoch) {
                     // A foreground read can report denial before Android returns
                     // NEVER_ASK_AGAIN. Retain that metadata without changing a newer grant.
@@ -167,40 +201,50 @@ const CameraScanner = ({
             }
         };
         run();
-    }, []);
+    }, [allowed]);
 
     useEffect(() => {
-        if (!appActive || !visible || autoAttempted.current) return;
+        if (appActive && visible && cameraAllowed) refreshAuthorization();
+    }, [appActive, visible, cameraAllowed, activityEpoch, refreshAuthorization]);
+
+    useEffect(() => {
+        if (!appActive || !visible || !cameraAllowed || !allowed() || autoAttempted.current) return;
         autoAttempted.current = true;
         if (shouldRequestCameraPermission(authorization.current, Platform.OS)) requestPermission();
-    }, [appActive, visible, requestPermission]);
+    }, [appActive, visible, cameraAllowed, allowed, requestPermission]);
 
     useEffect(() => {
         onHasTorchChange?.(hasTorch);
     }, [hasTorch, onHasTorchChange]);
 
     const retry = useCallback(() => {
-        if (!mounted.current || !active.current || !shown.current) return;
+        if (!mounted.current || !active.current || !shown.current || !allowed()) return;
         setHoldFallback(true);
         setPreviewFailed(false);
         setAttempt((value) => value + 1);
-    }, []);
+    }, [allowed]);
 
     const onCodeScanned = useCallback(
         (codes: Code[]) => {
-            if (!mounted.current || !active.current || !shown.current || liveCamera.current !== cameraToken) return;
+            if (!mounted.current || !active.current || !shown.current || !allowed(activityEpoch) ||
+                activity.current !== activityEpoch || sessionGeneration.current !== renderedGeneration ||
+                liveCamera.current !== cameraToken) return;
             const value = codes[0]?.value;
             if (value) {
                 onReadCurrent.current(value);
             }
         },
-        [cameraToken],
+        [cameraToken, allowed, activityEpoch, renderedGeneration],
     );
 
     const codeScanner = useCodeScanner({
         codeTypes: ['qr'],
         onCodeScanned,
     });
+
+    if (!appActive || !visible || !cameraAllowed) {
+        return <View testID="scan-camera-paused-view" style={[AppStyles.flex1, style]} />;
+    }
 
     if (phase === 'permission') {
         return renderNotAuthorized(requestPermission, settingsRequired, requesting);
@@ -212,22 +256,24 @@ const CameraScanner = ({
         <View style={[AppStyles.flex1, style]}>
             {!!device && !previewFailed && (
                 <Camera
-                    key={attempt}
+                    key={`${attempt}:${sessionEpoch}:${activityEpoch}`}
                     testID="scan-camera-preview"
                     style={[StyleSheet.absoluteFill, styles.noDevice]}
                     device={device}
-                    isActive={appActive && visible}
+                    isActive={appActive && visible && cameraAllowed}
                     audio={false}
                     torch={cameraTorchState(torchEnabled, hasTorch)}
                     codeScanner={codeScanner}
                     onStarted={() => {
-                        if (!mounted.current || !active.current || !shown.current ||
+                        if (!mounted.current || !active.current || !shown.current || !allowed(activityEpoch) ||
+                            activity.current !== activityEpoch || sessionGeneration.current !== renderedGeneration ||
                             liveCamera.current !== cameraToken) return;
                         setHoldFallback(false);
                         setPreviewFailed(false);
                     }}
                     onError={(error) => {
-                        if (!mounted.current || !active.current || !shown.current ||
+                        if (!mounted.current || !active.current || !shown.current || !allowed(activityEpoch) ||
+                            activity.current !== activityEpoch || sessionGeneration.current !== renderedGeneration ||
                             liveCamera.current !== cameraToken) return;
                         if (cameraErrorStopsPreview(error)) {
                             liveCamera.current = undefined;

@@ -5,9 +5,13 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { device, element, by, waitFor, system } = require('detox');
+const { getCurrentTestPasscode } = require('./testCredentials');
 
 const BUNDLE = 'com.xrpllabs.xumm';
-const CASES = ['first-use-grant', 'first-use-deny', 'blocked-settings-return', 'granted-preview-and-close'];
+const CASES = [
+    'first-use-grant', 'first-use-deny', 'blocked-settings-return', 'granted-preview-and-close',
+    'locked-camera-session',
+];
 const pause = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 const view = (id) => element(by.id(id));
 let sequence = 0;
@@ -117,7 +121,7 @@ async function tap(id) {
 
 async function unlock() {
     if (await has('lock-overlay', 1500)) {
-        const passcode = process.env.E2E_PASSCODE;
+        const passcode = getCurrentTestPasscode();
         assert(passcode && /^\d{6}$/.test(passcode), 'Set E2E_PASSCODE for the retained test profile');
         for (const digit of passcode) await view(`${digit}-key`).tap();
         await waitFor(view('lock-overlay')).not.toExist().withTimeout(15000);
@@ -205,6 +209,91 @@ async function assertGrantedAndClose(udid, name, report) {
     assert.strictEqual(nativeAuthorization(udid), 2);
 }
 
+function autoLockMinutes(label) {
+    const match = String(label).match(/(\d+)\s*(seconds?|minutes?|hours?|days?|weeks?)\b/i);
+    assert(match, 'The current auto-lock policy must be readable from its actual UI label');
+    const unit = match[2].toLowerCase().replace(/s$/, '');
+    const factors = { second: 1 / 60, minute: 1, hour: 60, day: 1440, week: 10080 };
+    const value = Number(match[1]) * factors[unit];
+    assert(Number.isInteger(value), 'Auto-lock policy must be an exact minute value');
+    return value;
+}
+
+async function setAutoLock(minutes) {
+    await tap('tab-Settings');
+    await exists('settings-tab-screen');
+    await tap('security-button');
+    await exists('security-settings-screen');
+    const previous = autoLockMinutes((await view('auto-lock-button').getAttributes()).label);
+    await tap('auto-lock-button');
+    await exists('picker-modal');
+    await view('picker-item-list').scrollTo(minutes >= 1440 ? 'bottom' : 'top');
+    let found = false;
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+        try {
+            await waitFor(view(`${minutes}-item`)).toBeVisible(100).withTimeout(700);
+            found = true;
+            break;
+        } catch {
+            await view('picker-item-list').swipe('up', 'slow', 0.5);
+        }
+    }
+    assert(found, 'The requested auto-lock policy must be visible in the real picker');
+    await tap(`${minutes}-item`);
+    await exists('security-settings-screen');
+    assert.strictEqual(autoLockMinutes((await view('auto-lock-button').getAttributes()).label), minutes);
+    await tap('back-button');
+    await exists('settings-tab-screen');
+    await tap('tab-Home');
+    await exists('home-tab-view');
+    return previous;
+}
+
+async function lockedCameraSession(udid, report) {
+    const previous = await setAutoLock(0);
+    report.previousAutoLockMinutes = previous;
+    let failure;
+    try {
+        await openScanner();
+        assert.strictEqual(nativeAuthorization(udid), 2);
+        report.beforeLockScreenshot = snapshot(udid, 'locked-camera-session-before');
+        await device.sendToHome();
+        await device.launchApp({ newInstance: false, launchArgs: { detoxEnableSynchronization: 0 } });
+        await device.disableSynchronization();
+        await exists('lock-overlay');
+        const locked = snapshot(udid, 'locked-camera-session-paused');
+        report.lockedScreenshot = locked;
+        await exists('scan-camera-paused-view');
+        await waitFor(view('scan-camera-preview')).not.toExist().withTimeout(5000);
+        await waitFor(view('scan-permission-approve-button')).not.toExist().withTimeout(5000);
+        assert.strictEqual(nativeAuthorization(udid), 2);
+        assert.strictEqual(cameraDialog(recognize(locked)), null,
+            'Lock must not open a new system camera permission prompt');
+        report.scope = 'Native lock/pause UI gates and TCC; simulator cannot prove physical sensor release';
+        await unlock();
+        await waitFor(view('scan-camera-paused-view')).not.toExist().withTimeout(15000);
+        await assertGrantedAndClose(udid, 'locked-camera-session-resumed', report);
+    } catch (error) {
+        failure = error;
+    } finally {
+        try {
+            if (failure) {
+                // Release any session before cleanup, retaining the test account and OS.
+                await device.terminateApp();
+                await device.launchApp({ newInstance: true, launchArgs: { detoxEnableSynchronization: 0 } });
+                await device.disableSynchronization();
+                await unlock();
+            }
+            await setAutoLock(previous);
+            report.autoLockPolicyRestored = true;
+        } catch (error) {
+            report.cleanupError = error.stack || String(error);
+            if (!failure) failure = error;
+        }
+    }
+    if (failure) throw failure;
+}
+
 async function runCameraPermissionCase(caseName) {
     assert(CASES.includes(caseName), `Unknown camera permission case: ${caseName}`);
     const udid = target();
@@ -214,13 +303,17 @@ async function runCameraPermissionCase(caseName) {
         started: new Date().toISOString(),
     };
     try {
-        await relaunch(udid, caseName === 'granted-preview-and-close' ? 'grant' : 'reset');
-        await openScanner();
-        if (caseName === 'granted-preview-and-close') {
+        const preGranted = caseName === 'granted-preview-and-close' || caseName === 'locked-camera-session';
+        await relaunch(udid, preGranted ? 'grant' : 'reset');
+        if (caseName === 'locked-camera-session') {
+            await lockedCameraSession(udid, report);
+        } else if (caseName === 'granted-preview-and-close') {
+            await openScanner();
             const image = recognize(snapshot(udid, `${caseName}-already-granted`));
             assert.strictEqual(cameraDialog(image), null, 'An already granted camera must not show the OS dialog');
             await assertGrantedAndClose(udid, caseName, report);
         } else {
+            await openScanner();
             await systemChoice(udid, caseName, caseName === 'first-use-grant' ? 'allow' : 'deny', report);
             if (caseName === 'first-use-grant') {
                 await assertGrantedAndClose(udid, caseName, report);

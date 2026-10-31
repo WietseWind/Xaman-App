@@ -12,3 +12,4 @@ Feature: Camera permission recovery
       | first-use-deny            |
       | blocked-settings-return   |
       | granted-preview-and-close |
+      | locked-camera-session     |

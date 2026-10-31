@@ -14,6 +14,7 @@ import {
 import { StringTypeDetector, StringDecoder, StringType, XrplDestination, PayId } from 'xumm-string-decode';
 
 import { StyleService, BackendService, NetworkService, LinkingService } from '@services';
+import AuthenticationService, { LockStatus } from '@services/AuthenticationService';
 
 import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
 
@@ -56,6 +57,7 @@ class ScanModal extends Component<Props, State> {
     private mounted = false;
     private closing = false;
     private readGeneration = 0;
+    private cameraActivityEpoch = 0;
 
     static options() {
         return {
@@ -87,6 +89,7 @@ class ScanModal extends Component<Props, State> {
 
     componentDidMount() {
         this.mounted = true;
+        AuthenticationService.on('lockStateChange', this.onAuthenticationChange);
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.onClose);
         this.navigationListener = Navigation.events().bindComponent(this);
     }
@@ -97,6 +100,8 @@ class ScanModal extends Component<Props, State> {
         this.screenVisible = false;
         this.shouldRead = false;
         this.readGeneration++;
+        this.cameraActivityEpoch++;
+        AuthenticationService.off('lockStateChange', this.onAuthenticationChange);
         if (this.backHandler) {
             this.backHandler.remove();
         }
@@ -111,13 +116,14 @@ class ScanModal extends Component<Props, State> {
     componentDidAppear() {
         if (!this.mounted || this.closing) return;
         this.screenVisible = true;
-        this.setState({ cameraVisible: true });
+        this.setState({ cameraVisible: !AuthenticationService.isLocked });
     }
 
     componentDidDisappear() {
         // disable qr code reading if component is not visible
         this.screenVisible = false;
         this.readGeneration++;
+        this.cameraActivityEpoch++;
         if (this.mounted) this.setState({ cameraVisible: false });
     }
 
@@ -126,8 +132,28 @@ class ScanModal extends Component<Props, State> {
         if (!value) this.readGeneration++;
     };
 
+    canUseCamera = (epoch?: number) => this.mounted && this.screenVisible && !this.closing &&
+        !AuthenticationService.isLocked && (epoch === undefined || epoch === this.cameraActivityEpoch);
+
+    onAuthenticationChange = (status: LockStatus) => {
+        if (!this.mounted || this.closing) return;
+        if (status === LockStatus.LOCKED) {
+            // Invalidate work before React commits the paused camera view.
+            this.readGeneration++;
+            this.cameraActivityEpoch++;
+            const { isLoading } = this.state;
+            if (isLoading) this.shouldRead = true;
+            this.setState({ cameraVisible: false, torchEnabled: false, isLoading: false });
+        } else if (status === LockStatus.UNLOCKED) {
+            this.setState({ cameraVisible: this.screenVisible });
+        }
+    };
+
+    canContinueRead = (generation: number) => !this.closing && !AuthenticationService.isLocked &&
+        generation === this.readGeneration;
+
     routeUser = async (screen: AppScreenKeys, passProps?: any, options?: any) => {
-        if (this.closing) return;
+        if (this.closing || AuthenticationService.isLocked) return;
         // close scan modal
         await Navigator.dismissModal();
 
@@ -150,14 +176,15 @@ class ScanModal extends Component<Props, State> {
     };
 
     loadTranslation = (uuid: string) => {
-        if (this.closing) return;
+        if (this.closing || AuthenticationService.isLocked) return;
+        const generation = this.readGeneration;
         this.setState({
             isLoading: true,
         });
 
         BackendService.getTranslation(uuid)
             .then((res: any) => {
-                if (this.closing) return;
+                if (!this.canContinueRead(generation)) return;
                 const { meta, translation } = res;
 
                 if (meta && meta.valid) {
@@ -177,7 +204,7 @@ class ScanModal extends Component<Props, State> {
                 }
             })
             .catch(() => {
-                if (this.closing) return;
+                if (!this.canContinueRead(generation)) return;
                 // ignore
                 Prompt(
                     'Error',
@@ -187,7 +214,7 @@ class ScanModal extends Component<Props, State> {
                 );
             })
             .finally(() => {
-                if (this.closing) return;
+                if (!this.canContinueRead(generation)) return;
                 this.setState({
                     isLoading: false,
                 });
@@ -225,7 +252,8 @@ class ScanModal extends Component<Props, State> {
     };
 
     handlePayloadReference = async (uuid: string) => {
-        if (this.closing) return;
+        if (this.closing || AuthenticationService.isLocked) return;
+        const generation = this.readGeneration;
         // double check if uuid is valid string
         if (!StringTypeCheck.isValidUUID(uuid)) {
             return;
@@ -238,7 +266,7 @@ class ScanModal extends Component<Props, State> {
         try {
             // fetch the payload
             const payload = await Payload.from(uuid, PayloadOrigin.QR);
-            if (this.closing) return;
+            if (!this.canContinueRead(generation)) return;
 
             // review the transaction
             await this.routeUser(
@@ -249,7 +277,7 @@ class ScanModal extends Component<Props, State> {
                 { modalPresentationStyle: 'fullScreen' },
             );
         } catch (e: any) {
-            if (this.closing) return;
+            if (!this.canContinueRead(generation)) return;
             Prompt(Localize.t('global.error'), e.message, [{ text: 'OK', onPress: () => this.setShouldRead(true) }], {
                 cancelable: false,
                 type: 'default',
@@ -737,7 +765,7 @@ class ScanModal extends Component<Props, State> {
 
         if (data) {
             // return if we don't need to read again
-            if (!this.shouldRead || !this.screenVisible || this.closing || AppState.currentState !== 'active') return;
+            if (!this.shouldRead || !this.canUseCamera() || AppState.currentState !== 'active') return;
 
             // should not read anymore until we decide about detect value
             this.setShouldRead(false);
@@ -753,7 +781,7 @@ class ScanModal extends Component<Props, State> {
     };
 
     checkClipboardContent = async () => {
-        if (!this.mounted || this.closing || !this.screenVisible || !this.shouldRead) return;
+        if (!this.canUseCamera() || !this.shouldRead) return;
         const generation = this.readGeneration;
         let clipboardContent: string;
         try {
@@ -764,7 +792,7 @@ class ScanModal extends Component<Props, State> {
 
         if (clipboardContent) {
             // return if we don't need to read again
-            if (!this.mounted || this.closing || !this.screenVisible || !this.shouldRead ||
+            if (!this.canUseCamera() || !this.shouldRead ||
                 generation !== this.readGeneration || AppState.currentState !== 'active') return;
 
             // should not read anymore until we decide about detect value
@@ -944,7 +972,9 @@ class ScanModal extends Component<Props, State> {
             <View testID="scan-modal" style={styles.container}>
                 <CameraScanner
                     onRead={this.onReadCode}
-                    visible={cameraVisible}
+                    visible={cameraVisible && !AuthenticationService.isLocked}
+                    canUseCamera={this.canUseCamera}
+                    activityEpoch={this.cameraActivityEpoch}
                     renderNotAuthorized={this.renderNotAuthorizedView}
                     renderUnavailable={this.renderCameraUnavailable}
                     torchEnabled={torchEnabled}

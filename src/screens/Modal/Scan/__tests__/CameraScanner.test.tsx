@@ -37,19 +37,27 @@ const permissionView = (request: () => void, settings: boolean, busy: boolean) =
     </View>
 );
 const unavailable = (retry: () => void) => <View testID="unavailable" onTouchEnd={retry} />;
-const mount = (visible = true) => {
+const scannerElement = (
+    visible = true,
+    canUseCamera: ((epoch?: number) => boolean) | undefined = undefined,
+    activityEpoch = 0,
+) => (
+    <CameraScanner
+        onRead={onRead}
+        onHasTorchChange={onTorch}
+        renderNotAuthorized={permissionView}
+        renderUnavailable={unavailable}
+        visible={visible}
+        canUseCamera={canUseCamera}
+        activityEpoch={activityEpoch}
+    >
+        <Text>Preview</Text>
+    </CameraScanner>
+);
+const mount = (visible = true, canUseCamera: ((epoch?: number) => boolean) | undefined = undefined,
+    activityEpoch = 0) => {
     act(() => {
-        tree = TestRenderer.create(
-            <CameraScanner
-                onRead={onRead}
-                onHasTorchChange={onTorch}
-                renderNotAuthorized={permissionView}
-                renderUnavailable={unavailable}
-                visible={visible}
-            >
-                <Text>Preview</Text>
-            </CameraScanner>,
-        );
+        tree = TestRenderer.create(scannerElement(visible, canUseCamera, activityEpoch));
     });
     return tree!;
 };
@@ -230,10 +238,11 @@ it('waits for the native scan screen to become visible and rejects reads while h
     expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
     const native = camera().props;
     act(() => tree!.update(render(false)));
-    expect(camera().props.isActive).toBe(false);
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    expect(tree!.root.findByProps({ testID: 'scan-camera-paused-view' })).toBeDefined();
     act(() => native.codeScanner.onCodeScanned([{ value: 'hidden-qr' }]));
     expect(onRead).not.toHaveBeenCalled();
-    act(() => tree!.update(render(true)));
+    setStatus('granted'); act(() => tree!.update(render(true)));
     expect(camera().props.isActive).toBe(true);
     expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
 });
@@ -242,7 +251,7 @@ it('recognizes Android revocation and pauses the preview without automatically r
     setStatus('granted'); mount();
     const oldCodeScanner = camera().props.codeScanner;
     state('background');
-    expect(camera().props.isActive).toBe(false);
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
     act(() => oldCodeScanner.onCodeScanned([{ value: 'background-qr' }]));
     expect(onRead).not.toHaveBeenCalled();
     setStatus('not-determined'); state('active'); await flush();
@@ -251,6 +260,103 @@ it('recognizes Android revocation and pauses the preview without automatically r
     expect(PermissionsAndroid.request).not.toHaveBeenCalled();
     act(() => oldCodeScanner.onCodeScanned([{ value: 'revoked-qr' }]));
     expect(onRead).not.toHaveBeenCalled();
+});
+
+it('does not spend the automatic request while locked, then requests once after unlock', async () => {
+    setStatus('denied');
+    let unlocked = false;
+    const policy = () => unlocked;
+    mount(true, policy);
+    expect(tree!.root.findByProps({ testID: 'scan-camera-paused-view' })).toBeDefined();
+    expect(PermissionsAndroid.request).not.toHaveBeenCalled();
+    unlocked = true;
+    act(() => tree!.update(scannerElement(true, policy)));
+    await flush();
+    expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
+    expect(camera().props.isActive).toBe(true);
+});
+
+it('refreshes an OS grant after unlocking a pending permission request without asking again', async () => {
+    setStatus('denied');
+    let unlocked = true;
+    let epoch = 0;
+    const policy = (captured?: number) => unlocked && (captured === undefined || captured === epoch);
+    const pending = deferred();
+    jest.mocked(PermissionsAndroid.request).mockReturnValueOnce(pending.promise);
+    mount(true, policy, epoch);
+    unlocked = false; epoch++;
+    act(() => tree!.update(scannerElement(false, policy, epoch)));
+    setStatus('granted');
+    await act(async () => pending.resolve(PermissionsAndroid.RESULTS.GRANTED));
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    unlocked = true;
+    act(() => tree!.update(scannerElement(true, policy, epoch)));
+    await flush();
+    expect(camera().props.isActive).toBe(true);
+    expect(PermissionsAndroid.request).toHaveBeenCalledTimes(1);
+});
+
+it('blocks a retained Settings action immediately when policy locks, before React commits', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    setStatus('denied');
+    let unlocked = true;
+    const policy = () => unlocked;
+    mount(true, policy);
+    const openSettings = permission().props.onTouchEnd;
+    unlocked = false;
+    act(() => openSettings());
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    expect(Camera.requestCameraPermission).not.toHaveBeenCalled();
+});
+
+it('rejects captured callbacks across a same-turn lock and unlock, then accepts only the new session', () => {
+    setStatus('granted');
+    let unlocked = true;
+    let epoch = 0;
+    const policy = (captured?: number) => unlocked && (captured === undefined || captured === epoch);
+    mount(true, policy, epoch);
+    const oldView = tree!.root.findByType(Camera);
+    const old = camera().props;
+    act(() => {
+        unlocked = false; epoch++;
+        unlocked = true;
+        old.codeScanner.onCodeScanned([{ value: 'same-turn-stale' }]);
+        old.onError(new Error('old error'));
+        tree!.update(scannerElement(true, policy, epoch));
+    });
+    expect(onRead).not.toHaveBeenCalled();
+    expect(tree!.root.findByType(Camera)).not.toBe(oldView);
+    act(() => { old.onStarted(); old.codeScanner.onCodeScanned([{ value: 'old-session' }]); });
+    expect(onRead).not.toHaveBeenCalled();
+    expect(tree!.root.findAllByProps({ testID: 'unavailable' })).toHaveLength(0);
+    act(() => camera().props.codeScanner.onCodeScanned([{ value: 'new-session' }]));
+    expect(onRead).toHaveBeenCalledTimes(1);
+    expect(onRead).toHaveBeenCalledWith('new-session');
+});
+
+it('unmounts the native camera while paused and rejects old callbacks after a batched app pause and resume', () => {
+    setStatus('granted'); mount();
+    const old = camera().props;
+    state('background');
+    expect(tree!.root.findAllByType('NativeCamera' as any)).toHaveLength(0);
+    state('active');
+    act(() => {
+        appStateListener('inactive'); appStateListener('active');
+        old.codeScanner.onCodeScanned([{ value: 'paused-qr' }]);
+        old.onError(new Error('paused error'));
+    });
+    expect(onRead).not.toHaveBeenCalled();
+    expect(camera().props.isActive).toBe(true);
+    act(() => camera().props.codeScanner.onCodeScanned([{ value: 'resumed-qr' }]));
+    expect(onRead).toHaveBeenCalledWith('resumed-qr');
+});
+
+it('fails a throwing policy closed without mounting or requesting a camera', () => {
+    setStatus('denied');
+    mount(true, () => { throw new Error('lock status unavailable'); });
+    expect(tree!.root.findByProps({ testID: 'scan-camera-paused-view' })).toBeDefined();
+    expect(PermissionsAndroid.request).not.toHaveBeenCalled();
+    expect(Linking.openSettings).not.toHaveBeenCalled();
 });
 
 it('preserves the iOS transient not-determined grant guard', async () => {

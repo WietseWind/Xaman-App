@@ -9,6 +9,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
 import { Payload, PayloadOrigin } from '@common/libs/payload';
 import BackendService from '@services/BackendService';
+import AuthenticationService, { LockStatus } from '@services/AuthenticationService';
 import Localize from '@locale';
 
 import CameraScanner from '../CameraScanner';
@@ -36,6 +37,7 @@ let handle: jest.SpyInstance;
 let closeCallback: jest.Mock;
 let removeBack: jest.Mock;
 let removeNavigation: jest.Mock;
+let locked: boolean;
 const originalAppState = AppState.currentState;
 const publicUuid = '00000000-0000-4000-8000-000000000001';
 const flush = async () => {
@@ -54,6 +56,8 @@ const appear = () => act(() => modal.componentDidAppear());
 
 beforeEach(() => {
     jest.clearAllMocks();
+    locked = false;
+    jest.spyOn(AuthenticationService, 'isLocked', 'get').mockImplementation(() => locked);
     setAppState('active');
     removeBack = jest.fn(); removeNavigation = jest.fn(); closeCallback = jest.fn();
     jest.spyOn(CoreRepository, 'getSettings').mockReturnValue({ hapticFeedback: false } as any);
@@ -103,6 +107,17 @@ it('accepts a QR only while the screen and app are active, and blocks duplicate 
     act(() => modal.setShouldRead(true));
     act(() => scanner().props.onRead('retry-qr'));
     expect(handle).toHaveBeenLastCalledWith('retry-qr');
+});
+
+it('keeps the camera epoch valid after a QR is rejected and reading is enabled again', () => {
+    mount(); appear();
+    const cameraProps = scanner().props;
+    act(() => cameraProps.onRead('rejected-public-qr'));
+    act(() => modal.setShouldRead(true));
+    expect(cameraProps.canUseCamera(cameraProps.activityEpoch)).toBe(true);
+    act(() => cameraProps.onRead('retry-public-qr'));
+    expect(handle).toHaveBeenCalledTimes(2);
+    expect(handle).toHaveBeenLastCalledWith('retry-public-qr');
 });
 
 it('suppresses a queued native QR as soon as Close is pressed, before native disappearance', () => {
@@ -166,6 +181,123 @@ it('rejects camera callbacks after unmount', () => {
     act(() => tree!.unmount()); tree = undefined;
     act(() => read('unmounted-public-qr'));
     expect(handle).not.toHaveBeenCalled();
+});
+
+it('removes its authentication listener on unmount', () => {
+    const before = AuthenticationService.listenerCount('lockStateChange');
+    mount();
+    expect(AuthenticationService.listenerCount('lockStateChange')).toBe(before + 1);
+    act(() => tree!.unmount()); tree = undefined;
+    expect(AuthenticationService.listenerCount('lockStateChange')).toBe(before);
+});
+
+it('keeps a scanner mounted under an existing lock paused until authentication unlocks it', () => {
+    locked = true;
+    mount(); appear();
+    expect(scanner().props.visible).toBe(false);
+    expect(scanner().props.canUseCamera()).toBe(false);
+    act(() => scanner().props.onRead('locked-qr'));
+    expect(handle).not.toHaveBeenCalled();
+    act(() => { locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED); });
+    expect(scanner().props.visible).toBe(true);
+    act(() => scanner().props.onRead('unlocked-qr'));
+    expect(handle).toHaveBeenCalledWith('unlocked-qr');
+});
+
+it('pauses on lock, turns off the torch and invalidates the captured camera epoch even in one batch', () => {
+    mount(); appear();
+    act(() => { modal.onHasTorchChange(true); });
+    act(() => modal.toggleTorch());
+    expect(modal.state.torchEnabled).toBe(true);
+    const old = scanner().props;
+    expect(old.canUseCamera(old.activityEpoch)).toBe(true);
+    act(() => {
+        locked = true; AuthenticationService.emit('lockStateChange', LockStatus.LOCKED);
+        expect(old.canUseCamera()).toBe(false);
+        old.onRead('locked-qr');
+        locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED);
+        expect(old.canUseCamera(old.activityEpoch)).toBe(false);
+    });
+    expect(handle).not.toHaveBeenCalled();
+    expect(modal.state.torchEnabled).toBe(false);
+    expect(scanner().props.activityEpoch).not.toBe(old.activityEpoch);
+    expect(scanner().props.canUseCamera(scanner().props.activityEpoch)).toBe(true);
+});
+
+it('does not restart a hidden or closing scanner when authentication unlocks', () => {
+    mount(); appear();
+    act(() => {
+        locked = true; AuthenticationService.emit('lockStateChange', LockStatus.LOCKED);
+        modal.componentDidDisappear();
+        locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED);
+    });
+    expect(scanner().props.visible).toBe(false);
+    appear();
+    act(() => modal.onClose());
+    act(() => AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED));
+    expect(scanner().props.visible).toBe(false);
+});
+
+it('rejects clipboard content from before a lock even after authentication unlocks', async () => {
+    mount(); appear();
+    const pending = deferred();
+    jest.spyOn(Clipboard, 'getString').mockReturnValueOnce(pending.promise);
+    const reading = modal.checkClipboardContent();
+    act(() => {
+        locked = true; AuthenticationService.emit('lockStateChange', LockStatus.LOCKED);
+        locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED);
+    });
+    await act(async () => { pending.resolve('pre-lock-content'); await reading; });
+    expect(handle).not.toHaveBeenCalled();
+});
+
+it.each(['resolve', 'reject'])(
+    'cancels a payload %s across lock and unlock, then permits a fresh read', async (outcome) => {
+    mount(); appear();
+    const pending = deferred();
+    jest.spyOn(Payload, 'from').mockReturnValueOnce(pending.promise);
+    const route = jest.spyOn(modal, 'routeUser');
+    let reading: Promise<void>;
+    act(() => { reading = modal.handlePayloadReference(publicUuid); });
+    expect(modal.state.isLoading).toBe(true);
+    act(() => {
+        locked = true; AuthenticationService.emit('lockStateChange', LockStatus.LOCKED);
+        locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED);
+    });
+    expect(modal.state.isLoading).toBe(false);
+    await act(async () => {
+        if (outcome === 'resolve') pending.resolve({ request_json: {} });
+        else pending.reject(new Error('late payload failure'));
+        await reading!;
+    });
+    expect(route).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
+    act(() => scanner().props.onRead('fresh-after-unlock'));
+    expect(handle).toHaveBeenCalledWith('fresh-after-unlock');
+    },
+);
+
+it.each(['resolve', 'reject'])('ignores a translation %s from before lock and unlock', async (outcome) => {
+    mount(); appear();
+    const pending = deferred();
+    jest.spyOn(BackendService, 'getTranslation').mockReturnValueOnce(pending.promise);
+    jest.spyOn(Localize, 'setLocaleBundle').mockImplementation(() => undefined);
+    jest.spyOn(Navigator, 'reRender').mockImplementation(() => undefined);
+    act(() => modal.loadTranslation(publicUuid));
+    act(() => {
+        locked = true; AuthenticationService.emit('lockStateChange', LockStatus.LOCKED);
+        locked = false; AuthenticationService.emit('lockStateChange', LockStatus.UNLOCKED);
+    });
+    const writes = jest.spyOn(modal, 'setState');
+    if (outcome === 'resolve') pending.resolve({ meta: { valid: true, language: 'NL' }, translation: {} });
+    else pending.reject(new Error('late translation failure'));
+    await flush();
+    expect(Localize.setLocaleBundle).not.toHaveBeenCalled();
+    expect(Navigator.reRender).not.toHaveBeenCalled();
+    expect(Navigator.dismissModal).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
+    expect(writes).not.toHaveBeenCalled();
+    expect(modal.state.isLoading).toBe(false);
 });
 
 it.each(['resolve', 'reject'])('ignores a late payload %s after Close', async (outcome) => {

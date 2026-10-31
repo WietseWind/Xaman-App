@@ -190,3 +190,21 @@ it('keeps a fresh valid unlock and runs post-authentication work', async () => {
     expect(Navigator.showOverlay).not.toHaveBeenCalled();
     expect(AuthenticationService.runAfterSuccessAuth).toHaveBeenCalledTimes(1);
 });
+
+it('exposes the authoritative lock before its overlay appears and unlocks only after counters commit', async () => {
+    expect(AuthenticationService.isLocked).toBe(false);
+    let present!: (value: string) => void;
+    (Navigator.showOverlay as jest.Mock).mockImplementation(() => new Promise((resolve) => { present = resolve; }));
+    const pendingLock = AuthenticationService.checkLockScreen();
+    await new Promise<void>((resolve) => { setImmediate(resolve); });
+    expect(AuthenticationService.isLocked).toBe(true);
+    (CoreRepository.saveAuthenticationSettings as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('counter storage unavailable');
+    });
+    await expect(AuthenticationService.authenticatePasscode('correct')).rejects.toThrow('counter storage unavailable');
+    expect(AuthenticationService.isLocked).toBe(true);
+    await expect(AuthenticationService.authenticatePasscode('correct')).resolves.toBe('hash');
+    expect(AuthenticationService.isLocked).toBe(false);
+    present(AppScreens.Overlay.Lock);
+    await pendingLock;
+});

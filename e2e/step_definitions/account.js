@@ -2,6 +2,7 @@ const assert = require('assert');
 const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
 const { element, by, waitFor, device } = require('detox');
+const { getCurrentTestPasscode } = require('../helpers/testCredentials');
 
 const {
     activateAccount,
@@ -450,7 +451,7 @@ const leaveAccountImportIfOpen = async () => {
         await waitFor(element(by.id('lock-overlay')))
             .toExist()
             .withTimeout(400);
-        const pin = String(process.env.E2E_PASSCODE || '958347');
+        const pin = getCurrentTestPasscode();
         for (let i = 0; i < pin.length; i += 1) {
             await element(by.id(`${pin[i]}-key`)).tap();
         }

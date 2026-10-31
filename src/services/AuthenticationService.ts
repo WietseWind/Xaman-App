@@ -177,6 +177,10 @@ class AuthenticationService extends EventEmitter {
         return this.lockStatus;
     };
 
+    get isLocked(): boolean {
+        return this.lockStatus === LockStatus.LOCKED;
+    }
+
     /**
      * Calculate who long the input should be blocked base on number of wrong attempts
      * @param  {number} attemptNumber latest wrong attempt
