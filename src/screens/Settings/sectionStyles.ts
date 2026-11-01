@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import StyleService from '@services/StyleService';
 import { AppFonts, AppSizes } from '@theme';
 
@@ -11,7 +11,7 @@ export default StyleService.create({
     section: { marginBottom: 22 },
     sectionTitle: {
         fontFamily: AppFonts.base.familyBold,
-        fontSize: AppFonts.small.size,
+        fontSize: AppFonts.small.size * 1.2,
         color: '$textSecondary',
         marginHorizontal: 10,
         marginBottom: 9,
@@ -33,7 +33,7 @@ export default StyleService.create({
         flex: 1,
         flexShrink: 1,
         fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.base.size,
+        fontSize: AppFonts.base.size * 0.9,
         color: '$textPrimary',
         paddingRight: 12,
     },
@@ -46,7 +46,13 @@ export default StyleService.create({
         textAlign: 'right',
     },
     control: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' },
-    switchContainer: { flex: 0, flexShrink: 0 },
+    switchContainer: {
+        flex: 0,
+        flexShrink: 0,
+        marginEnd: 24,
+        // React Native reserves 51pt, while the newer native iOS track overhangs it.
+        paddingRight: Platform.OS === 'ios' && Number(Platform.Version) >= 26 ? 13 : 0,
+    },
     stackedContent: { flex: 1 },
     stackedLabel: { flex: 0, paddingRight: 0 },
     stackedValue: { maxWidth: '100%', marginTop: 5, textAlign: 'auto' },

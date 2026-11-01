@@ -26,10 +26,11 @@ export default StyleService.create({
         color: '$textPrimary',
     },
     accountLabelDark: { color: '$black' },
-    statusIcon: { tintColor: '$textSecondary' },
+    statusIcon: { tintColor: '$textSecondary', flexShrink: 0 },
     proStatusIcon: { tintColor: '$grey' },
     proSecondary: { color: '$grey' },
     accessLevelContainer: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: 5 },
+    trait: { flexDirection: 'row', alignItems: 'center', flexShrink: 0, maxWidth: '100%', paddingEnd: 8 },
     accessLevelLabel: {
         flexShrink: 1,
         marginLeft: 5,

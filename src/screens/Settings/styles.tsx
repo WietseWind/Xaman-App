@@ -13,7 +13,7 @@ export default StyleService.create({
     rowLabel: {
         flex: 1,
         fontFamily: AppFonts.base.familyBold,
-        fontSize: AppFonts.base.size,
+        fontSize: AppFonts.base.size * 0.9,
         color: '$textPrimary',
         marginHorizontal: 14,
     },

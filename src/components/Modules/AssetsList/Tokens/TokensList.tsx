@@ -13,6 +13,7 @@ import { CoreRepository, CurrencyRepository, TrustLineRepository } from '@store/
 import { AccountModel, NetworkModel, TrustLineModel } from '@store/models';
 
 import { SortableFlatList } from '@components/General';
+import { ReorderableList } from '@components/General/ReorderableList';
 
 import { AddTokenOverlayProps } from '@screens/Overlay/AddToken';
 import { ExplainBalanceOverlayProps } from '@screens/Overlay/ExplainBalance';
@@ -668,38 +669,55 @@ class TokensList extends Component<Props, State> {
                         onPress={this.onNativeItemPress}
                     />
                 )}
-                <SortableFlatList
-                    key={`tokenlistflat-${accWorthEnabled ? 1 : 0}`}
-                    ref={this.dragSortableRef}
-                    itemHeight={TokenItem.Height}
-                    separatorHeight={0}
-                    topFade
-                    updateTokenPrices={this.updateTokenPrices}
-                    lineWorthLoading={this.updateLineWorthLoading}
-                    accWorthEnabled={accWorthEnabled}
-                    firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
-                    endInset={glassTabScrollPadding}
-                    dataSource={[
-                        ...(reorderEnabled ? [] : [{
-                            id: 'native',
-                            currency: {
-                                issuer: '',
-                            },
-                            getFormattedCurrency: () => NetworkService.getNativeAsset(),
-                            isLiquidityPoolToken: () => false,
-                            isMPToken: () => false,
-                            getFormattedIssuer: () => '',
-                            getLpAssetPair: () => [],
-                        }]),
-                        ...dataSource,
-                    ]}
-                    renderItem={this.renderItem}
-                    renderEmptyList={this.renderEmptyList}
-                    onItemPress={this.onTokenItemPress}
-                    keyExtractor={this.keyExtractor}
-                    onDataChange={this.onTokenReorder}
-                    sortable={reorderEnabled}
-                />
+                {reorderEnabled ? (
+                    <ReorderableList
+                        key={`token-reorder-${account.address}-${network?.key ?? ''}`}
+                        testID="token-reorder-scroll"
+                        data={Array.from(dataSource).filter(token => token?.isValid())}
+                        sortable
+                        keyExtractor={this.keyExtractor}
+                        renderItem={(item, index) => this.renderItem({ item, index })}
+                        onPress={this.onTokenItemPress}
+                        onReorder={this.onTokenReorder}
+                        contentContainerStyle={{
+                            paddingBottom: glassTabScrollPadding + AppSizes.safeAreaBottomInset + 16,
+                        }}
+                        emptyComponent={this.renderEmptyList()}
+                    />
+                ) : (
+                    <SortableFlatList
+                        key={`tokenlistflat-${accWorthEnabled ? 1 : 0}`}
+                        ref={this.dragSortableRef}
+                        itemHeight={TokenItem.Height}
+                        separatorHeight={0}
+                        topFade
+                        updateTokenPrices={this.updateTokenPrices}
+                        lineWorthLoading={this.updateLineWorthLoading}
+                        accWorthEnabled={accWorthEnabled}
+                        firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
+                        endInset={glassTabScrollPadding}
+                        dataSource={[
+                            ...(reorderEnabled ? [] : [{
+                                id: 'native',
+                                currency: {
+                                    issuer: '',
+                                },
+                                getFormattedCurrency: () => NetworkService.getNativeAsset(),
+                                isLiquidityPoolToken: () => false,
+                                isMPToken: () => false,
+                                getFormattedIssuer: () => '',
+                                getLpAssetPair: () => [],
+                            }]),
+                            ...dataSource,
+                        ]}
+                        renderItem={this.renderItem}
+                        renderEmptyList={this.renderEmptyList}
+                        onItemPress={this.onTokenItemPress}
+                        keyExtractor={this.keyExtractor}
+                        onDataChange={this.onTokenReorder}
+                        sortable={false}
+                    />
+                )}
             </View>
         );
     }

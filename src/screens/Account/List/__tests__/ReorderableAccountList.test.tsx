@@ -160,6 +160,19 @@ it('never scrolls to a negative offset when all rows fit on the screen', () => {
     list.componentWillUnmount();
 });
 
+it('includes the bottom content inset so the last row clears a floating tab bar', () => {
+    const { list, onReorder } = setup();
+    Object.assign(list as any, { contentHeight: 2480 });
+    list.begin('0', { nativeEvent: { pageY: 160 } } as any);
+    list.move(395);
+    hold(8000);
+    expect((list as any).offset).toBe(2180);
+    expect(frames.size).toBe(0);
+    list.finish(true);
+    expect(onReorder.mock.calls[0][0][19]).toBe('0');
+    list.componentWillUnmount();
+});
+
 it.each(['cancel', 'background', 'data change', 'disable', 'unmount'])(
     'cleans up %s without saving a partial order',
     (reason) => {
@@ -216,6 +229,24 @@ it('ignores an old gesture’s delivered frame after a new gesture has begun', (
     oldFrame(100);
     expect(scrollTo).toHaveBeenCalledTimes(count);
     expect((list as any).offset).toBe(0);
+    list.componentWillUnmount();
+});
+
+it('cancels a drop if a live item invalidates before its parent can remove it', () => {
+    const { list, props, onReorder } = setup();
+    let invalid = false;
+    Object.assign(list, { props: { ...props, keyExtractor: (item: string) => {
+        if (invalid) throw new Error('Invalid Realm object');
+        return item;
+    } } });
+    list.begin('0', { nativeEvent: { pageY: 160 } } as any);
+    list.move(395);
+    hold(500);
+    invalid = true;
+    expect(() => hold(500)).not.toThrow();
+    expect(() => list.finish(true)).not.toThrow();
+    expect(onReorder).not.toHaveBeenCalled();
+    expect(frames.size).toBe(0);
     list.componentWillUnmount();
 });
 

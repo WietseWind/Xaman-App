@@ -19,7 +19,7 @@ export default StyleService.create({
     themeItemFilled: { width: 12, height: 12, borderRadius: 6, backgroundColor: '$blue' },
     themeItemLabelText: {
         fontFamily: AppFonts.base.familyBold,
-        fontSize: AppFonts.base.size,
+        fontSize: AppFonts.base.size * 0.9,
         color: '$textPrimary',
     },
     themeItemLabelSmall: {

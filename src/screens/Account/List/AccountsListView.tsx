@@ -281,14 +281,15 @@ class AccountListView extends Component<Props, State> {
                             {accountListLabel(item)}
                         </Text>
                         <View style={styles.accessLevelContainer}>
-                            <Icon size={13} name={accessLevelIcon} style={statusIconStyle} />
-                            <Text style={statusLabelStyle}>{accessLevelLabel}</Text>
+                            <View style={styles.trait} testID={`account-trait-access-${item.address}`}>
+                                <Icon size={13} name={accessLevelIcon} style={statusIconStyle} />
+                                <Text style={statusLabelStyle}>{accessLevelLabel}</Text>
+                            </View>
                             {item.hidden && (
-                                <>
-                                    <Text style={statusLabelStyle}> </Text>
+                                <View style={styles.trait} testID={`account-trait-hidden-${item.address}`}>
                                     <Icon size={13} name="IconEyeOff" style={statusIconStyle} />
                                     <Text style={statusLabelStyle}>{Localize.t('global.hidden')}</Text>
-                                </>
+                                </View>
                             )}
                         </View>
                     </View>
