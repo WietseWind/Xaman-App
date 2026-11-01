@@ -49,7 +49,6 @@ export default StyleService.create({
     switchContainer: {
         flex: 0,
         flexShrink: 0,
-        marginEnd: 24,
         // React Native reserves 51pt, while the newer native iOS track overhangs it.
         paddingRight: Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) >= 26 ? 13 : 0,
     },
