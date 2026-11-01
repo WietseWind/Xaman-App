@@ -1453,7 +1453,7 @@
     "batch": "Lote de %{txCount}",
     "innerTransactions": "Transações internas",
     "batchSignerC": "(%{signCount} assinante(s))",
-    "thisIsAnBatchTransaction": "Esta é uma transação Batch com %{signers} signatários distintos das transações internas e %{txs} transações no lote.",
+    "thisIsAnBatchTransaction": "Esta é uma transação Batch. Número de signatários distintos das transações internas: %{signers}. Número de transações no lote: %{txs}.",
     "batchExecutionType": "As transações internas são executadas %{batchExecution}.",
     "batchExecution_tfAllOrNothing": "atomicamente, então ou todas têm sucesso ou todas falham",
     "batchExecution_tfOnlyOne": "para processar apenas a primeira transação bem-sucedida, todas as outras são falhadas ou ignoradas",

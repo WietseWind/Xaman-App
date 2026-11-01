@@ -1453,7 +1453,7 @@
     "batch": "Batch af %{txCount}",
     "innerTransactions": "Indre transaktioner",
     "batchSignerC": "(%{signCount} underskriver(e))",
-    "thisIsAnBatchTransaction": "Dette er en Batch-transaktion med %{signers} særskilte underskrivere af de indre transaktioner og %{txs} transaktioner i alt.",
+    "thisIsAnBatchTransaction": "Dette er en Batch-transaktion. Antal særskilte underskrivere af de indre transaktioner: %{signers}. Antal transaktioner i alt: %{txs}.",
     "batchExecutionType": "De indre transaktioner udføres %{batchExecution}.",
     "batchExecution_tfAllOrNothing": "atomisk, så enten lykkes de alle eller de mislykkes alle",
     "batchExecution_tfOnlyOne": "for kun at behandle den første succesfulde transaktion, alle andre mislykkes eller nægtes",

@@ -1453,7 +1453,7 @@
     "batch": "%{txCount} ഇടപാടുകളുടെ ബാച്ച്",
     "innerTransactions": "ആന്തരിക ഇടപാടുകൾ",
     "batchSignerC": "(%{signCount} ഒപ്പിടുന്നവർ)",
-    "thisIsAnBatchTransaction": "ഈ Batch ഇടപാടിൽ ആന്തരിക ഇടപാടുകളുടെ %{signers} വ്യത്യസ്ത ഒപ്പിടുന്നവരും ആകെ %{txs} ഇടപാടുകളും ഉണ്ട്.",
+    "thisIsAnBatchTransaction": "ഇത് ഒരു Batch ഇടപാടാണ്. ആന്തരിക ഇടപാടുകളുടെ വ്യത്യസ്ത ഒപ്പിടുന്നവരുടെ എണ്ണം: %{signers}. ബാച്ചിലെ ഇടപാടുകളുടെ എണ്ണം: %{txs}.",
     "batchExecutionType": "ആന്തരിക ഇടപാടുകൾ %{batchExecution} എക്സിക്യൂട്ട് ചെയ്യുന്നു.",
     "batchExecution_tfAllOrNothing": "അറ്റോമിക്കായി, അതിനാൽ എല്ലാം വിജയിക്കും അല്ലെങ്കിൽ എല്ലാം പരാജയപ്പെടും",
     "batchExecution_tfOnlyOne": "to process only the first successful transaction, all others are either failed or not tried (because one already succeeded)",

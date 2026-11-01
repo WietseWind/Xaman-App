@@ -1453,7 +1453,7 @@
     "batch": "Lot de %{txCount}",
     "innerTransactions": "Tranzacții interne",
     "batchSignerC": "(%{signCount} semnatar(i))",
-    "thisIsAnBatchTransaction": "Aceasta este o tranzacție Batch cu %{signers} semnatari separați ai tranzacțiilor interne și %{txs} tranzacții în lot.",
+    "thisIsAnBatchTransaction": "Aceasta este o tranzacție Batch. Numărul de semnatari separați ai tranzacțiilor interne: %{signers}. Numărul de tranzacții din lot: %{txs}.",
     "batchExecutionType": "Tranzacțiile interne sunt executate %{batchExecution}.",
     "batchExecution_tfAllOrNothing": "atomic, astfel încât fie toate reușesc, fie toate eșuează",
     "batchExecution_tfOnlyOne": "pentru a procesa doar prima tranzacție reușită, toate celelalte fie eșuează, fie nu sunt încercate",

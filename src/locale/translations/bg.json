@@ -1453,7 +1453,7 @@
     "batch": "Партида от %{txCount}",
     "innerTransactions": "Вътрешни транзакции",
     "batchSignerC": "(%{signCount} подписващ(и))",
-    "thisIsAnBatchTransaction": "Това е транзакция Batch с %{signers} отделни подписващи на вътрешните транзакции и общо %{txs} транзакции в пакета.",
+    "thisIsAnBatchTransaction": "Това е транзакция Batch. Брой отделни подписващи на вътрешните транзакции: %{signers}. Брой транзакции в пакета: %{txs}.",
     "batchExecutionType": "Вътрешните транзакции се изпълняват %{batchExecution}.",
     "batchExecution_tfAllOrNothing": "атомарно, така че или всички успяват, или всички се проваляваrt",
     "batchExecution_tfOnlyOne": "за обработка само на първата успешна транзакция, всички останали са неуспешни или не са опитани",

@@ -1453,7 +1453,7 @@
     "batch": "Batch de %{txCount}",
     "innerTransactions": "Tranzaksyon entèn",
     "batchSignerC": "(%{signCount} siyatè)",
-    "thisIsAnBatchTransaction": "Sa a se yon tranzaksyon Batch ki gen %{signers} moun diferan k ap siyen tranzaksyon entèn yo ak %{txs} tranzaksyon an total.",
+    "thisIsAnBatchTransaction": "Sa a se yon tranzaksyon Batch. Kantite moun diferan k ap siyen tranzaksyon entèn yo: %{signers}. Kantite tranzaksyon nan gwoup la: %{txs}.",
     "batchExecutionType": "Tranzaksyon entèn yo egzekite %{batchExecution}.",
     "batchExecution_tfAllOrNothing": "atomikman, kidonk swa yo tout reyisi oswa yo tout echwe",
     "batchExecution_tfOnlyOne": "pou trete sèlman premye tranzaksyon ki reyisi, tout lòt yo swa echwe oswa pa eseye (paske lòt yo deja reyisi)",

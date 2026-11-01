@@ -1453,7 +1453,7 @@
     "batch": "Batch z %{txCount}",
     "innerTransactions": "Vnútorné transakcie",
     "batchSignerC": "(%{signCount} podpisujúcich)",
-    "thisIsAnBatchTransaction": "Táto transakcia Batch obsahuje %{txs} transakcií a %{signers} samostatných podpisujúcich vnútorných transakcií.",
+    "thisIsAnBatchTransaction": "Toto je transakcia Batch. Počet samostatných podpisujúcich vnútorných transakcií: %{signers}. Počet transakcií v dávke: %{txs}.",
     "batchExecutionType": "Vnútorné transakcie sú vykonávané %{batchExecution}.",
     "batchExecution_tfAllOrNothing": "atomicky, takže buď všetky uspejú alebo všetky zlyhajú",
     "batchExecution_tfOnlyOne": "na spracovanie iba prvej úspešnej transakcie, všetky ostatné buď zlyhajú alebo sa neskúšajú (pretože iné už úspešne prešli)",

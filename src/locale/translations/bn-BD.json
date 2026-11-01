@@ -1453,7 +1453,7 @@
     "batch": "%{txCount}টি লেনদেনের ব্যাচ",
     "innerTransactions": "ইনার লেনদেন",
     "batchSignerC": "(%{signCount} জন স্বাক্ষরকারী)",
-    "thisIsAnBatchTransaction": "এই Batch লেনদেনে অভ্যন্তরীণ লেনদেনগুলির %{signers} জন পৃথক স্বাক্ষরকারী এবং মোট %{txs}টি লেনদেন রয়েছে।",
+    "thisIsAnBatchTransaction": "এটি একটি Batch লেনদেন। অভ্যন্তরীণ লেনদেনের পৃথক স্বাক্ষরকারীর সংখ্যা: %{signers}। ব্যাচে লেনদেনের সংখ্যা: %{txs}।",
     "batchExecutionType": "অভ্যন্তরীণ লেনদেনগুলি %{batchExecution} কার্যকর করা হয়।",
     "batchExecution_tfAllOrNothing": "সব বা কিছুই না",
     "batchExecution_tfOnlyOne": "শুধুমাত্র একটি",
