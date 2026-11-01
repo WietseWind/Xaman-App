@@ -51,7 +51,7 @@ export default StyleService.create({
         flexShrink: 0,
         marginEnd: 24,
         // React Native reserves 51pt, while the newer native iOS track overhangs it.
-        paddingRight: Platform.OS === 'ios' && Number(Platform.Version) >= 26 ? 13 : 0,
+        paddingRight: Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) >= 26 ? 13 : 0,
     },
     stackedContent: { flex: 1 },
     stackedLabel: { flex: 0, paddingRight: 0 },
