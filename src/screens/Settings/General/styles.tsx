@@ -1,146 +1,44 @@
-// import { StyleSheet } from 'react-native';
-
 import StyleService from '@services/StyleService';
+import { AppFonts } from '@theme';
 
-import { AppSizes, AppFonts } from '@theme';
-
-/* Styles ==================================================================== */
-const styles = StyleService.create({
-    container: {
-        position: 'relative',
-        flex: 1,
-        flexDirection: 'column',
-        backgroundColor: '$background',
-    },
-    rowIcon: {
-        tintColor: '$blue',
-        marginRight: -10,
-    },
-    header: {
-        paddingVertical: AppSizes.paddingSml / 1.5,
-        borderBottomWidth: 0,
-        borderTopWidth: 0,
-        backgroundColor: '$tint',
-        marginTop: AppSizes.paddingSml / 2,
-        marginBottom: AppSizes.paddingSml / 2,
-    },
-    row: {
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: AppSizes.paddingSml,
-        paddingVertical: AppSizes.paddingSml / 1.5,
-        borderBottomWidth: 0,
-        backgroundColor: '$background',
-        // borderTopWidth: StyleSheet.hairlineWidth,
-        // borderColor: '$tint',
-    },
-    rowNoBorder: {
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: AppSizes.paddingSml,
-    },
-    labelContainer: {
-        flex: 3,
-        height: '100%',
-        justifyContent: 'center',
-    },
-    label: {
-        fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.subtext.size,
-        color: '$textPrimary',
-    },
-    destructionLabel: {
-        fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.subtext.size,
-        color: '$red',
-        textAlign: 'center',
-    },
-    value: {
-        fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.subtext.size,
-        textAlign: 'right',
-        color: '$grey',
-    },
-    descriptionText: {
-        padding: AppSizes.paddingSml,
-        fontFamily: AppFonts.base.family,
-        fontSize: AppFonts.base.size * 0.8,
-        color: '$textPrimary',
-    },
-
-    themeItem: {
-        // minHeight: AppSizes.screen.height * 0.12,
-        width: '100%',
-        borderRadius: 20,
-        padding: 5,
-        paddingLeft: 20,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '$tint',
-        borderColor: '$tint',
-        color: '$grey',
-        borderWidth: 3,
-        marginBottom: 5,
-    },
+export default StyleService.create({
+    container: { flex: 1, backgroundColor: '$background' },
+    themeItem: { flexDirection: 'row', alignItems: 'center', padding: 14, minHeight: 70 },
+    themeItemSelected: { backgroundColor: '$lightBlue' },
+    themeLabel: { flex: 1, paddingHorizontal: 12 },
     themeItemDot: {
-        height: 26,
-        width: 26,
-        borderRadius: 15,
-        borderWidth: 2,
-        backgroundColor: '$tint',
-        borderColor: '$grey',
-        marginTop: 4,
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        borderWidth: 1.5,
+        borderColor: '$textSecondary',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    themeItemDotSelected: {
-        backgroundColor: '$white',
-        borderColor: '$blue',
-    },
-    themePreview: {
-        borderRadius: 10,
-        height: '100%',
-        padding: AppSizes.paddingSml,
-        alignItems: 'center',
-    },
-    themePreviewLight: { backgroundColor: '$white', color: '$black' },
-    themePreviewDark: { backgroundColor: '$themeDark', color: '$white' },
-    themePreviewMoonlight: { backgroundColor: '$themeMoonlight', color: '$grey' },
-    themePreviewRoyal: { backgroundColor: '$themeRoyal', color: '$white' },
-
-    themeItemFilled: {
-        height: 15,
-        width: 15,
-        borderRadius: 8,
-        backgroundColor: '$blue',
-        color: '$blue',
-    },
-
-    themeItemSelected: {
-        backgroundColor: '$lightBlue',
-        borderColor: '$blue',
-        color: '$blue',
-    },
+    themeItemDotSelected: { borderColor: '$blue', borderWidth: 2 },
+    themeItemFilled: { width: 12, height: 12, borderRadius: 6, backgroundColor: '$blue' },
     themeItemLabelText: {
-        fontFamily: AppFonts.base.familyExtraBold,
-        fontSize: AppFonts.p.size,
-        color: '$silver',
-    },
-    themeItemSelectedText: {
+        fontFamily: AppFonts.base.familyBold,
+        fontSize: AppFonts.base.size,
         color: '$textPrimary',
     },
     themeItemLabelSmall: {
-        fontSize: AppFonts.subtext.size,
-        fontFamily: AppFonts.base.familyBold,
-        color: '$silver',
+        fontFamily: AppFonts.base.family,
+        fontSize: AppFonts.small.size,
+        color: '$textSecondary',
+        marginTop: 3,
     },
+    themePreview: {
+        width: 52,
+        minHeight: 44,
+        padding: 8,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    themePreviewText: { fontFamily: AppFonts.base.familyExtraBold, fontSize: AppFonts.p.size },
+    themePreviewLight: { backgroundColor: '$white', color: '$black' },
+    themePreviewDark: { backgroundColor: '$themeDark', color: '$white' },
+    themePreviewMoonlight: { backgroundColor: '$themeMoonlight', color: '$silver' },
+    themePreviewRoyal: { backgroundColor: '$themeRoyal', color: '$white' },
 });
-
-export default styles;

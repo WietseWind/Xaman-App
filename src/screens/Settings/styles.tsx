@@ -1,33 +1,23 @@
 import StyleService from '@services/StyleService';
-
 import { AppSizes, AppFonts } from '@theme';
 
-/* Styles ==================================================================== */
-const styles = StyleService.create({
+export default StyleService.create({
+    content: { paddingHorizontal: AppSizes.paddingSml, paddingTop: 8, paddingBottom: 20 },
     rowContainer: {
-        paddingTop: AppSizes.heightPercentageToDP(2),
-        paddingBottom: AppSizes.heightPercentageToDP(2),
+        flexDirection: 'row',
+        alignItems: 'center',
+        minHeight: 58,
+        paddingHorizontal: 15,
+        paddingVertical: 14,
     },
     rowLabel: {
+        flex: 1,
         fontFamily: AppFonts.base.familyBold,
         fontSize: AppFonts.base.size,
         color: '$textPrimary',
+        marginHorizontal: 14,
     },
-    rowIcon: {
-        tintColor: '$textPrimary',
-    },
-    hr: {
-        borderBottomColor: '$contrast',
-        opacity: 0.15,
-        borderBottomWidth: 1,
-        marginTop: 7,
-        marginBottom: 7,
-    },
-
-    monetizationContainer: {
-        marginHorizontal: AppSizes.paddingSml,
-        marginBottom: AppSizes.paddingSml,
-    },
+    rowIcon: { tintColor: '$textPrimary', flexShrink: 0 },
+    chevron: { tintColor: '$textSecondary', flexShrink: 0 },
+    monetizationContainer: { marginHorizontal: AppSizes.paddingSml, marginBottom: AppSizes.paddingSml },
 });
-
-export default styles;
