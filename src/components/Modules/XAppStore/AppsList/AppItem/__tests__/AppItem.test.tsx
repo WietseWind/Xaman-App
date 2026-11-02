@@ -6,6 +6,8 @@ import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
 import { HOSTNAME } from '@common/constants/endpoints';
 import { XAppOrigin } from '@common/libs/payload';
+import { getXAppPalette } from '@common/helpers/xappPalette';
+import StyleService from '@services/StyleService';
 import AppItem, { AppActions, AppType, Props } from '../AppItem';
 
 jest.mock('@common/helpers/navigator', () => ({
@@ -15,6 +17,7 @@ jest.mock('@common/libs/payload', () => jest.requireActual('@common/libs/payload
 jest.mock('@components/General/TouchableDebounce', () => ({ TouchableDebounce: 'TouchableDebounce' }));
 jest.mock('@components/General/Icon', () => ({ Icon: 'Icon' }));
 jest.mock('@screens/Overlay/XAppInfo', () => ({ DisplayButtonTypes: { OPEN: 'OPEN', SHARE: 'SHARE' } }));
+jest.mock('@common/helpers/xappPalette', () => ({ getXAppPalette: jest.fn() }));
 
 const app = (id = 'first'): AppType => ({
     identifier: `public.${id}`, title: `Public ${id}`, description: `Description ${id}`, icon: `https://example.com/${id}.png`,
@@ -50,6 +53,7 @@ beforeEach(() => {
     loops = [];
     trees = [];
     jest.clearAllMocks();
+    jest.mocked(getXAppPalette).mockResolvedValue(undefined);
     jest.spyOn(Animated, 'timing').mockImplementation(composite);
     jest.spyOn(Animated, 'sequence').mockImplementation(composite);
     jest.spyOn(Animated, 'loop').mockImplementation(() => {
@@ -62,6 +66,61 @@ beforeEach(() => {
 afterEach(() => {
     trees.forEach(tree => act(() => tree.unmount()));
     jest.restoreAllMocks();
+    StyleService.setTheme('light');
+});
+
+it('uses the icon palette and readable captions in every theme after the image loads', async () => {
+    const item = app(); const tree = mount(props(item));
+    jest.mocked(getXAppPalette).mockResolvedValue({ background: '#ffcc00', foreground: '#000000' });
+    await act(async () => { await iconImage(tree, item).props.onLoad(); });
+    for (const theme of ['light', 'dark', 'moonlight', 'royal'] as const) {
+        act(() => { StyleService.setTheme(theme); tree.getInstance()!.forceUpdate(); });
+        expect(StyleSheet.flatten(target(tree, `xapp-tile-${item.identifier}`).props.style).backgroundColor)
+            .toBe('#ffcc00');
+        expect(StyleSheet.flatten(text(tree, item.title).props.style).color).toBe('#000000');
+        expect(StyleSheet.flatten(text(tree, item.description).props.style).color).toBe('#000000');
+    }
+    expect(getXAppPalette).toHaveBeenCalledTimes(1);
+});
+
+it('rejects late palette results after a recycled cell changes its icon', async () => {
+    let finish!: (value: any) => void;
+    jest.mocked(getXAppPalette).mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const first = app(); const second = app('second'); const tree = mount(props(first));
+    let pending!: Promise<void>;
+    act(() => { pending = iconImage(tree, first).props.onLoad(); });
+    act(() => tree.update(React.createElement(AppItem, props(second))));
+    await act(async () => { finish({ background: '#ffcc00', foreground: '#000000' }); await pending; });
+    expect(StyleSheet.flatten(target(tree, `xapp-tile-${second.identifier}`).props.style).backgroundColor)
+        .toBe(StyleService.value('$tint'));
+    jest.mocked(getXAppPalette).mockResolvedValue({ background: '#0030cf', foreground: '#ffffff' });
+    await act(async () => { await iconImage(tree, second).props.onLoad(); });
+    expect(StyleSheet.flatten(target(tree, `xapp-tile-${second.identifier}`).props.style).backgroundColor)
+        .toBe('#0030cf');
+});
+
+it('keeps the theme fallback after an image error even if a previous sample completes later', async () => {
+    let finish!: (value: any) => void;
+    jest.mocked(getXAppPalette).mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const item = app(); const tree = mount(props(item));
+    let pending!: Promise<void>;
+    act(() => { pending = iconImage(tree, item).props.onLoad(); });
+    act(() => iconImage(tree, item).props.onError());
+    await act(async () => { finish({ background: '#ffcc00', foreground: '#000000' }); await pending; });
+    expect(StyleSheet.flatten(target(tree, `xapp-tile-${item.identifier}`).props.style).backgroundColor)
+        .toBe(StyleService.value('$tint'));
+});
+
+it('does not update an unmounted tile after sampling finishes', async () => {
+    let finish!: (value: any) => void;
+    jest.mocked(getXAppPalette).mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const item = app(); const tree = mount(props(item));
+    let pending!: Promise<void>;
+    act(() => { pending = iconImage(tree, item).props.onLoad(); });
+    const update = jest.spyOn(tree.getInstance()!, 'setState');
+    act(() => tree.unmount()); update.mockClear();
+    await act(async () => { finish({ background: '#ffcc00', foreground: '#000000' }); await pending; });
+    expect(update).not.toHaveBeenCalled();
 });
 
 it('keeps Info and Open as sibling targets, and an Info press never launches the xApp', () => {

@@ -7,6 +7,7 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 import { AppScreens } from '@common/constants';
 import { HOSTNAME } from '@common/constants/endpoints';
 import { Images } from '@common/helpers/images';
+import { getXAppPalette, XAppPalette } from '@common/helpers/xappPalette';
 import { XAppOrigin } from '@common/libs/payload';
 import { Navigator } from '@common/helpers/navigator';
 import { Props as XAppBrowserModalProps } from '@screens/Modal/XAppBrowser/types';
@@ -41,6 +42,7 @@ export interface Props {
 interface State {
     titleLines: number;
     imageFailed: boolean;
+    palette?: XAppPalette & { uri: string };
 }
 
 class AppItem extends Component<Props, State> {
@@ -48,6 +50,7 @@ class AppItem extends Component<Props, State> {
     private readonly fadeAnimation: Animated.Value;
     private placeholderLoop?: Animated.CompositeAnimation;
     private mounted = false;
+    private paletteRequest = 0;
 
     constructor(props: Props) {
         super(props);
@@ -63,7 +66,7 @@ class AppItem extends Component<Props, State> {
 
     componentDidUpdate(prevProps: Props) {
         const { item } = this.props;
-        const { titleLines, imageFailed } = this.state;
+        const { titleLines, imageFailed, palette } = this.state;
         if (!prevProps.item && item) {
             this.stopPlaceholderAnimation();
             this.startFadeAnimation();
@@ -73,8 +76,10 @@ class AppItem extends Component<Props, State> {
             this.startPlaceholderAnimation();
         }
         if (prevProps.item?.identifier !== item?.identifier || prevProps.item?.icon !== item?.icon) {
-            if (titleLines !== 1 || imageFailed) {
-                this.setState({ titleLines: 1, imageFailed: false });
+            const iconChanged = prevProps.item?.icon !== item?.icon;
+            if (iconChanged) this.paletteRequest++;
+            if (titleLines !== 1 || imageFailed || (iconChanged && palette)) {
+                this.setState({ titleLines: 1, imageFailed: false, palette: iconChanged ? undefined : palette });
             }
         }
     }
@@ -166,8 +171,27 @@ class AppItem extends Component<Props, State> {
         const { item } = this.props;
         const { imageFailed } = this.state;
         if (this.mounted && item?.icon === uri && !imageFailed) {
-            this.setState({ imageFailed: true });
+            this.paletteRequest++;
+            this.setState({ imageFailed: true, palette: undefined });
         }
+    };
+
+    onImageLoad = async (uri: string) => {
+        const { item } = this.props;
+        const { imageFailed } = this.state;
+        if (!this.mounted || item?.icon !== uri || imageFailed) return;
+        const request = ++this.paletteRequest;
+        const palette = await getXAppPalette(uri);
+        const { item: currentItem } = this.props;
+        if (this.mounted && request === this.paletteRequest && currentItem?.icon === uri && palette) {
+            this.setState({ palette: { ...palette, uri } });
+        }
+    };
+
+    private getPalette = () => {
+        const { palette } = this.state;
+        const { item } = this.props;
+        return palette?.uri === item?.icon ? palette : undefined;
     };
 
     private tileGeometry = () => {
@@ -193,6 +217,7 @@ class AppItem extends Component<Props, State> {
                         resizeMode="cover"
                         style={[styles.appIcon, featured && styles.featuredIcon]}
                         onError={() => this.onImageError(item.icon)}
+                        onLoad={() => this.onImageLoad(item.icon)}
                         accessible={false}
                     />
                 )}
@@ -208,6 +233,8 @@ class AppItem extends Component<Props, State> {
     renderBackdrop = (featured = false) => {
         const { item } = this.props;
         const { imageFailed } = this.state;
+        const palette = this.getPalette();
+        if (featured && palette) return null;
         return (
             <View pointerEvents="none" style={styles.backdropContainer} importantForAccessibility="no-hide-descendants">
                 {!!item?.icon && !imageFailed && (
@@ -218,7 +245,11 @@ class AppItem extends Component<Props, State> {
                         accessible={false}
                     />
                 )}
-                {!featured && <Image source={Images.ImageXAppTileScrim} style={styles.scrim} resizeMode="stretch" />}
+                {!featured && <Image source={Images.ImageXAppTileScrim}
+                    style={[styles.scrim, palette && styles.paletteScrim, palette && { tintColor: palette.background }]}
+                    resizeMode="stretch" />}
+                {!featured && palette && <View style={[styles.captionBackdrop,
+                    { backgroundColor: palette.background }]} />}
             </View>
         );
     };
@@ -243,8 +274,11 @@ class AppItem extends Component<Props, State> {
     renderFeatured = () => {
         const { item } = this.props;
         if (!item) return this.renderPlaceholder();
+        const palette = this.getPalette();
+        const textColor = palette && { color: palette.foreground };
         return (
-            <Animated.View style={[styles.featured, { opacity: this.fadeAnimation }]}>
+            <Animated.View style={[styles.featured, palette && { backgroundColor: palette.background },
+                { opacity: this.fadeAnimation }]}>
                 {this.renderBackdrop(true)}
                 <TouchableDebounce
                     testID={`xapp-open-${item.identifier}`}
@@ -257,8 +291,8 @@ class AppItem extends Component<Props, State> {
                 >
                     {this.renderIcon(true)}
                     <View style={styles.featuredText}>
-                        <Text style={styles.featuredTitle}>{item.title}</Text>
-                        <Text style={styles.featuredDescription}>{item.description}</Text>
+                        <Text style={[styles.featuredTitle, textColor]}>{item.title}</Text>
+                        <Text style={[styles.featuredDescription, textColor]}>{item.description}</Text>
                     </View>
                 </TouchableDebounce>
                 <TouchableDebounce
@@ -280,21 +314,23 @@ class AppItem extends Component<Props, State> {
         if (variant === 'featured') return this.renderFeatured();
         const geometry = this.tileGeometry();
         const { titleLines } = this.state;
+        const palette = this.getPalette();
+        const textColor = palette && { color: palette.foreground };
         return (
             <Animated.View testID={`xapp-tile-${item.identifier}`} style={[styles.tile, geometry.tile,
-                { opacity: this.fadeAnimation }]}>
+                palette && { backgroundColor: palette.background }, { opacity: this.fadeAnimation }]}>
                 {this.renderBackdrop()}
                 <View pointerEvents="none" style={styles.decoration} importantForAccessibility="no-hide-descendants">
                     {this.renderIcon()}
                     <View style={[styles.caption, geometry.caption]}>
                         <Text
-                            style={styles.appTitle}
+                            style={[styles.appTitle, textColor]}
                             numberOfLines={2}
                             onTextLayout={(event) => this.onTitleLayout(event, item.identifier)}
                         >
                             {item.title}
                         </Text>
-                        <Text style={styles.appDescription} numberOfLines={titleLines > 1 ? 1 : 2}>
+                        <Text style={[styles.appDescription, textColor]} numberOfLines={titleLines > 1 ? 1 : 2}>
                             {item.description}
                         </Text>
                     </View>
@@ -318,9 +354,10 @@ class AppItem extends Component<Props, State> {
                         accessibilityLabel={`${Locale.t(action === AppActions.OPEN_ABOUT
                             ? 'xapp.aboutXapp' : 'xapp.openXapp')} ${item.title}`}
                     >
-                        <View style={styles.infoFace}>
+                        <View style={[styles.infoFace, palette && (palette.foreground === '#000000'
+                            ? styles.lightInfoFace : styles.darkInfoFace)]}>
                             <Icon name={action === AppActions.OPEN_ABOUT ? 'IconXAppInfo' : 'IconChevronRight'}
-                                size={20} style={styles.infoGlyph} />
+                                size={20} style={[styles.infoGlyph, palette && { tintColor: palette.foreground }]} />
                         </View>
                     </TouchableDebounce>
                 )}

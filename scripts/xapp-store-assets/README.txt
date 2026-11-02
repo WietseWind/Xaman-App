@@ -20,6 +20,13 @@ New assets:
 - ImageXAppTileScrim: transparent 8x132 black alpha mask. Stretch it across the tile
   and tint with the existing app $tint surface color in each theme. Opacity stops are 0 at 0%,
   0.05 at 25%, 0.95 at 87% and 1 at 100%. No text/colour is baked into this mask.
+  Once an icon loads, the tile uses its dominant color in every theme. A 32x32
+  native sRGB/ARGB sample is clustered in JS, ignoring transparent pixels. The
+  existing mask fades the enlarged artwork into that color above an opaque
+  caption area; black or white caption ink is chosen for >=4.5:1 contrast.
+  Missing/unsupported/failed icons keep the theme surface. Sampling uses the
+  existing RN/Fresco loaders, two concurrent JS requests, per-URI deduplication
+  and a 128-entry session cache; no new image library or backend is required.
 - iOS exports 1x/2x/3x. Android exports mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi.
 
 Global bottom bar:

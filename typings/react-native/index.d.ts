@@ -36,6 +36,7 @@ export interface LocalNotificationModuleInterface extends NativeModule {
  * Bunch of methods for managing the application
  */
 export interface AppUtilsModuleInterface extends NativeModule {
+    getImageSample?: (uri: string) => Promise<number[]>;
     /**
      * The version of the app.
      */

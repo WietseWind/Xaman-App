@@ -7,11 +7,15 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.os.Looper;
+import android.graphics.Bitmap;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -20,6 +24,18 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import com.facebook.common.executors.CallerThreadExecutor;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
+import com.facebook.datasource.DataSource;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.common.ImageDecodeOptions;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.facebook.react.views.imagehelper.ImageSource;
 
 @ReactModule(name = AppUtilsModule.NAME)
 public class AppUtilsModule extends ReactContextBaseJavaModule {
@@ -31,6 +47,58 @@ public class AppUtilsModule extends ReactContextBaseJavaModule {
     }
 
     static final String NAME = "AppUtilsModule";
+
+    /** Sample through the existing Fresco pipeline/cache, with bounded pixel/bridge work. */
+    @ReactMethod
+    public void getImageSample(String uri, Promise promise) {
+        if (uri == null || uri.isEmpty()) { promise.resolve(Arguments.createArray()); return; }
+        AtomicBoolean finished = new AtomicBoolean(false);
+        try {
+            ImageSource image = new ImageSource(reactContext, uri);
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(image.getUri())
+                    .setResizeOptions(new ResizeOptions(32, 32))
+                    .setImageDecodeOptions(ImageDecodeOptions.newBuilder()
+                            .setBitmapConfig(Bitmap.Config.ARGB_8888).build()).build();
+            DataSource<CloseableReference<CloseableImage>> source =
+                    Fresco.getImagePipeline().fetchDecodedImage(request, reactContext);
+            Handler handler = new Handler(Looper.getMainLooper());
+            Runnable timeout = () -> {
+                if (finished.compareAndSet(false, true)) {
+                    source.close(); promise.resolve(Arguments.createArray());
+                }
+            };
+            handler.postDelayed(timeout, 8000);
+            source.subscribe(new BaseBitmapDataSubscriber() {
+                @Override
+                protected void onNewResultImpl(Bitmap original) {
+                    if (!finished.compareAndSet(false, true)) return;
+                    handler.removeCallbacks(timeout);
+                    WritableArray sample = Arguments.createArray();
+                    Bitmap scaled = null;
+                    try {
+                        if (original != null) {
+                            scaled = Bitmap.createScaledBitmap(original, 32, 32, true);
+                            int[] pixels = new int[1024];
+                            scaled.getPixels(pixels, 0, 32, 0, 0, 32, 32);
+                            for (int pixel : pixels) sample.pushDouble(pixel & 0xffffffffL);
+                        }
+                    } catch (Exception ignored) { sample = Arguments.createArray(); }
+                    finally {
+                        if (scaled != null && scaled != original) scaled.recycle();
+                    }
+                    promise.resolve(sample);
+                }
+                @Override
+                protected void onFailureImpl(DataSource<CloseableReference<CloseableImage>> result) {
+                    if (finished.compareAndSet(false, true)) {
+                        handler.removeCallbacks(timeout); promise.resolve(Arguments.createArray());
+                    }
+                }
+            }, CallerThreadExecutor.getInstance());
+        } catch (Exception ignored) {
+            if (finished.compareAndSet(false, true)) promise.resolve(Arguments.createArray());
+        }
+    }
 
     @NonNull
     @Override
