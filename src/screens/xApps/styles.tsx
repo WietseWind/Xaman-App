@@ -16,7 +16,7 @@ export default StyleService.create({
         backgroundColor: '$transparent',
     },
     heading: {
-        fontFamily: AppFonts.base.familyBold,
+        fontFamily: AppFonts.h3.family,
         fontSize: 33,
         lineHeight: 39,
         color: StyleService.select({ light: '#10121a', dark: '#f5f6fc' }),
