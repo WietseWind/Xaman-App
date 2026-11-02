@@ -97,6 +97,9 @@ class HomeView extends Component<Props, State> {
     private motionRevision = 0;
     private motionListener?: ReturnType<typeof AccessibilityInfo.addEventListener>;
     private requestedHeaderHidden = false;
+    private headerTransition = 0;
+    private headerTransitionActive = false;
+    private headerCompletions: Array<() => void> = [];
 
     static options() {
         return { topBar: { visible: false } };
@@ -178,6 +181,8 @@ class HomeView extends Component<Props, State> {
 
     componentWillUnmount() {
         this.live = false;
+        this.headerTransition++;
+        this.headerCompletions = [];
         this.motionListener?.remove();
         // remove listeners
         if (this.navigationListener) {
@@ -208,12 +213,17 @@ class HomeView extends Component<Props, State> {
         });
     }
 
+    componentDidDisappear() {
+        this.cancelHeaderTransition();
+    }
+
     /*
         Handle events when something in CoreSettings has been changed
         Monitoring `discreetMode`, `developerMode`, `defaultNode` changes
      */
     onCoreSettingsUpdate = (coreSettings: CoreModel, changes: Partial<CoreModel>) => {
         const { discreetMode } = this.state;
+        if (has(changes, 'account') || has(changes, 'network')) this.cancelHeaderTransition();
 
         // default account changed
         if (has(changes, 'account')) {
@@ -424,6 +434,7 @@ class HomeView extends Component<Props, State> {
         const { timestamp } = this.props;
         const {
             account,
+            hideTopElements: headerHidden,
             discreetMode,
             isSpendable,
             experimentalUI,
@@ -451,6 +462,7 @@ class HomeView extends Component<Props, State> {
                 experimentalUI={experimentalUI}
                 account={account}
                 hideTopElements={this.hideTopElements}
+                headerHidden={headerHidden}
                 network={selectedNetwork}
                 discreetMode={discreetMode}
                 spendable={isSpendable}
@@ -466,22 +478,47 @@ class HomeView extends Component<Props, State> {
         this.reduceMotion = enabled;
     };
 
-    hideTopElements = (toggle: boolean) => {
-        // The settings overlay repeats the hide request on mount. Track the
-        // requested state so repeated calls and rapid reversals stay coherent.
-        if (!this.live || this.requestedHeaderHidden === toggle) return;
+    private cancelHeaderTransition = () => {
+        if (!this.headerTransitionActive) return;
+        this.headerTransition++;
+        this.headerTransitionActive = false;
+        this.headerCompletions = [];
+        this.requestedHeaderHidden = false;
+        if (this.live) this.setState({ hideTopElements: false });
+    };
+
+    hideTopElements = (toggle: boolean, onComplete?: () => void) => {
+        if (!this.live) return;
+        if (this.requestedHeaderHidden === toggle) {
+            if (onComplete) {
+                if (this.headerTransitionActive) this.headerCompletions.push(onComplete);
+                else onComplete();
+            }
+            return;
+        }
         this.requestedHeaderHidden = toggle;
-        if (!this.reduceMotion) {
+        const transition = ++this.headerTransition;
+        this.headerTransitionActive = true;
+        this.headerCompletions = onComplete ? [onComplete] : [];
+        const finish = () => {
+            if (!this.live || transition !== this.headerTransition || !this.headerTransitionActive) return;
+            this.headerTransitionActive = false;
+            const callbacks = this.headerCompletions;
+            this.headerCompletions = [];
+            callbacks.forEach(callback => callback());
+        };
+        const animate = !this.reduceMotion;
+        if (animate) {
             LayoutAnimation.configureNext({
-                duration: 160,
+                duration: 250,
                 update: { type: LayoutAnimation.Types.easeInEaseOut },
                 create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
                 delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-            });
+            }, finish, finish);
         }
         this.setState({
             hideTopElements: toggle,
-        });
+        }, () => { if (!animate) finish(); });
     };
 
     renderButtons = () => {

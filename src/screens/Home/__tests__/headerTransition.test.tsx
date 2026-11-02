@@ -48,11 +48,11 @@ it('animates both collapse and restore using one short native layout transition 
     act(() => home.hideTopElements(true));
     expect(home.state.hideTopElements).toBe(true);
     expect(LayoutAnimation.configureNext).toHaveBeenLastCalledWith({
-        duration: 160,
+        duration: 250,
         update: { type: LayoutAnimation.Types.easeInEaseOut },
         create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
         delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-    });
+    }, expect.any(Function), expect.any(Function));
     act(() => home.hideTopElements(false));
     expect(home.state.hideTopElements).toBe(false);
     expect(LayoutAnimation.configureNext).toHaveBeenCalledTimes(2);
@@ -97,4 +97,57 @@ it('removes its accessibility listener and ignores late overlay callbacks after 
     expect(remove).toHaveBeenCalledTimes(1);
     expect(update).not.toHaveBeenCalled();
     expect(LayoutAnimation.configureNext).not.toHaveBeenCalled();
+});
+
+const finishTransition = (index = jest.mocked(LayoutAnimation.configureNext).mock.calls.length - 1) => {
+    act(() => { jest.mocked(LayoutAnimation.configureNext).mock.calls[index][1]?.(); });
+};
+
+it('opens the sheet only once the native header transition finishes', async () => {
+    const home = await mount(); const open = jest.fn();
+    act(() => home.hideTopElements(true, open));
+    expect(open).not.toHaveBeenCalled();
+    finishTransition(); finishTransition();
+    expect(open).toHaveBeenCalledTimes(1);
+});
+
+it('waits for the existing restore transition before running an action from the closed sheet', async () => {
+    const home = await mount(); const action = jest.fn();
+    act(() => home.hideTopElements(true)); finishTransition();
+    act(() => home.hideTopElements(false));
+    act(() => home.hideTopElements(false, action));
+    expect(action).not.toHaveBeenCalled();
+    expect(LayoutAnimation.configureNext).toHaveBeenCalledTimes(2);
+    finishTransition(); expect(action).toHaveBeenCalledTimes(1);
+});
+
+it('cancels a pending open when reversed, leaving Home, or unmounting', async () => {
+    const home = await mount(); const open = jest.fn();
+    act(() => { home.hideTopElements(true, open); home.hideTopElements(false); });
+    finishTransition(0); expect(open).not.toHaveBeenCalled(); finishTransition();
+    act(() => home.hideTopElements(true, open));
+    act(() => home.componentDidDisappear());
+    finishTransition(); expect(open).not.toHaveBeenCalled();
+    expect(home.state.hideTopElements).toBe(false);
+    act(() => home.hideTopElements(true, open));
+    act(() => tree!.unmount()); tree = undefined;
+    finishTransition(); expect(open).not.toHaveBeenCalled();
+});
+
+it('completes after the state commit without waiting when Reduce Motion is enabled', async () => {
+    const home = await mount(); changed(true);
+    const open = jest.fn(() => expect(home.state.hideTopElements).toBe(true));
+    act(() => home.hideTopElements(true, open));
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(LayoutAnimation.configureNext).not.toHaveBeenCalled();
+});
+
+it('cancels a pending sheet open when the account or network changes', async () => {
+    const home = await mount(); const open = jest.fn();
+    jest.spyOn(home, 'updateAccountStatus').mockImplementation(() => {});
+    act(() => home.hideTopElements(true, open));
+    act(() => home.onCoreSettingsUpdate({ account: {}, network: {} } as any, { network: {} } as any));
+    finishTransition();
+    expect(open).not.toHaveBeenCalled();
+    expect(home.state.hideTopElements).toBe(false);
 });

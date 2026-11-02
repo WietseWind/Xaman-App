@@ -21,7 +21,7 @@ interface Props {
     onTokenAddPress: () => void;
     onReorderSavePress: () => void;
     onTitlePress: (selectedCategory?: ASSETS_CATEGORY) => void;
-    hideTopElements: (toggle: boolean) => void;
+    hideTopElements: (toggle: boolean, onComplete?: () => void) => void;
     filters?: FiltersType;
     visible: boolean;
     onFilterChange: (filters: FiltersType | undefined) => void;
@@ -34,6 +34,7 @@ interface Props {
 
 /* Component ==================================================================== */
 class ListHeader extends PureComponent<Props> {
+    private settingsOpening = false;
     onAddPress = () => {
         const { onTokenAddPress } = this.props;
 
@@ -59,6 +60,8 @@ class ListHeader extends PureComponent<Props> {
     };
 
     tokenListSettingsPress = () => {
+        if (this.settingsOpening) return;
+        this.settingsOpening = true;
         const {
             filters,
             visible,
@@ -69,21 +72,26 @@ class ListHeader extends PureComponent<Props> {
             hideTopElements,
         } = this.props;
 
-        hideTopElements(true);
-
-        Navigator.showOverlay<AssetListFilterProps>(AppScreens.Overlay.AssetListFilter, {
-            //
-            filters,
-            visible,
-            onFilterChange,
-            onReorderPress,
-            onTokenAddPress,
-            onReorderSavePress,
-            hideTopElements,
-            onAddTokenPress: () => { 
+        hideTopElements(true, () => {
+            Navigator.showOverlay<AssetListFilterProps>(AppScreens.Overlay.AssetListFilter, {
+                //
+                filters,
+                visible,
+                onFilterChange,
+                onReorderPress,
+                onTokenAddPress,
+                onReorderSavePress,
+                hideTopElements,
+                onAddTokenPress: onTokenAddPress,
+            }).then(shown => {
+                if (!shown) {
+                    this.settingsOpening = false;
+                    hideTopElements(false);
+                }
+            }).catch(() => {
+                this.settingsOpening = false;
                 hideTopElements(false);
-                this.onAddPress();
-            },
+            });
         });
     };
 

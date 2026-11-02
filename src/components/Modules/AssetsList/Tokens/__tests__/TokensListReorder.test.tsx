@@ -118,3 +118,17 @@ it('skips invalidated Realm tokens before extracting their keys', () => {
     expect(tree.root.findByType(ReorderableList).props.data).toHaveLength(3);
     expect(CoreRepository.getSettings).toHaveBeenCalled();
 });
+
+it('uses the parent header state so both layouts change in one native animation commit', () => {
+    const original = props();
+    act(() => { tree = renderer.create(React.createElement(TokensList, original)); });
+    const list = tree.getInstance() as TokensList; const complete = jest.fn();
+    expect(tree.root.findAllByType(ListHeader)).toHaveLength(1);
+    act(() => list.hideTopElements(true, complete));
+    expect(original.hideTopElements).toHaveBeenCalledWith(true, complete);
+    expect(tree.root.findAllByType(ListHeader)).toHaveLength(1);
+    act(() => tree.update(React.createElement(TokensList, { ...original, headerHidden: true })));
+    expect(tree.root.findAllByType(ListHeader)).toHaveLength(0);
+    act(() => tree.update(React.createElement(TokensList, { ...original, headerHidden: false })));
+    expect(tree.root.findAllByType(ListHeader)).toHaveLength(1);
+});

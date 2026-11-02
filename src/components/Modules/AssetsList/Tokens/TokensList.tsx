@@ -48,7 +48,8 @@ interface Props {
     onChangeCategoryPress: (selectedCategory?: ASSETS_CATEGORY) => void;
     network?: NetworkModel;
     addTokenPress?: () => void;
-    hideTopElements: (toggle: boolean) => void;
+    hideTopElements: (toggle: boolean, onComplete?: () => void) => void;
+    headerHidden?: boolean;
 }
 
 interface State {
@@ -59,7 +60,6 @@ interface State {
     dataSource: TrustLineModel[];
     filters?: FiltersType;
     reorderEnabled: boolean;
-    showHeader: boolean;
     accWorthEnabled: boolean;
     assetPricesInList: boolean;
     tokenPrices: {
@@ -106,7 +106,6 @@ class TokensList extends Component<Props, State> {
             reorderEnabled: false,
             // eslint-disable-next-line react/no-unused-state
             lineWorthLoading: true,
-            showHeader: true,
             accWorthEnabled: settings.accountWorthActive && accWorthContext,
             assetPricesInList: settings.showPerAssetWorth && accWorthContext,
             tokenPrices: {
@@ -176,13 +175,12 @@ class TokensList extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-        const { discreetMode, spendable, experimentalUI, network } = this.props;
+        const { discreetMode, spendable, experimentalUI, network, headerHidden } = this.props;
         const {
             dataSource,
             accountStateVersion,
             reorderEnabled,
             filters,
-            showHeader,
             accWorthEnabled,
             assetPricesInList,
             tokenPrices,
@@ -194,7 +192,7 @@ class TokensList extends Component<Props, State> {
                     !isEqual(nextState.tokenPrices, tokenPrices) ||
                     !isEqual(nextState.accWorthEnabled, accWorthEnabled) ||
                     !isEqual(nextState.assetPricesInList, assetPricesInList) ||
-                    !isEqual(nextState.showHeader, showHeader) ||
+                    nextProps.headerHidden !== headerHidden ||
                     !isEqual(nextProps.spendable, spendable) ||
                     !isEqual(nextProps.network, network) ||
                     !isEqual(nextProps.discreetMode, discreetMode) ||
@@ -589,16 +587,9 @@ class TokensList extends Component<Props, State> {
         return `token-${item.id}`;
     };
 
-    hideTopElements = (state: boolean) => {
+    hideTopElements = (state: boolean, onComplete?: () => void) => {
         const { hideTopElements } = this.props;
-
-        this.setState({
-            showHeader: !state,
-        }, () => {
-            if (hideTopElements) {
-                hideTopElements(state);
-            }
-        });
+        hideTopElements(state, onComplete);
     };
 
     updateTokenPrices = (prices: typeof this.state.tokenPrices) => {
@@ -624,18 +615,18 @@ class TokensList extends Component<Props, State> {
             discreetMode,
             experimentalUI,
             network,
+            headerHidden,
         } = this.props;
         const {
             dataSource,
             reorderEnabled,
             filters,
-            showHeader,
             accWorthEnabled,
         } = this.state;
 
         return (
             <View key={`tokenlist-${!!accWorthEnabled}`} testID="token-list-container" style={style}>
-                {showHeader && (
+                {!headerHidden && (
                     <ListHeader
                         reorderEnabled={reorderEnabled}
                         showTokenAddButton={spendable}
