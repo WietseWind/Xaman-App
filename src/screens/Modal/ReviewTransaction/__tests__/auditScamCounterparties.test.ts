@@ -24,7 +24,6 @@ describe('audit scam counterparties', () => {
                 RawTransactions: [wrapped ? { RawTransaction: entry } : entry],
             },
             'rSelf',
-            false,
             api,
         );
         expect(api.getAccountAdvisory).toHaveBeenCalledWith('rFlagged');
@@ -41,7 +40,6 @@ describe('audit scam counterparties', () => {
                 RawTransactions: [{ TransactionType: 'CheckCash', CheckID: 'CHECK' }],
             },
             'rSelf',
-            false,
             api,
         );
         expect(api.getLedgerEntry).toHaveBeenCalledWith('CHECK');
@@ -60,7 +58,6 @@ describe('audit scam counterparties', () => {
                 NFTokenBuyOffer: 'BUY',
             },
             'rSelf',
-            false,
             api,
         );
         expect(api.getLedgerEntry).toHaveBeenCalledWith('SELL');
@@ -75,7 +72,7 @@ it('continues checking the outer Batch Account when the selected signer is an in
     const result = await resolveScamSignRequest({
         TransactionType: 'Batch', Account: 'rFlagged',
         RawTransactions: [{ TransactionType: 'Payment', Account: 'rSelf', Destination: 'rClean' }],
-    }, 'rSelf', false, api);
+    }, 'rSelf', api);
     expect(api.getAccountAdvisory).toHaveBeenCalledWith('rFlagged');
     expect(result.isScam).toBe(true);
 });

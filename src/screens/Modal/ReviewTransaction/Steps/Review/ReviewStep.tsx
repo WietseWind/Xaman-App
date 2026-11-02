@@ -137,7 +137,7 @@ class ReviewStep extends Component<Props, State> {
     });
 
     detectScamAndCancel = async () => {
-        const { transaction, source, payload } = this.context;
+        const { transaction, source } = this.context;
         const generation = ++this.scamGeneration;
 
         if (!transaction) {
@@ -156,7 +156,6 @@ class ReviewStep extends Component<Props, State> {
         const { isScam, cancelCraft } = await resolveScamSignRequest(
             transaction,
             source?.address,
-            !!payload?.risk?.__warn_user,
             this.scamLookup(),
         );
 
@@ -168,6 +167,31 @@ class ReviewStep extends Component<Props, State> {
             isScamCounterpart: isScam,
             cancelCraft,
             scamCheckPending: false,
+        });
+    };
+
+    onDangerTypeAcceptSwipe = () => {
+        const { onAccept } = this.context;
+
+        Navigator.showAlertModal({
+            type: 'warning',
+            title: Localize.t('global.alertDanger'),
+            text: Localize.t('payload.dangerTypeConfirm'),
+            buttons: SCAM_ACCEPT_CONFIRM_BUTTONS.map((button) =>
+                button.action === 'continue'
+                    ? {
+                          testID: 'danger-type-accept-continue-button',
+                          text: Localize.t('global.continue'),
+                          onPress: onAccept,
+                          light: button.light,
+                      }
+                    : {
+                          testID: 'danger-type-accept-cancel-button',
+                          text: Localize.t('global.cancel'),
+                          type: 'dismiss' as const,
+                          light: button.light,
+                      },
+            ),
         });
     };
 
@@ -214,7 +238,6 @@ class ReviewStep extends Component<Props, State> {
             const { cancelCraft } = await resolveScamSignRequest(
                 transaction,
                 address,
-                !!payload?.risk?.__warn_user,
                 this.scamLookup(),
             );
             if (!current() || !cancelCraft) return;
@@ -245,10 +268,11 @@ class ReviewStep extends Component<Props, State> {
     };
 
     getSwipeButtonColor = (): string | undefined => {
-        const { coreSettings, transaction } = this.context;
+        const { coreSettings, transaction, payload } = this.context;
         const { isScamCounterpart } = this.state;
+        const dangerousType = !!payload?.risk?.__warn_user;
 
-        if (isScamCounterpart || transactionHasCriticalDelegation(transaction)) {
+        if (isScamCounterpart || dangerousType || transactionHasCriticalDelegation(transaction)) {
             return StyleService.value('$red');
         }
 
@@ -655,6 +679,29 @@ class ReviewStep extends Component<Props, State> {
                                                         <Spacer size={15} />
                                                     </>
                                                 )}
+                                                {!isScamCounterpart && !!payload?.risk?.__warn_user && (
+                                                    <>
+                                                        <View testID="danger-type-warning">
+                                                            <InfoMessage type="error">
+                                                                <Text style={[
+                                                                    AppStyles.subtext,
+                                                                    AppStyles.bold,
+                                                                    AppStyles.colorRed,
+                                                                ]}>
+                                                                    {Localize.t('payload.dangerTypeTitle')}
+                                                                </Text>
+                                                                <Text style={[
+                                                                    AppStyles.marginTopSml,
+                                                                    AppStyles.subtext,
+                                                                    AppStyles.colorRed,
+                                                                ]}>
+                                                                    {Localize.t('payload.dangerTypeBody')}
+                                                                </Text>
+                                                            </InfoMessage>
+                                                        </View>
+                                                        <Spacer size={15} />
+                                                    </>
+                                                )}
                                                 {canSendFee && isScamCounterpart && cancelCraft && (
                                                     <>
                                                         <Button
@@ -672,7 +719,11 @@ class ReviewStep extends Component<Props, State> {
                                                         isLoading={isLoading}
                                                         isDisabled={!canSlideToAccept(!!isReady, scamCheckPending)}
                                                         onSwipeSuccess={
-                                                            isScamCounterpart ? this.onScamAcceptSwipe : onAccept
+                                                            isScamCounterpart
+                                                                ? this.onScamAcceptSwipe
+                                                                : payload?.risk?.__warn_user
+                                                                    ? this.onDangerTypeAcceptSwipe
+                                                                    : onAccept
                                                         }
                                                         label={Localize.t('global.slideToAccept')}
                                                         accessibilityLabel={Localize.t('global.accept')}
