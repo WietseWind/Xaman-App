@@ -195,7 +195,6 @@ describe('scamRejectAction', () => {
             const result = await resolveScamSignRequest(
                 acceptTx,
                 LIVE_SCAM_OFFER.Destination,
-                false,
                 lookupFor({
                     advisoryByAddress: { [LIVE_SCAM_OFFER.Owner]: 'CONFIRMED' },
                 }),
@@ -218,7 +217,6 @@ describe('scamRejectAction', () => {
                     Account: UNRELATED_ACCOUNT,
                 },
                 UNRELATED_ACCOUNT,
-                false,
                 lookupFor({
                     advisoryByAddress: { [LIVE_SCAM_OFFER.Owner]: 'CONFIRMED' },
                 }),
@@ -236,7 +234,6 @@ describe('scamRejectAction', () => {
                     Destination: 'rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY',
                 },
                 UNRELATED_ACCOUNT,
-                false,
                 lookupFor({
                     advisoryByAddress: { rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY: 'NONE' },
                 }),
@@ -247,7 +244,6 @@ describe('scamRejectAction', () => {
             const accept = await resolveScamSignRequest(
                 acceptTx,
                 LIVE_SCAM_OFFER.Destination,
-                false,
                 lookupFor({
                     advisoryByAddress: { [LIVE_SCAM_OFFER.Owner]: 'NONE' },
                     nftImage: 'https://cdn.xaman.app/normal.png',
@@ -257,11 +253,24 @@ describe('scamRejectAction', () => {
             expect(accept.cancelCraft).toBeUndefined();
         });
 
+        it('does not call a SetRegularKey on the signer a scam when nothing is reported', async () => {
+            const api = lookupFor({});
+            const result = await resolveScamSignRequest(
+                {
+                    Type: TransactionTypes.SetRegularKey,
+                    Account: 'rSelf',
+                },
+                'rSelf',
+                api,
+            );
+
+            expect(result.isScam).toBe(false);
+        });
+
         it('also flags via a scam NFT image URL from backend details', async () => {
             const result = await resolveScamSignRequest(
                 acceptTx,
                 LIVE_SCAM_OFFER.Destination,
-                false,
                 lookupFor({
                     nftImage: 'https://cdn.xaman.app/scam-nft.png',
                 }),
@@ -314,19 +323,19 @@ describe('scamRejectAction', () => {
 
         it('does not offer cancel when CancelAfter is missing or still in the future', async () => {
             const missing = escrowLookup();
-            const missingResult = await resolveScamSignRequest(finish, 'rDest', false, missing.lookup);
+            const missingResult = await resolveScamSignRequest(finish, 'rDest', missing.lookup);
             expect(missing.calls).toEqual([{ escrow: { owner: 'rOwner', seq: 7 } }]);
             expect(missingResult.isScam).toBe(true);
             expect(missingResult.cancelCraft).toBeUndefined();
 
             const future = escrowLookup(FUTURE);
-            const futureResult = await resolveScamSignRequest(finish, 'rDest', false, future.lookup);
+            const futureResult = await resolveScamSignRequest(finish, 'rDest', future.lookup);
             expect(futureResult.cancelCraft).toBeUndefined();
         });
 
         it('offers cancel once CancelAfter has passed', async () => {
             const past = escrowLookup(PAST);
-            const result = await resolveScamSignRequest(finish, 'rAnyone', false, past.lookup);
+            const result = await resolveScamSignRequest(finish, 'rAnyone', past.lookup);
             expect(result.isScam).toBe(true);
             expect(result.cancelCraft?.labelKey).toBe('cancelEscrow');
         });
@@ -345,7 +354,6 @@ describe('scamRejectAction', () => {
             const result = await resolveScamSignRequest(
                 cash,
                 'rDest',
-                false,
                 lookupFor({
                     advisoryByAddress: { rSender: 'CONFIRMED' },
                     getLedgerEntry: async (spec) => {
@@ -372,7 +380,6 @@ describe('scamRejectAction', () => {
             const result = await resolveScamSignRequest(
                 { ...cash, Account: 'rStranger' },
                 'rStranger',
-                false,
                 lookupFor({
                     advisoryByAddress: { rSender: 'CONFIRMED' },
                     getLedgerEntry: async () => ({

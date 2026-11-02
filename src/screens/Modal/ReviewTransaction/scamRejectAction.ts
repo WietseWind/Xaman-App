@@ -168,17 +168,17 @@ export const craftCancelFromSignRequest = (transaction: any): CancelCraft | unde
 export const resolveScamSignRequest = async (
     transaction: any,
     sourceAddress: string | undefined,
-    payloadRiskWarn: boolean,
     lookup: ScamSignRequestLookup,
     definitions?: XrplDefinitions,
 ): Promise<{ isScam: boolean; cancelCraft?: CancelCraft }> => {
     // Batch inners are decoded by the model; scanned raw JSON can still be wrapped.
+    // A payload risk warning for a sensitive transaction type is not a scam report.
     const type = transaction?.Type || transaction?.TransactionType;
     let innerIsScam = false;
     if (type === TransactionTypes.Batch) {
         const results = await Promise.all(
             (transaction.RawTransactions || []).map((entry: any) =>
-                resolveScamSignRequest(entry.RawTransaction || entry, sourceAddress, false, lookup,
+                resolveScamSignRequest(entry.RawTransaction || entry, sourceAddress, lookup,
                     transaction.SigningDefinitions || definitions),
             ),
         );
@@ -186,7 +186,7 @@ export const resolveScamSignRequest = async (
     }
     let cancelCraft = craftCancelFromSignRequest(transaction);
     let canCancel = !!cancelCraft;
-    let isScam = !!payloadRiskWarn || innerIsScam;
+    let isScam = innerIsScam;
     const offerNodes: LedgerOfferNode[] = [];
     const extraCounterparties: string[] = [];
 
