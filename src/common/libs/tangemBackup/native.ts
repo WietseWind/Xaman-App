@@ -12,6 +12,7 @@ import { AccessLevels, AccountTypes, EncryptionLevels } from '@store/types';
 import { DefaultDerivationPaths, GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
 import { startTangemOfflineSession } from '@common/utils/tangemSession';
 import { waitForTangemIdentifyCleanup } from '@common/utils/tangemIdentifyNavigation';
+import { Navigator } from '@common/helpers/navigator';
 import { NormalizeFeeDataSet, PrepareTxForHookFee } from '@common/utils/fee';
 import {
     backupCardSerial,
@@ -91,6 +92,37 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
         },
         stop: RNTangemSdk.stopSession,
         scan: () => RNTangemSdk.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } }),
+        confirmImport: (_scanned, empty) =>
+            new Promise<boolean>((resolve, reject) => {
+                const finish = (confirmed: boolean) => resolve(confirmed && current());
+                Navigator.showAlertModal({
+                    testID: 'backup-import-alert',
+                    type: empty ? 'info' : 'warning',
+                    title: Localize.t(empty ? 'tangemImportMsgs.newTitle' : 'tangemImportMsgs.existingTitle'),
+                    text: empty
+                        ? Localize.t('tangemImportMsgs.newDescriptionAfter')
+                        : `${Localize.t('tangemImportMsgs.existingDescription')}\n\n${Localize.t('tangemImportMsgs.existingDescriptionAfter')}`,
+                    buttons: [
+                        {
+                            text: Localize.t('global.cancel'),
+                            testID: 'backup-import-cancel',
+                            onPress: () => finish(false),
+                            type: 'dismiss',
+                            light: true,
+                        },
+                        {
+                            text: Localize.t('global.continue'),
+                            testID: 'backup-import-continue',
+                            onPress: () => finish(true),
+                            type: 'continue',
+                        },
+                    ],
+                    // AlertOverlay calls this immediately before its button callback.
+                    onDismissed: () => {
+                        Promise.resolve().then(() => finish(false));
+                    },
+                }).catch(reject);
+            }),
         create: async (scanned) => {
             check();
             const supported = scanned.supportedCurves || [];

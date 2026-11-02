@@ -118,11 +118,9 @@ export default StyleService.create({
         marginTop: 12,
     },
     resultGreen: { backgroundColor: tone('#EAF6EF', '#1B352C') },
-    resultOrange: { backgroundColor: tone('#FCF2E4', '#3A2E22') },
-    resultUnknown: { backgroundColor: tone('#FCEEF0', '#3D252E') },
+    resultRed: { backgroundColor: tone('#FCEEF0', '#3D252E') },
     iconGreen: { tintColor: tone('#15754E', '#81D5AF') },
-    iconOrange: { tintColor: tone('#8A591B', '#EDC180') },
-    unknownIcon: { tintColor: tone('#B13B47', '#FFA7B1') },
+    iconRed: { tintColor: tone('#B13B47', '#FFA7B1') },
     swapIcon: { transform: [{ rotate: '90deg' }] },
     footer: {
         width: '100%',

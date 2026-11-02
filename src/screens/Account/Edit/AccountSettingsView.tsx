@@ -86,7 +86,7 @@ const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetu
             </View>
             <Button testID="tangem-backup-button"
                 label={Localize.t(key ? 'tangemBackup.replace' : 'tangemBackup.setUp')}
-                onPress={onSetup} roundedMini nonBlock allowFontScaling light={!!key}
+                onPress={onSetup} roundedMini nonBlock allowFontScaling
                 style={styles.identifyButton} />
         </View>
     </View>;

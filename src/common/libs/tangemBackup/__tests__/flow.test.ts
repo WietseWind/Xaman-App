@@ -63,6 +63,7 @@ const setup = (regularKey?: string) => {
         start: jest.fn(async () => undefined),
         stop: jest.fn(async () => undefined),
         scan: jest.fn(async () => sourceCard),
+        confirmImport: jest.fn(async () => true),
         create: jest.fn(async () => backupCard),
         sign: jest.fn(async () => ({ id: 'HASH', signedTransaction: 'BLOB' })),
         submit: jest.fn(async () => ({})),
@@ -95,6 +96,89 @@ const setup = (regularKey?: string) => {
 };
 
 describe('Tangem back-up card security and lifecycle', () => {
+    it('finishes scanning before the empty-card prompt and creates in a fresh NFC operation', async () => {
+        const { flow, deps } = setup();
+        await flow.start();
+        await flow.scanSource();
+        const empty = { ...backupCard, wallets: [] };
+        const events: string[] = [];
+        deps.scan = jest.fn(async () => {
+            events.push('scan');
+            return empty;
+        });
+        deps.start = jest.fn(async () => {
+            events.push('start');
+        });
+        deps.stop = jest.fn(async () => {
+            events.push('stop');
+        });
+        deps.confirmImport = jest.fn(async (card, isEmpty) => {
+            expect(card).toBe(empty);
+            expect(isEmpty).toBe(true);
+            events.push('confirm');
+            return true;
+        });
+        deps.create = jest.fn(async () => {
+            events.push('create');
+            return backupCard;
+        });
+        await flow.scanBackup();
+        expect(events).toEqual(['start', 'scan', 'stop', 'confirm', 'start', 'create', 'stop']);
+        expect(flow.state).toMatchObject({ step: 'ready', backup: { createdWallet: true, newlyAdded: true } });
+        expect(deps.save).toHaveBeenCalledTimes(1);
+    });
+    it('lets an empty-card import be declined without a false scan-cancelled error or wallet creation', async () => {
+        const { flow, deps } = setup();
+        await flow.start();
+        await flow.scanSource();
+        deps.scan = jest.fn(async () => ({ ...backupCard, wallets: [] }));
+        deps.confirmImport = jest.fn(async () => false);
+        await flow.scanBackup();
+        expect(flow.state).toMatchObject({ step: 'backup', busy: false, error: undefined });
+        expect(deps.create).not.toHaveBeenCalled();
+        expect(deps.save).not.toHaveBeenCalled();
+    });
+    it('imports a populated card missing from Xaman after confirmation without creating another wallet', async () => {
+        const { flow, deps, ready } = setup();
+        await ready();
+        expect(deps.confirmImport).toHaveBeenCalledWith(backupCard, false);
+        expect(deps.create).not.toHaveBeenCalled();
+        expect(deps.save).toHaveBeenCalledTimes(1);
+        expect(flow.state.step).toBe('ready');
+    });
+    it('does not create or import after the context changes while the import prompt is open', async () => {
+        const { flow, deps, invalidate } = setup();
+        await flow.start();
+        await flow.scanSource();
+        const prompt = defer();
+        deps.scan = jest.fn(async () => ({ ...backupCard, wallets: [] }));
+        deps.confirmImport = jest.fn(() => prompt.promise);
+        const operation = flow.scanBackup();
+        for (let i = 0; i < 12; i++) await Promise.resolve();
+        expect(deps.confirmImport).toHaveBeenCalledTimes(1);
+        invalidate();
+        prompt.resolve(true);
+        await operation;
+        expect(flow.state.error).toBe('contextChanged');
+        expect(deps.create).not.toHaveBeenCalled();
+        expect(deps.save).not.toHaveBeenCalled();
+    });
+    it('rescans a card with a wallet after cancelled creation without creating it again', async () => {
+        const { flow, deps } = setup();
+        await flow.start();
+        await flow.scanSource();
+        deps.scan = jest.fn(async () => ({ ...backupCard, wallets: [] }));
+        deps.create = jest.fn(async () => {
+            throw Object.assign(new Error('The user cancelled the operation'), { code: '50002' });
+        });
+        await flow.scanBackup();
+        expect(flow.state.error).toBe('cancelled');
+        deps.scan = jest.fn(async () => backupCard);
+        await flow.scanBackup();
+        expect(flow.state).toMatchObject({ step: 'ready', error: undefined });
+        expect(deps.create).toHaveBeenCalledTimes(1);
+        expect(deps.save).toHaveBeenCalledTimes(1);
+    });
     it('matches the source serial only, without deriving an address or signing', async () => {
         const { flow, deps } = setup();
         await flow.start();
@@ -141,12 +225,12 @@ describe('Tangem back-up card security and lifecycle', () => {
         expect(deps.create).not.toHaveBeenCalled();
     });
     it('rejects software accounts and changed imported cards', () => {
-        expect(() =>
-            inspectBackupCard(backupCard, source, [{ ...account, type: AccountTypes.Regular }]),
-        ).toThrow('softwareAccount');
-        expect(() =>
-            inspectBackupCard(backupCard, source, [{ ...account, address: source.address }]),
-        ).toThrow('cardChanged');
+        expect(() => inspectBackupCard(backupCard, source, [{ ...account, type: AccountTypes.Regular }])).toThrow(
+            'softwareAccount',
+        );
+        expect(() => inspectBackupCard(backupCard, source, [{ ...account, address: source.address }])).toThrow(
+            'cardChanged',
+        );
     });
     it('rejects a changed serial returned by wallet creation', async () => {
         const { flow, deps } = setup();

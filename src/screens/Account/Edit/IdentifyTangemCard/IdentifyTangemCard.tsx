@@ -403,8 +403,8 @@ class IdentifyTangemCardView extends Component<Props, State> {
         if (outcome.outcome === 'known') {
             return (
                 <>
-                    <View style={[styles.resultSymbol, styles.resultOrange]}>
-                        <Icon name="IconV2Swap" size={28} style={[styles.iconOrange, styles.swapIcon]} />
+                    <View style={[styles.resultSymbol, styles.resultRed]}>
+                        <Icon name="IconV2Swap" size={28} style={[styles.iconRed, styles.swapIcon]} />
                     </View>
                     <Spacer size={AppSizes.paddingSml} />
                     <Text style={styles.title} accessibilityRole="header">
@@ -422,8 +422,8 @@ class IdentifyTangemCardView extends Component<Props, State> {
 
         return (
             <>
-                <View style={[styles.resultSymbol, styles.resultUnknown]}>
-                    <Icon name="IconScanCard" size={32} style={styles.unknownIcon} />
+                <View style={[styles.resultSymbol, styles.resultRed]}>
+                    <Icon name="IconScanCard" size={32} style={styles.iconRed} />
                 </View>
                 <Spacer size={AppSizes.paddingSml} />
                 <Text style={styles.title} accessibilityRole="header">

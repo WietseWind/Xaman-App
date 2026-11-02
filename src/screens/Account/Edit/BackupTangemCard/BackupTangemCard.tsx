@@ -4,16 +4,17 @@ import {
     Dimensions,
     Image,
     LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     Platform,
     SafeAreaView,
     ScrollView,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import { get } from 'lodash';
 import { Navigation } from 'react-native-navigation';
-import BigNumber from 'bignumber.js';
-
 import NetworkService from '@services/NetworkService';
 import AppService, { AppStateStatus } from '@services/AppService';
 import NavigationService from '@services/NavigationService';
@@ -31,10 +32,12 @@ import {
 } from '@common/utils/tangemBackup';
 import { registerTangemIdentifyExit } from '@common/utils/tangemIdentifyNavigation';
 import { accountListLabel } from '@common/helpers/accountListLabel';
+import { Navigator } from '@common/helpers/navigator';
 import { Button } from '@components/General/Button';
 import { Footer } from '@components/General/Footer';
 import { Header } from '@components/General/Header';
 import { Icon } from '@components/General/Icon';
+import { LoadingIndicator } from '@components/General/LoadingIndicator';
 import { Spacer } from '@components/General/Spacer';
 import Localize from '@locale';
 import AppSizes from '@theme/sizes';
@@ -46,6 +49,7 @@ export interface Props {
 }
 interface State extends BackupState {
     androidBottomInset: number;
+    moreBelow: boolean;
 }
 
 const errorKey = (error: TangemBackupErrorCode) => {
@@ -75,8 +79,10 @@ class BackupTangemCardView extends Component<Props, State> {
     private statusChecks = 0;
     private disposers: (() => void)[] = [];
     readonly flow: TangemBackupFlow;
-    private readonly asset = NetworkService.getNativeAsset();
-    private readonly networkName = NetworkService.getNetwork().name;
+    private readonly scroll = React.createRef<ScrollView>();
+    private viewportHeight = 0;
+    private contentHeight = 0;
+    private scrollOffset = 0;
 
     constructor(props: Props) {
         super(props);
@@ -92,7 +98,7 @@ class BackupTangemCardView extends Component<Props, State> {
                 if (this.mounted && !this.exiting) this.setState(state);
             },
         );
-        this.state = { ...this.flow.state, androidBottomInset: 0 };
+        this.state = { ...this.flow.state, androidBottomInset: 0, moreBelow: false };
     }
     componentDidMount() {
         this.mounted = true;
@@ -123,8 +129,16 @@ class BackupTangemCardView extends Component<Props, State> {
         );
     }
     componentDidUpdate(_props: Props, previous: State) {
-        const { step, busy } = this.state;
+        const { step, busy, error } = this.state;
+        if (previous.step !== step) {
+            this.scrollOffset = 0;
+            this.scroll.current?.scrollTo({ y: 0, animated: false });
+            this.updateOverflow();
+        }
         if (previous.step !== 'checking' && step === 'checking') this.statusChecks = 0;
+        if (previous.busy && !busy && error && !this.isConfirming() && !this.exiting) {
+            this.showStepError();
+        }
         if (step !== 'checking' || busy || this.exiting) {
             if (this.statusTimer) clearTimeout(this.statusTimer);
             this.statusTimer = undefined;
@@ -167,9 +181,7 @@ class BackupTangemCardView extends Component<Props, State> {
         return this.exitPromise;
     };
     leave = () => {
-        this.requestExit().catch((error) =>
-            LoggerService.recordError('Unable to close Tangem back-up', error),
-        );
+        this.requestExit().catch((error) => LoggerService.recordError('Unable to close Tangem back-up', error));
     };
     onLayout = ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
         if (Platform.OS !== 'android') return;
@@ -178,26 +190,82 @@ class BackupTangemCardView extends Component<Props, State> {
         const { androidBottomInset } = this.state;
         if (bottom !== androidBottomInset) this.setState({ androidBottomInset: bottom });
     };
+    updateOverflow = () => {
+        const moreBelow = this.contentHeight - this.viewportHeight - this.scrollOffset > 8;
+        const { moreBelow: previous } = this.state;
+        if (this.mounted && moreBelow !== previous) this.setState({ moreBelow });
+    };
+    onScrollLayout = ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
+        this.viewportHeight = layout.height;
+        this.updateOverflow();
+    };
+    onContentSizeChange = (_width: number, height: number) => {
+        this.contentHeight = height;
+        this.updateOverflow();
+    };
+    onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        this.scrollOffset = nativeEvent.contentOffset.y;
+        this.updateOverflow();
+    };
+    showMore = () => {
+        this.scroll.current?.scrollTo({
+            y: Math.min(this.contentHeight - this.viewportHeight, this.scrollOffset + this.viewportHeight * 0.75),
+            animated: true,
+        });
+    };
+    isConfirming = () => {
+        const { step, busy, error } = this.state;
+        return (
+            step === 'checking' &&
+            (busy || this.statusChecks < 30) &&
+            !['contextChanged', 'accountChanged', 'masterDisabled'].includes(error || '')
+        );
+    };
+    retryConfirmation = () => {
+        this.statusChecks = 0;
+        this.flow.checkStatus();
+    };
+    showStepError = () => {
+        const { error, scannedSerial } = this.state;
+        if (!error) return;
+        const message = Localize.t(`tangemBackup.${errorKey(error)}`);
+        const warning = ['cancelled', 'feeChanged'].includes(error);
+        Navigator.showAlertModal({
+            testID: 'backup-error-alert',
+            type: warning ? 'warning' : 'error',
+            title: Localize.t(
+                error === 'wrongSource' ? 'account.tangemDifferentCard' : warning ? 'global.warning' : 'global.error',
+            ),
+            text:
+                error === 'wrongSource' && scannedSerial
+                    ? `${message}\n\n${Localize.t('account.cardId')}: ${backupCardSerial(this.flow.source.card)}\n${Localize.t('account.tangemScannedAccount')}: ${scannedSerial}`
+                    : message,
+            buttons: [{ text: Localize.t('global.ok'), testID: 'backup-error-ok' }],
+        }).catch((failure) => LoggerService.recordError('Unable to show Tangem back-up alert', failure));
+    };
     renderCard = (account: TangemBackupAccount, heading: string, serial?: string, chip?: string) => (
-        <View style={styles.accountSection}>
+        <View
+            testID={account.address === this.flow.source.address ? 'backup-source-card' : 'backup-destination-card'}
+            style={styles.accountSection}
+        >
             <Text style={styles.sectionLabel}>{heading}</Text>
-            <Spacer size={8} />
-            <View style={styles.accountCard}>
-                {!!chip && (
-                    <Text
-                        style={[styles.chip, chip === Localize.t('tangemBackup.newCard') && styles.newChip]}
-                    >
-                        {chip}
-                    </Text>
-                )}
-                <Text style={styles.accountName}>{accountListLabel(account)}</Text>
+            <Spacer size={6} />
+            <View style={[styles.accountCard, styles.compactCard]}>
+                <View style={styles.cardHeading}>
+                    <Text style={[styles.accountName, styles.cardName]}>{accountListLabel(account)}</Text>
+                    {!!chip && (
+                        <Text style={[styles.chip, chip === Localize.t('tangemBackup.newCard') && styles.newChip]}>
+                            {chip}
+                        </Text>
+                    )}
+                </View>
                 {!!account.address && (
                     <Text selectable style={styles.address}>
                         {account.address}
                     </Text>
                 )}
                 {!!serial && (
-                    <View style={styles.serialSection}>
+                    <View style={[styles.serialSection, styles.compactSerial]}>
                         <Text style={styles.serialLabel}>{Localize.t('account.cardId')}</Text>
                         <Text selectable style={styles.serial}>
                             {serial}
@@ -210,12 +278,13 @@ class BackupTangemCardView extends Component<Props, State> {
     renderArt = () => {
         const { step } = this.state;
         return (
-            <View style={styles.artwork} accessible={false}>
+            <View style={[styles.artwork, step !== 'intro' && styles.smallArtwork]} accessible={false}>
                 <Image
                     source={StyleService.getImage('ImageIdentifyTangem')}
                     resizeMode="contain"
                     style={[
                         styles.blueCard,
+                        step !== 'intro' && styles.smallBlueCard,
                         step === 'source' && styles.front,
                         ['backup', 'ready'].includes(step) && styles.faded,
                     ]}
@@ -223,13 +292,17 @@ class BackupTangemCardView extends Component<Props, State> {
                 <Image
                     source={StyleService.getImage('ImageBackupTangem')}
                     resizeMode="contain"
-                    style={[styles.goldCard, step === 'source' && styles.faded]}
+                    style={[
+                        styles.goldCard,
+                        step !== 'intro' && styles.smallGoldCard,
+                        step === 'source' && styles.faded,
+                    ]}
                 />
             </View>
         );
     };
     renderBody = () => {
-        const { step, backup, sourceVerified, transaction, error, scannedSerial } = this.state;
+        const { step, backup, sourceVerified } = this.state;
         const source = { type: 'Tangem', address: this.flow.source.address, label: this.flow.source.label };
         const titleKey = {
             intro: 'introTitle',
@@ -267,30 +340,18 @@ class BackupTangemCardView extends Component<Props, State> {
                 ) : !['review', 'checking'].includes(step) ? (
                     this.renderArt()
                 ) : null}
-                <Spacer size={16} />
-                <Text accessibilityRole="header" style={styles.title}>
+                <Spacer size={8} />
+                <Text
+                    testID="backup-step-title"
+                    accessibilityRole="header"
+                    style={[styles.title, step !== 'intro' && styles.compactTitle]}
+                >
                     {Localize.t(`tangemBackup.${titleKey}`)}
                 </Text>
-                <Spacer size={8} />
+                <Spacer size={6} />
                 <Text style={styles.explain}>{Localize.t(`tangemBackup.${bodyKey}`)}</Text>
-                {step === 'intro' && (
-                    <Text style={styles.instruction}>{Localize.t('tangemBackup.steps')}</Text>
-                )}
-                {!!error && (
-                    <View
-                        testID="backup-error"
-                        accessibilityLiveRegion="polite"
-                        style={[styles.error, error === 'sameCard' && styles.redError]}
-                    >
-                        <Text style={styles.errorText}>{Localize.t(`tangemBackup.${errorKey(error)}`)}</Text>
-                        {error === 'wrongSource' && !!scannedSerial && (
-                            <Text selectable style={styles.serial}>
-                                {Localize.t('account.tangemScannedAccount')}: {scannedSerial}
-                            </Text>
-                        )}
-                    </View>
-                )}
-                <Spacer size={20} />
+                {step === 'intro' && <Text style={styles.instruction}>{Localize.t('tangemBackup.steps')}</Text>}
+                <Spacer size={12} />
                 {this.renderCard(
                     source,
                     Localize.t('tangemBackup.sourceLabel'),
@@ -308,25 +369,12 @@ class BackupTangemCardView extends Component<Props, State> {
                         )}
                     </>
                 )}
-                {transaction && ['review', 'checking'].includes(step) && (
-                    <View style={styles.gap}>
-                        <View style={styles.fee}>
-                            <Text style={styles.feeLabel}>{Localize.t('global.network')}</Text>
-                            <Text style={styles.feeValue}>{this.networkName}</Text>
-                        </View>
-                        <View style={styles.fee}>
-                            <Text style={styles.feeLabel}>{Localize.t('events.transactionType')}</Text>
-                            <Text style={styles.feeValue}>SetRegularKey</Text>
-                        </View>
-                    </View>
-                )}
             </>
         );
     };
     renderFooter = () => {
-        const { step, busy, error, transaction } = this.state;
-        const terminal =
-            error === 'contextChanged' || error === 'accountChanged' || error === 'masterDisabled';
+        const { step, busy, error } = this.state;
+        const terminal = error === 'contextChanged' || error === 'accountChanged' || error === 'masterDisabled';
         const label =
             step === 'intro'
                 ? Localize.t('global.start')
@@ -335,7 +383,7 @@ class BackupTangemCardView extends Component<Props, State> {
                   : step === 'ready'
                     ? Localize.t('global.continue')
                     : step === 'review'
-                      ? `${Localize.t('global.signWith')} ${this.flow.source.label || Localize.t('tangemBackup.sourceLabel')}`
+                      ? Localize.t('global.confirm')
                       : step === 'checking'
                         ? Localize.t('global.tryAgain')
                         : Localize.t('global.done');
@@ -345,36 +393,28 @@ class BackupTangemCardView extends Component<Props, State> {
             backup: this.flow.scanBackup,
             ready: this.flow.review,
             review: this.flow.sign,
-            checking: this.flow.checkStatus,
+            checking: this.retryConfirmation,
             done: this.leave,
         }[step];
         return (
             <>
-                {transaction && ['review', 'checking'].includes(step) && (
-                    <View testID="backup-reviewed-fee" style={styles.footerFee}>
-                        <Text style={styles.feeLabel}>
-                            {Localize.t('global.fee')} · {this.networkName}
-                        </Text>
-                        <Text style={styles.feeValue}>
-                            {Localize.formatNumber(
-                                new BigNumber(transaction.Fee).dividedBy(1e6).toFixed(),
-                                6,
-                                false,
-                            )}{' '}
-                            {this.asset}
-                        </Text>
+                {this.isConfirming() ? (
+                    <View testID="backup-confirming" accessibilityLiveRegion="polite" style={styles.confirming}>
+                        <LoadingIndicator />
+                        <Text style={styles.confirmingText}>{Localize.t('tangemBackup.checkingTitle')}</Text>
                     </View>
+                ) : (
+                    <Button
+                        testID="backup-next"
+                        label={terminal ? Localize.t('global.close') : label}
+                        onPress={terminal ? this.leave : action}
+                        isLoading={busy}
+                        isDisabled={busy}
+                        style={styles.button}
+                        textStyle={styles.primaryButtonText}
+                        loadingIndicatorStyle="light"
+                    />
                 )}
-                <Button
-                    testID="backup-next"
-                    label={terminal ? Localize.t('global.close') : label}
-                    onPress={terminal ? this.leave : action}
-                    isLoading={busy}
-                    isDisabled={busy}
-                    style={styles.button}
-                    textStyle={styles.primaryButtonText}
-                    loadingIndicatorStyle="light"
-                />
                 {step !== 'done' && (
                     <>
                         <Spacer size={4} />
@@ -387,10 +427,8 @@ class BackupTangemCardView extends Component<Props, State> {
                                       ? 'global.back'
                                       : 'global.close',
                             )}
-                            onPress={
-                                ['ready', 'review'].includes(step) && !terminal ? this.flow.back : this.leave
-                            }
-                            isDisabled={busy}
+                            onPress={['ready', 'review'].includes(step) && !terminal ? this.flow.back : this.leave}
+                            isDisabled={busy && step !== 'checking'}
                             transparent
                             style={[styles.button, styles.secondaryButton]}
                             textStyle={styles.secondaryButtonText}
@@ -401,7 +439,7 @@ class BackupTangemCardView extends Component<Props, State> {
         );
     };
     render() {
-        const { androidBottomInset } = this.state;
+        const { androidBottomInset, moreBelow } = this.state;
         return (
             <SafeAreaView
                 testID="backup-tangem-card-screen"
@@ -428,9 +466,33 @@ class BackupTangemCardView extends Component<Props, State> {
                         textStyle: styles.headerTitle,
                     }}
                 />
-                <ScrollView style={styles.scroll} contentContainerStyle={styles.body} bounces={false}>
-                    {this.renderBody()}
-                </ScrollView>
+                <View style={styles.scroll}>
+                    <ScrollView
+                        ref={this.scroll}
+                        testID="backup-scroll"
+                        style={styles.scroll}
+                        contentContainerStyle={[styles.body, styles.compactBody]}
+                        onLayout={this.onScrollLayout}
+                        onContentSizeChange={this.onContentSizeChange}
+                        onScroll={this.onScroll}
+                        scrollEventThrottle={16}
+                        bounces={false}
+                    >
+                        {this.renderBody()}
+                    </ScrollView>
+                    {moreBelow && (
+                        <TouchableOpacity
+                            testID="backup-more"
+                            accessibilityRole="button"
+                            accessibilityLabel={Localize.t('global.readMore')}
+                            style={styles.moreCue}
+                            onPress={this.showMore}
+                        >
+                            <Text style={styles.moreCueText}>{Localize.t('global.readMore')}</Text>
+                            <Icon name="IconChevronDown" size={14} style={styles.moreCueIcon} />
+                        </TouchableOpacity>
+                    )}
+                </View>
                 <Footer style={styles.footer}>{this.renderFooter()}</Footer>
             </SafeAreaView>
         );

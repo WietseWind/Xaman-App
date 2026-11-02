@@ -50,6 +50,7 @@ export interface BackupDependencies {
     start: () => Promise<void>;
     stop: () => Promise<void>;
     scan: () => Promise<Card>;
+    confirmImport: (card: Card, empty: boolean) => Promise<boolean>;
     create: (card: Card) => Promise<Card>;
     sign: (card: Card, transaction: BackupTransaction) => Promise<BackupSigned>;
     submit: (blob: string, hash: string) => Promise<unknown>;
@@ -192,22 +193,27 @@ export class TangemBackupFlow {
                 throw new TangemBackupError('sourceUnavailable');
             }
             let createdWallet = false;
-            const card = await this.withCard(async () => {
-                let scanned = await this.deps.scan();
+            let card = await this.withCard(this.deps.scan);
+            this.check();
+            const serial = backupCardSerial(card);
+            if (!serial) throw new TangemBackupError('invalidCard');
+            if (serial === backupCardSerial(this.source.card)) throw new TangemBackupError('sameCard');
+            const empty = Array.isArray(card.wallets) && card.wallets.length === 0;
+            // Finish the scan before showing the normal import/create confirmation.
+            // Wallet creation is a separate, user-initiated NFC operation on the same card.
+            const candidate = empty ? undefined : inspectBackupCard(card, this.source, this.deps.accounts());
+            if (empty || !candidate?.existing || candidate.existing.accessLevel !== AccessLevels.Full) {
+                const confirmed = await this.deps.confirmImport(card, empty);
                 this.check();
-                if (!backupCardSerial(scanned)) throw new TangemBackupError('invalidCard');
-                if (backupCardSerial(scanned) === backupCardSerial(this.source.card)) {
-                    throw new TangemBackupError('sameCard');
-                }
-                if (Array.isArray(scanned.wallets) && scanned.wallets.length === 0) {
-                    const serial = backupCardSerial(scanned);
-                    scanned = await this.deps.create(scanned);
-                    this.check();
-                    if (backupCardSerial(scanned) !== serial) throw new TangemBackupError('cardChanged');
-                    createdWallet = true;
-                }
-                return scanned;
-            });
+                if (!confirmed) return;
+            }
+            if (empty) {
+                const scanned = card;
+                card = await this.withCard(() => this.deps.create(scanned));
+                this.check();
+                if (backupCardSerial(card) !== serial) throw new TangemBackupError('cardChanged');
+                createdWallet = true;
+            }
             // Re-read at the write boundary: another import may have completed during NFC.
             const current = inspectBackupCard(card, this.source, this.deps.accounts());
             const needsSave =

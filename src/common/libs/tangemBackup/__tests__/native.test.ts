@@ -8,6 +8,9 @@ import { AccessLevels, AccountTypes } from '@store/types';
 import fixtures from '@common/utils/__tests__/fixtures/tangem.cards.json';
 import { DefaultDerivationPaths } from '@common/utils/tangem';
 import { nativeBackupDependencies } from '../native';
+import { Navigator } from '@common/helpers/navigator';
+
+jest.mock('@common/helpers/navigator', () => ({ Navigator: { showAlertModal: jest.fn(async () => 'alert') } }));
 
 jest.mock('tangem-sdk-react-native', () => ({
     __esModule: true,
@@ -93,12 +96,26 @@ beforeEach(() => {
     jest.mocked(AccountRepository.getAccounts).mockReturnValue([] as any);
     jest.mocked(AccountRepository.safeWrite).mockImplementation((callback) => callback());
     jest.mocked(AccountRepository.realm.create).mockImplementation((_model, values) => values as any);
-    jest.mocked(NetworkService.getNetworkDefinitions).mockReturnValue(
-        new XrplDefinitions(binary.DEFAULT_DEFINITIONS),
-    );
+    jest.mocked(NetworkService.getNetworkDefinitions).mockReturnValue(new XrplDefinitions(binary.DEFAULT_DEFINITIONS));
 });
 
 describe('native Tangem back-up adapter', () => {
+    it.each([true, false])('uses the formatted import/create alert for an empty=%s card', async (empty) => {
+        const operation = nativeBackupDependencies(source, () => true).confirmImport(card as any, empty);
+        const alert = jest.mocked(Navigator.showAlertModal).mock.calls[0][0];
+        expect(alert.testID).toBe('backup-import-alert');
+        expect(alert.type).toBe(empty ? 'info' : 'warning');
+        alert.onDismissed?.();
+        alert.buttons[1].onPress?.();
+        expect(await operation).toBe(true);
+    });
+    it('declines import when its alert is dismissed without choosing Continue', async () => {
+        const operation = nativeBackupDependencies(source, () => true).confirmImport(card as any, true);
+        const alert = jest.mocked(Navigator.showAlertModal).mock.calls[0][0];
+        alert.onDismissed?.();
+        expect(await operation).toBe(false);
+        expect(RNTangemSdk.createWallet).not.toHaveBeenCalled();
+    });
     it('opts out of online attestation and provides the XRP HD path for every session', async () => {
         const deps = nativeBackupDependencies(source, () => true);
         await deps.start();
@@ -128,19 +145,29 @@ describe('native Tangem back-up adapter', () => {
     });
     it('signs an Ed25519 original card using the complete signing message', async () => {
         const ed = derive.privatekey(`ED${'01'.repeat(32)}`);
-        const edCard = { ...card, cardId: 'ED-ORIGINAL', wallets: [
-            { publicKey: ed.keypair.publicKey.slice(2), curve: EllipticCurve.Ed25519 },
-        ] };
+        const edCard = {
+            ...card,
+            cardId: 'ED-ORIGINAL',
+            wallets: [{ publicKey: ed.keypair.publicKey.slice(2), curve: EllipticCurve.Ed25519 }],
+        };
         const edTx = { ...tx, Account: ed.address };
         const message = binary.encodeForSigning({ ...edTx, SigningPubKey: ed.keypair.publicKey });
-        jest.mocked(RNTangemSdk.sign).mockResolvedValue({ cardId: edCard.cardId,
-            signatures: [signBytes(message, ed.keypair.privateKey)] });
-        const signed = await nativeBackupDependencies({ ...source, address: ed.address,
-            additionalInfo: edCard }, () => true).sign(edCard as any, edTx);
-        expect(binary.decode(signed.signedTransaction)).toMatchObject({ Account: ed.address,
-            RegularKey: tx.RegularKey, SigningPubKey: ed.keypair.publicKey });
-        expect(RNTangemSdk.sign).toHaveBeenCalledWith(expect.objectContaining({ hashes: [message],
-            cardId: edCard.cardId }));
+        jest.mocked(RNTangemSdk.sign).mockResolvedValue({
+            cardId: edCard.cardId,
+            signatures: [signBytes(message, ed.keypair.privateKey)],
+        });
+        const signed = await nativeBackupDependencies(
+            { ...source, address: ed.address, additionalInfo: edCard },
+            () => true,
+        ).sign(edCard as any, edTx);
+        expect(binary.decode(signed.signedTransaction)).toMatchObject({
+            Account: ed.address,
+            RegularKey: tx.RegularKey,
+            SigningPubKey: ed.keypair.publicKey,
+        });
+        expect(RNTangemSdk.sign).toHaveBeenCalledWith(
+            expect.objectContaining({ hashes: [message], cardId: edCard.cardId }),
+        );
     });
 
     it.each(['wrong serial', 'invalid signature', 'zero scalar'])(
@@ -165,9 +192,7 @@ describe('native Tangem back-up adapter', () => {
             validated: false,
             account_data: { Account: signer.address },
         } as any);
-        await expect(nativeBackupDependencies(source, () => true).root(signer.address)).rejects.toThrow(
-            'unavailable',
-        );
+        await expect(nativeBackupDependencies(source, () => true).root(signer.address)).rejects.toThrow('unavailable');
     });
     it('uses the selected-network hook-inclusive fee without a silent fee fallback', async () => {
         jest.mocked(NetworkService.send).mockResolvedValue({
@@ -199,10 +224,7 @@ describe('native Tangem back-up adapter', () => {
             }),
             expect.anything(),
         );
-        expect(AccountRepository.emit).toHaveBeenCalledWith(
-            'accountCreate',
-            expect.objectContaining({ address }),
-        );
+        expect(AccountRepository.emit).toHaveBeenCalledWith('accountCreate', expect.objectContaining({ address }));
     });
     it('preserves a read-only account label, hidden state and order during a proven-card upgrade', async () => {
         const backup = { ...fixtures.normalED.android, cardId: 'BACKUP' } as any;
