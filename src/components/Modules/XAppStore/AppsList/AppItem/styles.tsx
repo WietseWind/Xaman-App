@@ -7,10 +7,10 @@ const ink = select('#181b30', '#f2f3fb');
 const secondary = select('#636b86', '#a9afc6');
 
 export default StyleService.create({
-    tile: { height: 132, borderRadius: 15, backgroundColor: select('#e9e9e9', '#242733'), overflow: 'hidden' },
+    tile: { height: 132, borderRadius: 15, backgroundColor: '$tint', overflow: 'hidden' },
     backdropContainer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
     backdrop: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', opacity: 0.65 },
-    scrim: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', tintColor: select('#f3f4f8', '#171924') },
+    scrim: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', tintColor: '$tint' },
     decoration: { ...StyleSheet.absoluteFillObject },
     iconShadow: {
         position: 'absolute', top: 8, left: 12, width: 54, height: 54, borderRadius: 15,

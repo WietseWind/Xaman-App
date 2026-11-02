@@ -18,7 +18,7 @@ New assets:
 - Icon stroke width 1.7 matches the Calm category style. The PNGs are black alpha templates;
   React Native tintColor supplies the light/dark colour. No duplicate theme PNGs.
 - ImageXAppTileScrim: transparent 8x132 black alpha mask. Stretch it across the tile
-  and tint #f3f4f8 in light mode or #171924 in dark mode. Opacity stops are 0 at 0%,
+  and tint with the existing app $tint surface color in each theme. Opacity stops are 0 at 0%,
   0.05 at 25%, 0.95 at 87% and 1 at 100%. No text/colour is baked into this mask.
 - iOS exports 1x/2x/3x. Android exports mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi.
 

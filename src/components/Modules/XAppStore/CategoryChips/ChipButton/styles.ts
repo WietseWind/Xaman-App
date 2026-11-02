@@ -13,7 +13,7 @@ export default StyleService.create({
         borderRadius: 15,
         paddingHorizontal: 12,
         paddingVertical: 13,
-        backgroundColor: StyleService.select({ light: '#f3f4f8', dark: '#242632' }),
+        backgroundColor: '$tint',
     },
     icon: { tintColor: StyleService.select({ light: '#636b86', dark: '#a9afc6' }) },
     nameContainer: { flex: 1, minWidth: 0 },

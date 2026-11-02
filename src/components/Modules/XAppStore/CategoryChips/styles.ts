@@ -22,7 +22,7 @@ export default StyleService.create({
         borderRadius: 12,
         paddingHorizontal: 13,
         paddingVertical: 9,
-        backgroundColor: StyleService.select({ light: '#f3f4f8', dark: '#242632' }),
+        backgroundColor: '$tint',
     },
     activeText: {
         fontFamily: AppFonts.base.familyBold,

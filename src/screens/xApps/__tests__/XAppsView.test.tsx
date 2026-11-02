@@ -388,6 +388,10 @@ it('uses each app theme background and accessible local tabs', async () => {
             act(() => { StyleService.setTheme(theme); tree!.getInstance()!.forceUpdate(); });
             expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapp-store-tab-view' }).props.style)
                 .backgroundColor).toBe(background);
+            expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapps-section-Categories' }).props.style)
+                .backgroundColor).toBe(StyleService.value('$tint'));
+            expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapps-section-Home' }).props.style)
+                .backgroundColor).toBe(StyleService.value('$contrast'));
         });
     expect(Localize.t('xapp.yourRecentXApps')).toBe('Your recent xApps');
 });

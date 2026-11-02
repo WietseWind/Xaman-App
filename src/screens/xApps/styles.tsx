@@ -37,12 +37,12 @@ export default StyleService.create({
         paddingVertical: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: StyleService.select({ light: '#f3f4f8', dark: '#242632' }),
+        backgroundColor: '$tint',
     },
     homeTab: { flex: 0.82 },
     alphabetTab: { flex: 0.7 },
     categoryTab: { flex: 1.4 },
-    activeTab: { backgroundColor: StyleService.select({ light: '#171923', dark: '#f5f6fc' }) },
+    activeTab: { backgroundColor: '$contrast' },
     tabText: {
         fontFamily: AppFonts.base.family,
         fontSize: 14,
@@ -52,7 +52,7 @@ export default StyleService.create({
     },
     activeTabText: {
         fontFamily: AppFonts.base.familyBold,
-        color: StyleService.select({ light: '#ffffff', dark: '#171923' }),
+        color: '$textContrast',
     },
     headerMessageContainer: {},
     appListContainer: { flex: 1, paddingHorizontal: 20 },
