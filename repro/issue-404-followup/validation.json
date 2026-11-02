@@ -1,0 +1,57 @@
+{
+  "implementationCommit": "658ee23dce77b0ce4cd15573d8f59fa72d27a9ae",
+  "unitTestsPassed": 2559,
+  "snapshotsPassed": 60,
+  "existingTestsSkipped": 7,
+  "focusedChecksPassed": 154,
+  "localeBundles": 59,
+  "changedCopyMessages": 6,
+  "momentAndOtherLocaleContentUnchanged": true,
+  "nativeUiHost": true,
+  "syntheticCardsAndLedger": true,
+  "physicalNfcTested": false,
+  "liveLedgerSubmissionPerformed": false,
+  "emptyCardCreateConfirmation": true,
+  "newOfflineSessionForCreation": true,
+  "formattedRedWrongCardAlert": true,
+  "steadyPendingThenValidatedDone": true,
+  "technicalTransactionRowsRemoved": true,
+  "blueReplaceButton": true,
+  "readyBounds": {
+    "source": {
+      "height": 117.33334350585938,
+      "width": 345,
+      "x": 24,
+      "y": 350
+    },
+    "backup": {
+      "height": 117.33334350585938,
+      "width": 345,
+      "x": 24,
+      "y": 501.3333435058594
+    },
+    "next": {
+      "height": 48,
+      "width": 345,
+      "x": 24,
+      "y": 705
+    }
+  },
+  "largeText": {
+    "germanBothCardsFit": true,
+    "largeTextOverflowControlVisible": true,
+    "overflowControlScrolled": true,
+    "reviewStartsAtTop": true
+  },
+  "screenshots": {
+    "empty-create-alert.png": "76bda426fd9ae314404b783add57f51e82de7083025916a5f6f18a307ab55f95",
+    "ready-light.png": "99ab5d3a7de4352b1736324a691bf68c0681a26a3693a33fa30e14bf5340ff83",
+    "ready-dark.png": "6ed9b50bcc06e5f846d02ba14854ac6b3a53556bf41f3cf2855b6c88a6197fda",
+    "review-light.png": "a092e9b4ec83c81573a20990d6014544350cde6b4202f03c5ffffcf2fc364204",
+    "pending-light-1.png": "fcca2209de59750c23dd51593c0714b33e57217c029fc5546595a6505dc8b8a3",
+    "wrong-card-dark.png": "af2a787b2e3ef3dd5b2f00cd1b2000dd81c8d67918a3fc697c7f22e8c3453c5c",
+    "replace-light.png": "353b03bad89c03df3b7fe9c5f2e8acaec0eeb6224732b418a408e9add5105bef",
+    "identify-different-light.png": "07b1b94af9f42ab5849d97f8e70fda921f8339a8085afaf6100b6aff90bb0fd2",
+    "ready-large-text.png": "5dc443d7177853c2ca86f8ce205cbf33d28557a64080ad2ae72bfdb994a79fff"
+  }
+}
