@@ -45,9 +45,11 @@ function dominantRGB(pixels: number[]): RGB | undefined {
 export function dominantImagePalette(pixels: number[]): XAppPalette | undefined {
     const source = dominantRGB(pixels);
     if (!source) return undefined;
-    // A small white tint separates the background from the original foreground
-    // icon. Choose caption contrast from this final color, rather than the source.
-    const rgb = source.map(value => Math.round(value + (255 - value) * 0.12));
+    // Give colorful artwork a clearer light tint, but keep near-neutral icons
+    // close to their source so black/white tiles do not become grey panels.
+    const chroma = Math.max(...source) - Math.min(...source);
+    const tint = 0.03 + 0.21 * Math.min(1, chroma / 48);
+    const rgb = source.map(value => Math.round(value + (255 - value) * tint));
     // Native samples are 32x32. Inspect the middle of each edge, avoiding the
     // rounded corners. Transparent edges reveal the icon's themed backing.
     const sides = pixels.length >= 1024 ? [0, 1, 2, 3].map(side => Array.from({ length: 16 }, (_, n) => {
@@ -72,12 +74,12 @@ const separation = (a: number[], b: number[]) => {
     const distance = Math.max(...a.map((channel, i) => Math.abs(channel - b[i])));
     const x = luminance(a); const y = luminance(b);
     const contrast = (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
-    return Math.max(distance / 18, (contrast - 1) / 0.15);
+    return Math.max(distance / 8, (contrast - 1) / 0.06);
 };
 
 // Resolve at render time so the URI cache stays independent of the theme.
 // Keep the page distinct first, then separate matching icon edges using the
-// smallest useful nudge, capped at 10% toward white/black to retain the hue.
+// smallest useful nudge, capped at 4% toward white/black to retain the hue.
 export function resolveXAppPalette(palette: XAppPalette, pageColor: string, iconBacking?: string): XAppPalette {
     const rgb = readRGB(palette.background); const page = readRGB(pageColor);
     if (!rgb || !page) return palette;
@@ -91,7 +93,7 @@ export function resolveXAppPalette(palette: XAppPalette, pageColor: string, icon
     const preferred = pageNear ? (darkPage ? 255 : 0) : (darkPage ? 0 : 255);
     let best: number[] | undefined = pageNear ? undefined : rgb;
     let bestScore = best ? edgeScore(best) : -Infinity;
-    for (let step = 1; step <= 10; step++) {
+    for (let step = 1; step <= 4; step++) {
         for (const target of [preferred, 255 - preferred]) {
             const candidate = rgb.map(value => Math.round(value + (target - value) * step / 100));
             if (separation(candidate, page) < 1) continue;

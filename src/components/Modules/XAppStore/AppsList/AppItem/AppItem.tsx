@@ -245,7 +245,7 @@ class AppItem extends Component<Props, State> {
                     <Image
                         source={{ uri: item.icon }}
                         resizeMode="cover"
-                        blurRadius={10}
+                        blurRadius={3}
                         style={featured ? styles.featuredBackdrop : styles.backdrop}
                         accessible={false}
                     />

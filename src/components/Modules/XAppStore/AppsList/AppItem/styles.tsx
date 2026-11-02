@@ -9,7 +9,7 @@ const secondary = select('#636b86', '#a9afc6');
 export default StyleService.create({
     tile: { height: 132, borderRadius: 15, backgroundColor: '$tint', overflow: 'hidden' },
     backdropContainer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
-    backdrop: { ...StyleSheet.absoluteFillObject, top: '-25%', width: '100%', height: '100%', opacity: 0.65 },
+    backdrop: { ...StyleSheet.absoluteFillObject, top: '-12.5%', width: '100%', height: '100%', opacity: 0.5 },
     scrim: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', tintColor: '$tint' },
     captionBackdrop: { position: 'absolute', top: 68, bottom: 0, left: 0, right: 0 },
     paletteScrim: { top: 28, height: 40 },
