@@ -292,16 +292,17 @@ it('cancels deferred initial work and search focus on unmount', () => {
     expect(cancelFrame).toHaveBeenCalledTimes(1);
 });
 
-it('uses local theme colors and accessible local tabs', async () => {
+it('uses each app theme background and accessible local tabs', async () => {
     mount(); await reply();
     const tab = tree!.root.findByProps({ testID: 'xapps-section-Categories' });
     expect(tab.props.accessibilityRole).toBe('tab');
     expect(tab.props.accessibilityState).toEqual({ selected: false });
-    expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapp-store-tab-view' }).props.style)
-        .backgroundColor).toBe('#ffffff');
-    act(() => { StyleService.setTheme('dark'); tree!.getInstance()!.forceUpdate(); });
-    expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapp-store-tab-view' }).props.style)
-        .backgroundColor).toBe('#11121a');
+    ([['light', '#ffffff'], ['dark', '#000000'], ['moonlight', '#181A21'], ['royal', '#030B36']] as const)
+        .forEach(([theme, background]) => {
+            act(() => { StyleService.setTheme(theme); tree!.getInstance()!.forceUpdate(); });
+            expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapp-store-tab-view' }).props.style)
+                .backgroundColor).toBe(background);
+        });
     expect(Localize.t('xapp.yourRecentXApps')).toBe('Your recent xApps');
 });
 
@@ -315,6 +316,6 @@ it('remounts themed content on the existing timestamp update without losing the 
     expect(nextInput.props.defaultValue).toBe('swap');
     expect(ids(view)).toEqual(['app.swapper']);
     expect(StyleSheet.flatten(tree!.root.findByProps({ testID: 'xapp-store-tab-view' }).props.style)
-        .backgroundColor).toBe('#11121a');
+        .backgroundColor).toBe('#000000');
     expect(requests).toHaveLength(1);
 });

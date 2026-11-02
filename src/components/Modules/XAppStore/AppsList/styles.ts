@@ -22,7 +22,7 @@ export default StyleService.create({
         fontFamily: AppFonts.base.family, fontSize: 14, lineHeight: 20,
         color: select('#636b86', '#a9afc6'), textAlign: 'center', maxWidth: 235,
     },
-    sectionHeader: { backgroundColor: select('#fff', '#11121a'), paddingBottom: 12 },
+    sectionHeader: { backgroundColor: '$background', paddingBottom: 12 },
     sectionHeaderText: {
         fontSize: 19, lineHeight: 24, fontFamily: AppFonts.base.familyBold, color: select('#181b30', '#f2f3fb'),
     },

@@ -6,7 +6,7 @@ export default StyleService.create({
     container: {
         flex: 1,
         paddingTop: AppSizes.safeAreaTopInset,
-        backgroundColor: StyleService.select({ light: '#ffffff', dark: '#11121a' }),
+        backgroundColor: '$background',
     },
     contentContainer: { flex: 1, alignSelf: 'stretch' },
     headerContainer: {

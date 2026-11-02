@@ -5,6 +5,7 @@ import renderer, { act } from 'react-test-renderer';
 import CoreRepository from '@store/repositories/core';
 import { VibrateHapticFeedback } from '@common/helpers/interface';
 import { XAppOrigin } from '@common/libs/payload';
+import StyleService from '@services/StyleService';
 import AppsList from '../AppsList';
 
 jest.mock('@components/Modules/XAppStore/AppsList/AppItem', () => ({
@@ -51,7 +52,20 @@ beforeEach(() => {
 });
 afterEach(() => {
     trees.forEach(tree => act(() => tree.unmount()));
+    StyleService.setTheme('light');
     jest.restoreAllMocks();
+});
+
+it('keeps opaque sticky section headers on the current app theme background', () => {
+    const tree = mount({ dataSource: [{ title: 'Featured', data: [app('a')] }] });
+    ([['light', '#ffffff'], ['dark', '#000000'], ['moonlight', '#181A21'], ['royal', '#030B36']] as const)
+        .forEach(([theme, background]) => {
+            act(() => { StyleService.setTheme(theme); tree.getInstance()!.forceUpdate(); });
+            const header = tree.root.findAllByType(View).find(node => node.findAllByType(Text)
+                .some(textNode => textNode.props.children === 'Featured') &&
+                    StyleSheet.flatten(node.props.style)?.paddingBottom === 12)!;
+            expect(StyleSheet.flatten(header.props.style).backgroundColor).toBe(background);
+        });
 });
 
 it('pairs within each section while preserving order, duplicates and loading placeholders', () => {
