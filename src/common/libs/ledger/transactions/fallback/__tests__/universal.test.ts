@@ -162,10 +162,10 @@ describe('unmapped transaction types from network definitions', () => {
             getAccountAdvisory: jest.fn(async (address) => ({ danger: address === other ? 'CONFIRMED' : 'UNKNOWN' })),
             getAccountName: jest.fn(async () => ({})),
         };
-        expect((await resolveScamSignRequest(tx, signer.address, false, lookup)).isScam).toBe(true);
+        expect((await resolveScamSignRequest(tx, signer.address, lookup)).isScam).toBe(true);
         const batch = TransactionFactory.fromJson({ ...common, TransactionType: 'Batch', Flags: 65536,
             RawTransactions: [{ RawTransaction: { ...body, Fee: '0', Flags: 0x40000000 } }] } as any);
-        expect((await resolveScamSignRequest(batch, signer.address, false, lookup)).isScam).toBe(true);
+        expect((await resolveScamSignRequest(batch, signer.address, lookup)).isScam).toBe(true);
     });
 
     it('preserves the reviewed fields through Tangem raw signing', () => {
