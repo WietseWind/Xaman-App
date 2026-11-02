@@ -12,7 +12,7 @@ export default StyleService.create({
     backdrop: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', opacity: 0.65 },
     scrim: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', tintColor: '$tint' },
     captionBackdrop: { position: 'absolute', top: 68, bottom: 0, left: 0, right: 0 },
-    paletteScrim: { height: 68 },
+    paletteScrim: { top: 28, height: 40 },
     decoration: { ...StyleSheet.absoluteFillObject },
     iconShadow: {
         position: 'absolute', top: 8, left: 12, width: 54, height: 54, borderRadius: 15,

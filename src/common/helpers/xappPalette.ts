@@ -19,7 +19,12 @@ export function dominantImagePalette(pixels: number[]): XAppPalette | undefined 
     let dominant: ReturnType<typeof bins.get>;
     bins.forEach(bin => { if (!dominant || bin.weight > dominant.weight) dominant = bin; });
     if (!dominant) return undefined;
-    const rgb = [dominant.red, dominant.green, dominant.blue].map(channel => Math.round(channel / dominant!.weight));
+    // A small white tint separates the background from the original foreground
+    // icon. Choose caption contrast from this final color, rather than the source.
+    const rgb = [dominant.red, dominant.green, dominant.blue].map(channel => {
+        const value = Math.round(channel / dominant!.weight);
+        return Math.round(value + (255 - value) * 0.12);
+    });
     const background = `#${rgb.map(channel => channel.toString(16).padStart(2, '0')).join('')}`;
     const linear = rgb.map(channel => {
         const value = channel / 255;
