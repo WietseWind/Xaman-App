@@ -7,7 +7,8 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 import { AppScreens } from '@common/constants';
 import { HOSTNAME } from '@common/constants/endpoints';
 import { Images } from '@common/helpers/images';
-import { getXAppPalette, XAppPalette } from '@common/helpers/xappPalette';
+import { getXAppPalette, resolveXAppPalette, XAppPalette } from '@common/helpers/xappPalette';
+import StyleService from '@services/StyleService';
 import { XAppOrigin } from '@common/libs/payload';
 import { Navigator } from '@common/helpers/navigator';
 import { Props as XAppBrowserModalProps } from '@screens/Modal/XAppBrowser/types';
@@ -191,7 +192,10 @@ class AppItem extends Component<Props, State> {
     private getPalette = () => {
         const { palette } = this.state;
         const { item } = this.props;
-        return palette?.uri === item?.icon ? palette : undefined;
+        if (palette?.uri !== item?.icon || !palette) return undefined;
+        const backing = styles.iconShadow.backgroundColor;
+        return resolveXAppPalette(palette, StyleService.value('$background'),
+            typeof backing === 'string' ? backing : undefined);
     };
 
     private tileGeometry = () => {
@@ -241,6 +245,7 @@ class AppItem extends Component<Props, State> {
                     <Image
                         source={{ uri: item.icon }}
                         resizeMode="cover"
+                        blurRadius={10}
                         style={featured ? styles.featuredBackdrop : styles.backdrop}
                         accessible={false}
                     />

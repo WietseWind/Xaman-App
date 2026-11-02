@@ -17,7 +17,9 @@ jest.mock('@common/libs/payload', () => jest.requireActual('@common/libs/payload
 jest.mock('@components/General/TouchableDebounce', () => ({ TouchableDebounce: 'TouchableDebounce' }));
 jest.mock('@components/General/Icon', () => ({ Icon: 'Icon' }));
 jest.mock('@screens/Overlay/XAppInfo', () => ({ DisplayButtonTypes: { OPEN: 'OPEN', SHARE: 'SHARE' } }));
-jest.mock('@common/helpers/xappPalette', () => ({ getXAppPalette: jest.fn() }));
+jest.mock('@common/helpers/xappPalette', () => ({
+    ...jest.requireActual('@common/helpers/xappPalette'), getXAppPalette: jest.fn(),
+}));
 
 const app = (id = 'first'): AppType => ({
     identifier: `public.${id}`, title: `Public ${id}`, description: `Description ${id}`, icon: `https://example.com/${id}.png`,
@@ -97,6 +99,23 @@ it('rejects late palette results after a recycled cell changes its icon', async 
     await act(async () => { await iconImage(tree, second).props.onLoad(); });
     expect(StyleSheet.flatten(target(tree, `xapp-tile-${second.identifier}`).props.style).backgroundColor)
         .toBe('#0030cf');
+});
+
+it('recomputes page contrast after switching themes without resampling or blurring the foreground icon', async () => {
+    StyleService.setTheme('dark');
+    const item = app(); const tree = mount(props(item));
+    jest.mocked(getXAppPalette).mockResolvedValue({ background: '#ffffff', foreground: '#000000' });
+    await act(async () => { await iconImage(tree, item).props.onLoad(); });
+    expect(StyleSheet.flatten(target(tree, `xapp-tile-${item.identifier}`).props.style).backgroundColor).toBe('#ffffff');
+    act(() => { StyleService.setTheme('light'); tree.getInstance()!.forceUpdate(); });
+    const fill = StyleSheet.flatten(target(tree, `xapp-tile-${item.identifier}`).props.style).backgroundColor;
+    expect(fill).not.toBe('#ffffff');
+    expect(iconImage(tree, item).props.blurRadius).toBeUndefined();
+    expect(tree.root.findAllByType(Image).find(node => node.props.source?.uri === item.icon &&
+        !node.props.onError)!.props.blurRadius).toBeGreaterThan(0);
+    act(() => { StyleService.setTheme('dark'); tree.getInstance()!.forceUpdate(); });
+    expect(StyleSheet.flatten(target(tree, `xapp-tile-${item.identifier}`).props.style).backgroundColor).toBe('#ffffff');
+    expect(getXAppPalette).toHaveBeenCalledTimes(1);
 });
 
 it('keeps the theme fallback after an image error even if a previous sample completes later', async () => {

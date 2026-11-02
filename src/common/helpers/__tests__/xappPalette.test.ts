@@ -21,13 +21,13 @@ afterEach(async () => {
 
 it('lightens the dominant cluster without averaging distinct icon colors', () => {
     expect(helper.dominantImagePalette([...Array(700).fill(blue), ...Array(324).fill(0xffff0000)]))
-        .toEqual({ background: '#1f49d5', foreground: '#ffffff' });
+        .toMatchObject({ background: '#1f49d5', foreground: '#ffffff' });
 });
 
 it('groups antialiased shades and ignores transparent/low-alpha pixels', () => {
     expect(helper.dominantImagePalette([...Array(400).fill(0xff1030a0), ...Array(300).fill(0xff1131a1),
         ...Array(200).fill(0xffffffff), ...Array(124).fill(0x00123456)]))
-        .toEqual({ background: '#2d49ab', foreground: '#ffffff' });
+        .toMatchObject({ background: '#2d49ab', foreground: '#ffffff' });
     expect(helper.dominantImagePalette([0, 0x7fffffff, NaN, Infinity, 1.2])).toBeUndefined();
     expect(helper.dominantImagePalette([])).toBeUndefined();
 });
@@ -53,6 +53,87 @@ it('deduplicates concurrent tiles and reuses an image palette across later rende
     await expect(first).resolves.toMatchObject({ background: '#1f49d5' });
     await helper.getXAppPalette('https://example.com/icon.png');
     expect(sample).toHaveBeenCalledTimes(1);
+});
+
+const rgb = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+const lightness = (hex: string) => rgb(hex).map(channel => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}).reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
+const contrast = (a: string, b: string) =>
+    (Math.max(lightness(a), lightness(b)) + 0.05) / (Math.min(lightness(a), lightness(b)) + 0.05);
+const visiblySeparate = (a: string, b: string) =>
+    Math.max(...rgb(a).map((channel, i) => Math.abs(channel - rgb(b)[i]))) >= 18 || contrast(a, b) >= 1.15;
+
+it.each(['#ffffff', '#000000', '#181a21', '#030b36'])(
+    'separates an almost matching tile from page %s with a small theme-aware nudge', page => {
+        const original = { background: page, foreground: '#ffffff' as const };
+        const resolved = helper.resolveXAppPalette(original, page);
+        expect(visiblySeparate(resolved.background, page)).toBe(true);
+        expect(lightness(resolved.background) > lightness(page)).toBe(page !== '#ffffff');
+        expect(Math.max(...rgb(resolved.background).map((channel, i) => Math.abs(channel - rgb(page)[i]))))
+            .toBeLessThanOrEqual(26);
+        expect(contrast(resolved.background, resolved.foreground)).toBeGreaterThanOrEqual(4.5);
+        expect(original.background).toBe(page);
+    },
+);
+
+it('detects actual icon edge colors independently of its dominant center', () => {
+    const pixels = Array(1024).fill(blue);
+    for (let i = 8; i < 24; i++) {
+        [i, 31 * 32 + i, i * 32, i * 32 + 31].forEach(index => { pixels[index] = 0xff1f49d5; });
+    }
+    const original = helper.dominantImagePalette(pixels)!;
+    expect(original.background).toBe('#1f49d5');
+    expect(original.edgeColors).toEqual(['#1f49d5']);
+    const resolved = helper.resolveXAppPalette(original, '#030b36');
+    expect(visiblySeparate(resolved.background, '#1f49d5')).toBe(true);
+    expect(contrast(resolved.background, resolved.foreground)).toBeGreaterThanOrEqual(4.5);
+});
+
+it('separates opaque white icon edges even when the page is dark', () => {
+    const original = helper.dominantImagePalette(Array(1024).fill(0xffffffff))!;
+    for (const page of ['#ffffff', '#000000', '#181a21', '#030b36']) {
+        const resolved = helper.resolveXAppPalette(original, page);
+        expect(visiblySeparate(resolved.background, '#ffffff')).toBe(true);
+        expect(visiblySeparate(resolved.background, page)).toBe(true);
+    }
+    expect(original.background).toBe('#ffffff');
+});
+
+it('uses the themed backing behind transparent icon edges', () => {
+    const pixels = Array(1024).fill(0xff0030cf);
+    for (let i = 0; i < 32; i++) {
+        [i, 31 * 32 + i, i * 32, i * 32 + 31].forEach(index => { pixels[index] = 0; });
+    }
+    const sampled = helper.dominantImagePalette(pixels)!;
+    expect(sampled).toMatchObject({ transparentEdges: true, edgeColors: [] });
+    const original = { ...sampled, background: '#171924' };
+    const resolved = helper.resolveXAppPalette(original, '#030b36', '#171924');
+    expect(visiblySeparate(resolved.background, '#171924')).toBe(true);
+    expect(visiblySeparate(resolved.background, '#030b36')).toBe(true);
+    expect(helper.resolveXAppPalette(original, '#030b36', '#ffffff')).toBe(original);
+});
+
+it('preserves already distinct hues, including different colors with similar luminance', () => {
+    const original = { background: '#ffcc00', foreground: '#000000' as const, edgeColors: ['#0030cf'] };
+    expect(helper.resolveXAppPalette(original, '#030b36')).toBe(original);
+    const bluePalette = { background: '#0000ff', foreground: '#ffffff' as const, edgeColors: ['#4c4c4c'] };
+    expect(contrast(bluePalette.background, '#4c4c4c')).toBeLessThan(1.15);
+    expect(helper.resolveXAppPalette(bluePalette, '#181a21')).toBe(bluePalette);
+});
+
+it('keeps captions readable and the cached source unchanged across colors and theme changes', () => {
+    for (const color of [0x000000, 0xffffff, 0xffc900, 0xdf0070, 0x0030cf, 0x777777, 0x181a21, 0x030b36]) {
+        const original = helper.dominantImagePalette(Array(1024).fill(0xff000000 + color))!;
+        const saved = JSON.stringify(original);
+        for (const page of ['#ffffff', '#000000', '#181a21', '#030b36']) {
+            const resolved = helper.resolveXAppPalette(original, page, page === '#ffffff' ? '#ffffff' : '#171924');
+            expect(visiblySeparate(resolved.background, page)).toBe(true);
+            expect(contrast(resolved.background, resolved.foreground)).toBeGreaterThanOrEqual(4.5);
+        }
+        expect(JSON.stringify(original)).toBe(saved);
+    }
 });
 
 it('limits native sampling to two requests and starts the next queued image after completion', async () => {
