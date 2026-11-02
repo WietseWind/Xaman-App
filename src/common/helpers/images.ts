@@ -56,6 +56,8 @@ export const Images = {
     ImageBlankNFT: buildImageSource('ImageBlankNFT', 'image_blank_nft'),
     ImageBlankNFTLight: buildImageSource('ImageBlankNFTLight', 'image_blank_nft_light'),
     ImageArrowUp: buildImageSource('ImageArrowUp', 'image_arrow_up'),
+    ImageBackupTangem: buildImageSource('ImageBackupTangem', 'image_backup_tangem'),
+    ImageBackupTangemLight: buildImageSource('ImageBackupTangemLight', 'image_backup_tangem_light'),
     ImageIdentifyTangem: buildImageSource('ImageIdentifyTangem', 'image_identify_tangem'),
     ImageIdentifyTangemLight: buildImageSource('ImageIdentifyTangemLight', 'image_identify_tangem_light'),
     ImageXAppTileScrim: buildImageSource('ImageXAppTileScrim', 'image_xapp_tile_scrim'),

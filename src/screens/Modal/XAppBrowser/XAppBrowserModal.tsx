@@ -4,6 +4,7 @@
 
 import { assign, get, has, isEmpty, toUpper } from 'lodash';
 import moment from 'moment-timezone';
+import { explainRetiredTangemBackup, isRetiredTangemBackup } from '@common/helpers/retiredTangemBackup';
 import React, { Component } from 'react';
 import {
     Alert,
@@ -640,6 +641,11 @@ class XAppBrowserModal extends Component<Props, State> {
         // double check
         if (!app) {
             throw new Error('launchApp, app is required!');
+        }
+
+        if (isRetiredTangemBackup(app.identifier)) {
+            await explainRetiredTangemBackup();
+            return;
         }
 
         try {

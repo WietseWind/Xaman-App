@@ -26,6 +26,8 @@ import {
 } from 'react-native-navigation';
 import { AccountService, BackendService, StyleService } from '@services';
 import NetworkService from '@services/NetworkService';
+import { HomeWarningBanner } from '@components/Modules/HomeWarningBanner';
+import { showTangemBackupWarning } from '@common/utils/tangemBackup';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
@@ -710,49 +712,21 @@ class HomeView extends Component<Props, State> {
     renderDegenWarning = () => {
         const { account } = this.state;
 
-        if (typeof account?.additionalInfoString === 'string') {
-            if (account?.additionalInfoString.startsWith('{"degenMode":')) {
-                return (
-                    <View style={[
-                        AppStyles.buttonRed,
-                        AppStyles.borderRadius,
-                        AppStyles.marginHorizontalSml,
-                        styles.degenWarning,
-                        AppStyles.row,
-                    ]}>
-                        <Text style={[
-                            // AppStyles.p,
-                            // AppStyles.strong,
-                            // AppStyles.textCenterAligned,
-                            styles.degenWarningText,
-                            AppStyles.flex6,
-                        ]}>
-                            {Localize.t('account.degenBackUpHomeWrn')}
-                        </Text>
-                        <Button
-                            roundedSmall
-                            onPress={() => {
-                                const secret = (JSON.parse(account?.additionalInfoString || '{}')?.degenMode || '')
-                                    .split('.');
-
-                                Navigator.push<AccountGenerateViewProps>(AppScreens.Account.Generate, {
-                                    initial: {
-                                        step: 'ViewPrivateKey',
-                                        secretNumbers: secret,
-                                    },
-                                });
-                            }} 
-                            label={Localize.t('account.degenBackUpNowBtn')}
-                            style={[
-                                AppStyles.buttonRed,
-                                styles.backUpButton,
-                            ]}
-                        />
-                    </View>
-                );
-            }
+        if (!account) return null;
+        if (showTangemBackupWarning(account, NetworkService.getNetwork().key)) {
+            return <HomeWarningBanner variant="orange" title={Localize.t('tangemBackup.warningTitle')}
+                subtitle={Localize.t('tangemBackup.warningBody')}
+                onPress={() => { Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account }); }} />;
         }
-
+        if (account.additionalInfoString?.startsWith('{"degenMode":')) {
+            return <HomeWarningBanner variant="red" title={Localize.t('tangemBackup.secretsTitle')}
+                subtitle={Localize.t('tangemBackup.secretsBody')} onPress={() => {
+                    const secret = (JSON.parse(account.additionalInfoString || '{}')?.degenMode || '').split('.');
+                    Navigator.push<AccountGenerateViewProps>(AppScreens.Account.Generate, {
+                        initial: { step: 'ViewPrivateKey', secretNumbers: secret },
+                    });
+                }} />;
+        }
         return null;
     };
 

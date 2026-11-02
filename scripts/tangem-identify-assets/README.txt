@@ -22,3 +22,8 @@ The generator uses built-in CoreGraphics/ImageIO only. The exported SVG contains
 the outlined Xaman mark, so SVG/PNG files have no font or linked-image dependency.
 The paths, gradients and raster images are exported from the same geometry.
 PNG files use sRGB and transparency. No runtime or build dependency is added.
+
+Tangem backup artwork: ImageBackupTangem / ImageBackupTangemLight use the same
+geometry, a #F6C343 to #D99A1E gold gradient, #9C6A08 contours and a plus badge.
+The wizard layers the existing blue card and the gold card without changing
+other Identify assets or app palette tokens.

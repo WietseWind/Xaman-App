@@ -131,10 +131,10 @@ func wordmark() -> CGPath {
     return path.copy(using: &placement)!
 }
 
-func hero(dark: Bool) -> Artwork {
+func hero(dark: Bool, gold: Bool = false) -> Artwork {
     var art = Artwork(width: 220, height: 150)
-    let cardColor = "0030CF"
-    let cardInk = "FFFFFF"
+    let cardColor = gold ? "F6C343" : "0030CF"
+    let cardInk = gold ? "604004" : "FFFFFF"
     let badgeColor = dark ? "272B47" : "EEF0FB"
     let badgeRing = dark ? "12131B" : "F8F9FC"
     let card = rounded(20, 25, 172, 100, radius: 11)
@@ -146,7 +146,7 @@ func hero(dark: Bool) -> Artwork {
         let shadow = turn.concatenating(CGAffineTransform(translationX: 0, y: offset))
         art.add(card, dark ? "000000" : "1C2440", opacity: dark ? 0.10 : 0.04, transform: shadow)
     }
-    art.add(card, cardColor, gradientTo: "16339C", transform: turn)
+    art.add(card, cardColor, gradientTo: gold ? "D99A1E" : "16339C", transform: turn)
     // A restrained contour finish follows the physical Xaman card reference.
     for inset: CGFloat in [0, 13, 27, 42, 58, 75] {
         let contour = CGMutablePath()
@@ -160,7 +160,7 @@ func hero(dark: Bool) -> Artwork {
         contour.addCurve(to: CGPoint(x: 4 + inset * 0.35, y: 132),
             control1: CGPoint(x: 160 - inset * 0.1, y: 150 - inset * 0.16),
             control2: CGPoint(x: 50 + inset * 0.1, y: 169 - inset * 0.15))
-        art.add(contour, "112B96", opacity: 0.34, stroke: 1.7, clip: card, transform: turn)
+        art.add(contour, gold ? "9C6A08" : "112B96", opacity: 0.34, stroke: 1.7, clip: card, transform: turn)
     }
     art.add(wordmark(), cardInk, transform: turn)
     let radio = CGAffineTransform(translationX: 150, y: 46)
@@ -171,7 +171,14 @@ func hero(dark: Bool) -> Artwork {
     art.add(circle(181, 117, 20), badgeColor)
     let badgeGlyph = CGAffineTransform(translationX: 170, y: 106)
         .scaledBy(x: 22 / 24, y: 22 / 24)
-    art.add(scan(), dark ? "91AEFF" : cardColor, stroke: 2.25, transform: badgeGlyph)
+    if gold {
+        let plus = CGMutablePath()
+        plus.move(to: CGPoint(x: 5, y: 12)); plus.addLine(to: CGPoint(x: 19, y: 12))
+        plus.move(to: CGPoint(x: 12, y: 5)); plus.addLine(to: CGPoint(x: 12, y: 19))
+        art.add(plus, "9C6A08", stroke: 2.25, transform: badgeGlyph)
+    } else {
+        art.add(scan(), dark ? "91AEFF" : cardColor, stroke: 2.25, transform: badgeGlyph)
+    }
     return art
 }
 
@@ -285,6 +292,8 @@ func png(_ art: Artwork, scale: CGFloat, destination: URL) throws {
 let assets: [(String, String, Artwork, URL)] = [
     ("ImageIdentifyTangem", "image_identify_tangem", hero(dark: false), graphics),
     ("ImageIdentifyTangemLight", "image_identify_tangem_light", hero(dark: true), graphics),
+    ("ImageBackupTangem", "image_backup_tangem", hero(dark: false, gold: true), graphics),
+    ("ImageBackupTangemLight", "image_backup_tangem_light", hero(dark: true, gold: true), graphics),
     ("IconScanCard", "icon_scan_card", icon(), icons),
 ]
 for (name, filename, art, catalog) in assets {

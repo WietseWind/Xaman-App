@@ -69,6 +69,10 @@ class Account extends Realm.Object<Account> {
         return this.getDetails()?.balance ?? 0;
     }
 
+    get sequence(): number {
+        return this.getDetails()?.sequence ?? 0;
+    }
+
     get ownerCount(): number {
         return this.getDetails()?.ownerCount ?? 0;
     }

@@ -17,6 +17,7 @@ import { AppScreens } from '@common/constants';
 import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
 import { hasTangemIdentifyExit } from '@common/utils/tangemIdentifyNavigation';
+import { explainRetiredTangemBackup, isRetiredTangemBackup } from '@common/helpers/retiredTangemBackup';
 import { captureTangemIdentifyRoute, TangemIdentifyRoute } from '@common/helpers/tangemIdentifyRoute';
 
 import Localize from '@locale';
@@ -477,6 +478,7 @@ class LinkingService {
         const { xapp, params } = parsed;
 
         if (!xapp) return;
+        if (isRetiredTangemBackup(xapp)) { await explainRetiredTangemBackup(); return; }
 
         const identify = entryIdentify?.fork();
         let identifyTransferred = false;

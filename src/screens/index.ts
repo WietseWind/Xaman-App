@@ -19,6 +19,7 @@ import AccountList from './Account/List';
 import AccountEdit from './Account/Edit';
 import AccountChangePassphrase from './Account/Edit/ChangePassphrase';
 import AccountChangeTangemSecurity from './Account/Edit/ChangeTangemSecurity';
+import AccountBackupTangemCard from './Account/Edit/BackupTangemCard';
 import AccountIdentifyTangemCard from './Account/Edit/IdentifyTangemCard';
 import AccountCipherMigrationView from './Account/Migration/CipherMigration';
 
@@ -116,6 +117,7 @@ export {
     AccountChangePassphrase,
     AccountChangeTangemSecurity,
     AccountIdentifyTangemCard,
+    AccountBackupTangemCard,
     AccountImport,
     AccountGenerate,
     AccountCipherMigrationView,

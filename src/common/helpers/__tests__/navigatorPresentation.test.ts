@@ -3,6 +3,12 @@ import { Platform } from 'react-native';
 import NavigationService from '@services/NavigationService';
 import { AppScreens } from '@common/constants';
 import { ModalReservation, Navigator } from '../navigator';
+import { explainRetiredTangemBackup } from '../retiredTangemBackup';
+
+jest.mock('../retiredTangemBackup', () => ({
+    explainRetiredTangemBackup: jest.fn(async () => undefined),
+    isRetiredTangemBackup: (identifier?: string) => identifier?.toLowerCase() === 'xumm.tangem-backup',
+}));
 
 const review = AppScreens.Modal.ReviewTransaction;
 const alert = AppScreens.Overlay.Alert;
@@ -282,3 +288,20 @@ it.each(['registerComponentDidAppearListener', 'registerCommandListener', 'regis
         expect(listenerCount()).toBe(0);
     },
 );
+
+it.each(['xumm.tangem-backup', 'XUMM.TANGEM-BACKUP'])(
+    'intercepts the retired xApp %s before native browser presentation', async identifier => {
+        expect(await Navigator.showModal(AppScreens.Modal.XAppBrowser, { identifier })).toBe(false);
+        expect(explainRetiredTangemBackup).toHaveBeenCalledTimes(1);
+        expect(Navigation.showModal).not.toHaveBeenCalled();
+    },
+);
+
+it('intercepts a retired deep link before scheduling an xApp launch', async () => {
+    const linking = require('@services/LinkingService').default;
+    await linking.handleXAPPLink('https://xaman.app/detect/xapp:xumm.tangem-backup', {
+        xapp: 'xumm.tangem-backup', params: {},
+    });
+    expect(explainRetiredTangemBackup).toHaveBeenCalledTimes(1);
+    expect(Navigation.showModal).not.toHaveBeenCalled();
+});

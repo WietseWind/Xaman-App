@@ -21,30 +21,6 @@ const styles = StyleService.create({
     },
     hideTopElements: {
     },
-    degenWarning: {
-        paddingVertical: 7,
-        paddingHorizontal: 10, 
-        paddingLeft: 13,
-        marginBottom: 6,
-        borderRadius: 11,
-        backgroundColor: '$lightRed',
-        borderColor: '$red',
-        // borderWidth: 2,
-    },
-    backUpButton: {
-        borderRadius: 7,
-        paddingHorizontal: 12,
-        marginLeft: 10,
-        // borderColor: '$white',
-        height: '100%',
-    },
-    degenWarningText: {
-        color: '$red',
-        fontWeight: 'bold',
-        fontSize: 13,
-        paddingVertical: 2,
-        lineHeight: 15,
-    },
     monetizationContainer: {
         marginHorizontal: AppSizes.paddingSml,
         marginBottom: AppSizes.paddingExtraSml,

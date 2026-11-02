@@ -6,6 +6,9 @@ import { first, filter } from 'lodash';
 import React, { Component } from 'react';
 import { Alert, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
+import AccountService from '@services/AccountService';
+import LoggerService from '@services/LoggerService';
+import NetworkService from '@services/NetworkService';
 import PushNotificationsService from '@services/PushNotificationsService';
 
 import { Prompt } from '@common/helpers/interface';
@@ -95,6 +98,8 @@ class AccountSettingsView extends Component<Props, State> {
         const { account } = this.state;
 
         AccountRepository.on('accountUpdate', this.onAccountUpdate);
+        NetworkService.on('networkChange', this.refreshBackup);
+        this.refreshBackup();
 
         const accountCanSign = this.canAccountSign(account);
         this.setState({ accountCanSign });
@@ -115,6 +120,7 @@ class AccountSettingsView extends Component<Props, State> {
 
     componentWillUnmount() {
         AccountRepository.off('accountUpdate', this.onAccountUpdate);
+        NetworkService.off('networkChange', this.refreshBackup);
     }
 
     onAccountUpdate = (updateAccount: AccountModel) => {
@@ -125,6 +131,38 @@ class AccountSettingsView extends Component<Props, State> {
                 account: updateAccount,
             });
         }
+    };
+
+    refreshBackup = () => {
+        const { account } = this.state;
+        if (account.type === AccountTypes.Tangem) {
+            AccountService.updateAccountInfo(account.address).catch(error =>
+                LoggerService.recordError('Unable to refresh Tangem back-up details', error));
+        }
+    };
+
+    showTangemBackup = () => {
+        const { account } = this.state;
+        Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
+    };
+
+    renderTangemBackup = () => {
+        const { account } = this.state;
+        const key = account.regularKey;
+        const known = key ? AccountRepository.findOne({ address: key }) : undefined;
+        return <View testID="tangem-backup-details" style={styles.cardRow}>
+            <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.title')}</Text>
+            {!!key && !!known?.label && <Text style={styles.backupName}>{accountListLabel(known)}</Text>}
+            {!!key && <Text selectable style={styles.cardDetailValue}>{key}</Text>}
+            {!!key && !known && (
+                <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.notImported')}</Text>
+            )}
+            {!key && <Text style={styles.backupNotSet}>{Localize.t('tangemBackup.notSet')}</Text>}
+            <Button testID="tangem-backup-button"
+                label={Localize.t(key ? 'tangemBackup.replace' : 'tangemBackup.setUp')}
+                onPress={this.showTangemBackup} roundedMini nonBlock allowFontScaling light={!!key}
+                style={styles.backupButton} />
+        </View>;
     };
 
     accountLabelPressed = () => {
@@ -507,6 +545,7 @@ class AccountSettingsView extends Component<Props, State> {
                                 }
                             />
                         )}
+                        {account.type === AccountTypes.Tangem && this.renderTangemBackup()}
                     </SettingsSection>
                     <SettingsSection title={Localize.t('global.settings')}>
                         {accountCanSign && (

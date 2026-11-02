@@ -574,6 +574,12 @@ const Navigator = {
         options: Options = {},
         reservation: symbol | undefined = undefined,
     ): Promise<string | boolean> {
+        if (modal === AppScreens.Modal.XAppBrowser &&
+            String((passProps as any).identifier).toLowerCase() === 'xumm.tangem-backup') {
+            const { explainRetiredTangemBackup } = require('./retiredTangemBackup') as
+                typeof import('./retiredTangemBackup');
+            return explainRetiredTangemBackup().then(() => false);
+        }
         const currentScreen = NavigationService.getCurrentModal();
         const owner = modalReservations.get(modal)?.token;
         if ((owner && owner !== reservation) || (reservation && owner !== reservation)) {

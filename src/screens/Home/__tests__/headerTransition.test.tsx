@@ -2,6 +2,9 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { AccessibilityInfo, InteractionManager, LayoutAnimation } from 'react-native';
 import HomeView from '../HomeView';
+import NetworkService from '@services/NetworkService';
+import { Navigator } from '@common/helpers/navigator';
+import { AppScreens } from '@common/constants';
 
 jest.mock('@store/repositories', () => ({
     CoreRepository: { getSettings: () => ({ account: {}, network: {} }), on: jest.fn(), off: jest.fn() },
@@ -14,7 +17,7 @@ jest.mock('@common/libs/preferences', () => ({
 jest.mock('react-native-navigation', () => ({
     Navigation: { events: () => ({ bindComponent: () => ({ remove: jest.fn() }) }) },
 }));
-jest.mock('@common/helpers/navigator', () => ({ Navigator: {} }));
+jest.mock('@common/helpers/navigator', () => ({ Navigator: { push: jest.fn() } }));
 jest.mock('tangem-sdk-react-native', () => ({
     __esModule: true, default: { stopSession: () => Promise.resolve() },
 }));
@@ -150,4 +153,33 @@ it('cancels a pending sheet open when the account or network changes', async () 
     finishTransition();
     expect(open).not.toHaveBeenCalled();
     expect(home.state.hideTopElements).toBe(false);
+});
+
+it('preserves the quick-onboarding secret-number backup action on the whole red banner', async () => {
+    const home = await mount();
+    act(() =>
+        home.setState({
+            account: { type: 'Regular', additionalInfoString: '{"degenMode":"0.0.0.0.0.0.0.0"}' } as any,
+        }),
+    );
+    jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ key: 'MAINNET' } as any);
+    const warning = home.renderDegenWarning()!;
+    expect(warning.props.variant).toBe('red');
+    warning.props.onPress();
+    expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Generate, {
+        initial: { step: 'ViewPrivateKey', secretNumbers: Array(8).fill('0') },
+    });
+});
+
+it('opens the native backup wizard from the eligible Tangem Home banner and hides a confirmed link', async () => {
+    const home = await mount();
+    const account: any = { type: 'Tangem', balance: 10, flags: {}, additionalInfo: { cardId: 'SYNTHETIC' } };
+    act(() => home.setState({ account }));
+    jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ key: 'MAINNET' } as any);
+    const warning = home.renderDegenWarning()!;
+    expect(warning.props.variant).toBe('orange');
+    warning.props.onPress();
+    expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Edit.BackupTangemCard, { account });
+    account.regularKey = 'rBackup';
+    expect(home.renderDegenWarning()).toBeNull();
 });

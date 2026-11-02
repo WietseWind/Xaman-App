@@ -11,7 +11,8 @@ import AccountList from '../AccountsListView';
 import { SettingsRow } from '@screens/Settings/SettingsSection';
 
 jest.mock('@store/repositories', () => ({
-    AccountRepository: { getAccounts: jest.fn(), getSignableAccounts: jest.fn(() => []), update: jest.fn() },
+    AccountRepository: { findOne: jest.fn(), getAccounts: jest.fn(),
+        getSignableAccounts: jest.fn(() => []), update: jest.fn() },
     CoreRepository: {},
 }));
 jest.mock('@store/repositories/core', () => ({ __esModule: true, default: {} }));
@@ -194,4 +195,32 @@ it('does not read an invalidated Realm account while returning from account remo
             tree = renderer.create(screen.render());
         });
     }).not.toThrow();
+});
+
+it('offers native back-up setup alongside existing Tangem security controls', () => {
+    const screen = renderEdit({ type: AccountTypes.Tangem, additionalInfo: { cardId: 'SYNTHETIC' } });
+    const button = tree.root
+        .findAllByType(Button)
+        .find((node) => node.props.testID === 'tangem-backup-button')!;
+    expect(button.props.label).toBe(Localize.t('tangemBackup.setUp'));
+    act(() => button.props.onPress());
+    expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Edit.BackupTangemCard, {
+        account: screen.state.account,
+    });
+    expect(row('account.cardEnforcedSecurity')).toBeDefined();
+});
+
+it.each([true, false])('shows the on-chain back-up address with a local name only when known=%s', (known) => {
+    jest.mocked(AccountRepository.findOne).mockReturnValue(
+        known ? account({ label: 'My spare card', type: AccountTypes.Tangem }) : undefined,
+    );
+    renderEdit({ type: AccountTypes.Tangem, regularKey: 'rBackup', additionalInfo: { cardId: 'SYNTHETIC' } });
+    const texts = tree.root.findAllByType(Text).map((node) => node.props.children);
+    expect(texts).toContain('rBackup');
+    expect(texts.includes(Localize.t('tangemBackup.notImported'))).toBe(!known);
+    if (known) expect(texts).toContain('💳 My spare card');
+    const button = tree.root
+        .findAllByType(Button)
+        .find((node) => node.props.testID === 'tangem-backup-button')!;
+    expect(button.props.label).toBe(Localize.t('tangemBackup.replace'));
 });
