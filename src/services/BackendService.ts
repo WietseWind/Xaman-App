@@ -41,6 +41,7 @@ import Localize from '@locale';
 import { Props as TermOfUseViewProps } from '@screens/Settings/TermOfUse/types';
 import { AccountLinesTrustline } from '@common/libs/ledger/types/methods';
 import { AccountRepository } from '@store/repositories';
+import { EXTERNAL_ASSET_LIMIT, supportsExternalAssets } from '@common/helpers/externalAssets';
 
 /* Types  ==================================================================== */
 export interface RatesType {
@@ -844,7 +845,12 @@ class BackendService {
         marker?: string,
         combined = [] as AccountLinesTrustline[],
     ): Promise<AccountLinesTrustline[]> => {
-        return this.getExtAssets(account, NetworkService.getConnectionDetails().networkKey).then(async (resp) => {
+        const network = NetworkService.getConnectionDetails().networkKey;
+        if (!supportsExternalAssets(network)) return [];
+
+        return this.getExtAssets(account, network).then(async (resp) => {
+            if (NetworkService.getConnectionDetails().networkKey !== network ||
+                (resp?.network && resp.network !== network)) return [];
             if ('error' in resp) {
                 this.logger.error('Unable to get ext assets state', resp.error);
                 return combined;
@@ -867,7 +873,7 @@ class BackendService {
                             account: asset.account,
                             currency: asset.currency,
                             balance: asset.balance,
-                            limit: String(-9999999999),
+                            limit: EXTERNAL_ASSET_LIMIT,
                             limit_peer: asset.limit_peer,
                             no_ripple: true,
                             no_ripple_peer: false,
