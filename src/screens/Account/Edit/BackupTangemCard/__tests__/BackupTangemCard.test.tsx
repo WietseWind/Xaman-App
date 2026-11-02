@@ -264,7 +264,7 @@ describe('Tangem backup wizard UI', () => {
             .find((node) => node.props.children === Localize.t('tangemBackup.introTitle'))!;
         expect(StyleSheet.flatten(title.props.style).color).toBe('#F0F1FA');
     });
-    it('shows the wrong-card serial and keeps the scan action available', async () => {
+    it('identifies the selected card by name in the error alert and keeps scanning available', async () => {
         await press();
         deps.scan = jest.fn(async () => backup);
         await press();
@@ -272,12 +272,14 @@ describe('Tangem backup wizard UI', () => {
             expect.objectContaining({
                 type: 'error',
                 title: Localize.t('account.tangemDifferentCard'),
-                text: expect.stringContaining('BACKUP'),
+                text: Localize.t('tangemBackup.wrongSource', { name: account.label }),
             }),
         );
-        expect(jest.mocked(Navigator.showAlertModal).mock.calls[0][0].text).toContain(
-            Localize.t('tangemBackup.wrongSource'),
-        );
+        const message = jest.mocked(Navigator.showAlertModal).mock.calls[0][0].text as string;
+        expect(message).toContain(account.label);
+        expect(message).not.toContain(sourceCard.cardId);
+        expect(message).not.toContain('BACKUP');
+        expect(message).not.toContain(Localize.t('account.tangemScannedAccount'));
         expect(tree.root.findAllByProps({ testID: 'backup-error' })).toHaveLength(0);
         expect(tree.root.findByProps({ testID: 'backup-next' }).props.isDisabled).toBe(false);
         act(() => tree.update(<BackupTangemCard account={account} />));

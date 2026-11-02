@@ -24,6 +24,10 @@ describe('Tangem back-up wizard translations', () => {
         const step = i18n.t('tangemBackup.step', { number: 2 });
         expect(step).toContain('2');
         expect(step).not.toMatch(/%\{|missing/i);
+        const name = 'Everyday "card" 💳';
+        const wrongCard = i18n.t('tangemBackup.wrongSource', { name });
+        expect(wrongCard).toContain(name);
+        expect(wrongCard).not.toMatch(/%\{name\}|missing/i);
         if (file !== 'en-AU.json') {
             expect(translated.introBody).not.toBe(english.introBody);
             expect(translated.reviewBody).not.toBe(english.reviewBody);

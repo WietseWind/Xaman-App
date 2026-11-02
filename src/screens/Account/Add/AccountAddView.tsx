@@ -221,11 +221,6 @@ class AccountAddView extends Component<Props, State> {
                                     {Localize.t('tangemImportMsgs.existingDescription')}
                                 </Text>
                             </View>
-                            <View>
-                                <Text style={[ AppStyles.pbold, AppStyles.textCenterAligned ]}>
-                                    {Localize.t('tangemImportMsgs.existingDescriptionUsedBefore')}
-                                </Text>
-                            </View>
                             <View style={[ AppStyles.column, AppStyles.marginTopSml ]}>
                                 <Text style={[ AppStyles.baseText, AppStyles.textCenterAligned ]}>
                                     {Localize.t('tangemImportMsgs.existingDescriptionBoldAfter')}

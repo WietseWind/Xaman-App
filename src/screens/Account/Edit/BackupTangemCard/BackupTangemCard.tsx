@@ -226,9 +226,15 @@ class BackupTangemCardView extends Component<Props, State> {
         this.flow.checkStatus();
     };
     showStepError = () => {
-        const { error, scannedSerial } = this.state;
+        const { error } = this.state;
         if (!error) return;
-        const message = Localize.t(`tangemBackup.${errorKey(error)}`);
+        const name = this.flow.source.label?.trim();
+        const message =
+            error === 'wrongSource'
+                ? name
+                    ? Localize.t('tangemBackup.wrongSource', { name })
+                    : Localize.t('tangemBackup.sourceTitle')
+                : Localize.t(`tangemBackup.${errorKey(error)}`);
         const warning = ['cancelled', 'feeChanged'].includes(error);
         Navigator.showAlertModal({
             testID: 'backup-error-alert',
@@ -236,10 +242,7 @@ class BackupTangemCardView extends Component<Props, State> {
             title: Localize.t(
                 error === 'wrongSource' ? 'account.tangemDifferentCard' : warning ? 'global.warning' : 'global.error',
             ),
-            text:
-                error === 'wrongSource' && scannedSerial
-                    ? `${message}\n\n${Localize.t('account.cardId')}: ${backupCardSerial(this.flow.source.card)}\n${Localize.t('account.tangemScannedAccount')}: ${scannedSerial}`
-                    : message,
+            text: message,
             buttons: [{ text: Localize.t('global.ok'), testID: 'backup-error-ok' }],
         }).catch((failure) => LoggerService.recordError('Unable to show Tangem back-up alert', failure));
     };
