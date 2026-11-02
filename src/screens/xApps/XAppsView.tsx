@@ -32,6 +32,7 @@ export interface State {
     categoryFilter?: string;
     dataSource: SectionData[];
     isLoading: boolean;
+    isRefreshing: boolean;
     searchEnabled: boolean;
     searchQuery: string;
 }
@@ -63,6 +64,7 @@ class XAppsView extends Component<Props, State> {
             searchEnabled: false,
             searchQuery: '',
             isLoading: false,
+            isRefreshing: false,
         };
     }
 
@@ -105,21 +107,29 @@ class XAppsView extends Component<Props, State> {
         this.networkContext = context;
         this.requestEpoch++;
         this.mountTask?.cancel();
-        this.setState({ categories: undefined, message: undefined, dataSource: [], isLoading: false }, () => {
+        this.setState({
+            categories: undefined, message: undefined, dataSource: [], isLoading: false, isRefreshing: false,
+        }, () => {
             if (this.mounted) this.fetchStoreListings();
         });
     };
 
-    fetchStoreListings = async (): Promise<void> => {
+    private onRefresh = () => this.fetchStoreListings(true);
+
+    fetchStoreListings = async (showRefreshIndicator = false): Promise<void> => {
         if (!this.mounted) return;
         const context = this.getNetworkContext();
         const epoch = ++this.requestEpoch;
         this.networkContext = context;
         if (!context) {
-            this.setState({ categories: undefined, message: undefined, dataSource: [], isLoading: false });
+            this.setState({
+                categories: undefined, message: undefined, dataSource: [], isLoading: false, isRefreshing: false,
+            });
             return;
         }
-        this.setState({ isLoading: true });
+        // Background loads keep the list still. Only a user pull opens the native
+        // refresh control; a superseding request must not dismiss that feedback.
+        this.setState((state) => ({ isLoading: true, isRefreshing: showRefreshIndicator || state.isRefreshing }));
         const current = () => this.mounted && epoch === this.requestEpoch && context === this.getNetworkContext();
         try {
             const { message, categories } = await BackendService.getXAppStoreListings(
@@ -131,11 +141,13 @@ class XAppsView extends Component<Props, State> {
                 categories,
                 dataSource: this.dataForState(categories, state),
                 isLoading: false,
+                isRefreshing: false,
             }));
         } catch {
             if (!current()) return;
             this.setState((state) => ({
                 isLoading: false,
+                isRefreshing: false,
                 // A failed first request must finish the loading placeholders.
                 // A failed refresh keeps the last usable catalog and current view.
                 dataSource: state.categories ? this.dataForState(state.categories, state) : [],
@@ -286,7 +298,7 @@ class XAppsView extends Component<Props, State> {
 
     renderContent = () => {
         const {
-            message, dataSource, activeSection, categoryFilter, searchEnabled, searchQuery, isLoading,
+            message, dataSource, activeSection, categoryFilter, searchEnabled, searchQuery, isLoading, isRefreshing,
         } = this.state;
         if (searchEnabled) {
             return (
@@ -336,8 +348,8 @@ class XAppsView extends Component<Props, State> {
                 <AppsList
                     visible={activeSection !== Sections.Categories || !!categoryFilter}
                     dataSource={dataSource}
-                    onRefresh={this.fetchStoreListings}
-                    refreshing={isLoading}
+                    onRefresh={this.onRefresh}
+                    refreshing={isLoading && isRefreshing}
                     containerStyle={styles.appListContainer}
                     ListHeaderComponent={activeSection === Sections.Home ? (
                         <HeaderMessage visible message={message} containerStyle={styles.headerMessageContainer} />

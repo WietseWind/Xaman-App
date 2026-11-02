@@ -230,6 +230,92 @@ it('retains the last usable list and query when a refresh fails', async () => {
     expect(view.state.searchQuery).toBe('swap');
 });
 
+it('loads initially and on tab return without opening the native pull-to-refresh control', async () => {
+    const view = mount();
+    expect(view.state.isLoading).toBe(true);
+    expect(list().refreshing).toBe(false);
+    await reply();
+    const before = ids(view);
+    act(() => view.componentDidAppear());
+    expect(requests).toHaveLength(2);
+    expect(view.state.isLoading).toBe(true);
+    expect(list().refreshing).toBe(false);
+    expect(ids(view)).toEqual(before);
+    await reply(1);
+    expect(list().refreshing).toBe(false);
+});
+
+it.each(['success', 'failure'])('ends explicit pull feedback on %s', async (outcome) => {
+    const view = mount(); await reply(); select(view, Sections.Categories);
+    act(() => view.onCategoryChipPress({ value: 'Trading' }));
+    const before = ids(view);
+    act(() => { list().onRefresh(); });
+    expect(list().refreshing).toBe(true);
+    expect(ids(view)).toEqual(before);
+    await act(async () => {
+        if (outcome === 'success') requests[1].resolve(response());
+        else requests[1].reject(new Error('Offline'));
+        await flush();
+    });
+    expect(list().refreshing).toBe(false);
+    expect(view.state.isLoading).toBe(false);
+    expect(view.state.categoryFilter).toBe('Trading');
+    expect(ids(view)).toEqual(before);
+});
+
+it('keeps a pull indicator visible when a newer background request supersedes that pull', async () => {
+    const view = mount(); await reply();
+    act(() => { list().onRefresh(); });
+    act(() => view.componentDidAppear());
+    expect(list().refreshing).toBe(true);
+    await reply(1);
+    expect(list().refreshing).toBe(true);
+    await reply(2);
+    expect(list().refreshing).toBe(false);
+});
+
+it('does not let an older background reply finish a newer explicit pull', async () => {
+    const view = mount(); await reply();
+    act(() => view.componentDidAppear());
+    act(() => { list().onRefresh(); });
+    await act(async () => { requests[1].reject(new Error('Old request')); await flush(); });
+    expect(list().refreshing).toBe(true);
+    await reply(2);
+    expect(list().refreshing).toBe(false);
+});
+
+it('resets pull feedback when the network changes and rejects stale completion on the new network', async () => {
+    mount(); await reply();
+    act(() => { list().onRefresh(); });
+    expect(list().refreshing).toBe(true);
+    await switchNetwork(networkB);
+    expect(list().refreshing).toBe(false);
+    act(() => { list().onRefresh(); });
+    await reply(1);
+    await reply(2);
+    expect(list().refreshing).toBe(true);
+    await reply(3);
+    expect(list().refreshing).toBe(false);
+});
+
+it('ends pull feedback if the active network becomes unavailable', async () => {
+    mount(); await reply();
+    act(() => { list().onRefresh(); });
+    await switchNetwork(undefined as any);
+    expect(list().refreshing).toBe(false);
+    await reply(1);
+    expect(list().refreshing).toBe(false);
+});
+
+it('ignores a manual refresh completion after unmount', async () => {
+    const view = mount(); await reply();
+    act(() => { list().onRefresh(); });
+    const update = jest.spyOn(view, 'setState');
+    act(() => tree!.unmount()); tree = undefined; update.mockClear();
+    await reply(1);
+    expect(update).not.toHaveBeenCalled();
+});
+
 it('rejects late network A data after switching to B, including an A-B-A return', async () => {
     const view = mount();
     await switchNetwork(networkB);
