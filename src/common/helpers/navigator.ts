@@ -259,7 +259,7 @@ const getBottomTabIconOptions = (
     const { icon, iconSelected, scale } = icons[tabKey];
     const glassSideIcon = iosGlassTabBar && tabKey !== AppScreens.TabBar.Actions;
     // UIImage.scale is inverse. Keep the existing reduction, with a 21pt canvas
-    // floor so compact @2x devices retain a >=2pt stroke and legible glyphs.
+    // floor so compact @2x devices retain a >=1.5pt stroke and legible glyphs.
     const imageScale = glassSideIcon ? Math.min(scale / 0.72, (64 * (PixelRatio.get() || 2)) / 21) : scale;
     const foreground = glassSideIcon ? HexToRgbA(StyleService.value('$textPrimary'), 0.6) : undefined;
     const selectedForeground = glassSideIcon ? StyleService.value('$textPrimary') : undefined;

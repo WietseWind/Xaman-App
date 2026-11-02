@@ -201,7 +201,7 @@ it.each([
     { width: 375, height: 667, scale: 2, bottom: 0 },
     { width: 393, height: 852, scale: 3, bottom: 34 },
     { width: 430, height: 932, scale: 3, bottom: 34 },
-])('keeps every iOS navbar glyph at least 2pt thick on $width pt screens', async (profile) => {
+])('uses the requested midpoint iOS navbar stroke on $width pt screens', async (profile) => {
     const assets = require('../../../../scripts/xapp-store-assets/asset-map.json');
     const runtime = makeRuntime('ios', '27.0.1', profile);
     const options = await start(runtime);
@@ -209,7 +209,8 @@ it.each([
     const sideAssets = Object.entries(assets).filter(([name]) => name.startsWith('IconTabBar'));
     expect(sideAssets).toHaveLength(12);
     sideAssets.forEach(([, asset]: any) => {
-        expect(asset.ios_native_stroke_width * profile.scale / iconScale).toBeGreaterThanOrEqual(2);
+        expect(asset.ios_native_stroke_width).toBeCloseTo((3.2 + 6.4) / 2);
+        expect(asset.ios_native_stroke_width * profile.scale / iconScale).toBeGreaterThanOrEqual(1.5);
         expect(asset.native_stroke_width).toBe(3.2);
     });
 });

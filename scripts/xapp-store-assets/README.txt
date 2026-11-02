@@ -36,8 +36,8 @@ Global bottom bar:
   calculate native RNN sizes from them. The manifest fits new paths near the old
   painted height (about 43/64), with a fixed native line width to keep consistent
   visual weight. No navigator sizing change is needed.
-- iOS side glyphs use a 6.4pt source stroke on the 64pt canvas so the reduced glass
-  icons retain at least a 2pt displayed line. Android retains its existing 3.2pt
+- iOS side glyphs use a 4.8pt source stroke on the 64pt canvas, the midpoint
+  between the previous 3.2pt and heavier 6.4pt versions. Android retains its existing 3.2pt
   source stroke. The export keeps the same painted bounds and canvas sizes.
 - Native RNN currently preserves original image colours. Unselected stays #848CB8;
   selected is black in the light app and white in the dark app. All three variants
@@ -45,7 +45,7 @@ Global bottom bar:
 - On the iPhone glass bar, navigator.ts tints both states of the four side icons
   with matching label colours: textPrimary at 60% opacity for inactive tabs,
   opaque textPrimary for the active tab. It preserves the existing 0.72 image-size factor, with a 21pt
-  canvas minimum on compact @2x devices to keep the displayed stroke >=2pt. Regular bars
+  canvas minimum on compact @2x devices to keep the displayed stroke >=1.5pt. Regular bars
   keep the original PNG colours and sizes. Both initial tabs and theme refresh use
   this rule. Explicit 10pt labels are stable across theme changes. The native
   glass bar adopts the app-selected light/dark style independently of the OS.

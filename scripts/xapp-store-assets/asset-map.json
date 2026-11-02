@@ -136,7 +136,7 @@
       "3x": "icon home@3x.png"
     },
     "native_color": "#848CB8",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarHomeSelected": {
     "file": "icon_tabbar_home_selected",
@@ -157,7 +157,7 @@
       "3x": "icon home dark@3x.png"
     },
     "native_color": "#000000",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarHomeSelectedLight": {
     "file": "icon_tabbar_home_selected_light",
@@ -178,7 +178,7 @@
       "3x": "icon home light@3x.png"
     },
     "native_color": "#FFFFFF",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarEvents": {
     "file": "icon_tabbar_events",
@@ -199,7 +199,7 @@
       "3x": "ei@3x.png"
     },
     "native_color": "#848CB8",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarEventsSelected": {
     "file": "icon_tabbar_events_selected",
@@ -220,7 +220,7 @@
       "3x": "ed@3x.png"
     },
     "native_color": "#000000",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarEventsSelectedLight": {
     "file": "icon_tabbar_events_selected_light",
@@ -241,7 +241,7 @@
       "3x": "dl@3x.png"
     },
     "native_color": "#FFFFFF",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarXapp": {
     "file": "icon_tabbar_xapp",
@@ -262,7 +262,7 @@
       "3x": "xApps grey@3x.png"
     },
     "native_color": "#848CB8",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarXappSelected": {
     "file": "icon_tabbar_xapp_selected",
@@ -283,7 +283,7 @@
       "3x": "xapps@3x.png"
     },
     "native_color": "#000000",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarXappSelectedLight": {
     "file": "icon_tabbar_xapp_selected_light",
@@ -304,7 +304,7 @@
       "3x": "xapps light@3x.png"
     },
     "native_color": "#FFFFFF",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarSettings": {
     "file": "icon_tabbar_settings",
@@ -325,7 +325,7 @@
       "3x": "s@3x.png"
     },
     "native_color": "#848CB8",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarSettingsSelected": {
     "file": "icon_tabbar_settings_selected",
@@ -346,7 +346,7 @@
       "3x": "sdark@3x.png"
     },
     "native_color": "#000000",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   },
   "IconTabBarSettingsSelectedLight": {
     "file": "icon_tabbar_settings_selected_light",
@@ -367,6 +367,6 @@
       "3x": "slight@3x.png"
     },
     "native_color": "#FFFFFF",
-    "ios_native_stroke_width": 6.4
+    "ios_native_stroke_width": 4.8
   }
 }
