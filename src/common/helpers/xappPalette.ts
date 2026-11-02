@@ -48,7 +48,7 @@ export function dominantImagePalette(pixels: number[]): XAppPalette | undefined 
     // Give colorful artwork a clearer light tint, but keep near-neutral icons
     // close to their source so black/white tiles do not become grey panels.
     const chroma = Math.max(...source) - Math.min(...source);
-    const tint = 0.03 + 0.21 * Math.min(1, chroma / 48);
+    const tint = 0.03 + 0.25 * Math.min(1, chroma / 48);
     const rgb = source.map(value => Math.round(value + (255 - value) * tint));
     // Native samples are 32x32. Inspect the middle of each edge, avoiding the
     // rounded corners. Transparent edges reveal the icon's themed backing.

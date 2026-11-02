@@ -21,13 +21,13 @@ afterEach(async () => {
 
 it('lightens the dominant cluster without averaging distinct icon colors', () => {
     expect(helper.dominantImagePalette([...Array(700).fill(blue), ...Array(324).fill(0xffff0000)]))
-        .toMatchObject({ background: '#3d62db', foreground: '#ffffff' });
+        .toMatchObject({ background: '#476adc', foreground: '#ffffff' });
 });
 
 it('groups antialiased shades and ignores transparent/low-alpha pixels', () => {
     expect(helper.dominantImagePalette([...Array(400).fill(0xff1030a0), ...Array(300).fill(0xff1131a1),
         ...Array(200).fill(0xffffffff), ...Array(124).fill(0x00123456)]))
-        .toMatchObject({ background: '#4962b7', foreground: '#ffffff' });
+        .toMatchObject({ background: '#536abb', foreground: '#ffffff' });
     expect(helper.dominantImagePalette([0, 0x7fffffff, NaN, Infinity, 1.2])).toBeUndefined();
     expect(helper.dominantImagePalette([])).toBeUndefined();
 });
@@ -50,7 +50,7 @@ it('deduplicates concurrent tiles and reuses an image palette across later rende
     const first = helper.getXAppPalette('https://example.com/icon.png');
     const second = helper.getXAppPalette('https://example.com/icon.png');
     expect(first).toBe(second);
-    await expect(first).resolves.toMatchObject({ background: '#3d62db' });
+    await expect(first).resolves.toMatchObject({ background: '#476adc' });
     await helper.getXAppPalette('https://example.com/icon.png');
     expect(sample).toHaveBeenCalledTimes(1);
 });
@@ -81,13 +81,13 @@ it.each(['#ffffff', '#000000', '#181a21', '#030b36'])(
 it('detects actual icon edge colors independently of its dominant center', () => {
     const pixels = Array(1024).fill(blue);
     for (let i = 8; i < 24; i++) {
-        [i, 31 * 32 + i, i * 32, i * 32 + 31].forEach(index => { pixels[index] = 0xff3d62db; });
+        [i, 31 * 32 + i, i * 32, i * 32 + 31].forEach(index => { pixels[index] = 0xff476adc; });
     }
     const original = helper.dominantImagePalette(pixels)!;
-    expect(original.background).toBe('#3d62db');
-    expect(original.edgeColors).toEqual(['#3d62db']);
+    expect(original.background).toBe('#476adc');
+    expect(original.edgeColors).toEqual(['#476adc']);
     const resolved = helper.resolveXAppPalette(original, '#030b36');
-    expect(visiblySeparate(resolved.background, '#3d62db')).toBe(true);
+    expect(visiblySeparate(resolved.background, '#476adc')).toBe(true);
     expect(contrast(resolved.background, resolved.foreground)).toBeGreaterThanOrEqual(4.5);
 });
 
@@ -174,7 +174,7 @@ it.each(['reject', 'throw'])('keeps a safe fallback after native %s and retries 
     await expect(helper.getXAppPalette('bad')).resolves.toBeUndefined();
     await helper.getXAppPalette('bad'); expect(sample).toHaveBeenCalledTimes(1);
     jest.advanceTimersByTime(30001); sample.mockResolvedValue([blue]);
-    await expect(helper.getXAppPalette('bad')).resolves.toMatchObject({ background: '#3d62db' });
+    await expect(helper.getXAppPalette('bad')).resolves.toMatchObject({ background: '#476adc' });
     expect(sample).toHaveBeenCalledTimes(2);
 });
 
@@ -184,7 +184,7 @@ it('times out stalled decoders so other queued icons can still get a palette', a
     const third = helper.getXAppPalette('third');
     await flush(); jest.advanceTimersByTime(8000); await flush();
     await expect(first).resolves.toBeUndefined(); await expect(second).resolves.toBeUndefined();
-    await expect(third).resolves.toMatchObject({ background: '#3d62db' });
+    await expect(third).resolves.toMatchObject({ background: '#476adc' });
     expect(jest.getTimerCount()).toBe(0);
 });
 
