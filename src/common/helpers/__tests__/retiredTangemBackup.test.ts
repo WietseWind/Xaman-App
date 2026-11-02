@@ -5,12 +5,15 @@ import { CoreRepository } from '@store/repositories';
 import { AccountTypes } from '@store/types';
 import NavigationService, { RootType } from '@services/NavigationService';
 import NetworkService from '@services/NetworkService';
+import AccountService from '@services/AccountService';
+import { Navigator } from '../navigator';
 import { explainRetiredTangemBackup, isRetiredTangemBackup } from '../retiredTangemBackup';
 
 jest.mock('@services/AccountService', () => ({
     __esModule: true,
     default: { updateAccountInfo: jest.fn(async () => undefined) },
 }));
+jest.mock('../navigator', () => ({ Navigator: { showAlertModal: jest.fn(async () => 'overlay.Alert') } }));
 jest.mock('@store/repositories', () => ({ CoreRepository: { getDefaultAccount: jest.fn() } }));
 jest.mock('@services/NetworkService', () => {
     const EventEmitter = require('events');
@@ -55,8 +58,10 @@ beforeEach(() => {
     jest.mocked(NavigationService.getCurrentOverlay).mockReturnValue(undefined);
     jest.mocked(NavigationService.getCurrentModal).mockReturnValue(undefined);
     jest.mocked(NavigationService.getCurrentScreen).mockReturnValue(AppScreens.TabBar.Home);
-    jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, options) => {
-        buttons = options!;
+    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    jest.mocked(Navigator.showAlertModal).mockImplementation(async (props) => {
+        buttons = props.buttons;
+        return 'overlay.Alert';
     });
     jest.mocked(Navigation.events).mockReturnValue({
         registerCommandListener: jest.fn((fn) => {
@@ -67,6 +72,7 @@ beforeEach(() => {
             appeared = fn;
             return { remove: jest.fn() };
         }),
+        registerComponentDidDisappearListener: jest.fn(() => ({ remove: jest.fn() })),
     } as any);
 });
 afterEach(() => {
@@ -79,18 +85,15 @@ describe('retired Tangem xApp entry', () => {
         expect(isRetiredTangemBackup('XUMM.TANGEM-BACKUP')).toBe(true);
         expect(isRetiredTangemBackup('xumm.other')).toBe(false);
     });
-    it.each([undefined, { ...selected, type: AccountTypes.Regular }])(
-        'offers only Close for %j',
-        async (account) => {
-            jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue(account);
-            const result = explainRetiredTangemBackup();
-            await flush();
-            expect(buttons).toHaveLength(1);
-            buttons[0].onPress();
-            await result;
-            expect(Navigation.push).not.toHaveBeenCalled();
-        },
-    );
+    it.each([undefined, { ...selected, type: AccountTypes.Regular }])('offers only Close for %j', async (account) => {
+        jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue(account);
+        const result = explainRetiredTangemBackup();
+        await flush();
+        expect(buttons).toHaveLength(1);
+        buttons[0].onPress();
+        await result;
+        expect(Navigation.push).not.toHaveBeenCalled();
+    });
     it('explains the retired link before any account has been imported', async () => {
         jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue(undefined);
         jest.mocked(NavigationService.getCurrentRoot).mockReturnValue('OnboardingRoot' as RootType);
@@ -105,6 +108,7 @@ describe('retired Tangem xApp entry', () => {
         const result = explainRetiredTangemBackup();
         await flush();
         expect(buttons).toHaveLength(2);
+        jest.mocked(Navigator.showAlertModal).mock.calls[0][0].onDismissed?.();
         buttons[1].onPress();
         await result;
         expect(Navigation.push).toHaveBeenCalledWith(
@@ -145,34 +149,51 @@ describe('retired Tangem xApp entry', () => {
             }),
         );
     });
-    it.each(['network', 'lock', 'account', 'root'])(
-        'does not route a stale alert after %s changes',
-        async (change) => {
-            const result = explainRetiredTangemBackup();
-            await flush();
-            if (change === 'network') NetworkService.emit('networkChange', {} as any);
-            if (change === 'lock') {
-                command('showOverlay', { layout: { component: { name: AppScreens.Overlay.Lock } } });
-            }
-            if (change === 'root') NavigationService.emit('setRoot', RootType.DefaultRoot);
-            if (change === 'account') {
-                jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue({
-                    ...selected,
-                    address: 'rOther',
-                });
-            }
-            buttons[1].onPress();
-            await result;
-            expect(Navigation.push).not.toHaveBeenCalled();
-        },
-    );
+    it.each(['network', 'lock', 'account', 'root'])('does not route a stale alert after %s changes', async (change) => {
+        const result = explainRetiredTangemBackup();
+        await flush();
+        if (change === 'network') NetworkService.emit('networkChange', {} as any);
+        if (change === 'lock') {
+            command('showOverlay', { layout: { component: { name: AppScreens.Overlay.Lock } } });
+        }
+        if (change === 'root') NavigationService.emit('setRoot', RootType.DefaultRoot);
+        if (change === 'account') {
+            jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue({
+                ...selected,
+                address: 'rOther',
+            });
+        }
+        buttons[1].onPress();
+        await result;
+        expect(Navigation.push).not.toHaveBeenCalled();
+    });
     it('coalesces repeated links while an explanation is already open', async () => {
         const first = explainRetiredTangemBackup();
         const second = explainRetiredTangemBackup();
         expect(first).toBe(second);
         await flush();
-        expect(Alert.alert).toHaveBeenCalledTimes(1);
+        expect(Navigator.showAlertModal).toHaveBeenCalledTimes(1);
         buttons[0].onPress();
         await first;
+    });
+    it('shows the formatted explanation without waiting for any account refresh', async () => {
+        jest.mocked(AccountService.updateAccountInfo).mockImplementation(() => new Promise(() => {}));
+        const result = explainRetiredTangemBackup();
+        await flush();
+        expect(Navigator.showAlertModal).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'info',
+                testID: 'retired-tangem-backup-alert',
+            }),
+        );
+        expect(AccountService.updateAccountInfo).not.toHaveBeenCalled();
+        expect(Alert.alert).not.toHaveBeenCalled();
+        buttons[0].onPress();
+        await result;
+    });
+    it('settles if another formatted alert is already open', async () => {
+        jest.mocked(Navigator.showAlertModal).mockResolvedValue(false);
+        await explainRetiredTangemBackup();
+        expect(Navigation.push).not.toHaveBeenCalled();
     });
 });

@@ -1,17 +1,14 @@
-import { Alert } from 'react-native';
 import { Navigation } from 'react-native-navigation';
 import { get } from 'lodash';
 import { AppScreens } from '@common/constants';
 import NavigationService, { ComponentTypes, RootType } from '@services/NavigationService';
 import NetworkService from '@services/NetworkService';
-import AccountService from '@services/AccountService';
 import { CoreRepository } from '@store/repositories';
 import { AccountTypes } from '@store/types';
 import Localize from '@locale';
 import { captureTangemIdentifyRoute } from './tangemIdentifyRoute';
 
-export const isRetiredTangemBackup = (identifier?: string) =>
-    identifier?.toLowerCase() === 'xumm.tangem-backup';
+export const isRetiredTangemBackup = (identifier?: string) => identifier?.toLowerCase() === 'xumm.tangem-backup';
 let showing: Promise<void> | undefined;
 const selectedNetworkId = () => {
     try {
@@ -30,8 +27,11 @@ export const explainRetiredTangemBackup = (): Promise<void> => {
         const account = CoreRepository.getDefaultAccount();
         const address = account?.address;
         let interrupted = false;
+        let cancelAlert: (() => void) | undefined;
+        let alertDisappeared: { remove: () => void } | undefined;
         const invalidate = () => {
             interrupted = true;
+            cancelAlert?.();
         };
         const route = captureTangemIdentifyRoute();
         const valid = () =>
@@ -61,24 +61,44 @@ export const explainRetiredTangemBackup = (): Promise<void> => {
                 await Navigation.dismissModal(AppScreens.Modal.XAppBrowser);
                 if (!valid()) return;
             }
-            if (account?.type === AccountTypes.Tangem && root === RootType.DefaultRoot) {
-                await AccountService.updateAccountInfo(account.address).catch(() => undefined);
-            }
             if (!valid()) return;
-            const next = await new Promise<boolean>((resolve) => {
-                const buttons = [{ text: Localize.t('global.close'), onPress: () => resolve(false) }];
+            const next = await new Promise<boolean>((resolve, reject) => {
+                cancelAlert = () => resolve(false);
+                alertDisappeared = Navigation.events().registerComponentDidDisappearListener((event) => {
+                    if (event.componentName === AppScreens.Overlay.Alert) resolve(false);
+                });
+                const buttons = [
+                    {
+                        text: Localize.t('global.close'),
+                        testID: 'retired-tangem-close',
+                        onPress: () => resolve(false),
+                        light: true,
+                    },
+                ];
                 if (account?.type === AccountTypes.Tangem && root === RootType.DefaultRoot) {
                     buttons.push({
-                        text: Localize.t(
-                            account.regularKey ? 'tangemBackup.accountSettings' : 'tangemBackup.setUp',
-                        ),
+                        text: Localize.t(account.regularKey ? 'tangemBackup.accountSettings' : 'tangemBackup.setUp'),
+                        testID: 'retired-tangem-setup',
                         onPress: () => resolve(true),
+                        light: false,
                     });
                 }
-                Alert.alert(Localize.t('tangemBackup.title'), Localize.t('tangemBackup.retired'), buttons, {
-                    cancelable: true,
-                    onDismiss: () => resolve(false),
-                });
+                const { Navigator } = require('./navigator') as typeof import('./navigator');
+                Navigator.showAlertModal({
+                    testID: 'retired-tangem-backup-alert',
+                    type: 'info',
+                    title: Localize.t('tangemBackup.title'),
+                    text: Localize.t('tangemBackup.retired'),
+                    buttons,
+                    // The formatted alert calls onDismissed before its button callback.
+                    onDismissed: () => {
+                        Promise.resolve().then(() => resolve(false));
+                    },
+                })
+                    .then((shown) => {
+                        if (shown === false) resolve(false);
+                    })
+                    .catch(reject);
             });
             if (
                 !next ||
@@ -144,6 +164,7 @@ export const explainRetiredTangemBackup = (): Promise<void> => {
                 },
             });
         } finally {
+            alertDisappeared?.remove();
             route.release();
             commands.remove();
             NavigationService.off('setRoot', invalidate);

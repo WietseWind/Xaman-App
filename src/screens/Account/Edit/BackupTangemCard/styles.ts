@@ -5,7 +5,8 @@ import identify from '../IdentifyTangemCard/styles';
 const extra = StyleService.create({
     compactBody: { paddingVertical: 10 },
     compactTitle: { fontSize: 23, lineHeight: 28 },
-    compactCard: { padding: 10 },
+    compactCard: { padding: 10, borderRadius: 10 },
+    centeredSectionLabel: { textAlign: 'center' },
     compactSerial: { marginTop: 7, paddingTop: 6 },
     cardHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 3 },
     cardName: { flexGrow: 1, flexShrink: 1 },
@@ -18,8 +19,9 @@ const extra = StyleService.create({
     faded: { opacity: 0.3 },
     front: { zIndex: 1 },
     progress: { marginBottom: 10 },
-    progressTrack: { height: 4, borderRadius: 2, backgroundColor: '$lightBlue', marginTop: 7 },
-    progressFill: { height: 4, borderRadius: 2, backgroundColor: '$blue' },
+    progressSegments: { flexDirection: 'row', gap: 4, marginTop: 7 },
+    progressTrack: { flex: 1, height: 3, borderRadius: 1.5, backgroundColor: '$lightBlue' },
+    progressFill: { backgroundColor: '$blue' },
     stepText: { fontFamily: AppFonts.base.familyBold, fontSize: 12, lineHeight: 18, color: '$textSecondary' },
     chip: {
         color: StyleService.select({ light: '#15754E', dark: '#81D5AF' }),

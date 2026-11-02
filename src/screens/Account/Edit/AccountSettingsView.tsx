@@ -72,22 +72,22 @@ const CardDetails = ({ cardId, onIdentify }: { cardId: string; onIdentify: () =>
 };
 
 const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetup: () => void }) => {
-    const { fontScale } = useWindowDimensions();
     const key = account.regularKey;
     const known = key ? AccountRepository.findOne({ address: key }) : undefined;
     return <View testID="tangem-backup-details" style={styles.cardRow}>
-        <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.title')}</Text>
-        <View style={[styles.backupControls, fontScale > 1.2 && styles.cardControlsStacked]}>
-            <View style={[styles.backupValue, fontScale > 1.2 && styles.backupValueStacked]}>
-                {!!key && !!known?.label && <Text style={styles.backupName}>{accountListLabel(known)}</Text>}
-                {!!key && <Text selectable textBreakStrategy="simple" style={styles.address}>{key}</Text>}
-                {!!key && !known && <Text style={styles.backupNote}>{Localize.t('tangemBackup.notImported')}</Text>}
-                {!key && <Text style={styles.backupNotSet}>{Localize.t('tangemBackup.notSet')}</Text>}
-            </View>
+        <View style={styles.backupControls}>
+            <Text style={[styles.cardIdLabel, styles.backupHeadingLabel]}>{Localize.t('tangemBackup.title')}</Text>
             <Button testID="tangem-backup-button"
                 label={Localize.t(key ? 'tangemBackup.replace' : 'tangemBackup.setUp')}
                 onPress={onSetup} roundedMini nonBlock allowFontScaling
-                style={styles.identifyButton} />
+                hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                style={styles.backupButton} textStyle={styles.backupButtonText} />
+        </View>
+        <View style={styles.backupValue}>
+            {!!key && !!known?.label && <Text style={styles.backupName}>{accountListLabel(known)}</Text>}
+            {!!key && <Text selectable textBreakStrategy="simple" style={styles.address}>{key}</Text>}
+            {!!key && !known && <Text style={styles.backupNote}>{Localize.t('tangemBackup.notImported')}</Text>}
+            {!key && <Text style={styles.backupNotSet}>{Localize.t('tangemBackup.notSet')}</Text>}
         </View>
     </View>;
 };

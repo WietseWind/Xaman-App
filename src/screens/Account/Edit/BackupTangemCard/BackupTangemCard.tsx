@@ -251,7 +251,7 @@ class BackupTangemCardView extends Component<Props, State> {
             testID={account.address === this.flow.source.address ? 'backup-source-card' : 'backup-destination-card'}
             style={styles.accountSection}
         >
-            <Text style={styles.sectionLabel}>{heading}</Text>
+            <Text style={[styles.sectionLabel, styles.centeredSectionLabel]}>{heading}</Text>
             <Spacer size={6} />
             <View style={[styles.accountCard, styles.compactCard]}>
                 <View style={styles.cardHeading}>
@@ -329,10 +329,21 @@ class BackupTangemCardView extends Component<Props, State> {
         return (
             <>
                 {!['intro', 'done'].includes(step) && (
-                    <View style={styles.progress}>
+                    <View
+                        style={styles.progress}
+                        accessible
+                        accessibilityRole="progressbar"
+                        accessibilityLabel={Localize.t('tangemBackup.step', { number })}
+                        accessibilityValue={{ min: 0, max: 3, now: number }}
+                    >
                         <Text style={styles.stepText}>{Localize.t('tangemBackup.step', { number })}</Text>
-                        <View style={styles.progressTrack}>
-                            <View style={[styles.progressFill, { width: `${(number / 3) * 100}%` }]} />
+                        <View style={styles.progressSegments}>
+                            {[1, 2, 3].map((part) => (
+                                <View
+                                    key={part}
+                                    style={[styles.progressTrack, part <= number && styles.progressFill]}
+                                />
+                            ))}
                         </View>
                     </View>
                 )}
