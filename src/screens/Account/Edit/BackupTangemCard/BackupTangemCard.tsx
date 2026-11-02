@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {
-    AppState,
     BackHandler,
     Dimensions,
     Image,
@@ -16,6 +15,7 @@ import { Navigation } from 'react-native-navigation';
 import BigNumber from 'bignumber.js';
 
 import NetworkService from '@services/NetworkService';
+import AppService, { AppStateStatus } from '@services/AppService';
 import NavigationService from '@services/NavigationService';
 import StyleService from '@services/StyleService';
 import LoggerService from '@services/LoggerService';
@@ -133,7 +133,7 @@ class BackupTangemCardView extends Component<Props, State> {
                 this.statusTimer = undefined;
                 if (!this.mounted || this.exiting || this.interrupted) return;
                 this.statusChecks += 1;
-                if (AppState.currentState === 'active') this.flow.checkStatus();
+                if (AppService.currentAppState === AppStateStatus.Active) this.flow.checkStatus();
                 else this.forceUpdate();
             }, 2500);
         }

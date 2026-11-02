@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { AppState, SafeAreaView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView, StyleSheet, Text } from 'react-native';
 import { utils } from 'xrpl-accountlib';
 import { Card } from 'tangem-sdk-react-native';
 import { AccessLevels, AccountTypes } from '@store/types';
@@ -10,7 +10,14 @@ import { nativeBackupDependencies } from '@common/libs/tangemBackup/native';
 import { BackupDependencies } from '@common/libs/tangemBackup/flow';
 import Localize from '@locale';
 import StyleService from '@services/StyleService';
+import AppService, { AppStateStatus } from '@services/AppService';
 import BackupTangemCard from '../BackupTangemCard';
+
+jest.mock('@services/AppService', () => ({
+    __esModule: true,
+    AppStateStatus: { Active: 'Active', Background: 'Background' },
+    default: { currentAppState: 'Active' },
+}));
 
 jest.mock('@common/libs/tangemBackup/native', () => ({ nativeBackupDependencies: jest.fn() }));
 jest.mock('@services/NetworkService', () => {
@@ -47,7 +54,7 @@ const destination = utils.deriveAddress(GetWalletDerivedPublicKey(backup));
 let deps: BackupDependencies;
 let root: any;
 let tree: renderer.ReactTestRenderer;
-let originalAppState: typeof AppState.currentState;
+let originalAppState: typeof AppService.currentAppState;
 const press = async () => {
     await act(async () => {
         await tree.root.findByProps({ testID: 'backup-next' }).props.onPress();
@@ -60,7 +67,7 @@ const text = () =>
         .join(' ')
         .replace(/\s+/g, ' ');
 beforeEach(() => {
-    originalAppState = AppState.currentState;
+    originalAppState = AppService.currentAppState;
     StyleService.setTheme('light');
     Localize.setLocale('en');
     root = { Account: account.address, Sequence: 10, Balance: '100000000', Flags: 0, LedgerIndex: 1000 };
@@ -93,7 +100,7 @@ beforeEach(() => {
 afterEach(() => {
     act(() => tree.unmount());
     Localize.setLocale('en');
-    AppState.currentState = originalAppState;
+    AppService.currentAppState = originalAppState;
     StyleService.setTheme('light');
     jest.useRealTimers();
     jest.restoreAllMocks();
@@ -125,7 +132,7 @@ describe('Tangem backup wizard UI', () => {
     });
     it('automatically confirms a pending transaction without another signing scan', async () => {
         jest.useFakeTimers();
-        AppState.currentState = 'active';
+        AppService.currentAppState = AppStateStatus.Active;
         await press();
         await press();
         deps.scan = jest.fn(async () => backup);
@@ -143,7 +150,7 @@ describe('Tangem backup wizard UI', () => {
     });
     it('pauses automatic checks in the background and resumes without signing again', async () => {
         jest.useFakeTimers();
-        AppState.currentState = 'active';
+        AppService.currentAppState = AppStateStatus.Active;
         await press();
         await press();
         deps.scan = jest.fn(async () => backup);
@@ -151,14 +158,14 @@ describe('Tangem backup wizard UI', () => {
         await press();
         await press();
         const before = jest.mocked(deps.lookup).mock.calls.length;
-        AppState.currentState = 'background';
+        AppService.currentAppState = AppStateStatus.Background;
         await act(async () => {
             jest.advanceTimersByTime(2500);
             for (let i = 0; i < 12; i++) await Promise.resolve();
         });
         expect(deps.lookup).toHaveBeenCalledTimes(before);
         root = { ...root, RegularKey: destination };
-        AppState.currentState = 'active';
+        AppService.currentAppState = AppStateStatus.Active;
         await act(async () => {
             jest.advanceTimersByTime(2500);
             for (let i = 0; i < 12; i++) await Promise.resolve();
@@ -167,10 +174,16 @@ describe('Tangem backup wizard UI', () => {
         expect(deps.sign).toHaveBeenCalledTimes(1);
     });
     it('uses the current Identify palette after switching theme, including styles loaded earlier', () => {
-        act(() => { StyleService.setTheme('dark'); tree.update(<BackupTangemCard account={account} />); });
-        expect(StyleSheet.flatten(tree.root.findByType(SafeAreaView).props.style).backgroundColor).toBe('#12131B');
-        const title = tree.root.findAllByType(Text).find(node =>
-            node.props.children === Localize.t('tangemBackup.introTitle'))!;
+        act(() => {
+            StyleService.setTheme('dark');
+            tree.update(<BackupTangemCard account={account} />);
+        });
+        expect(StyleSheet.flatten(tree.root.findByType(SafeAreaView).props.style).backgroundColor).toBe(
+            '#12131B',
+        );
+        const title = tree.root
+            .findAllByType(Text)
+            .find((node) => node.props.children === Localize.t('tangemBackup.introTitle'))!;
         expect(StyleSheet.flatten(title.props.style).color).toBe('#F0F1FA');
     });
     it('shows the wrong-card serial and keeps the scan action available', async () => {

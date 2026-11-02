@@ -46,7 +46,11 @@ export default StyleService.create({
     backupName: { fontFamily: AppFonts.base.familyBold, fontSize: AppFonts.base.size, color: '$textPrimary' },
     backupNotSet: { fontFamily: AppFonts.base.family, fontSize: AppFonts.small.size,
         color: StyleService.select({ light: '#8A591B', dark: '$orange' }) },
-    backupButton: { alignSelf: 'flex-start', height: 'auto', minHeight: 44, marginTop: 8, paddingVertical: 9 },
+    backupControls: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    backupValue: { flex: 1, minWidth: 0 },
+    backupValueStacked: { flex: 0, alignSelf: 'stretch', marginBottom: 8 },
+    backupNote: { fontFamily: AppFonts.base.family, fontSize: AppFonts.small.size,
+        color: '$textSecondary', marginTop: 6 },
     inlineLoader: { marginRight: 10 },
     removeButton: {
         height: 'auto',

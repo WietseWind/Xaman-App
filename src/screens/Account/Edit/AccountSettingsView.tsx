@@ -71,6 +71,27 @@ const CardDetails = ({ cardId, onIdentify }: { cardId: string; onIdentify: () =>
     );
 };
 
+const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetup: () => void }) => {
+    const { fontScale } = useWindowDimensions();
+    const key = account.regularKey;
+    const known = key ? AccountRepository.findOne({ address: key }) : undefined;
+    return <View testID="tangem-backup-details" style={styles.cardRow}>
+        <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.title')}</Text>
+        <View style={[styles.backupControls, fontScale > 1.2 && styles.cardControlsStacked]}>
+            <View style={[styles.backupValue, fontScale > 1.2 && styles.backupValueStacked]}>
+                {!!key && !!known?.label && <Text style={styles.backupName}>{accountListLabel(known)}</Text>}
+                {!!key && <Text selectable textBreakStrategy="simple" style={styles.address}>{key}</Text>}
+                {!!key && !known && <Text style={styles.backupNote}>{Localize.t('tangemBackup.notImported')}</Text>}
+                {!key && <Text style={styles.backupNotSet}>{Localize.t('tangemBackup.notSet')}</Text>}
+            </View>
+            <Button testID="tangem-backup-button"
+                label={Localize.t(key ? 'tangemBackup.replace' : 'tangemBackup.setUp')}
+                onPress={onSetup} roundedMini nonBlock allowFontScaling light={!!key}
+                style={styles.identifyButton} />
+        </View>
+    </View>;
+};
+
 /* Component ==================================================================== */
 class AccountSettingsView extends Component<Props, State> {
     static screenName = AppScreens.Account.Edit.Settings;
@@ -144,25 +165,6 @@ class AccountSettingsView extends Component<Props, State> {
     showTangemBackup = () => {
         const { account } = this.state;
         Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
-    };
-
-    renderTangemBackup = () => {
-        const { account } = this.state;
-        const key = account.regularKey;
-        const known = key ? AccountRepository.findOne({ address: key }) : undefined;
-        return <View testID="tangem-backup-details" style={styles.cardRow}>
-            <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.title')}</Text>
-            {!!key && !!known?.label && <Text style={styles.backupName}>{accountListLabel(known)}</Text>}
-            {!!key && <Text selectable style={styles.cardDetailValue}>{key}</Text>}
-            {!!key && !known && (
-                <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.notImported')}</Text>
-            )}
-            {!key && <Text style={styles.backupNotSet}>{Localize.t('tangemBackup.notSet')}</Text>}
-            <Button testID="tangem-backup-button"
-                label={Localize.t(key ? 'tangemBackup.replace' : 'tangemBackup.setUp')}
-                onPress={this.showTangemBackup} roundedMini nonBlock allowFontScaling light={!!key}
-                style={styles.backupButton} />
-        </View>;
     };
 
     accountLabelPressed = () => {
@@ -545,7 +547,9 @@ class AccountSettingsView extends Component<Props, State> {
                                 }
                             />
                         )}
-                        {account.type === AccountTypes.Tangem && this.renderTangemBackup()}
+                        {account.type === AccountTypes.Tangem && (
+                            <BackupCardDetails account={account} onSetup={this.showTangemBackup} />
+                        )}
                     </SettingsSection>
                     <SettingsSection title={Localize.t('global.settings')}>
                         {accountCanSign && (
