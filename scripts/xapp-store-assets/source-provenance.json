@@ -66,5 +66,6 @@
     "list.svg": "e7b0d1d0515c85a22e9996c2a2dee1a89f4729fda46570bb52eafd6e61b31833"
   },
   "new_glyph_stroke_width": 1.7,
-  "bottom_native_stroke_width_on64pt_canvas": 3.2
+  "bottom_native_stroke_width_on64pt_canvas": 3.2,
+  "bottom_ios_native_stroke_width_on64pt_canvas": 6.4
 }

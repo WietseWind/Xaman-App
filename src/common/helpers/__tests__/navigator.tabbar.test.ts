@@ -6,6 +6,7 @@ type Runtime = {
     device: typeof import('../device');
     interactions: (() => Promise<void>)[];
     frames: FrameRequestCallback[];
+    pixelRatio: number;
 };
 
 jest.mock('@services/LoggerService', () => ({
@@ -24,7 +25,11 @@ jest.mock('@services/NavigationService', () => ({
     ComponentTypes: {},
 }));
 
-const makeRuntime = (os: 'ios' | 'android', version: string): Runtime => {
+const makeRuntime = (
+    os: 'ios' | 'android',
+    version: string,
+    profile = { width: 402, height: 874, scale: 3, bottom: 34 },
+): Runtime => {
     let runtime: Runtime;
     jest.isolateModules(() => {
         const native = require('react-native');
@@ -37,12 +42,12 @@ const makeRuntime = (os: 'ios' | 'android', version: string): Runtime => {
         Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
         Object.defineProperty(Platform, 'Version', { configurable: true, get: () => version });
         NativeModules.DeviceUtilsModule.osVersion = version;
-        NativeModules.DeviceUtilsModule.layoutInsets = { top: 59, bottom: 34 };
-        NativeModules.DeviceUtilsModule.tabBarMetrics = { itemHeight: 49, height: 83 };
+        NativeModules.DeviceUtilsModule.layoutInsets = { top: 59, bottom: profile.bottom };
+        NativeModules.DeviceUtilsModule.tabBarMetrics = { itemHeight: 49, height: 49 + profile.bottom };
         jest.spyOn(Dimensions, 'get').mockReturnValue({
-            width: 402, height: 874, scale: 3, fontScale: 1,
+            width: profile.width, height: profile.height, scale: profile.scale, fontScale: 1,
         });
-        jest.spyOn(PixelRatio, 'get').mockReturnValue(3);
+        jest.spyOn(PixelRatio, 'get').mockReturnValue(profile.scale);
         const interactions: (() => Promise<void>)[] = [];
         const frames: FrameRequestCallback[] = [];
         jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((callback: any) => {
@@ -65,6 +70,7 @@ const makeRuntime = (os: 'ios' | 'android', version: string): Runtime => {
             device: require('../device'),
             interactions,
             frames,
+            pixelRatio: profile.scale,
         };
     });
     return runtime!;
@@ -97,17 +103,21 @@ const expectTab = (runtime: Runtime, options: any, tab: string, glass: boolean, 
     const names: Record<string, string> = { Home: 'Home', Events: 'Events', Actions: 'Actions',
         XApps: 'Xapp', Settings: 'Settings' };
     const image = `IconTabBar${names[tab]}`;
-    const scale = runtime.device.GetBottomTabScale(factor) / (glass && !center ? 0.72 : 1);
+    const baseScale = runtime.device.GetBottomTabScale(factor);
+    const scale = glass && !center ? Math.min(baseScale / 0.72, (64 * runtime.pixelRatio) / 21) : baseScale;
     expect(options.icon).toEqual({ ...runtime.StyleService.getImage(image), scale });
     expect(options.selectedIcon).toEqual({
         ...runtime.StyleService.getImage(center ? image : `${image}Selected`), scale,
     });
-    expect(options.textColor).toBe(runtime.StyleService.value('$grey'));
+    const muted = runtime.StyleService.isDarkMode() ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
+    expect(options.textColor).toBe(glass ? muted : runtime.StyleService.value('$grey'));
     expect(options.selectedTextColor).toBe(runtime.StyleService.value('$textPrimary'));
+    if (glass) expect(options.fontSize).toBe(10);
+    else expect(options).not.toHaveProperty('fontSize');
     expect(options.selectTabOnPress).toBe(!center);
     expect(options.testID).toBe(`tab-${tab}`);
     if (glass && !center) {
-        expect(options.iconColor).toBe(runtime.StyleService.value('$textPrimary'));
+        expect(options.iconColor).toBe(muted);
         expect(options.selectedIconColor).toBe(runtime.StyleService.value('$textPrimary'));
     } else {
         expect(options).not.toHaveProperty('iconColor');
@@ -128,6 +138,8 @@ it.each(['26.5', '27.0.1'])(
     'uses smaller text-coloured side icons on iOS %s, including after a theme change', async (version) => {
         const runtime = makeRuntime('ios', version);
         const initial = await start(runtime);
+        expect(jest.mocked(runtime.Navigation.setDefaultOptions).mock.calls.at(-1)?.[0].bottomTabs?.barStyle)
+            .toBe('default');
         Object.keys(runtime.screens.TabBar).forEach((tab) => {
             expectTab(runtime, initial[`bottomTab-${tab}`], tab, true, false);
         });
@@ -135,12 +147,34 @@ it.each(['26.5', '27.0.1'])(
         const lightCenter = initial['bottomTab-Actions'];
         runtime.StyleService.setTheme('dark');
         const updated = refresh(runtime);
+        expect(jest.mocked(runtime.Navigation.setDefaultOptions).mock.calls.at(-1)?.[0].bottomTabs?.barStyle)
+            .toBe('black');
         Object.keys(runtime.screens.TabBar).forEach((tab) => {
             expectTab(runtime, updated[(runtime.screens.TabBar as any)[tab]], tab, true, false);
         });
         expect(updated[runtime.screens.TabBar.Home].iconColor).not.toBe(lightColor);
         expect(updated[runtime.screens.TabBar.Actions].icon.scale).toBe(lightCenter.icon.scale);
         expect(updated[runtime.screens.TabBar.Actions].text).toBe('');
+        runtime.StyleService.setTheme('light');
+        const restored = refresh(runtime);
+        expect(jest.mocked(runtime.Navigation.setDefaultOptions).mock.calls.at(-1)?.[0].bottomTabs?.barStyle)
+            .toBe('default');
+        Object.keys(runtime.screens.TabBar).forEach((tab) => {
+            expectTab(runtime, restored[(runtime.screens.TabBar as any)[tab]], tab, true, false);
+            expect(restored[(runtime.screens.TabBar as any)[tab]].icon.scale)
+                .toBe(initial[`bottomTab-${tab}`].icon.scale);
+            expect(restored[(runtime.screens.TabBar as any)[tab]].fontSize)
+                .toBe(initial[`bottomTab-${tab}`].fontSize);
+        });
+        ['moonlight', 'royal'].forEach((theme) => {
+            runtime.StyleService.setTheme(theme as any);
+            const themed = refresh(runtime);
+            Object.keys(runtime.screens.TabBar).forEach((tab) => {
+                expectTab(runtime, themed[(runtime.screens.TabBar as any)[tab]], tab, true, false);
+            });
+            expect(jest.mocked(runtime.Navigation.setDefaultOptions).mock.calls.at(-1)?.[0].bottomTabs?.barStyle)
+                .toBe('black');
+        });
     },
 );
 
@@ -151,6 +185,8 @@ it.each([
 ] as const)('preserves regular tab icon sizing and colours on %s %s', async (os, version) => {
     const runtime = makeRuntime(os, version);
     const initial = await start(runtime);
+    expect(jest.mocked(runtime.Navigation.setDefaultOptions).mock.calls.at(-1)?.[0].bottomTabs)
+        .not.toHaveProperty('barStyle');
     Object.keys(runtime.screens.TabBar).forEach((tab) => {
         expectTab(runtime, initial[`bottomTab-${tab}`], tab, false, os === 'android');
     });
@@ -158,5 +194,22 @@ it.each([
     const updated = refresh(runtime);
     Object.keys(runtime.screens.TabBar).forEach((tab) => {
         expectTab(runtime, updated[(runtime.screens.TabBar as any)[tab]], tab, false, os === 'android');
+    });
+});
+
+it.each([
+    { width: 375, height: 667, scale: 2, bottom: 0 },
+    { width: 393, height: 852, scale: 3, bottom: 34 },
+    { width: 430, height: 932, scale: 3, bottom: 34 },
+])('keeps every iOS navbar glyph at least 2pt thick on $width pt screens', async (profile) => {
+    const assets = require('../../../../scripts/xapp-store-assets/asset-map.json');
+    const runtime = makeRuntime('ios', '27.0.1', profile);
+    const options = await start(runtime);
+    const iconScale = options['bottomTab-Home'].icon.scale;
+    const sideAssets = Object.entries(assets).filter(([name]) => name.startsWith('IconTabBar'));
+    expect(sideAssets).toHaveLength(12);
+    sideAssets.forEach(([, asset]: any) => {
+        expect(asset.ios_native_stroke_width * profile.scale / iconScale).toBeGreaterThanOrEqual(2);
+        expect(asset.native_stroke_width).toBe(3.2);
     });
 });

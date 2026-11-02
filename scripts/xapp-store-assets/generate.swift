@@ -18,6 +18,7 @@ struct Asset: Decodable {
     let paint_width: CGFloat?
     let paint_height: CGFloat?
     let native_stroke_width: CGFloat?
+    let ios_native_stroke_width: CGFloat?
     let ios_filenames: [String: String]?
 }
 
@@ -191,7 +192,7 @@ func shape(_ node: Node) throws -> CGPath {
 }
 
 func png(_ document: SVG, asset: Asset, width logicalWidth: Int, height logicalHeight: Int,
-         scale: CGFloat, destination: URL) throws {
+         scale: CGFloat, destination: URL, nativeStrokeOverride: CGFloat? = nil) throws {
     let width = Int(CGFloat(logicalWidth) * scale), height = Int(CGFloat(logicalHeight) * scale)
     guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8,
         bytesPerRow: width * 4, space: CGColorSpace(name: CGColorSpace.sRGB)!,
@@ -228,7 +229,7 @@ func png(_ document: SVG, asset: Asset, width logicalWidth: Int, height logicalH
             // about43pt of painted height. Retain that contract for the new glyphs.
             let ratio = CGFloat(logicalWidth) / CGFloat(asset.ios_logical_width ?? logicalWidth)
             let bounds = paths.reduce(CGRect.null) { $0.union($1.boundingBoxOfPath) }
-            let stroke = nativeStroke * ratio
+            let stroke = (nativeStrokeOverride ?? nativeStroke) * ratio
             let fit = min((paintWidth * ratio - stroke) / bounds.width,
                           (paintHeight * ratio - stroke) / bounds.height)
             context.translateBy(x: (CGFloat(logicalWidth) - bounds.width * fit) / 2 - bounds.minX * fit,
@@ -276,7 +277,8 @@ func run() throws {
             let file = asset.ios_filenames?["\(scale)x"] ?? "\(asset.file)@\(scale)x.png"
             try png(document, asset: asset, width: asset.ios_logical_width ?? asset.logical_width,
                     height: asset.ios_logical_height ?? asset.logical_height,
-                    scale: CGFloat(scale), destination: catalog.appendingPathComponent(file))
+                    scale: CGFloat(scale), destination: catalog.appendingPathComponent(file),
+                    nativeStrokeOverride: asset.ios_native_stroke_width)
             entries.append(["idiom": "universal", "filename": file, "scale": "\(scale)x"]); count += 1
         }
         let contents: [String: Any] = ["images": entries, "info": ["author": "xcode", "version": 1]]

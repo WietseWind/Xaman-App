@@ -204,7 +204,11 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  }
  
  - (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
-@@ -101,6 +140,16 @@
+@@ -98,9 +137,20 @@
+ - (void)viewDidLayoutSubviews {
+     [super viewDidLayoutSubviews];
++    [self applyGlassTabBarAppearance];
+     [self.presenter viewDidLayoutSubviews];
      [_dotIndicatorPresenter bottomTabsDidLayoutSubviews:self];
  }
  
@@ -221,7 +225,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsControlle
  - (UIViewController *)getCurrentChild {
      return self.selectedViewController;
  }
-@@ -186,6 +235,8 @@
+@@ -186,6 +236,8 @@
          return YES;
      }
  
@@ -377,3 +381,126 @@ diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/
      }
  
      public void onConfigurationChanged(Configuration newConfig) {
+diff --git a/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.h b/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.h
+--- a/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.h
++++ b/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.h
+@@ -9,6 +9,7 @@
+ - (void)setTabBarTestID:(NSString *)testID;
+
+ - (void)setTabBarStyle:(UIBarStyle)barStyle;
++- (void)applyGlassTabBarAppearance;
+
+ - (void)setTabBarTranslucent:(BOOL)translucent;
+
+diff --git a/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.m b/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.m
+--- a/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.m
++++ b/node_modules/react-native-navigation/lib/ios/UITabBarController+RNNOptions.m
+@@ -18,6 +18,85 @@
+
+ - (void)setTabBarStyle:(UIBarStyle)barStyle {
+     self.tabBar.barStyle = barStyle;
++    [self applyGlassTabBarAppearance];
++}
++
++- (void)applyGlassTabBarAppearance {
++    if (@available(iOS 26.0, *)) {
++        UIUserInterfaceStyle style = self.tabBar.barStyle == UIBarStyleBlack
++            ? UIUserInterfaceStyleDark : UIUserInterfaceStyleLight;
++#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270000
++        if (@available(iOS 27.0, *)) {
++            if (self.tabBar.standardAppearance.overrideUserInterfaceStyle != style) {
++                UITabBarAppearance *appearance = [self.tabBar.standardAppearance copy];
++                appearance.overrideUserInterfaceStyle = style;
++                self.tabBar.standardAppearance = appearance;
++            }
++            if (self.tabBar.scrollEdgeAppearance.overrideUserInterfaceStyle != style) {
++                UITabBarAppearance *appearance = [self.tabBar.scrollEdgeAppearance copy]
++                    ?: [self.tabBar.standardAppearance copy];
++                appearance.overrideUserInterfaceStyle = style;
++                self.tabBar.scrollEdgeAppearance = appearance;
++            }
++            for (UITabBarItem *item in self.tabBar.items) {
++                if (item.standardAppearance.overrideUserInterfaceStyle != style) {
++                    UITabBarAppearance *appearance = [item.standardAppearance copy]
++                        ?: [self.tabBar.standardAppearance copy];
++                    appearance.overrideUserInterfaceStyle = style;
++                    item.standardAppearance = appearance;
++                }
++                if (item.scrollEdgeAppearance.overrideUserInterfaceStyle != style) {
++                    UITabBarAppearance *appearance = [item.scrollEdgeAppearance copy]
++                        ?: [item.standardAppearance copy];
++                    appearance.overrideUserInterfaceStyle = style;
++                    item.scrollEdgeAppearance = appearance;
++                }
++            }
++        }
++#endif
++    }
++    if (@available(iOS 26.0, *)) {
++        __weak UITabBarController *weakSelf = self;
++        dispatch_async(dispatch_get_main_queue(), ^{
++            UITabBarController *controller = weakSelf;
++            if (!controller) return;
++            UIUserInterfaceStyle style = controller.tabBar.barStyle == UIBarStyleBlack
++                ? UIUserInterfaceStyleDark : UIUserInterfaceStyleLight;
++            [controller applyGlassTabBarStyle:style toView:controller.tabBar];
++        });
++    }
++}
++
++- (void)applyGlassTabBarStyle:(UIUserInterfaceStyle)style toView:(UIView *)view {
++    // Glass hosts parts of the bar in child controllers. Apply traits to its
++    // views only, leaving React roots and the OS Appearance observer untouched.
++    if (view.overrideUserInterfaceStyle != style) view.overrideUserInterfaceStyle = style;
++    if ([view isKindOfClass:UILabel.class]) {
++        UILabel *label = (UILabel *)view;
++        for (UITabBarItem *item in self.tabBar.items) {
++            if (item.title.length && [label.text isEqualToString:item.title]) {
++                UIControlState state = item == self.tabBar.selectedItem
++                    ? UIControlStateSelected : UIControlStateNormal;
++                UIColor *color = [item titleTextAttributesForState:state][NSForegroundColorAttributeName];
++                NSAttributedString *current = label.attributedText;
++                if (color && current.length) {
++                    UIColor *rendered = [current attribute:NSForegroundColorAttributeName
++                                                  atIndex:0 effectiveRange:nil];
++                    if (![rendered isEqual:color]) {
++                        NSMutableAttributedString *title = [current mutableCopy];
++                        [title addAttribute:NSForegroundColorAttributeName value:color
++                                      range:NSMakeRange(0, title.length)];
++                        label.attributedText = title;
++                    }
++                } else if (color && ![label.textColor isEqual:color]) {
++                    label.textColor = color;
++                }
++            }
++        }
++    }
++    for (UIView *child in view.subviews) {
++        [self applyGlassTabBarStyle:style toView:child];
++    }
+ }
+
+ - (void)setTabBarTranslucent:(BOOL)translucent {
+diff --git a/node_modules/react-native-navigation/lib/ios/TabBarItemAppearanceCreator.m b/node_modules/react-native-navigation/lib/ios/TabBarItemAppearanceCreator.m
+--- a/node_modules/react-native-navigation/lib/ios/TabBarItemAppearanceCreator.m
++++ b/node_modules/react-native-navigation/lib/ios/TabBarItemAppearanceCreator.m
+@@ -10,6 +10,9 @@
+ }
+
+ - (void)setTitleAttributes:(UITabBarItem *)tabItem titleAttributes:(NSDictionary *)titleAttributes {
++    if (@available(iOS 26.0, *)) {
++        [super setTitleAttributes:tabItem titleAttributes:titleAttributes];
++    }
+     tabItem.standardAppearance.stackedLayoutAppearance.normal.titleTextAttributes = titleAttributes;
+     tabItem.standardAppearance.compactInlineLayoutAppearance.normal.titleTextAttributes =
+         titleAttributes;
+@@ -18,6 +21,9 @@
+
+ - (void)setSelectedTitleAttributes:(UITabBarItem *)tabItem
+            selectedTitleAttributes:(NSDictionary *)selectedTitleAttributes {
++    if (@available(iOS 26.0, *)) {
++        [super setSelectedTitleAttributes:tabItem selectedTitleAttributes:selectedTitleAttributes];
++    }
+     tabItem.standardAppearance.stackedLayoutAppearance.selected.titleTextAttributes =
+         selectedTitleAttributes;
+     tabItem.standardAppearance.compactInlineLayoutAppearance.selected.titleTextAttributes =

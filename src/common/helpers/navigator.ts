@@ -1,5 +1,5 @@
 import { get, merge } from 'lodash';
-import { Platform, InteractionManager } from 'react-native';
+import { Platform, InteractionManager, PixelRatio } from 'react-native';
 
 import LoggerService, { LogEvents } from '@services/LoggerService';
 import { Navigation, Options, LayoutTabsChildren, EventSubscription } from 'react-native-navigation';
@@ -18,6 +18,7 @@ import StyleService from '@services/StyleService';
 import { Props as AlertOverlayProps } from '@screens/Overlay/Alert/types';
 
 import AppFonts from '@theme/fonts';
+import { HexToRgbA } from '@common/utils/color';
 
 /* Types ==================================================================== */
 export type AppScreenKeys<T = typeof AppScreens, L0 = T[keyof T]> =
@@ -146,6 +147,7 @@ const getDefaultOptions = (): Options => {
         },
         bottomTabs: {
             backgroundColor: StyleService.value('$background'),
+            ...(iosGlassTabBar ? { barStyle: StyleService.isDarkMode() ? 'black' as const : 'default' as const } : {}),
             translucent: false,
             animate: false,
             drawBehind: iosGlassTabBar,
@@ -240,9 +242,10 @@ const getTabBarIcons = (): {
 
 const getBottomTabStyles = () => {
     return StyleService.applyTheme({
-        textColor: '$grey',
+        textColor: iosGlassTabBar ? HexToRgbA(StyleService.value('$textPrimary'), 0.6) : '$grey',
         selectedTextColor: '$textPrimary',
         fontFamily: AppFonts.base.familyExtraBold,
+        ...(iosGlassTabBar ? { fontSize: 10 } : {}),
         iconInsets: {
             top: HasBottomNotch() ? 4 : 2,
         },
@@ -255,13 +258,15 @@ const getBottomTabIconOptions = (
 ): Options['bottomTab'] => {
     const { icon, iconSelected, scale } = icons[tabKey];
     const glassSideIcon = iosGlassTabBar && tabKey !== AppScreens.TabBar.Actions;
-    // UIImage.scale is inverse: keep the 20% reduction, then shrink another 10%.
-    const imageScale = glassSideIcon ? scale / 0.72 : scale;
-    const foreground = glassSideIcon ? StyleService.value('$textPrimary') : undefined;
+    // UIImage.scale is inverse. Keep the existing reduction, with a 21pt canvas
+    // floor so compact @2x devices retain a >=2pt stroke and legible glyphs.
+    const imageScale = glassSideIcon ? Math.min(scale / 0.72, (64 * (PixelRatio.get() || 2)) / 21) : scale;
+    const foreground = glassSideIcon ? HexToRgbA(StyleService.value('$textPrimary'), 0.6) : undefined;
+    const selectedForeground = glassSideIcon ? StyleService.value('$textPrimary') : undefined;
     return {
         icon: { scale: imageScale, ...icon },
         selectedIcon: { scale: imageScale, ...iconSelected },
-        ...(glassSideIcon ? { iconColor: foreground, selectedIconColor: foreground } : {}),
+        ...(glassSideIcon ? { iconColor: foreground, selectedIconColor: selectedForeground } : {}),
     };
 };
 
