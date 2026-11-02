@@ -10,7 +10,7 @@ export default StyleService.create({
     tile: { height: 132, borderRadius: 15, backgroundColor: select('#e9e9e9', '#242733'), overflow: 'hidden' },
     backdropContainer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
     backdrop: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', opacity: 0.65 },
-    scrim: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', tintColor: select('#ffffff', '#171924') },
+    scrim: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', tintColor: select('#f3f4f8', '#171924') },
     decoration: { ...StyleSheet.absoluteFillObject },
     iconShadow: {
         position: 'absolute', top: 8, left: 12, width: 54, height: 54, borderRadius: 15,
