@@ -119,8 +119,16 @@ describe('Tangem backup wizard UI', () => {
         expect(text()).toContain(Localize.t('tangemBackup.introBody'));
         await press();
         expect(text()).toContain('Step 1 of 3');
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props).toMatchObject({
+            label: Localize.t('tangemBackup.scanOriginal'),
+            icon: 'IconScanCard',
+        });
         await press();
         expect(text()).toContain('Step 2 of 3');
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props).toMatchObject({
+            label: Localize.t('tangemBackup.scanBackup'),
+            icon: 'IconScanCard',
+        });
         deps.scan = jest.fn(async () => backup);
         await press();
         expect(text()).toContain(Localize.t('tangemBackup.verified'));

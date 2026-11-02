@@ -381,15 +381,17 @@ class BackupTangemCardView extends Component<Props, State> {
         const label =
             step === 'intro'
                 ? Localize.t('global.start')
-                : ['source', 'backup'].includes(step)
-                  ? Localize.t('account.tangemScanCard')
-                  : step === 'ready'
-                    ? Localize.t('global.continue')
-                    : step === 'review'
-                      ? Localize.t('global.confirm')
-                      : step === 'checking'
-                        ? Localize.t('global.tryAgain')
-                        : Localize.t('global.done');
+                : step === 'source'
+                  ? Localize.t('tangemBackup.scanOriginal')
+                  : step === 'backup'
+                    ? Localize.t('tangemBackup.scanBackup')
+                    : step === 'ready'
+                      ? Localize.t('global.continue')
+                      : step === 'review'
+                        ? Localize.t('global.confirm')
+                        : step === 'checking'
+                          ? Localize.t('global.tryAgain')
+                          : Localize.t('global.done');
         const action = {
             intro: this.flow.start,
             source: this.flow.scanSource,
@@ -410,6 +412,8 @@ class BackupTangemCardView extends Component<Props, State> {
                     <Button
                         testID="backup-next"
                         label={terminal ? Localize.t('global.close') : label}
+                        icon={!terminal && ['source', 'backup'].includes(step) ? 'IconScanCard' : undefined}
+                        iconStyle={styles.buttonIcon}
                         onPress={terminal ? this.leave : action}
                         isLoading={busy}
                         isDisabled={busy}
