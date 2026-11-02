@@ -14,6 +14,8 @@ import {
     Alert,
     ViewProps,
     ImageBackgroundProps,
+    AccessibilityInfo,
+    LayoutAnimation,
 } from 'react-native';
 
 import {
@@ -90,6 +92,11 @@ class HomeView extends Component<Props, State> {
 
     private navigationListener: EventSubscription | undefined;
     private nfcChangeListener?: EventSubscription;
+    private live = false;
+    private reduceMotion = true;
+    private motionRevision = 0;
+    private motionListener?: ReturnType<typeof AccessibilityInfo.addEventListener>;
+    private requestedHeaderHidden = false;
 
     static options() {
         return { topBar: { visible: false } };
@@ -116,6 +123,12 @@ class HomeView extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.live = true;
+        this.motionListener = AccessibilityInfo.addEventListener('reduceMotionChanged', this.onReduceMotionChange);
+        const revision = this.motionRevision;
+        AccessibilityInfo.isReduceMotionEnabled().then(enabled => {
+            if (this.live && revision === this.motionRevision) this.reduceMotion = enabled;
+        }).catch(() => { /* Keep motion disabled if the accessibility setting is unavailable. */ });
         // update UI on accounts update
         AccountRepository.on('accountUpdate', this.onAccountUpdate);
         // update discreetMode and developerMode on change
@@ -164,6 +177,8 @@ class HomeView extends Component<Props, State> {
     };
 
     componentWillUnmount() {
+        this.live = false;
+        this.motionListener?.remove();
         // remove listeners
         if (this.navigationListener) {
             this.navigationListener.remove();
@@ -446,7 +461,24 @@ class HomeView extends Component<Props, State> {
         );
     };
 
+    private onReduceMotionChange = (enabled: boolean) => {
+        this.motionRevision++;
+        this.reduceMotion = enabled;
+    };
+
     hideTopElements = (toggle: boolean) => {
+        // The settings overlay repeats the hide request on mount. Track the
+        // requested state so repeated calls and rapid reversals stay coherent.
+        if (!this.live || this.requestedHeaderHidden === toggle) return;
+        this.requestedHeaderHidden = toggle;
+        if (!this.reduceMotion) {
+            LayoutAnimation.configureNext({
+                duration: 160,
+                update: { type: LayoutAnimation.Types.easeInEaseOut },
+                create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+                delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+            });
+        }
         this.setState({
             hideTopElements: toggle,
         });

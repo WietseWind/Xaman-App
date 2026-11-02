@@ -19,9 +19,9 @@ const styles = StyleService.create({
         marginRight: 12,
     },
     tab: {
-        minHeight: 34,
+        minHeight: 30,
         justifyContent: 'center',
-        paddingVertical: 8,
+        paddingVertical: 6,
         flexShrink: 1,
     },
     firstTab: {
@@ -48,7 +48,7 @@ const CategoryTabs = ({ active, onPress }: Props) => (
                 testID={testID}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: active === category }}
-                hitSlop={{ top: 5, bottom: 5 }}
+                hitSlop={{ top: 7, bottom: 7 }}
                 style={[styles.tab, index === 0 && styles.firstTab]}
                 onPress={() => { if (active !== category) onPress(category); }}
             >

@@ -44,6 +44,9 @@ export default StyleService.create({
         // borderColor: '$red',
     },
     listOptionsButton: {
+        height: 29,
+        minWidth: 44,
+        alignSelf: 'center',
         marginLeft: AppSizes.paddingSml * 0.4,
         paddingRight: 5,
         paddingLeft: 7,
