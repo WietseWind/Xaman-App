@@ -321,11 +321,13 @@ class BackupTangemCardView extends Component<Props, State> {
                 <Spacer size={8} />
                 <Text style={styles.explain}>{Localize.t(`tangemBackup.${phase}Body`)}</Text>
                 <Spacer size={16} />
-                {this.renderCard(source, Localize.t('tangemBackup.sourceLabel'))}
-                <Text style={[styles.sectionLabel, styles.centeredSectionLabel]}>
-                    {Localize.t('tangemBackup.title')}
-                </Text>
-                <Text selectable style={styles.address}>{removeKey}</Text>
+                {this.renderCard(source, Localize.t('account.tangemSelectedAccount'))}
+                {step !== 'done' && <>
+                    <Text style={[styles.sectionLabel, styles.centeredSectionLabel]}>
+                        {Localize.t('tangemBackup.title')}
+                    </Text>
+                    <Text selectable style={styles.address}>{removeKey}</Text>
+                </>}
             </>;
         }
         const titleKey = {
