@@ -50,6 +50,7 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
     private scroll = React.createRef<ScrollView>();
     private heights = new Map<string, number>();
     private translations = new Map<string, Animated.Value>();
+    private displacements = new Map<string, number>();
     private drag?: Drag;
     private offset = 0;
     private viewportHeight = 0;
@@ -58,6 +59,8 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
     private lastFrame?: number;
     private mounted = false;
     private touchActive = false;
+    private touchPageY?: number;
+    private touchIdentifier?: GestureResponderEvent['nativeEvent']['identifier'];
     private generation = 0;
     private keys: string[];
     private appStateListener?: ReturnType<typeof AppState.addEventListener>;
@@ -72,7 +75,10 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
         onStartShouldSetPanResponder: () => false,
         onMoveShouldSetPanResponderCapture: () => !!this.drag,
         onMoveShouldSetPanResponder: () => !!this.drag,
-        onPanResponderMove: (_, gesture) => this.move(gesture.moveY),
+        // The move that transfers the responder can be consumed by PanResponder.
+        // Apply its position on grant as well, even if the finger then stays still.
+        onPanResponderGrant: (event) => this.onTouchMove(event),
+        onPanResponderMove: (event) => this.onTouchMove(event),
         onPanResponderRelease: () => this.finish(true),
         onPanResponderTerminate: () => this.finish(false),
         onPanResponderTerminationRequest: () => !this.drag,
@@ -136,6 +142,26 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
 
     private totalHeight = () => this.rows().reduce((sum, row) => sum + row.height, 0);
 
+    private onTouchStart = (event: GestureResponderEvent) => {
+        if (event.nativeEvent.touches.length > 1) {
+            this.finish(false);
+            return;
+        }
+        this.touchActive = true;
+        this.touchIdentifier = event.nativeEvent.identifier;
+        this.touchPageY = event.nativeEvent.pageY;
+    };
+
+    private onTouchMove = (event: GestureResponderEvent) => {
+        if (!this.touchActive) return;
+        const native = event.nativeEvent;
+        const touch = native.touches?.find(item => item.identifier === this.touchIdentifier) ??
+            (this.touchIdentifier === undefined || native.identifier === this.touchIdentifier ? native : undefined);
+        if (!touch || !Number.isFinite(touch.pageY)) return;
+        this.touchPageY = touch.pageY;
+        this.move(touch.pageY);
+    };
+
     begin = (key: string, event: GestureResponderEvent) => {
         const { sortable } = this.props;
         if (!this.mounted || !sortable || this.drag || !this.touchActive) return;
@@ -143,7 +169,8 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
         if (rows.some((row) => !row.height)) return;
         const from = rows.findIndex((row) => row.key === key);
         if (from < 0) return;
-        const { pageY } = event.nativeEvent;
+        const pageY = this.touchPageY ?? event.nativeEvent.pageY;
+        const offsetAtLift = this.offset;
         const generation = ++this.generation;
         this.viewport.current?.measureInWindow((_, top) => {
             if (!this.mounted || generation !== this.generation || !this.touchActive || !sortable) return;
@@ -154,14 +181,16 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
                 to: from,
                 origin,
                 height: rows[from].height,
-                grabOffset: pageY - top + this.offset - origin,
-                pageY,
+                grabOffset: pageY - top + offsetAtLift - origin,
+                pageY: this.touchPageY ?? pageY,
                 viewportTop: top,
             };
             this.scroll.current?.scrollTo({ y: this.offset, animated: false });
             this.setState({ activeKey: key });
             VibrateHapticFeedback('impactMedium');
-            this.move(pageY);
+            // Native measurement is asynchronous. Do not put the held row back
+            // at the original long-press point if the finger has already moved.
+            this.move(this.drag.pageY);
         });
     };
 
@@ -183,6 +212,10 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
                 let delta = 0;
                 if (index > drag.from && index <= to) delta = -drag.height;
                 if (index < drag.from && index >= to) delta = drag.height;
+                // Long lists must not create/restart native animations for every
+                // untouched row when only one neighbour has crossed the finger.
+                if (delta === (this.displacements.get(row.key) ?? 0)) return;
+                this.displacements.set(row.key, delta);
                 Animated.timing(this.translation(row.key), {
                     toValue: delta,
                     duration: 140,
@@ -225,6 +258,8 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
         const { activeKey } = this.state;
         this.generation += 1;
         this.touchActive = false;
+        this.touchPageY = undefined;
+        this.touchIdentifier = undefined;
         if (this.frame !== undefined) cancelAnimationFrame(this.frame);
         this.frame = undefined;
         this.lastFrame = undefined;
@@ -234,6 +269,7 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
             value.stopAnimation();
             value.setValue(0);
         });
+        this.displacements.clear();
         if (this.mounted && activeKey) this.setState({ activeKey: undefined });
         if (drag && commit) VibrateHapticFeedback('impactMedium');
         if (drag && commit && drag.from !== drag.to) {
@@ -278,9 +314,9 @@ export default class ReorderableList<T> extends Component<Props<T>, { activeKey?
                     }
                     this.viewportHeight = event.nativeEvent.layout.height;
                 }}
-                onTouchStart={() => {
-                    this.touchActive = true;
-                }}
+                onTouchStart={this.onTouchStart}
+                // Follow the finger during measurement and responder handoff too.
+                onTouchMove={this.onTouchMove}
                 onTouchEnd={() => this.finish(true)}
                 onTouchCancel={() => this.finish(false)}
                 // eslint-disable-next-line react/jsx-props-no-spreading
