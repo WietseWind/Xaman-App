@@ -2065,6 +2065,18 @@
     "feeChanged": "A taxa da rede mudou. Confira a taxa atualizada antes de assinar.",
     "cancelled": "A leitura do cartão foi cancelada. Pode tentar novamente.",
     "retry": "Não foi possível confirmar a ligação. Verifique a ligação à Internet e tente novamente. Se houver uma transação pendente, consulte primeiro o estado dela.",
-    "enableNewCard": "Agora vamos preparar este cartão para ser usado como cartão de backup."
+    "enableNewCard": "Agora vamos preparar este cartão para ser usado como cartão de backup.",
+    "remove": "Remover cartão de backup",
+    "replaceAction": "Substituir cartão de backup",
+    "identify": "Identificar cartão de backup",
+    "removeWarning": "Sua conta deixará de ter um cartão de backup. Se perder seu cartão original, você poderá perder o acesso à sua conta. Continuar?",
+    "removeBody": "Escaneie seu cartão original para confirmar a remoção. Seu cartão original continuará funcionando.",
+    "removeCheckingTitle": "Confirmando remoção…",
+    "removeCheckingBody": "Aguarde enquanto a rede confirma esta alteração.",
+    "removeDoneTitle": "Cartão de backup removido",
+    "removeDoneBody": "Seu cartão original continua funcionando. Sua conta não tem mais um cartão de backup.",
+    "identifyBody": "Escaneie o cartão de backup vinculado a esta conta para verificar se é o cartão correto.",
+    "notYourBackup": "Este não é seu cartão de backup.",
+    "yourBackup": "Este é seu cartão de backup."
   }
 }

@@ -2065,6 +2065,18 @@
     "feeChanged": "Les frais du réseau ont changé. Vérifiez les nouveaux frais avant de signer.",
     "cancelled": "Le scan de la carte a été annulé. Vous pouvez réessayer.",
     "retry": "Le lien entre les cartes n'a pas pu être confirmé. Vérifiez votre connexion et réessayez. Si une transaction est en attente, vérifiez d'abord son état.",
-    "enableNewCard": "Nous allons maintenant préparer cette carte pour l’utiliser comme carte de secours."
+    "enableNewCard": "Nous allons maintenant préparer cette carte pour l’utiliser comme carte de secours.",
+    "remove": "Retirer la carte de secours",
+    "replaceAction": "Remplacer la carte de secours",
+    "identify": "Identifier la carte de secours",
+    "removeWarning": "Votre compte n’aura plus de carte de secours. Si vous perdez votre carte d’origine, vous pourriez perdre l’accès à votre compte. Continuer ?",
+    "removeBody": "Scannez votre carte d’origine pour confirmer le retrait. Votre carte d’origine continuera de fonctionner.",
+    "removeCheckingTitle": "Confirmation du retrait…",
+    "removeCheckingBody": "Patientez pendant que le réseau confirme cette modification.",
+    "removeDoneTitle": "Carte de secours retirée",
+    "removeDoneBody": "Votre carte d’origine fonctionne toujours. Votre compte n’a plus de carte de secours.",
+    "identifyBody": "Scannez la carte de secours liée à ce compte pour vérifier qu’il s’agit de la bonne carte.",
+    "notYourBackup": "Ce n’est pas votre carte de secours.",
+    "yourBackup": "C’est votre carte de secours."
   }
 }

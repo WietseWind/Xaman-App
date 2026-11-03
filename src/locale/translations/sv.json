@@ -1967,6 +1967,18 @@
     "feeChanged": "Nätverksavgiften har ändrats. Granska den uppdaterade avgiften innan du signerar.",
     "cancelled": "Kortskanningen avbröts. Du kan försöka igen.",
     "retry": "Kortkopplingen kunde inte bekräftas. Kontrollera anslutningen och försök igen. Om en transaktion väntar ska du först kontrollera dess status.",
-    "enableNewCard": "Vi förbereder nu det här kortet för användning som reservkort."
+    "enableNewCard": "Vi förbereder nu det här kortet för användning som reservkort.",
+    "remove": "Ta bort reservkort",
+    "replaceAction": "Byt reservkort",
+    "identify": "Identifiera reservkort",
+    "removeWarning": "Ditt konto kommer inte längre att ha ett reservkort. Om du tappar bort ditt ursprungliga kort kan du förlora åtkomsten till ditt konto. Fortsätta?",
+    "removeBody": "Skanna ditt ursprungliga kort för att bekräfta borttagningen. Ditt ursprungliga kort fungerar även efteråt.",
+    "removeCheckingTitle": "Bekräftar borttagning…",
+    "removeCheckingBody": "Vänta medan nätverket bekräftar den här ändringen.",
+    "removeDoneTitle": "Reservkort borttaget",
+    "removeDoneBody": "Ditt ursprungliga kort fungerar fortfarande. Ditt konto har inte längre ett reservkort.",
+    "identifyBody": "Skanna reservkortet som är kopplat till det här kontot för att kontrollera att det är rätt kort.",
+    "notYourBackup": "Det här är inte ditt reservkort.",
+    "yourBackup": "Det här är ditt reservkort."
   }
 }

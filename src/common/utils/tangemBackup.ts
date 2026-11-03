@@ -56,6 +56,16 @@ export const savedBackupCard = (account: TangemBackupAccount): Card | undefined 
     }
 };
 
+/** Identify the linked signing key, including cards not imported on this phone. Never creates a key. */
+export const matchesBackupCard = (card: Card, address: string): boolean => {
+    try {
+        if (Array.isArray(card.wallets) && card.wallets.length === 0) return false;
+        return utils.isValidAddress(address) && utils.deriveAddress(GetWalletDerivedPublicKey(card)) === address;
+    } catch {
+        return false;
+    }
+};
+
 export const showTangemBackupWarning = (
     account: TangemBackupAccount & {
         balance?: number;

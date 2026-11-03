@@ -2051,6 +2051,18 @@
     "feeChanged": "Sieťový poplatok sa zmenil. Pred podpisom skontrolujte nový poplatok.",
     "cancelled": "Skenovanie karty bolo zrušené. Môžete to skúsiť znova.",
     "retry": "Prepojenie sa nepodarilo potvrdiť. Skontrolujte pripojenie a skúste to znova. Ak transakcia čaká na potvrdenie, najprv overte jej stav.",
-    "enableNewCard": "Teraz túto kartu pripravíme ako záložnú kartu."
+    "enableNewCard": "Teraz túto kartu pripravíme ako záložnú kartu.",
+    "remove": "Odobrať záložnú kartu",
+    "replaceAction": "Vymeniť záložnú kartu",
+    "identify": "Identifikovať záložnú kartu",
+    "removeWarning": "Váš účet už nebude mať záložnú kartu. Ak stratíte pôvodnú kartu, môžete stratiť prístup k účtu. Pokračovať?",
+    "removeBody": "Naskenujte pôvodnú kartu a potvrďte odobratie. Pôvodná karta bude naďalej fungovať.",
+    "removeCheckingTitle": "Potvrdzuje sa odobratie…",
+    "removeCheckingBody": "Počkajte, kým sieť potvrdí túto zmenu.",
+    "removeDoneTitle": "Záložná karta odobratá",
+    "removeDoneBody": "Pôvodná karta stále funguje. Váš účet už nemá záložnú kartu.",
+    "identifyBody": "Naskenujte záložnú kartu prepojenú s týmto účtom a overte, či je správna.",
+    "notYourBackup": "Toto nie je vaša záložná karta.",
+    "yourBackup": "Toto je vaša záložná karta."
   }
 }

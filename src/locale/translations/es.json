@@ -2047,6 +2047,18 @@
     "feeChanged": "La comisión de la red ha cambiado. Revisa la comisión actualizada antes de firmar.",
     "cancelled": "Se canceló el escaneo de la tarjeta. Puedes volver a intentarlo.",
     "retry": "No se pudo confirmar el vínculo. Comprueba tu conexión y reintenta. Si hay una transacción pendiente, consulta primero su estado.",
-    "enableNewCard": "Ahora prepararemos esta tarjeta para usarla como tarjeta de respaldo."
+    "enableNewCard": "Ahora prepararemos esta tarjeta para usarla como tarjeta de respaldo.",
+    "remove": "Quitar tarjeta de respaldo",
+    "replaceAction": "Reemplazar tarjeta de respaldo",
+    "identify": "Identificar tarjeta de respaldo",
+    "removeWarning": "Tu cuenta dejará de tener una tarjeta de respaldo. Si pierdes tu tarjeta original, podrías perder el acceso a tu cuenta. ¿Continuar?",
+    "removeBody": "Escanea tu tarjeta original para confirmar la eliminación. Tu tarjeta original seguirá funcionando.",
+    "removeCheckingTitle": "Confirmando eliminación…",
+    "removeCheckingBody": "Espera mientras la red confirma este cambio.",
+    "removeDoneTitle": "Tarjeta de respaldo eliminada",
+    "removeDoneBody": "Tu tarjeta original sigue funcionando. Tu cuenta ya no tiene una tarjeta de respaldo.",
+    "identifyBody": "Escanea la tarjeta de respaldo vinculada a esta cuenta para comprobar que es la correcta.",
+    "notYourBackup": "Esta no es tu tarjeta de respaldo.",
+    "yourBackup": "Esta es tu tarjeta de respaldo."
   }
 }

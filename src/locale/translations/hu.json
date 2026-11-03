@@ -1967,6 +1967,18 @@
     "feeChanged": "A hálózati díj megváltozott. Aláírás előtt ellenőrizd az új díjat.",
     "cancelled": "A kártya beolvasása megszakadt. Újra próbálkozhatsz.",
     "retry": "A kapcsolatot nem sikerült megerősíteni. Ellenőrizd a kapcsolatot, és próbáld újra. Függő tranzakció esetén először annak állapotát ellenőrizd.",
-    "enableNewCard": "Most előkészítjük ezt a kártyát tartalékkártyaként való használatra."
+    "enableNewCard": "Most előkészítjük ezt a kártyát tartalékkártyaként való használatra.",
+    "remove": "Tartalékkártya eltávolítása",
+    "replaceAction": "Tartalékkártya cseréje",
+    "identify": "Tartalékkártya azonosítása",
+    "removeWarning": "A fiókodnak nem lesz többé tartalékkártyája. Ha elveszíted az eredeti kártyát, elveszítheted a hozzáférést a fiókodhoz. Folytatod?",
+    "removeBody": "Olvasd be az eredeti kártyát az eltávolítás megerősítéséhez. Az eredeti kártya továbbra is működni fog.",
+    "removeCheckingTitle": "Eltávolítás megerősítése…",
+    "removeCheckingBody": "Várj, amíg a hálózat megerősíti ezt a módosítást.",
+    "removeDoneTitle": "Tartalékkártya eltávolítva",
+    "removeDoneBody": "Az eredeti kártya továbbra is működik. A fiókodnak már nincs tartalékkártyája.",
+    "identifyBody": "Olvasd be a fiókhoz kapcsolt tartalékkártyát, hogy ellenőrizd, ez a megfelelő kártya.",
+    "notYourBackup": "Ez nem a tartalékkártyád.",
+    "yourBackup": "Ez a tartalékkártyád."
   }
 }

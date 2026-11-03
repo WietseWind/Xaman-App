@@ -2054,6 +2054,18 @@
     "feeChanged": "Tīkla maksa ir mainījusies. Pirms parakstīšanas pārbaudiet atjaunināto maksu.",
     "cancelled": "Kartes skenēšana tika atcelta. Varat mēģināt vēlreiz.",
     "retry": "Neizdevās apstiprināt saistījumu. Pārbaudiet savienojumu un mēģiniet vēlreiz. Ja darījums gaida, vispirms pārbaudiet tā statusu.",
-    "enableNewCard": "Tagad sagatavosim šo karti lietošanai kā rezerves karti."
+    "enableNewCard": "Tagad sagatavosim šo karti lietošanai kā rezerves karti.",
+    "remove": "Noņemt rezerves karti",
+    "replaceAction": "Aizstāt rezerves karti",
+    "identify": "Identificēt rezerves karti",
+    "removeWarning": "Jūsu kontam vairs nebūs rezerves kartes. Ja pazaudēsiet sākotnējo karti, varat zaudēt piekļuvi savam kontam. Turpināt?",
+    "removeBody": "Noskenējiet sākotnējo karti, lai apstiprinātu noņemšanu. Sākotnējā karte turpinās darboties.",
+    "removeCheckingTitle": "Apstiprina noņemšanu…",
+    "removeCheckingBody": "Uzgaidiet, kamēr tīkls apstiprina šīs izmaiņas.",
+    "removeDoneTitle": "Rezerves karte noņemta",
+    "removeDoneBody": "Sākotnējā karte joprojām darbojas. Jūsu kontam vairs nav rezerves kartes.",
+    "identifyBody": "Noskenējiet šim kontam piesaistīto rezerves karti, lai pārbaudītu, vai tā ir pareizā karte.",
+    "notYourBackup": "Šī nav jūsu rezerves karte.",
+    "yourBackup": "Šī ir jūsu rezerves karte."
   }
 }

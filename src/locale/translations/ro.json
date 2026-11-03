@@ -2059,6 +2059,18 @@
     "feeChanged": "Comisionul rețelei s-a schimbat. Verificați comisionul actualizat înainte de semnare.",
     "cancelled": "Scanarea cardului a fost anulată. Puteți încerca din nou.",
     "retry": "Asocierea nu a putut fi confirmată. Verificați conexiunea și încercați din nou. Dacă există o tranzacție în așteptare, verificați-i mai întâi starea.",
-    "enableNewCard": "Acum vom pregăti acest card pentru a fi folosit drept card de rezervă."
+    "enableNewCard": "Acum vom pregăti acest card pentru a fi folosit drept card de rezervă.",
+    "remove": "Elimină cardul de rezervă",
+    "replaceAction": "Înlocuiește cardul de rezervă",
+    "identify": "Identifică cardul de rezervă",
+    "removeWarning": "Contul tău nu va mai avea un card de rezervă. Dacă pierzi cardul original, poți pierde accesul la cont. Continui?",
+    "removeBody": "Scanează cardul original pentru a confirma eliminarea. Cardul original va funcționa în continuare.",
+    "removeCheckingTitle": "Se confirmă eliminarea…",
+    "removeCheckingBody": "Așteaptă până când rețeaua confirmă această modificare.",
+    "removeDoneTitle": "Card de rezervă eliminat",
+    "removeDoneBody": "Cardul original funcționează în continuare. Contul tău nu mai are un card de rezervă.",
+    "identifyBody": "Scanează cardul de rezervă asociat acestui cont pentru a verifica dacă este cel corect.",
+    "notYourBackup": "Acesta nu este cardul tău de rezervă.",
+    "yourBackup": "Acesta este cardul tău de rezervă."
   }
 }

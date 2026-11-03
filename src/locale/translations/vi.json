@@ -2070,6 +2070,18 @@
     "feeChanged": "Phí mạng đã thay đổi. Kiểm tra mức phí mới trước khi ký.",
     "cancelled": "Đã hủy quét thẻ. Bạn có thể thử lại.",
     "retry": "Không thể xác nhận liên kết thẻ. Kiểm tra kết nối rồi thử lại. Nếu có giao dịch đang chờ, hãy kiểm tra trạng thái trước.",
-    "enableNewCard": "Bây giờ chúng tôi sẽ chuẩn bị thẻ này để dùng làm thẻ dự phòng."
+    "enableNewCard": "Bây giờ chúng tôi sẽ chuẩn bị thẻ này để dùng làm thẻ dự phòng.",
+    "remove": "Gỡ thẻ dự phòng",
+    "replaceAction": "Thay thẻ dự phòng",
+    "identify": "Nhận diện thẻ dự phòng",
+    "removeWarning": "Tài khoản của bạn sẽ không còn thẻ dự phòng. Nếu mất thẻ gốc, bạn có thể mất quyền truy cập tài khoản. Tiếp tục?",
+    "removeBody": "Quét thẻ gốc để xác nhận việc gỡ. Thẻ gốc vẫn sẽ hoạt động.",
+    "removeCheckingTitle": "Đang xác nhận việc gỡ…",
+    "removeCheckingBody": "Vui lòng đợi mạng xác nhận thay đổi này.",
+    "removeDoneTitle": "Đã gỡ thẻ dự phòng",
+    "removeDoneBody": "Thẻ gốc vẫn hoạt động. Tài khoản của bạn không còn thẻ dự phòng.",
+    "identifyBody": "Quét thẻ dự phòng được liên kết với tài khoản này để kiểm tra xem đó có phải thẻ đúng không.",
+    "notYourBackup": "Đây không phải thẻ dự phòng của bạn.",
+    "yourBackup": "Đây là thẻ dự phòng của bạn."
   }
 }

@@ -1967,6 +1967,18 @@
     "feeChanged": "A taxa da rede mudou. Confira a taxa atualizada antes de assinar.",
     "cancelled": "A leitura do cartão foi cancelada. Pode tentar novamente.",
     "retry": "Não foi possível confirmar a ligação. Verifique a ligação à Internet e tente novamente. Se houver uma transação pendente, consulte primeiro o estado dela.",
-    "enableNewCard": "Vamos agora preparar este cartão para ser utilizado como cartão de reserva."
+    "enableNewCard": "Vamos agora preparar este cartão para ser utilizado como cartão de reserva.",
+    "remove": "Remover cartão de cópia de segurança",
+    "replaceAction": "Substituir cartão de cópia de segurança",
+    "identify": "Identificar cartão de cópia de segurança",
+    "removeWarning": "A sua conta deixará de ter um cartão de cópia de segurança. Se perder o cartão original, poderá perder o acesso à sua conta. Continuar?",
+    "removeBody": "Leia o cartão original para confirmar a remoção. O cartão original continuará a funcionar.",
+    "removeCheckingTitle": "A confirmar a remoção…",
+    "removeCheckingBody": "Aguarde enquanto a rede confirma esta alteração.",
+    "removeDoneTitle": "Cartão de cópia de segurança removido",
+    "removeDoneBody": "O cartão original continua a funcionar. A sua conta já não tem um cartão de cópia de segurança.",
+    "identifyBody": "Leia o cartão de cópia de segurança associado a esta conta para verificar se é o cartão correto.",
+    "notYourBackup": "Este não é o seu cartão de cópia de segurança.",
+    "yourBackup": "Este é o seu cartão de cópia de segurança."
   }
 }

@@ -1,5 +1,7 @@
 import renderer, { act, ReactTestRenderer } from 'react-test-renderer';
 import { Text } from 'react-native';
+import { ActionSheet } from '@common/helpers/interface';
+import NetworkService from '@services/NetworkService';
 import Localize from '@locale';
 import { AccountRepository } from '@store/repositories';
 import { AccountTypes, AccessLevels, EncryptionLevels } from '@store/types';
@@ -21,8 +23,12 @@ jest.mock('@common/helpers/device', () => ({
     GetLayoutInsets: () => ({ top: 20, bottom: 34 }),
     HasBottomNotch: () => true,
 }));
-jest.mock('@common/helpers/navigator', () => ({ Navigator: { push: jest.fn(), pop: jest.fn() } }));
+jest.mock('@common/helpers/navigator',
+    () => ({ Navigator: { push: jest.fn(), pop: jest.fn(), showAlertModal: jest.fn(async () => 'alert') } }));
 jest.mock('@components/Modules', () => ({ ProBadge: () => null }));
+
+jest.mock('@common/helpers/interface',
+    () => ({ ...jest.requireActual('@common/helpers/interface'), ActionSheet: jest.fn() }));
 
 let tree: ReactTestRenderer;
 const account = (overrides = {}) =>
@@ -222,5 +228,53 @@ it.each([true, false])('shows the on-chain back-up address with a local name onl
     const button = tree.root
         .findAllByType(Button)
         .find((node) => node.props.testID === 'tangem-backup-button')!;
-    expect(button.props.label).toBe(Localize.t('tangemBackup.replace'));
+    expect(button.props.label).toBe(Localize.t('global.update'));
+});
+
+
+const menu = () => {
+    jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ id: 'selected' } as any);
+    const screen = renderEdit({ type: AccountTypes.Tangem,
+        regularKey: 'rBackup', additionalInfo: { cardId: 'SYNTHETIC' } });
+    screen.showTangemBackup();
+    const [options, callback] = jest.mocked(ActionSheet).mock.calls[0];
+    return { screen, options, select: callback as (index: number) => void };
+};
+it('offers all three backup actions from Update and can cancel the menu', () => {
+    const { options, select } = menu();
+    expect(options.options.slice(0,
+        3)).toEqual(['Remove back-up card', 'Replace back-up card', 'Identify back-up card']);
+    expect(options.destructiveButtonIndex).toBe(0);
+    select(3); expect(Navigator.push).not.toHaveBeenCalled();
+});
+it('keeps Cancel primary and Remove secondary red, and does nothing until removal is confirmed', () => {
+    const { screen, select } = menu(); select(0);
+    expect(Navigator.push).not.toHaveBeenCalled();
+    const alert = jest.mocked(Navigator.showAlertModal).mock.calls[0][0];
+    expect(alert.type).toBe('warning');
+    expect(alert.buttons[0]).toMatchObject({ text: Localize.t('global.cancel') });
+    expect(alert.buttons[0].light).not.toBe(true);
+    expect(alert.buttons[1]).toMatchObject({ text: Localize.t('global.remove'), light: true, destructive: true });
+    alert.buttons[0].onPress?.(); expect(Navigator.push).not.toHaveBeenCalled();
+    alert.buttons[1].onPress?.(); alert.buttons[1].onPress?.();
+    expect(Navigator.push).toHaveBeenCalledTimes(1);
+    expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Edit.BackupTangemCard,
+        { account: screen.state.account, removeKey: 'rBackup' });
+});
+it.each([1, 2])('routes menu option %s to replace or identify exactly once', index => {
+    const { screen, select } = menu(); select(index); select(index);
+    expect(Navigator.push).toHaveBeenCalledTimes(1);
+    expect(Navigator.push).toHaveBeenCalledWith(index === 1
+        ? AppScreens.Account.Edit.BackupTangemCard : AppScreens.Account.Edit.IdentifyTangemCard,
+        index === 1 ? { account: screen.state.account } : { account: screen.state.account, backupAddress: 'rBackup' });
+});
+it('rejects a stale removal confirmation when the backup link changed', () => {
+    const { screen, select } = menu(); select(0);
+    const alert = jest.mocked(Navigator.showAlertModal).mock.calls[0][0];
+    screen.state.account.regularKey = 'rNewBackup'; alert.buttons[1].onPress?.();
+    expect(Navigator.push).not.toHaveBeenCalled();
+});
+it('ignores menu choices after the selected network changes', () => {
+    const { select } = menu(); jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ id: 'other' } as any);
+    select(2); expect(Navigator.push).not.toHaveBeenCalled();
 });

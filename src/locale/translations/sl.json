@@ -1967,6 +1967,18 @@
     "feeChanged": "Omrežna provizija se je spremenila. Pred podpisom preverite posodobljeno provizijo.",
     "cancelled": "Skeniranje kartice je bilo preklicano. Lahko poskusite znova.",
     "retry": "Povezave ni bilo mogoče potrditi. Preverite povezavo z internetom in poskusite znova. Če transakcija čaka, najprej preverite njeno stanje.",
-    "enableNewCard": "Zdaj bomo to kartico pripravili kot rezervno kartico."
+    "enableNewCard": "Zdaj bomo to kartico pripravili kot rezervno kartico.",
+    "remove": "Odstrani rezervno kartico",
+    "replaceAction": "Zamenjaj rezervno kartico",
+    "identify": "Prepoznaj rezervno kartico",
+    "removeWarning": "Vaš račun ne bo več imel rezervne kartice. Če izgubite prvotno kartico, lahko izgubite dostop do računa. Nadaljujem?",
+    "removeBody": "Skenirajte prvotno kartico, da potrdite odstranitev. Prvotna kartica bo še naprej delovala.",
+    "removeCheckingTitle": "Potrjevanje odstranitve…",
+    "removeCheckingBody": "Počakajte, da omrežje potrdi to spremembo.",
+    "removeDoneTitle": "Rezervna kartica odstranjena",
+    "removeDoneBody": "Prvotna kartica še vedno deluje. Vaš račun nima več rezervne kartice.",
+    "identifyBody": "Skenirajte rezervno kartico, povezano s tem računom, da preverite, ali je prava.",
+    "notYourBackup": "To ni vaša rezervna kartica.",
+    "yourBackup": "To je vaša rezervna kartica."
   }
 }

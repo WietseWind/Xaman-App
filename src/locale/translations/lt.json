@@ -2086,6 +2086,18 @@
     "feeChanged": "Tinklo mokestis pasikeitė. Prieš pasirašydami patikrinkite atnaujintą mokestį.",
     "cancelled": "Kortelės nuskaitymas atšauktas. Galite bandyti dar kartą.",
     "retry": "Nepavyko patvirtinti susiejimo. Patikrinkite ryšį ir bandykite dar kartą. Jei operacija laukia, pirmiausia patikrinkite jos būseną.",
-    "enableNewCard": "Dabar paruošime šią kortelę naudoti kaip atsarginę kortelę."
+    "enableNewCard": "Dabar paruošime šią kortelę naudoti kaip atsarginę kortelę.",
+    "remove": "Pašalinti atsarginę kortelę",
+    "replaceAction": "Pakeisti atsarginę kortelę",
+    "identify": "Atpažinti atsarginę kortelę",
+    "removeWarning": "Jūsų paskyra nebeturės atsarginės kortelės. Jei prarasite pradinę kortelę, galite prarasti prieigą prie paskyros. Tęsti?",
+    "removeBody": "Nuskaitykite pradinę kortelę, kad patvirtintumėte pašalinimą. Pradinė kortelė veiks ir toliau.",
+    "removeCheckingTitle": "Patvirtinamas pašalinimas…",
+    "removeCheckingBody": "Palaukite, kol tinklas patvirtins šį pakeitimą.",
+    "removeDoneTitle": "Atsarginė kortelė pašalinta",
+    "removeDoneBody": "Pradinė kortelė vis dar veikia. Jūsų paskyra nebeturi atsarginės kortelės.",
+    "identifyBody": "Nuskaitykite su šia paskyra susietą atsarginę kortelę, kad patikrintumėte, ar ji tinkama.",
+    "notYourBackup": "Tai ne jūsų atsarginė kortelė.",
+    "yourBackup": "Tai jūsų atsarginė kortelė."
   }
 }

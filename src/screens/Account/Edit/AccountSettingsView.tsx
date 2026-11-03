@@ -4,14 +4,15 @@
 
 import { first, filter } from 'lodash';
 import React, { Component } from 'react';
-import { Alert, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, Platform, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import AccountService from '@services/AccountService';
 import LoggerService from '@services/LoggerService';
 import NetworkService from '@services/NetworkService';
+import NavigationService from '@services/NavigationService';
 import PushNotificationsService from '@services/PushNotificationsService';
 
-import { Prompt } from '@common/helpers/interface';
+import { ActionSheet, Prompt } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
 
 import { GetCardEnforcedSecurity, GetCardId, TangemSecurity } from '@common/utils/tangem';
@@ -78,7 +79,7 @@ const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetu
         <View style={styles.backupControls}>
             <Text style={[styles.cardIdLabel, styles.backupHeadingLabel]}>{Localize.t('tangemBackup.title')}</Text>
             <Button testID="tangem-backup-button"
-                label={Localize.t(key ? 'tangemBackup.replace' : 'tangemBackup.setUp')}
+                label={Localize.t(key ? 'global.update' : 'tangemBackup.setUp')}
                 onPress={onSetup} roundedMini nonBlock allowFontScaling
                 hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                 style={styles.backupButton} textStyle={styles.backupButtonText} />
@@ -95,6 +96,8 @@ const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetu
 /* Component ==================================================================== */
 class AccountSettingsView extends Component<Props, State> {
     static screenName = AppScreens.Account.Edit.Settings;
+    private backupAlive = true;
+    private backupMenuOpen = false;
 
     static options() {
         return {
@@ -140,6 +143,7 @@ class AccountSettingsView extends Component<Props, State> {
     }
 
     componentWillUnmount() {
+        this.backupAlive = false;
         AccountRepository.off('accountUpdate', this.onAccountUpdate);
         NetworkService.off('networkChange', this.refreshBackup);
     }
@@ -164,7 +168,60 @@ class AccountSettingsView extends Component<Props, State> {
 
     showTangemBackup = () => {
         const { account } = this.state;
-        Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
+        const key = account.regularKey;
+        if (!key) {
+            Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
+            return;
+        }
+        if (this.backupMenuOpen) return;
+        const network = NetworkService.getNetwork().id.toString();
+        const current = () => this.backupAlive && account.isValid() && account.regularKey === key &&
+            NavigationService.getCurrentOverlay() !== AppScreens.Overlay.Lock &&
+            NetworkService.getNetwork().id.toString() === network;
+        this.backupMenuOpen = true;
+        let selected = false;
+        ActionSheet({
+            options: [
+                Localize.t('tangemBackup.remove'),
+                Localize.t('tangemBackup.replaceAction'),
+                Localize.t('tangemBackup.identify'),
+                ...(Platform.OS === 'ios' ? [Localize.t('global.cancel')] : []),
+            ],
+            cancelButtonIndex: 3,
+            destructiveButtonIndex: 0,
+        }, (index: number) => {
+            if (selected) return;
+            selected = true;
+            this.backupMenuOpen = false;
+            if (!current()) return;
+            if (index === 0) {
+                let confirmed = false;
+                Navigator.showAlertModal({
+                    testID: 'backup-remove-warning',
+                    type: 'warning',
+                    title: Localize.t('tangemBackup.remove'),
+                    text: Localize.t('tangemBackup.removeWarning'),
+                    buttons: [
+                        { text: Localize.t('global.cancel'), testID: 'backup-remove-cancel', type: 'dismiss' },
+                        {
+                            text: Localize.t('global.remove'), testID: 'backup-remove-confirm',
+                            light: true, destructive: true,
+                            onPress: () => {
+                                if (confirmed || !current()) return;
+                                confirmed = true;
+                                Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account, removeKey: key });
+                            },
+                        },
+                    ],
+                }).catch(error => LoggerService.recordError('Unable to show back-up removal warning', error));
+            } else if (index === 1) {
+                Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
+            } else if (index === 2) {
+                Navigator.push<IdentifyTangemCardViewProps>(AppScreens.Account.Edit.IdentifyTangemCard, {
+                    account, backupAddress: key,
+                });
+            }
+        });
     };
 
     accountLabelPressed = () => {

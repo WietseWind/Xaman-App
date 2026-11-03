@@ -2065,6 +2065,18 @@
     "feeChanged": "Tarmoq haqi o'zgardi. Imzolashdan oldin yangilangan haqni tekshiring.",
     "cancelled": "Kartani skanerlash bekor qilindi. Qayta urinishingiz mumkin.",
     "retry": "Bog'lanishni tasdiqlab bo'lmadi. Ulanishni tekshirib, qayta urinib ko'ring. Kutilayotgan tranzaksiya bo'lsa, avval uning holatini tekshiring.",
-    "enableNewCard": "Endi ushbu kartani zaxira karta sifatida foydalanishga tayyorlaymiz."
+    "enableNewCard": "Endi ushbu kartani zaxira karta sifatida foydalanishga tayyorlaymiz.",
+    "remove": "Zaxira kartani olib tashlash",
+    "replaceAction": "Zaxira kartani almashtirish",
+    "identify": "Zaxira kartani aniqlash",
+    "removeWarning": "Hisobingizda endi zaxira karta bo‘lmaydi. Asl kartangizni yo‘qotsangiz, hisobingizga kirish imkonini yo‘qotishingiz mumkin. Davom etilsinmi?",
+    "removeBody": "Olib tashlashni tasdiqlash uchun asl kartangizni skanerlang. Asl karta ishlashda davom etadi.",
+    "removeCheckingTitle": "Olib tashlash tasdiqlanmoqda…",
+    "removeCheckingBody": "Tarmoq bu o‘zgarishni tasdiqlaguncha kuting.",
+    "removeDoneTitle": "Zaxira karta olib tashlandi",
+    "removeDoneBody": "Asl kartangiz hali ham ishlaydi. Hisobingizda endi zaxira karta yo‘q.",
+    "identifyBody": "To‘g‘ri karta ekanini tekshirish uchun bu hisobga bog‘langan zaxira kartani skanerlang.",
+    "notYourBackup": "Bu sizning zaxira kartangiz emas.",
+    "yourBackup": "Bu sizning zaxira kartangiz."
   }
 }

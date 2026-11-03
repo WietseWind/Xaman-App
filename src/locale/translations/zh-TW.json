@@ -2068,6 +2068,18 @@
     "feeChanged": "網路手續費已變更。簽名前請核對更新後的手續費。",
     "cancelled": "已取消卡片掃描。您可以重試。",
     "retry": "無法確認卡片連結。請檢查連線後重試。如有待確認的交易，請先查看其狀態。",
-    "enableNewCard": "現在我們將準備好這張卡片，以便將其用作備用卡。"
+    "enableNewCard": "現在我們將準備好這張卡片，以便將其用作備用卡。",
+    "remove": "移除備份卡",
+    "replaceAction": "更換備份卡",
+    "identify": "識別備份卡",
+    "removeWarning": "您的帳戶將不再有備份卡。如果原卡遺失，您可能會無法存取帳戶。是否繼續？",
+    "removeBody": "請掃描原卡以確認移除。原卡仍可正常使用。",
+    "removeCheckingTitle": "正在確認移除…",
+    "removeCheckingBody": "請等待網路確認此變更。",
+    "removeDoneTitle": "備份卡已移除",
+    "removeDoneBody": "原卡仍可正常使用。您的帳戶不再有備份卡。",
+    "identifyBody": "請掃描與此帳戶連結的備份卡，確認是否為正確的卡片。",
+    "notYourBackup": "這不是您的備份卡。",
+    "yourBackup": "這是您的備份卡。"
   }
 }

@@ -306,3 +306,24 @@ describe('Tangem backup wizard UI', () => {
         });
     });
 });
+
+
+it('guides removal with only the original-card scan, confirmation loader and removal result', async () => {
+    jest.useFakeTimers();
+    act(() => tree.unmount());
+    root.RegularKey = destination;
+    await act(async () => { tree = renderer.create(<BackupTangemCard account={account} removeKey={destination} />); });
+    expect(text()).toContain(Localize.t('tangemBackup.removeBody'));
+    expect(text()).not.toContain(Localize.t('tangemBackup.step', { number: 3 }));
+    expect(tree.root.findByProps({ testID: 'backup-next' }).props.label).toBe(Localize.t('tangemBackup.scanOriginal'));
+    await press();
+    expect(tree.root.findByProps({ testID: 'backup-confirming' })).toBeDefined();
+    expect(text()).toContain(Localize.t('tangemBackup.removeCheckingTitle'));
+    expect(text()).not.toContain(Localize.t('global.tryAgain'));
+    root.RegularKey = undefined;
+    await act(async () => { jest.advanceTimersByTime(2500); });
+    expect(text()).toContain(Localize.t('tangemBackup.removeDoneTitle'));
+    expect(text()).toContain(Localize.t('tangemBackup.removeDoneBody'));
+    expect(deps.sign).toHaveBeenCalledWith(expect.anything(), expect.not.objectContaining({ RegularKey: destination }));
+    expect(deps.scan).not.toHaveBeenCalled();
+});

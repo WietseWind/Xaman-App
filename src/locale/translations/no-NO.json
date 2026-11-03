@@ -2067,6 +2067,18 @@
     "feeChanged": "Nettverksgebyret er endret. Se gjennom det oppdaterte gebyret før du signerer.",
     "cancelled": "Kortskanningen ble avbrutt. Du kan prøve igjen.",
     "retry": "Korttilknytningen kunne ikke bekreftes. Kontroller forbindelsen og prøv igjen. Hvis en transaksjon venter, sjekk statusen først.",
-    "enableNewCard": "Vi gjør nå dette kortet klart til bruk som reservekort."
+    "enableNewCard": "Vi gjør nå dette kortet klart til bruk som reservekort.",
+    "remove": "Fjern reservekort",
+    "replaceAction": "Bytt reservekort",
+    "identify": "Identifiser reservekort",
+    "removeWarning": "Kontoen din vil ikke lenger ha et reservekort. Hvis du mister det opprinnelige kortet, kan du miste tilgangen til kontoen din. Fortsette?",
+    "removeBody": "Skann det opprinnelige kortet for å bekrefte fjerningen. Det opprinnelige kortet vil fortsatt fungere.",
+    "removeCheckingTitle": "Bekrefter fjerning…",
+    "removeCheckingBody": "Vent mens nettverket bekrefter denne endringen.",
+    "removeDoneTitle": "Reservekort fjernet",
+    "removeDoneBody": "Det opprinnelige kortet fungerer fortsatt. Kontoen din har ikke lenger et reservekort.",
+    "identifyBody": "Skann reservekortet som er knyttet til denne kontoen, for å kontrollere at det er riktig kort.",
+    "notYourBackup": "Dette er ikke reservekortet ditt.",
+    "yourBackup": "Dette er reservekortet ditt."
   }
 }

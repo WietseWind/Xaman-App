@@ -2,6 +2,9 @@ import React from 'react';
 import renderer, { act, ReactTestInstance, ReactTestRenderer } from 'react-test-renderer';
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import { Navigation } from 'react-native-navigation';
+import { utils } from 'xrpl-accountlib';
+import { Navigator } from '@common/helpers/navigator';
+import NetworkService from '@services/NetworkService';
 import RNTangemSdk from 'tangem-sdk-react-native';
 
 import StyleService from '@services/StyleService';
@@ -11,7 +14,7 @@ import { AccountModel } from '@store/models';
 import { AccountTypes } from '@store/types';
 import { Images } from '@common/helpers/images';
 import { prepareForTangemIdentifyNavigation } from '@common/utils/tangemIdentifyNavigation';
-import { DefaultDerivationPaths } from '@common/utils/tangem';
+import { DefaultDerivationPaths, GetWalletDerivedPublicKey } from '@common/utils/tangem';
 import tangemCards from '@common/utils/__tests__/fixtures/tangem.cards.json';
 import Localize from '@locale';
 import { AppFonts } from '@theme';
@@ -21,7 +24,20 @@ import IdentifyTangemCardView from '../IdentifyTangemCard';
 jest.mock('tangem-sdk-react-native', () => ({ __esModule: true, default: {
     startSession: jest.fn(), scanCard: jest.fn(), stopSession: jest.fn(),
 } }));
-jest.mock('react-native-navigation', () => ({ Navigation: { pop: jest.fn() } }));
+jest.mock('react-native-navigation', () => {
+    const registerCommandListener = jest.fn(() => ({ remove: jest.fn() }));
+    return { Navigation: { pop: jest.fn(), events: () => ({ registerCommandListener }) } };
+});
+jest.mock('@common/helpers/navigator', () => ({ Navigator: { showAlertModal: jest.fn(async () => 'alert') } }));
+jest.mock('@services/NetworkService', () => {
+    const EventEmitter = require('events');
+    return { __esModule: true,
+        default: Object.assign(new EventEmitter(), { getNetwork: jest.fn(() => ({ id: 'test' })) }) };
+});
+jest.mock('@services/NavigationService', () => {
+    const EventEmitter = require('events');
+    return { __esModule: true, default: new EventEmitter() };
+});
 jest.mock('@services/LoggerService', () => ({ __esModule: true, default: {
     recordError: jest.fn(), createLogger: () => ({ debug: jest.fn() }),
 } }));
@@ -424,5 +440,87 @@ describe('Tangem Identify owns the start/scan/stop lifecycle', () => {
         expect(LoggerService.recordError).toHaveBeenCalledWith('Tangem identify session cleanup', expect.any(Error));
         expect(Alert.alert).not.toHaveBeenCalled();
         expect(Navigation.pop).not.toHaveBeenCalled();
+    });
+});
+
+
+describe('identify a linked back-up card by public key', () => {
+    const card = tangemCards.multiCurrency.android as any;
+    const address = utils.deriveAddress(GetWalletDerivedPublicKey(card));
+    const mountBackup = () => {
+        const account = { ...selected, regularKey: address, isValid: () => true } as any;
+        let tree!: ReactTestRenderer;
+        act(() => {
+            tree = renderer.create(
+                <IdentifyTangemCardView account={account} backupAddress={address} componentId={componentId} />,
+            );
+        });
+        trees.add(tree);
+        return { tree, view: tree.getInstance() as IdentifyTangemCardView, account };
+    };
+    it('identifies a matching derived address even when the card is not imported', async () => {
+        const { tree } = mountBackup();
+        jest.mocked(AccountRepository.getAccounts).mockReturnValue([] as any);
+        jest.mocked(RNTangemSdk.scanCard).mockResolvedValue(card);
+        await press(tree, 'next-button');
+        expect(Navigator.showAlertModal).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'success', text: Localize.t('tangemBackup.yourBackup'),
+        }));
+        expect(RNTangemSdk.startSession).toHaveBeenCalledWith(expect.objectContaining({ attestationMode: 'offline' }));
+        expect(Alert.alert).not.toHaveBeenCalled();
+    });
+    it.each([{}, { ...card, wallets: [] }, tangemCards.normalED.android])(
+        'shows a formatted warning for an empty or different key: %#', async scanned => {
+        const { tree } = mountBackup();
+        jest.mocked(RNTangemSdk.scanCard).mockResolvedValue(scanned as any);
+        await press(tree, 'next-button');
+        expect(Navigator.showAlertModal).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'warning', text: Localize.t('tangemBackup.notYourBackup'),
+        }));
+        expect(Alert.alert).not.toHaveBeenCalled();
+        });
+    it('finishes native session cleanup before showing identification feedback', async () => {
+        const { tree, view } = mountBackup(); const stop = deferred<void>();
+        jest.mocked(RNTangemSdk.scanCard).mockResolvedValue(card);
+        jest.mocked(RNTangemSdk.stopSession).mockReturnValue(stop.promise);
+        let scanning!: Promise<void>;
+        await act(async () => { scanning = view.onNext(); await flush(); });
+        expect(RNTangemSdk.stopSession).toHaveBeenCalled();
+        expect(Navigator.showAlertModal).not.toHaveBeenCalled();
+        await act(async () => { stop.resolve(); await scanning; });
+        expect(Navigator.showAlertModal).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
+        expect(button(tree, 'next-button').props.isDisabled).toBe(false);
+    });
+    it('suppresses late results when the backup link changes while NFC is open', async () => {
+        const { view, account } = mountBackup(); const scan = deferred<any>();
+        jest.mocked(RNTangemSdk.scanCard).mockReturnValue(scan.promise);
+        let scanning!: Promise<void>;
+        await act(async () => { scanning = view.onNext(); await flush(); });
+        account.regularKey = 'rChanged';
+        await act(async () => { scan.resolve(card); await scanning; });
+        expect(Navigator.showAlertModal).not.toHaveBeenCalled();
+        expect(RNTangemSdk.stopSession).toHaveBeenCalledTimes(1);
+    });
+    it('waits for NFC cleanup on a network interruption and never shows a stale match', async () => {
+        const { view } = mountBackup(); const scan = deferred<any>();
+        jest.mocked(RNTangemSdk.scanCard).mockReturnValue(scan.promise);
+        let scanning!: Promise<void>;
+        await act(async () => { scanning = view.onNext();
+            await flush();
+            NetworkService.emit('networkChange');
+            await flush();
+            });
+        expect(Navigation.pop).not.toHaveBeenCalled();
+        await act(async () => { scan.resolve(card); await scanning; await flush(); });
+        expect(Navigation.pop).toHaveBeenCalledWith(componentId);
+        expect(Navigator.showAlertModal).not.toHaveBeenCalled();
+    });
+    it('shows a formatted error after a failed scan, allowing retry', async () => {
+        const { tree } = mountBackup();
+        jest.mocked(RNTangemSdk.scanCard).mockRejectedValue(new Error('NFC failed'));
+        await press(tree, 'next-button');
+        expect(Navigator.showAlertModal).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+        expect(Alert.alert).not.toHaveBeenCalled();
+        expect(button(tree, 'next-button').props.isDisabled).toBe(false);
     });
 });

@@ -1967,6 +1967,18 @@
     "feeChanged": "La comissió de la xarxa ha canviat. Revisa la comissió actualitzada abans de signar.",
     "cancelled": "S'ha cancel·lat l'escaneig de la targeta. Pots tornar-ho a provar.",
     "retry": "No s'ha pogut confirmar la vinculació. Comprova la connexió i torna-ho a provar. Si hi ha una transacció pendent, consulta'n primer l'estat.",
-    "enableNewCard": "Ara prepararem aquesta targeta perquè es pugui fer servir com a targeta de reserva."
+    "enableNewCard": "Ara prepararem aquesta targeta perquè es pugui fer servir com a targeta de reserva.",
+    "remove": "Elimina la targeta de reserva",
+    "replaceAction": "Substitueix la targeta de reserva",
+    "identify": "Identifica la targeta de reserva",
+    "removeWarning": "El teu compte deixarà de tenir una targeta de reserva. Si perds la targeta original, podries perdre l’accés al teu compte. Vols continuar?",
+    "removeBody": "Escaneja la targeta original per confirmar l’eliminació. La targeta original continuarà funcionant.",
+    "removeCheckingTitle": "S’està confirmant l’eliminació…",
+    "removeCheckingBody": "Espera mentre la xarxa confirma aquest canvi.",
+    "removeDoneTitle": "Targeta de reserva eliminada",
+    "removeDoneBody": "La targeta original continua funcionant. El teu compte ja no té cap targeta de reserva.",
+    "identifyBody": "Escaneja la targeta de reserva vinculada a aquest compte per comprovar que és la correcta.",
+    "notYourBackup": "Aquesta no és la teva targeta de reserva.",
+    "yourBackup": "Aquesta és la teva targeta de reserva."
   }
 }

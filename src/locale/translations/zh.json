@@ -2066,6 +2066,18 @@
     "feeChanged": "网络手续费已更改。签名前请核对更新后的手续费。",
     "cancelled": "卡片扫描已取消。您可以重试。",
     "retry": "无法确认卡片关联。请检查连接后重试。如果有待确认的交易，请先查看其状态。",
-    "enableNewCard": "现在我们将准备好这张卡片，以便将其用作备用卡。"
+    "enableNewCard": "现在我们将准备好这张卡片，以便将其用作备用卡。",
+    "remove": "移除备份卡",
+    "replaceAction": "更换备份卡",
+    "identify": "识别备份卡",
+    "removeWarning": "您的账户将不再有备份卡。如果原卡丢失，您可能会无法访问账户。是否继续？",
+    "removeBody": "请扫描原卡以确认移除。原卡仍可正常使用。",
+    "removeCheckingTitle": "正在确认移除…",
+    "removeCheckingBody": "请等待网络确认此更改。",
+    "removeDoneTitle": "备份卡已移除",
+    "removeDoneBody": "原卡仍可正常使用。您的账户不再有备份卡。",
+    "identifyBody": "请扫描与此账户关联的备份卡，确认是否为正确的卡片。",
+    "notYourBackup": "这不是您的备份卡。",
+    "yourBackup": "这是您的备份卡。"
   }
 }

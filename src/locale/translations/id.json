@@ -2065,6 +2065,18 @@
     "feeChanged": "Biaya jaringan berubah. Tinjau biaya terbaru sebelum menandatangani.",
     "cancelled": "Pemindaian kartu dibatalkan. Anda dapat mencoba lagi.",
     "retry": "Penautan kartu tidak dapat dikonfirmasi. Periksa koneksi dan coba lagi. Jika transaksi masih tertunda, periksa statusnya terlebih dahulu.",
-    "enableNewCard": "Sekarang kami akan menyiapkan kartu ini untuk digunakan sebagai kartu cadangan."
+    "enableNewCard": "Sekarang kami akan menyiapkan kartu ini untuk digunakan sebagai kartu cadangan.",
+    "remove": "Hapus kartu cadangan",
+    "replaceAction": "Ganti kartu cadangan",
+    "identify": "Identifikasi kartu cadangan",
+    "removeWarning": "Akun Anda tidak akan lagi memiliki kartu cadangan. Jika kartu asli hilang, Anda bisa kehilangan akses ke akun. Lanjutkan?",
+    "removeBody": "Pindai kartu asli untuk mengonfirmasi penghapusan. Kartu asli akan tetap berfungsi.",
+    "removeCheckingTitle": "Mengonfirmasi penghapusan…",
+    "removeCheckingBody": "Tunggu sementara jaringan mengonfirmasi perubahan ini.",
+    "removeDoneTitle": "Kartu cadangan dihapus",
+    "removeDoneBody": "Kartu asli masih berfungsi. Akun Anda tidak lagi memiliki kartu cadangan.",
+    "identifyBody": "Pindai kartu cadangan yang terhubung ke akun ini untuk memeriksa apakah kartunya benar.",
+    "notYourBackup": "Ini bukan kartu cadangan Anda.",
+    "yourBackup": "Ini kartu cadangan Anda."
   }
 }

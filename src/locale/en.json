@@ -972,17 +972,17 @@
     "hideSecret": "Hide secret",
     "newAccountSafeOrDegenTitle": "Onboarding",
     "degenModeExplanation1": "To make sure you can recover your account in case of a lost, stolen or damaged device, we ask you to write & re-enter your account secret.",
-    "degenModeExplanation2": "You may choose to defer writing down & re-entering your account secret. Having it written down & stored in a safe place is critical to keeping your account safe.", 
+    "degenModeExplanation2": "You may choose to defer writing down & re-entering your account secret. Having it written down & stored in a safe place is critical to keeping your account safe.",
     "safeMode": "Write your account secret down now (safer)",
     "imSmartPerson": "Immediately write down & re-enter your account secret for account recovery.",
     "degenMode": "Fast onboarding (risky)",
     "degenBackUpHomeWrn": "You are unprotected in case of lost, stolen or damaged phone!",
     "imRetard": "Write down & re-enter later: all your funds are at risk until you do so!",
-    "degenModeExplanationConfirm": "Are you sure you want to proceed? Until you write down your account secret, you will NOT be able to recover your account if your phone gets lost, stolen or damaged.", 
+    "degenModeExplanationConfirm": "Are you sure you want to proceed? Until you write down your account secret, you will NOT be able to recover your account if your phone gets lost, stolen or damaged.",
     "degenModeNowDone": "Wonderful! You're all set! Whenever you have to recover your account, you can do so by importing the account secret you just wrote down.",
-    "degenModeProceedBtn": "I accept the risk", 
+    "degenModeProceedBtn": "I accept the risk",
     "degenBackUpNowBtn": "Back up",
-    "showSecret": "Show secret",    
+    "showSecret": "Show secret",
     "addAccountDescription": "Import your existing account, or create a new account.",
     "importExisting": "Import an existing account",
     "generateNewAccount": "Create a new account",
@@ -1199,10 +1199,10 @@
     "unableToFetchAccountNFTokens": "Unable to fetch the account NFT's. Please make sure you are connected to the node."
   },
   "send": {
-    "mustOpenxAppInstead": "You cannot send funds straight to this account: the destination account requires specific sending parameters. You can use a dedicated xApp to interact with this account. Do you want to open the xApp?", 
+    "mustOpenxAppInstead": "You cannot send funds straight to this account: the destination account requires specific sending parameters. You can use a dedicated xApp to interact with this account. Do you want to open the xApp?",
     "cannotOpenDirectly": "Sending funds directly to this account is not allowed: the destination account requires specific sending parameters. These cannot be provided in a manual Payment transaction.",
     "theDestinationAccountDidNotAuthorize": "The destination account did not authorize this transaction. Check your selected sending account, or contact the destination account owner.",
-    "txResultQueued": "Transaction queued!", 
+    "txResultQueued": "Transaction queued!",
     "txResultQueuedExplain": "Transaction added to the queue",
     "txResultQueuedLongExplain": "Your transaction has been submitted, however, it is currently queued for processing.\n\nPlease wait a few minutes and check your transaction history (Events) to see if it has made it through to a final ledger.\n\nQueueing transactions is normal behavior and does not indicate a problem with your transaction: individual nodes can queue transactions if the node or the network is busy.",
     "amountIsBiggerThanYourSpend": "This amount is bigger than what you can spend (%{spendable})",
@@ -1417,7 +1417,7 @@
     "thankYouForUsingXaman": "Thank you for using Xaman!",
     "comingPaymentWarning": "You're still enjoying Xaman for free, but you're nearing our free limit. To support Xaman's innovation and security, a small in-app payment may be requested soon.",
     "paymentRequiredMessage": "A small payment is required to maintain unlimited access for the next 30 days. Alternatively, Xaman will switch to limited-use mode until your monthly limits reset automatically.",
-    "prePurchaseMessage" : "You're currently unable to open xApps and sign requests. A small payment is required to unlock 30 days of unrestricted access to Xaman.",
+    "prePurchaseMessage": "You're currently unable to open xApps and sign requests. A small payment is required to unlock 30 days of unrestricted access to Xaman.",
     "learnMore": "Learn more",
     "monetizationRequiredForThisFeature": "You currently can’t open Sign Requests & xApps: a small payment is required to unlock a 30 days of unrestricted use of Xaman. Developing Xaman, building secure software takes a lot of resources. We hope you will support us continuing to build. If you decide not to: every month your limits will reset, allowing you to open xApps & Sign Requests again.",
     "allSet": "All set!",
@@ -1437,9 +1437,9 @@
     "prePurchaseTipAndroid": "Please note that this is a 30 days purchase. Make sure your Google account is logged in and your payment information is up-to-date. For issues, use the 'Restore Purchase' button."
   },
   "errors": {
-    "unableToLoadTermOfService":"Oops! Unable to Retrieve Terms of Service",
-    "unableToLoadCredits":"Oops! Unable to Retrieve Credits",
-    "unableToLoadChangeLogs":"Oops! Unable to Retrieve Change Logs",
+    "unableToLoadTermOfService": "Oops! Unable to Retrieve Terms of Service",
+    "unableToLoadCredits": "Oops! Unable to Retrieve Credits",
+    "unableToLoadChangeLogs": "Oops! Unable to Retrieve Change Logs",
     "tecPATH_DRY": "The transaction didn't work because funds couldn't be moved between the two accounts, or could not be moved at the requested exchange rate.\n\nThis might be because the two accounts involved don't have a connection (TrustLine) that allows them to exchange money with each other, or the transaction didn't work because there wasn't enough money available to move between the two accounts.",
     "tecPATH_PARTIAL": "The transaction didn't go through because there weren't enough tokens available to send the complete amount at the requested exchange rate between the two accounts.",
     "tecHOOK_REJECTED": "Rejected by hook on sending or receiving account.\n\n%{hookReturnString}",
@@ -1488,7 +1488,7 @@
     "itInvolvesIssuesACredentialFrom": "It a credential issued by %{from}.",
     "theCredentialTypeIs": "The credential type is %{type}. ",
     "theCredentialUriIs": "The credential URI is %{uri}.",
-    "paymentBeingUsed": "This transaction automatically uses a valid Credential you own to authorize this transaction." 
+    "paymentBeingUsed": "This transaction automatically uses a valid Credential you own to authorize this transaction."
   },
   "mptokenIssuance": {
     "event": "MPToken Issuance",
@@ -1967,6 +1967,18 @@
     "feeChanged": "The network fee changed. Review the updated fee before signing.",
     "cancelled": "The card scan was cancelled. You can try again.",
     "retry": "The card link could not be confirmed. Check your connection and try again. If a transaction is pending, refresh its status first.",
-    "enableNewCard": "We will now enable this card for use as a back-up card."
+    "enableNewCard": "We will now enable this card for use as a back-up card.",
+    "remove": "Remove back-up card",
+    "replaceAction": "Replace back-up card",
+    "identify": "Identify back-up card",
+    "removeWarning": "Your account will no longer have a back-up card. If you lose your original card, you could lose access to your account. Continue?",
+    "removeBody": "Scan your original card to confirm removal. Your original card will keep working.",
+    "removeCheckingTitle": "Confirming removal…",
+    "removeCheckingBody": "Please wait while the network confirms this change.",
+    "removeDoneTitle": "Back-up card removed",
+    "removeDoneBody": "Your original card still works. Your account no longer has a back-up card.",
+    "identifyBody": "Scan the back-up card linked to this account to check that it is the right card.",
+    "notYourBackup": "This is not your back-up card.",
+    "yourBackup": "This is your back-up card."
   }
 }

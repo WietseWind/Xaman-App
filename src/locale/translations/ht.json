@@ -2082,6 +2082,18 @@
     "feeChanged": "Frè rezo a chanje. Verifye nouvo frè a anvan ou siyen.",
     "cancelled": "Eskanè kat la anile. Ou ka eseye ankò.",
     "retry": "Nou pa t ka konfime koneksyon an. Verifye koneksyon entènèt ou epi eseye ankò. Si gen yon tranzaksyon an atant, verifye estati li anvan.",
-    "enableNewCard": "Kounye a, n ap prepare kat sa a pou ou ka sèvi avè l kòm yon kat sekou."
+    "enableNewCard": "Kounye a, n ap prepare kat sa a pou ou ka sèvi avè l kòm yon kat sekou.",
+    "remove": "Retire kat sekou a",
+    "replaceAction": "Ranplase kat sekou a",
+    "identify": "Idantifye kat sekou a",
+    "removeWarning": "Kont ou a p ap gen kat sekou ankò. Si ou pèdi kat orijinal ou a, ou ka pèdi aksè nan kont ou a. Kontinye?",
+    "removeBody": "Eskane kat orijinal ou a pou konfime retrè a. Kat orijinal ou a ap kontinye mache.",
+    "removeCheckingTitle": "Ap konfime retrè a…",
+    "removeCheckingBody": "Tanpri tann pandan rezo a konfime chanjman sa a.",
+    "removeDoneTitle": "Kat sekou a retire",
+    "removeDoneBody": "Kat orijinal ou a toujou mache. Kont ou a pa gen kat sekou ankò.",
+    "identifyBody": "Eskane kat sekou ki lye ak kont sa a pou verifye si se bon kat la.",
+    "notYourBackup": "Sa a se pa kat sekou ou a.",
+    "yourBackup": "Sa a se kat sekou ou a."
   }
 }

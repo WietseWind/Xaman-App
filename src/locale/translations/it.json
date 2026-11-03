@@ -2060,6 +2060,18 @@
     "feeChanged": "La commissione di rete è cambiata. Controlla la commissione aggiornata prima di firmare.",
     "cancelled": "La scansione della carta è stata annullata. Puoi riprovare.",
     "retry": "Impossibile confermare il collegamento. Controlla la connessione e riprova. Se una transazione è in sospeso, controllane prima lo stato.",
-    "enableNewCard": "Ora prepareremo questa carta per usarla come carta di riserva."
+    "enableNewCard": "Ora prepareremo questa carta per usarla come carta di riserva.",
+    "remove": "Rimuovi carta di backup",
+    "replaceAction": "Sostituisci carta di backup",
+    "identify": "Identifica carta di backup",
+    "removeWarning": "Il tuo account non avrà più una carta di backup. Se perdi la carta originale, potresti perdere l’accesso al tuo account. Continuare?",
+    "removeBody": "Scansiona la carta originale per confermare la rimozione. La carta originale continuerà a funzionare.",
+    "removeCheckingTitle": "Conferma della rimozione…",
+    "removeCheckingBody": "Attendi mentre la rete conferma questa modifica.",
+    "removeDoneTitle": "Carta di backup rimossa",
+    "removeDoneBody": "La carta originale funziona ancora. Il tuo account non ha più una carta di backup.",
+    "identifyBody": "Scansiona la carta di backup collegata a questo account per verificare che sia quella giusta.",
+    "notYourBackup": "Questa non è la tua carta di backup.",
+    "yourBackup": "Questa è la tua carta di backup."
   }
 }

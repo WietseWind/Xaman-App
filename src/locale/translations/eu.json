@@ -2071,6 +2071,18 @@
     "feeChanged": "Sarearen komisioa aldatu da. Berrikusi eguneratutako komisioa sinatu aurretik.",
     "cancelled": "Txartelaren eskaneatzea bertan behera utzi da. Berriro saia zaitezke.",
     "retry": "Ezin izan da lotura berretsi. Egiaztatu konexioa eta saiatu berriro. Transakzioren bat zain badago, egiaztatu haren egoera lehenik.",
-    "enableNewCard": "Orain txartel hau prestatuko dugu ordezko txartel gisa erabiltzeko."
+    "enableNewCard": "Orain txartel hau prestatuko dugu ordezko txartel gisa erabiltzeko.",
+    "remove": "Kendu babeskopia-txartela",
+    "replaceAction": "Ordeztu babeskopia-txartela",
+    "identify": "Identifikatu babeskopia-txartela",
+    "removeWarning": "Zure kontuak ez du babeskopia-txartelik izango. Jatorrizko txartela galtzen baduzu, zure konturako sarbidea gal dezakezu. Jarraitu?",
+    "removeBody": "Eskaneatu jatorrizko txartela kentzea berresteko. Jatorrizko txartelak lanean jarraituko du.",
+    "removeCheckingTitle": "Kentzea berresten…",
+    "removeCheckingBody": "Itxaron sareak aldaketa hau berresten duen bitartean.",
+    "removeDoneTitle": "Babeskopia-txartela kendu da",
+    "removeDoneBody": "Jatorrizko txartelak lanean jarraitzen du. Zure kontuak ez du babeskopia-txartelik.",
+    "identifyBody": "Eskaneatu kontu honi lotutako babeskopia-txartela zuzena dela egiaztatzeko.",
+    "notYourBackup": "Hau ez da zure babeskopia-txartela.",
+    "yourBackup": "Hau zure babeskopia-txartela da."
   }
 }

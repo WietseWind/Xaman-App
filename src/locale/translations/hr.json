@@ -1967,6 +1967,18 @@
     "feeChanged": "Mrežna naknada se promijenila. Prije potpisivanja pregledajte novu naknadu.",
     "cancelled": "Skeniranje kartice je otkazano. Možete pokušati ponovno.",
     "retry": "Povezivanje nije potvrđeno. Provjerite vezu i pokušajte ponovno. Ako je transakcija na čekanju, najprije provjerite njezin status.",
-    "enableNewCard": "Sada ćemo ovu karticu pripremiti kao pričuvnu karticu."
+    "enableNewCard": "Sada ćemo ovu karticu pripremiti kao pričuvnu karticu.",
+    "remove": "Ukloni pričuvnu karticu",
+    "replaceAction": "Zamijeni pričuvnu karticu",
+    "identify": "Prepoznaj pričuvnu karticu",
+    "removeWarning": "Vaš račun više neće imati pričuvnu karticu. Ako izgubite izvornu karticu, mogli biste izgubiti pristup računu. Nastaviti?",
+    "removeBody": "Skenirajte izvornu karticu za potvrdu uklanjanja. Izvorna kartica i dalje će raditi.",
+    "removeCheckingTitle": "Potvrđivanje uklanjanja…",
+    "removeCheckingBody": "Pričekajte dok mreža potvrdi ovu promjenu.",
+    "removeDoneTitle": "Pričuvna kartica uklonjena",
+    "removeDoneBody": "Izvorna kartica i dalje radi. Vaš račun više nema pričuvnu karticu.",
+    "identifyBody": "Skenirajte pričuvnu karticu povezanu s ovim računom kako biste provjerili je li prava.",
+    "notYourBackup": "Ovo nije vaša pričuvna kartica.",
+    "yourBackup": "Ovo je vaša pričuvna kartica."
   }
 }

@@ -2057,6 +2057,18 @@
     "feeChanged": "Verkon maksu on muuttunut. Tarkista päivitetty maksu ennen allekirjoittamista.",
     "cancelled": "Kortin lukeminen peruttiin. Voit yrittää uudelleen.",
     "retry": "Korttien yhdistämistä ei voitu vahvistaa. Tarkista yhteys ja yritä uudelleen. Jos tapahtuma odottaa, tarkista ensin sen tila.",
-    "enableNewCard": "Valmistelemme nyt tämän kortin käytettäväksi varakorttina."
+    "enableNewCard": "Valmistelemme nyt tämän kortin käytettäväksi varakorttina.",
+    "remove": "Poista varakortti",
+    "replaceAction": "Vaihda varakortti",
+    "identify": "Tunnista varakortti",
+    "removeWarning": "Tililläsi ei tämän jälkeen ole varakorttia. Jos kadotat alkuperäisen korttisi, saatat menettää pääsyn tilillesi. Jatketaanko?",
+    "removeBody": "Vahvista poistaminen skannaamalla alkuperäinen korttisi. Alkuperäinen korttisi toimii edelleen.",
+    "removeCheckingTitle": "Vahvistetaan poistamista…",
+    "removeCheckingBody": "Odota, kun verkko vahvistaa muutoksen.",
+    "removeDoneTitle": "Varakortti poistettu",
+    "removeDoneBody": "Alkuperäinen korttisi toimii edelleen. Tililläsi ei enää ole varakorttia.",
+    "identifyBody": "Skannaa tähän tiliin liitetty varakortti tarkistaaksesi, että se on oikea kortti.",
+    "notYourBackup": "Tämä ei ole varakorttisi.",
+    "yourBackup": "Tämä on varakorttisi."
   }
 }

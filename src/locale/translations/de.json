@@ -2058,6 +2058,18 @@
     "feeChanged": "Die Netzwerkgebühr hat sich geändert. Prüfe die aktualisierte Gebühr vor dem Signieren.",
     "cancelled": "Der Kartenscan wurde abgebrochen. Du kannst es erneut versuchen.",
     "retry": "Die Kartenverknüpfung konnte nicht bestätigt werden. Prüfe deine Verbindung und versuche es erneut. Prüfe bei einer ausstehenden Transaktion zuerst deren Status.",
-    "enableNewCard": "Wir bereiten diese Karte jetzt für die Verwendung als Sicherungskarte vor."
+    "enableNewCard": "Wir bereiten diese Karte jetzt für die Verwendung als Sicherungskarte vor.",
+    "remove": "Backup-Karte entfernen",
+    "replaceAction": "Backup-Karte ersetzen",
+    "identify": "Backup-Karte identifizieren",
+    "removeWarning": "Dein Konto hat danach keine Backup-Karte mehr. Wenn du deine ursprüngliche Karte verlierst, könntest du den Zugriff auf dein Konto verlieren. Fortfahren?",
+    "removeBody": "Scanne deine ursprüngliche Karte, um das Entfernen zu bestätigen. Deine ursprüngliche Karte funktioniert weiterhin.",
+    "removeCheckingTitle": "Entfernen wird bestätigt…",
+    "removeCheckingBody": "Bitte warte, während das Netzwerk diese Änderung bestätigt.",
+    "removeDoneTitle": "Backup-Karte entfernt",
+    "removeDoneBody": "Deine ursprüngliche Karte funktioniert weiterhin. Dein Konto hat keine Backup-Karte mehr.",
+    "identifyBody": "Scanne die mit diesem Konto verknüpfte Backup-Karte, um zu prüfen, ob es die richtige Karte ist.",
+    "notYourBackup": "Dies ist nicht deine Backup-Karte.",
+    "yourBackup": "Dies ist deine Backup-Karte."
   }
 }

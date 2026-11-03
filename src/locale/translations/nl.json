@@ -2051,6 +2051,18 @@
     "feeChanged": "De netwerkkosten zijn gewijzigd. Controleer de bijgewerkte kosten voordat je ondertekent.",
     "cancelled": "De kaartscan is geannuleerd. Je kunt het opnieuw proberen.",
     "retry": "De kaartkoppeling kon niet worden bevestigd. Controleer je verbinding en probeer opnieuw. Controleer eerst de status als er nog een transactie loopt.",
-    "enableNewCard": "We maken deze kaart nu klaar voor gebruik als back-upkaart."
+    "enableNewCard": "We maken deze kaart nu klaar voor gebruik als back-upkaart.",
+    "remove": "Back-upkaart verwijderen",
+    "replaceAction": "Back-upkaart vervangen",
+    "identify": "Back-upkaart identificeren",
+    "removeWarning": "Je account heeft hierna geen back-upkaart meer. Als je je oorspronkelijke kaart verliest, kun je de toegang tot je account verliezen. Doorgaan?",
+    "removeBody": "Scan je oorspronkelijke kaart om de verwijdering te bevestigen. Je oorspronkelijke kaart blijft werken.",
+    "removeCheckingTitle": "Verwijdering bevestigen…",
+    "removeCheckingBody": "Wacht terwijl het netwerk deze wijziging bevestigt.",
+    "removeDoneTitle": "Back-upkaart verwijderd",
+    "removeDoneBody": "Je oorspronkelijke kaart blijft werken. Je account heeft geen back-upkaart meer.",
+    "identifyBody": "Scan de back-upkaart die aan dit account is gekoppeld om te controleren of het de juiste kaart is.",
+    "notYourBackup": "Dit is niet je back-upkaart.",
+    "yourBackup": "Dit is je back-upkaart."
   }
 }

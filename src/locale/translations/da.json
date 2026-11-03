@@ -1967,6 +1967,18 @@
     "feeChanged": "Netværksgebyret er ændret. Gennemgå det opdaterede gebyr, før du underskriver.",
     "cancelled": "Kortscanningen blev annulleret. Du kan prøve igen.",
     "retry": "Korttilknytningen kunne ikke bekræftes. Kontrollér forbindelsen, og prøv igen. Hvis en transaktion afventer, skal du først kontrollere dens status.",
-    "enableNewCard": "Vi gør nu dette kort klar til brug som reservekort."
+    "enableNewCard": "Vi gør nu dette kort klar til brug som reservekort.",
+    "remove": "Fjern backupkort",
+    "replaceAction": "Udskift backupkort",
+    "identify": "Identificer backupkort",
+    "removeWarning": "Din konto vil ikke længere have et backupkort. Hvis du mister dit oprindelige kort, kan du miste adgangen til din konto. Fortsæt?",
+    "removeBody": "Scan dit oprindelige kort for at bekræfte fjernelsen. Dit oprindelige kort vil fortsat virke.",
+    "removeCheckingTitle": "Bekræfter fjernelse…",
+    "removeCheckingBody": "Vent, mens netværket bekræfter denne ændring.",
+    "removeDoneTitle": "Backupkort fjernet",
+    "removeDoneBody": "Dit oprindelige kort virker stadig. Din konto har ikke længere et backupkort.",
+    "identifyBody": "Scan det backupkort, der er knyttet til denne konto, for at kontrollere, at det er det rigtige kort.",
+    "notYourBackup": "Dette er ikke dit backupkort.",
+    "yourBackup": "Dette er dit backupkort."
   }
 }

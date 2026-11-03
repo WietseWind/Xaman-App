@@ -12,11 +12,15 @@ import {
 } from 'react-native';
 
 import * as AccountLib from 'xrpl-accountlib';
+import { get } from 'lodash';
+import { Navigation } from 'react-native-navigation';
 
 import RNTangemSdk from 'tangem-sdk-react-native';
 
 import LoggerService from '@services/LoggerService';
 import StyleService from '@services/StyleService';
+import NetworkService from '@services/NetworkService';
+import NavigationService from '@services/NavigationService';
 
 import { AccountRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
@@ -26,6 +30,8 @@ import { AppScreens } from '@common/constants';
 import { WebLinks } from '@common/constants/endpoints';
 import { DefaultDerivationPaths, GetCardId, GetWalletDerivedPublicKey } from '@common/utils/tangem';
 import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { matchesBackupCard } from '@common/utils/tangemBackup';
+import { Navigator } from '@common/helpers/navigator';
 import { registerTangemIdentifyExit, waitForTangemIdentifyCleanup } from '@common/utils/tangemIdentifyNavigation';
 import {
     identifyScannedTangemSerial,
@@ -51,6 +57,7 @@ import styles from './styles';
 export interface Props {
     account: AccountModel;
     componentId?: string;
+    backupAddress?: string;
 }
 
 interface State {
@@ -78,6 +85,9 @@ class IdentifyTangemCardView extends Component<Props, State> {
     }
 
     private readonly serial: string;
+    private readonly backupAddress?: string;
+    private readonly backupNetworkId?: string;
+    private backupDisposers: (() => void)[] = [];
 
     private mounted = false;
 
@@ -95,6 +105,8 @@ class IdentifyTangemCardView extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
+        this.backupAddress = props.backupAddress;
+        this.backupNetworkId = props.backupAddress ? NetworkService.getNetwork().id.toString() : undefined;
 
         this.serial = '';
         try {
@@ -115,12 +127,28 @@ class IdentifyTangemCardView extends Component<Props, State> {
     componentDidMount() {
         this.mounted = true;
         this.unregisterExit = registerTangemIdentifyExit(this.requestExit);
+        if (this.backupAddress) {
+            NetworkService.on('networkChange', this.leave);
+            NavigationService.on('setRoot', this.leave);
+            const commands = Navigation.events().registerCommandListener((name, params) => {
+                if (name === 'setRoot' || (name === 'showOverlay' && [
+                    get(params, 'layout.id'), get(params, 'layout.data.name'),
+                    get(params, 'layout.component.id'), get(params, 'layout.component.name'),
+                ].includes(AppScreens.Overlay.Lock))) this.leave();
+            });
+            this.backupDisposers.push(() => commands.remove());
+        }
     }
 
     componentWillUnmount() {
         this.mounted = false;
         this.exiting = true;
         this.unregisterExit?.();
+        if (this.backupAddress) {
+            NetworkService.off('networkChange', this.leave);
+            NavigationService.off('setRoot', this.leave);
+            this.backupDisposers.forEach(dispose => dispose());
+        }
     }
 
     requestExit = (): Promise<void> => {
@@ -137,7 +165,6 @@ class IdentifyTangemCardView extends Component<Props, State> {
                 return;
             }
 
-            const { Navigation } = require('react-native-navigation') as typeof import('react-native-navigation');
             const { componentId } = this.props;
             await Navigation.pop(componentId || IdentifyTangemCardView.screenName);
         })().catch((error) => {
@@ -174,10 +201,27 @@ class IdentifyTangemCardView extends Component<Props, State> {
             '[Identify] Tangem scan failed', context, this.tangemErrorMessage(error as { message?: string }) || error,
         );
         LoggerService.recordError(`Unexpected error while identifying a Tangem card: ${context}`, error);
+        if (this.backupAddress) {
+            const cancelled = code === '50002' || this.tangemErrorMessage(error as any) === TANGEM_CANCELLED;
+            Navigator.showAlertModal({
+                testID: 'backup-identify-error', type: cancelled ? 'warning' : 'error',
+                text: Localize.t(cancelled ? 'tangemBackup.cancelled' : 'global.pleaseCheckSessionLogForMoreInfo'),
+                buttons: [{ text: Localize.t('global.ok') }],
+            }).catch(failure => LoggerService.recordError('Unable to show back-up identify error', failure));
+            return;
+        }
         Alert.alert(
             Localize.t('global.unexpectedErrorOccurred'),
             Localize.t('global.pleaseCheckSessionLogForMoreInfo'),
         );
+    };
+
+    backupContextCurrent = () => {
+        if (!this.mounted || this.exiting) return false;
+        if (!this.backupAddress) return true;
+        const { account, backupAddress } = this.props;
+        return account.isValid() && backupAddress === this.backupAddress && account.regularKey === this.backupAddress &&
+            NetworkService.getNetwork().id.toString() === this.backupNetworkId;
     };
 
     onNext = async () => {
@@ -192,16 +236,18 @@ class IdentifyTangemCardView extends Component<Props, State> {
         });
         let ownsSession = false;
         let stage = 'session start';
+        let backupMatch: boolean | undefined;
+        let backupError: unknown;
 
         try {
             await waitForTangemIdentifyCleanup();
-            if (!this.mounted || this.exiting) {
+            if (!this.backupContextCurrent()) {
                 return;
             }
 
             await startTangemOfflineSession({ defaultDerivationPaths: DefaultDerivationPaths });
             ownsSession = true;
-            if (!this.mounted || this.exiting) {
+            if (!this.backupContextCurrent()) {
                 return;
             }
 
@@ -209,7 +255,11 @@ class IdentifyTangemCardView extends Component<Props, State> {
             const card = await RNTangemSdk.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } });
             const { account } = this.props;
 
-            if (!this.mounted || this.exiting) {
+            if (!this.backupContextCurrent()) {
+                return;
+            }
+            if (this.backupAddress) {
+                backupMatch = matchesBackupCard(card, this.backupAddress);
                 return;
             }
 
@@ -256,6 +306,10 @@ class IdentifyTangemCardView extends Component<Props, State> {
             if (!this.mounted || this.exiting) {
                 return;
             }
+            if (this.backupAddress) {
+                backupError = error;
+                return;
+            }
 
             if (String(error?.code) === '50002' || this.tangemErrorMessage(error) === TANGEM_CANCELLED) {
                 this.leave();
@@ -270,6 +324,7 @@ class IdentifyTangemCardView extends Component<Props, State> {
                 }
             } catch (error) {
                 LoggerService.recordError('Tangem identify session cleanup', error);
+                backupError = error;
             } finally {
                 this.scanningCard = false;
                 // Keep this callback out of generator catch/finally local-variable slots.
@@ -277,6 +332,16 @@ class IdentifyTangemCardView extends Component<Props, State> {
                 this.completeResource = () => undefined;
                 if (this.mounted && !this.exiting) {
                     this.setState({ scanning: false });
+                }
+                if (this.backupAddress && this.backupContextCurrent()) {
+                    if (backupError) this.showTangemError(backupError, stage);
+                    else if (backupMatch !== undefined) {
+                        Navigator.showAlertModal({
+                            testID: 'backup-identify-result', type: backupMatch ? 'success' : 'warning',
+                            text: Localize.t(backupMatch ? 'tangemBackup.yourBackup' : 'tangemBackup.notYourBackup'),
+                            buttons: [{ text: Localize.t('global.ok'), testID: 'backup-identify-ok' }],
+                        }).catch(error => LoggerService.recordError('Unable to show back-up identification', error));
+                    }
                 }
             }
         }
@@ -344,6 +409,20 @@ class IdentifyTangemCardView extends Component<Props, State> {
     renderExplain = () => {
         const { account } = this.props;
         const compact = this.isCompact();
+        if (this.backupAddress) {
+            return <>
+                <Image source={StyleService.getImage('ImageIdentifyTangem')}
+                style={[styles.cardGraphic, styles.cardGraphicCompact]}
+                resizeMode="contain" accessible={false} />
+                <Spacer size={12} />
+                <Text style={styles.title} accessibilityRole="header">{Localize.t('tangemBackup.scanBackup')}</Text>
+                <Spacer size={8} />
+                <Text style={styles.explain}>{Localize.t('tangemBackup.identifyBody')}</Text>
+                <Spacer size={18} />
+                {this.renderAccount({ address: this.backupAddress, type: 'Tangem',
+                label: Localize.t('tangemBackup.title') }, Localize.t('tangemBackup.title'))}
+            </>;
+        }
 
         return (
             <>
@@ -504,7 +583,7 @@ class IdentifyTangemCardView extends Component<Props, State> {
             <>
                 <Button
                     testID="next-button"
-                    label={Localize.t('account.tangemScanCard')}
+                    label={Localize.t(this.backupAddress ? 'tangemBackup.scanBackup' : 'account.tangemScanCard')}
                     icon="IconScanCard"
                     onPress={this.onNext}
                     isLoading={scanning}
@@ -554,7 +633,7 @@ class IdentifyTangemCardView extends Component<Props, State> {
                         onPress: this.leave,
                     }}
                     centerComponent={{
-                        text: Localize.t('account.identifyTangemTitle'),
+                        text: Localize.t(this.backupAddress ? 'tangemBackup.identify' : 'account.identifyTangemTitle'),
                         textStyle: styles.headerTitle,
                     }}
                 />

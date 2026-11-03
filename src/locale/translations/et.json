@@ -2054,6 +2054,18 @@
     "feeChanged": "Võrgutasu muutus. Kontrolli uut tasu enne allkirjastamist.",
     "cancelled": "Kaardi skannimine tühistati. Võid uuesti proovida.",
     "retry": "Seost ei saanud kinnitada. Kontrolli ühendust ja proovi uuesti. Kui tehing on ootel, kontrolli esmalt selle olekut.",
-    "enableNewCard": "Nüüd valmistame selle kaardi ette varukaardina kasutamiseks."
+    "enableNewCard": "Nüüd valmistame selle kaardi ette varukaardina kasutamiseks.",
+    "remove": "Eemalda varukaart",
+    "replaceAction": "Asenda varukaart",
+    "identify": "Tuvasta varukaart",
+    "removeWarning": "Sinu kontol ei ole enam varukaarti. Kui kaotad algse kaardi, võid kaotada juurdepääsu oma kontole. Kas jätkata?",
+    "removeBody": "Eemaldamise kinnitamiseks skanni algset kaarti. Algne kaart töötab ka edaspidi.",
+    "removeCheckingTitle": "Eemaldamise kinnitamine…",
+    "removeCheckingBody": "Oota, kuni võrk selle muudatuse kinnitab.",
+    "removeDoneTitle": "Varukaart eemaldatud",
+    "removeDoneBody": "Algne kaart töötab endiselt. Sinu kontol ei ole enam varukaarti.",
+    "identifyBody": "Skanni selle kontoga seotud varukaarti, et kontrollida, kas see on õige kaart.",
+    "notYourBackup": "See ei ole sinu varukaart.",
+    "yourBackup": "See on sinu varukaart."
   }
 }

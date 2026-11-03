@@ -1967,6 +1967,18 @@
     "feeChanged": "Nagbago ang bayad sa network. Suriin ang bagong bayad bago pumirma.",
     "cancelled": "Kinansela ang pag-scan ng card. Maaari mong subukan muli.",
     "retry": "Hindi makumpirma ang pag-uugnay. Suriin ang koneksyon at subukan muli. Kung may nakabinbing transaksyon, tingnan muna ang status nito.",
-    "enableNewCard": "Ihahanda na namin ang card na ito para magamit bilang backup card."
+    "enableNewCard": "Ihahanda na namin ang card na ito para magamit bilang backup card.",
+    "remove": "Alisin ang backup card",
+    "replaceAction": "Palitan ang backup card",
+    "identify": "Tukuyin ang backup card",
+    "removeWarning": "Mawawalan na ng backup card ang iyong account. Kung mawala ang orihinal mong card, maaari mong mawalan ng access sa account. Magpapatuloy?",
+    "removeBody": "I-scan ang orihinal mong card para kumpirmahin ang pag-alis. Gagana pa rin ang orihinal mong card.",
+    "removeCheckingTitle": "Kinukumpirma ang pag-alis…",
+    "removeCheckingBody": "Maghintay habang kinukumpirma ng network ang pagbabagong ito.",
+    "removeDoneTitle": "Naalis na ang backup card",
+    "removeDoneBody": "Gumagana pa rin ang orihinal mong card. Wala nang backup card ang iyong account.",
+    "identifyBody": "I-scan ang backup card na naka-link sa account na ito para masuri kung ito ang tamang card.",
+    "notYourBackup": "Hindi ito ang iyong backup card.",
+    "yourBackup": "Ito ang iyong backup card."
   }
 }

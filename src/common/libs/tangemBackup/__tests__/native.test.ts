@@ -294,3 +294,15 @@ describe('native Tangem back-up adapter', () => {
         expect(AccountRepository.realm.create).not.toHaveBeenCalled();
     });
 });
+
+
+it('encodes and verifies a real removal signature with no RegularKey field', async () => {
+    const removal: Omit<typeof tx, 'RegularKey'> & { RegularKey?: string } = { ...tx };
+    delete removal.RegularKey;
+    jest.mocked(RNTangemSdk.sign).mockResolvedValue({ cardId: card.cardId, signatures: [signatureFor(removal)] });
+    const result = await nativeBackupDependencies(source, () => true).sign(card as any, removal);
+    const decoded = binary.decode(result.signedTransaction);
+    expect(decoded.TransactionType).toBe('SetRegularKey');
+    expect(decoded.Account).toBe(source.address);
+    expect(decoded).not.toHaveProperty('RegularKey');
+});

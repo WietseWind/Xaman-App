@@ -2041,6 +2041,18 @@
     "feeChanged": "Opłata sieciowa uległa zmianie. Sprawdź nową opłatę przed podpisaniem.",
     "cancelled": "Skanowanie karty anulowano. Możesz spróbować ponownie.",
     "retry": "Nie udało się potwierdzić powiązania. Sprawdź połączenie i spróbuj ponownie. Jeśli transakcja oczekuje, najpierw sprawdź jej stan.",
-    "enableNewCard": "Teraz przygotujemy tę kartę do używania jako karty zapasowej."
+    "enableNewCard": "Teraz przygotujemy tę kartę do używania jako karty zapasowej.",
+    "remove": "Usuń kartę zapasową",
+    "replaceAction": "Wymień kartę zapasową",
+    "identify": "Zidentyfikuj kartę zapasową",
+    "removeWarning": "Twoje konto nie będzie już miało karty zapasowej. Jeśli zgubisz oryginalną kartę, możesz stracić dostęp do konta. Kontynuować?",
+    "removeBody": "Zeskanuj oryginalną kartę, aby potwierdzić usunięcie. Oryginalna karta będzie nadal działać.",
+    "removeCheckingTitle": "Potwierdzanie usunięcia…",
+    "removeCheckingBody": "Poczekaj, aż sieć potwierdzi tę zmianę.",
+    "removeDoneTitle": "Karta zapasowa usunięta",
+    "removeDoneBody": "Oryginalna karta nadal działa. Twoje konto nie ma już karty zapasowej.",
+    "identifyBody": "Zeskanuj kartę zapasową powiązaną z tym kontem, aby sprawdzić, czy jest właściwa.",
+    "notYourBackup": "To nie jest Twoja karta zapasowa.",
+    "yourBackup": "To jest Twoja karta zapasowa."
   }
 }

@@ -46,6 +46,7 @@ import styles from './styles';
 export interface Props {
     account: AccountModel;
     componentId?: string;
+    removeKey?: string;
 }
 interface State extends BackupState {
     androidBottomInset: number;
@@ -97,6 +98,7 @@ class BackupTangemCardView extends Component<Props, State> {
             (state) => {
                 if (this.mounted && !this.exiting) this.setState(state);
             },
+            props.removeKey,
         );
         this.state = { ...this.flow.state, androidBottomInset: 0, moreBelow: false };
     }
@@ -127,6 +129,8 @@ class BackupTangemCardView extends Component<Props, State> {
             () => commands.remove(),
             () => back.remove(),
         );
+        const { removeKey } = this.props;
+        if (removeKey) this.flow.start();
     }
     componentDidUpdate(_props: Props, previous: State) {
         const { step, busy, error } = this.state;
@@ -306,7 +310,24 @@ class BackupTangemCardView extends Component<Props, State> {
     };
     renderBody = () => {
         const { step, backup, sourceVerified } = this.state;
+        const { removeKey } = this.props;
         const source = { type: 'Tangem', address: this.flow.source.address, label: this.flow.source.label };
+        if (removeKey) {
+            const phase = step === 'done' ? 'removeDone' : step === 'checking' ? 'removeChecking' : 'remove';
+            return <>
+                <Text testID="backup-step-title" accessibilityRole="header" style={[styles.title, styles.compactTitle]}>
+                    {Localize.t(phase === 'remove' ? 'tangemBackup.remove' : `tangemBackup.${phase}Title`)}
+                </Text>
+                <Spacer size={8} />
+                <Text style={styles.explain}>{Localize.t(`tangemBackup.${phase}Body`)}</Text>
+                <Spacer size={16} />
+                {this.renderCard(source, Localize.t('tangemBackup.sourceLabel'))}
+                <Text style={[styles.sectionLabel, styles.centeredSectionLabel]}>
+                    {Localize.t('tangemBackup.title')}
+                </Text>
+                <Text selectable style={styles.address}>{removeKey}</Text>
+            </>;
+        }
         const titleKey = {
             intro: 'introTitle',
             source: 'sourceTitle',
@@ -388,6 +409,8 @@ class BackupTangemCardView extends Component<Props, State> {
     };
     renderFooter = () => {
         const { step, busy, error } = this.state;
+        const { removeKey } = this.props;
+        const removing = !!removeKey;
         const terminal = error === 'contextChanged' || error === 'accountChanged' || error === 'masterDisabled';
         const label =
             step === 'intro'
@@ -417,13 +440,17 @@ class BackupTangemCardView extends Component<Props, State> {
                 {this.isConfirming() ? (
                     <View testID="backup-confirming" accessibilityLiveRegion="polite" style={styles.confirming}>
                         <LoadingIndicator />
-                        <Text style={styles.confirmingText}>{Localize.t('tangemBackup.checkingTitle')}</Text>
+                        <Text style={styles.confirmingText}>
+                            {Localize.t(removing ? 'tangemBackup.removeCheckingTitle' : 'tangemBackup.checkingTitle')}
+                        </Text>
                     </View>
                 ) : (
                     <Button
                         testID="backup-next"
-                        label={terminal ? Localize.t('global.close') : label}
-                        icon={!terminal && ['source', 'backup'].includes(step) ? 'IconScanCard' : undefined}
+                        label={terminal ? Localize.t('global.close') : removing && step === 'review'
+                            ? Localize.t('tangemBackup.scanOriginal') : label}
+                        icon={!terminal && (['source', 'backup'].includes(step) || (removing && step === 'review'))
+                            ? 'IconScanCard' : undefined}
                         iconStyle={styles.buttonIcon}
                         onPress={terminal ? this.leave : action}
                         isLoading={busy}
@@ -439,13 +466,14 @@ class BackupTangemCardView extends Component<Props, State> {
                         <Button
                             testID="backup-back"
                             label={Localize.t(
-                                step === 'intro'
+                                removing ? 'global.close' : step === 'intro'
                                     ? 'global.notNow'
                                     : ['ready', 'review'].includes(step)
                                       ? 'global.back'
                                       : 'global.close',
                             )}
-                            onPress={['ready', 'review'].includes(step) && !terminal ? this.flow.back : this.leave}
+                            onPress={!removing && ['ready', 'review'].includes(step) && !terminal
+                                ? this.flow.back : this.leave}
                             isDisabled={busy && step !== 'checking'}
                             transparent
                             style={[styles.button, styles.secondaryButton]}
@@ -458,6 +486,7 @@ class BackupTangemCardView extends Component<Props, State> {
     };
     render() {
         const { androidBottomInset, moreBelow } = this.state;
+        const { removeKey } = this.props;
         return (
             <SafeAreaView
                 testID="backup-tangem-card-screen"
@@ -480,7 +509,7 @@ class BackupTangemCardView extends Component<Props, State> {
                         onPress: this.leave,
                     }}
                     centerComponent={{
-                        text: Localize.t('tangemBackup.title'),
+                        text: Localize.t(removeKey ? 'tangemBackup.remove' : 'tangemBackup.title'),
                         textStyle: styles.headerTitle,
                     }}
                 />

@@ -2064,6 +2064,18 @@
     "feeChanged": "Die netwerkfooi het verander. Gaan die nuwe fooi na voordat jy onderteken.",
     "cancelled": "Die kaartskandering is gekanselleer. Jy kan weer probeer.",
     "retry": "Die kaartkoppeling kon nie bevestig word nie. Kontroleer jou verbinding en probeer weer. As 'n transaksie nog hangende is, gaan eers sy status na.",
-    "enableNewCard": "Ons sal nou hierdie kaart vir gebruik as ’n rugsteunkaart aktiveer."
+    "enableNewCard": "Ons sal nou hierdie kaart vir gebruik as ’n rugsteunkaart aktiveer.",
+    "remove": "Verwyder rugsteunkaart",
+    "replaceAction": "Vervang rugsteunkaart",
+    "identify": "Identifiseer rugsteunkaart",
+    "removeWarning": "Jou rekening sal nie meer ’n rugsteunkaart hê nie. As jy jou oorspronklike kaart verloor, kan jy toegang tot jou rekening verloor. Gaan voort?",
+    "removeBody": "Skandeer jou oorspronklike kaart om die verwydering te bevestig. Jou oorspronklike kaart sal steeds werk.",
+    "removeCheckingTitle": "Bevestig verwydering…",
+    "removeCheckingBody": "Wag terwyl die netwerk hierdie verandering bevestig.",
+    "removeDoneTitle": "Rugsteunkaart verwyder",
+    "removeDoneBody": "Jou oorspronklike kaart werk steeds. Jou rekening het nie meer ’n rugsteunkaart nie.",
+    "identifyBody": "Skandeer die rugsteunkaart wat aan hierdie rekening gekoppel is om te kyk of dit die regte kaart is.",
+    "notYourBackup": "Dit is nie jou rugsteunkaart nie.",
+    "yourBackup": "Dit is jou rugsteunkaart."
   }
 }

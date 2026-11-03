@@ -1967,6 +1967,18 @@
     "feeChanged": "Ağ ücreti değişti. İmzalamadan önce güncel ücreti kontrol edin.",
     "cancelled": "Kart taraması iptal edildi. Yeniden deneyebilirsiniz.",
     "retry": "Kart bağlantısı doğrulanamadı. Bağlantınızı kontrol edip yeniden deneyin. Bekleyen bir işlem varsa önce durumunu kontrol edin.",
-    "enableNewCard": "Şimdi bu kartı yedek kart olarak kullanıma hazırlayacağız."
+    "enableNewCard": "Şimdi bu kartı yedek kart olarak kullanıma hazırlayacağız.",
+    "remove": "Yedek kartı kaldır",
+    "replaceAction": "Yedek kartı değiştir",
+    "identify": "Yedek kartı tanımla",
+    "removeWarning": "Hesabınızın artık bir yedek kartı olmayacak. Asıl kartınızı kaybederseniz hesabınıza erişimi kaybedebilirsiniz. Devam edilsin mi?",
+    "removeBody": "Kaldırmayı onaylamak için asıl kartınızı tarayın. Asıl kartınız çalışmaya devam edecektir.",
+    "removeCheckingTitle": "Kaldırma onaylanıyor…",
+    "removeCheckingBody": "Ağ bu değişikliği onaylarken lütfen bekleyin.",
+    "removeDoneTitle": "Yedek kart kaldırıldı",
+    "removeDoneBody": "Asıl kartınız hâlâ çalışıyor. Hesabınızın artık bir yedek kartı yok.",
+    "identifyBody": "Doğru kart olduğunu kontrol etmek için bu hesaba bağlı yedek kartı tarayın.",
+    "notYourBackup": "Bu sizin yedek kartınız değil.",
+    "yourBackup": "Bu sizin yedek kartınız."
   }
 }

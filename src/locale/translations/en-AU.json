@@ -2064,6 +2064,18 @@
     "feeChanged": "The network fee changed. Review the updated fee before signing.",
     "cancelled": "The card scan was cancelled. You can try again.",
     "retry": "The card link could not be confirmed. Check your connection and try again. If a transaction is pending, refresh its status first.",
-    "enableNewCard": "We will now enable this card for use as a back-up card."
+    "enableNewCard": "We will now enable this card for use as a back-up card.",
+    "remove": "Remove back-up card",
+    "replaceAction": "Replace back-up card",
+    "identify": "Identify back-up card",
+    "removeWarning": "Your account will no longer have a back-up card. If you lose your original card, you could lose access to your account. Continue?",
+    "removeBody": "Scan your original card to confirm removal. Your original card will keep working.",
+    "removeCheckingTitle": "Confirming removal…",
+    "removeCheckingBody": "Please wait while the network confirms this change.",
+    "removeDoneTitle": "Back-up card removed",
+    "removeDoneBody": "Your original card still works. Your account no longer has a back-up card.",
+    "identifyBody": "Scan the back-up card linked to this account to check that it is the right card.",
+    "notYourBackup": "This is not your back-up card.",
+    "yourBackup": "This is your back-up card."
   }
 }

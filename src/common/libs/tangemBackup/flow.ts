@@ -22,7 +22,7 @@ export type BackupRoot = {
 export type BackupTransaction = {
     TransactionType: 'SetRegularKey';
     Account: string;
-    RegularKey: string;
+    RegularKey?: string;
     Fee: string;
     Sequence: number;
     LastLedgerSequence: number;
@@ -76,6 +76,7 @@ export class TangemBackupFlow {
         readonly source: { address: string; label?: string; card: Card },
         private readonly deps: BackupDependencies,
         private readonly changed: (state: BackupState) => void,
+        readonly removeKey?: string,
     ) {
         this.network = { ...deps.network() };
     }
@@ -168,8 +169,17 @@ export class TangemBackupFlow {
         this.run(async () => {
             if (this.state.step !== 'intro') return;
             const root = await this.loadRoot();
+            if (this.removeKey && root.RegularKey !== this.removeKey) {
+                throw new TangemBackupError('accountChanged');
+            }
             this.initialKey = root.RegularKey;
             this.initialized = true;
+            if (this.removeKey) {
+                this.update({ existingKey: root.RegularKey, step: 'ready' });
+                const transaction = await this.prepare();
+                if (transaction) this.update({ step: 'review', transaction });
+                return;
+            }
             this.update({ existingKey: root.RegularKey, step: 'source' });
         });
 
@@ -232,10 +242,13 @@ export class TangemBackupFlow {
 
     private prepare = async (): Promise<BackupTransaction | undefined> => {
         const { backup, sourceVerified } = this.state;
-        if (!sourceVerified || !backup) throw new TangemBackupError('sourceUnavailable');
+        if (!this.initialized || (!this.removeKey && (!sourceVerified || !backup))) {
+            throw new TangemBackupError('sourceUnavailable');
+        }
+        const target = this.removeKey ? undefined : backup!.account.address;
         // A confirmed link may be discovered after a retry; never charge for a no-op.
         const root = await this.loadRoot(false);
-        if (root.RegularKey === backup.account.address) {
+        if (root.RegularKey === target) {
             await this.deps.refresh(root);
             this.check();
             this.update({ step: 'done' });
@@ -254,7 +267,8 @@ export class TangemBackupFlow {
         const transaction: BackupTransaction = {
             TransactionType: 'SetRegularKey',
             Account: this.source.address,
-            RegularKey: backup.account.address,
+            // Omission revokes the regular key. An empty address is not a removal transaction.
+            ...(target ? { RegularKey: target } : {}),
             Fee: String(Math.ceil(Fee)),
             Sequence: root.Sequence,
             LastLedgerSequence: LastLedger + 150,
@@ -363,6 +377,7 @@ export class TangemBackupFlow {
 
     back = () => {
         if (this.state.busy || this.pending || this.closed) return;
+        if (this.removeKey) return;
         if (this.state.step === 'done') return;
         const step = this.state.step === 'review' ? 'ready' : this.state.sourceVerified ? 'backup' : 'intro';
         this.update({ step, error: undefined, transaction: undefined });

@@ -41,7 +41,7 @@ const defer = () => {
     return { promise, resolve };
 };
 
-const setup = (regularKey?: string) => {
+const setup = (regularKey?: string, removing = false) => {
     let root: BackupRoot = {
         Account: source.address,
         Balance: '100000000',
@@ -71,7 +71,7 @@ const setup = (regularKey?: string) => {
         refresh: jest.fn(async () => undefined),
     };
     const changed = jest.fn();
-    const flow = new TangemBackupFlow(source, deps, changed);
+    const flow = new TangemBackupFlow(source, deps, changed, removing ? regularKey : undefined);
     const ready = async () => {
         await flow.start();
         await flow.scanSource();
@@ -430,5 +430,100 @@ describe('Tangem back-up card security and lifecycle', () => {
             expect(showTangemBackupWarning({ ...eligible, ...variation }, 'MAINNET')).toBe(false);
         }
         expect(showTangemBackupWarning(eligible, 'XAHAU')).toBe(false);
+    });
+});
+
+
+describe('removing a Tangem back-up link', () => {
+    it('uses only the original card and omits RegularKey from the signed removal', async () => {
+        const { flow, deps, root } = setup(address, true);
+        await flow.start();
+        expect(flow.state.step).toBe('review');
+        expect(flow.state.transaction).toEqual({ TransactionType: 'SetRegularKey', Account: source.address,
+            Fee: '12', Sequence: 10, LastLedgerSequence: 1150 });
+        expect(deps.scan).not.toHaveBeenCalled();
+        expect(deps.create).not.toHaveBeenCalled();
+        expect(deps.save).not.toHaveBeenCalled();
+        await flow.sign();
+        expect(deps.sign).toHaveBeenCalledWith(sourceCard, flow.state.transaction);
+        expect(deps.submit).toHaveBeenCalledTimes(1);
+        expect(flow.state.step).toBe('checking');
+        expect(deps.refresh).not.toHaveBeenCalled();
+        root({ RegularKey: undefined, LedgerIndex: 1001 });
+        await flow.checkStatus();
+        expect(flow.state.step).toBe('done');
+        expect(deps.refresh).toHaveBeenCalledWith(expect.objectContaining({ RegularKey: undefined }));
+    });
+    it('does not remove a replacement link that changed before opening the flow', async () => {
+        const { flow, deps, root } = setup(address, true);
+        root({ RegularKey: 'rReplacement' });
+        await flow.start();
+        expect(flow.state.error).toBe('accountChanged');
+        expect(deps.sign).not.toHaveBeenCalled();
+        expect(deps.submit).not.toHaveBeenCalled();
+    });
+    it.each([{ RegularKey: 'rReplacement' }, { Flags: 0x00100000 }, { Sequence: 11 }])(
+        'does not submit when the source changes during removal signing: %j', async changes => {
+            const { flow, deps, root } = setup(address, true);
+            await flow.start();
+            deps.sign = jest.fn(async () => { root(changes); return { id: 'HASH', signedTransaction: 'BLOB' }; });
+            await flow.sign();
+            expect(flow.state.error).toBeDefined();
+            expect(deps.submit).not.toHaveBeenCalled();
+        });
+    it('keeps a timed-out removal pending and never signs a duplicate', async () => {
+        const { flow, deps, root } = setup(address, true);
+        await flow.start();
+        deps.submit = jest.fn(async () => { throw new Error('timeout'); });
+        await flow.sign();
+        await flow.sign();
+        await flow.checkStatus();
+        expect(deps.sign).toHaveBeenCalledTimes(1);
+        expect(deps.submit).toHaveBeenCalledTimes(1);
+        expect(flow.state.step).toBe('checking');
+        root({ RegularKey: undefined });
+        await flow.checkStatus();
+        expect(flow.state.step).toBe('done');
+    });
+    it('requires a new review after validated failure or expiry', async () => {
+        const { flow, deps } = setup(address, true);
+        await flow.start();
+        deps.lookup = jest.fn(async () => ({ validated: true, meta: { TransactionResult: 'tecFAILED' } }));
+        await flow.sign();
+        expect(flow.state).toMatchObject({ step: 'ready', error: 'failed' });
+        await flow.review();
+        expect(flow.state.step).toBe('review');
+        expect(flow.state.transaction).not.toHaveProperty('RegularKey');
+    });
+    it('blocks removal while the original key is disabled or cannot pay the fee', async () => {
+        const a = setup(address, true); a.root({ Flags: 0x00100000 }); await a.flow.start();
+        expect(a.flow.state.error).toBe('masterDisabled'); expect(a.deps.sign).not.toHaveBeenCalled();
+        const b = setup(address, true); b.root({ Balance: '1' }); await b.flow.start();
+        expect(b.flow.state.error).toBe('insufficientFee'); expect(b.deps.sign).not.toHaveBeenCalled();
+    });
+    it('preserves selected Xahau network and hook-fee preparation for removal', async () => {
+        const { deps, network } = setup(address, true);
+        network({ id: 'xahau', key: 'XAHAU', networkId: 21337 });
+        deps.fee = jest.fn(async () => '120');
+        const flow = new TangemBackupFlow(source, deps, jest.fn(), address);
+        await flow.start();
+        expect(flow.state.transaction).toMatchObject({ NetworkID: 21337, Fee: '120' });
+        expect(flow.state.transaction).not.toHaveProperty('RegularKey');
+    });
+    it('cancels a removal without signing and ignores late signing after exit', async () => {
+        const { flow, deps } = setup(address, true);
+        await flow.start();
+        const signed = defer(); deps.sign = jest.fn(() => signed.promise);
+        const operation = flow.sign();
+        for (let i = 0; i < 20; i++) await Promise.resolve();
+        expect(deps.sign).toHaveBeenCalledTimes(1);
+        const exit = flow.exit(); signed.resolve({ id: 'HASH', signedTransaction: 'BLOB' });
+        await operation; await exit;
+        expect(deps.submit).not.toHaveBeenCalled();
+    });
+    it('never signs when removal is closed before confirmation', async () => {
+        const { flow, deps } = setup(address, true);
+        await flow.start(); await flow.exit(); await flow.sign();
+        expect(deps.sign).not.toHaveBeenCalled(); expect(deps.submit).not.toHaveBeenCalled();
     });
 });

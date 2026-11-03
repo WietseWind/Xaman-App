@@ -2066,6 +2066,18 @@
     "feeChanged": "Ada ya mtandao imebadilika. Kagua ada mpya kabla ya kusaini.",
     "cancelled": "Uchanganuzi wa kadi umeghairiwa. Unaweza kujaribu tena.",
     "retry": "Muunganisho haukuweza kuthibitishwa. Kagua intaneti na ujaribu tena. Ikiwa muamala unasubiri, kagua hali yake kwanza.",
-    "enableNewCard": "Sasa tutaiandaa kadi hii kwa matumizi kama kadi ya akiba."
+    "enableNewCard": "Sasa tutaiandaa kadi hii kwa matumizi kama kadi ya akiba.",
+    "remove": "Ondoa kadi ya akiba",
+    "replaceAction": "Badilisha kadi ya akiba",
+    "identify": "Tambua kadi ya akiba",
+    "removeWarning": "Akaunti yako haitakuwa na kadi ya akiba tena. Ukipoteza kadi yako ya awali, unaweza kupoteza ufikiaji wa akaunti yako. Uendelee?",
+    "removeBody": "Changanua kadi yako ya awali ili kuthibitisha kuondoa. Kadi yako ya awali itaendelea kufanya kazi.",
+    "removeCheckingTitle": "Inathibitisha kuondoa…",
+    "removeCheckingBody": "Subiri mtandao uthibitishe mabadiliko haya.",
+    "removeDoneTitle": "Kadi ya akiba imeondolewa",
+    "removeDoneBody": "Kadi yako ya awali bado inafanya kazi. Akaunti yako haina kadi ya akiba tena.",
+    "identifyBody": "Changanua kadi ya akiba iliyounganishwa na akaunti hii ili uhakikishe kuwa ndiyo kadi sahihi.",
+    "notYourBackup": "Hii si kadi yako ya akiba.",
+    "yourBackup": "Hii ndiyo kadi yako ya akiba."
   }
 }

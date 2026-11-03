@@ -1967,6 +1967,18 @@
     "feeChanged": "A comisión da rede cambiou. Revisa a comisión actualizada antes de asinar.",
     "cancelled": "Cancelouse o escaneo da tarxeta. Podes tentalo de novo.",
     "retry": "Non se puido confirmar a ligazón. Comproba a conexión e téntao de novo. Se hai unha transacción pendente, consulta primeiro o seu estado.",
-    "enableNewCard": "Agora prepararemos esta tarxeta para usala como tarxeta de reserva."
+    "enableNewCard": "Agora prepararemos esta tarxeta para usala como tarxeta de reserva.",
+    "remove": "Eliminar tarxeta de respaldo",
+    "replaceAction": "Substituír tarxeta de respaldo",
+    "identify": "Identificar tarxeta de respaldo",
+    "removeWarning": "A túa conta deixará de ter unha tarxeta de respaldo. Se perdes a tarxeta orixinal, poderías perder o acceso á túa conta. Continuar?",
+    "removeBody": "Escanea a tarxeta orixinal para confirmar a eliminación. A tarxeta orixinal seguirá funcionando.",
+    "removeCheckingTitle": "Confirmando a eliminación…",
+    "removeCheckingBody": "Agarda mentres a rede confirma este cambio.",
+    "removeDoneTitle": "Tarxeta de respaldo eliminada",
+    "removeDoneBody": "A tarxeta orixinal segue funcionando. A túa conta xa non ten unha tarxeta de respaldo.",
+    "identifyBody": "Escanea a tarxeta de respaldo vinculada a esta conta para comprobar que é a correcta.",
+    "notYourBackup": "Esta non é a túa tarxeta de respaldo.",
+    "yourBackup": "Esta é a túa tarxeta de respaldo."
   }
 }
