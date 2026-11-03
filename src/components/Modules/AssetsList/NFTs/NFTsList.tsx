@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { FlatList, InteractionManager, RefreshControl, View, ViewStyle } from 'react-native';
 import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { Navigator } from '@common/helpers/navigator';
 import { AppConfig, AppScreens } from '@common/constants';
 import { Toast } from '@common/helpers/interface';
@@ -309,6 +310,9 @@ class NFTsList extends Component<Props, State> {
                     renderItem={this.renderItem}
                     ListEmptyComponent={this.renderEmptyList}
                     keyExtractor={this.keyExtractor}
+                    contentContainerStyle={
+                        glassTabScrollPadding > 0 ? { paddingBottom: glassTabScrollPadding } : undefined
+                    }
                     indicatorStyle={StyleService.isDarkMode() ? 'white' : 'default'}
                     refreshControl={
                         <RefreshControl

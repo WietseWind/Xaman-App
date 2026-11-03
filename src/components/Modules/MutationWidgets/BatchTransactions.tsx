@@ -182,9 +182,17 @@ class BatchTransactions extends PureComponent<Props, State> {
                         };
                     }
 
-                    // console.log('Fetched inner transaction', hash, resp);
+                    // Use the executed transaction's metadata, just like the Events list.
+                    const ledgerTransaction = resp.meta && typeof resp.meta === 'object'
+                        ? TransactionFactory.fromLedger({
+                            tx: resp,
+                            meta: resp.meta,
+                            ledger_index: resp.ledger_index,
+                            validated: resp.validated,
+                        }, [MixingTypes.Mutation])
+                        : transaction;
                     return {
-                        transaction,
+                        transaction: ledgerTransaction,
                         hash,
                         index,
                         found: true,

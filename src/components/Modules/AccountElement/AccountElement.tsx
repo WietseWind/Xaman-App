@@ -44,6 +44,7 @@ interface Props {
     textStyle?: TextStyle | TextStyle[];
     onPress?: (account: AccountElementType) => void;
     onInfoUpdate?: (info: AccountNameResolveType) => void;
+    avatarBackgroundColor?: string;
     tokenDetails?: cachedTokenDetailsState;
 }
 
@@ -191,7 +192,15 @@ class AccountElement extends Component<Props, State> {
             return tokenDetails.icon;
         }
 
-        return <Avatar source={{ uri: `${WebLinks.AvatarURL}/${address}_180_50.png` }} badge={badge} />;
+        const { avatarBackgroundColor } = this.props;
+
+        return (
+            <Avatar
+                source={{ uri: `${WebLinks.AvatarURL}/${address}_180_50.png` }}
+                badge={badge}
+                backgroundColor={avatarBackgroundColor}
+            />
+        );
     };
 
     renderSource = () => {

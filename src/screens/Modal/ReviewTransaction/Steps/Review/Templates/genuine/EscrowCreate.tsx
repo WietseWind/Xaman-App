@@ -72,6 +72,17 @@ class EscrowCreateTemplate extends Component<Props, State> {
                         </View>
                     </>
                 )}
+
+                {!!transaction.Condition && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.condition')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text selectable style={styles.value}>
+                                {transaction.Condition}
+                            </Text>
+                        </View>
+                    </>
+                )}
             </>
         );
     }

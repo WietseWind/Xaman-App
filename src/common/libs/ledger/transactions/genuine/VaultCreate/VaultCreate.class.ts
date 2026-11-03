@@ -1,6 +1,7 @@
 import BaseGenuineTransaction from '@common/libs/ledger/transactions/genuine/base';
 
-import { Hash256, UInt8, Amount, Issue, Blob } from '@common/libs/ledger/parser/fields';
+import { Hash256, UInt8, UInt32, Amount, Issue, Blob } from '@common/libs/ledger/parser/fields';
+import { RippleTime } from '@common/libs/ledger/parser/fields/codec';
 
 /* Types ==================================================================== */
 import { TransactionJson, TransactionMetadata } from '@common/libs/ledger/types/transaction';
@@ -20,6 +21,10 @@ class VaultCreate extends BaseGenuineTransaction {
         Data: { type: Blob },
         MPTokenMetadata: { type: Blob },
         WithdrawalPolicy: { type: UInt8 },
+        VaultKind: { type: UInt8 },
+        // Ledger times (closed-ended vaults)
+        SubscriptionDate: { type: UInt32, codec: RippleTime },
+        RedemptionDate: { type: UInt32, codec: RippleTime },
     };
 
     declare Asset: FieldReturnType<typeof Issue>;
@@ -29,6 +34,9 @@ class VaultCreate extends BaseGenuineTransaction {
     declare Data: FieldReturnType<typeof Blob>;
     declare MPTokenMetadata: FieldReturnType<typeof Blob>;
     declare WithdrawalPolicy: FieldReturnType<typeof UInt8>;
+    declare VaultKind: FieldReturnType<typeof UInt8>;
+    declare SubscriptionDate: FieldReturnType<typeof UInt32, typeof RippleTime>;
+    declare RedemptionDate: FieldReturnType<typeof UInt32, typeof RippleTime>;
 
     constructor(tx?: TransactionJson, meta?: TransactionMetadata) {
         super(tx, meta);

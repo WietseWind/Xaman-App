@@ -20,7 +20,13 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(hmac256:(NSString *)input key:(NSString *)key
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-  NSData *data = [Crypto HMAC256WithData:[input dataUsingEncoding:NSUTF8StringEncoding] key:[Crypto HexToDataWithHexString:key]];
+  NSError *error;
+  NSData *keyData = [Crypto HexToDataWithHexString:key error:&error];
+  if (error != nil) {
+    reject(@"HMAC256WithData", @"Invalid hex key", error);
+    return;
+  }
+  NSData *data = [Crypto HMAC256WithData:[input dataUsingEncoding:NSUTF8StringEncoding] key:keyData];
   if (data == nil) {
     reject(@"HMAC256WithData", @"Hash error", nil);
   } else {

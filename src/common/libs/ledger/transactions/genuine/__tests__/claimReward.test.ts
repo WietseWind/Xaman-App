@@ -44,6 +44,31 @@ describe('ClaimReward', () => {
             expect(instance.Issuer).toBe(claimRewardTemplates.Emitted.tx.Issuer);
             expect(instance.ClaimStatus).toBe(ClaimRewardStatus.OptIn);
         });
+
+        it('Should keep ClaimCurrency (IOU reward) when signing', () => {
+            const tx = {
+                TransactionType: 'ClaimReward',
+                Account: 'rE6wHjDtqWbpvcyZDjhxVrt6ykg4LSwXWz',
+                Issuer: 'rJ8e4mfYAu8ZcAcr4gMFxPRhZuawjAGzBi',
+                ClaimCurrency: {
+                    currency: '5841484D00000000000000000000000000000000',
+                    issuer: 'rJ8e4mfYAu8ZcAcr4gMFxPRhZuawjAGzBi',
+                },
+                Fee: '12',
+                Sequence: 1,
+            };
+            const instance = new ClaimReward(tx as any);
+            expect(instance.ClaimCurrency).toEqual(tx.ClaimCurrency);
+            expect(instance.JsonForSigning.ClaimCurrency).toEqual(tx.ClaimCurrency);
+            expect(instance.JsonForSigning.Issuer).toBe(tx.Issuer);
+        });
+
+        it('Should not add ClaimCurrency when not set (native reward)', () => {
+            const { tx, meta }: any = claimRewardTemplates.OptIn;
+            const instance = new ClaimReward(tx, meta);
+            expect(instance.ClaimCurrency).toBeUndefined();
+            expect(Object.keys(instance.JsonForSigning)).not.toContain('ClaimCurrency');
+        });
     });
 
     describe('Info', () => {

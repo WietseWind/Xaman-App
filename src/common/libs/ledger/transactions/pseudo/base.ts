@@ -24,18 +24,7 @@ class BasePseudoTransaction extends BaseTransaction {
      * serialize transaction object to the ledger tx json for signing
      */
     get JsonForSigning(): TransactionJson {
-        // shallow copy and filter the fields
-        const tx = { ...this._tx } as TransactionJson;
-        Object.getOwnPropertyNames(this._tx).forEach((key: string) => {
-            if (
-                !Object.keys({
-                    ...BasePseudoTransaction.CommonFields,
-                    ...(this.constructor as typeof BasePseudoTransaction).Fields,
-                }).includes(key)
-            ) {
-                delete tx[key];
-            }
-        });
+        const tx = this.definitionJson(omit(this._tx, 'TransactionType'));
 
         // make sure the TransactionType is not in the json
         // NOTE: PSEUDO transaction DOESN'T have transaction type field

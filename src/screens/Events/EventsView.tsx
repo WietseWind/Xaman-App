@@ -22,18 +22,19 @@ import { Navigator } from '@common/helpers/navigator';
 import type { AccountTxTransaction } from '@common/libs/ledger/types/methods/accountTx';
 import { LedgerObjectFactory, TransactionFactory } from '@common/libs/ledger/factory';
 import { TransactionTypes, LedgerEntryTypes } from '@common/libs/ledger/types/enums';
-import { MPToken, NFTokenOffer } from '@common/libs/ledger/objects';
+import { NFTokenOffer } from '@common/libs/ledger/objects';
 import { Payload } from '@common/libs/payload';
 
 import { LedgerObjects } from '@common/libs/ledger/objects/types';
 import { LedgerMarker } from '@common/libs/ledger/types/common';
 import { Transactions } from '@common/libs/ledger/transactions/types';
-import { LedgerEntry } from '@common/libs/ledger/types/ledger';
+import { LedgerEntry, MPToken as MPTokenEntry } from '@common/libs/ledger/types/ledger';
 
 import { MixingTypes } from '@common/libs/ledger/mixin/types';
 import { FilterProps } from '@screens/Modal/FilterEvents/EventsFilterModal';
 
 import ResolverService from '@services/ResolverService';
+import NetworkService from '@services/NetworkService';
 
 import {
     AccountService,
@@ -58,6 +59,7 @@ import { DataSourceItem, RowItemType } from '@components/Modules/EventsList/Even
 import { AppStyles } from '@theme';
 import styles from './styles';
 import { isRegularKeyForDestination, shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
+import { shouldFetchNextEventPage } from './loadMoreGuard';
 
 /* types ==================================================================== */
 export interface Props {
@@ -88,6 +90,7 @@ enum EventSections {
     PLANNED = 'PLANNED',
     REQUESTS = 'REQUESTS',
     OWNED = 'OWNED',
+    AUTHORISATIONS = 'AUTHORISATIONS',
 }
 
 enum DataSourceType {
@@ -99,8 +102,25 @@ enum DataSourceType {
 
 /* Cache ==================================================================== */
 
-// console.log('eventscache')
-const EventCache: Record<string, any> = {};
+const EventCache = new Map<string, Promise<any>>();
+
+// Cache the pending lookup too, so rows on the same page do not all fetch it.
+const getEventLedgerData = (request: { command: string; ledger_index?: number | string; mpt_issuance?: string }) => {
+    const network = NetworkService.getNetwork();
+    const key = JSON.stringify([network.id?.toString() || network.key, NetworkService.getConnectedEndpoint(),
+        request.command, request.ledger_index, request.mpt_issuance]);
+    const cached = EventCache.get(key);
+    if (cached) return cached;
+    const lookup = LedgerService.getLedgerEntry(request).then((response) => {
+        if (!response || typeof response !== 'object' || 'error' in response) EventCache.delete(key);
+        return response;
+    }).catch((error) => {
+        EventCache.delete(key);
+        throw error;
+    });
+    EventCache.set(key, lookup);
+    return lookup;
+};
 
 /* Component ==================================================================== */
 class EventsView extends Component<Props, State> {
@@ -110,6 +130,7 @@ class EventsView extends Component<Props, State> {
     private isScreenVisible: boolean;
     private navigationListener: EventSubscription | undefined;
     private isLoadingMoreDebouncedTimer?: ReturnType<typeof setTimeout>;
+    private segmentButtons = React.createRef<SegmentButtons>();
 
     static options() {
         return {
@@ -159,6 +180,8 @@ class EventsView extends Component<Props, State> {
             isLoadingMore,
             isLoadingMoreDebounced,
             filters,
+            activeSection,
+            plannedTransactions,
         } = this.state;
         const { timestamp } = this.props;
 
@@ -168,7 +191,9 @@ class EventsView extends Component<Props, State> {
             !isEqual(nextState.isLoadingMore, isLoadingMore) ||
             !isEqual(nextState.isLoadingMoreDebounced, isLoadingMoreDebounced) ||
             !isEqual(nextState.canLoadMore, canLoadMore) ||
-            !isEqual(nextState.account, account) ||
+            nextState.account !== account ||
+            nextState.activeSection !== activeSection ||
+            this.hasAuthorisations(nextState.plannedTransactions) !== this.hasAuthorisations(plannedTransactions) ||
             !isEqual(nextState.filters, filters) ||
             !isEqual(nextProps.timestamp, timestamp)
         );
@@ -179,7 +204,8 @@ class EventsView extends Component<Props, State> {
 
         // console.log('appeared')
         this.isScreenVisible = true;
-        
+        this.segmentButtons.current?.revealActive();
+
         // check if we need to reload the screen
         if (this.forceReload) {
             // console.log('reloading')
@@ -328,12 +354,11 @@ class EventsView extends Component<Props, State> {
                 if (r[ri]?.LedgerEntryType === 'Credential') {
                     if (r[ri]?.PreviousTxnLgrSeq) {
                         try {
-                            const o = EventCache?.[r[ri].PreviousTxnLgrSeq] ?? await LedgerService.getLedgerEntry({
+                            const o = await getEventLedgerData({
                                 command: 'ledger',
                                 ledger_index: r[ri].PreviousTxnLgrSeq,
                             });
                             const { close_time_iso } = (o as any)?.ledger || {};
-                            Object.assign(EventCache, { [r[ri].PreviousTxnLgrSeq]: o });
                             Object.assign(r[ri], {
                                 Date: close_time_iso,
                             });
@@ -346,21 +371,16 @@ class EventsView extends Component<Props, State> {
                 if (r[ri]?.LedgerEntryType === 'MPToken') {
                     try {
                         const [issuance, ledger] = await Promise.all([
-                            EventCache?.[(r[ri] as unknown as MPToken)?.MPTokenIssuanceID] ??
-                            LedgerService.getLedgerEntry({
+                            getEventLedgerData({
                                 command: 'ledger_entry',
                                 ledger_index: 'validated',
-                                mpt_issuance: (r[ri] as unknown as MPToken)?.MPTokenIssuanceID,
+                                mpt_issuance: (r[ri] as MPTokenEntry)?.MPTokenIssuanceID,
                             }),
-                            EventCache?.[r[ri].PreviousTxnLgrSeq] ??
-                            LedgerService.getLedgerEntry({
+                            getEventLedgerData({
                                 command: 'ledger',
                                 ledger_index: r[ri].PreviousTxnLgrSeq,
                             }),
                         ]);
-
-                        Object.assign(EventCache, { [(r[ri] as unknown as MPToken)?.MPTokenIssuanceID]: issuance });
-                        Object.assign(EventCache, { [r[ri].PreviousTxnLgrSeq]: ledger });
 
                         const { close_time_iso } = (ledger as any)?.ledger || {};
                         if (close_time_iso) {
@@ -605,6 +625,11 @@ class EventsView extends Component<Props, State> {
                                 }
                             }
 
+                            // These rows will not be displayed, so do not load their MPT details.
+                            if (typeof transaction.meta !== 'object' ||
+                                !['tesSUCCESS', 'tecHOOK_REJECTED'].includes(transaction.meta?.TransactionResult) ||
+                                blocked) return null;
+
                             const mptTokenAuth =
                                 transaction?.tx?.TransactionType === 'MPTokenAuthorize' &&
                                     transaction.tx?.MPTokenIssuanceID
@@ -623,24 +648,18 @@ class EventsView extends Component<Props, State> {
                                     : null;
 
                             if (mptTokenAuth || mptTokenPayment) {                                
-                                const o = EventCache?.[mptTokenAuth || mptTokenPayment] ??
-                                    await LedgerService.getLedgerEntry({
-                                        command: 'ledger_entry',
-                                        ledger_index: 'validated',
-                                        mpt_issuance: mptTokenAuth || mptTokenPayment,
-                                    });
-                                Object.assign(EventCache, { [mptTokenAuth || mptTokenPayment]: o });
+                                const o = await getEventLedgerData({
+                                    command: 'ledger_entry',
+                                    ledger_index: 'validated',
+                                    mpt_issuance: mptTokenAuth || mptTokenPayment,
+                                });
                                 if (!transaction.meta?._attachments) {
                                     Object.assign(transaction.meta, { _attachments: {} });
                                 }
                                 Object.assign(transaction.meta._attachments, { MPTokenIssuance: o?.node });
                             }
 
-                            return typeof transaction.meta === 'object' &&
-                                (
-                                    transaction?.meta.TransactionResult === 'tesSUCCESS' ||
-                                    transaction?.meta.TransactionResult === 'tecHOOK_REJECTED'
-                                ) && !blocked ? transaction : null;
+                            return transaction;
                         }),
                     )).filter(t => t !== null) as AccountTxTransaction[];
                     // await Promise.all(
@@ -693,7 +712,7 @@ class EventsView extends Component<Props, State> {
     loadMore = async (forced = false) => {
         //            ^^ danger: called elsewhere natively by RN adds {distanceFromEnd: float} so must be
         //               not only truthy but also boolean
-        const { canLoadMore, filters, searchText, isLoadingMore, isLoading, activeSection } = this.state;
+        const { canLoadMore, filters, searchText, isLoadingMore, isLoading, activeSection, lastMarker } = this.state;
 
         // console.log('-- load more',  new Date(), {
         //     canLoadMore,
@@ -706,10 +725,20 @@ class EventsView extends Component<Props, State> {
         }
 
         // console.log('loadingmore', canLoadMore, isLoadingMore)
-        if (!forced || typeof forced !== 'boolean') {
-            // only force return if NOT forced (if forced continue)
-            // or if FORCED but forced isn't bool (see fn enter comment)
-            if (isLoading || isLoadingMore || !canLoadMore || activeSection !== EventSections.ALL) return;
+        // only force return if NOT forced (if forced continue)
+        // or if FORCED but forced isn't bool (see fn enter comment)
+        // lastMarker: ignore empty-list onEndReached before the first page exists
+        if (
+            !shouldFetchNextEventPage({
+                forced,
+                isLoading,
+                isLoadingMore,
+                canLoadMore,
+                hasMarker: !!lastMarker,
+                isAllSection: activeSection === EventSections.ALL,
+            })
+        ) {
+            return;
         }
         // console.log('loadingmoremore', forced)
         
@@ -753,7 +782,6 @@ class EventsView extends Component<Props, State> {
                         LedgerEntryTypes.Check,
                         LedgerEntryTypes.Ticket,
                         LedgerEntryTypes.PayChannel,
-                        LedgerEntryTypes.Delegate,
                         LedgerEntryTypes.Credential,
                         LedgerEntryTypes.Cron,
                         // LedgerEntryTypes.Vault, // Vault is in OWNED, not PLANNED
@@ -879,6 +907,9 @@ class EventsView extends Component<Props, State> {
                 ['Date'],
             );
             items = [...openRequestObjects , ...pendingRequests];
+        } else if (activeSection === EventSections.AUTHORISATIONS) {
+            items = orderBy(filter(plannedTransactions, (item) => item.Type === LedgerEntryTypes.Delegate),
+                ['Account', 'Authorize']);
         } else if (activeSection === EventSections.OWNED) {
             const ownedObjects = orderBy(
                 filter(plannedTransactions, (p) => {
@@ -965,6 +996,7 @@ class EventsView extends Component<Props, State> {
                 sourceTypes = [DataSourceType.PENDING_REQUESTS];
                 break;
             case EventSections.OWNED:
+            case EventSections.AUTHORISATIONS:
                 sourceTypes = [DataSourceType.PLANNED_TRANSACTIONS];
                 break;
             default:
@@ -1016,12 +1048,39 @@ class EventsView extends Component<Props, State> {
         }
     };
 
+    hasAuthorisations = (items?: State['plannedTransactions']) => {
+        const { plannedTransactions } = this.state;
+        return (items || plannedTransactions).some((item) => item.Type === LedgerEntryTypes.Delegate);
+    };
+
     applyDefaults = () => {
-        const { transactions, pendingRequests, plannedTransactions } = this.state;
+        const { transactions, pendingRequests, plannedTransactions, activeSection } = this.state;
+
+        if (activeSection === EventSections.AUTHORISATIONS && !this.hasAuthorisations(plannedTransactions)) {
+            this.setState({ activeSection: EventSections.ALL }, this.applyDefaults);
+            return;
+        }
 
         this.setState({
             dataSource: this.buildDataSource(transactions, pendingRequests, plannedTransactions),
         });
+    };
+
+    sectionButtons = () => {
+        const { activeSection } = this.state;
+        const buttons = [
+            { label: Localize.t('events.eventTypeAll'), value: EventSections.ALL },
+            { label: Localize.t('events.eventTypePlanned'), value: EventSections.PLANNED },
+            { label: Localize.t('events.eventTypeRequests'), value: EventSections.REQUESTS },
+            { label: Localize.t('events.eventTypeOwned'), value: EventSections.OWNED },
+        ];
+        if (this.hasAuthorisations() || activeSection === EventSections.AUTHORISATIONS) {
+            buttons.push({
+                label: Localize.t('delegation.authorisations'),
+                value: EventSections.AUTHORISATIONS,
+            });
+        }
+        return buttons;
     };
 
     applyFilters = (paramFilters?: FilterProps | boolean) => {
@@ -1041,7 +1100,7 @@ class EventsView extends Component<Props, State> {
 
         // console.log('ap1')
 
-        if (activeSection === EventSections.REQUESTS) {
+        if (activeSection === EventSections.REQUESTS || activeSection === EventSections.AUTHORISATIONS) {
             this.setState({
                 dataSource: this.buildDataSource(transactions, pendingRequests, plannedTransactions),
             });
@@ -1138,6 +1197,7 @@ class EventsView extends Component<Props, State> {
                         TransactionTypes.AMMDelete,
                         TransactionTypes.AMMDeposit,
                         TransactionTypes.AMMWithdraw,
+                        TransactionTypes.AMMClawback,
                         TransactionTypes.AMMBid,
                         TransactionTypes.AMMVote,
                     ];
@@ -1162,6 +1222,7 @@ class EventsView extends Component<Props, State> {
                         TransactionTypes.TicketCreate,
                         TransactionTypes.DepositPreauth,
                         TransactionTypes.AccountDelete,
+                        TransactionTypes.LedgerStateFix,
                         TransactionTypes.NFTokenAcceptOffer,
                         TransactionTypes.NFTokenBurn,
                         TransactionTypes.NFTokenCancelOffer,
@@ -1304,7 +1365,9 @@ class EventsView extends Component<Props, State> {
         });
 
         const plannedTransactionFilter = new Fuse(plannedTransactions, {
-            keys: [
+            keys: activeSection === EventSections.AUTHORISATIONS ? [
+                'Account', 'Authorize', 'Permissions.Permission.PermissionValue',
+            ] : [
                 'Account.address',
                 'Account.tag',
                 'Destination.address',
@@ -1324,7 +1387,8 @@ class EventsView extends Component<Props, State> {
         if (activeSection === EventSections.ALL) {
             newPendingRequests = flatMap(payloadFilter.search(text), 'item');
             newTransactions = flatMap(transactionFilter.search(text), 'item');
-        } else if (activeSection === EventSections.PLANNED) {
+        } else if (activeSection === EventSections.PLANNED ||
+            activeSection === EventSections.AUTHORISATIONS) {
             newPlannedTransactions = flatMap(plannedTransactionFilter.search(text), 'item');
         } else if (activeSection === EventSections.REQUESTS) {
             newPendingRequests = flatMap(payloadFilter.search(text), 'item');
@@ -1443,7 +1507,7 @@ class EventsView extends Component<Props, State> {
             return null;
         }
 
-        if (activeSection === EventSections.OWNED) {
+        if (activeSection === EventSections.OWNED || activeSection === EventSections.AUTHORISATIONS) {
             return null;
         }
 
@@ -1476,7 +1540,7 @@ class EventsView extends Component<Props, State> {
                         text: Localize.t('global.events'),
                         textStyle: AppStyles.h3,
                     }}
-                    rightComponent={{
+                    rightComponent={activeSection === EventSections.AUTHORISATIONS ? undefined : {
                         icon: 'IconFilter',
                         iconSize: 25,
                         iconStyle: styles.filterIcon,
@@ -1493,6 +1557,7 @@ class EventsView extends Component<Props, State> {
                 />
                 {/* <Text>{ activeSection}</Text> */}
                 <SegmentButtons
+                    ref={this.segmentButtons}
                     activeButton={activeSection}
                     key={`eventsview-segmentbuttons-${timestamp}`}
                     containerStyle={[
@@ -1500,24 +1565,7 @@ class EventsView extends Component<Props, State> {
                         AppStyles.marginTopNegativeSml,
                         AppStyles.leftSelf,
                     ]}
-                    buttons={[
-                        {
-                            label: Localize.t('events.eventTypeAll'),
-                            value: EventSections.ALL,
-                        },
-                        {
-                            label: Localize.t('events.eventTypePlanned'),
-                            value: EventSections.PLANNED,
-                        },
-                        {
-                            label: Localize.t('events.eventTypeRequests'),
-                            value: EventSections.REQUESTS,
-                        },
-                        {
-                            label: Localize.t('events.eventTypeOwned'),
-                            value: EventSections.OWNED,
-                        },
-                    ]}
+                    buttons={this.sectionButtons()}
                     onItemPress={this.onSectionChange}
                 />
                 {/* <Text>{isLoadingMore && 'isloadingmore'}</Text> */}
@@ -1535,7 +1583,7 @@ class EventsView extends Component<Props, State> {
                     // headerComponent={this.renderListHeader}
                     dataSource={dataSource}
                     isLoading={isLoading}
-                    isFiltering={isFiltering}
+                    isFiltering={activeSection === EventSections.AUTHORISATIONS ? false : isFiltering}
                     // forceFullLoader={isFiltering && dataSource.length === 0}
                     isVisible={this.isScreenVisible}
                     isLoadingMore={isLoadingMore || (isLoadingMoreDebounced && canLoadMore)}

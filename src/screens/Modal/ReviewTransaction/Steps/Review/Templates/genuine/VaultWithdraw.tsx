@@ -9,7 +9,8 @@ import { Navigator } from '@common/helpers/navigator';
 
 import { Destination } from '@common/libs/ledger/parser/types';
 
-import { LedgerService, NetworkService, StyleService } from '@services';
+import { LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { VaultWithdraw } from '@common/libs/ledger/transactions';
 import { Vault } from '@common/libs/ledger/objects';
@@ -355,6 +356,18 @@ class VaultWithdrawTemplate extends Component<Props, State> {
                                     light
                                 />
                             </TouchableOpacity>
+                        </View>
+                    </>
+                )}
+                {transaction?.CredentialIDs && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.credentialIDs')}</Text>
+                        <View style={styles.contentBox}>
+                            {transaction.CredentialIDs.map((id, index) => (
+                                <Text key={`credential-${index}`} style={styles.value}>
+                                    {id}
+                                </Text>
+                            ))}
                         </View>
                     </>
                 )}

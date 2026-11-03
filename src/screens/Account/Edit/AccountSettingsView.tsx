@@ -3,12 +3,16 @@
  */
 
 import { first, filter } from 'lodash';
-import React, { Component, Fragment } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import React, { Component } from 'react';
+import { Alert, Platform, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
+import AccountService from '@services/AccountService';
+import LoggerService from '@services/LoggerService';
+import NetworkService from '@services/NetworkService';
+import NavigationService from '@services/NavigationService';
 import PushNotificationsService from '@services/PushNotificationsService';
 
-import { Prompt } from '@common/helpers/interface';
+import { ActionSheet, Prompt } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
 
 import { GetCardEnforcedSecurity, GetCardId, TangemSecurity } from '@common/utils/tangem';
@@ -18,7 +22,7 @@ import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
 import { AccessLevels, AccountTypes, EncryptionLevels } from '@store/types';
 
-import { Button, Header, Icon, Spacer, Switch, TouchableDebounce, LoadingIndicator } from '@components/General';
+import { Button, Header, Switch, LoadingIndicator } from '@components/General';
 
 import Localize from '@locale';
 
@@ -26,11 +30,14 @@ import { PickerModalProps } from '@screens/Global/Picker';
 import { AccountImportViewProps } from '@screens/Account/Add/Import';
 import { ChangePassphraseViewProps } from '@screens/Account/Edit/ChangePassphrase';
 import { ChangeTangemSecurityViewProps } from '@screens/Account/Edit/ChangeTangemSecurity';
+import { IdentifyTangemCardViewProps } from '@screens/Account/Edit/IdentifyTangemCard';
 import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { PassphraseAuthenticationOverlayProps } from '@screens/Overlay/PassphraseAuthentication';
 
-import { AppStyles } from '@theme';
 import styles from './styles';
+import sectionStyles from '@screens/Settings/sectionStyles';
+import { SettingsRow, SettingsSection } from '@screens/Settings/SettingsSection';
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import BackendService from '@services/BackendService';
 
 /* types ==================================================================== */
@@ -47,9 +54,50 @@ export interface State {
     accountCanSign: boolean;
 }
 
+const CardDetails = ({ cardId, onIdentify }: { cardId: string; onIdentify: () => void }) => {
+    const { fontScale } = useWindowDimensions();
+    return (
+        <View style={styles.cardRow}>
+            <Text style={styles.cardIdLabel} testID="tangem-card-id">{Localize.t('account.cardId')}</Text>
+            <View style={[styles.cardControls, fontScale > 1.2 && styles.cardControlsStacked]}>
+                <Text selectable textBreakStrategy="simple"
+                    style={[styles.cardDetailValue, fontScale > 1.2 && styles.cardDetailValueStacked]}>
+                    {cardId}
+                </Text>
+                <Button testID="identify-tangem-button" label={Localize.t('account.identify')}
+                    icon="IconScanCard" onPress={onIdentify} roundedMini nonBlock allowFontScaling
+                    style={styles.identifyButton} />
+            </View>
+        </View>
+    );
+};
+
+const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetup: () => void }) => {
+    const key = account.regularKey;
+    const known = key ? AccountRepository.findOne({ address: key }) : undefined;
+    return <View testID="tangem-backup-details" style={styles.cardRow}>
+        <View style={styles.backupControls}>
+            <Text style={[styles.cardIdLabel, styles.backupHeadingLabel]}>{Localize.t('tangemBackup.title')}</Text>
+            <Button testID="tangem-backup-button"
+                label={Localize.t(key ? 'global.update' : 'tangemBackup.setUp')}
+                onPress={onSetup} roundedMini nonBlock allowFontScaling
+                hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                style={styles.backupButton} textStyle={styles.backupButtonText} />
+        </View>
+        <View style={styles.backupValue}>
+            {!!key && !!known?.label && <Text style={styles.backupName}>{accountListLabel(known)}</Text>}
+            {!!key && <Text selectable textBreakStrategy="simple" style={styles.address}>{key}</Text>}
+            {!!key && !known && <Text style={styles.backupNote}>{Localize.t('tangemBackup.notImported')}</Text>}
+            {!key && <Text style={styles.backupNotSet}>{Localize.t('tangemBackup.notSet')}</Text>}
+        </View>
+    </View>;
+};
+
 /* Component ==================================================================== */
 class AccountSettingsView extends Component<Props, State> {
     static screenName = AppScreens.Account.Edit.Settings;
+    private backupAlive = true;
+    private backupMenuOpen = false;
 
     static options() {
         return {
@@ -74,6 +122,8 @@ class AccountSettingsView extends Component<Props, State> {
         const { account } = this.state;
 
         AccountRepository.on('accountUpdate', this.onAccountUpdate);
+        NetworkService.on('networkChange', this.refreshBackup);
+        this.refreshBackup();
 
         const accountCanSign = this.canAccountSign(account);
         this.setState({ accountCanSign });
@@ -93,7 +143,9 @@ class AccountSettingsView extends Component<Props, State> {
     }
 
     componentWillUnmount() {
+        this.backupAlive = false;
         AccountRepository.off('accountUpdate', this.onAccountUpdate);
+        NetworkService.off('networkChange', this.refreshBackup);
     }
 
     onAccountUpdate = (updateAccount: AccountModel) => {
@@ -104,6 +156,72 @@ class AccountSettingsView extends Component<Props, State> {
                 account: updateAccount,
             });
         }
+    };
+
+    refreshBackup = () => {
+        const { account } = this.state;
+        if (account.type === AccountTypes.Tangem) {
+            AccountService.updateAccountInfo(account.address).catch(error =>
+                LoggerService.recordError('Unable to refresh Tangem back-up details', error));
+        }
+    };
+
+    showTangemBackup = () => {
+        const { account } = this.state;
+        const key = account.regularKey;
+        if (!key) {
+            Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
+            return;
+        }
+        if (this.backupMenuOpen) return;
+        const network = NetworkService.getNetwork().id.toString();
+        const current = () => this.backupAlive && account.isValid() && account.regularKey === key &&
+            NavigationService.getCurrentOverlay() !== AppScreens.Overlay.Lock &&
+            NetworkService.getNetwork().id.toString() === network;
+        this.backupMenuOpen = true;
+        let selected = false;
+        ActionSheet({
+            options: [
+                Localize.t('tangemBackup.remove'),
+                Localize.t('tangemBackup.replaceAction'),
+                Localize.t('tangemBackup.identify'),
+                ...(Platform.OS === 'ios' ? [Localize.t('global.cancel')] : []),
+            ],
+            cancelButtonIndex: 3,
+            destructiveButtonIndex: 0,
+        }, (index: number) => {
+            if (selected) return;
+            selected = true;
+            this.backupMenuOpen = false;
+            if (!current()) return;
+            if (index === 0) {
+                let confirmed = false;
+                Navigator.showAlertModal({
+                    testID: 'backup-remove-warning',
+                    type: 'warning',
+                    title: Localize.t('tangemBackup.remove'),
+                    text: Localize.t('tangemBackup.removeWarning'),
+                    buttons: [
+                        { text: Localize.t('global.cancel'), testID: 'backup-remove-cancel', type: 'dismiss' },
+                        {
+                            text: Localize.t('global.remove'), testID: 'backup-remove-confirm',
+                            light: true, destructive: true,
+                            onPress: () => {
+                                if (confirmed || !current()) return;
+                                confirmed = true;
+                                Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account, removeKey: key });
+                            },
+                        },
+                    ],
+                }).catch(error => LoggerService.recordError('Unable to show back-up removal warning', error));
+            } else if (index === 1) {
+                Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account });
+            } else if (index === 2) {
+                Navigator.push<IdentifyTangemCardViewProps>(AppScreens.Account.Edit.IdentifyTangemCard, {
+                    account, backupAddress: key,
+                });
+            }
+        });
     };
 
     accountLabelPressed = () => {
@@ -237,6 +355,12 @@ class AccountSettingsView extends Component<Props, State> {
         Navigator.push<ChangePassphraseViewProps>(AppScreens.Account.Edit.ChangePassphrase, { account });
     };
 
+    showIdentifyTangemCard = () => {
+        const { account } = this.state;
+
+        Navigator.push<IdentifyTangemCardViewProps>(AppScreens.Account.Edit.IdentifyTangemCard, { account });
+    };
+
     showChangeTangemSecurity = () => {
         const { account } = this.props;
         Navigator.push<ChangeTangemSecurityViewProps>(AppScreens.Account.Edit.ChangeTangemSecurityEnforce, { account });
@@ -291,13 +415,16 @@ class AccountSettingsView extends Component<Props, State> {
     };
 
     onRemovePress = () => {
+        const { account } = this.state;
+        const tangemCard = account.type === AccountTypes.Tangem;
+
         Prompt(
             Localize.t('global.warning'),
-            Localize.t('account.accountRemoveWarning'),
+            Localize.t(tangemCard ? 'account.accountRemoveTangemWarning' : 'account.accountRemoveWarning'),
             [
                 { text: Localize.t('global.cancel') },
                 {
-                    text: Localize.t('global.doIt'),
+                    text: Localize.t(tangemCard ? 'global.ok' : 'global.doIt'),
                     onPress: this.onAccountRemoveRequest,
                     style: 'destructive',
                 },
@@ -394,188 +521,122 @@ class AccountSettingsView extends Component<Props, State> {
 
     render() {
         const { account, fetchingPushState, pushAvailable, pushEnabled, accountCanSign } = this.state;
-
         if (!account?.isValid()) return null;
-
+        const cardSecurity = {
+            [TangemSecurity.Passcode]: Localize.t('global.passcode'),
+            [TangemSecurity.AccessCode]: Localize.t('global.accessCode'),
+            [TangemSecurity.LongTap]: Localize.t('global.longTap'),
+        };
         return (
             <View testID="account-settings-screen" style={styles.container}>
                 <Header
-                    leftComponent={{
-                        testID: 'back-button',
-                        icon: 'IconChevronLeft',
-                        onPress: Navigator.pop,
-                    }}
-                    centerComponent={{
-                        text: Localize.t('account.accountSettings'),
-                    }}
+                    leftComponent={{ testID: 'back-button', icon: 'IconChevronLeft', onPress: Navigator.pop }}
+                    centerComponent={{ text: Localize.t('account.accountSettings') }}
                 />
-
-                <View style={AppStyles.contentContainer}>
-                    <ScrollView>
-                        {/* Account Label */}
-                        <Text style={styles.descriptionText}>{Localize.t('account.accountSettingsDescription')}</Text>
-
-                        <View style={styles.row}>
-                            <Text numberOfLines={1} style={styles.label} testID="address-label">
-                                {Localize.t('global.address')}
-                            </Text>
-
-                            <Text numberOfLines={1} selectable style={styles.address}>
-                                {account.address}
-                            </Text>
-                        </View>
-
-                        {account.type === AccountTypes.Tangem && (
-                            <View style={styles.row}>
-                                <Text numberOfLines={1} style={styles.label} testID="tangem-card-id">
-                                    {Localize.t('account.cardId')}
-                                </Text>
-
-                                <Text selectable style={styles.address}>
-                                    {GetCardId(account.additionalInfo!)}
-                                </Text>
-                            </View>
-                        )}
-
-                        {/* Account Label */}
-                        <TouchableDebounce
+                <ScrollView contentContainerStyle={sectionStyles.content}>
+                    <View style={styles.identity}>
+                        <Text accessibilityRole="header" style={styles.accountName}>
+                            {accountListLabel(account)}
+                        </Text>
+                        <Text testID="address-label" style={styles.addressLabel}>
+                            {Localize.t('global.address')}
+                        </Text>
+                        <Text selectable textBreakStrategy="simple" style={styles.address}>
+                            {account.address}
+                        </Text>
+                    </View>
+                    <SettingsSection title={Localize.t('global.general')}>
+                        <SettingsRow
                             testID="account-label-button"
-                            style={styles.row}
+                            label={Localize.t('account.accountLabel')}
+                            value={account.label}
                             onPress={this.accountLabelPressed}
-                        >
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('account.accountLabel')}
-                            </Text>
-                            <Text numberOfLines={1} style={styles.value}>
-                                {account.label}
-                            </Text>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </TouchableDebounce>
-
-                        {/* Push notifications */}
-                        { accountCanSign && 
-                            (
-                                <View style={styles.row}>
-                                    <Text numberOfLines={1} style={styles.label}>
-                                        {Localize.t('global.accounttxpush')}
-                                    </Text>
-                                    <View style={[
-                                        AppStyles.flex1,
-                                        styles.loaderInline,
-                                    ]}>
-                                        { fetchingPushState && (
-                                            <LoadingIndicator style={styles.inlineLoader} />
-                                            )
-                                        }
-                                        <Switch
-                                            style={[
-                                                styles.switchRight,
-                                                AppStyles.rightAligned,
-                                            ]}
-                                            checked={pushEnabled}
-                                            isDisabled={fetchingPushState || !pushAvailable}
-                                            onChange={this.onTxPushChange}
-                                        /> 
-                                    </View>
-                                </View>
-                            )
-                        }
-
-                        {/* Account Access Level */}
-                        {account.type === AccountTypes.Regular && (
-                            <TouchableDebounce
-                                testID="account-access-level-button"
-                                style={styles.row}
-                                onPress={this.showAccessLevelPicker}
-                            >
-                                <Text numberOfLines={1} style={styles.label}>
-                                    {Localize.t('account.accessLevel')}
-                                </Text>
-                                <Text testID="account-access-level-value" style={styles.value}>
-                                    {account.accessLevel === AccessLevels.Full
-                                        ? Localize.t('account.fullAccess')
-                                        : Localize.t('account.readOnly')}
-                                </Text>
-                                <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                            </TouchableDebounce>
-                        )}
-                        {/* <Text style={styles.descriptionText}>{Localize.t('account.passwordOptionDesc')}</Text> */}
-                        {account.accessLevel === AccessLevels.Full && (
-                            <Fragment key="security">
-                                {/* Encryption Label */}
-                                <View style={styles.row}>
-                                    <Text numberOfLines={1} style={styles.label}>
-                                        {Localize.t('account.securityLevel')}
-                                    </Text>
-                                    <Text style={styles.value}>
-                                        {account.encryptionLevel === EncryptionLevels.Passphrase
-                                            ? 'Password'
-                                            : account.encryptionLevel}
-                                    </Text>
-                                </View>
-                                {/* Change passphrase */}
-                                {account.encryptionLevel === EncryptionLevels.Passphrase && (
-                                    <TouchableDebounce
-                                        testID="change-password-button"
-                                        style={styles.row}
-                                        onPress={this.showChangePassphrase}
-                                    >
-                                        <Text style={styles.label}>{Localize.t('account.changePassword')}</Text>
-                                        <Text style={styles.value} />
-                                        <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                                    </TouchableDebounce>
-                                )}
-                            </Fragment>
-                        )}
-
-                        {account.type === AccountTypes.Tangem && (
-                            <TouchableDebounce style={styles.row} onPress={this.showChangeTangemSecurity}>
-                                <Text numberOfLines={1} style={styles.label}>
-                                    {Localize.t('account.cardEnforcedSecurity')}
-                                </Text>
-                                <Text style={styles.value}>
-                                    {(() => {
-                                        switch (GetCardEnforcedSecurity(account.additionalInfo!)) {
-                                            case TangemSecurity.Passcode:
-                                                return Localize.t('global.passcode');
-                                            case TangemSecurity.AccessCode:
-                                                return Localize.t('global.accessCode');
-                                            case TangemSecurity.LongTap:
-                                                return Localize.t('global.longTap');
-                                            default:
-                                                return null;
-                                        }
-                                    })()}
-                                </Text>
-                                <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                            </TouchableDebounce>
-                        )}
-
-                        <View style={styles.row}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.hidden')}
-                            </Text>
-                            <View style={[AppStyles.flex1, AppStyles.rightAligned]}>
-                                <Switch checked={account.hidden} onChange={this.onHiddenChange} />
-                            </View>
-                        </View>
-
-                        <Spacer size={50} />
-
-                        <Button
-                            numberOfLines={1}
-                            label={Localize.t('account.removeFromXaman')}
-                            icon="IconTrash"
-                            iconStyle={AppStyles.imgColorWhite}
-                            style={[AppStyles.marginSml, AppStyles.buttonRed]}
-                            onPress={this.onRemovePress}
                         />
-                    </ScrollView>
-                </View>
+                        {account.type === AccountTypes.Tangem && (
+                            <CardDetails cardId={GetCardId(account.additionalInfo!)}
+                                onIdentify={this.showIdentifyTangemCard} />
+                        )}
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.security')}>
+                        {account.type === AccountTypes.Regular && (
+                            <SettingsRow
+                                testID="account-access-level-button"
+                                label={Localize.t('account.accessLevel')}
+                                valueTestID="account-access-level-value"
+                                onPress={this.showAccessLevelPicker}
+                                value={Localize.t(
+                                    account.accessLevel === AccessLevels.Full
+                                        ? 'account.fullAccess'
+                                        : 'account.readOnly',
+                                )}
+                            />
+                        )}
+                        {account.accessLevel === AccessLevels.Full &&
+                            account.type !== AccountTypes.Tangem && (
+                                <SettingsRow
+                                    label={Localize.t('account.securityLevel')}
+                                    value={
+                                        account.encryptionLevel === EncryptionLevels.Passphrase
+                                            ? 'Password'
+                                            : account.encryptionLevel
+                                    }
+                                />
+                            )}
+                        {account.accessLevel === AccessLevels.Full &&
+                            account.type !== AccountTypes.Tangem &&
+                            account.encryptionLevel === EncryptionLevels.Passphrase && (
+                                <SettingsRow
+                                    testID="change-password-button"
+                                    label={Localize.t('account.changePassword')}
+                                    onPress={this.showChangePassphrase}
+                                />
+                            )}
+                        {account.type === AccountTypes.Tangem && (
+                            <SettingsRow
+                                label={Localize.t('account.cardEnforcedSecurity')}
+                                onPress={this.showChangeTangemSecurity}
+                                value={
+                                    cardSecurity[
+                                        GetCardEnforcedSecurity(
+                                            account.additionalInfo!,
+                                        ) as keyof typeof cardSecurity
+                                    ]
+                                }
+                            />
+                        )}
+                        {account.type === AccountTypes.Tangem && (
+                            <BackupCardDetails account={account} onSetup={this.showTangemBackup} />
+                        )}
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.settings')}>
+                        {accountCanSign && (
+                            <SettingsRow label={Localize.t('global.accounttxpush')}>
+                                {fetchingPushState && <LoadingIndicator style={styles.inlineLoader} />}
+                                <Switch
+                                    checked={pushEnabled}
+                                    isDisabled={fetchingPushState || !pushAvailable}
+                                    onChange={this.onTxPushChange}
+                                />
+                            </SettingsRow>
+                        )}
+                        <SettingsRow label={Localize.t('global.hidden')}>
+                            <Switch checked={account.hidden} onChange={this.onHiddenChange} />
+                        </SettingsRow>
+                    </SettingsSection>
+                    <Button
+                        label={Localize.t('account.removeFromXaman')}
+                        icon="IconTrash"
+                        light
+                        allowFontScaling
+                        iconStyle={styles.removeIcon}
+                        textStyle={styles.removeText}
+                        style={styles.removeButton}
+                        onPress={this.onRemovePress}
+                    />
+                </ScrollView>
             </View>
         );
     }
 }
 
-/* Export Component ==================================================================== */
 export default AccountSettingsView;

@@ -1,3 +1,5 @@
+export { SensitiveAccessibilityView } from './SensitiveAccessibilityView';
+
 export * from './Avatar';
 export * from './Badge';
 export * from './Spacer';

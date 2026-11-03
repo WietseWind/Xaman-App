@@ -13,14 +13,22 @@ import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { AppColors } from '@theme';
 import styles from './styles';
 
+// Unbroken ledger values (signatures, blobs) have no spaces, so iOS will not wrap them.
+// A zero-width space gives the line a break without changing the characters that are shown.
+const BREAK = '\u200b';
+const breakLongToken = (value: string) => (
+    value.length > 40 ? value.replace(/[^\s]{16}/g, (chunk) => `${chunk}${BREAK}`) : value
+);
+
 /* Types ==================================================================== */
 export interface Props {
     propertyName?: string;
-    data: Record<string, any> | any[];
+    data: any;
     level: number;
     comma?: boolean;
     noDefaultCollapse?: boolean | number;
     containerStyle?: ViewStyle | ViewStyle[];
+    showFullValues?: boolean;
 }
 
 export interface State {
@@ -39,7 +47,7 @@ class JsonTree extends PureComponent<Props, State> {
 
         // automatically collapse if items are too long to show
         let collapsed = false;
-        if (typeof props.data === 'object' && Object.keys(props.data).length > 1) {
+        if (props.data !== null && typeof props.data === 'object' && Object.keys(props.data).length > 1) {
             collapsed = props.level > (typeof noDefaultCollapse === 'number' ? noDefaultCollapse : 2)
                 ? true
                 : !noDefaultCollapse; 
@@ -57,7 +65,7 @@ class JsonTree extends PureComponent<Props, State> {
     };
 
     renderArrayContent = (data: any[], key: string, level: number) => {
-        const { comma, noDefaultCollapse } = this.props;
+        const { comma, noDefaultCollapse, showFullValues } = this.props;
 
         return (
             <>
@@ -74,6 +82,7 @@ class JsonTree extends PureComponent<Props, State> {
                         level={level + 1}
                         comma={data.length - 1 !== index}
                         noDefaultCollapse={noDefaultCollapse}
+                        showFullValues={showFullValues}
                     />
                 ))}
                 <Text style={styles.symbolTextStyle}>&#93;{comma && <Text style={styles.propertyText}>,</Text>}</Text>
@@ -82,7 +91,7 @@ class JsonTree extends PureComponent<Props, State> {
     };
 
     renderObjectContent = (data: Record<string, any>, key: string, level: number) => {
-        const { comma, noDefaultCollapse } = this.props;
+        const { comma, noDefaultCollapse, showFullValues } = this.props;
         return (
             <>
                 <TouchableDebounce activeOpacity={1} onPress={this.toggleCollapse} style={styles.rowContainer}>
@@ -98,6 +107,7 @@ class JsonTree extends PureComponent<Props, State> {
                         level={level + 1}
                         comma={Object.keys(data).length - 1 !== index}
                         noDefaultCollapse={noDefaultCollapse}
+                        showFullValues={showFullValues}
                     />
                 ))}
                 <Text style={styles.symbolTextStyle}>&#125;{comma && <Text style={styles.propertyText}>,</Text>}</Text>
@@ -105,8 +115,8 @@ class JsonTree extends PureComponent<Props, State> {
         );
     };
 
-    renderScalarContent = (data: string | number | boolean, key: string) => {
-        const { comma } = this.props;
+    renderScalarContent = (data: any, key: string) => {
+        const { comma, showFullValues } = this.props;
 
         let valueColor: string | undefined;
         let valueString: string | undefined;
@@ -130,14 +140,16 @@ class JsonTree extends PureComponent<Props, State> {
         }
 
         return (
-            <View style={styles.rowContainer}>
+            <View style={showFullValues ? [styles.rowContainer, styles.fullRow] : styles.rowContainer}>
                 <Text style={styles.propertyText}>{key}: </Text>
                 <Text
-                    numberOfLines={1}
+                    numberOfLines={showFullValues ? undefined : 1}
                     selectable
-                    style={[styles.textValue, valueColor ? { color: valueColor } : undefined]}
+                    style={showFullValues
+                        ? [styles.textValue, styles.fullValue, valueColor ? { color: valueColor } : undefined]
+                        : [styles.textValue, valueColor ? { color: valueColor } : undefined]}
                 >
-                    {valueString}
+                    {showFullValues ? breakLongToken(valueString!) : valueString}
                 </Text>
                 {comma && <Text style={styles.propertyText}>,</Text>}
             </View>
@@ -169,7 +181,7 @@ class JsonTree extends PureComponent<Props, State> {
             return this.renderArrayContent(data, propertyName!, level);
         }
 
-        if (typeof data === 'object') {
+        if (data !== null && typeof data === 'object') {
             return this.renderObjectContent(data, propertyName!, level);
         }
 
@@ -177,12 +189,16 @@ class JsonTree extends PureComponent<Props, State> {
     };
 
     render() {
-        const { level, containerStyle } = this.props;
+        const { level, containerStyle, showFullValues } = this.props;
 
         return (
-            <View style={[styles.container, level > 0 && containerStyle]}>
+            <View style={showFullValues
+                ? [styles.container, styles.fullTree, styles.fullContent, level > 0 && containerStyle]
+                : [styles.container, level > 0 && containerStyle]}>
                 {level > 0 && <View style={styles.seperatorLine} />}
-                <View style={{ marginLeft: level * 5 }}>{this.renderContent()}</View>
+                <View style={showFullValues
+                    ? [styles.fullContent, { marginLeft: level > 0 ? 5 : 0 }]
+                    : { marginLeft: level * 5 }}>{this.renderContent()}</View>
             </View>
         );
     }

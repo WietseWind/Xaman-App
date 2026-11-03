@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="8" height="132" viewBox="0 0 8 132">
+  <title>xApp tile tint mask</title>
+  <defs>
+    <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.25" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="0.87" stop-color="#000" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#000" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="8" height="132" fill="url(#scrim)"/>
+</svg>

@@ -11,6 +11,7 @@ import { sortBy, values, flatMap } from 'lodash';
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 
 import Vault from '@common/libs/vault';
+import { recoverPasscodeChange } from '@common/libs/passcodeChange';
 
 import { AppConfig } from '@common/constants';
 /* Module ==================================================================== */
@@ -49,6 +50,9 @@ export default class Storage {
                 // NOTE: this method should be represented in onFirstOpen but as this method is causing in the current
                 // version of realm we do it manually
                 await this.populateDataStoreIfNeeded();
+
+                // Finish/roll back a rekey before authentication or signing can start.
+                await recoverPasscodeChange();
 
                 resolve();
             } catch (e) {

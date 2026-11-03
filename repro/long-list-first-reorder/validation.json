@@ -1,0 +1,28 @@
+{
+  "pullRequest": 456,
+  "source": "d9bc9d18df289709e9e4eb8fd11e80ea7db09246",
+  "fullTestsPassed": 2603,
+  "snapshotsPassed": 60,
+  "existingSkippedTests": 7,
+  "focusedTestsPassed": 43,
+  "newMovementRegressionsFailingOnBaseline": 8,
+  "newAnimationRegressionsFailingBeforeOptimization": 2,
+  "nativePlatform": "iOS 27",
+  "nativeInput": "system touch runner",
+  "nativeHost": "optimized Hermes; synthetic offline data",
+  "controlledMeasurementDelayMs": 800,
+  "tokenCount": 512,
+  "baselineLastTokenPosition": 512,
+  "fixedLastTokenPosition": 475,
+  "ordinaryMeasurementFirstDragPassed": true,
+  "tokenIntegrityAndExplicitSavePassed": true,
+  "variableHeightAccounts": 18,
+  "lastAccountReachedFirstPosition": true,
+  "physicalPhoneUsedForReorderTests": false,
+  "androidNativeRun": false,
+  "screenshots": {
+    "before-tokens.png": "4a640b2e9ddc3ae72d59c6f2b4379bfa798f559775f6e74103c795cf8701105c",
+    "after-tokens.png": "4fba44f81f998e0d30e2af149efd98f1935a79c10fb4d8c5eb2166da60d6bb76",
+    "after-accounts.png": "112f829573d6bff844005a4829ebe26d832a84040583806229a0b615239db05b"
+  }
+}

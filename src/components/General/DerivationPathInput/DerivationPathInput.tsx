@@ -5,6 +5,8 @@
     <DerivationPathInput onChange={} />
  *
  */
+import { noAutofillProps } from '../TextInput/noAutofill';
+
 import React, { Component } from 'react';
 import { View, TextInput, Text, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
 
@@ -109,6 +111,8 @@ class DerivationPathInput extends Component<Props, State> {
             <View style={styles.container}>
                 <Text style={styles.label}>m/44&apos;/144&apos;/</Text>
                 <TextInput
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...noAutofillProps}
                     ref={this.accountPathInputRef}
                     value={accountPath}
                     style={styles.input}
@@ -123,6 +127,8 @@ class DerivationPathInput extends Component<Props, State> {
                 />
                 <Text style={styles.label}>&apos;/</Text>
                 <TextInput
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...noAutofillProps}
                     ref={this.changePathInputRef}
                     value={changePath}
                     style={styles.input}
@@ -138,6 +144,8 @@ class DerivationPathInput extends Component<Props, State> {
                 />
                 <Text style={styles.label}>/</Text>
                 <TextInput
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...noAutofillProps}
                     ref={this.addressIndexInputRef}
                     placeholderTextColor={StyleService.value('$lightGrey')}
                     value={addressIndex}

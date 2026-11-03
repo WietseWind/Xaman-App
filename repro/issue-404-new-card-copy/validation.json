@@ -1,0 +1,16 @@
+{
+  "issue": 404,
+  "pullRequest": 454,
+  "appSource": "5dc11e2b012003268c4c7d368c59ae06300fb80f",
+  "focusedTestsPassed": 307,
+  "localeBundles": 59,
+  "existingTranslationsIncludingMomentUnchanged": true,
+  "nativeScreenshotHost": "iOS optimized Hermes",
+  "syntheticCardResponses": true,
+  "realNfc": false,
+  "realLedgerSubmission": false,
+  "screenshots": {
+    "new-backup-card-dark.png": "cd745e7b56f4207fff1f258d2a5b759af5695bb10023bcc1074508cb9237f81a",
+    "new-backup-card-light.png": "ba6656872b8b8c9643f9e994a5dd19e4b0f6893e3d09e88561aaf272e1cfd24d"
+  }
+}

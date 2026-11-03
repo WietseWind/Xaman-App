@@ -30,6 +30,8 @@ import {
 } from '@common/libs/ledger/types/methods';
 import { AccountTypes } from '@store/types';
 import BackendService from './BackendService';
+import { extAssetsOrEmpty } from './extAssetsOrEmpty';
+import { accountDetailsId } from '@common/helpers/accountNetwork';
 
 /* Events  ==================================================================== */
 export type AccountServiceEvent = {
@@ -47,6 +49,7 @@ class AccountService extends EventEmitter {
 
     private accounts?: string[];
     private logger: LoggerInstance;
+    private accountUpdateRequests = new Map<string, symbol>();
 
     constructor() {
         super();
@@ -188,88 +191,120 @@ class AccountService extends EventEmitter {
      * Update account info, contain balance etc ...
      */
     updateAccountInfo = async (account: string) => {
-        // fetch account info from ledger
-        const accountInfo = await LedgerService.getAccountInfo(account);
+        const network = NetworkService.getNetwork();
+        const detailsId = accountDetailsId(account, network);
+        const context = this.getNetworkContext(network);
+        const request = Symbol(account);
+        this.accountUpdateRequests.set(account, request);
+        const current = () => this.accountUpdateRequests.get(account) === request && this.isCurrentNetwork(context);
+        try {
+            // fetch account info from ledger
+            const accountInfo = await LedgerService.getAccountInfo(account);
+            if (!current()) return;
 
-        if (!accountInfo) {
-            this.logger.warn(`updateAccountInfo [${account}]: got empty response`);
-        }
-
-        // if there is any error in the response return and ignore fetching the account lines
-        if ('error' in accountInfo) {
-            // account not found reset account to default state
-            if (get(accountInfo, 'error') === 'actNotFound') {
-                // reset account details to default
-                await AccountRepository.updateDetails(account, {
-                    id: `${account}.${NetworkService.getNetworkId()}`,
-                    network: NetworkService.getNetwork(),
-                    ownerCount: 0,
-                    sequence: 0,
-                    balance: 0,
-                    flagsString: JSON.stringify({}),
-                    regularKey: '',
-                    domain: '',
-                    emailHash: '',
-                    messageKey: '',
-                    importSequence: 0,
-                    reward: {} as any,
-                    lines: [] as any,
-                });
+            if (!accountInfo) {
+                this.logger.warn(`updateAccountInfo [${account}]: got empty response`);
+                return;
             }
 
-            // log the error and return
-            this.logger.warn(`updateAccountInfo [${account}]:`, accountInfo?.error);
-            return;
-        }
-        const { account_data, account_flags } = accountInfo;
-        // Now fetch the Account Lines (TrustLines), but only for the currently selected accounts
-        const updateAccountLinesIf = CoreRepository?.getDefaultAccount()?.address === account;
-        const lines = updateAccountLinesIf
-            ? ((await this.getNormalizedAccountLines(account)) as unknown as Realm.Results<TrustLineModel>)
-            : undefined;
+            // if there is any error in the response return and ignore fetching the account lines
+            if ('error' in accountInfo) {
+                // account not found reset account to default state
+                if (get(accountInfo, 'error') === 'actNotFound') {
+                    // reset account details to default
+                    await AccountRepository.updateDetails(account, {
+                        id: detailsId,
+                        network,
+                        ownerCount: 0,
+                        sequence: 0,
+                        balance: 0,
+                        flagsString: JSON.stringify({}),
+                        regularKey: '',
+                        domain: '',
+                        emailHash: '',
+                        messageKey: '',
+                        importSequence: 0,
+                        reward: {} as any,
+                        lines: [] as any,
+                    }, current);
+                }
 
-        // update account info
-        await AccountRepository.updateDetails(account, {
-            id: `${account}.${NetworkService.getNetworkId()}`,
-            network: NetworkService.getNetwork(),
-            ownerCount: account_data?.OwnerCount ?? 0,
-            sequence: account_data?.Sequence ?? 0,
-            balance: new AmountParser(account_data?.Balance).dropsToNative().toNumber(),
-            flagsString: JSON.stringify(account_flags),
-            regularKey: account_data?.RegularKey ?? '',
-            domain: account_data?.Domain ?? '',
-            emailHash: account_data?.EmailHash ?? '',
-            messageKey: account_data?.MessageKey ?? '',
-            lines,
-            accountIndex: account_data?.AccountIndex,
-            reward: {
-                rewardAccumulator: account_data?.RewardAccumulator,
-                rewardLgrFirst: account_data?.RewardLgrFirst,
-                rewardLgrLast: account_data?.RewardLgrLast,
-                rewardTime: account_data?.RewardTime,
-            } as unknown as RewardInformation,
-        });
+                // log the error and return
+                this.logger.warn(`updateAccountInfo [${account}]:`, accountInfo?.error);
+                return;
+            }
+            const { account_data, account_flags } = accountInfo;
+            // Now fetch the Account Lines (TrustLines), but only for the currently selected accounts
+            const updateAccountLinesIf = CoreRepository?.getDefaultAccount()?.address === account;
+            const lines = updateAccountLinesIf
+                ? ((await this.getNormalizedAccountLines(account, network)) as unknown as Realm.List<TrustLineModel>)
+                : undefined;
+            if (!current()) return;
+
+            // update account info
+            await AccountRepository.updateDetails(account, {
+                id: detailsId,
+                network,
+                ownerCount: account_data?.OwnerCount ?? 0,
+                sequence: account_data?.Sequence ?? 0,
+                balance: new AmountParser(account_data?.Balance).dropsToNative().toNumber(),
+                flagsString: JSON.stringify(account_flags),
+                regularKey: account_data?.RegularKey ?? '',
+                domain: account_data?.Domain ?? '',
+                emailHash: account_data?.EmailHash ?? '',
+                messageKey: account_data?.MessageKey ?? '',
+                lines,
+                accountIndex: account_data?.AccountIndex,
+                reward: {
+                    rewardAccumulator: account_data?.RewardAccumulator,
+                    rewardLgrFirst: account_data?.RewardLgrFirst,
+                    rewardLgrLast: account_data?.RewardLgrLast,
+                    rewardTime: account_data?.RewardTime,
+                } as unknown as RewardInformation,
+            }, current);
+        } finally {
+            if (this.accountUpdateRequests.get(account) === request) this.accountUpdateRequests.delete(account);
+        }
+    };
+
+    private getNetworkContext = (network = NetworkService.getNetwork()): string =>
+        JSON.stringify([network.id?.toString(), network.key, network.networkId]);
+
+    private isCurrentNetwork = (context: string): boolean => {
+        try {
+            return this.getNetworkContext() === context;
+        } catch {
+            return false;
+        }
     };
 
     /**
      * Get normalized account lines
      */
-    getNormalizedAccountLines = async (account: string): Promise<Partial<TrustLineModel>[]> => {
+    getNormalizedAccountLines = async (
+        account: string,
+        network = NetworkService.getNetwork(),
+    ): Promise<Partial<TrustLineModel>[]> => {
+        const context = this.getNetworkContext(network);
+        const detailsId = accountDetailsId(account, network);
         const [accountLines, accountObligations, mptokens, extAssets] = await Promise.all([
             LedgerService.getFilteredAccountLines(account),
             LedgerService.getAccountObligations(account),
             // No MPT on non-XRPL
-            ...(NetworkService.getNetwork().name.toLowerCase().match(/xahau/)
+            ...(network.name.toLowerCase().match(/xahau/)
                 ? [Promise.resolve([])]
                 : [LedgerService.getAccountMPTFullDetails(account)]),
-            BackendService.getAccountExtAssets(account),
+            extAssetsOrEmpty(BackendService.getAccountExtAssets(account), (error) => {
+                this.logger.warn('Unable to get ext assets, continuing with ledger balances', error);
+            }),
         ]);
+        if (!this.isCurrentNetwork(context)) return [];
 
         this.logger.debug('Getting Normalised Account Lines for ', account);
 
         const combinedLines = [...accountLines, ...accountObligations, ...mptokens, ...extAssets];
 
-        return Promise.all(
+        const lines = await Promise.all(
             combinedLines.map(async (line) => {
                 const currency = await CurrencyRepository.upsert({
                     id: `${line.account}.${line.currency}`,
@@ -286,7 +321,7 @@ class AccountService extends EventEmitter {
                 const order = (line as unknown as any)?.order;
 
                 return {
-                    id: `${account}.${currency.id}}`,
+                    id: `${detailsId}.${currency.id}`,
                     ...(order && typeof order === 'number' ? { order } : {}),
                     currency,
                     balance,
@@ -303,6 +338,7 @@ class AccountService extends EventEmitter {
                 };
             }),
         );
+        return this.isCurrentNetwork(context) ? lines : [];
     };
 
     updateAMMPairs = async (address: string) => {

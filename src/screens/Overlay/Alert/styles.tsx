@@ -64,6 +64,7 @@ const styles = StyleService.create({
     titleSuccess: {
         color: '$green',
     },
+    destructiveButtonText: { color: '$red' },
 });
 
 export default styles;

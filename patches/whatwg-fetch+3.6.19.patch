@@ -1,0 +1,92 @@
+diff --git a/node_modules/whatwg-fetch/dist/fetch.umd.js b/node_modules/whatwg-fetch/dist/fetch.umd.js
+index 1803a94..f3b41be 100644
+--- a/node_modules/whatwg-fetch/dist/fetch.umd.js
++++ b/node_modules/whatwg-fetch/dist/fetch.umd.js
+@@ -477,7 +477,11 @@
+     this.type = 'default';
+     this.status = options.status === undefined ? 200 : options.status;
+     if (this.status < 200 || this.status > 599) {
+-      throw new RangeError("Failed to construct 'Response': The status provided (0) is outside the range [200, 599].")
++      throw new RangeError(
++        "Failed to construct 'Response': The status provided (" +
++          this.status +
++          ') is outside the range [200, 599].',
++      );
+     }
+     this.ok = this.status >= 200 && this.status < 300;
+     this.statusText = options.statusText === undefined ? '' : '' + options.statusText;
+@@ -557,7 +561,27 @@
+         options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL');
+         var body = 'response' in xhr ? xhr.response : xhr.responseText;
+         setTimeout(function() {
+-          resolve(new Response(body, options));
++          try {
++            resolve(new Response(body, options));
++          } catch (err) {
++            // Status outside 200–599 used to throw here, outside the promise, and abort release builds.
++            var error = new TypeError('Network request failed');
++            error.unexpectedHttpStatus = true;
++            error.status = typeof xhr.status === 'number' ? xhr.status : 0;
++            error.method = request.method;
++            error.url = request.url;
++            var responseBody = '';
++            try {
++              if (typeof xhr.responseText === 'string') {
++                responseBody = xhr.responseText;
++              }
++            } catch (bodyError) {}
++            if (!responseBody && typeof xhr.response === 'string') {
++              responseBody = xhr.response;
++            }
++            error.body = responseBody.length > 8000 ? responseBody.slice(0, 8000) : responseBody;
++            reject(error);
++          }
+         }, 0);
+       };
+ 
+diff --git a/node_modules/whatwg-fetch/fetch.js b/node_modules/whatwg-fetch/fetch.js
+index 5b5c5ff..3cf2b41 100644
+--- a/node_modules/whatwg-fetch/fetch.js
++++ b/node_modules/whatwg-fetch/fetch.js
+@@ -471,7 +471,11 @@ export function Response(bodyInit, options) {
+   this.type = 'default'
+   this.status = options.status === undefined ? 200 : options.status
+   if (this.status < 200 || this.status > 599) {
+-    throw new RangeError("Failed to construct 'Response': The status provided (0) is outside the range [200, 599].")
++    throw new RangeError(
++      "Failed to construct 'Response': The status provided (" +
++        this.status +
++        ') is outside the range [200, 599].',
++    )
+   }
+   this.ok = this.status >= 200 && this.status < 300
+   this.statusText = options.statusText === undefined ? '' : '' + options.statusText
+@@ -551,7 +555,27 @@ export function fetch(input, init) {
+       options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL')
+       var body = 'response' in xhr ? xhr.response : xhr.responseText
+       setTimeout(function() {
+-        resolve(new Response(body, options))
++        try {
++          resolve(new Response(body, options))
++        } catch (err) {
++          // Status outside 200–599 used to throw here, outside the promise, and abort release builds.
++          var error = new TypeError('Network request failed')
++          error.unexpectedHttpStatus = true
++          error.status = typeof xhr.status === 'number' ? xhr.status : 0
++          error.method = request.method
++          error.url = request.url
++          var responseBody = ''
++          try {
++            if (typeof xhr.responseText === 'string') {
++              responseBody = xhr.responseText
++            }
++          } catch (bodyError) {}
++          if (!responseBody && typeof xhr.response === 'string') {
++            responseBody = xhr.response
++          }
++          error.body = responseBody.length > 8000 ? responseBody.slice(0, 8000) : responseBody
++          reject(error)
++        }
+       }, 0)
+     }
+ 

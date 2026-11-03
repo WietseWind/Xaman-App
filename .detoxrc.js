@@ -17,12 +17,15 @@ module.exports = {
         },
         'xaman.android': {
             type: 'android.apk',
+            // Exclude destructive native unit fixtures from the E2E instrumentation run.
+            launchArgs: { class: 'com.xrpllabs.xumm.DetoxTest' },
             binaryPath: 'android/app/build/outputs/apk/release/app-x86_64-release.apk',
             build: 'cd android && ./gradlew app:assembleRelease app:assembleAndroidTest -DtestBuildType=release && cd ..',
         },
         // Apple Silicon AVD Xaman_API36 — never point Detox at the USB phone
         'xaman.android.arm64': {
             type: 'android.apk',
+            launchArgs: { class: 'com.xrpllabs.xumm.DetoxTest' },
             binaryPath: 'android/app/build/outputs/apk/release/app-arm64-v8a-release.apk',
             testBinaryPath: 'android/app/build/outputs/apk/androidTest/release/app-release-androidTest.apk',
             build: 'cd android && ./gradlew app:assembleRelease app:assembleAndroidTest -DtestBuildType=release && cd ..',
@@ -30,6 +33,7 @@ module.exports = {
         // Debug + Metro: androidTest is not R8-minified (release test APK strips JUnit).
         'xaman.android.debug.arm64': {
             type: 'android.apk',
+            launchArgs: { class: 'com.xrpllabs.xumm.DetoxTest' },
             binaryPath: 'android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk',
             testBinaryPath: 'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk',
             build: 'cd android && ./gradlew app:assembleDebug app:assembleAndroidTest -DtestBuildType=debug && cd ..',
@@ -54,6 +58,11 @@ module.exports = {
         'ios.simulator.se': {
             type: 'ios.simulator',
             device: { name: 'Xaman-se' },
+        },
+        // iOS 27 glass runtime. Xaman-e2e stays on iOS 26.5.
+        'ios.simulator.ios27': {
+            type: 'ios.simulator',
+            device: { name: 'Xaman-e2e-27' },
         },
         'android.emulator': {
             type: 'android.emulator',
@@ -95,6 +104,10 @@ module.exports = {
         },
         'ios.simulator.se+xaman.ios': {
             device: 'ios.simulator.se',
+            app: 'xaman.ios',
+        },
+        'ios.simulator.ios27+xaman.ios': {
+            device: 'ios.simulator.ios27',
             app: 'xaman.ios',
         },
         'android.emulator+xaman.android': {

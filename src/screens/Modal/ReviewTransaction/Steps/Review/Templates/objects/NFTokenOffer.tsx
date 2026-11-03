@@ -29,6 +29,7 @@ export interface Props {
     source: AccountModel;
     nfTokenOffer: string;
     transaction?: NFTokenAcceptOffer | NFTokenCancelOffer;
+    createdInBatch?: boolean;
 }
 
 export interface State {
@@ -52,7 +53,8 @@ class NFTokenOfferTemplate extends Component<Props, State> {
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(this.fetchDetails);
+        const { createdInBatch } = this.props;
+        if (!createdInBatch) InteractionManager.runAfterInteractions(this.fetchDetails);
     }
 
     fetchDetails = async () => {
@@ -174,8 +176,16 @@ class NFTokenOfferTemplate extends Component<Props, State> {
     };
 
     render() {
-        const { source, transaction } = this.props;
+        const { source, transaction, createdInBatch } = this.props;
         const { object, isTokenBurnable, isLoading, wantsPercentage, wantsValue } = this.state;
+
+        if (createdInBatch) {
+            return (
+                <View testID="batch-created-nft-offer">
+                    <InfoMessage type="info" icon="IconInfo" label={Localize.t('payload.offerCreatedEarlierInBatch')} />
+                </View>
+            );
+        }
 
         if (isLoading) {
             return <LoadingIndicator />;

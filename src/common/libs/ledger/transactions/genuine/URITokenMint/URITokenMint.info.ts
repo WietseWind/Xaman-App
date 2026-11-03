@@ -58,13 +58,14 @@ class URITokenMintInfo extends ExplainerAbstract<URITokenMint, MutationsMixinTyp
     generateDescription() {
         const content: string[] = [];
         const isRemitOutput = !!this.item.MetaData?.ParentRemitID;
-        const hasAmount = typeof this.item.Amount !== 'undefined';
+        const amount = this.item.Amount;
+        const hasAmount = typeof amount !== 'undefined';
 
         if (hasAmount && !isRemitOutput) {
             content.push(
                 Localize.t('events.uriTokenMintAmount', {
-                    value: this.item.Amount.value,
-                    currency: NormalizeCurrencyCode(this.item.Amount.currency),
+                    value: amount.value,
+                    currency: NormalizeCurrencyCode(amount.currency),
                 }),
             );
         }

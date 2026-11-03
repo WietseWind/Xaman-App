@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
+import { noAutofillProps } from '../TextInput/noAutofill';
+
 import React, { PureComponent } from 'react';
 import { TextInput, View, TextStyle, ViewStyle, Animated, TouchableOpacity, InteractionManager } from 'react-native';
 
@@ -207,13 +209,14 @@ class SearchBar extends PureComponent<Props, State> {
 
                 <View style={AppStyles.flex1}>
                     <TextInput
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...noAutofillProps}
                         ref={this.inputRef}
                         style={[styles.searchInput, { height }, inputStyle]}
                         onChangeText={this.onChangeText}
                         onFocus={this.onFocus}
                         onBlur={this.onBlur}
                         value={value}
-                        autoComplete="off"
                         spellCheck={false}
                         placeholder={placeholder}
                         keyboardType="visible-password"

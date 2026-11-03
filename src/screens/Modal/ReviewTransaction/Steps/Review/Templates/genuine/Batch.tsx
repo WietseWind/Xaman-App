@@ -13,8 +13,8 @@ import { AppStyles } from '@theme';
 import styles from '../styles';
 
 import { TemplateProps } from '../types';
-// eslint-disable-next-line import/no-cycle
-import * as GenuineTransactionTemplates from '.';
+import { FallbackTemplate } from '../fallback';
+import * as GenuineTransactionTemplates from './registry';
 
 // import { HexEncoding } from '@common/utils/string';
 import { BatchSigner } from '@common/libs/ledger/types/common';
@@ -22,10 +22,12 @@ import { BatchSigner } from '@common/libs/ledger/types/common';
 import { TransactionFactory } from '@common/libs/ledger/factory';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { MixingTypes } from '@common/libs/ledger/mixin/types';
+import { InstanceTypes } from '@common/libs/ledger/types/enums';
 import { utils } from 'xrpl-accountlib';
-import NetworkService from '@services/NetworkService';
+import ExtraFields from '../../ExtraFields';
 import { AccountModel } from '@store/models';
 import { AccountRepository } from '@store/repositories';
+import { batchNFTokenOffersBefore } from './batchNFTokenOffers';
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
     transaction: Batch;
@@ -97,12 +99,19 @@ class BatchTemplate extends Component<Props, State> {
 
         return transaction.RawTransactions.map((t, index) => {
             const tx = TransactionFactory.fromJson({ ...t } as unknown as TransactionJson, [MixingTypes.Mutation]);
+            tx.inheritSigningContext(transaction);
             const hash = utils.hashBatchInnerTxn(
-                { ...t } as unknown as TransactionJson,
-                NetworkService.getNetworkDefinitions(),
+                tx.JsonForSigning,
+                transaction.SigningDefinitions,
             );
 
             const matchingSourceAccount = AccountRepository.findOne({ address: tx.Account });
+
+            // an inner transaction with no genuine template is reviewed as raw JSON, as ReviewStep does for a fallback
+            const GenuineTemplate =
+                tx.InstanceType === InstanceTypes.GenuineTransaction
+                    ? get(GenuineTransactionTemplates, String(tx.TransactionType))
+                    : undefined;
 
             const Props = {
                 source: matchingSourceAccount ||
@@ -110,6 +119,9 @@ class BatchTemplate extends Component<Props, State> {
                 transaction: tx,
                 payload,
                 innerBatch: true,
+                batchCreatedNFTokenOffers: batchNFTokenOffersBefore(
+                    transaction.RawTransactions, index, transaction.JsonForSigning.Flags,
+                ),
                 forceRender: () => {
                     // console.log('forceRender');
                 },
@@ -122,7 +134,7 @@ class BatchTemplate extends Component<Props, State> {
                 setServiceFee: () => {},
             } as any;
 
-            return <View style={[
+            return <View key={hash} style={[
                 styles.transactionContainer,
                 !matchingSourceAccount && styles.transactionContainerThirdParty,
                 matchingSourceAccount && source.address !== matchingSourceAccount.address &&
@@ -178,18 +190,22 @@ class BatchTemplate extends Component<Props, State> {
                             containerStyle={[styles.contentBox, styles.addressContainer]}
                         />
 
-                        {
-                            React.createElement(get(GenuineTransactionTemplates, String(tx.TransactionType)), {
-                                ...Props,
-                                key: `InnerTxn-${hash}`,
-                            })
-                        }
-                        {
-                            React.createElement(get(GenuineTransactionTemplates, 'Global'), {
-                                ...Props,
-                                key: `InnerTxn-${hash}-GlobalTemplate`,
-                            })
-                        }
+                        {GenuineTemplate
+                            ? [
+                                  React.createElement(GenuineTemplate, {
+                                      ...Props,
+                                      key: `InnerTxn-${hash}`,
+                                  }),
+                                  React.createElement(get(GenuineTransactionTemplates, 'Global'), {
+                                      ...Props,
+                                      key: `InnerTxn-${hash}-GlobalTemplate`,
+                                  }),
+                              ]
+                            : React.createElement(FallbackTemplate, {
+                                  ...Props,
+                                  key: `InnerTxn-${hash}-FallbackTemplate`,
+                              })}
+                        {GenuineTemplate && <ExtraFields transaction={tx} />}
                     </View>
                 </View>
             </View>;

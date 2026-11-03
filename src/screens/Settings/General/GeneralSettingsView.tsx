@@ -16,15 +16,16 @@ import { CoreRepository } from '@store/repositories';
 import { CoreModel } from '@store/models';
 import { Themes } from '@store/types';
 
-import { TouchableDebounce, Header, Icon, Switch } from '@components/General';
+import { TouchableDebounce, Header, Switch } from '@components/General';
 
 import Localize from '@locale';
 
 import { PickerModalProps } from '@screens/Global/Picker';
 import { CurrencyPickerModalProps } from '@screens/Modal/CurrencyPicker';
 
-import { AppStyles } from '@theme';
 import styles from './styles';
+import sectionStyles from '../sectionStyles';
+import { SettingsRow, SettingsSection } from '../SettingsSection';
 import StyleService from '@services/StyleService';
 import { Prompt } from '@common/helpers/interface';
 
@@ -242,55 +243,35 @@ class GeneralSettingsView extends Component<Props, State> {
         // );
     };
 
-    renderThemeButton = (theme: Themes, { title, description }: any) => {
+    renderThemeButton = (theme: Themes, { title, description }: { title: string; description: string }) => {
         const { coreSettings } = this.state;
-
-        let previewStyle;
-
-        switch (theme) {
-            case 'light':
-                previewStyle = styles.themePreviewLight;
-                break;
-            case 'dark':
-                previewStyle = styles.themePreviewDark;
-                break;
-            case 'moonlight':
-                previewStyle = styles.themePreviewMoonlight;
-                break;
-            case 'royal':
-                previewStyle = styles.themePreviewRoyal;
-                break;
-            default:
-                break;
-        }
-
         const selected = toLower(coreSettings.theme) === theme;
-
+        const previewStyle = {
+            light: styles.themePreviewLight,
+            dark: styles.themePreviewDark,
+            moonlight: styles.themePreviewMoonlight,
+            royal: styles.themePreviewRoyal,
+        }[theme];
         return (
             <TouchableDebounce
                 key={theme}
                 testID={`theme-${theme}`}
-                activeOpacity={selected ? 1 : 0.8}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selected }}
                 onPress={() => {
-                    if (!selected) {
-                        this.onThemeSelect(theme);
-                    }
+                    if (!selected) this.onThemeSelect(theme);
                 }}
                 style={[styles.themeItem, selected && styles.themeItemSelected]}
             >
-                <View style={AppStyles.flex1}>
-                    <View style={[styles.themeItemDot, selected && styles.themeItemDotSelected]}>
-                        {selected && <View style={styles.themeItemFilled} />}
-                    </View>
+                <View style={[styles.themeItemDot, selected && styles.themeItemDotSelected]}>
+                    {selected && <View style={styles.themeItemFilled} />}
                 </View>
-                <View style={AppStyles.flex5}>
-                    <Text style={[styles.themeItemLabelText, selected && styles.themeItemSelectedText]}>{title}</Text>
-                    <Text style={[styles.themeItemLabelSmall, selected && styles.themeItemSelectedText]}>
-                        {description}
-                    </Text>
+                <View style={styles.themeLabel}>
+                    <Text style={styles.themeItemLabelText}>{title}</Text>
+                    <Text style={styles.themeItemLabelSmall}>{description}</Text>
                 </View>
-                <View style={[AppStyles.flex1, styles.themePreview, previewStyle]}>
-                    <Text style={[AppStyles.p, AppStyles.strong, previewStyle]}>Aa</Text>
+                <View style={[styles.themePreview, previewStyle]}>
+                    <Text style={[styles.themePreviewText, previewStyle]}>Aa</Text>
                 </View>
             </TouchableDebounce>
         );
@@ -298,9 +279,7 @@ class GeneralSettingsView extends Component<Props, State> {
 
     render() {
         const { coreSettings } = this.state;
-
         const accountWorthInfo = coreSettings.accountWorthInfo.split('|');
-
         const themeItems = {
             light: {
                 title: Localize.t('global.default'),
@@ -319,237 +298,93 @@ class GeneralSettingsView extends Component<Props, State> {
                 description: Localize.t('settings.royalThemeDescription'),
             },
         };
-
         return (
             <View testID="general-settings-view" style={styles.container}>
                 <Header
-                    leftComponent={{
-                        icon: 'IconChevronLeft',
-                        onPress: Navigator.pop,
-                    }}
+                    leftComponent={{ icon: 'IconChevronLeft', onPress: Navigator.pop }}
                     centerComponent={{ text: Localize.t('settings.generalSettings') }}
                 />
-                <ScrollView>
-
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                        AppStyles.marginTopNone,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.languageAndCurrency')}</Text>
-                        </View>
-                    </View>
-
-                    <TouchableDebounce style={styles.row} onPress={this.showLanguagePicker}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.language')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Text style={styles.value}>{this.getLanguageTitle()}</Text>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
-
-                    <TouchableDebounce style={styles.row} onPress={this.showCurrencyPicker}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.currency')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Text style={styles.value}>{coreSettings.currency}</Text>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
-
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.useSystemSeparators')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
+                <ScrollView contentContainerStyle={sectionStyles.content}>
+                    <SettingsSection title={Localize.t('global.languageAndCurrency')}>
+                        <SettingsRow
+                            label={Localize.t('global.language')}
+                            value={this.getLanguageTitle()}
+                            onPress={this.showLanguagePicker}
+                        />
+                        <SettingsRow
+                            label={Localize.t('global.currency')}
+                            value={coreSettings.currency}
+                            onPress={this.showCurrencyPicker}
+                        />
+                        <SettingsRow label={Localize.t('settings.useSystemSeparators')}>
                             <Switch
                                 checked={coreSettings.useSystemSeparators}
                                 onChange={this.onSystemSeparatorChange}
                             />
-                        </View>
-                    </View>
-
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.homeScreen')}</Text>
-                        </View>
-                    </View>
-
-                    {accountWorthInfo.length > 1 && (
-                        <>
-                            <View style={styles.row}>
-                                <View style={AppStyles.flex3}>
-                                    <Text numberOfLines={1} style={styles.label}>
-                                        {Localize.t('settings.accountWorthActive', { name: accountWorthInfo[1] })}
-                                    </Text>
-                                </View>
-                                <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
-                                    <Switch
-                                        checked={coreSettings.accountWorthActive}
-                                        onChange={this.onAccountWorthActiveChange}
-                                    />
-                                </View>
-                            </View>
-
-                            <View style={styles.row}>
-                                <View style={AppStyles.flex3}>
-                                    <Text numberOfLines={1} style={styles.label}>
-                                        {Localize.t('settings.showPerAssetWorth')}
-                                    </Text>
-                                </View>
-                                <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
-                                    <Switch
-                                        checked={coreSettings.showPerAssetWorth}
-                                        onChange={this.onShowPerAssetWorthChange}
-                                    />
-                                </View>
-                            </View>
-                        </>
-                    )}
-
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.showReserveValue')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
-                            <Switch checked={coreSettings.showReservePanel} onChange={this.onShowReservePanelChange} />
-                        </View>
-                    </View>
-
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.theme')}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.themeAutoSwitch')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
+                        </SettingsRow>
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.homeScreen')}>
+                        {accountWorthInfo.length > 1 && (
+                            <SettingsRow
+                                label={Localize.t('settings.accountWorthActive', {
+                                    name: accountWorthInfo[1],
+                                })}
+                            >
+                                <Switch
+                                    checked={coreSettings.accountWorthActive}
+                                    onChange={this.onAccountWorthActiveChange}
+                                />
+                            </SettingsRow>
+                        )}
+                        {accountWorthInfo.length > 1 && (
+                            <SettingsRow label={Localize.t('settings.showPerAssetWorth')}>
+                                <Switch
+                                    checked={coreSettings.showPerAssetWorth}
+                                    onChange={this.onShowPerAssetWorthChange}
+                                />
+                            </SettingsRow>
+                        )}
+                        <SettingsRow label={Localize.t('settings.showReserveValue')}>
                             <Switch
-                                checked={coreSettings.themeAutoSwitch}
-                                onChange={this.themeAutoSwitch}
+                                checked={coreSettings.showReservePanel}
+                                onChange={this.onShowReservePanelChange}
                             />
-                        </View>
-                    </View>
-                    <View style={[
-                        styles.rowNoBorder,
-                        AppStyles.marginBottomSml,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            {
-                                Object.keys(themeItems)
-                                    // @ts-ignore
-                                    .filter((key: Themes) => {
-                                        if (coreSettings.themeAutoSwitch) {
-                                            if (key === 'light') return false;
-                                        }
-                                        
-                                        return true;
-                                    })
-                                    // @ts-ignore
-                                    .map((key: Themes) => this.renderThemeButton(key, themeItems[key]))
-                            }
-                        </View>
-                    </View>
-
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.transactionsAndEvents')}</Text>
-                        </View>
-                    </View>
-                    
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.hideAdvisoryTransactions')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
+                        </SettingsRow>
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.theme')}>
+                        <SettingsRow label={Localize.t('settings.themeAutoSwitch')}>
+                            <Switch checked={coreSettings.themeAutoSwitch} onChange={this.themeAutoSwitch} />
+                        </SettingsRow>
+                        {(Object.keys(themeItems) as Themes[])
+                            .filter((theme) => !coreSettings.themeAutoSwitch || theme !== 'light')
+                            .map((theme) => this.renderThemeButton(theme, themeItems[theme]))}
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.transactionsAndEvents')}>
+                        <SettingsRow label={Localize.t('settings.hideAdvisoryTransactions')}>
                             <Switch
                                 checked={coreSettings.hideAdvisoryTransactions}
                                 onChange={this.hideAdvisoryTransactionsChange}
                             />
-                        </View>
-                    </View>
-
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.hideServiceFeeTransactions')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
+                        </SettingsRow>
+                        <SettingsRow label={Localize.t('settings.hideServiceFeeTransactions')}>
                             <Switch
                                 checked={coreSettings.hideServiceFeeTransactions}
                                 onChange={this.hideServiceFeeTransactionsChange}
                             />
-                        </View>
-                    </View>
-
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.miscellaneous')}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.hapticFeedback')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
-                            <Switch checked={coreSettings.hapticFeedback} onChange={this.hapticFeedbackChange} />
-                        </View>
-                    </View>
-
+                        </SettingsRow>
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.miscellaneous')}>
+                        <SettingsRow label={Localize.t('settings.hapticFeedback')}>
+                            <Switch
+                                checked={coreSettings.hapticFeedback}
+                                onChange={this.hapticFeedbackChange}
+                            />
+                        </SettingsRow>
+                    </SettingsSection>
                 </ScrollView>
             </View>
         );
     }
 }
 
-/* Export Component ==================================================================== */
 export default GeneralSettingsView;

@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { Keyboard, Platform } from 'react-native';
+import { Keyboard } from 'react-native';
 import CommunityWebView from 'react-native-webview';
 import type { IOSWebViewProps, AndroidWebViewProps } from 'react-native-webview/lib/WebViewTypes';
 
@@ -67,6 +67,7 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
 
     return (
         <NativeWebView
+            // eslint-disable-next-line react/jsx-props-no-spreading -- later defaults override these props
             {...props}
             ref={innerRef}
             originWhitelist={[...defaultOriginWhitelist]}
@@ -89,10 +90,9 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             enableApplePay={false}
             saveFormDataDisabled
             setDisplayZoomControls={false}
-            // Android incognito still has localStorage/IndexedDB. iOS incognito uses a
-            // non-persistent store that drops both. iOS uses the app-sandbox default
-            // store instead; the webview patch strips cookies and service workers.
-            incognito={Platform.OS === 'android'}
+            // Keep cookies and script storage across navigation in this open view.
+            // iOS gets a private in-memory store that is discarded on close.
+            incognito
             thirdPartyCookiesEnabled
             cacheEnabled={false}
             hideKeyboardAccessoryView
@@ -105,6 +105,7 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             nestedScrollEnabled={false}
             autoManageStatusBarEnabled={false}
             automaticallyAdjustContentInsets={false}
+            // eslint-disable-next-line react/jsx-no-useless-fragment -- native loader requires an element
             renderLoading={() => <></>}
             onFileDownload={rejectFileDownload}
         />

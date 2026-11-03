@@ -7,6 +7,77 @@ import NavigationService, { RootType, ComponentTypes } from '../NavigationServic
 
 jest.useFakeTimers();
 
+describe('overlay dismissal completion', () => {
+    const add = AppScreens.Overlay.AddToken;
+    const other = AppScreens.Overlay.HomeActions;
+    const top = AppScreens.Overlay.SwitchAccount;
+    const show = (name: typeof add | typeof other | typeof top, id: string = name) => {
+        NavigationService.navigatorCommandListener('showOverlay', { layout: { id, data: { name } } });
+        NavigationService.setCurrentOverlay(name);
+    };
+    const dismiss = (id: string, commandId = 'dismiss-1') => {
+        NavigationService.navigatorCommandListener('dismissOverlay', { componentId: id, commandId });
+    };
+    const complete = (commandId = 'dismiss-1') => {
+        NavigationService.navigatorCommandCompleted({ commandId, commandName: 'dismissOverlay', completionTime: 1 });
+    };
+    beforeEach(() => NavigationService.reinstate());
+    afterEach(() => NavigationService.reinstate());
+
+    it('removes a foreground appearance queued during native close without hiding the lower overlay', () => {
+        show(add); show(other); show(top);
+        dismiss(top);
+        NavigationService.setCurrentOverlay(top);
+        complete();
+        expect(NavigationService.getCurrentOverlay()).toBe(other);
+        dismiss(other, 'dismiss-2'); complete('dismiss-2');
+        expect(NavigationService.getCurrentOverlay()).toBe(add);
+    });
+
+    it('removes the exact lower overlay while preserving the current one', () => {
+        show(add); show(other); show(top);
+        dismiss(other); complete();
+        expect(NavigationService.getCurrentOverlay()).toBe(top);
+        dismiss(top, 'dismiss-2'); complete('dismiss-2');
+        expect(NavigationService.getCurrentOverlay()).toBe(add);
+    });
+
+    it.each([other, 'custom-home-actions-id'])('keeps a newer show after an older dismissal (%s)', (id) => {
+        show(add); show(other);
+        dismiss(other);
+        show(other, id);
+        complete();
+        expect(NavigationService.getCurrentOverlay()).toBe(other);
+    });
+
+    it('reconciles dismissAll without removing overlays shown after that command', () => {
+        show(add); show(other);
+        NavigationService.navigatorCommandListener('dismissAllOverlays', { commandId: 'all' });
+        show(top);
+        complete('all');
+        expect(NavigationService.getCurrentOverlay()).toBe(top);
+        dismiss(top); complete();
+        expect(NavigationService.getCurrentOverlay()).toBeUndefined();
+    });
+
+    it('does not infer completion from an unrelated command', () => {
+        show(add); show(other); dismiss(other);
+        NavigationService.setCurrentOverlay(other);
+        complete('unrelated');
+        expect(NavigationService.getCurrentOverlay()).toBe(other);
+        complete();
+        expect(NavigationService.getCurrentOverlay()).toBe(add);
+    });
+
+    it('discards pending dismissal bookkeeping on service reset', () => {
+        show(other); dismiss(other);
+        NavigationService.reinstate();
+        show(other);
+        complete();
+        expect(NavigationService.getCurrentOverlay()).toBe(other);
+    });
+});
+
 describe('NavigationService', () => {
     const navigationService = NavigationService;
 

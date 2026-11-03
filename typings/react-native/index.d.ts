@@ -36,6 +36,7 @@ export interface LocalNotificationModuleInterface extends NativeModule {
  * Bunch of methods for managing the application
  */
 export interface AppUtilsModuleInterface extends NativeModule {
+    getImageSample?: (uri: string) => Promise<number[]>;
     /**
      * The version of the app.
      */
@@ -50,6 +51,11 @@ export interface AppUtilsModuleInterface extends NativeModule {
      * Indicates whether the application is running in debug mode.
      */
     isDebug: boolean;
+
+    /**
+     * True on an iOS TestFlight install (sandbox App Store receipt). Android is false.
+     */
+    isTestFlight?: boolean;
 
     /**
      * Checks if blocking screenshots enabled

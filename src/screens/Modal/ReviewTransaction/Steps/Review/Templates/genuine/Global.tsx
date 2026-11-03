@@ -4,6 +4,9 @@ import { InteractionManager, Text, View } from 'react-native';
 
 import { MutatedTransaction, SignableTransaction, Transactions } from '@common/libs/ledger/transactions/types';
 
+import {
+    escrowNeedsIrrevocableConditionWarning,
+} from '@common/libs/ledger/transactions/genuine/EscrowCreate/escrowCreateWarning';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
 import { AmountParser } from '@common/libs/ledger/parser/common';
 
@@ -26,6 +29,8 @@ import { TemplateProps } from '../types';
 import { HookExplainerOrigin } from '@components/Modules/HooksExplainer/HooksExplainer';
 import { Toast } from '@common/helpers/interface';
 import { AppStyles } from '@theme/index';
+import { canAdjustNativeAmount, nativeSpendFromTransaction, xrpLeavingDrops } from './paymentSpend';
+import { cappedServiceFeeDrops, incomingXrpDrops } from '@common/libs/ledger/serviceFee/rules';
 
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
@@ -72,6 +77,10 @@ class GlobalTemplate extends Component<Props, State> {
             }
         }
 
+        if (escrowNeedsIrrevocableConditionWarning(transaction)) {
+            warnings.push(Localize.t('payload.escrowIrrevocableConditionWarning'));
+        }
+
         if (warnings.length > 0) {
             this.setState({
                 warnings,
@@ -93,28 +102,27 @@ class GlobalTemplate extends Component<Props, State> {
         const { setServiceFee, transaction, source } = this.props;
 
         if (transaction && source) {
-            let isXrpPayment = false;
-            try {
-                isXrpPayment = transaction &&
-                    transaction.TransactionType === 'Payment' &&
-                    (transaction as any)?.Amount?.currency === NetworkService.getNativeAsset();
-            } catch (e) {
-                // console.log(e)
-            }
+            // A plain XRP send can be shrunk to fit the fee. Anything else keeps Amount
+            // and the service fee is capped to the XRP that is actually free, same as an IOU payment.
+            const plainNativePayment = canAdjustNativeAmount(
+                nativeSpendFromTransaction(transaction, NetworkService.getNativeAsset()),
+            );
 
-            if (!isXrpPayment) {
-                const sfee = Number(fee?.value || 0) / 1_000_000;
+            if (!plainNativePayment) {
                 const avail = CalculateAvailableBalance(source!);
-                const spendable = (Math.floor(Number(avail) * 1_000_000) - 100) / 1_000_000; 
-                if (spendable < sfee) {
-                    setServiceFee(Math.floor(Number(avail) * 1_000_000) - 100);
-                    // console.log(`${sfee} higher: ${spendable}, set ${Math.floor(Number(avail) * 1_000_000) - 100}`);
-                    return;
-                }
+                const spendableDrops = Math.floor(Number(avail) * 1_000_000);
+                const incoming = incomingXrpDrops(transaction.JsonForSigning).toNumber();
+                setServiceFee(cappedServiceFeeDrops(Number(fee?.value || 0), spendableDrops, incoming));
+                return;
             }
         }
 
         setServiceFee(Number(fee?.value || 0));
+    };
+
+    onServiceFeeQuote = (quote: { submitCondition?: any }) => {
+        const { transaction } = this.props;
+        transaction.setServiceFeeSubmitCondition?.(quote?.submitCondition);
     };
 
     setFees = (txFee: any, serviceFee: any) => {
@@ -287,34 +295,27 @@ class GlobalTemplate extends Component<Props, State> {
             <>
                 <Text style={styles.label}>{Localize.t('global.memo')}</Text>
                 <View style={styles.contentBox}>
-                    {
-                        transaction.Memos.map((m, i) => {
-                            return (
-                                <View
-                                    style={styles.memoContainer}
-                                    key={`memo-${i}`}
-                                >
-                                    {m.MemoType && (
-                                        <Text style={[styles.value, styles.memoType]}>{m.MemoType}</Text>
-                                    )}
-                                    {m.MemoFormat && (
-                                        <Text style={[styles.value, styles.memoFormat]}>{m.MemoFormat}</Text>
-                                    )}
-                                    {m.MemoData && (
-                                        <Text
-                                            style={[styles.value, styles.memoData]}
-                                            onPress={() => {
-                                                if (String(m.MemoData) !== '') {
-                                                    Clipboard.setString(String(m.MemoData));
-                                                    Toast(Localize.t('payload.dataCopiedToClipboard'));
-                                                }
-                                            }}
-                                        >{m.MemoData}</Text>
-                                    )}
-                                </View>
-                            );
-                        })
-                    }
+                    {transaction.Memos.map((m, i) => {
+                        return (
+                            <View style={styles.memoContainer} key={`memo-${i}`}>
+                                {m.MemoType && <Text style={[styles.value, styles.memoType]}>{m.MemoType}</Text>}
+                                {m.MemoFormat && <Text style={[styles.value, styles.memoFormat]}>{m.MemoFormat}</Text>}
+                                {m.MemoData && (
+                                    <Text
+                                        style={[styles.value, styles.memoData]}
+                                        onPress={() => {
+                                            if (String(m.MemoData) !== '') {
+                                                Clipboard.setString(String(m.MemoData));
+                                                Toast(Localize.t('payload.dataCopiedToClipboard'));
+                                            }
+                                        }}
+                                    >
+                                        {m.MemoData}
+                                    </Text>
+                                )}
+                            </View>
+                        );
+                    })}
                     {/* <ReadMore numberOfLines={3} textStyle={styles.value}>
                         {transaction.Memos.map((m) => {
                             let memo = '';
@@ -358,9 +359,7 @@ class GlobalTemplate extends Component<Props, State> {
     // Can it actually send tx + fee?
     canSendFee = (canSend: boolean) => {
         const { canSendFee } = this.state;
-        const {
-            canSendFee: parentCanSendFee,
-        } = this.props;
+        const { canSendFee: parentCanSendFee } = this.props;
 
         if (canSend !== canSendFee) {
             if (typeof parentCanSendFee === 'function') {
@@ -373,23 +372,15 @@ class GlobalTemplate extends Component<Props, State> {
     };
 
     renderFee = () => {
-        const {
-            transaction,
-            source,
-            payload,
-            serviceFee,
-            setTransaction,
-        } = this.props;
+        const { transaction, source, payload, serviceFee, setTransaction } = this.props;
 
-        const {
-            showFeePicker,
-            canSendFee,
-        } = this.state;
+        const { showFeePicker, canSendFee } = this.state;
 
         // we should not override the fee
         // either transaction fee has already been set in payload
         // or transaction is a multi sign tx
-        if (!showFeePicker) { //  && !(process?.env?.NODE_ENV === 'development') // TODO: REMOVE(d)
+        if (!showFeePicker) {
+            //  && !(process?.env?.NODE_ENV === 'development') // TODO: REMOVE(d)
             if (typeof transaction.Fee !== 'undefined') {
                 return (
                     <>
@@ -409,6 +400,7 @@ class GlobalTemplate extends Component<Props, State> {
                                     textStyle={styles.feeText}
                                     payload={payload}
                                     onSelect={this.setServiceFeeAmount}
+                                    onQuote={this.onServiceFeeQuote}
                                 />
                             </View>
                         </>
@@ -418,27 +410,10 @@ class GlobalTemplate extends Component<Props, State> {
 
             return null;
         }
-        
-        const sendDrops = Math.ceil(Number(
-            typeof transaction?.JsonForSigning?.Amount === 'string'
-                ? (transaction as any)?.Amount?.value
-                    ? Number(String((transaction as any)?.Amount?.value || '0')) * 1_000_000
-                    : transaction?.JsonForSigning?.Amount
-                : 0,
-        ));
 
-        const amountField = 'Amount';
-        // if (transaction.TransactionType === 'OfferCreate') {
-        //     amountField = 'TakerGets';
-        // }
-        let isXrpPayment = false;
-        try {
-            isXrpPayment = transaction &&
-                transaction.TransactionType === 'Payment' &&
-                (transaction as any)?.Amount?.currency === NetworkService.getNativeAsset();
-        } catch (e) {
-            // console.log(e)
-        }
+        const spend = nativeSpendFromTransaction(transaction, NetworkService.getNativeAsset());
+        const sendDrops = xrpLeavingDrops(spend);
+        const plainNativePayment = canAdjustNativeAmount(spend);
 
         return (
             <>
@@ -448,39 +423,30 @@ class GlobalTemplate extends Component<Props, State> {
                     sendAmountDrops={sendDrops}
                     txJson={transaction.JsonForSigning}
                     onSelect={this.setFees}
+                    onQuote={this.onServiceFeeQuote}
                     source={source}
                     payload={payload}
                     containerStyle={styles.contentBox}
                     textStyle={styles.feeText}
                 />
                 {/* <Text style={AppStyles.colorWhite}>{ String((transaction as any)?.Amount?.value || '') }</Text> */}
-                <View style={[
-                    !canSendFee && AppStyles.marginTopSml,
-                ]}>
+                <View style={[!canSendFee && AppStyles.marginTopSml]}>
                     <ServiceFeeSpendable
                         txType={transaction?.TransactionType || transaction?.JsonForSigning?.TransactionType}
                         spendableBalanceDrops={Math.floor(Number(CalculateAvailableBalance(source!)) * 1_000_000)}
                         serviceFeeDrops={Number(serviceFee || 0)}
                         txFeeDrops={Number(transaction?.JsonForSigning?.Fee || 0)}
-                        sendAmountDrops={Math.ceil(Number(
-                            typeof (transaction?.JsonForSigning?.[amountField]) === 'string'
-                                ? (transaction as any)?.[amountField]?.value
-                                    ? Number(String((transaction as any)?.[amountField]?.value || '0')) * 1_000_000
-                                    : transaction?.JsonForSigning?.[amountField]
-                                : 0,
-                        ))}
+                        sendAmountDrops={sendDrops}
                         onTxMaySend={this.canSendFee}
                         updateSendingAmountDrops={
-                            isXrpPayment
-                                ? (drops) => { 
-                                    if (isXrpPayment) {
-                                        (transaction as any).Amount = {
-                                            ...(transaction as any).Amount,
-                                            value: String(drops / 1_000_000),
-                                        };
-                                        setTransaction(transaction, true);
-                                    }
-                                }
+                            plainNativePayment
+                                ? (drops) => {
+                                      (transaction as any).Amount = {
+                                          ...(transaction as any).Amount,
+                                          value: String(drops / 1_000_000),
+                                      };
+                                      setTransaction(transaction, true);
+                                  }
                                 : undefined
                         }
                     />

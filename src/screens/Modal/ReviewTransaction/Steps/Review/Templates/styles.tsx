@@ -131,6 +131,9 @@ const styles = StyleService.create({
     signersContainer: {
         marginBottom: AppSizes.paddingSml,
     },
+    extraFieldsWarning: {
+        marginBottom: AppSizes.paddingSml,
+    },
     label: {
         fontFamily: AppFonts.subtext.family,
         fontSize: AppFonts.subtext.size,

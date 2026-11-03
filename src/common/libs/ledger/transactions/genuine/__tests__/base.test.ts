@@ -86,19 +86,20 @@ describe('BaseGenuineTransaction', () => {
             });
         });
 
-        it('should return an tx json with only the allowed fields', () => {
+        it('keeps network-defined fields and ignores unknown fields', () => {
             const txData = {
                 TransactionType: TransactionTypes.Payment,
                 Account: 'rAccountxxxxxxxxxxxxxxxxxxxxxxxxxx',
                 Amount: 1337,
                 RegularKey: 'rAccountxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                NotDefined: 'ignored',
             };
 
             const transaction = new BaseGenuineTransaction(txData);
             const jsonResult = transaction.JsonForSigning;
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { RegularKey, Amount, ...expectedResult } = txData;
+            const { NotDefined, ...expectedResult } = txData;
 
             expect(jsonResult).toStrictEqual(expectedResult);
         });

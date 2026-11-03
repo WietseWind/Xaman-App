@@ -1,4 +1,5 @@
 import Localize from '@locale';
+import { MPT_MAX_AMOUNT, mptRawToDisplay } from '@common/utils/mptAmount';
 
 import { AccountModel } from '@store/models';
 
@@ -35,7 +36,7 @@ class MPTokenIssuanceInfo extends ExplainerAbstract<MPTokenIssuance> {
     generateDescription(): string {
         const content: string[] = [];
 
-        const maxAmount = this.item.MaximumAmount || 1;
+        const maxAmount = mptRawToDisplay(this.item.MaximumAmount ?? MPT_MAX_AMOUNT, this.item.AssetScale);
         // const scale = this.item.AssetScale || 1;
         content.push(
             Localize.t('mptokenIssuance.explain', {
@@ -72,13 +73,10 @@ class MPTokenIssuanceInfo extends ExplainerAbstract<MPTokenIssuance> {
     getMonetaryDetails() {
         const factor = [];
         if (this.item.OutstandingAmount) {
-            let value = this.item?.OutstandingAmount || 0;
-            if (this.item.AssetScale && this.item.AssetScale > 1) {
-                value /= 10 ** this.item.AssetScale;
-            }
+            const value = mptRawToDisplay(this.item.OutstandingAmount, this.item.AssetScale);
             factor.push({
                 currency: ' ',
-                value: String(value * -1),
+                value: value === '0' ? '0' : `-${value}`,
                 issuer: DecodeMPTokenIssuanceToIssuer(String(this.item.mpt_issuance_id)),
                 mpt_issuance_id: String(this.item.mpt_issuance_id),
                 effect: 'POTENTIAL_EFFECT' as MonetaryStatus,

@@ -14,6 +14,8 @@ import {
     Alert,
     ViewProps,
     ImageBackgroundProps,
+    AccessibilityInfo,
+    LayoutAnimation,
 } from 'react-native';
 
 import {
@@ -24,6 +26,8 @@ import {
 } from 'react-native-navigation';
 import { AccountService, BackendService, StyleService } from '@services';
 import NetworkService from '@services/NetworkService';
+import { HomeWarningBanner } from '@components/Modules/HomeWarningBanner';
+import { showTangemBackupWarning } from '@common/utils/tangemBackup';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
@@ -59,6 +63,8 @@ import { ShareAccountOverlayProps } from '@screens/Overlay/ShareAccount';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
+import NodeConnection from './NodeConnection';
+import { shouldApplyAccountUpdate } from './accountUpdateGuard';
 import onboardingStyles from '../Onboarding/styles';
 import { AccountGenerateViewProps } from '@screens/Account/Add/Generate';
 import { AccountImportViewProps } from '@screens/Account/Add/Import';
@@ -73,7 +79,6 @@ export interface State {
     isSpendable: boolean;
     isSignable: boolean;
     selectedNetwork: NetworkModel;
-    connectedNode: string;
     developerMode: boolean;
     discreetMode: boolean;
     experimentalUI?: boolean;
@@ -89,6 +94,14 @@ class HomeView extends Component<Props, State> {
 
     private navigationListener: EventSubscription | undefined;
     private nfcChangeListener?: EventSubscription;
+    private live = false;
+    private reduceMotion = true;
+    private motionRevision = 0;
+    private motionListener?: ReturnType<typeof AccessibilityInfo.addEventListener>;
+    private requestedHeaderHidden = false;
+    private headerTransition = 0;
+    private headerTransitionActive = false;
+    private headerCompletions: Array<() => void> = [];
 
     static options() {
         return { topBar: { visible: false } };
@@ -106,7 +119,6 @@ class HomeView extends Component<Props, State> {
             isSpendable: false,
             isSignable: false,
             selectedNetwork: coreSettings.network,
-            connectedNode: coreSettings.network?.defaultNode?.endpoint || '',
             developerMode: coreSettings.developerMode,
             discreetMode: coreSettings.discreetMode,
             experimentalUI: undefined,
@@ -116,13 +128,16 @@ class HomeView extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.live = true;
+        this.motionListener = AccessibilityInfo.addEventListener('reduceMotionChanged', this.onReduceMotionChange);
+        const revision = this.motionRevision;
+        AccessibilityInfo.isReduceMotionEnabled().then(enabled => {
+            if (this.live && revision === this.motionRevision) this.reduceMotion = enabled;
+        }).catch(() => { /* Keep motion disabled if the accessibility setting is unavailable. */ });
         // update UI on accounts update
         AccountRepository.on('accountUpdate', this.onAccountUpdate);
         // update discreetMode and developerMode on change
         CoreRepository.on('updateSettings', this.onCoreSettingsUpdate);
-        // live socket node (failover) for the developer-mode "Connected to" label
-        NetworkService.on('connect', this.onNetworkConnect);
-        this.onNetworkConnect();
 
         // listen for screen appear event
         this.navigationListener = Navigation.events().bindComponent(this);
@@ -167,6 +182,10 @@ class HomeView extends Component<Props, State> {
     };
 
     componentWillUnmount() {
+        this.live = false;
+        this.headerTransition++;
+        this.headerCompletions = [];
+        this.motionListener?.remove();
         // remove listeners
         if (this.navigationListener) {
             this.navigationListener.remove();
@@ -174,7 +193,6 @@ class HomeView extends Component<Props, State> {
 
         AccountRepository.off('accountUpdate', this.onAccountUpdate);
         CoreRepository.off('updateSettings', this.onCoreSettingsUpdate);
-        NetworkService.off('connect', this.onNetworkConnect);
 
         if (this.nfcChangeListener) {
             this.nfcChangeListener.remove();
@@ -197,12 +215,17 @@ class HomeView extends Component<Props, State> {
         });
     }
 
+    componentDidDisappear() {
+        this.cancelHeaderTransition();
+    }
+
     /*
         Handle events when something in CoreSettings has been changed
         Monitoring `discreetMode`, `developerMode`, `defaultNode` changes
      */
     onCoreSettingsUpdate = (coreSettings: CoreModel, changes: Partial<CoreModel>) => {
         const { discreetMode } = this.state;
+        if (has(changes, 'account') || has(changes, 'network')) this.cancelHeaderTransition();
 
         // default account changed
         if (has(changes, 'account')) {
@@ -228,33 +251,16 @@ class HomeView extends Component<Props, State> {
                 {
                     developerMode: coreSettings.developerMode,
                     selectedNetwork: coreSettings.network,
-                    connectedNode:
-                        NetworkService.getConnectedEndpoint() ||
-                        coreSettings.network?.defaultNode?.endpoint ||
-                        '',
                 },
                 this.updateAccountStatus,
             );
         }
     };
 
-    onNetworkConnect = () => {
-        const { connectedNode } = this.state;
-        const nextNode = NetworkService.getConnectedEndpoint();
-
-        if (!nextNode || nextNode === connectedNode) {
-            return;
-        }
-
-        this.setState({
-            connectedNode: nextNode,
-        });
-    };
-
     onAccountUpdate = (updatedAccount: AccountModel) => {
         const { account } = this.state;
 
-        if (updatedAccount?.isValid() && updatedAccount.address === account.address) {
+        if (shouldApplyAccountUpdate(updatedAccount, account)) {
             // update the UI
             this.setState(
                 {
@@ -430,6 +436,7 @@ class HomeView extends Component<Props, State> {
         const { timestamp } = this.props;
         const {
             account,
+            hideTopElements: headerHidden,
             discreetMode,
             isSpendable,
             experimentalUI,
@@ -457,6 +464,7 @@ class HomeView extends Component<Props, State> {
                 experimentalUI={experimentalUI}
                 account={account}
                 hideTopElements={this.hideTopElements}
+                headerHidden={headerHidden}
                 network={selectedNetwork}
                 discreetMode={discreetMode}
                 spendable={isSpendable}
@@ -467,10 +475,52 @@ class HomeView extends Component<Props, State> {
         );
     };
 
-    hideTopElements = (toggle: boolean) => {
+    private onReduceMotionChange = (enabled: boolean) => {
+        this.motionRevision++;
+        this.reduceMotion = enabled;
+    };
+
+    private cancelHeaderTransition = () => {
+        if (!this.headerTransitionActive) return;
+        this.headerTransition++;
+        this.headerTransitionActive = false;
+        this.headerCompletions = [];
+        this.requestedHeaderHidden = false;
+        if (this.live) this.setState({ hideTopElements: false });
+    };
+
+    hideTopElements = (toggle: boolean, onComplete?: () => void) => {
+        if (!this.live) return;
+        if (this.requestedHeaderHidden === toggle) {
+            if (onComplete) {
+                if (this.headerTransitionActive) this.headerCompletions.push(onComplete);
+                else onComplete();
+            }
+            return;
+        }
+        this.requestedHeaderHidden = toggle;
+        const transition = ++this.headerTransition;
+        this.headerTransitionActive = true;
+        this.headerCompletions = onComplete ? [onComplete] : [];
+        const finish = () => {
+            if (!this.live || transition !== this.headerTransition || !this.headerTransitionActive) return;
+            this.headerTransitionActive = false;
+            const callbacks = this.headerCompletions;
+            this.headerCompletions = [];
+            callbacks.forEach(callback => callback());
+        };
+        const animate = !this.reduceMotion;
+        if (animate) {
+            LayoutAnimation.configureNext({
+                duration: 250,
+                update: { type: LayoutAnimation.Types.easeInEaseOut },
+                create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+                delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+            }, finish, finish);
+        }
         this.setState({
             hideTopElements: toggle,
-        });
+        }, () => { if (!animate) finish(); });
     };
 
     renderButtons = () => {
@@ -632,20 +682,13 @@ class HomeView extends Component<Props, State> {
     };
 
     renderNetworkDetails = () => {
-        const { developerMode, selectedNetwork, connectedNode, experimentalUI } = this.state;
+        const { developerMode, selectedNetwork, experimentalUI } = this.state;
 
         if (!developerMode || !selectedNetwork || typeof experimentalUI === 'undefined' || experimentalUI) {
             return null;
         }
 
-        return (
-            <View style={styles.networkDetailsContainer}>
-                <Text style={styles.networkTextLabel}>{Localize.t('global.connectedTo')} </Text>
-                <Text adjustsFontSizeToFit numberOfLines={1} style={styles.networkTextContent}>
-                    {connectedNode || selectedNetwork.defaultNode.endpoint}
-                </Text>
-            </View>
-        );
+        return <NodeConnection fallbackEndpoint={selectedNetwork.defaultNode.endpoint} />;
     };
 
     renderAccountAddress = () => {
@@ -669,49 +712,21 @@ class HomeView extends Component<Props, State> {
     renderDegenWarning = () => {
         const { account } = this.state;
 
-        if (typeof account?.additionalInfoString === 'string') {
-            if (account?.additionalInfoString.startsWith('{"degenMode":')) {
-                return (
-                    <View style={[
-                        AppStyles.buttonRed,
-                        AppStyles.borderRadius,
-                        AppStyles.marginHorizontalSml,
-                        styles.degenWarning,
-                        AppStyles.row,
-                    ]}>
-                        <Text style={[
-                            // AppStyles.p,
-                            // AppStyles.strong,
-                            // AppStyles.textCenterAligned,
-                            styles.degenWarningText,
-                            AppStyles.flex6,
-                        ]}>
-                            {Localize.t('account.degenBackUpHomeWrn')}
-                        </Text>
-                        <Button
-                            roundedSmall
-                            onPress={() => {
-                                const secret = (JSON.parse(account?.additionalInfoString || '{}')?.degenMode || '')
-                                    .split('.');
-
-                                Navigator.push<AccountGenerateViewProps>(AppScreens.Account.Generate, {
-                                    initial: {
-                                        step: 'ViewPrivateKey',
-                                        secretNumbers: secret,
-                                    },
-                                });
-                            }} 
-                            label={Localize.t('account.degenBackUpNowBtn')}
-                            style={[
-                                AppStyles.buttonRed,
-                                styles.backUpButton,
-                            ]}
-                        />
-                    </View>
-                );
-            }
+        if (!account) return null;
+        if (showTangemBackupWarning(account, NetworkService.getNetwork().key)) {
+            return <HomeWarningBanner variant="orange" title={Localize.t('tangemBackup.warningTitle')}
+                subtitle={Localize.t('tangemBackup.warningBody')}
+                onPress={() => { Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account }); }} />;
         }
-
+        if (account.additionalInfoString?.startsWith('{"degenMode":')) {
+            return <HomeWarningBanner variant="red" title={Localize.t('tangemBackup.secretsTitle')}
+                subtitle={Localize.t('tangemBackup.secretsBody')} onPress={() => {
+                    const secret = (JSON.parse(account.additionalInfoString || '{}')?.degenMode || '').split('.');
+                    Navigator.push<AccountGenerateViewProps>(AppScreens.Account.Generate, {
+                        initial: { step: 'ViewPrivateKey', secretNumbers: secret },
+                    });
+                }} />;
+        }
         return null;
     };
 

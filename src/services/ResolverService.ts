@@ -127,7 +127,9 @@ class ResolverService {
         // remove the cache if account is added/removed/updated
         if (account?.address) {
             if (!changes || (changes && 'label' in changes)) {
-                this.accountNameCache.delete(this.getAccountNameCacheKey(account.address));
+                // Account labels apply to all destination tags and both lookup modes.
+                const prefix = `[${JSON.stringify(account.address)},`;
+                this.accountNameCache.deleteWhere((key) => key.startsWith(prefix));
             }
         }
     };
@@ -135,12 +137,18 @@ class ResolverService {
     private onContactChange = (contact: Partial<ContactModel>) => {
         // remove the cache if contact is added/removed/updated
         if (contact?.address) {
-            this.accountNameCache.delete(this.getAccountNameCacheKey(contact.address, contact.destinationTag));
+            // Older removal events used "tag"; accept them during release integration.
+            const legacyTag = 'tag' in contact &&
+                (typeof contact.tag === 'string' || typeof contact.tag === 'number') ? contact.tag : undefined;
+            const tag = contact.destinationTag ?? legacyTag;
+            [false, true].forEach((internal) => {
+                this.accountNameCache.delete(this.getAccountNameCacheKey(contact.address!, tag, internal));
+            });
         }
     };
 
-    private getAccountNameCacheKey = (address: string, tag?: number | string) => {
-        return `${address}${tag ?? ''}`;
+    private getAccountNameCacheKey = (address: string, tag?: number | string, internal = false) => {
+        return JSON.stringify([address, String(tag ?? ''), internal]);
     };
 
     private resolveAccountName = async (address: string, tag?: number, internal = false) => {
@@ -220,7 +228,7 @@ class ResolverService {
         tag?: number,
         internal = false,
     ): Promise<AccountNameResolveType> => {
-        const key = `${address}${tag ?? ''}`;
+        const key = this.getAccountNameCacheKey(address, tag, internal);
 
         const cachedValue = this.accountNameCache.get(key);
 
@@ -228,11 +236,15 @@ class ResolverService {
             return cachedValue;
         }
 
-        const resultPromise = (async () => {
-            const result = await this.resolveAccountName(address, tag, internal);
-            this.accountNameCache.set(key, { ...result, address, tag });
-            return { ...result, address, tag };
-        })();
+        const resultPromise = this.resolveAccountName(address, tag, internal).then((result) => {
+            const resolved = { ...result, address, tag };
+            // A contact change deletes this entry while the lookup is still running.
+            // Writing the old result back would put the stale name in front of the new contact.
+            if (this.accountNameCache.get(key) === resultPromise) {
+                this.accountNameCache.set(key, resolved);
+            }
+            return resolved;
+        });
 
         this.accountNameCache.set(key, resultPromise); // save the promise itself for subsequent calls
 

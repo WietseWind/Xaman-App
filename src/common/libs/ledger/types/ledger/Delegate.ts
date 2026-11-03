@@ -3,21 +3,18 @@ import { Permission } from '../common';
 import { BaseLedgerEntry, HasPreviousTxnID } from './BaseLedgerEntry';
 
 /**
- * The Delegate object type represents a list of parties that, as a group,
- * are Delegated to sign a transaction in place of an individual account. You
- * can create, replace, or remove a signer list using a DelegateSet
- * transaction.
+ * Permissions granted by Account to Authorize. DelegateSet replaces or removes this exact relationship.
  *
  * @category Ledger Entries
  */
 export default interface Delegate extends BaseLedgerEntry, HasPreviousTxnID {
+    Account: string;
     /**
      * Account that is authorized
      */
     Authorize: string;
     /**
-     * A bit-map of Boolean flags enabled for this signer list. For more
-     * information, see Authorize Flags.
+     * Ledger entry flags.
      */
     Flags: number;
     /**
@@ -25,9 +22,9 @@ export default interface Delegate extends BaseLedgerEntry, HasPreviousTxnID {
      * in case the directory consists of multiple pages.
      */
     OwnerNode: string;
+    DestinationNode?: string;
     /**
-     * An array of Signer Entry objects representing the parties who are part of
-     * this signer list.
+     * Permissions granted to Authorize by Account.
      */
-    Permissions: { Permissions: Permission }[];
+    Permissions: { Permission: Permission }[];
 }

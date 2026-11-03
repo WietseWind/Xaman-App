@@ -16,6 +16,7 @@ interface ContextProps extends State {
     setAdditionalInfo: (info: Object, callback?: any) => void;
     setTangemSignature: (signature: string, callback?: any) => void;
     setSecretType: (type: SecretTypes, callback?: any) => void;
+    beginTangemUpgrade: () => Promise<void>;
     goNext: (step?: ImportSteps) => void;
     goBack: () => void;
 }

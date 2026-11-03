@@ -6,6 +6,7 @@
  */
 
 import Realm from 'realm';
+import { EXTERNAL_ASSET_LIMIT } from '@common/helpers/externalAssets';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
@@ -21,7 +22,7 @@ import Localize from '@locale';
 class TrustLine extends Realm.Object<TrustLine> {
     public static schema: Realm.ObjectSchema = TrustLineSchema.schema;
 
-    /** Unique identifier representing this specific trust line. `${address}.${currency.id}}` */
+    /** Balance identity scoped to account details (account/network) and currency. */
     public declare id: string;
     /** Currency model associated with the trust line. */
     public declare currency: CurrencyModel;
@@ -71,7 +72,7 @@ class TrustLine extends Realm.Object<TrustLine> {
 
     isExternalAsset(): boolean {
         // TODO: improve this check for Extenral Asset as set in
-        return this.limit === String(-9999999999);
+        return this.limit === EXTERNAL_ASSET_LIMIT;
     }
 
     getLpAssetPair(): string[] {

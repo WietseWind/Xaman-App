@@ -21,16 +21,25 @@ internal struct CryptError: LocalizedError {
 
 public extension Data {
   init?(hexString: String) {
-    guard hexString.count.isMultiple(of: 2) else {
-      return nil
+    let chars = Array(hexString.utf8)
+    guard !chars.isEmpty, chars.count.isMultiple(of: 2) else { return nil }
+
+    func nibble(_ char: UInt8) -> UInt8? {
+      switch char {
+      case 48...57: return char - 48
+      case 65...70: return char - 65 + 10
+      case 97...102: return char - 97 + 10
+      default: return nil
+      }
     }
-    
-    let chars = hexString.map { $0 }
-    let bytes = stride(from: 0, to: chars.count, by: 2)
-      .map { String(chars[$0]) + String(chars[$0 + 1]) }
-      .compactMap { UInt8($0, radix: 16) }
-    
-    guard hexString.count / bytes.count == 2 else { return nil }
+
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(chars.count / 2)
+    for index in stride(from: 0, to: chars.count, by: 2) {
+      guard let high = nibble(chars[index]), let low = nibble(chars[index + 1]) else { return nil }
+      bytes.append((high << 4) | low)
+    }
+
     self.init(bytes)
   }
   
@@ -63,8 +72,11 @@ public extension SymmetricKey {
     return data.hexadecimal
   }
   
-  @objc static func HexToData(hexString: String) -> Data {
-    return Data(hexString:hexString)!
+  @objc static func HexToData(hexString: String?) throws -> Data {
+    guard let hexString = hexString, let data = Data(hexString: hexString) else {
+      throw CryptError(message: "Invalid hex data", status: -1)
+    }
+    return data
   }
   
   @objc static func SHA1Hash(data: Data) -> Data {
@@ -89,6 +101,9 @@ public extension SymmetricKey {
   }
   
   @objc static func PBKDF2(password: Data, salt: Data, iteration: Int) throws -> Data {
+    guard iteration > 0, iteration <= Int(UInt32.max) else {
+      throw CryptError(message: "Invalid PBKDF2 iteration count", status: -1)
+    }
     // constants
     let HMAC_HASH_ALGO = kCCPRFHmacAlgSHA512;
     let KEY_LENGTH = kCCKeySizeAES256 // 256 bits = 32 bytes;
@@ -109,7 +124,7 @@ public extension SymmetricKey {
       }
     }
     
-    return Data(bytes: UnsafePointer<UInt8>(bytes), count: kCCKeySizeAES256)
+    return Data(bytes)
   }
   
   @objc static func RandomBytes(length: Int) throws -> Data {
@@ -151,6 +166,9 @@ public extension SymmetricKey {
     
     /// Process data, either encrypt or decrypt it
     private static func process(_ data: Data, using key: SymmetricKey, iv: Data, operation: Operation) throws -> Data {
+      guard iv.count == kCCBlockSizeAES128 else {
+        throw CryptError(message: "Invalid AES-CBC IV length", status: -1)
+      }
       let inputBuffer = data.bytes
       let keyData = key.dataRepresentation.bytes
       let ivData = iv.bytes

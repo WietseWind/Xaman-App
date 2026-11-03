@@ -2,7 +2,8 @@ import { get } from 'lodash';
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, Alert, InteractionManager } from 'react-native';
 
-import { LedgerService, NetworkService, StyleService } from '@services';
+import { LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { CheckCash, CheckCreate } from '@common/libs/ledger/transactions';
 

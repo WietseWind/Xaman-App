@@ -11,6 +11,7 @@ import { type RatesType } from '@services/BackendService';
 import { CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel } from '@store/models';
 
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { VibrateHapticFeedback } from '@common/helpers/interface';
 
 import { Payload } from '@common/libs/payload';
@@ -289,7 +290,10 @@ class EventsList extends PureComponent<Props, State> {
                 { !renderSeparateLoadingIndicator && !forceFullLoader && 
                     <SectionList
                         style={styles.sectionList}
-                        contentContainerStyle={styles.sectionListContainer}
+                        contentContainerStyle={[
+                            styles.sectionListContainer,
+                            glassTabScrollPadding > 0 && { paddingBottom: glassTabScrollPadding },
+                        ]}
                         sections={dataSource}
                         renderItem={this.renderItem}
                         renderSectionHeader={this.renderSectionHeader}

@@ -20,6 +20,14 @@ import { SignableTransaction } from '@common/libs/ledger/transactions/types';
 
 import { Constructor, SignMethodType, SignMixinType } from './types';
 import { Batch } from '../transactions';
+import { loadBatchInnerOutcomes } from '../serviceFee/batchOutcomes';
+import {
+    changesForAccount,
+    isBatchSubmitCondition,
+    ServiceFeeSubmitCondition,
+    shouldSubmitBatchFee,
+    shouldSubmitSingleFee,
+} from '../serviceFee/rules';
 
 /* Mixin ==================================================================== */
 export function SignMixin<TBase extends Constructor>(Base: TBase) {
@@ -31,6 +39,7 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
 
         public ServiceFee?: number;
         public ServiceFeeTx?: SignedObjectType;
+        public ServiceFeeSubmitCondition?: ServiceFeeSubmitCondition;
         public SignedBlob?: string;
         public SignerPubKey?: string;
         public SignMethod?: SignMethodType;
@@ -207,7 +216,8 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                     // check transaction can be signed by the network user is connected to
                     // before triggering the sign flow
                     // NOTE: skip for pseudo transactions
-                    const definitions = NetworkService.getNetworkDefinitions();
+                    this.assertSigningContext();
+                    const definitions = this.SigningDefinitions;
 
                     if (
                         this.TransactionType &&
@@ -222,6 +232,61 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                         return;
                     }
 
+                    // a field Xaman cannot sign is refused, never removed: the signed transaction is the reviewed one
+                    const unsignable =
+                        typeof (this as any).unsignableFields === 'function' ? (this as any).unsignableFields() : [];
+                    if (unsignable.length) {
+                        reject(
+                            new Error(`Xaman cannot sign this transaction yet: it carries ${unsignable.join(', ')}.`),
+                        );
+                        return;
+                    }
+
+                    // Batch with inner accounts that are not the signer (BatchV1_1): every BatchSigner
+                    // signature binds the outer Account and Sequence, so these must come from the payload
+                    if (this.TransactionType === TransactionTypes.Batch && !multiSign) {
+                        if (
+                            typeof this.Account === 'undefined' &&
+                            this.innerBatchSigners().some((innerAccount) => innerAccount !== account.address)
+                        ) {
+                            reject(
+                                new Error(
+                                    'This Batch has inner transactions of another account: ' +
+                                        'the Batch Account must be set.',
+                                ),
+                            );
+                            return;
+                        }
+
+                        if (
+                            this.isBatchCoSigner(account.address) &&
+                            (typeof this.Sequence === 'undefined' ||
+                                (this.Sequence === 0 && typeof this.TicketSequence === 'undefined'))
+                        ) {
+                            reject(
+                                new Error(
+                                    'Signing as an inner account: the Batch Sequence must be set ' +
+                                        '(0 when the Batch uses a TicketSequence).',
+                                ),
+                            );
+                            return;
+                        }
+
+                        if (
+                            typeof this.Account !== 'undefined' &&
+                            account.address !== this.Account &&
+                            !this.isBatchCoSigner(account.address)
+                        ) {
+                            reject(
+                                new Error(
+                                    `This Batch can only be signed by its Account (${this.Account}) ` +
+                                        'or by one of its inner accounts.',
+                                ),
+                            );
+                            return;
+                        }
+                    }
+
                     // if account not set , set the signing account
                     if (typeof this.Account === 'undefined') {
                         this.Account = account.address;
@@ -232,6 +297,8 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
                     if (!multiSign) {
                         await this.prepare(account);
                     }
+
+                    this.assertSigningFields();
 
                     // if transaction aborted then don't continue
                     if (this.isAborted) {
@@ -301,24 +368,67 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             });
         };
 
+        /**
+         * Batch: the (unique) accounts that sign the inner transactions, as rippled requires them:
+         * the inner transaction Delegate (or else its Account), its Counterparty, and its Sponsor
+         * when it carries a SponsorSignature
+         * @param splice also leave out the outer Account: it signs the Batch itself, not as a BatchSigner
+         * @returns {string[]} inner accounts
+         */
         innerBatchSigners(splice: boolean = false): string[] {
             if (this.TransactionType === TransactionTypes.Batch) {
                 const innerAccounts = ((this as unknown as Batch)?.RawTransactions || [])
-                    .map((innerTx) => {
-                        return innerTx?.Account;
+                    .flatMap((innerTx: any) => {
+                        return [
+                            innerTx?.Delegate || innerTx?.Account,
+                            innerTx?.Counterparty,
+                            innerTx?.SponsorSignature ? innerTx?.Sponsor : undefined,
+                        ];
                     })
-                    .filter((account) => account !== undefined);
+                    .filter((account): account is string => typeof account === 'string' && account !== '');
 
-                if (splice) {
-                    if (this?.Account && innerAccounts.indexOf(this.Account) > -1) {
-                        innerAccounts.splice(innerAccounts.indexOf(this.Account), 1);
-                    }
-                }
-
-                return [...new Set(innerAccounts)];
+                // Every occurrence: the outer Account can own more than one inner transaction
+                return [...new Set(innerAccounts)].filter((account) => !splice || account !== this.Account);
             }
 
             return [];
+        }
+
+        /**
+         * Batch: the Batch Account to set when an account is selected to sign
+         * @param {string} source the selected account address
+         * @param {string} payloadAccount the Batch Account from the payload
+         * @returns {string | undefined} the Batch Account, or undefined to leave it as it is
+         */
+        batchAccountForSource(source: string, payloadAccount?: string): string | undefined {
+            // BatchV1_1: the BatchSigner signatures of the other inner accounts bind the payload Batch Account
+            if (
+                typeof payloadAccount !== 'undefined' &&
+                this.innerBatchSigners().some((innerAccount) => innerAccount !== payloadAccount)
+            ) {
+                return payloadAccount;
+            }
+
+            // The selected account signs all inner transactions (or there are none): it signs and submits the Batch
+            if (this.innerBatchSigners().every((innerAccount) => innerAccount === source)) {
+                return source;
+            }
+
+            // Else leave it as it is: sign() tells which accounts can sign
+            return undefined;
+        }
+
+        /**
+         * Check if the account signs this Batch as an inner account (BatchSigner), not as the Batch Account
+         * @param {string} account signing account address
+         * @returns {boolean} True if the account has to add a BatchSigner signature
+         */
+        isBatchCoSigner(account: string): boolean {
+            if (this.TransactionType !== TransactionTypes.Batch || typeof this.Account === 'undefined') {
+                return false;
+            }
+
+            return account !== this.Account && this.innerBatchSigners(true /** splice */).includes(account);
         }
 
         /**
@@ -364,6 +474,30 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             this.ServiceFee = serviceFee;
         };
 
+        setServiceFeeSubmitCondition = (condition?: ServiceFeeSubmitCondition) => {
+            this.ServiceFeeSubmitCondition = condition;
+        };
+
+        serviceFeeShouldSubmit = async (): Promise<boolean> => {
+            const json = this.JsonForSigning;
+            const account = json?.Account;
+            const meta = this._meta as any;
+            const feeDrops = String((this._tx as any)?.Fee || json?.Fee || '0');
+            const condition = this.ServiceFeeSubmitCondition;
+
+            if (this.TransactionType === TransactionTypes.Batch && isBatchSubmitCondition(condition)) {
+                const inners = await loadBatchInnerOutcomes(json, this.hash || '', (this._tx as any)?.ledger_index);
+                return shouldSubmitBatchFee(condition, inners);
+            }
+
+            return shouldSubmitSingleFee({
+                result: meta?.TransactionResult,
+                changes: changesForAccount(meta, account),
+                feeDrops,
+                submitCondition: condition,
+            });
+        };
+
         /*
         Set Service FeeTx
         */
@@ -395,12 +529,17 @@ export function SignMixin<TBase extends Constructor>(Base: TBase) {
             this.VerifyResult = { success: verifyResult.success };
 
             // console.log('this.VerifyResult.success', this.VerifyResult.success)
-            if (this.VerifyResult.success) {
-                if (this.ServiceFeeTx && this.ServiceFeeTx.signedTransaction) {
-                    // Submit the Fee transaction
-                    // console.log('Submit fee tx')
-                    LedgerService.submitTransaction(this.ServiceFeeTx.signedTransaction, this.ServiceFeeTx.id, false);
-                }
+            if (this.VerifyResult.success && this.ServiceFeeTx?.signedTransaction) {
+                const signed = this.ServiceFeeTx.signedTransaction;
+                const feeId = this.ServiceFeeTx.id;
+                // The result screen must not wait on account_tx for a Batch fee.
+                this.serviceFeeShouldSubmit()
+                    .then((sendFee) => {
+                        if (sendFee) {
+                            LedgerService.submitTransaction(signed, feeId, false);
+                        }
+                    })
+                    .catch(() => undefined);
             }
 
             return verifyResult;

@@ -7,6 +7,7 @@ export enum SecretTypes {
     SecretNumbers = 'secretNumbers',
     FamilySeed = 'familySeed',
     Mnemonic = 'mnemonic',
+    Tangem = 'tangem',
 }
 
 type XrplAltFamilySeedAlphabet = {
@@ -46,6 +47,7 @@ export interface State {
     importedAccount?: XRPL_Account;
     passphrase?: string;
     tangemSignature?: string;
+    scannedTangemCard?: Card;
     secretType: SecretTypes;
     upgradeAccount?: AccountModel;
     alternativeSeedAlphabet?: XrplAltFamilySeedAlphabet;

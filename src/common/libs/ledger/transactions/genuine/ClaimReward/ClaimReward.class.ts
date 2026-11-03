@@ -1,6 +1,6 @@
 import BaseGenuineTransaction from '@common/libs/ledger/transactions/genuine/base';
 
-import { AccountID } from '@common/libs/ledger/parser/fields';
+import { AccountID, Issue } from '@common/libs/ledger/parser/fields';
 
 /* Types ==================================================================== */
 import { ClaimRewardStatus } from '@common/libs/ledger/parser/types';
@@ -15,9 +15,12 @@ class ClaimReward extends BaseGenuineTransaction {
 
     public static Fields: { [key: string]: FieldConfig } = {
         Issuer: { type: AccountID },
+        // Xahau: claim an IOU reward (issued currency) instead of the native reward
+        ClaimCurrency: { type: Issue },
     };
 
     declare Issuer: FieldReturnType<typeof AccountID>;
+    declare ClaimCurrency: FieldReturnType<typeof Issue>;
 
     constructor(tx?: TransactionJson, meta?: TransactionMetadata) {
         super(tx, meta);

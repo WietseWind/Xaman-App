@@ -1,27 +1,22 @@
 import React, { Component } from 'react';
-import { View, Text, Animated, Share } from 'react-native';
+import {
+    View, Text, Animated, Share, Image, PixelRatio, NativeSyntheticEvent, TextLayoutEventData,
+} from 'react-native';
 import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 
 import { AppScreens } from '@common/constants';
 import { HOSTNAME } from '@common/constants/endpoints';
-
+import { Images } from '@common/helpers/images';
+import { getXAppPalette, resolveXAppPalette, XAppPalette } from '@common/helpers/xappPalette';
+import StyleService from '@services/StyleService';
 import { XAppOrigin } from '@common/libs/payload';
-
 import { Navigator } from '@common/helpers/navigator';
 import { Props as XAppBrowserModalProps } from '@screens/Modal/XAppBrowser/types';
-
-import StyleService from '@services/StyleService';
-
-import { TouchableDebounce, Avatar, Button } from '@components/General';
-
+import { TouchableDebounce } from '@components/General/TouchableDebounce';
+import { Icon } from '@components/General/Icon';
 import { XAppInfoOverlayProps, DisplayButtonTypes } from '@screens/Overlay/XAppInfo';
-
 import Locale from '@locale';
-
-import { AppStyles } from '@theme';
 import styles from './styles';
-
-/* types ==================================================================== */
 
 export type AppType = {
     title: string;
@@ -41,76 +36,85 @@ export interface Props {
     item?: AppType;
     action: AppActions;
     origin: XAppOrigin;
+    variant?: 'tile' | 'featured';
+    fontScale?: number;
 }
 
-/* Component ==================================================================== */
-class AppItem extends Component<Props> {
-    private readonly placeholderAnimation: Animated.Value;
+interface State {
+    titleLines: number;
+    imageFailed: boolean;
+    palette?: XAppPalette & { uri: string };
+}
+
+class AppItem extends Component<Props, State> {
+    private readonly placeholderAnimation = new Animated.Value(1);
     private readonly fadeAnimation: Animated.Value;
+    private placeholderLoop?: Animated.CompositeAnimation;
+    private mounted = false;
+    private paletteRequest = 0;
 
     constructor(props: Props) {
         super(props);
-
-        this.placeholderAnimation = new Animated.Value(1);
-        this.fadeAnimation = new Animated.Value(0);
+        this.fadeAnimation = new Animated.Value(props.item ? 1 : 0);
+        this.state = { titleLines: 1, imageFailed: false };
     }
 
     componentDidMount() {
+        this.mounted = true;
         const { item } = this.props;
+        if (!item) this.startPlaceholderAnimation();
+    }
 
-        // if no item present start placeholder animation
-        if (!item) {
-            this.startPlaceholderAnimation();
-        } else {
+    componentDidUpdate(prevProps: Props) {
+        const { item } = this.props;
+        const { titleLines, imageFailed, palette } = this.state;
+        if (!prevProps.item && item) {
+            this.stopPlaceholderAnimation();
             this.startFadeAnimation();
+        } else if (prevProps.item && !item) {
+            this.fadeAnimation.stopAnimation();
+            this.fadeAnimation.setValue(0);
+            this.startPlaceholderAnimation();
+        }
+        if (prevProps.item?.identifier !== item?.identifier || prevProps.item?.icon !== item?.icon) {
+            const iconChanged = prevProps.item?.icon !== item?.icon;
+            if (iconChanged) this.paletteRequest++;
+            if (titleLines !== 1 || imageFailed || (iconChanged && palette)) {
+                this.setState({ titleLines: 1, imageFailed: false, palette: iconChanged ? undefined : palette });
+            }
         }
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+        this.stopPlaceholderAnimation();
+        this.fadeAnimation.stopAnimation();
+    }
+
     startFadeAnimation = () => {
-        Animated.timing(this.fadeAnimation, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
+        Animated.timing(this.fadeAnimation, { toValue: 1, duration: 180, useNativeDriver: true }).start();
     };
 
     startPlaceholderAnimation = () => {
         const { item } = this.props;
-
-        // if item provided stop the placeholder animation
-        if (item) {
-            this.startFadeAnimation();
-            return;
-        }
-
-        Animated.sequence([
-            Animated.timing(this.placeholderAnimation, {
-                toValue: 0.4,
-                duration: 1000,
-                useNativeDriver: true,
-            }),
-            Animated.timing(this.placeholderAnimation, {
-                toValue: 1,
-                duration: 1000,
-                useNativeDriver: true,
-            }),
-        ]).start(this.startPlaceholderAnimation);
+        if (!this.mounted || item || this.placeholderLoop) return;
+        this.placeholderLoop = Animated.loop(Animated.sequence([
+            Animated.timing(this.placeholderAnimation, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
+            Animated.timing(this.placeholderAnimation, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        ]));
+        this.placeholderLoop.start();
     };
 
-    openXApp = () => {
-        const { item, origin } = this.props;
+    stopPlaceholderAnimation = () => {
+        this.placeholderLoop?.stop();
+        this.placeholderLoop = undefined;
+        this.placeholderAnimation.stopAnimation();
+    };
 
-        const { identifier, title, icon } = item!;
-
-        // open xApp browser
+    private openItem = (item: AppType, origin: XAppOrigin) => {
         Navigator.showModal<XAppBrowserModalProps>(
             AppScreens.Modal.XAppBrowser,
-            {
-                identifier,
-                title,
-                icon,
-                origin,
-            },
+            { identifier: item.identifier, title: item.title, icon: item.icon, origin },
             {
                 modalTransitionStyle: OptionsModalTransitionStyle.coverVertical,
                 modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
@@ -118,139 +122,251 @@ class AppItem extends Component<Props> {
         );
     };
 
+    openXApp = () => {
+        const { item, origin } = this.props;
+        if (item?.identifier) this.openItem(item, origin);
+    };
+
+    private shareItem = (item: AppType) => {
+        Share.share({ title: item.title, message: `https://${HOSTNAME}/detect/xapp:${item.identifier}`, url: undefined });
+    };
+
     shareXApp = () => {
         const { item } = this.props;
-
-        const { identifier, title } = item!;
-
-        Share.share({
-            title,
-            message: `https://${HOSTNAME}/detect/xapp:${identifier}`,
-            url: undefined,
-        });
+        if (item?.identifier) this.shareItem(item);
     };
 
     openXAppInfo = () => {
-        const { item } = this.props;
-
-        const { identifier, title, icon } = item!;
-
+        const { item, origin } = this.props;
+        if (!item?.identifier) return;
+        // About can outlive or recycle its list cell. Its delayed actions keep the clicked app.
+        const clicked = { ...item };
         Navigator.showOverlay<XAppInfoOverlayProps>(AppScreens.Overlay.XAppInfo, {
-            identifier,
-            title: title!,
-            icon: icon!,
+            identifier: clicked.identifier,
+            title: clicked.title,
+            icon: clicked.icon,
             displayButtonTypes: [DisplayButtonTypes.OPEN, DisplayButtonTypes.SHARE],
-            onOpenPress: this.openXApp,
-            onSharePress: this.shareXApp,
+            onOpenPress: () => this.openItem(clicked, origin),
+            onSharePress: () => this.shareItem(clicked),
         });
     };
 
     onActionPress = () => {
         const { action } = this.props;
-
         switch (action) {
-            case AppActions.LUNCH_APP:
-                this.openXApp();
-                break;
-            case AppActions.OPEN_ABOUT:
-                this.openXAppInfo();
-                break;
-            default:
-                break;
+            case AppActions.LUNCH_APP: this.openXApp(); break;
+            case AppActions.OPEN_ABOUT: this.openXAppInfo(); break;
+            default: break;
         }
     };
 
-    renderPlaceholder = () => {
-        return (
-            <View style={styles.container}>
-                <View style={AppStyles.flex1}>
-                    <Animated.View
-                        style={[
-                            styles.appIcon,
-                            styles.appIconPlaceholder,
-                            {
-                                opacity: this.placeholderAnimation,
-                            },
-                        ]}
-                    />
-                </View>
+    onTitleLayout = (event: NativeSyntheticEvent<TextLayoutEventData>, identifier: string) => {
+        const { item } = this.props;
+        const { titleLines: currentTitleLines } = this.state;
+        if (!this.mounted || item?.identifier !== identifier) return;
+        const titleLines = Math.max(1, Math.min(2, event.nativeEvent.lines.length));
+        if (titleLines !== currentTitleLines) this.setState({ titleLines });
+    };
 
-                <View style={[AppStyles.flex5, AppStyles.centerContent]}>
-                    <Animated.Text
-                        numberOfLines={1}
-                        style={[styles.appTitle, styles.appTitlePlaceholder, { opacity: this.placeholderAnimation }]}
-                    >
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                    </Animated.Text>
-                    <Animated.Text
-                        numberOfLines={1}
-                        style={[
-                            styles.appDescription,
-                            styles.appDescriptionPlaceholder,
-                            { opacity: this.placeholderAnimation },
-                        ]}
-                    >
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    </Animated.Text>
-                </View>
+    onImageError = (uri: string) => {
+        const { item } = this.props;
+        const { imageFailed } = this.state;
+        if (this.mounted && item?.icon === uri && !imageFailed) {
+            this.paletteRequest++;
+            this.setState({ imageFailed: true, palette: undefined });
+        }
+    };
+
+    onImageLoad = async (uri: string) => {
+        const { item } = this.props;
+        const { imageFailed } = this.state;
+        if (!this.mounted || item?.icon !== uri || imageFailed) return;
+        const request = ++this.paletteRequest;
+        const palette = await getXAppPalette(uri);
+        const { item: currentItem } = this.props;
+        if (this.mounted && request === this.paletteRequest && currentItem?.icon === uri && palette) {
+            this.setState({ palette: { ...palette, uri } });
+        }
+    };
+
+    private getPalette = () => {
+        const { palette } = this.state;
+        const { item } = this.props;
+        if (palette?.uri !== item?.icon || !palette) return undefined;
+        const backing = styles.iconShadow.backgroundColor;
+        return resolveXAppPalette(palette, StyleService.value('$background'),
+            typeof backing === 'string' ? backing : undefined);
+    };
+
+    private tileGeometry = () => {
+        const { fontScale: requestedFontScale } = this.props;
+        const fontScale = Math.max(1, requestedFontScale ?? PixelRatio.getFontScale());
+        const captionHeight = Math.ceil(56 * fontScale);
+        return { tile: { height: 68 + captionHeight + 8 }, caption: { height: captionHeight } };
+    };
+
+    renderIcon = (featured = false) => {
+        const { item } = this.props;
+        const { imageFailed } = this.state;
+        const failed = imageFailed || !item?.icon;
+        return (
+            <View style={[styles.iconShadow, featured && styles.featuredIconShadow]}>
+                {failed ? (
+                    <View style={[styles.appIcon, styles.fallbackIcon, featured && styles.featuredIcon]}>
+                        <Icon name="IconXAppCategoryFallback" size={28} style={styles.fallbackGlyph} />
+                    </View>
+                ) : (
+                    <Image
+                        source={{ uri: item.icon }}
+                        resizeMode="cover"
+                        style={[styles.appIcon, featured && styles.featuredIcon]}
+                        onError={() => this.onImageError(item.icon)}
+                        onLoad={() => this.onImageLoad(item.icon)}
+                        accessible={false}
+                    />
+                )}
+                {item?.development && (
+                    <View style={styles.developmentBadge}>
+                        <Icon name="IconSmartPhone" size={10} style={styles.developmentGlyph} />
+                    </View>
+                )}
             </View>
         );
     };
 
-    renderActionButton = () => {
-        const { action } = this.props;
-
-        if (!action) {
-            return null;
-        }
-
-        let actionLabel;
-
-        switch (action) {
-            case AppActions.LUNCH_APP:
-                actionLabel = Locale.t('xapp.openXapp');
-                break;
-            case AppActions.OPEN_ABOUT:
-                actionLabel = Locale.t('xapp.aboutXapp');
-                break;
-            default:
-                return null;
-        }
-
+    renderBackdrop = (featured = false) => {
+        const { item } = this.props;
+        const { imageFailed } = this.state;
+        const palette = this.getPalette();
+        if (featured && palette) return null;
         return (
-            <View style={styles.rightPanelContainer}>
-                <Button onPress={this.onActionPress} light roundedMini label={actionLabel} />
+            <View pointerEvents="none" style={styles.backdropContainer} importantForAccessibility="no-hide-descendants">
+                {!!item?.icon && !imageFailed && (
+                    <Image
+                        source={{ uri: item.icon }}
+                        resizeMode="cover"
+                        blurRadius={3}
+                        style={featured ? styles.featuredBackdrop : styles.backdrop}
+                        accessible={false}
+                    />
+                )}
+                {!featured && <Image source={Images.ImageXAppTileScrim}
+                    style={[styles.scrim, palette && styles.paletteScrim, palette && { tintColor: palette.background }]}
+                    resizeMode="stretch" />}
+                {!featured && palette && <View style={[styles.captionBackdrop,
+                    { backgroundColor: palette.background }]} />}
             </View>
+        );
+    };
+
+    renderPlaceholder = () => {
+        const geometry = this.tileGeometry();
+        return (
+            <Animated.View
+                testID="xapp-tile-placeholder"
+                style={[styles.tile, geometry.tile, { opacity: this.placeholderAnimation }]}
+                accessible={false}
+            >
+                <View style={[styles.iconShadow, styles.placeholderIcon]} />
+                <View style={styles.placeholderCaption}>
+                    <View style={styles.placeholderTitle} />
+                    <View style={styles.placeholderDescription} />
+                </View>
+            </Animated.View>
+        );
+    };
+
+    renderFeatured = () => {
+        const { item } = this.props;
+        if (!item) return this.renderPlaceholder();
+        const palette = this.getPalette();
+        const textColor = palette && { color: palette.foreground };
+        return (
+            <Animated.View style={[styles.featured, palette && { backgroundColor: palette.background },
+                { opacity: this.fadeAnimation }]}>
+                {this.renderBackdrop(true)}
+                <TouchableDebounce
+                    testID={`xapp-open-${item.identifier}`}
+                    style={styles.featuredMain}
+                    onPress={this.openXApp}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.title}. ${item.description || ''}`}
+                    accessibilityHint={Locale.t('xapp.openXapp')}
+                    activeOpacity={0.85}
+                >
+                    {this.renderIcon(true)}
+                    <View style={styles.featuredText}>
+                        <Text style={[styles.featuredTitle, textColor]}>{item.title}</Text>
+                        <Text style={[styles.featuredDescription, textColor]}>{item.description}</Text>
+                    </View>
+                </TouchableDebounce>
+                <TouchableDebounce
+                    testID={`xapp-featured-action-${item.identifier}`}
+                    style={styles.featuredButton}
+                    onPress={this.onActionPress}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${Locale.t('xapp.openXapp')} ${item.title}`}
+                >
+                    <Text style={styles.featuredButtonText}>{Locale.t('xapp.openXapp')}</Text>
+                </TouchableDebounce>
+            </Animated.View>
         );
     };
 
     render() {
-        const { item } = this.props;
-
-        if (!item) {
-            return this.renderPlaceholder();
-        }
-
+        const { item, variant, action } = this.props;
+        if (!item) return this.renderPlaceholder();
+        if (variant === 'featured') return this.renderFeatured();
+        const geometry = this.tileGeometry();
+        const { titleLines } = this.state;
+        const palette = this.getPalette();
+        const textColor = palette && { color: palette.foreground };
         return (
-            <TouchableDebounce onPress={this.openXApp} activeOpacity={0.9}>
-                <Animated.View style={[styles.container, { opacity: this.fadeAnimation }]}>
-                    <Avatar
-                        size={40}
-                        source={{ uri: item.icon }}
-                        badge={item.development ? 'IconSmartPhone' : undefined}
-                        badgeColor={StyleService.value('$orange')}
-                    />
-                    <View style={styles.titleContainer}>
-                        <Text numberOfLines={1} style={styles.appTitle}>
+            <Animated.View testID={`xapp-tile-${item.identifier}`} style={[styles.tile, geometry.tile,
+                palette && { backgroundColor: palette.background }, { opacity: this.fadeAnimation }]}>
+                {this.renderBackdrop()}
+                <View pointerEvents="none" style={styles.decoration} importantForAccessibility="no-hide-descendants">
+                    {this.renderIcon()}
+                    <View style={[styles.caption, geometry.caption]}>
+                        <Text
+                            style={[styles.appTitle, textColor]}
+                            numberOfLines={2}
+                            onTextLayout={(event) => this.onTitleLayout(event, item.identifier)}
+                        >
                             {item.title}
                         </Text>
-                        <Text numberOfLines={2} style={styles.appDescription}>
-                            {item.description ?? 'This is a short description'}
+                        <Text style={[styles.appDescription, textColor]} numberOfLines={titleLines > 1 ? 1 : 2}>
+                            {item.description}
                         </Text>
                     </View>
-                    {this.renderActionButton()}
-                </Animated.View>
-            </TouchableDebounce>
+                </View>
+                <TouchableDebounce
+                    testID={`xapp-open-${item.identifier}`}
+                    style={styles.openTarget}
+                    onPress={this.openXApp}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.title}. ${item.description || ''}`}
+                    accessibilityHint={Locale.t('xapp.openXapp')}
+                />
+                {!!action && (
+                    <TouchableDebounce
+                        testID={`xapp-info-${item.identifier}`}
+                        style={styles.infoTarget}
+                        onPress={this.onActionPress}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${Locale.t(action === AppActions.OPEN_ABOUT
+                            ? 'xapp.aboutXapp' : 'xapp.openXapp')} ${item.title}`}
+                    >
+                        <View style={[styles.infoFace, palette && (palette.foreground === '#000000'
+                            ? styles.lightInfoFace : styles.darkInfoFace)]}>
+                            <Icon name={action === AppActions.OPEN_ABOUT ? 'IconXAppInfo' : 'IconChevronRight'}
+                                size={20} style={[styles.infoGlyph, palette && { tintColor: palette.foreground }]} />
+                        </View>
+                    </TouchableDebounce>
+                )}
+            </Animated.View>
         );
     }
 }

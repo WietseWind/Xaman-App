@@ -82,43 +82,38 @@
 + (NSString *) decrypt: (NSString *)cipher key: (NSString *)key derivedKeys:(struct DerivedKeys)derivedKeys {
   NSError *error;
   
+  // Validate the whole persisted record before passing data into Swift or PBKDF2.
+  NSData *passcodeSalt = [Crypto HexToDataWithHexString:derivedKeys.passcode_salt error:&error];
+  CipherCheckCondition(error == nil && passcodeSalt.length == 32, @"Invalid passcode salt");
+  NSData *preKeySalt = [Crypto HexToDataWithHexString:derivedKeys.pre_key_salt error:&error];
+  CipherCheckCondition(error == nil && preKeySalt.length == 32, @"Invalid pre-key salt");
+  NSData *encrKeySalt = [Crypto HexToDataWithHexString:derivedKeys.encr_key_salt error:&error];
+  CipherCheckCondition(error == nil && encrKeySalt.length == 32, @"Invalid encryption-key salt");
+  NSData *iv = [Crypto HexToDataWithHexString:derivedKeys.iv error:&error];
+  CipherCheckCondition(error == nil && iv.length == 32, @"Invalid v2 IV");
+  NSData *cipherData = [Crypto HexToDataWithHexString:cipher error:&error];
+  CipherCheckCondition(error == nil && cipherData.length >= 16, @"Invalid GCM ciphertext");
+
   // NOTE: using "91337" as iteration count is a conscious choice to save performance.
-  NSData *passcodeHash = [Crypto PBKDF2WithPassword:[key dataUsingEncoding:NSUTF8StringEncoding] salt:[Crypto HexToDataWithHexString:derivedKeys.passcode_salt]  iteration:91337 error:&error];
-  
-  
+  NSData *passcodeHash = [Crypto PBKDF2WithPassword:[key dataUsingEncoding:NSUTF8StringEncoding] salt:passcodeSalt iteration:91337 error:&error];
   CipherCheckCondition(error == nil, @"PBKDF2 passcodeHash error %@", [error localizedDescription]);
-  
-  // get device unique id for using in preKey and AAD
+
   NSData *uniqueDeviceId = [[UniqueIdProviderModule getDeviceUniqueId] dataUsingEncoding:NSUTF8StringEncoding];
-  
   CipherCheckCondition(uniqueDeviceId != nil, @"UniqueIdProviderModule is nil");
-  
-  // preKey = preKeySalt + passcodeHash + uniqueDeviceId
+
   NSMutableData *preKey = [NSMutableData data];
-  [preKey appendData:[Crypto HexToDataWithHexString:derivedKeys.pre_key_salt]];
+  [preKey appendData:preKeySalt];
   [preKey appendData:passcodeHash];
   [preKey appendData:uniqueDeviceId];
-  
-  
+
   // NOTE: using "33" as iteration count is a conscious choice to save performance.
-  NSData *encrKey = [Crypto PBKDF2WithPassword:preKey
-                                          salt:[Crypto HexToDataWithHexString:derivedKeys.encr_key_salt]
-                                     iteration:33
-                                         error:&error];
-  
+  NSData *encrKey = [Crypto PBKDF2WithPassword:preKey salt:encrKeySalt iteration:33 error:&error];
   CipherCheckCondition(error == nil, @"PBKDF2 encrKey error %@", [error localizedDescription]);
-  
-  // decrypt using AES GCM
-  NSData *decryptedData = [Crypto AESDecryptWithAlgo:AESAlgoGCM
-                                                data:[Crypto HexToDataWithHexString:cipher]
-                                               using:encrKey
-                                                  iv:[Crypto HexToDataWithHexString:derivedKeys.iv]
-                                                 aad:uniqueDeviceId error:&error];
-  
+
+  NSData *decryptedData = [Crypto AESDecryptWithAlgo:AESAlgoGCM data:cipherData using:encrKey iv:iv aad:uniqueDeviceId error:&error];
   CipherCheckCondition(error == nil, @"AESAlgoGCM decrypt error %@", [error localizedDescription]);
-  
+
   return [[NSString alloc] initWithData:decryptedData encoding:NSUTF8StringEncoding];
 }
 
 @end
-

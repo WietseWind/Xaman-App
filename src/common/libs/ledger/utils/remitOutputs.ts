@@ -11,6 +11,7 @@ import { Remit } from '@common/libs/ledger/transactions';
 import { Transactions } from '@common/libs/ledger/transactions/types';
 import { TransactionJson, TransactionMetadata } from '@common/libs/ledger/types/transaction';
 import { AmountType } from '@common/libs/ledger/parser/types';
+import { LedgerEntryTypes } from '@common/libs/ledger/types/enums';
 
 const HEX64 = /^[0-9A-Fa-f]{64}$/;
 
@@ -45,7 +46,7 @@ const compactDefined = <T extends Record<string, unknown>>(value: T): Partial<T>
 const parentLedgerFields = (item: Remit) => {
     const raw = ((item as any).JsonRaw || (item as any)._tx || {}) as Record<string, unknown>;
     const ledger_index =
-        asFiniteNumber((item as MutationsMixinType).LedgerIndex) ??
+        asFiniteNumber((item as unknown as MutationsMixinType).LedgerIndex) ??
         asFiniteNumber(raw.ledger_index) ??
         asFiniteNumber(raw.inLedger);
     const date = asFiniteNumber(raw.date);
@@ -61,7 +62,7 @@ const parentLedgerFields = (item: Remit) => {
 
 const parentMetaFields = (item: Remit, meta: TransactionMetadata | undefined) => {
     const transactionIndex =
-        asFiniteNumber((item as MutationsMixinType).TransactionIndex) ??
+        asFiniteNumber((item as unknown as MutationsMixinType).TransactionIndex) ??
         asFiniteNumber(meta?.TransactionIndex) ??
         0;
 
@@ -78,19 +79,19 @@ const uriTokenIds = (item: Remit): string[] => {
         .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0);
 };
 
-const mintMeta = (meta: TransactionMetadata | undefined): TransactionMetadata => {
+const mintMeta = (meta: TransactionMetadata | undefined): Pick<TransactionMetadata, 'AffectedNodes'> => {
     const nodes = (meta?.AffectedNodes || []).filter(
         (node: any) => node?.CreatedNode?.LedgerEntryType === 'URIToken',
     );
     return { AffectedNodes: nodes };
 };
 
-const transferMeta = (tokenId: string, uri?: string): TransactionMetadata => {
+const transferMeta = (tokenId: string, uri?: string): Pick<TransactionMetadata, 'AffectedNodes'> => {
     return {
         AffectedNodes: [
             {
                 CreatedNode: {
-                    LedgerEntryType: 'URIToken',
+                    LedgerEntryType: LedgerEntryTypes.URIToken,
                     LedgerIndex: tokenId,
                     NewFields: uri ? { URI: uri } : {},
                 },

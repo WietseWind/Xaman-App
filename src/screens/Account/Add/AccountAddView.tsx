@@ -28,6 +28,7 @@ import { Navigator } from '@common/helpers/navigator';
 // import { Prompt } from '@common/helpers/interface';
 
 import { GetPreferCurve, GetWalletDerivedPublicKey, DefaultDerivationPaths } from '@common/utils/tangem';
+import { startTangemOfflineSession } from '@common/utils/tangemSession';
 
 import { AppScreens } from '@common/constants';
 
@@ -220,11 +221,6 @@ class AccountAddView extends Component<Props, State> {
                                     {Localize.t('tangemImportMsgs.existingDescription')}
                                 </Text>
                             </View>
-                            <View>
-                                <Text style={[ AppStyles.pbold, AppStyles.textCenterAligned ]}>
-                                    {Localize.t('tangemImportMsgs.existingDescriptionUsedBefore')}
-                                </Text>
-                            </View>
                             <View style={[ AppStyles.column, AppStyles.marginTopSml ]}>
                                 <Text style={[ AppStyles.baseText, AppStyles.textCenterAligned ]}>
                                     {Localize.t('tangemImportMsgs.existingDescriptionBoldAfter')}
@@ -334,8 +330,7 @@ class AccountAddView extends Component<Props, State> {
         }
 
         // start the NFC/Tangem session
-        RNTangemSdk.startSession({
-            attestationMode: 'offline',
+        startTangemOfflineSession({
             defaultDerivationPaths: DefaultDerivationPaths,
         }).catch((e) => {
             LoggerService.recordError('Unexpected error TangemSDK startSession', e);

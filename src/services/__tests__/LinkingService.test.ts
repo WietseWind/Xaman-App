@@ -213,6 +213,57 @@ describe('LinkinService', () => {
                 navigatorSpy.mockRestore();
             });
         });
+        describe('Transaction Template', () => {
+            it('should keep every field of a TrustSet template in the payload it reviews', () => {
+                const navigatorSpy = jest.spyOn(Navigator, 'showModal');
+                const template = {
+                    TransactionType: 'TrustSet',
+                    Account: testAccountAddress,
+                    LimitAmount: { currency: 'USD', issuer: 'rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ', value: '1000' },
+                    Delegate: 'rE6wHjDtqWbpvcyZDjhxVrt6ykg4LSwXWz',
+                };
+
+                service.handle(Buffer.from(JSON.stringify(template)).toString('hex').toUpperCase());
+                jest.runAllTimers();
+
+                expect(navigatorSpy).toHaveBeenCalledWith(
+                    AppScreens.Modal.ReviewTransaction,
+                    { componentType: ComponentTypes.Modal, payload: expect.any(Payload) },
+                    { modalPresentationStyle: 'fullScreen' },
+                );
+
+                const { payload } = navigatorSpy.mock.calls[0][1] as { payload: Payload };
+                expect(payload.payload.request_json).toEqual(template);
+
+                navigatorSpy.mockRestore();
+            });
+
+            it('should keep every field of an AccountSet template in the payload it reviews (developer mode)', () => {
+                const navigatorSpy = jest.spyOn(Navigator, 'showModal');
+                const developerModeSpy = jest.spyOn(CoreRepository, 'isDeveloperModeEnabled').mockReturnValue(true);
+                const template = {
+                    TransactionType: 'AccountSet',
+                    Account: testAccountAddress,
+                    SetFlag: 8,
+                    Delegate: 'rE6wHjDtqWbpvcyZDjhxVrt6ykg4LSwXWz',
+                };
+
+                service.handle(Buffer.from(JSON.stringify(template)).toString('hex').toUpperCase());
+                jest.runAllTimers();
+
+                expect(navigatorSpy).toHaveBeenCalledWith(
+                    AppScreens.Modal.ReviewTransaction,
+                    { componentType: ComponentTypes.Modal, payload: expect.any(Payload) },
+                    { modalPresentationStyle: 'fullScreen' },
+                );
+
+                const { payload } = navigatorSpy.mock.calls[0][1] as { payload: Payload };
+                expect(payload.payload.request_json).toEqual(template);
+
+                developerModeSpy.mockRestore();
+                navigatorSpy.mockRestore();
+            });
+        });
         describe('XApp', () => {
             const mockURL = 'https://xaman.app/detect/xapp:xumm.sample.giraffe?test=true&blah=hi';
 

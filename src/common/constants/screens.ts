@@ -26,6 +26,8 @@ const screens = {
             Settings: 'app.Account.Settings',
             ChangePassphrase: 'app.Account.ChangePassphrase',
             ChangeTangemSecurityEnforce: 'app.Account.ChangeTangemSecurityEnforce',
+            BackupTangemCard: 'app.Account.BackupTangemCard',
+            IdentifyTangemCard: 'app.Account.IdentifyTangemCard',
         },
         Migration: {
             CipherMigration: 'app.Account.Migration.CipherMigration',

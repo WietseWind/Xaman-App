@@ -139,7 +139,7 @@ class Avatar extends PureComponent<Props> {
     };
 
     renderAvatar = () => {
-        const { source, size, imageScale, border, imageStyle, containerStyle } = this.props;
+        const { source, size, imageScale, border, imageStyle, containerStyle, backgroundColor } = this.props;
 
         return (
             <Animated.View
@@ -151,6 +151,7 @@ class Avatar extends PureComponent<Props> {
                         width: AppSizes.scale(size) + (border ? 1.3 : 0),
                         opacity: this.animatedFadeIn,
                     },
+                    backgroundColor ? { backgroundColor } : undefined,
                     containerStyle,
                 ]}
             >
@@ -169,18 +170,19 @@ class Avatar extends PureComponent<Props> {
     };
 
     renderLoading = () => {
-        const { size, border, containerStyle } = this.props;
+        const { size, border, containerStyle, backgroundColor } = this.props;
 
         return (
             <Animated.View
                 style={[
                     styles.container,
-                    styles.placeholder,
+                    backgroundColor ? undefined : styles.placeholder,
                     border && styles.border,
                     {
                         height: AppSizes.scale(size) + (border ? 1.3 : 0),
                         width: AppSizes.scale(size) + (border ? 1.3 : 0),
                     },
+                    backgroundColor ? { backgroundColor } : undefined,
                     containerStyle,
                     { opacity: this.animatedPulse },
                 ]}

@@ -1,0 +1,5 @@
+Public Suffix List, version 2026-10-22_08-36-41_UTC
+Source: https://publicsuffix.org/list/public_suffix_list.dat
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+The same derived rule data is embedded in the Android/iOS WebView patch.

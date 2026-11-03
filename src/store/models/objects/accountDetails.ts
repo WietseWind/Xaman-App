@@ -35,7 +35,7 @@ class AccountDetails extends Realm.Object<AccountDetails> {
     public declare flagsString?: string;
     public declare accountIndex?: string;
     public declare importSequence?: number;
-    public declare lines: Realm.Results<TrustLineModel>;
+    public declare lines: Realm.List<TrustLineModel>;
     public declare reward?: RewardInformation;
     public declare registerAt?: Date;
     public declare updatedAt?: Date;

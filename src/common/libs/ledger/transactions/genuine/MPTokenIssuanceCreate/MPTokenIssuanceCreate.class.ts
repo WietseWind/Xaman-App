@@ -1,6 +1,6 @@
 import BaseGenuineTransaction from '@common/libs/ledger/transactions/genuine/base';
 
-import { Blob, STString, UInt16, UInt8 } from '@common/libs/ledger/parser/fields';
+import { Blob, Hash256, STString, UInt16, UInt32, UInt8 } from '@common/libs/ledger/parser/fields';
 import { TransferFee } from '@common/libs/ledger/parser/fields/codec';
 
 /* Types ==================================================================== */
@@ -18,12 +18,16 @@ class MPTokenIssuanceCreate extends BaseGenuineTransaction {
         TransferFee: { type: UInt16, codec: TransferFee },
         MaximumAmount: { type: STString },
         MPTokenMetadata: { type: Blob },
+        DomainID: { type: Hash256 },
+        ImmutableFlags: { type: UInt32 },
     };
 
     declare AssetScale: FieldReturnType<typeof UInt8>;
     declare TransferFee: FieldReturnType<typeof UInt16, typeof TransferFee>;
     declare MaximumAmount: FieldReturnType<typeof STString>;
     declare MPTokenMetadata: FieldReturnType<typeof Blob>;
+    declare DomainID: FieldReturnType<typeof Hash256>;
+    declare ImmutableFlags: FieldReturnType<typeof UInt32>;
 
     constructor(tx?: TransactionJson, meta?: TransactionMetadata) {
         super(tx, meta);

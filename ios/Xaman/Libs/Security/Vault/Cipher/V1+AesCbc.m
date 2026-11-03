@@ -35,8 +35,10 @@
   CipherCheckCondition(ciperData != nil, @"Base64Encode ciperData is nil");
   
   //convert hex iv string to hex data
-  NSData *ivData = [Crypto HexToDataWithHexString:derivedKeys.iv];
+  NSData *ivData = [Crypto HexToDataWithHexString:derivedKeys.iv error:&error];
   
+  CipherCheckCondition(error == nil && ivData.length == 16, @"Invalid v1 IV");
+
   NSData *decryptedData = [Crypto AESDecryptWithAlgo:AESAlgoCBC data:ciperData using:hashedKeyData iv:ivData aad:nil error:&error];
   
   CipherCheckCondition(error == nil, @"AESAlgoCBC decrypt error %@", [error localizedDescription]);

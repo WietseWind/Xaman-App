@@ -6,6 +6,11 @@ import { Endpoints } from '@common/constants/endpoints';
 
 import { ApiService } from '../';
 import { ApiError } from '../ApiService';
+import { reportUnexpectedBackendResponse } from '../backendResponseReport';
+
+jest.mock('../backendResponseReport', () => ({
+    reportUnexpectedBackendResponse: jest.fn(),
+}));
 
 const API_ROOT = 'https://xaman.app/api';
 const ENDPOINT = '/v1/app/ping';
@@ -90,6 +95,31 @@ describe('API', () => {
             await expect(ApiService.fetch(Endpoints.Ping, 'GET', { action: '400' })).rejects.toMatchObject(
                 new ApiError('API error (non 200) 400 {"foo":"bar"}'),
             );
+            expect(reportUnexpectedBackendResponse).not.toHaveBeenCalled();
+        });
+
+        it('rejects an out-of-range status instead of throwing', async () => {
+            const failure = Object.assign(new TypeError('Network request failed'), {
+                unexpectedHttpStatus: true,
+                status: 0,
+                body: 'dropped',
+            });
+            fetch.restore();
+            const fetchSpy = jest.spyOn(global, 'fetch').mockRejectedValueOnce(failure);
+
+            await expect(ApiService.fetch(Endpoints.Ping, 'POST', undefined, POST_BODY)).rejects.toMatchObject({
+                originalMessage: 'Unexpected response from the backend',
+            });
+            expect(reportUnexpectedBackendResponse).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    method: 'POST',
+                    status: 0,
+                    body: 'dropped',
+                    url: `${API_ROOT}${ENDPOINT}`,
+                }),
+            );
+
+            fetchSpy.mockRestore();
         });
     });
 });
