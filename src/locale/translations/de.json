@@ -2057,6 +2057,7 @@
     "insufficientFee": "Das ursprüngliche Konto hat nicht genug vom nativen Vermögenswert des Netzwerks, um die Transaktionsgebühr zu zahlen.",
     "feeChanged": "Die Netzwerkgebühr hat sich geändert. Prüfe die aktualisierte Gebühr vor dem Signieren.",
     "cancelled": "Der Kartenscan wurde abgebrochen. Du kannst es erneut versuchen.",
-    "retry": "Die Kartenverknüpfung konnte nicht bestätigt werden. Prüfe deine Verbindung und versuche es erneut. Prüfe bei einer ausstehenden Transaktion zuerst deren Status."
+    "retry": "Die Kartenverknüpfung konnte nicht bestätigt werden. Prüfe deine Verbindung und versuche es erneut. Prüfe bei einer ausstehenden Transaktion zuerst deren Status.",
+    "enableNewCard": "Wir bereiten diese Karte jetzt für die Verwendung als Sicherungskarte vor."
   }
 }

@@ -9,6 +9,7 @@ import fixtures from '@common/utils/__tests__/fixtures/tangem.cards.json';
 import { DefaultDerivationPaths } from '@common/utils/tangem';
 import { nativeBackupDependencies } from '../native';
 import { Navigator } from '@common/helpers/navigator';
+import Localize from '@locale';
 
 jest.mock('@common/helpers/navigator', () => ({ Navigator: { showAlertModal: jest.fn(async () => 'alert') } }));
 
@@ -105,6 +106,14 @@ describe('native Tangem back-up adapter', () => {
         const alert = jest.mocked(Navigator.showAlertModal).mock.calls[0][0];
         expect(alert.testID).toBe('backup-import-alert');
         expect(alert.type).toBe(empty ? 'info' : 'warning');
+        if (empty) {
+            expect(alert.title).toBe(Localize.t('tangemImportMsgs.newTitle'));
+            expect(alert.text).toBe(Localize.t('tangemBackup.enableNewCard'));
+        }
+        expect(alert.buttons.map((button) => button.text)).toEqual([
+            Localize.t('global.cancel'),
+            Localize.t('global.continue'),
+        ]);
         alert.onDismissed?.();
         alert.buttons[1].onPress?.();
         expect(await operation).toBe(true);

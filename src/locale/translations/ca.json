@@ -1966,6 +1966,7 @@
     "insufficientFee": "El compte original no té prou actiu natiu de la xarxa per pagar la comissió de la transacció.",
     "feeChanged": "La comissió de la xarxa ha canviat. Revisa la comissió actualitzada abans de signar.",
     "cancelled": "S'ha cancel·lat l'escaneig de la targeta. Pots tornar-ho a provar.",
-    "retry": "No s'ha pogut confirmar la vinculació. Comprova la connexió i torna-ho a provar. Si hi ha una transacció pendent, consulta'n primer l'estat."
+    "retry": "No s'ha pogut confirmar la vinculació. Comprova la connexió i torna-ho a provar. Si hi ha una transacció pendent, consulta'n primer l'estat.",
+    "enableNewCard": "Ara prepararem aquesta targeta perquè es pugui fer servir com a targeta de reserva."
   }
 }

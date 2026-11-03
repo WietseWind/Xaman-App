@@ -2085,6 +2085,7 @@
     "insufficientFee": "Pradinėje paskyroje nepakanka tinklo vietinio turto operacijos mokesčiui sumokėti.",
     "feeChanged": "Tinklo mokestis pasikeitė. Prieš pasirašydami patikrinkite atnaujintą mokestį.",
     "cancelled": "Kortelės nuskaitymas atšauktas. Galite bandyti dar kartą.",
-    "retry": "Nepavyko patvirtinti susiejimo. Patikrinkite ryšį ir bandykite dar kartą. Jei operacija laukia, pirmiausia patikrinkite jos būseną."
+    "retry": "Nepavyko patvirtinti susiejimo. Patikrinkite ryšį ir bandykite dar kartą. Jei operacija laukia, pirmiausia patikrinkite jos būseną.",
+    "enableNewCard": "Dabar paruošime šią kortelę naudoti kaip atsarginę kortelę."
   }
 }

@@ -2064,6 +2064,7 @@
     "insufficientFee": "Le compte d'origine ne possède pas assez d'actif natif du réseau pour payer les frais de transaction.",
     "feeChanged": "Les frais du réseau ont changé. Vérifiez les nouveaux frais avant de signer.",
     "cancelled": "Le scan de la carte a été annulé. Vous pouvez réessayer.",
-    "retry": "Le lien entre les cartes n'a pas pu être confirmé. Vérifiez votre connexion et réessayez. Si une transaction est en attente, vérifiez d'abord son état."
+    "retry": "Le lien entre les cartes n'a pas pu être confirmé. Vérifiez votre connexion et réessayez. Si une transaction est en attente, vérifiez d'abord son état.",
+    "enableNewCard": "Nous allons maintenant préparer cette carte pour l’utiliser comme carte de secours."
   }
 }

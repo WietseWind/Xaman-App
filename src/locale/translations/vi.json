@@ -2069,6 +2069,7 @@
     "insufficientFee": "Tài khoản gốc không có đủ tài sản gốc của mạng để trả phí giao dịch.",
     "feeChanged": "Phí mạng đã thay đổi. Kiểm tra mức phí mới trước khi ký.",
     "cancelled": "Đã hủy quét thẻ. Bạn có thể thử lại.",
-    "retry": "Không thể xác nhận liên kết thẻ. Kiểm tra kết nối rồi thử lại. Nếu có giao dịch đang chờ, hãy kiểm tra trạng thái trước."
+    "retry": "Không thể xác nhận liên kết thẻ. Kiểm tra kết nối rồi thử lại. Nếu có giao dịch đang chờ, hãy kiểm tra trạng thái trước.",
+    "enableNewCard": "Bây giờ chúng tôi sẽ chuẩn bị thẻ này để dùng làm thẻ dự phòng."
   }
 }

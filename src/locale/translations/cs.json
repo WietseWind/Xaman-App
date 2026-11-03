@@ -2051,6 +2051,7 @@
     "insufficientFee": "Původní účet nemá dost nativního aktiva sítě na zaplacení transakčního poplatku.",
     "feeChanged": "Síťový poplatek se změnil. Před podepsáním zkontrolujte nový poplatek.",
     "cancelled": "Skenování karty bylo zrušeno. Můžete to zkusit znovu.",
-    "retry": "Propojení se nepodařilo potvrdit. Zkontrolujte připojení a zkuste to znovu. Pokud transakce čeká na potvrzení, nejprve ověřte její stav."
+    "retry": "Propojení se nepodařilo potvrdit. Zkontrolujte připojení a zkuste to znovu. Pokud transakce čeká na potvrzení, nejprve ověřte její stav.",
+    "enableNewCard": "Nyní tuto kartu připravíme jako záložní kartu."
   }
 }

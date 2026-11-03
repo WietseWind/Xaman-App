@@ -2056,6 +2056,7 @@
     "insufficientFee": "Alkuperäisellä tilillä ei ole tarpeeksi verkon omaa valuuttaa tapahtumamaksuun.",
     "feeChanged": "Verkon maksu on muuttunut. Tarkista päivitetty maksu ennen allekirjoittamista.",
     "cancelled": "Kortin lukeminen peruttiin. Voit yrittää uudelleen.",
-    "retry": "Korttien yhdistämistä ei voitu vahvistaa. Tarkista yhteys ja yritä uudelleen. Jos tapahtuma odottaa, tarkista ensin sen tila."
+    "retry": "Korttien yhdistämistä ei voitu vahvistaa. Tarkista yhteys ja yritä uudelleen. Jos tapahtuma odottaa, tarkista ensin sen tila.",
+    "enableNewCard": "Valmistelemme nyt tämän kortin käytettäväksi varakorttina."
   }
 }

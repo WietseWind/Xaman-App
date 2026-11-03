@@ -2046,6 +2046,7 @@
     "insufficientFee": "La cuenta original no tiene suficiente activo nativo de la red para pagar la comisión de la transacción.",
     "feeChanged": "La comisión de la red ha cambiado. Revisa la comisión actualizada antes de firmar.",
     "cancelled": "Se canceló el escaneo de la tarjeta. Puedes volver a intentarlo.",
-    "retry": "No se pudo confirmar el vínculo. Comprueba tu conexión y reintenta. Si hay una transacción pendiente, consulta primero su estado."
+    "retry": "No se pudo confirmar el vínculo. Comprueba tu conexión y reintenta. Si hay una transacción pendiente, consulta primero su estado.",
+    "enableNewCard": "Ahora prepararemos esta tarjeta para usarla como tarjeta de respaldo."
   }
 }

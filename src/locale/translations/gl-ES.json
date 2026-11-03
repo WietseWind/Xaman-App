@@ -1966,6 +1966,7 @@
     "insufficientFee": "A conta orixinal non ten suficiente activo nativo da rede para pagar a comisión da transacción.",
     "feeChanged": "A comisión da rede cambiou. Revisa a comisión actualizada antes de asinar.",
     "cancelled": "Cancelouse o escaneo da tarxeta. Podes tentalo de novo.",
-    "retry": "Non se puido confirmar a ligazón. Comproba a conexión e téntao de novo. Se hai unha transacción pendente, consulta primeiro o seu estado."
+    "retry": "Non se puido confirmar a ligazón. Comproba a conexión e téntao de novo. Se hai unha transacción pendente, consulta primeiro o seu estado.",
+    "enableNewCard": "Agora prepararemos esta tarxeta para usala como tarxeta de reserva."
   }
 }

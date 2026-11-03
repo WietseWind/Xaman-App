@@ -2066,6 +2066,7 @@
     "insufficientFee": "Den opprinnelige kontoen har ikke nok av nettverkets opprinnelige aktiva til å betale transaksjonsgebyret.",
     "feeChanged": "Nettverksgebyret er endret. Se gjennom det oppdaterte gebyret før du signerer.",
     "cancelled": "Kortskanningen ble avbrutt. Du kan prøve igjen.",
-    "retry": "Korttilknytningen kunne ikke bekreftes. Kontroller forbindelsen og prøv igjen. Hvis en transaksjon venter, sjekk statusen først."
+    "retry": "Korttilknytningen kunne ikke bekreftes. Kontroller forbindelsen og prøv igjen. Hvis en transaksjon venter, sjekk statusen først.",
+    "enableNewCard": "Vi gjør nå dette kortet klart til bruk som reservekort."
   }
 }

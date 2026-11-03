@@ -1966,6 +1966,7 @@
     "insufficientFee": "A conta original não tem ativo nativo da rede suficiente para pagar a taxa da transação.",
     "feeChanged": "A taxa da rede mudou. Confira a taxa atualizada antes de assinar.",
     "cancelled": "A leitura do cartão foi cancelada. Pode tentar novamente.",
-    "retry": "Não foi possível confirmar a ligação. Verifique a ligação à Internet e tente novamente. Se houver uma transação pendente, consulte primeiro o estado dela."
+    "retry": "Não foi possível confirmar a ligação. Verifique a ligação à Internet e tente novamente. Se houver uma transação pendente, consulte primeiro o estado dela.",
+    "enableNewCard": "Vamos agora preparar este cartão para ser utilizado como cartão de reserva."
   }
 }

@@ -2050,6 +2050,7 @@
     "insufficientFee": "De oorspronkelijke rekening heeft onvoldoende van de eigen munt van het netwerk om de transactiekosten te betalen.",
     "feeChanged": "De netwerkkosten zijn gewijzigd. Controleer de bijgewerkte kosten voordat je ondertekent.",
     "cancelled": "De kaartscan is geannuleerd. Je kunt het opnieuw proberen.",
-    "retry": "De kaartkoppeling kon niet worden bevestigd. Controleer je verbinding en probeer opnieuw. Controleer eerst de status als er nog een transactie loopt."
+    "retry": "De kaartkoppeling kon niet worden bevestigd. Controleer je verbinding en probeer opnieuw. Controleer eerst de status als er nog een transactie loopt.",
+    "enableNewCard": "We maken deze kaart nu klaar voor gebruik als back-upkaart."
   }
 }

@@ -1966,6 +1966,7 @@
     "insufficientFee": "Asıl hesapta işlem ücretini ödeyecek kadar ağın yerel varlığı yok.",
     "feeChanged": "Ağ ücreti değişti. İmzalamadan önce güncel ücreti kontrol edin.",
     "cancelled": "Kart taraması iptal edildi. Yeniden deneyebilirsiniz.",
-    "retry": "Kart bağlantısı doğrulanamadı. Bağlantınızı kontrol edip yeniden deneyin. Bekleyen bir işlem varsa önce durumunu kontrol edin."
+    "retry": "Kart bağlantısı doğrulanamadı. Bağlantınızı kontrol edip yeniden deneyin. Bekleyen bir işlem varsa önce durumunu kontrol edin.",
+    "enableNewCard": "Şimdi bu kartı yedek kart olarak kullanıma hazırlayacağız."
   }
 }

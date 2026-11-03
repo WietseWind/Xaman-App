@@ -1966,6 +1966,7 @@
     "insufficientFee": "Izvirni račun nima dovolj izvornega sredstva omrežja za plačilo transakcijske provizije.",
     "feeChanged": "Omrežna provizija se je spremenila. Pred podpisom preverite posodobljeno provizijo.",
     "cancelled": "Skeniranje kartice je bilo preklicano. Lahko poskusite znova.",
-    "retry": "Povezave ni bilo mogoče potrditi. Preverite povezavo z internetom in poskusite znova. Če transakcija čaka, najprej preverite njeno stanje."
+    "retry": "Povezave ni bilo mogoče potrditi. Preverite povezavo z internetom in poskusite znova. Če transakcija čaka, najprej preverite njeno stanje.",
+    "enableNewCard": "Zdaj bomo to kartico pripravili kot rezervno kartico."
   }
 }

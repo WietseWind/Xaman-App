@@ -2081,6 +2081,7 @@
     "insufficientFee": "Kont orijinal la pa gen ase nan byen natif natal rezo a pou peye frè tranzaksyon an.",
     "feeChanged": "Frè rezo a chanje. Verifye nouvo frè a anvan ou siyen.",
     "cancelled": "Eskanè kat la anile. Ou ka eseye ankò.",
-    "retry": "Nou pa t ka konfime koneksyon an. Verifye koneksyon entènèt ou epi eseye ankò. Si gen yon tranzaksyon an atant, verifye estati li anvan."
+    "retry": "Nou pa t ka konfime koneksyon an. Verifye koneksyon entènèt ou epi eseye ankò. Si gen yon tranzaksyon an atant, verifye estati li anvan.",
+    "enableNewCard": "Kounye a, n ap prepare kat sa a pou ou ka sèvi avè l kòm yon kat sekou."
   }
 }

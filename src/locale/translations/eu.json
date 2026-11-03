@@ -2070,6 +2070,7 @@
     "insufficientFee": "Jatorrizko kontuak ez du sareko berezko aktibo nahikorik transakzioaren komisioa ordaintzeko.",
     "feeChanged": "Sarearen komisioa aldatu da. Berrikusi eguneratutako komisioa sinatu aurretik.",
     "cancelled": "Txartelaren eskaneatzea bertan behera utzi da. Berriro saia zaitezke.",
-    "retry": "Ezin izan da lotura berretsi. Egiaztatu konexioa eta saiatu berriro. Transakzioren bat zain badago, egiaztatu haren egoera lehenik."
+    "retry": "Ezin izan da lotura berretsi. Egiaztatu konexioa eta saiatu berriro. Transakzioren bat zain badago, egiaztatu haren egoera lehenik.",
+    "enableNewCard": "Orain txartel hau prestatuko dugu ordezko txartel gisa erabiltzeko."
   }
 }

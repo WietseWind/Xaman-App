@@ -2064,6 +2064,7 @@
     "insufficientFee": "Akun asli tidak memiliki cukup aset asli jaringan untuk membayar biaya transaksi.",
     "feeChanged": "Biaya jaringan berubah. Tinjau biaya terbaru sebelum menandatangani.",
     "cancelled": "Pemindaian kartu dibatalkan. Anda dapat mencoba lagi.",
-    "retry": "Penautan kartu tidak dapat dikonfirmasi. Periksa koneksi dan coba lagi. Jika transaksi masih tertunda, periksa statusnya terlebih dahulu."
+    "retry": "Penautan kartu tidak dapat dikonfirmasi. Periksa koneksi dan coba lagi. Jika transaksi masih tertunda, periksa statusnya terlebih dahulu.",
+    "enableNewCard": "Sekarang kami akan menyiapkan kartu ini untuk digunakan sebagai kartu cadangan."
   }
 }

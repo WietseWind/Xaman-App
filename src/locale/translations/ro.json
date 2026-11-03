@@ -2058,6 +2058,7 @@
     "insufficientFee": "Contul original nu are suficient activ nativ al rețelei pentru plata comisionului de tranzacție.",
     "feeChanged": "Comisionul rețelei s-a schimbat. Verificați comisionul actualizat înainte de semnare.",
     "cancelled": "Scanarea cardului a fost anulată. Puteți încerca din nou.",
-    "retry": "Asocierea nu a putut fi confirmată. Verificați conexiunea și încercați din nou. Dacă există o tranzacție în așteptare, verificați-i mai întâi starea."
+    "retry": "Asocierea nu a putut fi confirmată. Verificați conexiunea și încercați din nou. Dacă există o tranzacție în așteptare, verificați-i mai întâi starea.",
+    "enableNewCard": "Acum vom pregăti acest card pentru a fi folosit drept card de rezervă."
   }
 }

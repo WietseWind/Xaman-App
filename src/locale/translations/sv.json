@@ -1966,6 +1966,7 @@
     "insufficientFee": "Det ursprungliga kontot har inte tillräckligt av nätverkets inhemska tillgång för att betala transaktionsavgiften.",
     "feeChanged": "Nätverksavgiften har ändrats. Granska den uppdaterade avgiften innan du signerar.",
     "cancelled": "Kortskanningen avbröts. Du kan försöka igen.",
-    "retry": "Kortkopplingen kunde inte bekräftas. Kontrollera anslutningen och försök igen. Om en transaktion väntar ska du först kontrollera dess status."
+    "retry": "Kortkopplingen kunde inte bekräftas. Kontrollera anslutningen och försök igen. Om en transaktion väntar ska du först kontrollera dess status.",
+    "enableNewCard": "Vi förbereder nu det här kortet för användning som reservkort."
   }
 }

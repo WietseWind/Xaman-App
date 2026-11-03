@@ -2059,6 +2059,7 @@
     "insufficientFee": "Il conto originale non ha abbastanza asset nativo della rete per pagare la commissione di transazione.",
     "feeChanged": "La commissione di rete è cambiata. Controlla la commissione aggiornata prima di firmare.",
     "cancelled": "La scansione della carta è stata annullata. Puoi riprovare.",
-    "retry": "Impossibile confermare il collegamento. Controlla la connessione e riprova. Se una transazione è in sospeso, controllane prima lo stato."
+    "retry": "Impossibile confermare il collegamento. Controlla la connessione e riprova. Se una transazione è in sospeso, controllane prima lo stato.",
+    "enableNewCard": "Ora prepareremo questa carta per usarla come carta di riserva."
   }
 }

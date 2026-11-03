@@ -2065,6 +2065,7 @@
     "insufficientFee": "Akaunti ya awali haina mali asili ya mtandao ya kutosha kulipa ada ya muamala.",
     "feeChanged": "Ada ya mtandao imebadilika. Kagua ada mpya kabla ya kusaini.",
     "cancelled": "Uchanganuzi wa kadi umeghairiwa. Unaweza kujaribu tena.",
-    "retry": "Muunganisho haukuweza kuthibitishwa. Kagua intaneti na ujaribu tena. Ikiwa muamala unasubiri, kagua hali yake kwanza."
+    "retry": "Muunganisho haukuweza kuthibitishwa. Kagua intaneti na ujaribu tena. Ikiwa muamala unasubiri, kagua hali yake kwanza.",
+    "enableNewCard": "Sasa tutaiandaa kadi hii kwa matumizi kama kadi ya akiba."
   }
 }

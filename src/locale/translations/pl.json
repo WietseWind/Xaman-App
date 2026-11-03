@@ -2040,6 +2040,7 @@
     "insufficientFee": "Oryginalne konto nie ma wystarczającej ilości natywnego aktywa sieci na opłatę transakcyjną.",
     "feeChanged": "Opłata sieciowa uległa zmianie. Sprawdź nową opłatę przed podpisaniem.",
     "cancelled": "Skanowanie karty anulowano. Możesz spróbować ponownie.",
-    "retry": "Nie udało się potwierdzić powiązania. Sprawdź połączenie i spróbuj ponownie. Jeśli transakcja oczekuje, najpierw sprawdź jej stan."
+    "retry": "Nie udało się potwierdzić powiązania. Sprawdź połączenie i spróbuj ponownie. Jeśli transakcja oczekuje, najpierw sprawdź jej stan.",
+    "enableNewCard": "Teraz przygotujemy tę kartę do używania jako karty zapasowej."
   }
 }

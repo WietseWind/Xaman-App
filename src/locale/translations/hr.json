@@ -1966,6 +1966,7 @@
     "insufficientFee": "Izvorni račun nema dovoljno izvorne imovine mreže za plaćanje transakcijske naknade.",
     "feeChanged": "Mrežna naknada se promijenila. Prije potpisivanja pregledajte novu naknadu.",
     "cancelled": "Skeniranje kartice je otkazano. Možete pokušati ponovno.",
-    "retry": "Povezivanje nije potvrđeno. Provjerite vezu i pokušajte ponovno. Ako je transakcija na čekanju, najprije provjerite njezin status."
+    "retry": "Povezivanje nije potvrđeno. Provjerite vezu i pokušajte ponovno. Ako je transakcija na čekanju, najprije provjerite njezin status.",
+    "enableNewCard": "Sada ćemo ovu karticu pripremiti kao pričuvnu karticu."
   }
 }

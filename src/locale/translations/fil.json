@@ -1966,6 +1966,7 @@
     "insufficientFee": "Walang sapat na katutubong asset ng network ang orihinal na account para sa bayad sa transaksyon.",
     "feeChanged": "Nagbago ang bayad sa network. Suriin ang bagong bayad bago pumirma.",
     "cancelled": "Kinansela ang pag-scan ng card. Maaari mong subukan muli.",
-    "retry": "Hindi makumpirma ang pag-uugnay. Suriin ang koneksyon at subukan muli. Kung may nakabinbing transaksyon, tingnan muna ang status nito."
+    "retry": "Hindi makumpirma ang pag-uugnay. Suriin ang koneksyon at subukan muli. Kung may nakabinbing transaksyon, tingnan muna ang status nito.",
+    "enableNewCard": "Ihahanda na namin ang card na ito para magamit bilang backup card."
   }
 }

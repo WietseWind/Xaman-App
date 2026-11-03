@@ -1966,6 +1966,7 @@
     "insufficientFee": "Az eredeti számlán nincs elég a hálózat natív eszközéből a tranzakciós díjhoz.",
     "feeChanged": "A hálózati díj megváltozott. Aláírás előtt ellenőrizd az új díjat.",
     "cancelled": "A kártya beolvasása megszakadt. Újra próbálkozhatsz.",
-    "retry": "A kapcsolatot nem sikerült megerősíteni. Ellenőrizd a kapcsolatot, és próbáld újra. Függő tranzakció esetén először annak állapotát ellenőrizd."
+    "retry": "A kapcsolatot nem sikerült megerősíteni. Ellenőrizd a kapcsolatot, és próbáld újra. Függő tranzakció esetén először annak állapotát ellenőrizd.",
+    "enableNewCard": "Most előkészítjük ezt a kártyát tartalékkártyaként való használatra."
   }
 }

@@ -2063,6 +2063,7 @@
     "insufficientFee": "Die oorspronklike rekening het nie genoeg van die netwerk se eie bate om die transaksiefooi te betaal nie.",
     "feeChanged": "Die netwerkfooi het verander. Gaan die nuwe fooi na voordat jy onderteken.",
     "cancelled": "Die kaartskandering is gekanselleer. Jy kan weer probeer.",
-    "retry": "Die kaartkoppeling kon nie bevestig word nie. Kontroleer jou verbinding en probeer weer. As 'n transaksie nog hangende is, gaan eers sy status na."
+    "retry": "Die kaartkoppeling kon nie bevestig word nie. Kontroleer jou verbinding en probeer weer. As 'n transaksie nog hangende is, gaan eers sy status na.",
+    "enableNewCard": "Ons sal nou hierdie kaart vir gebruik as ’n rugsteunkaart aktiveer."
   }
 }

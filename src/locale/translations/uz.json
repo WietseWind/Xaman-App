@@ -2064,6 +2064,7 @@
     "insufficientFee": "Asl hisobda tranzaksiya haqini to'lash uchun tarmoqning o'z aktivi yetarli emas.",
     "feeChanged": "Tarmoq haqi o'zgardi. Imzolashdan oldin yangilangan haqni tekshiring.",
     "cancelled": "Kartani skanerlash bekor qilindi. Qayta urinishingiz mumkin.",
-    "retry": "Bog'lanishni tasdiqlab bo'lmadi. Ulanishni tekshirib, qayta urinib ko'ring. Kutilayotgan tranzaksiya bo'lsa, avval uning holatini tekshiring."
+    "retry": "Bog'lanishni tasdiqlab bo'lmadi. Ulanishni tekshirib, qayta urinib ko'ring. Kutilayotgan tranzaksiya bo'lsa, avval uning holatini tekshiring.",
+    "enableNewCard": "Endi ushbu kartani zaxira karta sifatida foydalanishga tayyorlaymiz."
   }
 }

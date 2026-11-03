@@ -2053,6 +2053,7 @@
     "insufficientFee": "Algsel kontol pole tehingutasu maksmiseks piisavalt võrgu natiivvara.",
     "feeChanged": "Võrgutasu muutus. Kontrolli uut tasu enne allkirjastamist.",
     "cancelled": "Kaardi skannimine tühistati. Võid uuesti proovida.",
-    "retry": "Seost ei saanud kinnitada. Kontrolli ühendust ja proovi uuesti. Kui tehing on ootel, kontrolli esmalt selle olekut."
+    "retry": "Seost ei saanud kinnitada. Kontrolli ühendust ja proovi uuesti. Kui tehing on ootel, kontrolli esmalt selle olekut.",
+    "enableNewCard": "Nüüd valmistame selle kaardi ette varukaardina kasutamiseks."
   }
 }

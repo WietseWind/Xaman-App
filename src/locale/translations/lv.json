@@ -2053,6 +2053,7 @@
     "insufficientFee": "Sākotnējā kontā nepietiek tīkla vietējā aktīva, lai samaksātu darījuma maksu.",
     "feeChanged": "Tīkla maksa ir mainījusies. Pirms parakstīšanas pārbaudiet atjaunināto maksu.",
     "cancelled": "Kartes skenēšana tika atcelta. Varat mēģināt vēlreiz.",
-    "retry": "Neizdevās apstiprināt saistījumu. Pārbaudiet savienojumu un mēģiniet vēlreiz. Ja darījums gaida, vispirms pārbaudiet tā statusu."
+    "retry": "Neizdevās apstiprināt saistījumu. Pārbaudiet savienojumu un mēģiniet vēlreiz. Ja darījums gaida, vispirms pārbaudiet tā statusu.",
+    "enableNewCard": "Tagad sagatavosim šo karti lietošanai kā rezerves karti."
   }
 }

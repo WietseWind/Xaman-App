@@ -100,7 +100,7 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
                     type: empty ? 'info' : 'warning',
                     title: Localize.t(empty ? 'tangemImportMsgs.newTitle' : 'tangemImportMsgs.existingTitle'),
                     text: empty
-                        ? Localize.t('tangemImportMsgs.newDescriptionAfter')
+                        ? Localize.t('tangemBackup.enableNewCard')
                         : `${Localize.t('tangemImportMsgs.existingDescription')}\n\n${Localize.t('tangemImportMsgs.existingDescriptionAfter')}`,
                     buttons: [
                         {
