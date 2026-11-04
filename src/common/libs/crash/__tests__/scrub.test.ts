@@ -13,6 +13,7 @@ import {
     groupingName,
     describeThrown,
     REDACTED,
+    isSensitiveKey,
 } from '../scrub';
 import { parseFrames } from '../stack';
 
@@ -108,6 +109,42 @@ describe('scrubText: secrets never survive', () => {
 
     it('removes the passcode-sized number', () => {
         expect(scrubText('passcode 123456 rejected')).toBe(`passcode ${REDACTED} rejected`);
+    });
+
+    it('removes a PIN after any punctuation, but keeps decimals', () => {
+        [
+            'Invalid PIN:123456',
+            'PIN=123456',
+            'PIN.123456',
+            'PIN#123456',
+            'pin(123456)',
+            'pin "123456"',
+            'PIN: 123456',
+            'PIN-123456',
+            'PIN_123456',
+            '[123456]',
+            'code:123456;',
+        ].forEach((text) => {
+            expect({ text, output: scrubText(text) }).toEqual({ text, output: expect.not.stringContaining('123456') });
+        });
+        expect(scrubText('amount 1.123456 XRP')).toBe('amount 1.123456 XRP');
+    });
+
+    it('removes a mnemonic in any case and with other separators', () => {
+        const words = mnemonic.secret.mnemonic!;
+        const titleCase = words
+            .split(' ')
+            .map((word) => `${word[0].toUpperCase()}${word.slice(1)}`)
+            .join(' ');
+        [
+            words.toUpperCase(),
+            titleCase,
+            words.split(' ').join('.'),
+            words.split(' ').join('-'),
+            words.split(' ').join('_'),
+        ].forEach((variant) => {
+            expect(leaks(scrubText(`recovery: ${variant}`, 10000), variant)).toEqual([]);
+        });
     });
 
     it('keeps addresses, also X-addresses', () => {
@@ -213,17 +250,44 @@ describe('scrubStack', () => {
         '    at tryCallOne (address at index.android.bundle:1:2345)',
     ].join('\n');
 
-    it('scrubs the message and keeps frames byte for byte', () => {
+    it('scrubs the message and keeps frame names, files and positions', () => {
         const output = scrubStack(hermesStack);
         const lines = output.split('\n');
+        const input = hermesStack.split('\n');
         expect(leaks(lines[0], SECRETS.secpSeed)).toEqual([]);
         expect(leaks(lines[0], SECRETS.secpPrivateKey)).toEqual([]);
-        expect(lines.slice(1)).toEqual(hermesStack.split('\n').slice(1));
+        expect([lines[1], lines[3], lines[4]]).toEqual([input[1], input[3], input[4]]);
+        // the per-install container path looks like base64 and may go; the bundle name and position stay
+        expect(lines[2]).toMatch(/^ {4}at anonymous \(address at .*\/Xaman\.app\/main\.jsbundle:1:123456\)$/);
+        expect(parseFrames(output)[1]).toEqual({ fn: 'anonymous', file: 'main.jsbundle', line: 1, col: 123456 });
     });
 
     it('scrubs lines in the frame part that are not frames', () => {
         const output = scrubStack(`Error: x\n    at foo (address at index.android.bundle:1:1)\n${SECRETS.mnemonic12}`);
         expect(output).not.toContain(`${mnemonicWords[0]  } ${  mnemonicWords[1]}`);
+    });
+
+    it('scrubs runtime data in frame-shaped lines and keeps their positions', () => {
+        // a multiline message or a stack set by code can contain lines that look like frames
+        Object.entries(SECRETS).forEach(([name, secret]) => {
+            [
+                `    at ${secret} (address at index.android.bundle:1:23)`,
+                `    at load (address at ${secret}:1:23)`,
+                `    at ${secret} (native)`,
+                `${secret}@main.jsbundle:1:23`,
+                `load@${secret}:1:23`,
+                `    at ${secret}:1:23`,
+            ].forEach((line) => {
+                const output = scrubStack(
+                    `Error: Import failed\n${line}\n    at onPress (address at index.android.bundle:1:768112)`,
+                );
+                expect({ name, leaks: leaks(output, secret) }).toEqual({ name, leaks: [] });
+                expect(output.endsWith('    at onPress (address at index.android.bundle:1:768112)')).toBe(true);
+            });
+        });
+        expect(scrubStack(`Error: x\n    at ${SECRETS.secpSeed} (address at index.android.bundle:1:23)`)).toBe(
+            `Error: x\n    at ${REDACTED} (address at index.android.bundle:1:23)`,
+        );
     });
 
     it('keeps multi-line messages scrubbed', () => {
@@ -254,6 +318,37 @@ describe('parseFrames', () => {
 });
 
 describe('scrubParams', () => {
+    it('redacts params named like secrets whatever their value', () => {
+        expect(
+            scrubParams({
+                passphrase: 'correct horse battery staple',
+                token: 'abc123xyz',
+                pinCode: 1234,
+                pin: 'x',
+                hasPassphrase: true,
+                pinned: 3,
+                spinner: 'on',
+            }),
+        ).toEqual({
+            passphrase: REDACTED,
+            token: REDACTED,
+            pinCode: REDACTED,
+            pin: REDACTED,
+            hasPassphrase: true,
+            pinned: 3,
+            spinner: 'on',
+        });
+    });
+
+    it('knows secret key names, and not their look-alikes', () => {
+        ['pin', 'PIN', 'pinCode', 'user_pin', 'accessToken', 'passphrase', 'privateKey', 'seed'].forEach((key) => {
+            expect({ key, sensitive: isSensitiveKey(key) }).toEqual({ key, sensitive: true });
+        });
+        ['pinned', 'spinner', 'mapping', 'screen', 'network_id', 'developer_mode'].forEach((key) => {
+            expect({ key, sensitive: isSensitiveKey(key) }).toEqual({ key, sensitive: false });
+        });
+    });
+
     it('scrubs strings, keeps safe numbers and booleans, drops objects', () => {
         expect(
             scrubParams({

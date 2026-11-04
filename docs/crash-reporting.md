@@ -13,15 +13,16 @@ report, so Analytics params count too.) The scrubber redacts:
 |---|---|
 | Private and public keys, hashes, encryption keys | hex runs of 32+ characters |
 | Family seeds (`s…`, `sEd…`), base58 public keys | XRPL base58 tokens with a valid checksum, or 25+ random-looking base58 characters |
-| Secret numbers, passcode | two or more 6-digit groups, any lone 6-digit number, 24+ digits |
-| Mnemonics | runs of 12+ lowercase words of 3–8 letters |
-| Tokens and passwords | values of `token`, `secret`, `password`, `passcode`, `passphrase`, `seed`, `mnemonic`, `privateKey`, `authorization`… keys; `Bearer`/`Basic` credentials; JWTs; long random base64 |
+| Secret numbers, passcode | two or more 6-digit groups, any lone 6-digit number (also after `:` or `.`; the fraction of a decimal like `1.123456` is kept), 24+ digits |
+| Mnemonics | runs of 12+ words of 3–8 letters, in any case and with any common separator |
+| Tokens and passwords | values of `token`, `secret`, `password`, `passcode`, `passphrase`, `pin`, `seed`, `mnemonic`, `privateKey`, `authorization`… keys; Analytics params and custom keys with such names are redacted whole; `Bearer`/`Basic` credentials; JWTs; long random base64 |
 | URLs | query string and fragment |
 
 Addresses (r… and X-addresses) are public and kept. Percent-encoded text is decoded first. The
 rules prefer false positives: a lost detail is cheap, a leaked key is not. Frame lines of a JS stack
-are kept unchanged, because the JS engine writes them from code (function name plus position) and
-symbolication needs the positions.
+keep their line and column numbers (symbolication needs them). Their function and file names are
+scrubbed like any other text: a frame-shaped line can come from an error message or from a stack
+set by code.
 
 `src/common/libs/crash/install.ts` is the first import in `index.js`. In release builds it installs
 the outermost global error handler, which scrubs an uncaught error **in place** before React Native

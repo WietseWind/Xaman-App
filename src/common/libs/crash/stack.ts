@@ -1,9 +1,10 @@
 /**
  * JS stack trace parsing for crash reports.
  *
- * Frame lines are produced by the JS engine from code (function name + location), so they
- * cannot carry runtime data. That lets the scrubber keep them untouched (bytecode offsets
- * are what symbolication needs) and only scrub the message part of a stack.
+ * A frame-shaped line is not proof that the JS engine wrote it: a multiline error message or a
+ * stack set by code can contain one, with runtime data in the function or file name. So the
+ * scrubber rewrites frame lines (rewriteFrameLine): names and files are scrubbed like any text,
+ * only the line and column numbers are kept as they are (symbolication needs them).
  */
 
 export type StackFrame = {
@@ -25,6 +26,34 @@ const AT_NATIVE = new RegExp(`^\\s*at\\s+(${FN})\\s+\\(native\\)$`);
 // JSC: "fn@file:1:2" and "fn@[native code]"
 const JSC = new RegExp(`^(${FN})?@([^()\\s@]{1,300}):(\\d{1,9}):(\\d{1,9})$`);
 const JSC_NATIVE = new RegExp(`^(${FN})?@\\[native code\\]$`);
+
+// The same frame shapes as above, split into prefix, function, middle, file and position, so a
+// line can be rebuilt with scrubbed names and its numbers untouched.
+const REWRITE: RegExp[] = [
+    new RegExp(`^(\\s*at\\s+)(${FN})(\\s+\\((?:address at\\s+)?)([^()\\s]{1,300})(:\\d{1,9}:\\d{1,9}\\))$`),
+    /^(\s*at\s+)()((?:address at\s+)?)([^()\s]{1,300})(:\d{1,9}:\d{1,9})$/,
+    new RegExp(`^(\\s*at\\s+)(${FN})(\\s+\\(native\\))()()$`),
+    new RegExp(`^()(${FN})?(@)([^()\\s@]{1,300})(:\\d{1,9}:\\d{1,9})$`),
+    new RegExp(`^()(${FN})?(@\\[native code\\])()()$`),
+];
+
+/**
+ * Rebuild a frame line with `scrub` applied to its function and file names; line and column
+ * numbers stay as they are. Undefined when the line is not a strict frame line.
+ */
+export const rewriteFrameLine = (line: string, scrub: (text: string) => string): string | undefined => {
+    if (typeof line !== 'string' || line.length > 600) {
+        return undefined;
+    }
+    for (const pattern of REWRITE) {
+        const match = pattern.exec(line);
+        if (match) {
+            const [, prefix, fn, middle, file, position] = match;
+            return `${prefix}${fn ? scrub(fn) : ''}${middle}${file ? scrub(file) : ''}${position}`;
+        }
+    }
+    return undefined;
+};
 
 const basename = (file: string): string => {
     const withoutQuery = file.split('?')[0];

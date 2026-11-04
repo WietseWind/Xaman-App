@@ -11,16 +11,18 @@
  *    that has a valid XRPL checksum or looks random. Addresses (r… and X-addresses) are
  *    public and kept.
  *  - secret numbers: two or more 6-digit groups, any lone 6-digit number (also covers
- *    the passcode), digit runs of 24+
- *  - mnemonic-like runs of 12+ lowercase words of 3-8 letters
- *  - values of token/secret/password/seed/... keys, Bearer/Basic credentials, JWTs
+ *    the passcode, also after ":" or "."; decimals like 1.123456 are kept), digit runs of 24+
+ *  - mnemonic-like runs of 12+ words of 3-8 letters, in any case
+ *  - values of token/secret/password/seed/... keys, Bearer/Basic credentials, JWTs; Analytics
+ *    params and custom keys with such names are redacted whole
  *  - long random base64 runs (keys in base64)
  *  - URL query strings and fragments
- * Percent-encoded text is decoded first.
+ * Percent-encoded text is decoded first. Stack frame lines keep their line and column numbers;
+ * their function and file names are scrubbed like any other text.
  * See docs/crash-reporting.md.
  */
 
-import { isFrameLine, parseFrames, firstMeaningfulFunction, StackFrame } from './stack';
+import { isFrameLine, rewriteFrameLine, parseFrames, firstMeaningfulFunction, StackFrame } from './stack';
 
 export const REDACTED = '[redacted]';
 
@@ -198,11 +200,19 @@ const SENSITIVE_KEY = new RegExp(
     'i',
 );
 
+// pin, PIN, pinCode, user_pin; not pinned, spinner or mapping
+const PIN_KEY = /(?:^|[^A-Za-z])(?:pin|Pin|PIN)(?:$|[^a-z])/;
+
+/**
+ * True for a key name that marks its value as secret (token, password, seed, pin, …).
+ */
+export const isSensitiveKey = (key: string): boolean => SENSITIVE_KEY.test(key) || PIN_KEY.test(key);
+
 const MIN_MNEMONIC_WORDS = 12;
 
 const redactMnemonicRun = (run: string): string => {
     const words: Array<{ start: number; end: number; ok: boolean }> = [];
-    const wordPattern = /[a-z]+/g;
+    const wordPattern = /[a-z]+/gi;
     let match = wordPattern.exec(run);
     while (match) {
         words.push({
@@ -260,7 +270,7 @@ const RULES: Array<(text: string) => string> = [
         text.replace(
             /(["']?)([A-Za-z][\w-]{0,63})\1(\s*[:=]\s*)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[^\s,;&}\])]+)/g,
             (all, quote, key, separator, value) => {
-                if (!SENSITIVE_KEY.test(key)) {
+                if (!isSensitiveKey(key)) {
                     return all;
                 }
                 const wrap = ['"', '\''].includes(value[0]) ? value[0] : '';
@@ -269,12 +279,14 @@ const RULES: Array<(text: string) => string> = [
         ),
     // hex: private keys, public keys (66), hashes (64), encryption keys
     (text) => text.replace(/(?:0x)?[0-9a-fA-F]{32,}/g, REDACTED),
-    // secret numbers (and the passcode): long digit runs, 6-digit groups, lone 6-digit numbers
+    // secret numbers (and the passcode): long digit runs, 6-digit groups, lone 6-digit numbers.
+    // A lone number is kept only as the fraction of a decimal (1.123456); stack positions are kept
+    // by the frame rewrite in scrubStack, not here.
     (text) => text.replace(/\d{24,}/g, REDACTED),
     (text) => text.replace(/(^|\D)(\d{6}(?:[\s.,;:|/"'[\]\\-]{1,6}\d{6})+)(?!\d)/g, `$1${REDACTED}`),
-    (text) => text.replace(/(^|[^\d:.])\d{6}(?!\d)/g, `$1${REDACTED}`),
-    // mnemonics
-    (text) => text.replace(/[a-z]+(?:[\s,"'[\]\\]{1,6}[a-z]+)*/g, redactMnemonicRun),
+    (text) => text.replace(/(^|[^\d.]|\D\.)\d{6}(?!\d)/g, `$1${REDACTED}`),
+    // mnemonics, in any case and with any common separator
+    (text) => text.replace(/[a-z]+(?:[\s,._"'[\]\\-]{1,6}[a-z]+)*/gi, redactMnemonicRun),
     // base64 key material (pure base58 runs are left to the next rule)
     (text) =>
         text.replace(/[A-Za-z0-9+/]{40,}={0,2}/g, (token) =>
@@ -318,9 +330,12 @@ export const scrubText = (input: unknown, maxLength = 1000): string => {
     return truncate(text, maxLength);
 };
 
+// Scrub a function or file name inside a frame line (never truncated: the line must stay a frame).
+const scrubFrameText = (text: string): string => scrubText(text, 1000);
+
 /**
- * Scrub a JS stack: the message part fully, frame lines kept as they are (they come from code
- * and hold the bytecode offsets needed to symbolicate).
+ * Scrub a JS stack: the message part fully, frame lines with their names and files scrubbed and
+ * their line and column numbers kept (symbolication needs them). Any other line is scrubbed as text.
  */
 export const scrubStack = (stack: unknown, maxFrames = 50): string => {
     if (typeof stack !== 'string' || !stack) {
@@ -333,13 +348,14 @@ export const scrubStack = (stack: unknown, maxFrames = 50): string => {
     }
     const out = [scrubText(lines.slice(0, firstFrame).join('\n'), 2000)];
     lines.slice(firstFrame, firstFrame + maxFrames).forEach((line) => {
-        out.push(isFrameLine(line) ? line : scrubText(line, 300));
+        out.push(rewriteFrameLine(line, scrubFrameText) ?? scrubText(line, 300));
     });
     return out.join('\n');
 };
 
 /**
  * Scrub analytics event params (Crashlytics shows recent Analytics events as breadcrumbs).
+ * A param named like a secret (token, passphrase, pin…) is redacted whatever its value.
  */
 export const scrubParams = (
     params?: Record<string, unknown>,
@@ -350,7 +366,9 @@ export const scrubParams = (
     const out: Record<string, string | number | boolean> = {};
     Object.keys(params).forEach((key) => {
         const value = params[key];
-        if (typeof value === 'string') {
+        if ((typeof value === 'string' || typeof value === 'number') && isSensitiveKey(key)) {
+            out[key] = REDACTED;
+        } else if (typeof value === 'string') {
             out[key] = scrubText(value, 100);
         } else if (typeof value === 'number') {
             out[key] = scrubText(String(value), 100) === String(value) ? value : REDACTED;

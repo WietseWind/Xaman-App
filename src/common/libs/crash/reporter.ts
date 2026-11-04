@@ -13,7 +13,7 @@
 
 import { NativeModules } from 'react-native';
 
-import { scrubText, scrubStack, describeThrown, groupingName } from './scrub';
+import { scrubText, scrubStack, describeThrown, groupingName, isSensitiveKey, REDACTED } from './scrub';
 import { parseFrames } from './stack';
 
 /* Types  ==================================================================== */
@@ -206,7 +206,7 @@ export class Reporter {
             Object.keys(keys).forEach((key) => {
                 const value = keys[key];
                 if (value !== undefined && value !== null) {
-                    attributes[key.slice(0, 32)] = scrubText(String(value), 100);
+                    attributes[key.slice(0, 32)] = isSensitiveKey(key) ? REDACTED : scrubText(String(value), 100);
                 }
             });
             native.setAttributes(attributes).catch(() => undefined);

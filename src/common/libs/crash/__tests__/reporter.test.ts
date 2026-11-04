@@ -92,6 +92,37 @@ describe('Reporter global handler', () => {
         expect(payload.frames.length).toBeGreaterThan(1);
     });
 
+    it('scrubs runtime data in frame-shaped lines of a message and of a supplied stack', () => {
+        const { reporter } = setup();
+
+        const error = new Error(`Import failed\n    at ${SEED} (address at index.android.bundle:1:23)`);
+        const forwarded = reporter.scrubThrown(error);
+        const { payload } = reporter.buildPayload(forwarded, { fatal: true });
+        expect(forwarded.stack).not.toContain(SEED);
+        expect(forwarded.message).not.toContain(SEED);
+        expect(JSON.stringify(payload)).not.toContain(SEED);
+
+        const supplied = new Error('load failed');
+        supplied.stack = [
+            'Error: load failed',
+            `    at ${SEED} (address at index.android.bundle:1:23)`,
+            `    at load (address at ${PRIVATE_KEY}:1:9)`,
+            `${SEED}@main.jsbundle:2:5`,
+        ].join('\n');
+        const forwardedSupplied = reporter.scrubThrown(supplied);
+        const built = reporter.buildPayload(forwardedSupplied, { fatal: true });
+        [forwardedSupplied.stack, JSON.stringify(built.payload)].forEach((text) => {
+            expect(text).not.toContain(SEED);
+            expect(text).not.toContain(PRIVATE_KEY);
+        });
+        // positions survive for symbolication
+        expect(built.payload.frames.slice(1).map((frame: any) => frame.file)).toEqual([
+            'index.android.bundle:1:23',
+            '[redacted]:1:9',
+            'main.jsbundle:2:5',
+        ]);
+    });
+
     it('forwards non-fatal errors right away', async () => {
         const { reporter, rnHandler, throwGlobal, native } = setup();
         reporter.install();
@@ -226,6 +257,17 @@ describe('Reporter handled errors, breadcrumbs, keys', () => {
         reporter.recordError(new Error('The user cancelled the operation'), 'Tangem');
         await flush();
         expect(native.recordErrorPromise).not.toHaveBeenCalled();
+    });
+
+    it('redacts custom keys named like secrets', () => {
+        const { reporter, native } = setup();
+        reporter.setKeys({ screen: 'Home', token: 'abc123xyz', passphrase: 'correct horse battery staple', pin: 1234 });
+        expect(native.setAttributes).toHaveBeenCalledWith({
+            screen: 'Home',
+            token: '[redacted]',
+            passphrase: '[redacted]',
+            pin: '[redacted]',
+        });
     });
 
     it('scrubs breadcrumbs and keys', () => {
