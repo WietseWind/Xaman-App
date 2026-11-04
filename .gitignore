@@ -2,6 +2,12 @@
 #
 .DS_Store
 
+# monorepo
+backend/
+
+# screenshots
+repro/
+
 # Xcode
 #
 build/
