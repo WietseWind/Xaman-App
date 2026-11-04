@@ -15,6 +15,7 @@ import { AccountRepository, CoreRepository, NetworkRepository } from '@store/rep
 import { AccountModel, NetworkModel } from '@store/models';
 
 import { AppScreenKeys, Navigator } from '@common/helpers/navigator';
+import CrashReporter from '@common/libs/crash';
 import { AppScreens } from '@common/constants';
 
 import { Payload, PayloadOrigin, XAppOrigin } from '@common/libs/payload';
@@ -251,6 +252,8 @@ class PushNotificationsService extends EventEmitter {
      * @param message - FirebaseMessagingTypes.RemoteMessage
      */
     handleNotification = (message: FirebaseMessagingTypes.RemoteMessage) => {
+        CrashReporter.breadcrumb(`push received ${this.getNotificationType(message) ?? 'unknown'}`);
+
         // complete the notification and show the notification if necessary
         const shouldShowNotification = NavigationService.getCurrentModal() !== AppScreens.Modal.ReviewTransaction;
 
@@ -564,6 +567,8 @@ class PushNotificationsService extends EventEmitter {
 
         // assign last message id
         this.lastOpenedMessageId = notification.messageId;
+
+        CrashReporter.breadcrumb(`push opened ${this.getNotificationType(notification) ?? 'unknown'}`);
 
         const url = get(notification, ['data', 'deeplink']) as string;
 

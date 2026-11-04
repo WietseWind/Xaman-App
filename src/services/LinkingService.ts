@@ -12,6 +12,7 @@ import NavigationService, { ComponentTypes, RootType } from '@services/Navigatio
 import { Payload, PayloadOrigin, XAppOrigin } from '@common/libs/payload';
 import { Navigator, AppScreenKeys } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
+import CrashReporter from '@common/libs/crash';
 import { AppScreens } from '@common/constants';
 
 import { NormalizeDestination } from '@common/utils/codec';
@@ -681,6 +682,9 @@ class LinkingService {
         const detected = new StringTypeDetector(url);
         const parsed = new StringDecoder(detected).getAny();
         const identifyArgs: [] | [TangemIdentifyRoute] = identify ? [identify] : [];
+
+        // the type only: the url itself can hold secrets
+        CrashReporter.breadcrumb(`link ${detected.getType()}`);
 
         // the screen will handle the content
         switch (detected.getType()) {
