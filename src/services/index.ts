@@ -11,6 +11,7 @@ import AccountService from './AccountService';
 import BackendService from './BackendService';
 import ResolverService from './ResolverService';
 import StyleService from './StyleService';
+import UpdateService from './UpdateService';
 
 export {
     LoggerService,
@@ -26,4 +27,5 @@ export {
     BackendService,
     ResolverService,
     StyleService,
+    UpdateService,
 };

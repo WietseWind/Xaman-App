@@ -35,6 +35,7 @@ import ApiService from '@services/ApiService';
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 import LedgerService from '@services/LedgerService';
 import NetworkService from '@services/NetworkService';
+import UpdateService from '@services/UpdateService';
 
 import Localize from '@locale';
 
@@ -274,6 +275,8 @@ class BackendService {
         const settings = CoreRepository.getSettings();
         return ApiService.fetch(Endpoints.Ping, 'POST', null, {
             appVersion: GetAppReadableVersion(),
+            // over-the-air update this device runs (0 = store version); appVersion stays as it was
+            otaUpdateId: UpdateService.getOtaUpdateId(),
             appLanguage: Localize.getCurrentLocale(),
             appCurrency: CoreRepository.getAppCurrency(),
             devicePushToken: await PushNotificationsService.getToken(),

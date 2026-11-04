@@ -61,7 +61,8 @@ class Application {
         Navigation.events().registerAppLaunchedListener(() => {
             // start the app
             this.logger.debug(
-                `Xaman version ${GetAppVersionCode()}_${GetAppBuildNumber()}_${IsDebugBuild() ? 'D' : 'R'}`,
+                `Xaman version ${GetAppVersionCode()}_${GetAppBuildNumber()}_${IsDebugBuild() ? 'D' : 'R'}` +
+                    ` (over-the-air update ${services.UpdateService.getOtaUpdateId()})`,
             );
             this.logger.debug(`Device ${GetDeviceBrand()} - OS Version ${GetDeviceOSVersion()}`);
 
@@ -183,6 +184,8 @@ class Application {
             // lock the app and the start the app
             AuthenticationService.checkLockScreen().then(() => {
                 Navigator.startDefault();
+                // over-the-air updates: health + update check, independent of unlocking
+                services.UpdateService.onAppStarted();
 
                 // Switch theme if back from background and changed
                 services.AppService.on('appStateChange', newState => {
@@ -231,6 +234,7 @@ class Application {
             }).catch(this.handleError);
         } else {
             Navigator.startOnboarding();
+            services.UpdateService.onAppStarted();
         }
     };
 
