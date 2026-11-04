@@ -302,7 +302,8 @@ class AccountRepository extends BaseRepository<AccountModel> {
             await Vault.purge(account.publicKey);
         }
 
-        // remove the secret numbers of a degen account that was not backed up
+        // remove the secret numbers of a degen account that was not backed up. The entry is registered
+        // (degenSecrets), so if this fails, startup removes it once the account is gone.
         if (account.publicKey) {
             const degenVault = degenVaultName(account.publicKey);
             try {
@@ -310,7 +311,7 @@ class AccountRepository extends BaseRepository<AccountModel> {
                     await Vault.purge(degenVault);
                 }
             } catch {
-                // the account is removed regardless
+                // retried at startup
             }
         }
 
