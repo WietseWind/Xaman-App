@@ -24,10 +24,12 @@ import {
     OptionsModalPresentationStyle,
     OptionsModalTransitionStyle,
 } from 'react-native-navigation';
-import { AccountService, BackendService, StyleService } from '@services';
+import { AccountService, BackendService, LoggerService, StyleService } from '@services';
 import NetworkService from '@services/NetworkService';
 import { HomeWarningBanner } from '@components/Modules/HomeWarningBanner';
 import { showTangemBackupWarning } from '@common/utils/tangemBackup';
+import { getDegenInfo } from '@common/utils/degenSecret';
+import DegenSecrets from '@common/libs/degenSecrets';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel, NetworkModel } from '@store/models';
@@ -39,7 +41,7 @@ import { AppScreens, AppConfig } from '@common/constants';
 import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 
 import { Navigator } from '@common/helpers/navigator';
-import { Prompt } from '@common/helpers/interface';
+import { Prompt, Toast } from '@common/helpers/interface';
 
 import Preferences from '@common/libs/preferences';
 
@@ -60,6 +62,7 @@ import Localize from '@locale';
 import { SendViewProps } from '@screens/Send';
 import { AccountAddViewProps } from '@screens/Account/Add';
 import { ShareAccountOverlayProps } from '@screens/Overlay/ShareAccount';
+import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 
 import { AppStyles } from '@theme';
 import styles from './styles';
@@ -718,16 +721,41 @@ class HomeView extends Component<Props, State> {
                 subtitle={Localize.t('tangemBackup.warningBody')}
                 onPress={() => { Navigator.push(AppScreens.Account.Edit.BackupTangemCard, { account }); }} />;
         }
-        if (account.additionalInfoString?.startsWith('{"degenMode":')) {
+        if (getDegenInfo(account.additionalInfoString).kind !== 'none') {
             return <HomeWarningBanner variant="red" title={Localize.t('tangemBackup.secretsTitle')}
-                subtitle={Localize.t('tangemBackup.secretsBody')} onPress={() => {
-                    const secret = (JSON.parse(account.additionalInfoString || '{}')?.degenMode || '').split('.');
-                    Navigator.push<AccountGenerateViewProps>(AppScreens.Account.Generate, {
-                        initial: { step: 'ViewPrivateKey', secretNumbers: secret },
-                    });
-                }} />;
+                subtitle={Localize.t('tangemBackup.secretsBody')} onPress={this.onDegenBackupPress} />;
         }
         return null;
+    };
+
+    onDegenBackupPress = () => {
+        // the secret numbers are only shown after passcode or biometric authentication
+        Navigator.showOverlay<AuthenticateOverlayProps>(AppScreens.Overlay.Auth, {
+            canAuthorizeBiometrics: true,
+            onSuccess: this.showDegenSecretNumbers,
+        });
+    };
+
+    showDegenSecretNumbers = async () => {
+        const { account } = this.state;
+
+        let secretNumbers: string[] | undefined;
+        try {
+            if (account?.isValid()) {
+                secretNumbers = await DegenSecrets.read(account);
+            }
+        } catch (error) {
+            LoggerService.recordError('Unable to read degen secret numbers', error);
+        }
+
+        if (!secretNumbers?.length) {
+            Toast(Localize.t('global.unexpectedErrorOccurred'));
+            return;
+        }
+
+        Navigator.push<AccountGenerateViewProps>(AppScreens.Account.Generate, {
+            initial: { step: 'ViewPrivateKey', secretNumbers },
+        });
     };
 
     render() {

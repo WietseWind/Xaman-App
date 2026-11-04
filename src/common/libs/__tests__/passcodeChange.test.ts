@@ -186,3 +186,25 @@ it('retains recovery copies until every primary is restored, then removes all re
     }
     expect(blobs.has(PASSCODE_CHANGE_JOURNAL)).toBe(false);
 });
+
+it('re-keys degen secret entries listed by an async names(), and restores them on failure', async () => {
+    const { blobs, vault, deps } = setup();
+    blobs.set('C_DEGEN', { data: '123456.234567', key: 'old' });
+    const service = createPasscodeChange({ ...deps, names: async () => ['A', 'B', 'C_DEGEN'] });
+    await service.change('123456');
+    expect(deps.readHash()).toBe('new');
+    for (const name of ['A', 'B', 'C_DEGEN']) expect(blobs.get(name)!.key).toBe('new');
+    expect(await vault.open('C_DEGEN', 'new')).toBe('123456.234567');
+
+    // a failed batch puts every entry, the degen one too, back on the committed key
+    const failing = setup();
+    failing.blobs.set('C_DEGEN', { data: '123456.234567', key: 'old' });
+    failing.vault.reKeyBatch.mockImplementationOnce(async () => {
+        failing.blobs.set('C_DEGEN', { data: '123456.234567', key: 'new' });
+        throw new Error('keychain busy');
+    });
+    const failingService = createPasscodeChange({ ...failing.deps, names: async () => ['A', 'B', 'C_DEGEN'] });
+    await expect(failingService.change('123456')).rejects.toThrow('keychain busy');
+    expect(failing.deps.readHash()).toBe('old');
+    expect(await failing.vault.open('C_DEGEN', 'old')).toBe('123456.234567');
+});

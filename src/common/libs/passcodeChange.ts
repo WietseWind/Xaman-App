@@ -1,4 +1,5 @@
 import Vault from '@common/libs/vault';
+import DegenSecrets from '@common/libs/degenSecrets';
 import CoreRepository from '@store/repositories/core';
 import AccountRepository from '@store/repositories/account';
 import { EncryptionLevels } from '@store/types';
@@ -12,7 +13,7 @@ type Dependencies = {
     readHash: () => string;
     writeHash: (hash: string) => void;
     hash: (passcode: string) => Promise<string>;
-    names: () => string[];
+    names: () => string[] | Promise<string[]>;
 };
 
 /** Settings are the commit record. Before commit, recovery restores the old key.
@@ -82,7 +83,7 @@ export const createPasscodeChange = ({ vault, readHash, writeHash, hash, names }
         const newKey = await hash(passcode);
         if (!oldKey || !newKey) throw new Error('Unable to store the passcode');
         if (oldKey === newKey) return;
-        const journal: Journal = { version: 1, oldKey, newKey, names: [...new Set(names())] };
+        const journal: Journal = { version: 1, oldKey, newKey, names: [...new Set(await names())] };
         const storageKey = (await vault.getStorageEncryptionKey()).toString('hex');
         await vault.create(PASSCODE_CHANGE_JOURNAL, JSON.stringify(journal), storageKey);
         // Native create verifies its write. No account/settings mutation precedes it.
@@ -108,8 +109,11 @@ const passcodeChange = createPasscodeChange({
     readHash: () => CoreRepository.getSettings().passcode || '',
     writeHash: (hash) => CoreRepository.savePasscodeHash(hash),
     hash: (passcode) => CoreRepository.hashPasscode(passcode),
-    names: () =>
-        AccountRepository.findBy('encryptionLevel', EncryptionLevels.Passcode).map((account) => account.publicKey),
+    names: async () => [
+        ...AccountRepository.findBy('encryptionLevel', EncryptionLevels.Passcode).map((account) => account.publicKey),
+        // secret numbers of degen accounts that are not backed up yet
+        ...(await DegenSecrets.vaultNames()),
+    ],
 });
 export const changePasscode = passcodeChange.change;
 export const recoverPasscodeChange = passcodeChange.recover;
