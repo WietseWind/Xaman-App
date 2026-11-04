@@ -184,8 +184,8 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  
      private PermissionAwareActivity getPermissionAwareActivity() {
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
---- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	1985-10-26 09:15:00
-+++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java	2026-10-27 17:12:06
+--- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
 @@ -9,6 +9,7 @@
  import android.view.MenuItem;
  import android.view.MotionEvent;

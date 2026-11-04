@@ -94,7 +94,7 @@ index 1111111..2222222 100644
  
  #include <ReactCommon/RuntimeExecutor.h>
  #include <react/renderer/runtimescheduler/RuntimeSchedulerClock.h>
-@@ -142,4 +145,6 @@ class RuntimeScheduler final : RuntimeSchedulerBase {
+@@ -143,3 +146,5 @@ class RuntimeScheduler final : RuntimeSchedulerBase {
  };
  
  } // namespace facebook::react
