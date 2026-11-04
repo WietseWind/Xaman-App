@@ -167,6 +167,25 @@
             android:resource="@color/push_notification"
             tools:replace="android:resource" />
 
+        <!-- Over-the-air JS updates (expo-updates). Off until the code signing certificate is in place. -->
+        <meta-data
+            android:name="expo.modules.updates.ENABLED"
+            android:value="false" />
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATE_URL"
+            android:value="https://xaman.app/api/v1/app/ota/manifest" />
+        <!-- {version}.{build} of this native build; updates only install on this exact runtime -->
+        <meta-data
+            android:name="expo.modules.updates.EXPO_RUNTIME_VERSION"
+            android:value="@string/expo_runtime_version" />
+        <!-- the native side never checks by itself; the app checks from JS after launch -->
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH"
+            android:value="NEVER" />
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS"
+            android:value="0" />
+
         <receiver
             android:name="libs.notification.NotificationMessageReceiver"
             android:exported="true"

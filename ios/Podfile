@@ -5,6 +5,10 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+# Expo modules autolinking (expo-updates for over-the-air JS updates)
+require File.join(File.dirname(Pod::Executable.execute_command('node', ['--print',
+  'require.resolve("expo/package.json", {paths: [process.argv[1]]})', __dir__]).strip), 'scripts/autolinking')
+
 platform :ios, '15.0'
 prepare_react_native_project!
 
@@ -23,6 +27,7 @@ if linkage != nil
 end
 
 target 'Xaman' do
+  use_expo_modules!
   config = use_native_modules!
 
       pod 'Firebase', :modular_headers => true
@@ -36,6 +41,8 @@ target 'Xaman' do
 
   use_react_native!(
     :path => config[:reactNativePath],
+    # explicit (the RN 0.74 default): `expo export` refuses to build bytecode when it can't tell
+    :hermes_enabled => true,
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 

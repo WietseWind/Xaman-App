@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Over-the-air JS updates (expo-updates). Off until the code signing certificate is in place. -->
+	<key>EXUpdatesEnabled</key>
+	<false/>
+	<key>EXUpdatesURL</key>
+	<string>https://xaman.app/api/v1/app/ota/manifest</string>
+	<!-- {version}.{build} of this native build; updates only install on this exact runtime -->
+	<key>EXUpdatesRuntimeVersion</key>
+	<string>5.4.0.456</string>
+	<!-- the native side never checks by itself; the app checks from JS after launch -->
+	<key>EXUpdatesCheckOnLaunch</key>
+	<string>NEVER</string>
+	<key>EXUpdatesLaunchWaitMs</key>
+	<integer>0</integer>
+</dict>
+</plist>

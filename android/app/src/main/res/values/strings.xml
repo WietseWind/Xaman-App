@@ -4,4 +4,7 @@
     <string name="splash_screen_background">Splash screen background pattern</string>
 
     <string name="default_notification_channel_id">fcm_fallback_notification_channel</string>
+
+    <!-- over-the-air updates: {version}.{build} of this native build (see scripts/bump-build-number.sh) -->
+    <string name="expo_runtime_version" translatable="false">5.4.0.456</string>
 </resources>

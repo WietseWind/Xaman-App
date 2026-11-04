@@ -75,4 +75,24 @@ allprojects {
     }
 }
 
+// expo-modules-core (Expo SDK 51, over-the-air updates) compiles against React Native 0.74's folly
+// headers, which NDK 28's libc++ rejects (std::char_traits<unsigned char>). Build that one module with
+// NDK 26, like the local React Native AARs (app/libs/readme.txt), linked for 16 KB pages.
+subprojects {
+    afterEvaluate { project ->
+        if (project.name == 'expo-modules-core') {
+            project.android {
+                ndkVersion '26.1.10909125'
+                defaultConfig {
+                    externalNativeBuild {
+                        cmake {
+                            arguments '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 apply plugin: "com.facebook.react.rootproject"
