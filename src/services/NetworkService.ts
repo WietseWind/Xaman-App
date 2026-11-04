@@ -24,6 +24,7 @@ import { NetworkType } from '@store/types';
 
 import { Navigator } from '@common/helpers/navigator';
 import { GetAppVersionCode } from '@common/helpers/app';
+import CrashReporter from '@common/libs/crash';
 
 import { NormalizeFeeDataSet, PrepareTxForHookFee } from '@common/utils/fee';
 
@@ -145,6 +146,7 @@ class NetworkService extends EventEmitter {
                 // set the current network
                 this.network = coreSettings.network;
                 this.prepareNetworkDefinitions(this.network);
+                CrashReporter.setKeys({ network: this.network?.key, network_id: this.network?.networkId });
 
                 // set current network reserve
                 this.networkReserve = {
@@ -535,6 +537,9 @@ class NetworkService extends EventEmitter {
                 // set the default network on the store
                 CoreRepository.setDefaultNetwork(network);
 
+                CrashReporter.breadcrumb(`network switch ${network.key}`);
+                CrashReporter.setKeys({ network: network.key, network_id: network.networkId });
+
                 // emit the event
                 this.emit('networkChange', network);
 
@@ -857,6 +862,7 @@ class NetworkService extends EventEmitter {
         }
 
         this.logger.error('Socket Error: ', error || 'Tried all nodes!');
+        CrashReporter.breadcrumb('network error');
     };
 
     /**
@@ -883,6 +889,7 @@ class NetworkService extends EventEmitter {
 
         // log the connection
         this.logger.debug(`Connected to node ${connectedNode} [${publicKey}]`);
+        CrashReporter.breadcrumb('network connected');
 
         // run post connect functions
         [this.updateNetworkReserve, this.updateNetworkDefinitions, this.updateNetworkFeatures].forEach((fn) => fn());
@@ -900,6 +907,7 @@ class NetworkService extends EventEmitter {
 
         // log that socked is closed
         this.logger.warn('Socket closed');
+        CrashReporter.breadcrumb('network closed');
     };
 
     /**

@@ -680,7 +680,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n# Release: archive the Hermes source map of every build outside the repo, to symbolicate Crashlytics JS stacks (scripts/archive-sourcemap.sh, docs/crash-reporting.md)\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  export SOURCEMAP_FILE=\"$DERIVED_FILE_DIR/main.jsbundle.map\"\n  mkdir -p \"$DERIVED_FILE_DIR\"\n  rm -f \"$SOURCEMAP_FILE\"\nfi\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  /bin/bash \"$PROJECT_DIR/../scripts/archive-sourcemap.sh\" ios \"$MARKETING_VERSION\" \"$CURRENT_PROJECT_VERSION\" \"$SOURCEMAP_FILE\"\nfi\n";
 		};
 		590E29A235634955291A8083 /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;

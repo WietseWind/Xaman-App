@@ -20,6 +20,7 @@ import { SignedObjectType } from '@common/libs/ledger/types';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
 
 import Vault from '@common/libs/vault';
+import CrashReporter from '@common/libs/crash';
 
 import { GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
 import { startTangemOfflineSession } from '@common/utils/tangemSession';
@@ -279,6 +280,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     sign = (method: AuthMethods, options: SignOptions) => {
+        CrashReporter.breadcrumb(`sign start ${method}`);
         // console.log('Vault overlay SIGN')
         switch (method) {
             case AuthMethods.BIOMETRIC:
@@ -622,6 +624,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     onSign = (signedObject: SignedObjectType, signedServiceFeeObject?: SignedObjectType) => {
+        CrashReporter.breadcrumb('sign done');
         const { onSign } = this.props;
 
         // console.log('Vault overlay ONSIGN')

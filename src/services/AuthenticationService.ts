@@ -7,6 +7,7 @@ import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 import { GetElapsedRealtime } from '@common/helpers/device';
 import { ExitApp } from '@common/helpers/app';
+import CrashReporter from '@common/libs/crash';
 
 import { Biometric, BiometricErrors } from '@common/libs/biometric';
 import Vault from '@common/libs/vault';
@@ -164,6 +165,9 @@ class AuthenticationService extends EventEmitter {
      * @param {LockStatus} status current lock status
      */
     private setLockStatus = (status: LockStatus) => {
+        if (this.lockStatus !== status) {
+            CrashReporter.breadcrumb(`lock ${status}`);
+        }
         this.lockStatus = status;
 
         // emit the event

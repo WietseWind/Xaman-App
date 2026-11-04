@@ -23,6 +23,7 @@ import { AppScreens } from '@common/constants';
 import { VibrateHapticFeedback, Prompt } from '@common/helpers/interface';
 import { AppScreenKeys, Navigator } from '@common/helpers/navigator';
 import { Clipboard } from '@common/helpers/clipboard';
+import CrashReporter from '@common/libs/crash';
 
 import { NormalizeDestination } from '@common/utils/codec';
 import { StringTypeCheck } from '@common/utils/string';
@@ -688,6 +689,9 @@ class ScanModal extends Component<Props, State> {
         if (detectedType === StringType.PayId) {
             detectedType = StringType.XrplDestination;
         }
+
+        // the type only: scanned content can be a secret
+        CrashReporter.breadcrumb(`scan ${detectedType}${clipboard ? ' (clipboard)' : ''}`);
 
         // if any black list defined check in the list
         if (!type && typeof onRead === 'function' && blackList) {

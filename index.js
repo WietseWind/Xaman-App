@@ -1,5 +1,8 @@
 // import './.cosmos/cosmos.app';
 
+// must stay first: scrubs secrets from every uncaught error (see docs/crash-reporting.md)
+import '@common/libs/crash/install';
+
 import './debug';
 import './global';
 
