@@ -27,6 +27,7 @@ import {
 import { SetFlagSecure, ExitApp, GetAppVersionCode, GetAppBuildNumber, IsDebugBuild } from '@common/helpers/app';
 
 import Vault from '@common/libs/vault';
+import CrashReporter from '@common/libs/crash';
 
 // Storage
 import { CoreRepository } from '@store/repositories';
@@ -48,12 +49,14 @@ messaging().setBackgroundMessageHandler(async () => {
 class Application {
     private storage: DataStorage;
     private initialized: boolean;
+    private settingsReported: boolean;
     private logger: any;
 
     constructor() {
         this.storage = new DataStorage();
         this.logger = services.LoggerService.createLogger('App');
         this.initialized = false;
+        this.settingsReported = false;
     }
 
     run() {
@@ -67,30 +70,38 @@ class Application {
             this.logger.debug(`Device ${GetDeviceBrand()} - OS Version ${GetDeviceOSVersion()}`);
 
             // tasks need to run before booting the app
-            let tasks = [];
+            let tasks: Array<[string, () => Promise<any>]> = [];
 
             // if already initialized then soft boot
             // NOTE: this can happen if Activity is destroyed and re-initiated
             if (this.initialized) {
-                tasks = [this.configure, this.reinstateServices];
+                tasks = [
+                    ['configure', this.configure],
+                    ['reinstateServices', this.reinstateServices],
+                ];
             } else {
                 tasks = [
-                    this.checkup,
-                    this.initializeStorage,
-                    this.configure,
-                    this.initializeServices,
-                    this.registerScreens,
+                    ['checkup', this.checkup],
+                    ['initializeStorage', this.initializeStorage],
+                    ['configure', this.configure],
+                    ['initializeServices', this.initializeServices],
+                    ['registerScreens', this.registerScreens],
                 ];
             }
 
             // run them in waterfall
             tasks
-                .reduce((accumulator: any, callback) => {
-                    return accumulator.then(callback);
+                .reduce((accumulator: Promise<any>, [name, callback]) => {
+                    return accumulator.then(() => {
+                        // a startup crash report shows the step it died in
+                        CrashReporter.breadcrumb(`boot ${name}`);
+                        return callback();
+                    });
                 }, Promise.resolve())
                 .then(() => {
                     // if everything went well boot the app
                     this.initialized = true;
+                    this.reportSettings();
                     this.boot();
                 })
                 .catch(this.handleError);
@@ -134,6 +145,35 @@ class Application {
         // if error is not caused from device being jail-broken or rooted then report error to the crashlytics
         if (![ErrorMessages.runningOnRootedDevice, ErrorMessages.runningOnJailBrokenDevice].includes(message)) {
             services.LoggerService.logError('APP_STARTUP_ERROR', exception);
+        }
+    };
+
+    /**
+     * Crash report keys from settings (no user data), kept up to date on change
+     */
+    reportSettings = () => {
+        // re-wrap if anything installed a global error handler on top of the crash reporter
+        CrashReporter.install();
+
+        const report = () => {
+            const core = CoreRepository.getSettings();
+            CrashReporter.setKeys({
+                developer_mode: !!core?.developerMode,
+                locale: core?.language ?? '',
+                theme: core?.theme ?? '',
+            });
+        };
+        report();
+
+        if (!this.settingsReported) {
+            this.settingsReported = true;
+            // NOTE: the second argument holds the changed fields, which can include the passcode hash:
+            // only ever look at the field names
+            CoreRepository.on('updateSettings', (_settings: any, changes: any) => {
+                if (changes && ['developerMode', 'language', 'theme'].some((key) => key in changes)) {
+                    report();
+                }
+            });
         }
     };
 

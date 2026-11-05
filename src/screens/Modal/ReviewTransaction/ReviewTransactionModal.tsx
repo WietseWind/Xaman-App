@@ -7,7 +7,7 @@ import { Alert, BackHandler, Keyboard, Linking, NativeEventSubscription } from '
 
 import { AppScreens } from '@common/constants';
 
-import { NetworkService, PushNotificationsService, ResolverService } from '@services';
+import { LoggerService, NetworkService, PushNotificationsService, ResolverService } from '@services';
 
 import { AccountRepository, CoreRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
@@ -82,6 +82,11 @@ class ReviewTransactionModal extends Component<Props, State> {
     static getDerivedStateFromError(error: any): Partial<State> {
         // Update state so the next render will show the fallback UI.
         return { hasError: true, errorMessage: error?.message };
+    }
+
+    componentDidCatch(error: Error) {
+        // a render crash here only shows the fallback and rejects the payload: report it (scrubbed)
+        LoggerService.recordError('ReviewTransaction render error', error);
     }
 
     componentDidMount() {

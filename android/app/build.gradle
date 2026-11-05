@@ -179,7 +179,9 @@ android {
             * nativeSymbolUploadEnabled to true along with a pointer to native libs. */
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
-                unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/out/lib'
+                // AGP 8 path; only libs built from source here are unstripped (e.g. VisionCamera),
+                // the React Native / Hermes AARs in libs/ ship stripped
+                unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib'
             }
         }
     }
@@ -395,4 +397,26 @@ configurations.all {
 // incremental build kept an old id and commit time next to a newer bundle. Always regenerate.
 tasks.matching { it.name.startsWith('create') && it.name.endsWith('UpdatesResources') }.configureEach {
     outputs.upToDateWhen { false }
+}
+
+/* Crashlytics ==================================================================== */
+// Archive the release JS source map of every build outside the repo, to symbolicate Crashlytics JS stacks
+// (scripts/archive-sourcemap.sh, docs/crash-reporting.md). Fails the build when the map can't be archived.
+tasks.matching { it.name == 'createBundleReleaseJsAndAssets' }.configureEach { bundleTask ->
+    bundleTask.doLast {
+        def map = file("$buildDir/generated/sourcemaps/react/release/index.android.bundle.map")
+        exec {
+            commandLine '/bin/bash', "$rootDir/../scripts/archive-sourcemap.sh",
+                'android', canonicalVersionName, "${canonicalVersionCode}", map.absolutePath
+        }
+    }
+}
+
+// Upload NDK symbols after local release builds (skip with -PskipCrashlyticsSymbols, never on CI)
+afterEvaluate {
+    if (!System.getenv("CI") && !project.hasProperty('skipCrashlyticsSymbols')) {
+        ['assembleRelease', 'bundleRelease'].each { name ->
+            tasks.findByName(name)?.finalizedBy('uploadCrashlyticsSymbolFileRelease')
+        }
+    }
 }

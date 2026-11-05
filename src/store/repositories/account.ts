@@ -1,7 +1,8 @@
 import Realm from 'realm';
-import { flatMap, has, filter, find } from 'lodash';
+import { flatMap, has, filter, find, sortBy } from 'lodash';
 
 import Vault from '@common/libs/vault';
+import { degenVaultName } from '@common/utils/degenSecret';
 import { accountDetailsId } from '@common/helpers/accountNetwork';
 
 import { AccountModel, AccountDetailsModel, TrustLineModel } from '@store/models';
@@ -198,10 +199,10 @@ class AccountRepository extends BaseRepository<AccountModel> {
     };
 
     /**
-     * get list of available accounts for signing
+     * get list of available accounts for signing, in the user's order of the Accounts list
      */
     getSignableAccounts = (): AccountModel[] => {
-        const accounts = this.findAll();
+        const accounts = sortBy(Array.from(this.findAll()), (account) => account.order ?? 0);
 
         const availableAccounts = [] as Array<AccountModel>;
 
@@ -299,6 +300,19 @@ class AccountRepository extends BaseRepository<AccountModel> {
         // remove private key if account has full access
         if (account.accessLevel === AccessLevels.Full) {
             await Vault.purge(account.publicKey);
+        }
+
+        // remove the secret numbers of a degen account that was not backed up. The entry is registered
+        // (degenSecrets), so if this fails, startup removes it once the account is gone.
+        if (account.publicKey) {
+            const degenVault = degenVaultName(account.publicKey);
+            try {
+                if (await Vault.exist(degenVault)) {
+                    await Vault.purge(degenVault);
+                }
+            } catch {
+                // retried at startup
+            }
         }
 
         // remove account trust lines

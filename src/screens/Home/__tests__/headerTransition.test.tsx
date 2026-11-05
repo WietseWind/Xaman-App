@@ -5,6 +5,7 @@ import HomeView from '../HomeView';
 import NetworkService from '@services/NetworkService';
 import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
+import DegenSecrets from '@common/libs/degenSecrets';
 
 jest.mock('@store/repositories', () => ({
     CoreRepository: { getSettings: () => ({ account: {}, network: {} }), on: jest.fn(), off: jest.fn() },
@@ -17,7 +18,7 @@ jest.mock('@common/libs/preferences', () => ({
 jest.mock('react-native-navigation', () => ({
     Navigation: { events: () => ({ bindComponent: () => ({ remove: jest.fn() }) }) },
 }));
-jest.mock('@common/helpers/navigator', () => ({ Navigator: { push: jest.fn() } }));
+jest.mock('@common/helpers/navigator', () => ({ Navigator: { push: jest.fn(), showOverlay: jest.fn() } }));
 jest.mock('tangem-sdk-react-native', () => ({
     __esModule: true, default: { stopSession: () => Promise.resolve() },
 }));
@@ -155,20 +156,62 @@ it('cancels a pending sheet open when the account or network changes', async () 
     expect(home.state.hideTopElements).toBe(false);
 });
 
-it('preserves the quick-onboarding secret-number backup action on the whole red banner', async () => {
+const authenticate = async () => {
+    const [screen, props] = jest.mocked(Navigator.showOverlay).mock.lastCall as any;
+    expect(screen).toBe(AppScreens.Overlay.Auth);
+    expect(props.canAuthorizeBiometrics).toBe(true);
+    await props.onSuccess();
+};
+
+it('asks for the passcode or biometrics before the quick-onboarding red banner shows the secret numbers', async () => {
     const home = await mount();
+    jest.mocked(Navigator.push).mockClear();
     act(() =>
         home.setState({
-            account: { type: 'Regular', additionalInfoString: '{"degenMode":"0.0.0.0.0.0.0.0"}' } as any,
+            account: {
+                type: 'Regular',
+                isValid: () => true,
+                additionalInfoString: '{"degenMode":"0.0.0.0.0.0.0.0"}',
+            } as any,
         }),
     );
     jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ key: 'MAINNET' } as any);
     const warning = home.renderDegenWarning()!;
     expect(warning.props.variant).toBe('red');
     warning.props.onPress();
+    expect(Navigator.push).not.toHaveBeenCalled();
+    await authenticate();
     expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Generate, {
         initial: { step: 'ViewPrivateKey', secretNumbers: Array(8).fill('0') },
     });
+});
+
+it('shows the secret numbers of a quick-onboarding account from the vault after authentication', async () => {
+    const home = await mount();
+    jest.mocked(Navigator.push).mockClear();
+    const read = jest.spyOn(DegenSecrets, 'read').mockResolvedValue(Array(8).fill('1'));
+    act(() =>
+        home.setState({
+            account: { type: 'Regular', isValid: () => true, additionalInfoString: '{"degenVault":true}' } as any,
+        }),
+    );
+    jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ key: 'MAINNET' } as any);
+    const warning = home.renderDegenWarning()!;
+    expect(warning.props.variant).toBe('red');
+    warning.props.onPress();
+    await authenticate();
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Generate, {
+        initial: { step: 'ViewPrivateKey', secretNumbers: Array(8).fill('1') },
+    });
+    read.mockRestore();
+});
+
+it('shows no red banner once the secret numbers are backed up', async () => {
+    const home = await mount();
+    act(() => home.setState({ account: { type: 'Regular', additionalInfoString: '{}' } as any }));
+    jest.spyOn(NetworkService, 'getNetwork').mockReturnValue({ key: 'MAINNET' } as any);
+    expect(home.renderDegenWarning()).toBeNull();
 });
 
 it('opens the native backup wizard from the eligible Tangem Home banner and hides a confirmed link', async () => {

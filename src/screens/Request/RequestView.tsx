@@ -79,7 +79,8 @@ class RequestView extends Component<Props, State> {
         super(props);
 
         const defaultAccount = CoreRepository.getDefaultAccount();
-        const accounts = AccountRepository.getAccounts();
+        // in the user's order of the Accounts list
+        const accounts = AccountRepository.getAccounts().sorted([['order', false]]);
 
         this.state = {
             coreSettings: CoreRepository.getSettings(),

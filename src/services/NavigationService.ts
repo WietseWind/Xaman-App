@@ -23,6 +23,7 @@ import {
 import { Toast, VibrateHapticFeedback } from '@common/helpers/interface';
 import { ExitApp } from '@common/helpers/app';
 import { HideLaunchSplash } from '@common/helpers/device';
+import CrashReporter from '@common/libs/crash';
 
 import { AppScreens } from '@common/constants';
 
@@ -216,6 +217,20 @@ class NavigationService extends EventEmitter {
 
     onOverlayDismissed = (componentName: AppScreenKeys) => {
         this.overlays = this.overlays.filter((overlay) => overlay !== componentName);
+        this.reportNavigation(`overlay closed ${componentName}`);
+    };
+
+    /**
+     * Crash report breadcrumb + keys: registered component names only, never RNN event objects
+     * (those carry passProps, which can hold accounts and secrets).
+     */
+    reportNavigation = (breadcrumb: string) => {
+        CrashReporter.breadcrumb(`nav ${breadcrumb}`);
+        CrashReporter.setKeys({
+            screen: this.currentScreen ?? '',
+            modal: last(this.modals) ?? '',
+            overlay: last(this.overlays) ?? '',
+        });
     };
 
     hideLaunchSplashOnce = () => {
@@ -396,6 +411,7 @@ class NavigationService extends EventEmitter {
         if (this.currentScreen !== currentScreen) {
             analytics().logScreenView({ screen_name: currentScreen });
             this.currentScreen = currentScreen;
+            this.reportNavigation(`screen ${currentScreen}`);
         }
     };
 
@@ -403,6 +419,7 @@ class NavigationService extends EventEmitter {
         if (!this.modals.includes(modal)) {
             analytics().logScreenView({ screen_name: modal });
             this.modals.push(modal);
+            this.reportNavigation(`modal ${modal}`);
         }
     };
 
@@ -413,6 +430,9 @@ class NavigationService extends EventEmitter {
     pullCurrentModal = (): string | undefined => {
         const lastModal = last(this.modals);
         this.modals = take(this.modals, this.modals.length - 1);
+        if (lastModal) {
+            this.reportNavigation(`modal closed ${lastModal}`);
+        }
         return lastModal;
     };
 
@@ -420,6 +440,7 @@ class NavigationService extends EventEmitter {
         if (!this.overlays.includes(overlay)) {
             analytics().logScreenView({ screen_name: overlay });
             this.overlays.push(overlay);
+            this.reportNavigation(`overlay ${overlay}`);
         }
     };
 
@@ -436,6 +457,7 @@ class NavigationService extends EventEmitter {
     onRootChange = (root: RootType) => {
         if (this.currentRoot !== root) {
             this.currentRoot = root;
+            CrashReporter.breadcrumb(`nav root ${root}`);
         }
 
         this.emit('setRoot', root);
