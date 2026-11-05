@@ -11,6 +11,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		559A5D08536F62959115419B /* libPods-Xaman.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E970B0A9270522FB0AF008B0 /* libPods-Xaman.a */; };
+		7561E9D7D704E790023BE093 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70123610EC56B54A789AC3DC /* ExpoModulesProvider.swift */; };
 		A2021F6A28E591F300506772 /* CryptoTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2021F6928E591F300506772 /* CryptoTest.swift */; };
 		A2021F7528E5C53000506772 /* CipherTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A2021F7428E5C53000506772 /* CipherTest.m */; };
 		A2021F7728E6DF9700506772 /* VaultMangerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A2021F7628E6DF9700506772 /* VaultMangerTest.m */; };
@@ -63,7 +64,11 @@
 		A2ED131C252F113A002AFC09 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2ED131B252F113A002AFC09 /* StoreKit.framework */; };
 		A2F4F39528802A4600444302 /* UniqueIdProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F4F39428802A4600444302 /* UniqueIdProvider.m */; };
 		A2F4F398288168CB00444302 /* Clipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F4F397288168CB00444302 /* Clipboard.m */; };
+		A2OTA0000000000000000002 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2OTA0000000000000000001 /* Expo.plist */; };
+		A2OTA0000000000000000004 /* XamanOta.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2OTA0000000000000000003 /* XamanOta.swift */; };
+		A2OTA0000000000000000006 /* OtaRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = A2OTA0000000000000000005 /* OtaRecovery.m */; };
 		A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A2SC0E012710000200A75B9A /* SceneDelegate.m */; };
+		BDFF48F99E375F02C4E7E26D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743A6DDE2E9FC8B600BF711C /* ExpoModulesProvider.swift */; };
 		CE2349EA1CF53D755A66BD4C /* libPods-Xaman-XamanTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AB54F464B5BCA7B88FD9167 /* libPods-Xaman-XamanTests.a */; };
 /* End PBXBuildFile section */
 
@@ -88,6 +93,8 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Xaman/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Xaman/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Xaman/main.m; sourceTree = "<group>"; };
+		70123610EC56B54A789AC3DC /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Xaman/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		743A6DDE2E9FC8B600BF711C /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Xaman-XamanTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		7AB54F464B5BCA7B88FD9167 /* libPods-Xaman-XamanTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Xaman-XamanTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2021F6828E591F300506772 /* XamanTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XamanTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		A2021F6928E591F300506772 /* CryptoTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoTest.swift; sourceTree = "<group>"; };
@@ -174,6 +181,10 @@
 		A2F4F39428802A4600444302 /* UniqueIdProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UniqueIdProvider.m; sourceTree = "<group>"; };
 		A2F4F396288168BC00444302 /* Clipboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Clipboard.h; sourceTree = "<group>"; };
 		A2F4F397288168CB00444302 /* Clipboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Clipboard.m; sourceTree = "<group>"; };
+		A2OTA0000000000000000001 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Expo.plist; path = Xaman/Expo.plist; sourceTree = "<group>"; };
+		A2OTA0000000000000000003 /* XamanOta.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XamanOta.swift; path = Xaman/Libs/Common/Ota/XamanOta.swift; sourceTree = "<group>"; };
+		A2OTA0000000000000000005 /* OtaRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OtaRecovery.m; path = Xaman/Libs/Common/Ota/OtaRecovery.m; sourceTree = "<group>"; };
+		A2OTA0000000000000000007 /* OtaRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OtaRecovery.h; path = Xaman/Libs/Common/Ota/OtaRecovery.h; sourceTree = "<group>"; };
 		A2SC0E012710000100A75B9A /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = Xaman/SceneDelegate.h; sourceTree = "<group>"; };
 		A2SC0E012710000200A75B9A /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SceneDelegate.m; path = Xaman/SceneDelegate.m; sourceTree = "<group>"; };
 		B712F110E060129D749043CD /* Pods-Xaman.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Xaman.debug.xcconfig"; path = "Target Support Files/Pods-Xaman/Pods-Xaman.debug.xcconfig"; sourceTree = "<group>"; };
@@ -239,6 +250,10 @@
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				A2SC0E012710000100A75B9A /* SceneDelegate.h */,
 				A2SC0E012710000200A75B9A /* SceneDelegate.m */,
+				A2OTA0000000000000000001 /* Expo.plist */,
+				A2OTA0000000000000000003 /* XamanOta.swift */,
+				A2OTA0000000000000000007 /* OtaRecovery.h */,
+				A2OTA0000000000000000005 /* OtaRecovery.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				A2B145CA243E935F00E952B6 /* LaunchScreen.storyboard */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -262,6 +277,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		57DB9F0B63AACF6F1419F8B0 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				9DE3208E7AC151F209084C07 /* Xaman */,
+				A939BE5C829A0380C6AD085C /* XamanTests */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -278,6 +302,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				ED14F17356ED5A81E9920E69 /* Pods */,
+				57DB9F0B63AACF6F1419F8B0 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -291,6 +316,14 @@
 				00E356EE1AD99517003FC87E /* XamanTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9DE3208E7AC151F209084C07 /* Xaman */ = {
+			isa = PBXGroup;
+			children = (
+				70123610EC56B54A789AC3DC /* ExpoModulesProvider.swift */,
+			);
+			name = Xaman;
 			sourceTree = "<group>";
 		};
 		A21FD5D728EDA7C400030EF0 /* extentions */ = {
@@ -533,6 +566,14 @@
 			path = Providers;
 			sourceTree = "<group>";
 		};
+		A939BE5C829A0380C6AD085C /* XamanTests */ = {
+			isa = PBXGroup;
+			children = (
+				743A6DDE2E9FC8B600BF711C /* ExpoModulesProvider.swift */,
+			);
+			name = XamanTests;
+			sourceTree = "<group>";
+		};
 		ED14F17356ED5A81E9920E69 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -552,6 +593,7 @@
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "XamanTests" */;
 			buildPhases = (
 				E9D62753F665C0D1637F6639 /* [CP] Check Pods Manifest.lock */,
+				A270234048F961D6D972F18F /* [Expo] Configure project */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
@@ -574,6 +616,7 @@
 			buildPhases = (
 				A3F03C47283A8EFCD65408F9 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
+				4877DEE6562FE149E2DD809D /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -654,6 +697,7 @@
 				A2AFF12F243E79C30007005E /* UbuntuMono-BoldItalic.ttf in Resources */,
 				A2AFF131243E79C30007005E /* Proxima Nova Alt Bold.otf in Resources */,
 				A27996282BB5AFCE00998100 /* PrivacyInfo.xcprivacy in Resources */,
+				A2OTA0000000000000000002 /* Expo.plist in Resources */,
 				A2AFF136243E79C30007005E /* Proxima Nova Black.otf in Resources */,
 				A2AFF130243E79C30007005E /* UbuntuMono-Bold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
@@ -680,7 +724,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n# Release: archive the Hermes source map of every build outside the repo, to symbolicate Crashlytics JS stacks (scripts/archive-sourcemap.sh, docs/crash-reporting.md)\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  export SOURCEMAP_FILE=\"$DERIVED_FILE_DIR/main.jsbundle.map\"\n  mkdir -p \"$DERIVED_FILE_DIR\"\n  rm -f \"$SOURCEMAP_FILE\"\nfi\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  /bin/bash \"$PROJECT_DIR/../scripts/archive-sourcemap.sh\" ios \"$MARKETING_VERSION\" \"$CURRENT_PROJECT_VERSION\" \"$SOURCEMAP_FILE\"\nfi\n";
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n# Bundle with Expo CLI (export:embed): same asset hashing as over-the-air updates\nexport BUNDLE_COMMAND=\"export:embed\"\nexport CLI_PATH=\"$PROJECT_DIR/../node_modules/@expo/cli/build/bin/cli\"\n\n# Release: archive the Hermes source map of every build outside the repo, to symbolicate Crashlytics JS stacks (scripts/archive-sourcemap.sh, docs/crash-reporting.md)\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  export SOURCEMAP_FILE=\"$DERIVED_FILE_DIR/main.jsbundle.map\"\n  mkdir -p \"$DERIVED_FILE_DIR\"\n  rm -f \"$SOURCEMAP_FILE\"\nfi\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  /bin/bash \"$PROJECT_DIR/../scripts/archive-sourcemap.sh\" ios \"$MARKETING_VERSION\" \"$CURRENT_PROJECT_VERSION\" \"$SOURCEMAP_FILE\"\nfi\n";
+		};
+		4877DEE6562FE149E2DD809D /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Xaman/expo-configure-project.sh\"\n";
 		};
 		590E29A235634955291A8083 /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -716,6 +779,10 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Xaman/Pods-Xaman-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXUpdates/EXUpdates.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCore/FirebaseCore_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCoreExtension/FirebaseCoreExtension_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCoreInternal/FirebaseCoreInternal_Privacy.bundle",
@@ -726,6 +793,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleUtilities/GoogleUtilities_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC/FBLPromises_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesSwift/Promises_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ReachabilitySwift/ReachabilitySwift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/RCTI18nStrings.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RealmJS/RealmJS.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TangemSdk/TangemSdk.bundle",
@@ -733,6 +801,10 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXUpdates.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseCore_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseCoreExtension_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseCoreInternal_Privacy.bundle",
@@ -743,6 +815,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleUtilities_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FBLPromises_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Promises_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ReachabilitySwift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCTI18nStrings.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RealmJS.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TangemSdk.bundle",
@@ -752,6 +825,25 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Xaman/Pods-Xaman-resources.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		A270234048F961D6D972F18F /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Xaman-XamanTests/expo-configure-project.sh\"\n";
 		};
 		A275AAF3297057150055DFD6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -835,6 +927,10 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Xaman-XamanTests/Pods-Xaman-XamanTests-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXUpdates/EXUpdates.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCore/FirebaseCore_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCoreExtension/FirebaseCoreExtension_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCoreInternal/FirebaseCoreInternal_Privacy.bundle",
@@ -845,6 +941,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleUtilities/GoogleUtilities_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC/FBLPromises_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesSwift/Promises_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ReachabilitySwift/ReachabilitySwift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/RCTI18nStrings.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RealmJS/RealmJS.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TangemSdk/TangemSdk.bundle",
@@ -852,6 +949,10 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXUpdates.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseCore_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseCoreExtension_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseCoreInternal_Privacy.bundle",
@@ -862,6 +963,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleUtilities_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FBLPromises_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Promises_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ReachabilitySwift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCTI18nStrings.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RealmJS.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TangemSdk.bundle",
@@ -944,6 +1046,7 @@
 				A2021F7528E5C53000506772 /* CipherTest.m in Sources */,
 				A2021F6A28E591F300506772 /* CryptoTest.swift in Sources */,
 				A2021F7728E6DF9700506772 /* VaultMangerTest.m in Sources */,
+				BDFF48F99E375F02C4E7E26D /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -972,6 +1075,8 @@
 				A2805CE224D1982400B5552E /* LocalNotification.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				A2SC0E012710000300A75B9A /* SceneDelegate.m in Sources */,
+				A2OTA0000000000000000004 /* XamanOta.swift in Sources */,
+				A2OTA0000000000000000006 /* OtaRecovery.m in Sources */,
 				A2BE295B2C0C977600F66E10 /* InAppPurchase+ProductRequestHandler.m in Sources */,
 				A2AFF13B243E79C30007005E /* QRCode.m in Sources */,
 				A2AFF13F243E79C30007005E /* CIColor+QRCode.m in Sources */,
@@ -985,6 +1090,7 @@
 				A2AFF140243E79C30007005E /* NSString+Utils.m in Sources */,
 				A22A151A28C0BECA001A632E /* Cipher.m in Sources */,
 				A2BE295E2C0D028E00F66E10 /* InAppPurchase+TransactionObserver.m in Sources */,
+				7561E9D7D704E790023BE093 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1076,6 +1182,7 @@
 					"-lc++",
 					"$(inherited)",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xrpllabs.xumm.XamanTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "XamanTests/XamanTests-Bridging-Header.h";
@@ -1161,6 +1268,7 @@
 					"-lc++",
 					"$(inherited)",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xrpllabs.xumm.XamanTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "XamanTests/XamanTests-Bridging-Header.h";
@@ -1196,6 +1304,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xrpllabs.xumm;
 				PRODUCT_NAME = Xaman;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1227,6 +1336,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xrpllabs.xumm;
 				PRODUCT_NAME = Xaman;
 				PROVISIONING_PROFILE_SPECIFIER = "";

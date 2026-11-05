@@ -8,6 +8,7 @@ import { View, Text, ScrollView, Alert, Platform, Linking } from 'react-native';
 import PushNotificationsService from '@services/PushNotificationsService';
 import NetworkService from '@services/NetworkService';
 import BackendService from '@services/BackendService';
+import UpdateService, { RunningUpdate, UpdateChannel } from '@services/UpdateService';
 
 import { CoreRepository, NetworkRepository, ProfileRepository } from '@store/repositories';
 import { CoreModel, ProfileModel } from '@store/models';
@@ -16,7 +17,7 @@ import { NetworkType } from '@store/types';
 import { AppScreens, NetworkConfig } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 
-import { SetFlagSecure, GetAppVersionCode, GetAppReadableVersion } from '@common/helpers/app';
+import { SetFlagSecure, GetAppVersionCode, ExitApp } from '@common/helpers/app';
 
 import { Header, Switch, MultiPressDetector } from '@components/General';
 
@@ -39,6 +40,10 @@ export interface Props {}
 export interface State {
     coreSettings: CoreModel;
     profile?: ProfileModel;
+    // over-the-air updates (developer mode)
+    otaBusy: boolean;
+    otaUpdates?: XamanBackend.OtaUpdate[];
+    otaReady: boolean;
 }
 
 /* Component ==================================================================== */
@@ -57,6 +62,9 @@ class AdvancedSettingsView extends Component<Props, State> {
         this.state = {
             coreSettings: CoreRepository.getSettings(),
             profile: ProfileRepository.getProfile(),
+            otaBusy: false,
+            otaUpdates: undefined,
+            otaReady: false,
         };
     }
 
@@ -171,6 +179,22 @@ class AdvancedSettingsView extends Component<Props, State> {
         if (Platform.OS === 'android') {
             SetFlagSecure(true);
         }
+
+        // a test update runs: back to the public version (or the store version). Offline, this is
+        // retried after the next start.
+        this.setState({ otaUpdates: undefined });
+        if (UpdateService.getRunningUpdate().channel === UpdateChannel.Developer) {
+            UpdateService.exitDeveloperChannel()
+                .then((changed) => {
+                    if (changed) {
+                        this.setState({ otaReady: true });
+                        this.promptOtaRestart();
+                    }
+                })
+                .catch(() => {
+                    // retried by UpdateService after the next start
+                });
+        }
     };
 
     onDeveloperModeChangeRequest = (enable: boolean) => {
@@ -255,6 +279,248 @@ class AdvancedSettingsView extends Component<Props, State> {
         Navigator.push<NetworkSettingViewProps>(AppScreens.Settings.Network.List, {});
     };
 
+    /* Hot updates (developer mode) ==================================================================== */
+
+    showOtaError = (error: any) => {
+        Alert.alert(Localize.t('global.error'), error?.message ? String(error.message) : String(error));
+    };
+
+    checkOtaUpdates = async () => {
+        const { otaBusy } = this.state;
+        const { runtimeVersion } = UpdateService.getRunningUpdate();
+
+        if (otaBusy || !runtimeVersion) {
+            return;
+        }
+
+        this.setState({ otaBusy: true });
+        try {
+            const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
+            this.setState({ otaUpdates: Array.isArray(updates) ? updates : [] });
+        } catch (error: any) {
+            this.showOtaError(error);
+        } finally {
+            this.setState({ otaBusy: false });
+        }
+    };
+
+    installOtaUpdate = (update: XamanBackend.OtaUpdate) => {
+        const { otaBusy } = this.state;
+
+        if (otaBusy) {
+            return;
+        }
+
+        Alert.alert(Localize.t('settings.otaInstallQuestion', { otaId: update.otaId }), update.message, [
+            { text: Localize.t('global.cancel'), style: 'cancel' },
+            { text: Localize.t('settings.otaInstall'), onPress: () => this.runOtaInstall(update.otaId) },
+        ]);
+    };
+
+    runOtaInstall = async (otaId: number) => {
+        const { runtimeVersion } = UpdateService.getRunningUpdate();
+
+        if (!runtimeVersion) {
+            return;
+        }
+
+        this.setState({ otaBusy: true });
+        try {
+            // a fresh install token: the one from the list expires after a few minutes
+            const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
+            this.setState({ otaUpdates: Array.isArray(updates) ? updates : [] });
+
+            const update = updates?.find((u) => u.otaId === otaId);
+            if (!update) {
+                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
+                return;
+            }
+
+            const isNew = await UpdateService.installDeveloperUpdate(update.manifest.uuid, update.installToken);
+            if (!isNew) {
+                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNotNewer'));
+                return;
+            }
+
+            this.setState({ otaReady: true });
+            this.promptOtaRestart();
+        } catch (error: any) {
+            this.showOtaError(error);
+        } finally {
+            this.setState({ otaBusy: false });
+        }
+    };
+
+    leaveTestUpdate = async () => {
+        const { otaBusy } = this.state;
+
+        if (otaBusy) {
+            return;
+        }
+
+        this.setState({ otaBusy: true });
+        try {
+            const changed = await UpdateService.exitDeveloperChannel();
+            if (!changed) {
+                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
+                return;
+            }
+            this.setState({ otaReady: true });
+            this.promptOtaRestart();
+        } catch (error: any) {
+            this.showOtaError(error);
+        } finally {
+            this.setState({ otaBusy: false });
+        }
+    };
+
+    promptOtaRestart = () => {
+        Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaReadyRestart'), [
+            { text: Localize.t('global.notNow'), style: 'cancel' },
+            { text: Localize.t('settings.otaRestartNow'), onPress: this.restartIntoUpdate },
+        ]);
+    };
+
+    restartIntoUpdate = () => {
+        UpdateService.reloadNow().catch(this.showOtaError);
+    };
+
+    revertToStoreVersion = () => {
+        const { otaId } = UpdateService.getRunningUpdate();
+
+        Alert.alert(Localize.t('settings.otaRevertToStore'), Localize.t('settings.otaRevertWarning', { otaId }), [
+            { text: Localize.t('global.cancel'), style: 'cancel' },
+            { text: Localize.t('global.continue'), style: 'destructive', onPress: this.runRevert },
+        ]);
+    };
+
+    runRevert = async () => {
+        try {
+            // takes effect on the next launch, before the update can run again
+            await UpdateService.revertToStoreVersion();
+            Alert.alert(Localize.t('settings.otaRevertToStore'), Localize.t('settings.otaReopen'), [
+                { text: Localize.t('global.notNow'), style: 'cancel' },
+                { text: Localize.t('settings.otaCloseApp'), onPress: ExitApp },
+            ]);
+        } catch (error: any) {
+            this.showOtaError(error);
+        }
+    };
+
+    otaRunningLabel = (running: RunningUpdate): string => {
+        if (running.otaId === 0) {
+            return Localize.t('settings.otaStoreVersion');
+        }
+        if (running.channel === UpdateChannel.Developer) {
+            return Localize.t('settings.otaTestUpdateNumber', { otaId: running.otaId });
+        }
+        return Localize.t('settings.otaUpdateNumber', { otaId: running.otaId });
+    };
+
+    otaUpdateLabel = (update: XamanBackend.OtaUpdate, running: RunningUpdate): string => {
+        const status =
+            update.status === 'dev'
+                ? Localize.t('settings.otaStatusTest')
+                : Localize.t('settings.otaStatusPublic', { percent: update.rollout });
+
+        return [
+            `${update.otaId === running.otaId ? '✓ ' : ''}${update.otaId}`,
+            update.held ? `${status}, ${Localize.t('settings.otaStatusHeld')}` : status,
+            update.message,
+        ].join(' · ');
+    };
+
+    renderHotUpdates = () => {
+        const { otaBusy, otaUpdates, otaReady } = this.state;
+
+        if (!UpdateService.isEnabled()) {
+            return (
+                <SettingsSection title={Localize.t('settings.otaTitle')}>
+                    <SettingsRow
+                        label={Localize.t('settings.otaRunning')}
+                        value={Localize.t('settings.otaNotAvailable')}
+                    />
+                </SettingsSection>
+            );
+        }
+
+        const running = UpdateService.getRunningUpdate();
+        const rows = [
+            <SettingsRow
+                key="running"
+                testID="ota-running"
+                label={Localize.t('settings.otaRunning')}
+                value={this.otaRunningLabel(running)}
+            />,
+            <SettingsRow
+                key="runtime"
+                label={Localize.t('settings.otaStoreBuild')}
+                value={running.runtimeVersion ?? '—'}
+                selectableValue
+            />,
+        ];
+
+        if (running.isEmergencyLaunch) {
+            rows.push(<SettingsRow key="emergency" label={Localize.t('settings.otaFailedToStart')} />);
+        }
+
+        rows.push(
+            <SettingsRow
+                key="check"
+                testID="ota-check"
+                label={Localize.t('settings.otaCheckForUpdates')}
+                value={otaBusy ? Localize.t('global.loading') : undefined}
+                onPress={this.checkOtaUpdates}
+            />,
+        );
+
+        if (otaUpdates?.length === 0) {
+            rows.push(<SettingsRow key="none" label={Localize.t('settings.otaNoUpdates')} />);
+        }
+
+        otaUpdates?.slice(0, 10).forEach((update) => {
+            rows.push(
+                <SettingsRow
+                    key={`update-${update.otaId}`}
+                    label={this.otaUpdateLabel(update, running)}
+                    onPress={() => this.installOtaUpdate(update)}
+                />,
+            );
+        });
+
+        if (otaReady) {
+            rows.push(
+                <SettingsRow
+                    key="restart"
+                    label={Localize.t('settings.otaRestartNow')}
+                    onPress={this.restartIntoUpdate}
+                />,
+            );
+        }
+
+        if (running.channel === UpdateChannel.Developer) {
+            rows.push(
+                <SettingsRow
+                    key="public"
+                    label={Localize.t('settings.otaBackToPublic')}
+                    onPress={this.leaveTestUpdate}
+                />,
+            );
+        }
+
+        if (running.otaId > 0) {
+            rows.push(
+                <SettingsRow
+                    key="revert"
+                    label={Localize.t('settings.otaRevertToStore')}
+                    onPress={this.revertToStoreVersion}
+                />,
+            );
+        }
+
+        return <SettingsSection title={Localize.t('settings.otaTitle')}>{rows}</SettingsSection>;
+    };
+
     showDeveloperSettings = () => {
         const { coreSettings } = this.state;
 
@@ -289,7 +555,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                         <SettingsRow label={Localize.t('global.version')}>
                             <MultiPressDetector pressThreshold={3} onMultiPress={this.showDeveloperSettings}>
                                 <Text selectable style={styles.value}>
-                                    {GetAppReadableVersion()}
+                                    {UpdateService.getAppFullVersion()}
                                 </Text>
                             </MultiPressDetector>
                         </SettingsRow>
@@ -317,6 +583,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                             onPress={this.showSessionLogs}
                         />
                     </SettingsSection>
+                    {coreSettings.developerMode && this.renderHotUpdates()}
                 </ScrollView>
             </View>
         );

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# Guard: src/common/constants/endpoints.ts must carry the production values.
+# Guard: src/common/constants/endpoints.ts and the over-the-air update configuration (iOS Expo.plist,
+# Android manifest) must carry the production values.
 # Used by the pre-commit hook and the endpoints-guard GitHub workflow.
 
 FILE="src/common/constants/endpoints.ts"
@@ -31,3 +32,6 @@ active() {
 [ "$(active | grep -cE '(^|[^A-Za-z0-9_])ApiUrl[[:space:]]*=')" -eq 1 ] || fail "extra assignment to ApiUrl detected"
 
 echo "[✓] endpoints.ts carries production values"
+
+# over-the-air updates: production endpoint, runtime = {version}.{build}, the same signing certificate on both platforms
+node "$(dirname "$0")/ota/check-config.js" || exit 1

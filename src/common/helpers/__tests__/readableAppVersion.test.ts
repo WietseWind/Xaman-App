@@ -1,4 +1,4 @@
-import { canonicalBuildNumber, readableAppVersion } from '../readableAppVersion';
+import { canonicalBuildNumber, fullAppVersion, readableAppVersion } from '../readableAppVersion';
 
 describe('readableAppVersion', () => {
     it('shows the same build number iOS uses, not the Android version code', () => {
@@ -17,5 +17,18 @@ describe('readableAppVersion', () => {
     it('leaves a version code that is not in this scheme unchanged', () => {
         expect(canonicalBuildNumber('unknown')).toBe('unknown');
         expect(canonicalBuildNumber('100')).toBe('100');
+    });
+});
+
+describe('fullAppVersion', () => {
+    it('adds the number of the over-the-air update; the store version stays as it is', () => {
+        expect(fullAppVersion('5.4.0.456', 12)).toBe('5.4.0.456.12');
+        expect(fullAppVersion('5.4.0.456', 0)).toBe('5.4.0.456');
+    });
+
+    it('never adds anything that is not an update number', () => {
+        expect(fullAppVersion('5.4.0.456', NaN)).toBe('5.4.0.456');
+        expect(fullAppVersion('5.4.0.456', -1)).toBe('5.4.0.456');
+        expect(fullAppVersion('5.4.0.456', 1.5)).toBe('5.4.0.456');
     });
 });

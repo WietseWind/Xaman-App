@@ -11,10 +11,16 @@
 #import "Libs/Notification/LocalNotification.h"
 #import "Libs/Security/Authentication/Biometric/BiometricModule.h"
 #import "Libs/Common/InAppPurchase/InAppPurchase.h"
+#import "Xaman-Swift.h"
 
 @interface AppDelegate ()
 @property (nonatomic, copy) NSDictionary *savedLaunchOptions;
 @property (nonatomic, assign) BOOL didStartReactNative;
+// expo-updates decided which JS bundle to launch
+@property (nonatomic, assign) BOOL otaReady;
+@property (nonatomic, strong) UIWindowScene *pendingScene;
+@property (nonatomic, strong) UISceneConnectionOptions *pendingConnectionOptions;
+- (void)otaDidStart;
 @end
 
 @implementation AppDelegate
@@ -43,6 +49,14 @@
 
   // init firebase app
   [FIRApp configure];
+
+  // over-the-air updates: pick the JS bundle (store version or a downloaded update)
+  // before React Native starts
+  [XamanOta prepareBeforeStart];
+  __weak AppDelegate *weakSelf = self;
+  [XamanOta start:^(BOOL success) {
+    [weakSelf otaDidStart];
+  }];
 
   // bootstrap local notification and Biometric module
   [LocalNotificationModule initialise];
@@ -90,6 +104,16 @@
   }
   self.window.frame = windowScene.coordinateSpace.bounds;
 
+  if (!self.otaReady) {
+    // expo-updates is still picking the bundle; otaDidStart continues from here
+    self.pendingScene = windowScene;
+    self.pendingConnectionOptions = connectionOptions;
+    if (self.window.rootViewController == nil) {
+      self.window.rootViewController = [[UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil] instantiateInitialViewController];
+    }
+    return;
+  }
+
   if (self.didStartReactNative) {
     return;
   }
@@ -115,6 +139,9 @@
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
   self.bridge = bridge;
   [ReactNativeNavigation bootstrapWithBridge:bridge];
+
+  // over-the-air watchdog: a launch counts once JS starts for a screen (not a background launch)
+  [XamanOta countLaunch];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
@@ -127,8 +154,30 @@
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  // a downloaded over-the-air update, or nil for the bundle shipped with the app
+  NSURL *otaBundleURL = [XamanOta launchAssetUrl];
+  return otaBundleURL ?: [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
+}
+
+- (void)otaDidStart
+{
+  // attribute crashes to the running bundle before any JS runs
+  NSDictionary *launch = [XamanOta launchedUpdateInfo];
+  FIRCrashlytics *crashlytics = [FIRCrashlytics crashlytics];
+  [crashlytics setCustomValue:launch[@"updateId"] forKey:@"ota_update_id"];
+  [crashlytics setCustomValue:launch[@"otaId"] forKey:@"ota_id"];
+  [crashlytics setCustomValue:launch[@"runtimeVersion"] forKey:@"ota_runtime"];
+  [crashlytics setCustomValue:launch[@"isEmbedded"] forKey:@"ota_embedded"];
+
+  self.otaReady = YES;
+  if (self.pendingScene != nil) {
+    UIWindowScene *scene = self.pendingScene;
+    UISceneConnectionOptions *options = self.pendingConnectionOptions;
+    self.pendingScene = nil;
+    self.pendingConnectionOptions = nil;
+    [self startReactNativeForScene:scene connectionOptions:options];
+  }
 }
 
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge {

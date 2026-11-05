@@ -32,5 +32,17 @@ sed -i "" "s/canonicalVersionCode = [0-9]*/canonicalVersionCode = $android_versi
 echo "Updated canonicalVersionCode in "$android_gradle_file" to $android_version_code"
 echo
 
+# over-the-air updates: the runtime version is {version}.{build} of this native build (scripts/ota/check-config.js)
+ios_version=$(sed -nE 's/.*MARKETING_VERSION = "?([^";]+)"?;.*/\1/p' "$ios_project_path"/Xaman.xcodeproj/project.pbxproj | head -1)
+android_version_name=$(sed -nE 's/^def canonicalVersionName = "([^"]+)".*/\1/p' "$android_gradle_file")
+ios_runtime="$ios_version.$iOS_build_number"
+android_runtime="$android_version_name.$android_version_code"
+
+perl -0pi -e "s|(<key>EXUpdatesRuntimeVersion</key>\\s*<string>)[^<]*(</string>)|\${1}$ios_runtime\${2}|" "$ios_project_path"/Xaman/Expo.plist
+sed -i "" -E "s|(<string name=\"expo_runtime_version\"[^>]*>)[^<]*(</string>)|\\1$android_runtime\\2|" "$CURRENT_DIR"/android/app/src/main/res/values/strings.xml
+
+echo "Updated the over-the-air runtime version to $ios_runtime (iOS) and $android_runtime (Android)"
+echo
+
 
 

@@ -99,3 +99,7 @@ scripts/imageprepare-app/*/*
 android/app/libs/*.aar
 
 .claude_session
+
+# private keys never belong in the repo (the over-the-air signing key lives on the build machine only)
+*.pem
+!certs/ota-certificate.pem

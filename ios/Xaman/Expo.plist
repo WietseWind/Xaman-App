@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Over-the-air JS updates (expo-updates). Checked by scripts/ota/check-config.js (pre-commit). -->
+	<key>EXUpdatesEnabled</key>
+	<true/>
+	<key>EXUpdatesURL</key>
+	<string>https://xaman.app/api/v1/app/ota/manifest</string>
+	<!-- {version}.{build} of this native build; updates only install on this exact runtime -->
+	<key>EXUpdatesRuntimeVersion</key>
+	<string>5.4.0.462</string>
+	<!-- the native side never checks by itself; the app checks from JS after launch -->
+	<key>EXUpdatesCheckOnLaunch</key>
+	<string>NEVER</string>
+	<key>EXUpdatesLaunchWaitMs</key>
+	<integer>0</integer>
+	<!-- only updates signed with the OTA signing key run; public certificate: certs/ota-certificate.pem -->
+	<key>EXUpdatesCodeSigningCertificate</key>
+	<string>-----BEGIN CERTIFICATE-----
+MIIFNzCCAx+gAwIBAgIUFddwbTjrzVPMkjYiadqJFNlSh7wwDQYJKoZIhvcNAQEL
+BQAwMDEaMBgGA1UEAwwRWGFtYW4gT1RBIHVwZGF0ZXMxEjAQBgNVBAoMCVhSUEwg
+TGFiczAeFw0yNjExMDUxMTI5NDBaFw0zNjExMDIxMTI5NDBaMDAxGjAYBgNVBAMM
+EVhhbWFuIE9UQSB1cGRhdGVzMRIwEAYDVQQKDAlYUlBMIExhYnMwggIiMA0GCSqG
+SIb3DQEBAQUAA4ICDwAwggIKAoICAQDjsKGbc4NMYoqB9dBZQTvhjFSHzB6r/Tv8
+2opKmXj9/jDLj1fO23VtJMCdT7bJj83w8nHiwJU2DdFBszxOtVaGHzZXCpkFrINJ
+rtizz6p41nQCh+AyRxFL8td7gg1RwkSlKgcpCIEp4fAsSFxGvBcli26hbFKDZ+fz
+nezy5KBLgJyQTIbEzstjIesYWGSW8TbRKl6cYPIojY5NHZMLGLSDvLUsAsdgIrra
+///i4Wi9JdZASgOBhEFv7w4fUwGXAAuHlP+V5ei6TfMPbqoQqOIJDU7lcarUD186
+xTqHV4GelyXd88xobxog5uTBFGz2RWxZr6dNUaXmlHlF7WdihhBscD0gJLj53lSb
+xFYtb53/87L55n7y64IP4mIgqXfATE3sv3UCJ6mhYw6uS/P3yeS7+ZVmVuhQZL1w
+5Ox4QA1Qmzfjc6dmd/29ixNWtK8YaV0v9crmiBp/F22VlXke/SzY3X8gTVBZX8/r
+L9sJxNxGb2/QkYIiGK8ASh/pPmo4h26T+D9XarI9kTDuUYYajPLhKsVExr2SfNrf
+dKFDhdpujIjqdD2vNmuOsuXOrFo/dw6/OJD/n8izYLvk9zzOdbBVR6613eCPa+cN
+nYsjTuXFVMNTrzpHknH41mUTrFq3XHuNjNUTAFyXiYyK4GwZ61bclwr6swx81izJ
+FKfxvzrlOQIDAQABo0kwRzAOBgNVHQ8BAf8EBAMCB4AwFgYDVR0lAQH/BAwwCgYI
+KwYBBQUHAwMwHQYDVR0OBBYEFFg7CBlS1nmgg0OqZLmeqZNWKx5yMA0GCSqGSIb3
+DQEBCwUAA4ICAQAqjnd+HN4iNpT6mwUeHqg5R5I32bi59bgs4HrhPcC48X2RMeeJ
+EhzS1AJeI5R5HRohSrqa8p6Ph11ssXXCv43KExSDwTYlMp9AlL0MmlBUPGaL3ujx
+OZaELW3lkv07WljmeQqNTUNH0hUkQUcM8FT96yMBvvL6L+OfDScTEzD0PgmoZ0cg
+VrMKPxb2Zyrh8SgYq2yzL4v7ptuOKkOa7OPkX0XX98ZcPgghXCMvC13pfzp414KW
+noEHRqZ6jNseOONHA2EYGIttZYpbSo6t9ca/W8lc3Jyv2vDSzc8/CUY0G9h2K+Xw
+qJaouL2dWg0XuXt6dV8MPMtVCdrRadgM25fMMrHenWD9/WpR37hI4SW92AD5sUok
+sLKfnAcktsDwYtP0J2e8leeJg7dPDOIrAWrVFVNOlJRIIIskeQ1YYzq/Lb+lADzG
+Gxwu8M5qfdIj7TRMOizmmvXSDc2cbVrpzgwpYqsShVixLMb3pzjLGQzuUFELgjUS
+xbE+83or6Njq9OSDSaSN78DqGMgDFtgIa+BW04yLOoWzjMitG+HzfZCbZ9SDbEDu
+JEyJOhPZQT1rZ+d3MN0tegxYLNBwf6bwN8VVebAV8KtthRP/xrPjzTNRWVP1t13u
+v9ro0+77juPTS85ixeyqpsFNrSMsisHfu95CILgmSFG8ZJ2JYHlz/8VlpQ==
+-----END CERTIFICATE-----</string>
+	<key>EXUpdatesCodeSigningMetadata</key>
+	<dict>
+		<key>keyid</key>
+		<string>main</string>
+		<key>alg</key>
+		<string>rsa-v1_5-sha256</string>
+	</dict>
+</dict>
+</plist>
