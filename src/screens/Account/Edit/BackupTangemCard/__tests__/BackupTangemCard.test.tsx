@@ -4,6 +4,7 @@ import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text } from 'r
 import { utils } from 'xrpl-accountlib';
 import { Card } from 'tangem-sdk-react-native';
 import { AccessLevels, AccountTypes } from '@store/types';
+import { AccountRepository } from '@store/repositories';
 import { GetWalletDerivedPublicKey } from '@common/utils/tangem';
 import fixtures from '@common/utils/__tests__/fixtures/tangem.cards.json';
 import { nativeBackupDependencies } from '@common/libs/tangemBackup/native';
@@ -21,6 +22,7 @@ jest.mock('@services/AppService', () => ({
 }));
 
 jest.mock('@common/libs/tangemBackup/native', () => ({ nativeBackupDependencies: jest.fn() }));
+jest.mock('@store/repositories', () => ({ AccountRepository: { findOne: jest.fn() } }));
 jest.mock('@common/helpers/navigator', () => ({ Navigator: { showAlertModal: jest.fn(async () => 'alert') } }));
 jest.mock('@services/NetworkService', () => {
     const EventEmitter = require('events');
@@ -312,11 +314,26 @@ it('guides removal with only the original-card scan, confirmation loader and rem
     jest.useFakeTimers();
     act(() => tree.unmount());
     root.RegularKey = destination;
+    const findAccount = jest.spyOn(AccountRepository, 'findOne').mockReturnValue(undefined);
     await act(async () => { tree = renderer.create(<BackupTangemCard account={account} removeKey={destination} />); });
     expect(text()).toContain(Localize.t('tangemBackup.removeBody'));
     expect(text()).toContain(Localize.t('account.tangemSelectedAccount'));
     expect(text()).not.toContain(Localize.t('tangemBackup.step', { number: 3 }));
     expect(tree.root.findByProps({ testID: 'backup-next' }).props.label).toBe(Localize.t('tangemBackup.scanOriginal'));
+    const destinationCard = () => tree.root.findByProps({ testID: 'backup-destination-card' });
+    const cardText = () => destinationCard().findAllByType(Text).flatMap((node) => node.props.children).join(' ');
+    expect(cardText()).toContain(`💳 ${Localize.t('tangemBackup.title')}`);
+    expect(cardText()).toContain(destination);
+    expect(cardText()).not.toContain(Localize.t('account.cardId'));
+    findAccount.mockReturnValue({
+        address: destination, label: 'Spare card', type: AccountTypes.Tangem, additionalInfo: backup,
+    } as any);
+    act(() => tree.update(<BackupTangemCard account={account} removeKey={destination} />));
+    expect(findAccount).toHaveBeenCalledWith({ address: destination });
+    expect(cardText()).toContain('💳 Spare card');
+    expect(cardText()).toContain(backup.cardId);
+    expect(cardText()).not.toContain(Localize.t('tangemBackup.verified'));
+    expect(cardText()).not.toContain(Localize.t('tangemBackup.newCard'));
     await press();
     expect(tree.root.findByProps({ testID: 'backup-confirming' })).toBeDefined();
     expect(text()).toContain(Localize.t('tangemBackup.removeCheckingTitle'));
@@ -326,6 +343,7 @@ it('guides removal with only the original-card scan, confirmation loader and rem
     expect(text()).toContain(Localize.t('tangemBackup.removeDoneTitle'));
     expect(text()).toContain(Localize.t('tangemBackup.removeDoneBody'));
     expect(text()).not.toContain(destination);
+    expect(tree.root.findAllByProps({ testID: 'backup-destination-card' })).toHaveLength(0);
     expect(deps.sign).toHaveBeenCalledWith(expect.anything(), expect.not.objectContaining({ RegularKey: destination }));
     expect(deps.scan).not.toHaveBeenCalled();
 });
