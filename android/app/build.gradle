@@ -420,3 +420,9 @@ afterEvaluate {
         }
     }
 }
+
+// The NDK symbol file reads the merged native libraries (unstrippedNativeLibsDir above). Declare that, or
+// Gradle's task validation fails the release build whenever the symbol task runs (seen on build 462).
+tasks.matching { it.name == 'generateCrashlyticsSymbolFileRelease' }.configureEach {
+    dependsOn 'mergeReleaseNativeLibs'
+}
