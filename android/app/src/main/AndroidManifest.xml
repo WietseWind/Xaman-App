@@ -167,10 +167,10 @@
             android:resource="@color/push_notification"
             tools:replace="android:resource" />
 
-        <!-- Over-the-air JS updates (expo-updates). Off until the code signing certificate is in place. -->
+        <!-- Over-the-air JS updates (expo-updates). Checked by scripts/ota/check-config.js (pre-commit). -->
         <meta-data
             android:name="expo.modules.updates.ENABLED"
-            android:value="false" />
+            android:value="true" />
         <meta-data
             android:name="expo.modules.updates.EXPO_UPDATE_URL"
             android:value="https://xaman.app/api/v1/app/ota/manifest" />
@@ -185,6 +185,13 @@
         <meta-data
             android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS"
             android:value="0" />
+        <!-- only updates signed with the OTA signing key run; public certificate: certs/ota-certificate.pem -->
+        <meta-data
+            android:name="expo.modules.updates.CODE_SIGNING_CERTIFICATE"
+            android:value="@string/expo_updates_code_signing_certificate" />
+        <meta-data
+            android:name="expo.modules.updates.CODE_SIGNING_METADATA"
+            android:value="{&quot;keyid&quot;:&quot;main&quot;,&quot;alg&quot;:&quot;rsa-v1_5-sha256&quot;}" />
 
         <receiver
             android:name="libs.notification.NotificationMessageReceiver"
