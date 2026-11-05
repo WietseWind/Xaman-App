@@ -7,7 +7,7 @@ import { View, Text, ScrollView } from 'react-native';
 
 import { AccountModel } from '@store/models';
 
-import { accountListLabel, sortAccountsByLabel } from '@common/helpers/accountListLabel';
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { AppScreens } from '@common/constants';
@@ -169,7 +169,9 @@ class SelectAccountOverlay extends Component<Props, State> {
             );
         }
 
-        return sortAccountsByLabel(accounts).map((account) => {
+        // in the order given: the user's own order from the Accounts list (only destination pickers
+        // sort A-Z)
+        return accounts.map((account) => {
             return this.renderRow(account);
         });
     };

@@ -1,5 +1,5 @@
 import Realm from 'realm';
-import { flatMap, has, filter, find } from 'lodash';
+import { flatMap, has, filter, find, sortBy } from 'lodash';
 
 import Vault from '@common/libs/vault';
 import { accountDetailsId } from '@common/helpers/accountNetwork';
@@ -198,10 +198,10 @@ class AccountRepository extends BaseRepository<AccountModel> {
     };
 
     /**
-     * get list of available accounts for signing
+     * get list of available accounts for signing, in the user's order of the Accounts list
      */
     getSignableAccounts = (): AccountModel[] => {
-        const accounts = this.findAll();
+        const accounts = sortBy(Array.from(this.findAll()), (account) => account.order ?? 0);
 
         const availableAccounts = [] as Array<AccountModel>;
 

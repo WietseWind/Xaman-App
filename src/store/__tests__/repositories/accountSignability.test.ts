@@ -58,3 +58,18 @@ it.each([
     expect(AccountRepository.isSignable(owner)).toBe(expected);
     expect(AccountRepository.getSpendableAccounts()).toEqual(expected ? [owner] : []);
 });
+
+it('lists signable accounts in the order of the Accounts list, keeping ties in place', () => {
+    const third = account({ address: 'rThird', order: 2 });
+    const first = account({ address: 'rFirst', order: 0 });
+    const unordered = account({ address: 'rUnordered' });
+    const second = account({ address: 'rSecond', order: 1 });
+    jest.spyOn(AccountRepository, 'findAll').mockReturnValue([third, first, unordered, second] as any);
+    jest.spyOn(AccountRepository, 'query').mockReturnValue({ isEmpty: () => true } as any);
+    expect(AccountRepository.getSignableAccounts().map((item) => item.address)).toEqual([
+        'rFirst',
+        'rUnordered',
+        'rSecond',
+        'rThird',
+    ]);
+});
