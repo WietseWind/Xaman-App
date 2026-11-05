@@ -16,7 +16,10 @@
 import { NativeModules } from 'react-native';
 import * as Updates from 'expo-updates';
 
-import { IsDebugBuild } from '@common/helpers/app';
+import { IsDebugBuild, GetAppReadableVersion } from '@common/helpers/app';
+import { fullAppVersion } from '@common/helpers/readableAppVersion';
+
+import CoreRepository from '@store/repositories/core';
 
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 
@@ -128,6 +131,14 @@ class UpdateService {
     };
 
     /**
+     * For display only: 5.4.0.456.12 while update 12 runs, 5.4.0.456 on the store version.
+     * The version sent to the backend (GetAppReadableVersion) never includes the update.
+     */
+    getAppFullVersion = (): string => {
+        return fullAppVersion(GetAppReadableVersion(), this.getOtaUpdateId());
+    };
+
+    /**
      * Call once the first screen is up. Never blocks the UI.
      */
     onAppStarted = async (): Promise<void> => {
@@ -144,10 +155,24 @@ class UpdateService {
 
         setTimeout(this.markHealthy, HEALTHY_AFTER_MS);
         setTimeout(() => {
-            this.checkAutomatically().catch((error) => {
+            this.checkAfterStart().catch((error) => {
                 this.logger.warn('Automatic update check failed', error);
             });
         }, AUTOMATIC_CHECK_DELAY_MS);
+    };
+
+    /**
+     * A test update still runs while developer mode is off (it was turned off offline, or the
+     * app was killed meanwhile): leave it first. Otherwise the regular GA check.
+     */
+    checkAfterStart = async (): Promise<boolean> => {
+        if (
+            this.getRunningUpdate().channel === UpdateChannel.Developer &&
+            !CoreRepository.isDeveloperModeEnabled()
+        ) {
+            return this.exitDeveloperChannel();
+        }
+        return this.checkAutomatically();
     };
 
     /**

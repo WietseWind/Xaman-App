@@ -374,6 +374,14 @@ class BackendService {
     };
 
     /**
+     * Developer mode: the over-the-air updates published for this store build, each with a
+     * short-lived install token. The backend answers 403 when developer mode is off.
+     */
+    getOtaUpdates = (runtime: string): Promise<XamanBackend.OtaUpdatesResponse> => {
+        return ApiService.fetch(Endpoints.OtaUpdates, 'GET', { runtime });
+    };
+
+    /**
      * Gets a list of authorized third-party apps.
      * @returns {Promise} A promise that resolves with a list of authorized third-party app.
      */

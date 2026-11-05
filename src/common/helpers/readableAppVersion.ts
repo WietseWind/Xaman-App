@@ -28,3 +28,9 @@ export const readableAppVersion = (
 
     return `${versionName}.${build}`;
 };
+
+// The readable version plus the number of the over-the-air update that runs (5.4.0.456.12). The store
+// version stays 5.4.0.456. For display and logs only: the version sent to the backend never changes.
+export const fullAppVersion = (readableVersion: string, otaUpdateId: number): string => {
+    return Number.isInteger(otaUpdateId) && otaUpdateId > 0 ? `${readableVersion}.${otaUpdateId}` : readableVersion;
+};

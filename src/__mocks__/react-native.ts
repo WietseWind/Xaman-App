@@ -63,6 +63,23 @@ ReactNative.NativeModules.DeviceUtilsModule = {
     hideLaunchSplash: jest.fn(),
 };
 
+// over-the-air update safety net (XamanOta): nothing blocked or reverted
+ReactNative.NativeModules.OtaRecoveryModule = {
+    markHealthy: jest.fn(),
+    scheduleRevert: jest.fn(() => Promise.resolve(true)),
+    getState: jest.fn(() =>
+        Promise.resolve({
+            blockedUpdateIds: [],
+            blockedOtaIds: [],
+            revertedUpdateId: null,
+            revertPending: false,
+            unhealthyLaunches: 0,
+            watchdogLimit: 3,
+            automatedTest: false,
+        }),
+    ),
+};
+
 ReactNative.NativeModules.AppUtilsModule = {
     appVersion: '0.0.1',
     buildNumber: '1',
