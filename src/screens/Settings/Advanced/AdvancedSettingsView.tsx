@@ -9,6 +9,7 @@ import PushNotificationsService from '@services/PushNotificationsService';
 import NetworkService from '@services/NetworkService';
 import BackendService from '@services/BackendService';
 import UpdateService, { RunningUpdate, UpdateChannel } from '@services/UpdateService';
+import LoggerService from '@services/LoggerService';
 
 import { CoreRepository, NetworkRepository, ProfileRepository } from '@store/repositories';
 import { CoreModel, ProfileModel } from '@store/models';
@@ -33,6 +34,9 @@ import { ChangeLogOverlayProps } from '@screens/Overlay/ChangeLog';
 import { SettingsRow, SettingsSection } from '../SettingsSection';
 import sectionStyles from '../sectionStyles';
 import styles from './styles';
+
+// session log (Settings > Advanced > Session log)
+const logger = LoggerService.createLogger('Settings');
 
 /* types ==================================================================== */
 export interface Props {}
@@ -153,6 +157,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 // persist the settings
                 CoreRepository.saveSettings({ developerMode: true });
                 BackendService.action('developermode', 'on');
+                logger.debug('Developer mode turned on (hot updates: test updates can be installed by hand)');
 
                 if (Platform.OS === 'android') {
                     SetFlagSecure(false);
@@ -175,6 +180,7 @@ class AdvancedSettingsView extends Component<Props, State> {
         // persist the settings
         CoreRepository.saveSettings({ developerMode: false });
         BackendService.action('developermode', 'off');
+        logger.debug('Developer mode turned off');
 
         if (Platform.OS === 'android') {
             SetFlagSecure(true);
@@ -191,8 +197,9 @@ class AdvancedSettingsView extends Component<Props, State> {
                         this.promptOtaRestart();
                     }
                 })
-                .catch(() => {
+                .catch((error) => {
                     // retried by UpdateService after the next start
+                    logger.warn('Hot updates: leaving the test update failed; retried after the next start', error);
                 });
         }
     };
@@ -297,7 +304,11 @@ class AdvancedSettingsView extends Component<Props, State> {
         try {
             const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
             this.setState({ otaUpdates: Array.isArray(updates) ? updates : [] });
+            logger.debug(
+                `Hot updates: ${Array.isArray(updates) ? updates.length : 0} update(s) published for store build ${runtimeVersion}`,
+            );
         } catch (error: any) {
+            logger.warn('Hot updates: the update list could not be loaded', error);
             this.showOtaError(error);
         } finally {
             this.setState({ otaBusy: false });
@@ -326,12 +337,14 @@ class AdvancedSettingsView extends Component<Props, State> {
 
         this.setState({ otaBusy: true });
         try {
+            logger.debug(`Hot updates: install of update ${otaId} chosen`);
             // a fresh install token: the one from the list expires after a few minutes
             const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
             this.setState({ otaUpdates: Array.isArray(updates) ? updates : [] });
 
             const update = updates?.find((u) => u.otaId === otaId);
             if (!update) {
+                logger.warn(`Hot updates: update ${otaId} is no longer published`);
                 Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
                 return;
             }
@@ -345,6 +358,7 @@ class AdvancedSettingsView extends Component<Props, State> {
             this.setState({ otaReady: true });
             this.promptOtaRestart();
         } catch (error: any) {
+            logger.warn(`Hot updates: install of update ${otaId} failed`, error);
             this.showOtaError(error);
         } finally {
             this.setState({ otaBusy: false });
@@ -360,6 +374,7 @@ class AdvancedSettingsView extends Component<Props, State> {
 
         this.setState({ otaBusy: true });
         try {
+            logger.debug('Hot updates: "Back to the public version" chosen');
             const changed = await UpdateService.exitDeveloperChannel();
             if (!changed) {
                 Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
@@ -368,6 +383,7 @@ class AdvancedSettingsView extends Component<Props, State> {
             this.setState({ otaReady: true });
             this.promptOtaRestart();
         } catch (error: any) {
+            logger.warn('Hot updates: leaving the test update failed', error);
             this.showOtaError(error);
         } finally {
             this.setState({ otaBusy: false });
@@ -403,6 +419,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 { text: Localize.t('settings.otaCloseApp'), onPress: ExitApp },
             ]);
         } catch (error: any) {
+            logger.warn('Hot updates: scheduling the revert to the store version failed', error);
             this.showOtaError(error);
         }
     };
