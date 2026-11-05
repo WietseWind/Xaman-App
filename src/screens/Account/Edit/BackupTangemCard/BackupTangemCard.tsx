@@ -21,6 +21,7 @@ import NavigationService from '@services/NavigationService';
 import StyleService from '@services/StyleService';
 import LoggerService from '@services/LoggerService';
 import { AccountModel } from '@store/models';
+import { AccountRepository } from '@store/repositories';
 import { AppScreens } from '@common/constants';
 import { TangemBackupFlow, BackupState } from '@common/libs/tangemBackup/flow';
 import { nativeBackupDependencies } from '@common/libs/tangemBackup/native';
@@ -313,6 +314,8 @@ class BackupTangemCardView extends Component<Props, State> {
         const { removeKey } = this.props;
         const source = { type: 'Tangem', address: this.flow.source.address, label: this.flow.source.label };
         if (removeKey) {
+            const known = AccountRepository.findOne({ address: removeKey });
+            const card = known?.type === 'Tangem' ? savedBackupCard(known) : undefined;
             const phase = step === 'done' ? 'removeDone' : step === 'checking' ? 'removeChecking' : 'remove';
             return <>
                 <Text testID="backup-step-title" accessibilityRole="header" style={[styles.title, styles.compactTitle]}>
@@ -323,10 +326,12 @@ class BackupTangemCardView extends Component<Props, State> {
                 <Spacer size={16} />
                 {this.renderCard(source, Localize.t('account.tangemSelectedAccount'))}
                 {step !== 'done' && <>
-                    <Text style={[styles.sectionLabel, styles.centeredSectionLabel]}>
-                        {Localize.t('tangemBackup.title')}
-                    </Text>
-                    <Text selectable style={styles.address}>{removeKey}</Text>
+                    <Spacer size={12} />
+                    {this.renderCard(
+                        { type: 'Tangem', address: removeKey, label: known?.label || Localize.t('tangemBackup.title') },
+                        Localize.t('tangemBackup.title'),
+                        backupCardSerial(card),
+                    )}
                 </>}
             </>;
         }

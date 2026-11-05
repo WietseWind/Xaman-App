@@ -1,0 +1,94 @@
+{
+  "sourceCommit": "2b438ece94577b8ff06632813c83c826bf80cc83",
+  "baseCommit": "b991a210ee1bb1bdd20c8d6be476023bdaf5f049",
+  "focusedTests": 67,
+  "focusedSuites": 3,
+  "typeScript": "passed",
+  "commitHooks": "passed",
+  "nativeScreens": [
+    {
+      "theme": "light",
+      "imported": true,
+      "screen": "app.Account.BackupTangemCard",
+      "step": "review",
+      "events": [
+        {
+          "stage": "launched"
+        },
+        {
+          "stage": "realm-ready"
+        },
+        {
+          "stage": "style-ready"
+        },
+        {
+          "networkRequest": "fee"
+        },
+        {
+          "appeared": "app.Account.BackupTangemCard"
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "imported": true,
+      "screen": "app.Account.BackupTangemCard",
+      "step": "review",
+      "events": [
+        {
+          "stage": "launched"
+        },
+        {
+          "stage": "realm-ready"
+        },
+        {
+          "stage": "style-ready"
+        },
+        {
+          "networkRequest": "fee"
+        },
+        {
+          "appeared": "app.Account.BackupTangemCard"
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "imported": false,
+      "screen": "app.Account.BackupTangemCard",
+      "step": "review",
+      "events": [
+        {
+          "stage": "launched"
+        },
+        {
+          "stage": "realm-ready"
+        },
+        {
+          "stage": "style-ready"
+        },
+        {
+          "networkRequest": "fee"
+        },
+        {
+          "appeared": "app.Account.BackupTangemCard"
+        }
+      ]
+    }
+  ],
+  "nativeHost": {
+    "nativeCodeSHA256": "b1d8bab3cf78ce822d7cbc3eebda53a64cced1aab9ae1e1bab1db83ecfa99e6f",
+    "hermesSHA256": "50b5b15ea76c1eca8dc5124292effd780c36dd08a476e50d0ae44dad2fcb6c3c",
+    "assetsSHA256": "cfb1740a1f842c431f6f7ead92309f9d65f0b09f3a2324a775b9bfe3ef9763af",
+    "app": "/private/tmp/xaman-backup-removal-proof-20261105/native/Tangem404-after.app",
+    "syntheticCards": true,
+    "realNfc": false,
+    "realLedgerSubmission": false
+  },
+  "screenshots": {
+    "removal-not-imported-light.png": "16ce916e6e8b84c8d7dbe9cc9d22c42ce09343181b082f1fce16920e2131d7ba",
+    "before-light.png": "03b0e8ada764042f85284089a056b2dc2ad4fe0c3cdba64bb0f5f8c316b767a4",
+    "removal-light.png": "0ea59e99a07cbeaa372f903e5a672497a92a4867f2de9288d22b46b3c7217c13",
+    "removal-dark.png": "2b738a32616f064abffec5d1fd9138454f7c66be195450c32ce31982a5c19afb"
+  }
+}
