@@ -12,6 +12,7 @@ import LoggerService, { LoggerInstance } from '@services/LoggerService';
 
 import Vault from '@common/libs/vault';
 import { recoverPasscodeChange } from '@common/libs/passcodeChange';
+import { migrateDegenSecrets } from '@common/libs/degenSecrets';
 
 import { AppConfig } from '@common/constants';
 /* Module ==================================================================== */
@@ -53,6 +54,9 @@ export default class Storage {
 
                 // Finish/roll back a rekey before authentication or signing can start.
                 await recoverPasscodeChange();
+
+                // Move degen secret numbers kept in plaintext by older versions into the vault (never throws).
+                await migrateDegenSecrets();
 
                 resolve();
             } catch (e) {

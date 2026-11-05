@@ -27,6 +27,8 @@ import { AppScreens } from '@common/constants';
 import { Header } from '@components/General';
 
 import Vault from '@common/libs/vault';
+import DegenSecrets from '@common/libs/degenSecrets';
+import { DEGEN_FLAG } from '@common/utils/degenSecret';
 
 // localize
 import Localize from '@locale';
@@ -184,11 +186,10 @@ class AccountGenerateView extends Component<Props, State> {
             }
 
             if (degenMode) {
-                Object.assign(account, {
-                    additionalInfoString: JSON.stringify({
-                        degenMode: generatedAccount?.secret?.secretNumbers?.join('.'),
-                    }),
-                });
+                // the secret numbers wait in the vault (passcode) until the user backs them up from the
+                // Home banner; the account record only carries the flag
+                await DegenSecrets.store(account.publicKey!, generatedAccount?.secret?.secretNumbers!);
+                Object.assign(account, { additionalInfoString: DEGEN_FLAG });
             }
 
             // add account to store
@@ -227,10 +228,15 @@ class AccountGenerateView extends Component<Props, State> {
         }
 
         if (currentStep === 'ConfirmSeed' && degenMode) {
-            // Done confirming
-            Object.assign(account, {
-                additionalInfoString: JSON.stringify({}),
-            });
+            // Done confirming: forget the secret numbers (the private key stays in the vault).
+            // Only the flag changes, the rest of the account record stays as it is.
+            try {
+                await DegenSecrets.forget({ address: account.address!, publicKey: account.publicKey! });
+            } catch {
+                Toast(Localize.t('global.unexpectedErrorOccurred'));
+                await Navigator.popToRoot();
+                return;
+            }
             Navigator.showAlertModal({
                 type: 'success',
                 text: Localize.t('account.degenModeNowDone'),
@@ -242,7 +248,6 @@ class AccountGenerateView extends Component<Props, State> {
                     },
                 ],
             });
-            await AccountRepository.update(account);
             await Navigator.popToRoot();
             return;
         }
