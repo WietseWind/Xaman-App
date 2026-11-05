@@ -1,0 +1,51 @@
+{
+  "$comment": [
+    "Over-the-air updates must stay rollback-safe: a device can always go back to the bundle of its store build, so an",
+    "update may never change native code, build configuration or the format of stored data. The signer on the build",
+    "machine refuses an update that changes any of these paths compared to the commit of the store build (runtime).",
+    "It reads this file at that runtime commit, so an update can never loosen its own rules. Patterns: ** is any",
+    "number of path segments, * is anything within one segment. See docs/ota-updates.md in the backend repo."
+  ],
+  "version": 1,
+  "forbidden": [
+    {
+      "reason": "native code, native configuration and bundling: only a store build may change them",
+      "paths": [
+        "android/**",
+        "ios/**",
+        "patches/**",
+        "app.json",
+        "index.js",
+        "metro.config.js",
+        "babel.config.js",
+        "certs/**"
+      ]
+    },
+    {
+      "reason": "stored data formats: Realm schemas, migrations and persisted enums must stay readable by the store build",
+      "paths": [
+        "src/store/models/schemas/**",
+        "src/store/models/index.ts",
+        "src/store/storage.ts",
+        "src/store/types.ts"
+      ]
+    },
+    {
+      "reason": "secrets: vault, encryption, passcode, biometrics and the degen-mode secret storage",
+      "paths": [
+        "src/common/libs/vault.ts",
+        "src/common/libs/crypto.ts",
+        "src/common/libs/passcodeChange.ts",
+        "src/common/libs/biometric.ts",
+        "src/common/libs/degenSecrets.ts",
+        "src/common/utils/degenSecret.ts"
+      ]
+    },
+    {
+      "reason": "the updater itself: a broken updater can not be fixed over the air",
+      "paths": [
+        "src/services/UpdateService.ts"
+      ]
+    }
+  ]
+}
