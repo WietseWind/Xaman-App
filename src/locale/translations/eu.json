@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Ezkutatu zerbitzu kuota gertaerak",
     "developerMode": "Garatzaile modua",
     "otaTitle": "OTA eguneratzeak",
+    "otaScreenTitle": "OTA eguneratzeak",
     "otaRunning": "Martxan",
     "otaStoreVersion": "Dendako bertsioa",
     "otaUpdateNumber": "%{otaId}. eguneratzea",

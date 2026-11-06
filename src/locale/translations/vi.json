@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Ẩn sự kiện phí dịch vụ",
     "developerMode": "Chế độ nhà phát triển",
     "otaTitle": "Cập nhật OTA",
+    "otaScreenTitle": "Cập nhật OTA",
     "otaRunning": "Đang chạy",
     "otaStoreVersion": "Phiên bản cửa hàng",
     "otaUpdateNumber": "Bản cập nhật %{otaId}",

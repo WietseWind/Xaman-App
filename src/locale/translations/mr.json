@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "विकसक मोड",
     "otaTitle": "OTA अपडेट्स",
+    "otaScreenTitle": "OTA अपडेट्स",
     "otaRunning": "चालू",
     "otaStoreVersion": "स्टोर आवृत्ती",
     "otaUpdateNumber": "अपडेट %{otaId}",

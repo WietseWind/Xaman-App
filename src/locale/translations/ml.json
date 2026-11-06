@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "സേവന ഫീസ് ഇവന്റുകൾ മറയ്ക്കുക",
     "developerMode": "ഡവലപ്പർ മോഡ്",
     "otaTitle": "OTA അപ്‌ഡേറ്റുകൾ",
+    "otaScreenTitle": "OTA അപ്‌ഡേറ്റുകൾ",
     "otaRunning": "പ്രവർത്തിക്കുന്നത്",
     "otaStoreVersion": "സ്റ്റോർ പതിപ്പ്",
     "otaUpdateNumber": "അപ്‌ഡേറ്റ് %{otaId}",

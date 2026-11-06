@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "إخفاء أحداث رسوم الخدمة",
     "developerMode": "وضع المطور",
     "otaTitle": "تحديثات OTA",
+    "otaScreenTitle": "تحديثات OTA",
     "otaRunning": "قيد التشغيل",
     "otaStoreVersion": "إصدار المتجر",
     "otaUpdateNumber": "التحديث %{otaId}",

@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Nascondi eventi commissioni servizio",
     "developerMode": "Modalità sviluppatore",
     "otaTitle": "Aggiornamenti OTA",
+    "otaScreenTitle": "Aggiornamenti OTA",
     "otaRunning": "In uso",
     "otaStoreVersion": "Versione dello store",
     "otaUpdateNumber": "Aggiornamento %{otaId}",

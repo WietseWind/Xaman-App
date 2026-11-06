@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "سروس فيس ٽرانزيڪشن لڪايو",
     "developerMode": "ٺاهيندڙ موڊ",
     "otaTitle": "OTA اپڊيٽس",
+    "otaScreenTitle": "OTA اپڊيٽس",
     "otaRunning": "هلندڙ",
     "otaStoreVersion": "اسٽور ورزن",
     "otaUpdateNumber": "اپڊيٽ %{otaId}",

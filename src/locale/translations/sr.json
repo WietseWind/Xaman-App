@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Sakrij događaje provizije usluge",
     "developerMode": "Опција програмера ",
     "otaTitle": "OTA ажурирања",
+    "otaScreenTitle": "OTA ажурирања",
     "otaRunning": "Покренуто",
     "otaStoreVersion": "Верзија из продавнице",
     "otaUpdateNumber": "Ажурирање %{otaId}",

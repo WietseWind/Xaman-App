@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Geliştirici modu",
     "otaTitle": "OTA güncellemeleri",
+    "otaScreenTitle": "OTA güncellemeleri",
     "otaRunning": "Çalışan",
     "otaStoreVersion": "Mağaza sürümü",
     "otaUpdateNumber": "Güncelleme %{otaId}",

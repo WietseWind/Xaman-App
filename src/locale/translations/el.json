@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Απόκρυψη συμβάντων χρέωσης υπηρεσίας",
     "developerMode": "Λειτουργία προγραμματιστή",
     "otaTitle": "Ενημερώσεις OTA",
+    "otaScreenTitle": "Ενημερώσεις OTA",
     "otaRunning": "Σε εκτέλεση",
     "otaStoreVersion": "Έκδοση καταστήματος",
     "otaUpdateNumber": "Ενημέρωση %{otaId}",

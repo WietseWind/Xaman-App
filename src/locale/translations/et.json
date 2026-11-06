@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Peida teenustasu sündmused",
     "developerMode": "Arendaja režiim",
     "otaTitle": "OTA-uuendused",
+    "otaScreenTitle": "OTA-uuendused",
     "otaRunning": "Kasutusel",
     "otaStoreVersion": "Poe versioon",
     "otaUpdateNumber": "Uuendus %{otaId}",

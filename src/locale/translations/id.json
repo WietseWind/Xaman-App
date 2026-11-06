@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Sembunyikan peristiwa Service Fee",
     "developerMode": "mode pengembang",
     "otaTitle": "Pembaruan OTA",
+    "otaScreenTitle": "Pembaruan OTA",
     "otaRunning": "Berjalan",
     "otaStoreVersion": "Versi toko",
     "otaUpdateNumber": "Pembaruan %{otaId}",

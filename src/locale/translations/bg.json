@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Икономичен режим",
     "otaTitle": "OTA актуализации",
+    "otaScreenTitle": "OTA актуализации",
     "otaRunning": "Активна",
     "otaStoreVersion": "Версия от магазина",
     "otaUpdateNumber": "Актуализация %{otaId}",

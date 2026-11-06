@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "서비스 수수료 이벤트 숨기기",
     "developerMode": "개발자 모드",
     "otaTitle": "OTA 업데이트",
+    "otaScreenTitle": "OTA 업데이트",
     "otaRunning": "실행 중",
     "otaStoreVersion": "스토어 버전",
     "otaUpdateNumber": "업데이트 %{otaId}",

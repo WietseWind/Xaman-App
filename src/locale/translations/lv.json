@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Slēpt pakalpojuma maksas notikumus",
     "developerMode": "Izstrādātāja režīms",
     "otaTitle": "OTA atjauninājumi",
+    "otaScreenTitle": "OTA atjauninājumi",
     "otaRunning": "Darbojas",
     "otaStoreVersion": "Veikala versija",
     "otaUpdateNumber": "Atjauninājums %{otaId}",

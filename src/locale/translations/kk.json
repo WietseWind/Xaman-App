@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Қызмет комиссиясы оқиғаларын жасыру",
     "developerMode": "Әзірлеуші режимі",
     "otaTitle": "OTA жаңартулары",
+    "otaScreenTitle": "OTA жаңартулары",
     "otaRunning": "Іске қосулы",
     "otaStoreVersion": "Дүкен нұсқасы",
     "otaUpdateNumber": "%{otaId} жаңартуы",

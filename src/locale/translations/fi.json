@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Piilota palvelumaksutapahtumat",
     "developerMode": "Kehittäjätila",
     "otaTitle": "OTA-päivitykset",
+    "otaScreenTitle": "OTA-päivitykset",
     "otaRunning": "Käytössä",
     "otaStoreVersion": "Kauppaversio",
     "otaUpdateNumber": "Päivitys %{otaId}",

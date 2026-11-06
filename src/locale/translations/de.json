@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Servicegebühr-Ereignisse ausblenden",
     "developerMode": "Entwicklermodus",
     "otaTitle": "Over-the-Air-Updates",
+    "otaScreenTitle": "OTA-Updates",
     "otaRunning": "Aktiv",
     "otaStoreVersion": "Store-Version",
     "otaUpdateNumber": "Update %{otaId}",

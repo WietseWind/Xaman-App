@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Hide Service Ada events",
     "developerMode": "Hali ya msanidi",
     "otaTitle": "Masasisho ya OTA",
+    "otaScreenTitle": "Masasisho ya OTA",
     "otaRunning": "Inaendeshwa",
     "otaStoreVersion": "Toleo la duka",
     "otaUpdateNumber": "Sasisho %{otaId}",

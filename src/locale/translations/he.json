@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "הסתר אירועי עמלת שירות",
     "developerMode": "מצב מפתח",
     "otaTitle": "עדכוני OTA",
+    "otaScreenTitle": "עדכוני OTA",
     "otaRunning": "פועל",
     "otaStoreVersion": "גרסת החנות",
     "otaUpdateNumber": "עדכון %{otaId}",
