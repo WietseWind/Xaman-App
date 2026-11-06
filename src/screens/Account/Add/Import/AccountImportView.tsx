@@ -715,7 +715,7 @@ class AccountImportView extends Component<Props, State> {
                 }
                 break;
             case 'VerifySignature':
-                title = Localize.t('account.verifyTangemCard');
+                title = Localize.t('account.verifyCard');
                 break;
             case 'ConfirmPublicKey':
                 title = Localize.t('account.publicAddress');
