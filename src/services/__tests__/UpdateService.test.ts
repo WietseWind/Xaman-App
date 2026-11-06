@@ -313,3 +313,94 @@ describe('after start', () => {
         expect(mockUpdates.checkForUpdateAsync).toHaveBeenCalledTimes(1);
     });
 });
+
+describe('session log', () => {
+    /** everything one service instance logged, messages and data, as text */
+    const logged = (service: any): string =>
+        ['debug', 'warn', 'error']
+            .flatMap((level) => service.logger[level].mock.calls)
+            .map((call: any[]) => call.map((x) => (typeof x === 'string' ? x : JSON.stringify(x))).join(' '))
+            .join('\n');
+
+    it('at start: what runs, a revert before this launch, launches that never got healthy', async () => {
+        running(manifest('uuid-12', 12, 'ga'));
+        OtaRecoveryModule.getState.mockResolvedValue({
+            ...STATE,
+            revertedUpdateId: 'uuid-11',
+            unhealthyLaunches: 3,
+            blockedOtaIds: [11],
+            blockedUpdateIds: ['uuid-11'],
+        });
+        jest.useFakeTimers();
+        try {
+            const { service } = load();
+            await service.onAppStarted();
+            const log = logged(service);
+            expect(log).toMatch('Hot updates: running update 12 (GA, uuid-12), store build 5.4.0.456');
+            expect(log).toMatch('Hot updates: update uuid-11 was reverted to the store version before this launch');
+            expect(log).toMatch('Hot updates: 2 earlier launch(es) of this update did not reach a healthy screen');
+            expect(log).toMatch('Hot updates: never installed again on this device: update(s) 11');
+        } finally {
+            jest.clearAllTimers();
+            jest.useRealTimers();
+        }
+    });
+
+    it('at start: a build without updates says so once', async () => {
+        const { service } = load();
+        await service.onAppStarted();
+        await service.onAppStarted();
+        expect(logged(service)).toBe('Hot updates: off in this build');
+    });
+
+    it('automatic check: nothing new, a GA download, a rollback, a refusal', async () => {
+        running();
+        let { service } = load();
+        await service.checkAutomatically();
+        expect(logged(service)).toMatch('Hot updates: no new GA update');
+
+        mockUpdates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: manifest('ga-12', 12, 'ga') });
+        mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: true, manifest: manifest('ga-12', 12, 'ga') });
+        ({ service } = load());
+        await service.checkAutomatically();
+        expect(logged(service)).toMatch('Hot updates: update 12 (GA, ga-12) downloaded; it runs from the next start');
+
+        mockUpdates.checkForUpdateAsync.mockResolvedValue({ isAvailable: false, isRollBackToEmbedded: true });
+        ({ service } = load());
+        await service.checkAutomatically();
+        expect(logged(service)).toMatch('Hot updates: rollback to the store version received');
+
+        mockUpdates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: manifest('ga-12', 12, 'ga') });
+        mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: true, manifest: manifest('dev-13', 13, 'dev') });
+        ({ service } = load());
+        await expect(service.checkAutomatically()).rejects.toThrow();
+        expect(logged(service)).toMatch(
+            'Hot updates: refused update 13 (test, dev-13): channel dev; wiped before the next start',
+        );
+    });
+
+    it('a manual install: requested and downloaded, and the install token never in the log', async () => {
+        running();
+        mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: true, manifest: manifest('dev-13', 13, 'dev') });
+        const { service } = load();
+        await service.installDeveloperUpdate('dev-13', 'install-token-must-not-be-logged');
+        const log = logged(service);
+        expect(log).toMatch('Hot updates: installing dev-13 by hand (developer mode)');
+        expect(log).toMatch('Hot updates: update 13 (test, dev-13) downloaded; it runs from the next start');
+        expect(log).not.toMatch('install-token-must-not-be-logged');
+    });
+
+    it('leaving a test update, reverting to the store version, restarting', async () => {
+        running(manifest('dev-13', 13, 'dev'));
+        mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: false, isRollBackToEmbedded: true });
+        const { service } = load();
+        await service.exitDeveloperChannel();
+        await service.revertToStoreVersion();
+        await service.reloadNow();
+        const log = logged(service);
+        expect(log).toMatch('Hot updates: leaving update 13 (test, dev-13) for the public version');
+        expect(log).toMatch('Hot updates: back to the store version from the next start');
+        expect(log).toMatch('Hot updates: revert to the store version scheduled for update 13 (test, dev-13)');
+        expect(log).toMatch('Hot updates: restarting to run the downloaded update');
+    });
+});

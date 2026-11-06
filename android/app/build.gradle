@@ -8,7 +8,7 @@ apply plugin: "com.google.firebase.crashlytics"
 import com.android.build.OutputFile
 
 def canonicalVersionName = "5.4.0"
-def canonicalVersionCode = 462
+def canonicalVersionCode = 463
 
 // NOTE: DO NOT change postFixSize value, this is for handling legacy method for handling the versioning in android
 def postFixSize = 30_000
@@ -419,4 +419,10 @@ afterEvaluate {
             tasks.findByName(name)?.finalizedBy('uploadCrashlyticsSymbolFileRelease')
         }
     }
+}
+
+// The NDK symbol file reads the merged native libraries (unstrippedNativeLibsDir above). Declare that, or
+// Gradle's task validation fails the release build whenever the symbol task runs (seen on build 462).
+tasks.matching { it.name == 'generateCrashlyticsSymbolFileRelease' }.configureEach {
+    dependsOn 'mergeReleaseNativeLibs'
 }
