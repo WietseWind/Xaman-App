@@ -1,6 +1,7 @@
 /**
- * Over The Air Updates: the updates published for this store build (developer mode).
+ * OTA Updates: the updates published for this store build (developer mode).
  * Opened from Settings > Advanced > Check for updates, with the list already loaded there.
+ * The header uses the short title (settings.otaScreenTitle): "Over The Air Updates" doesn't fit there.
  * Newest first; tap one to install it; pull down to load the list again.
  */
 
@@ -248,7 +249,7 @@ class RuntimeUpdatesView extends Component<Props, State> {
             <View testID="runtime-updates-screen" style={styles.container}>
                 <Header
                     leftComponent={{ testID: 'back-button', icon: 'IconChevronLeft', onPress: Navigator.pop }}
-                    centerComponent={{ text: Localize.t('settings.otaTitle') }}
+                    centerComponent={{ text: Localize.t('settings.otaScreenTitle') }}
                 />
                 <ScrollView
                     contentContainerStyle={sectionStyles.content}

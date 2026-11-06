@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "سروس فی واقعات چھپائیں",
     "developerMode": "ڈویلپر وضع",
     "otaTitle": "OTA اپ ڈیٹس",
+    "otaScreenTitle": "OTA اپ ڈیٹس",
     "otaRunning": "چل رہا ہے",
     "otaStoreVersion": "اسٹور ورژن",
     "otaUpdateNumber": "اپ ڈیٹ %{otaId}",

@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "隐藏服务费事件",
     "developerMode": "开发者模式",
     "otaTitle": "OTA 更新",
+    "otaScreenTitle": "OTA 更新",
     "otaRunning": "当前运行",
     "otaStoreVersion": "商店版本",
     "otaUpdateNumber": "更新 %{otaId}",

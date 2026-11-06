@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Skrýt události poplatků služby",
     "developerMode": "Vývojářský režim",
     "otaTitle": "Aktualizace OTA",
+    "otaScreenTitle": "Aktualizace OTA",
     "otaRunning": "Běží",
     "otaStoreVersion": "Verze z obchodu",
     "otaUpdateNumber": "Aktualizace %{otaId}",

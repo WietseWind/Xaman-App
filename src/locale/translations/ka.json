@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "დამალეთ სერვისის საკომისიოს მოვლენები",
     "developerMode": "დეველოპერის რეჟიმი ",
     "otaTitle": "OTA განახლებები",
+    "otaScreenTitle": "OTA განახლებები",
     "otaRunning": "მუშაობს",
     "otaStoreVersion": "მაღაზიის ვერსია",
     "otaUpdateNumber": "განახლება %{otaId}",

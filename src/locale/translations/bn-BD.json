@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "সার্ভিস ফি লেনদেন লুকান",
     "developerMode": "ডেভেলপার মোড",
     "otaTitle": "OTA আপডেট",
+    "otaScreenTitle": "OTA আপডেট",
     "otaRunning": "চলছে",
     "otaStoreVersion": "স্টোর সংস্করণ",
     "otaUpdateNumber": "আপডেট %{otaId}",

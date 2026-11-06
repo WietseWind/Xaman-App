@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Razvijalski način",
     "otaTitle": "Posodobitve OTA",
+    "otaScreenTitle": "Posodobitve OTA",
     "otaRunning": "Teče",
     "otaStoreVersion": "Različica iz trgovine",
     "otaUpdateNumber": "Posodobitev %{otaId}",

@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Приховати події сервісної комісії",
     "developerMode": "Режим розробника",
     "otaTitle": "Оновлення OTA",
+    "otaScreenTitle": "Оновлення OTA",
     "otaRunning": "Запущено",
     "otaStoreVersion": "Версія з магазину",
     "otaUpdateNumber": "Оновлення %{otaId}",

@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Versteek Diens Fooi gebeure",
     "developerMode": "Ontwikkelaar modus",
     "otaTitle": "Oor-die-lug-opdaterings",
+    "otaScreenTitle": "OTA-opdaterings",
     "otaRunning": "Aktief",
     "otaStoreVersion": "Winkelweergawe",
     "otaUpdateNumber": "Opdatering %{otaId}",

@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Fejlesztői mód",
     "otaTitle": "OTA-frissítések",
+    "otaScreenTitle": "OTA-frissítések",
     "otaRunning": "Futó verzió",
     "otaStoreVersion": "Áruházi verzió",
     "otaUpdateNumber": "%{otaId}. frissítés",

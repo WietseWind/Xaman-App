@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Dölj serviceavgiftshändelser",
     "developerMode": "Utvecklingsläge",
     "otaTitle": "OTA-uppdateringar",
+    "otaScreenTitle": "OTA-uppdateringar",
     "otaRunning": "Körs",
     "otaStoreVersion": "Butiksversion",
     "otaUpdateNumber": "Uppdatering %{otaId}",

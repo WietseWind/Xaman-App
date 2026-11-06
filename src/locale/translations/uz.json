@@ -896,6 +896,7 @@
     "hideServiceFeeTransactions": "Xizmat To'lovi hodisalarini yashirish",
     "developerMode": "Ishlab chiqaruvchi rejimi",
     "otaTitle": "OTA yangilanishlari",
+    "otaScreenTitle": "OTA yangilanishlari",
     "otaRunning": "Ishlamoqda",
     "otaStoreVersion": "Do'kon versiyasi",
     "otaUpdateNumber": "%{otaId}-yangilanish",
