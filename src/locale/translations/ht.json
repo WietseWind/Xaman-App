@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Enstale mizajou %{otaId}?",
     "otaInstall": "Enstale",
     "otaNotNewer": "Aparèy sa a deja gen mizajou sa a oswa youn ki pi nouvo.",
+    "otaReinstallNeedsReset": "Mizajou %{otaId} pi ansyen pase sa aparèy sa a te aplike dènye fwa, pa egzanp apre ou retounen nan vèsyon magazen an. Pou enstale l ankò, fèmen Xaman: mizajou ou te telechaje yo efase. Apre sa, louvri Xaman epi enstale mizajou a yon lòt fwa.",
     "otaNothingToInstall": "Pa gen anyen pou enstale kounye a.",
     "otaReadyRestart": "Pare. Rekòmanse Xaman kounye a pou sèvi ak li?",
     "otaRestartNow": "Rekòmanse kounye a",

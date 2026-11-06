@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Kas paigaldada uuendus %{otaId}?",
     "otaInstall": "Paigalda",
     "otaNotNewer": "Selles seadmes on see uuendus või uuem juba olemas.",
+    "otaReinstallNeedsReset": "Uuendus %{otaId} on vanem kui see, mida see seade viimati rakendas, näiteks pärast poe versiooni juurde naasmist. Selle uuesti paigaldamiseks sulge Xaman: allalaaditud uuendused kustutatakse. Seejärel ava Xaman ja paigalda uuendus uuesti.",
     "otaNothingToInstall": "Praegu pole midagi paigaldada.",
     "otaReadyRestart": "Valmis. Kas taaskäivitada Xaman kohe, et seda kasutada?",
     "otaRestartNow": "Taaskäivita kohe",

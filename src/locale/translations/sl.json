@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Namestim posodobitev %{otaId}?",
     "otaInstall": "Namesti",
     "otaNotNewer": "Ta naprava že ima to posodobitev ali novejšo.",
+    "otaReinstallNeedsReset": "Posodobitev %{otaId} je starejša od stanja, ki ga je ta naprava nazadnje uporabila, na primer po vrnitvi na različico iz trgovine. Če jo želite namestiti znova, zaprite Xaman: prenesene posodobitve se izbrišejo. Nato odprite Xaman in posodobitev namestite še enkrat.",
     "otaNothingToInstall": "Trenutno ni ničesar za namestitev.",
     "otaReadyRestart": "Pripravljeno. Želite zdaj znova zagnati Xaman, da jo uporabite?",
     "otaRestartNow": "Znova zaženi zdaj",

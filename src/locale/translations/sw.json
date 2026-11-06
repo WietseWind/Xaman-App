@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Sakinisha sasisho %{otaId}?",
     "otaInstall": "Sakinisha",
     "otaNotNewer": "Kifaa hiki tayari kina sasisho hili au jipya zaidi.",
+    "otaReinstallNeedsReset": "Sasisho %{otaId} ni la zamani kuliko kile kifaa hiki kilichotumia mara ya mwisho, kwa mfano baada ya kurudi kwenye toleo la duka. Ili kulisakinisha tena, funga Xaman: masasisho yaliyopakuliwa yanafutwa. Kisha fungua Xaman na usakinishe sasisho tena.",
     "otaNothingToInstall": "Hakuna cha kusakinisha kwa sasa.",
     "otaReadyRestart": "Tayari. Anzisha upya Xaman sasa ili kulitumia?",
     "otaRestartNow": "Anzisha upya sasa",

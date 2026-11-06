@@ -911,6 +911,7 @@
     "otaInstallQuestion": "%{otaId}-yangilanish o'rnatilsinmi?",
     "otaInstall": "O'rnatish",
     "otaNotNewer": "Bu qurilmada ushbu yangilanish yoki undan yangisi allaqachon bor.",
+    "otaReinstallNeedsReset": "%{otaId}-yangilanish ushbu qurilma oxirgi marta qo'llagan holatdan eskiroq, masalan do'kon versiyasiga qaytgandan keyin. Uni qayta o'rnatish uchun Xaman'ni yoping: yuklab olingan yangilanishlar o'chiriladi. So'ng Xaman'ni oching va yangilanishni yana bir bor o'rnating.",
     "otaNothingToInstall": "Hozir o'rnatadigan narsa yo'q.",
     "otaReadyRestart": "Tayyor. Undan foydalanish uchun Xaman hozir qayta ishga tushirilsinmi?",
     "otaRestartNow": "Hozir qayta ishga tushirish",

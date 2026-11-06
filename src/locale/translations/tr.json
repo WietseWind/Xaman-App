@@ -911,6 +911,7 @@
     "otaInstallQuestion": "%{otaId} numaralı güncelleme yüklensin mi?",
     "otaInstall": "Yükle",
     "otaNotNewer": "Bu cihazda bu güncelleme veya daha yenisi zaten var.",
+    "otaReinstallNeedsReset": "%{otaId} numaralı güncelleme, bu cihazın en son uyguladığından daha eski; örneğin mağaza sürümüne döndükten sonra. Yeniden yüklemek için Xaman'ı kapatın: indirilen güncellemeler silinir. Ardından Xaman'ı açın ve güncellemeyi bir kez daha yükleyin.",
     "otaNothingToInstall": "Şu anda yüklenecek bir şey yok.",
     "otaReadyRestart": "Hazır. Kullanmak için Xaman şimdi yeniden başlatılsın mı?",
     "otaRestartNow": "Şimdi yeniden başlat",

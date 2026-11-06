@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Installera uppdatering %{otaId}?",
     "otaInstall": "Installera",
     "otaNotNewer": "Den här enheten har redan den här uppdateringen eller en nyare.",
+    "otaReinstallNeedsReset": "Uppdatering %{otaId} är äldre än det som den här enheten senast har tillämpat, till exempel efter att ha gått tillbaka till butiksversionen. Stäng Xaman för att installera den igen: de nedladdade uppdateringarna rensas. Öppna sedan Xaman och installera uppdateringen en gång till.",
     "otaNothingToInstall": "Inget att installera just nu.",
     "otaReadyRestart": "Klart. Starta om Xaman nu för att använda den?",
     "otaRestartNow": "Starta om nu",

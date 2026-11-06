@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Įdiegti atnaujinimą %{otaId}?",
     "otaInstall": "Įdiegti",
     "otaNotNewer": "Šiame įrenginyje jau yra šis atnaujinimas arba naujesnis.",
+    "otaReinstallNeedsReset": "Atnaujinimas %{otaId} yra senesnis nei tai, ką šis įrenginys pritaikė paskutinį kartą, pavyzdžiui, grįžus į parduotuvės versiją. Norėdami jį įdiegti iš naujo, uždarykite Xaman: atsisiųsti atnaujinimai ištrinami. Tada atidarykite Xaman ir įdiekite atnaujinimą dar kartą.",
     "otaNothingToInstall": "Šiuo metu nėra ką įdiegti.",
     "otaReadyRestart": "Paruošta. Paleisti Xaman iš naujo dabar, kad jį naudotumėte?",
     "otaRestartNow": "Paleisti iš naujo dabar",

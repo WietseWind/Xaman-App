@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Installeer opdatering %{otaId}?",
     "otaInstall": "Installeer",
     "otaNotNewer": "Hierdie toestel het reeds hierdie opdatering of 'n nuwer een.",
+    "otaReinstallNeedsReset": "Opdatering %{otaId} is ouer as wat hierdie toestel laaste toegepas het, byvoorbeeld ná die terugkeer na die winkelweergawe. Om dit weer te installeer, maak Xaman toe: die afgelaaide opdaterings word uitgevee. Maak dan Xaman oop en installeer die opdatering weer.",
     "otaNothingToInstall": "Niks om nou te installeer nie.",
     "otaReadyRestart": "Gereed. Herbegin Xaman nou om dit te gebruik?",
     "otaRestartNow": "Herbegin nou",

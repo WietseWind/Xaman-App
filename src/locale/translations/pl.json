@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Zainstalować aktualizację %{otaId}?",
     "otaInstall": "Zainstaluj",
     "otaNotNewer": "To urządzenie ma już tę aktualizację lub nowszą.",
+    "otaReinstallNeedsReset": "Aktualizacja %{otaId} jest starsza niż ostatni stan zastosowany na tym urządzeniu, na przykład po powrocie do wersji ze sklepu. Aby zainstalować ją ponownie, zamknij Xaman: pobrane aktualizacje zostaną usunięte. Następnie otwórz Xaman i zainstaluj aktualizację jeszcze raz.",
     "otaNothingToInstall": "W tej chwili nie ma nic do zainstalowania.",
     "otaReadyRestart": "Gotowe. Uruchomić ponownie Xaman teraz, aby jej użyć?",
     "otaRestartNow": "Uruchom ponownie teraz",

@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Instalezi actualizarea %{otaId}?",
     "otaInstall": "Instalează",
     "otaNotNewer": "Acest dispozitiv are deja această actualizare sau una mai nouă.",
+    "otaReinstallNeedsReset": "Actualizarea %{otaId} este mai veche decât ce a aplicat ultima dată acest dispozitiv, de exemplu după revenirea la versiunea din magazin. Pentru a o instala din nou, închide Xaman: actualizările descărcate sunt șterse. Apoi deschide Xaman și instalează din nou actualizarea.",
     "otaNothingToInstall": "Nimic de instalat momentan.",
     "otaReadyRestart": "Gata. Repornești Xaman acum pentru a o folosi?",
     "otaRestartNow": "Repornește acum",

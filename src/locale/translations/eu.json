@@ -911,6 +911,7 @@
     "otaInstallQuestion": "%{otaId}. eguneratzea instalatu?",
     "otaInstall": "Instalatu",
     "otaNotNewer": "Gailu honek badu eguneratze hau edo berriago bat.",
+    "otaReinstallNeedsReset": "%{otaId}. eguneratzea gailu honek azkenekoz aplikatutakoa baino zaharragoa da, adibidez dendako bertsiora itzuli ondoren. Berriro instalatzeko, itxi Xaman: deskargatutako eguneratzeak ezabatzen dira. Ondoren, ireki Xaman eta instalatu eguneratzea berriro.",
     "otaNothingToInstall": "Une honetan ez dago ezer instalatzeko.",
     "otaReadyRestart": "Prest. Xaman orain berrabiarazi erabiltzeko?",
     "otaRestartNow": "Berrabiarazi orain",

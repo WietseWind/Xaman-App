@@ -911,6 +911,7 @@
     "otaInstallQuestion": "Instalirati ažuriranje %{otaId}?",
     "otaInstall": "Instaliraj",
     "otaNotNewer": "Ovaj uređaj već ima ovo ažuriranje ili novije.",
+    "otaReinstallNeedsReset": "Ažuriranje %{otaId} starije je od stanja koje je ovaj uređaj zadnje primijenio, na primjer nakon povratka na verziju iz trgovine. Za ponovnu instalaciju zatvorite Xaman: preuzeta ažuriranja se brišu. Zatim otvorite Xaman i ponovno instalirajte ažuriranje.",
     "otaNothingToInstall": "Trenutačno nema ničega za instalaciju.",
     "otaReadyRestart": "Spremno. Ponovno pokrenuti Xaman sada da biste ga koristili?",
     "otaRestartNow": "Ponovno pokreni sada",
