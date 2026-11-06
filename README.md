@@ -22,6 +22,7 @@ Xaman is written in JavaScript with React Native. To get started with the code, 
 Further reading:
 
 * [Makefile](docs/makefile.md)
+* [Over-the-air updates](docs/ota-updates.md)
 * [Testing](docs/testing.md)
 * [Troubleshooting](docs/troubleshooting.md)
 * [Responsible disclosure](RESPONSIBLE-DISCLOSURE.md)
