@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Mode ng developer",
-    "otaTitle": "Mga runtime update",
+    "otaTitle": "Mga OTA update",
     "otaRunning": "Tumatakbo",
     "otaStoreVersion": "Bersyon ng store",
     "otaUpdateNumber": "Update %{otaId}",

@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Ẩn giao dịch spam/lừa đảo",
     "hideServiceFeeTransactions": "Ẩn sự kiện phí dịch vụ",
     "developerMode": "Chế độ nhà phát triển",
-    "otaTitle": "Cập nhật thời gian chạy",
+    "otaTitle": "Cập nhật OTA",
     "otaRunning": "Đang chạy",
     "otaStoreVersion": "Phiên bản cửa hàng",
     "otaUpdateNumber": "Bản cập nhật %{otaId}",

@@ -30,6 +30,7 @@ import { DeveloperSettingViewProps } from '@screens/Settings/Advanced/DeveloperS
 import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { ChangeLogOverlayProps } from '@screens/Overlay/ChangeLog';
 import { RuntimeUpdatesViewProps } from '@screens/Settings/Advanced/RuntimeUpdates';
+import { fetchOtaUpdates } from '@screens/Settings/Advanced/RuntimeUpdates/RuntimeUpdatesView';
 
 // style
 import { SettingsRow, SettingsSection } from '../SettingsSection';
@@ -47,6 +48,7 @@ export interface State {
     profile?: ProfileModel;
     // over-the-air updates (developer mode)
     otaBusy: boolean;
+    otaChecking: boolean;
     otaReady: boolean;
 }
 
@@ -67,6 +69,7 @@ class AdvancedSettingsView extends Component<Props, State> {
             coreSettings: CoreRepository.getSettings(),
             profile: ProfileRepository.getProfile(),
             otaBusy: false,
+            otaChecking: false,
             otaReady: false,
         };
     }
@@ -156,7 +159,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 // persist the settings
                 CoreRepository.saveSettings({ developerMode: true });
                 BackendService.action('developermode', 'on');
-                logger.debug('Developer mode turned on (hot updates: test updates can be installed by hand)');
+                logger.debug('Developer mode turned on (OTA updates: test updates can be installed by hand)');
 
                 if (Platform.OS === 'android') {
                     SetFlagSecure(false);
@@ -197,7 +200,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 })
                 .catch((error) => {
                     // retried by UpdateService after the next start
-                    logger.warn('Hot updates: leaving the test update failed; retried after the next start', error);
+                    logger.warn('OTA updates: leaving the test update failed; retried after the next start', error);
                 });
         }
     };
@@ -284,16 +287,33 @@ class AdvancedSettingsView extends Component<Props, State> {
         Navigator.push<NetworkSettingViewProps>(AppScreens.Settings.Network.List, {});
     };
 
-    /* Hot updates (developer mode) ==================================================================== */
+    /* Over The Air Updates (developer mode) ==================================================================== */
 
     showOtaError = (error: any) => {
         Alert.alert(Localize.t('global.error'), error?.message ? String(error.message) : String(error));
     };
 
-    showRuntimeUpdates = () => {
-        Navigator.push<RuntimeUpdatesViewProps>(AppScreens.Settings.RuntimeUpdates, {
-            onUpdateReady: () => this.setState({ otaReady: true }),
-        });
+    /** loads the list first, so the screen opens with it (no refresh animation on opening) */
+    showRuntimeUpdates = async () => {
+        const { otaChecking } = this.state;
+
+        if (otaChecking) {
+            return;
+        }
+
+        this.setState({ otaChecking: true });
+        try {
+            const updates = await fetchOtaUpdates();
+            Navigator.push<RuntimeUpdatesViewProps>(AppScreens.Settings.RuntimeUpdates, {
+                updates,
+                onUpdateReady: () => this.setState({ otaReady: true }),
+            });
+        } catch (error: any) {
+            logger.warn('OTA updates: the update list could not be loaded', error);
+            this.showOtaError(error);
+        } finally {
+            this.setState({ otaChecking: false });
+        }
     };
 
     leaveTestUpdate = async () => {
@@ -305,7 +325,7 @@ class AdvancedSettingsView extends Component<Props, State> {
 
         this.setState({ otaBusy: true });
         try {
-            logger.debug('Hot updates: "Back to the public version" chosen');
+            logger.debug('OTA updates: "Back to the public version" chosen');
             const changed = await UpdateService.exitDeveloperChannel();
             if (!changed) {
                 Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
@@ -314,7 +334,7 @@ class AdvancedSettingsView extends Component<Props, State> {
             this.setState({ otaReady: true });
             this.promptOtaRestart();
         } catch (error: any) {
-            logger.warn('Hot updates: leaving the test update failed', error);
+            logger.warn('OTA updates: leaving the test update failed', error);
             this.showOtaError(error);
         } finally {
             this.setState({ otaBusy: false });
@@ -350,7 +370,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 { text: Localize.t('settings.otaCloseApp'), onPress: ExitApp },
             ]);
         } catch (error: any) {
-            logger.warn('Hot updates: scheduling the revert to the store version failed', error);
+            logger.warn('OTA updates: scheduling the revert to the store version failed', error);
             this.showOtaError(error);
         }
     };
@@ -366,7 +386,7 @@ class AdvancedSettingsView extends Component<Props, State> {
     };
 
     renderHotUpdates = () => {
-        const { otaReady } = this.state;
+        const { otaReady, otaChecking } = this.state;
 
         if (!UpdateService.isEnabled()) {
             return (
@@ -404,6 +424,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 key="check"
                 testID="ota-check"
                 label={Localize.t('settings.otaCheckForUpdates')}
+                value={otaChecking ? Localize.t('global.loading') : undefined}
                 onPress={this.showRuntimeUpdates}
             />,
         );

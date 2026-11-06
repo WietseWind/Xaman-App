@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "הסתר אירועי עמלת שירות",
     "developerMode": "מצב מפתח",
-    "otaTitle": "עדכוני זמן ריצה",
+    "otaTitle": "עדכוני OTA",
     "otaRunning": "פועל",
     "otaStoreVersion": "גרסת החנות",
     "otaUpdateNumber": "עדכון %{otaId}",

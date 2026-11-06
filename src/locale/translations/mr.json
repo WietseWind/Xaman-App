@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "विकसक मोड",
-    "otaTitle": "रनटाइम अपडेट्स",
+    "otaTitle": "OTA अपडेट्स",
     "otaRunning": "चालू",
     "otaStoreVersion": "स्टोर आवृत्ती",
     "otaUpdateNumber": "अपडेट %{otaId}",

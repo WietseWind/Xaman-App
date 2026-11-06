@@ -1,10 +1,11 @@
 /**
- * Runtime updates: the over-the-air updates published for this store build (developer mode).
- * Opened from Settings > Advanced > Check for updates. Newest first; tap one to install it.
+ * Over The Air Updates: the updates published for this store build (developer mode).
+ * Opened from Settings > Advanced > Check for updates, with the list already loaded there.
+ * Newest first; tap one to install it; pull down to load the list again.
  */
 
 import React, { Component } from 'react';
-import { Alert, NativeModules, RefreshControl, ScrollView, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
@@ -25,23 +26,41 @@ import styles from '../styles';
 
 /* types ==================================================================== */
 export interface Props {
+    /** the list as loaded when Check for updates was tapped */
+    updates?: XamanBackend.OtaUpdate[];
     /** an update was downloaded and runs after a restart */
     onUpdateReady?: () => void;
 }
 
 export interface State {
-    loading: boolean;
     updates?: XamanBackend.OtaUpdate[];
+    /** first load, only when the list wasn't passed in */
+    loading: boolean;
+    /** pull to refresh, only when the user pulls */
+    refreshing: boolean;
     busy: boolean;
 }
 
 // session log (Settings > Advanced > Session log)
 const logger = LoggerService.createLogger('Settings');
 
-/** newest published (or re-published) first */
 const publishedAt = (update: XamanBackend.OtaUpdate) => new Date(update.manifest.createdAt).getTime();
-const newestFirst = (updates: XamanBackend.OtaUpdate[]) =>
+
+/** newest published (or re-published) first */
+export const newestFirst = (updates: XamanBackend.OtaUpdate[]) =>
     [...updates].sort((a, b) => publishedAt(b) - publishedAt(a) || b.otaId - a.otaId);
+
+/** the published updates for the running store build, newest first, each with a fresh install token */
+export const fetchOtaUpdates = async (): Promise<XamanBackend.OtaUpdate[]> => {
+    const { runtimeVersion } = UpdateService.getRunningUpdate();
+    if (!runtimeVersion) {
+        return [];
+    }
+    const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
+    const list = Array.isArray(updates) ? newestFirst(updates) : [];
+    logger.debug(`OTA updates: ${list.length} update(s) published for store build ${runtimeVersion}`);
+    return list;
+};
 
 /* Component ==================================================================== */
 class RuntimeUpdatesView extends Component<Props, State> {
@@ -57,46 +76,40 @@ class RuntimeUpdatesView extends Component<Props, State> {
         super(props);
 
         this.state = {
-            loading: true,
-            updates: undefined,
+            updates: props.updates,
+            loading: !props.updates,
+            refreshing: false,
             busy: false,
         };
     }
 
     componentDidMount() {
-        this.load();
+        const { updates } = this.props;
+
+        // opened without the list (not via Check for updates): load it, without the pull-to-refresh animation
+        if (!updates) {
+            this.load('loading');
+        }
     }
 
     showError = (error: any) => {
         Alert.alert(Localize.t('global.error'), error?.message ? String(error.message) : String(error));
     };
 
-    /** the published updates, each with a fresh install token */
-    fetchUpdates = async (): Promise<XamanBackend.OtaUpdate[]> => {
-        const { runtimeVersion } = UpdateService.getRunningUpdate();
-        if (!runtimeVersion) {
-            return [];
-        }
-        const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
-        return Array.isArray(updates) ? newestFirst(updates) : [];
-    };
-
-    load = async () => {
-        this.setState({ loading: true });
+    load = async (indicator: 'loading' | 'refreshing') => {
+        this.setState({ [indicator]: true } as Pick<State, 'loading' | 'refreshing'>);
         try {
-            const updates = await this.fetchUpdates();
-            this.setState({ updates });
-            logger.debug(
-                `Hot updates: ${updates.length} update(s) published for store build ${
-                    UpdateService.getRunningUpdate().runtimeVersion
-                }`,
-            );
+            this.setState({ updates: await fetchOtaUpdates() });
         } catch (error: any) {
-            logger.warn('Hot updates: the update list could not be loaded', error);
+            logger.warn('OTA updates: the update list could not be loaded', error);
             this.showError(error);
         } finally {
-            this.setState({ loading: false });
+            this.setState({ [indicator]: false } as Pick<State, 'loading' | 'refreshing'>);
         }
+    };
+
+    refresh = () => {
+        this.load('refreshing');
     };
 
     confirmInstall = (update: XamanBackend.OtaUpdate) => {
@@ -117,14 +130,14 @@ class RuntimeUpdatesView extends Component<Props, State> {
 
         this.setState({ busy: true });
         try {
-            logger.debug(`Hot updates: install of update ${otaId} chosen`);
+            logger.debug(`OTA updates: install of update ${otaId} chosen`);
             // a fresh install token: the one from the list expires after a few minutes
-            const updates = await this.fetchUpdates();
+            const updates = await fetchOtaUpdates();
             this.setState({ updates });
 
             const update = updates.find((u) => u.otaId === otaId);
             if (!update) {
-                logger.warn(`Hot updates: update ${otaId} is no longer published`);
+                logger.warn(`OTA updates: update ${otaId} is no longer published`);
                 Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
                 return;
             }
@@ -147,7 +160,7 @@ class RuntimeUpdatesView extends Component<Props, State> {
                 { text: Localize.t('settings.otaRestartNow'), onPress: this.restart },
             ]);
         } catch (error: any) {
-            logger.warn(`Hot updates: install of update ${otaId} failed`, error);
+            logger.warn(`OTA updates: install of update ${otaId} failed`, error);
             this.showError(error);
         } finally {
             this.setState({ busy: false });
@@ -155,12 +168,9 @@ class RuntimeUpdatesView extends Component<Props, State> {
     };
 
     /**
-     * expo-updates only installs updates newer than what the phone last applied. Going back to the store
-     * version stamps it with the time of that step, so an earlier update counts as older from then on.
-     * Clearing the downloaded updates at the next start (the native revert without blocking anything)
-     * undoes that; then the same install works.
-     * NOTE: calls the native module directly because the updater (UpdateService) can't change in an
-     * over-the-air update; this moves into UpdateService with the next store build.
+     * expo-updates only installs updates newer than what the phone last applied, so an update can count
+     * as older after the phone went to a newer one or back to the store version. Clearing the downloaded
+     * updates at the next start (UpdateService.resetUpdateStorage) undoes that; then the same install works.
      */
     offerReset = (otaId: number) => {
         Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaReinstallNeedsReset', { otaId }), [
@@ -169,14 +179,10 @@ class RuntimeUpdatesView extends Component<Props, State> {
                 text: Localize.t('settings.otaCloseApp'),
                 onPress: async () => {
                     try {
-                        await NativeModules.OtaRecoveryModule.scheduleRevert(null, 0);
-                        logger.warn(
-                            `Hot updates: downloaded updates are cleared at the next start, so update ${otaId} ` +
-                                'can be installed again',
-                        );
+                        await UpdateService.resetUpdateStorage();
                         ExitApp();
                     } catch (error: any) {
-                        logger.warn('Hot updates: clearing the downloaded updates failed', error);
+                        logger.warn('OTA updates: clearing the downloaded updates failed', error);
                         this.showError(error);
                     }
                 },
@@ -236,7 +242,7 @@ class RuntimeUpdatesView extends Component<Props, State> {
     };
 
     render() {
-        const { loading } = this.state;
+        const { refreshing } = this.state;
 
         return (
             <View testID="runtime-updates-screen" style={styles.container}>
@@ -248,8 +254,8 @@ class RuntimeUpdatesView extends Component<Props, State> {
                     contentContainerStyle={sectionStyles.content}
                     refreshControl={
                         <RefreshControl
-                            onRefresh={this.load}
-                            refreshing={loading}
+                            onRefresh={this.refresh}
+                            refreshing={refreshing}
                             tintColor={StyleService.value('$contrast')}
                         />
                     }

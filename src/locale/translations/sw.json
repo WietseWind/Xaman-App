@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Ada events",
     "developerMode": "Hali ya msanidi",
-    "otaTitle": "Masasisho ya wakati wa kuendesha",
+    "otaTitle": "Masasisho ya OTA",
     "otaRunning": "Inaendeshwa",
     "otaStoreVersion": "Toleo la duka",
     "otaUpdateNumber": "Sasisho %{otaId}",

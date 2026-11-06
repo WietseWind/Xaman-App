@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Απόκρυψη συμβάντων χρέωσης υπηρεσίας",
     "developerMode": "Λειτουργία προγραμματιστή",
-    "otaTitle": "Ενημερώσεις χρόνου εκτέλεσης",
+    "otaTitle": "Ενημερώσεις OTA",
     "otaRunning": "Σε εκτέλεση",
     "otaStoreVersion": "Έκδοση καταστήματος",
     "otaUpdateNumber": "Ενημέρωση %{otaId}",

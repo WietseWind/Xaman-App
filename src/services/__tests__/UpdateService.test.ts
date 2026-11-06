@@ -336,10 +336,10 @@ describe('session log', () => {
             const { service } = load();
             await service.onAppStarted();
             const log = logged(service);
-            expect(log).toMatch('Hot updates: running update 12 (GA, uuid-12), store build 5.4.0.456');
-            expect(log).toMatch('Hot updates: update uuid-11 was reverted to the store version before this launch');
-            expect(log).toMatch('Hot updates: 2 earlier launch(es) of this update did not reach a healthy screen');
-            expect(log).toMatch('Hot updates: never installed again on this device: update(s) 11');
+            expect(log).toMatch('OTA updates: running update 12 (GA, uuid-12), store build 5.4.0.456');
+            expect(log).toMatch('OTA updates: update uuid-11 was reverted to the store version before this launch');
+            expect(log).toMatch('OTA updates: 2 earlier launch(es) of this update did not reach a healthy screen');
+            expect(log).toMatch('OTA updates: never installed again on this device: update(s) 11');
         } finally {
             jest.clearAllTimers();
             jest.useRealTimers();
@@ -350,32 +350,32 @@ describe('session log', () => {
         const { service } = load();
         await service.onAppStarted();
         await service.onAppStarted();
-        expect(logged(service)).toBe('Hot updates: off in this build');
+        expect(logged(service)).toBe('OTA updates: off in this build');
     });
 
     it('automatic check: nothing new, a GA download, a rollback, a refusal', async () => {
         running();
         let { service } = load();
         await service.checkAutomatically();
-        expect(logged(service)).toMatch('Hot updates: no new GA update');
+        expect(logged(service)).toMatch('OTA updates: no new GA update');
 
         mockUpdates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: manifest('ga-12', 12, 'ga') });
         mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: true, manifest: manifest('ga-12', 12, 'ga') });
         ({ service } = load());
         await service.checkAutomatically();
-        expect(logged(service)).toMatch('Hot updates: update 12 (GA, ga-12) downloaded; it runs from the next start');
+        expect(logged(service)).toMatch('OTA updates: update 12 (GA, ga-12) downloaded; it runs from the next start');
 
         mockUpdates.checkForUpdateAsync.mockResolvedValue({ isAvailable: false, isRollBackToEmbedded: true });
         ({ service } = load());
         await service.checkAutomatically();
-        expect(logged(service)).toMatch('Hot updates: rollback to the store version received');
+        expect(logged(service)).toMatch('OTA updates: rollback to the store version received');
 
         mockUpdates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: manifest('ga-12', 12, 'ga') });
         mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: true, manifest: manifest('dev-13', 13, 'dev') });
         ({ service } = load());
         await expect(service.checkAutomatically()).rejects.toThrow();
         expect(logged(service)).toMatch(
-            'Hot updates: refused update 13 (test, dev-13): channel dev; wiped before the next start',
+            'OTA updates: refused update 13 (test, dev-13): channel dev; wiped before the next start',
         );
     });
 
@@ -385,8 +385,8 @@ describe('session log', () => {
         const { service } = load();
         await service.installDeveloperUpdate('dev-13', 'install-token-must-not-be-logged');
         const log = logged(service);
-        expect(log).toMatch('Hot updates: installing dev-13 by hand (developer mode)');
-        expect(log).toMatch('Hot updates: update 13 (test, dev-13) downloaded; it runs from the next start');
+        expect(log).toMatch('OTA updates: installing dev-13 by hand (developer mode)');
+        expect(log).toMatch('OTA updates: update 13 (test, dev-13) downloaded; it runs from the next start');
         expect(log).not.toMatch('install-token-must-not-be-logged');
     });
 
@@ -398,9 +398,37 @@ describe('session log', () => {
         await service.revertToStoreVersion();
         await service.reloadNow();
         const log = logged(service);
-        expect(log).toMatch('Hot updates: leaving update 13 (test, dev-13) for the public version');
-        expect(log).toMatch('Hot updates: back to the store version from the next start');
-        expect(log).toMatch('Hot updates: revert to the store version scheduled for update 13 (test, dev-13)');
-        expect(log).toMatch('Hot updates: restarting to run the downloaded update');
+        expect(log).toMatch('OTA updates: leaving update 13 (test, dev-13) for the public version');
+        expect(log).toMatch('OTA updates: back to the store version from the next start');
+        expect(log).toMatch('OTA updates: revert to the store version scheduled for update 13 (test, dev-13)');
+        expect(log).toMatch('OTA updates: restarting to run the downloaded update');
+    });
+});
+
+describe('going back to the store version, and installing the same update again', () => {
+    it('leaving a test update for the store version clears the update storage, no stamp', async () => {
+        running(manifest('dev-13', 13, 'dev'));
+        mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: false, isRollBackToEmbedded: true });
+        const { service } = load();
+        await expect(service.exitDeveloperChannel()).resolves.toBe(true);
+        // nothing blocked: (null, 0) only wipes at the next start
+        expect(OtaRecoveryModule.scheduleRevert).toHaveBeenCalledWith(null, 0);
+    });
+
+    it('leaving a test update for a GA update keeps it (no clearing)', async () => {
+        running(manifest('dev-13', 13, 'dev'));
+        mockUpdates.fetchUpdateAsync.mockResolvedValue({ isNew: true, manifest: manifest('exit-12', 12, 'exit') });
+        const { service } = load();
+        await expect(service.exitDeveloperChannel()).resolves.toBe(true);
+        expect(OtaRecoveryModule.scheduleRevert).not.toHaveBeenCalled();
+    });
+
+    it('resetUpdateStorage clears at the next start and blocks nothing', async () => {
+        running(manifest('ga-12', 12, 'ga'));
+        const { service } = load();
+        await service.resetUpdateStorage();
+        expect(OtaRecoveryModule.scheduleRevert).toHaveBeenCalledWith(null, 0);
+        const warned = service.logger.warn.mock.calls.map((c: any[]) => c[0]).join('\n');
+        expect(warned).toMatch('OTA updates: downloaded updates are cleared at the next start (nothing blocked)');
     });
 });
