@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "隐藏垃圾/诈骗交易",
     "hideServiceFeeTransactions": "隐藏服务费事件",
     "developerMode": "开发者模式",
-    "otaTitle": "热更新",
+    "otaTitle": "运行时更新",
     "otaRunning": "当前运行",
     "otaStoreVersion": "商店版本",
     "otaUpdateNumber": "更新 %{otaId}",

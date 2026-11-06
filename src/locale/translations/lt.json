@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Slėpti šlamšto/sukčiavimo įvykius",
     "hideServiceFeeTransactions": "Slėpti aptarnavimo mokesčio įvykius",
     "developerMode": "Kūrėjo režimas",
-    "otaTitle": "Karštieji atnaujinimai",
+    "otaTitle": "Vykdymo laiko atnaujinimai",
     "otaRunning": "Veikia",
     "otaStoreVersion": "Parduotuvės versija",
     "otaUpdateNumber": "Atnaujinimas %{otaId}",

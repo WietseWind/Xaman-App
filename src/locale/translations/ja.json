@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "スパム／詐欺トランザクションを非表示",
     "hideServiceFeeTransactions": "サービス手数料イベントを非表示",
     "developerMode": "開発者モード",
-    "otaTitle": "ホットアップデート",
+    "otaTitle": "ランタイムアップデート",
     "otaRunning": "実行中",
     "otaStoreVersion": "ストア版",
     "otaUpdateNumber": "アップデート %{otaId}",

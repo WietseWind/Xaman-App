@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "დამალეთ სერვისის საკომისიოს მოვლენები",
     "developerMode": "დეველოპერის რეჟიმი ",
-    "otaTitle": "სწრაფი განახლებები",
+    "otaTitle": "გაშვების დროის განახლებები",
     "otaRunning": "მუშაობს",
     "otaStoreVersion": "მაღაზიის ვერსია",
     "otaUpdateNumber": "განახლება %{otaId}",

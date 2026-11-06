@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Sakrij događaje provizije usluge",
     "developerMode": "Опција програмера ",
-    "otaTitle": "Брза ажурирања",
+    "otaTitle": "Ажурирања током рада",
     "otaRunning": "Покренуто",
     "otaStoreVersion": "Верзија из продавнице",
     "otaUpdateNumber": "Ажурирање %{otaId}",

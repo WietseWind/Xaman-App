@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Икономичен режим",
-    "otaTitle": "Бързи актуализации",
+    "otaTitle": "Актуализации по време на работа",
     "otaRunning": "Активна",
     "otaStoreVersion": "Версия от магазина",
     "otaUpdateNumber": "Актуализация %{otaId}",

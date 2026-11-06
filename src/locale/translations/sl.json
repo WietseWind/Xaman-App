@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Razvijalski način",
-    "otaTitle": "Takojšnje posodobitve",
+    "otaTitle": "Posodobitve med izvajanjem",
     "otaRunning": "Teče",
     "otaStoreVersion": "Različica iz trgovine",
     "otaUpdateNumber": "Posodobitev %{otaId}",

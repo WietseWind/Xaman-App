@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Spam/scam transacties verbergen",
     "hideServiceFeeTransactions": "Servicekosten gebeurtenissen verbergen",
     "developerMode": "Ontwikkelaarsmodus",
-    "otaTitle": "Hot-updates",
+    "otaTitle": "Runtime-updates",
     "otaRunning": "Actief",
     "otaStoreVersion": "Store-versie",
     "otaUpdateNumber": "Update %{otaId}",

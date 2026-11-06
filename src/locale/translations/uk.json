@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Приховати події сервісної комісії",
     "developerMode": "Режим розробника",
-    "otaTitle": "Швидкі оновлення",
+    "otaTitle": "Оновлення під час виконання",
     "otaRunning": "Запущено",
     "otaStoreVersion": "Версія з магазину",
     "otaUpdateNumber": "Оновлення %{otaId}",

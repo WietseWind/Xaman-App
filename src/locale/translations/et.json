@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Peida rämpsposti/scam tehingud",
     "hideServiceFeeTransactions": "Peida teenustasu sündmused",
     "developerMode": "Arendaja režiim",
-    "otaTitle": "Kiiruuendused",
+    "otaTitle": "Käitusaja uuendused",
     "otaRunning": "Kasutusel",
     "otaStoreVersion": "Poe versioon",
     "otaUpdateNumber": "Uuendus %{otaId}",

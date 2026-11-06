@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Sembunyikan transaksi spam/penipuan",
     "hideServiceFeeTransactions": "Sembunyikan peristiwa Service Fee",
     "developerMode": "mode pengembang",
-    "otaTitle": "Pembaruan langsung",
+    "otaTitle": "Pembaruan runtime",
     "otaRunning": "Berjalan",
     "otaStoreVersion": "Versi toko",
     "otaUpdateNumber": "Pembaruan %{otaId}",

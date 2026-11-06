@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Geliştirici modu",
-    "otaTitle": "Anlık güncellemeler",
+    "otaTitle": "Çalışma zamanı güncellemeleri",
     "otaRunning": "Çalışan",
     "otaStoreVersion": "Mağaza sürümü",
     "otaUpdateNumber": "Güncelleme %{otaId}",

@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Piilota palvelumaksutapahtumat",
     "developerMode": "Kehittäjätila",
-    "otaTitle": "Pikapäivitykset",
+    "otaTitle": "Ajonaikaiset päivitykset",
     "otaRunning": "Käytössä",
     "otaStoreVersion": "Kauppaversio",
     "otaUpdateNumber": "Päivitys %{otaId}",

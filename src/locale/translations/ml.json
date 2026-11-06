@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "സ്പാം/സ്കാം ഇവന്റുകൾ മറയ്ക്കുക",
     "hideServiceFeeTransactions": "സേവന ഫീസ് ഇവന്റുകൾ മറയ്ക്കുക",
     "developerMode": "ഡവലപ്പർ മോഡ്",
-    "otaTitle": "ഹോട്ട് അപ്‌ഡേറ്റുകൾ",
+    "otaTitle": "റൺടൈം അപ്‌ഡേറ്റുകൾ",
     "otaRunning": "പ്രവർത്തിക്കുന്നത്",
     "otaStoreVersion": "സ്റ്റോർ പതിപ്പ്",
     "otaUpdateNumber": "അപ്‌ഡേറ്റ് %{otaId}",

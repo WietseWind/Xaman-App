@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam events",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Fejlesztői mód",
-    "otaTitle": "Gyorsfrissítések",
+    "otaTitle": "Futásidejű frissítések",
     "otaRunning": "Futó verzió",
     "otaStoreVersion": "Áruházi verzió",
     "otaUpdateNumber": "%{otaId}. frissítés",

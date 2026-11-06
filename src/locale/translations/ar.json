@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "إخفاء أحداث رسوم الخدمة",
     "developerMode": "وضع المطور",
-    "otaTitle": "التحديثات الفورية",
+    "otaTitle": "تحديثات وقت التشغيل",
     "otaRunning": "قيد التشغيل",
     "otaStoreVersion": "إصدار المتجر",
     "otaUpdateNumber": "التحديث %{otaId}",

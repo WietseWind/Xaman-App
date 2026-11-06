@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Спам/алаяқтық оқиғаларды жасыру",
     "hideServiceFeeTransactions": "Қызмет комиссиясы оқиғаларын жасыру",
     "developerMode": "Әзірлеуші режимі",
-    "otaTitle": "Жылдам жаңартулар",
+    "otaTitle": "Орындалу кезіндегі жаңартулар",
     "otaRunning": "Іске қосулы",
     "otaStoreVersion": "Дүкен нұсқасы",
     "otaUpdateNumber": "%{otaId} жаңартуы",

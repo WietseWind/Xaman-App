@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "সার্ভিস ফি লেনদেন লুকান",
     "developerMode": "ডেভেলপার মোড",
-    "otaTitle": "হট আপডেট",
+    "otaTitle": "রানটাইম আপডেট",
     "otaRunning": "চলছে",
     "otaStoreVersion": "স্টোর সংস্করণ",
     "otaUpdateNumber": "আপডেট %{otaId}",

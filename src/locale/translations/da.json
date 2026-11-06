@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Skjul servicegebyr-begivenheder",
     "developerMode": "Udviklertilstand",
-    "otaTitle": "Hot-opdateringer",
+    "otaTitle": "Runtime-opdateringer",
     "otaRunning": "Kører",
     "otaStoreVersion": "Butiksversion",
     "otaUpdateNumber": "Opdatering %{otaId}",

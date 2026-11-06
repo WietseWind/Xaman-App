@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Spam/firibgarlik hodisalarini yashirish",
     "hideServiceFeeTransactions": "Xizmat To'lovi hodisalarini yashirish",
     "developerMode": "Ishlab chiqaruvchi rejimi",
-    "otaTitle": "Tezkor yangilanishlar",
+    "otaTitle": "Ish vaqtidagi yangilanishlar",
     "otaRunning": "Ishlamoqda",
     "otaStoreVersion": "Do'kon versiyasi",
     "otaUpdateNumber": "%{otaId}-yangilanish",
