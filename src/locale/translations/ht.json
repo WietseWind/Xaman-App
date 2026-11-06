@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Kache evènman Frè Sèvis",
     "developerMode": "Mòd devlopè",
-    "otaTitle": "Mizajou pandan egzekisyon",
+    "otaTitle": "Mizajou OTA",
     "otaRunning": "Ap mache",
     "otaStoreVersion": "Vèsyon magazen an",
     "otaUpdateNumber": "Mizajou %{otaId}",

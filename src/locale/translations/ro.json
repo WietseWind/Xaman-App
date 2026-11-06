@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam transactions",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Mod dezvoltator",
-    "otaTitle": "Actualizări la rulare",
+    "otaTitle": "Actualizări OTA",
     "otaRunning": "Rulează",
     "otaStoreVersion": "Versiunea din magazin",
     "otaUpdateNumber": "Actualizarea %{otaId}",

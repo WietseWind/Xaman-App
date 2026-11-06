@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Скрыть спам/мошеннические транзакции",
     "hideServiceFeeTransactions": "Скрыть события Service Fee",
     "developerMode": "Режим разработчика",
-    "otaTitle": "Обновления во время выполнения",
+    "otaTitle": "Обновления OTA",
     "otaRunning": "Запущено",
     "otaStoreVersion": "Версия из магазина",
     "otaUpdateNumber": "Обновление %{otaId}",

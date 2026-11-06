@@ -895,7 +895,7 @@
     "hideAdvisoryTransactions": "Hide spam/scam events",
     "hideServiceFeeTransactions": "Hide Service Fee events",
     "developerMode": "Developer mode",
-    "otaTitle": "Runtime updates",
+    "otaTitle": "Over The Air Updates",
     "otaRunning": "Running",
     "otaStoreVersion": "Store version",
     "otaUpdateNumber": "Update %{otaId}",

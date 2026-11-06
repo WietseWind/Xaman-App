@@ -12,7 +12,9 @@
  * - A launch counts as healthy once the first screen has been up for a while (native watchdog:
  *   an update that never gets there is reverted to the store version).
  * - Everything it decides goes to the session log (Settings > Advanced > Session log), prefixed
- *   "Hot updates:". Install tokens never do.
+ *   "OTA updates:". Install tokens never do.
+ * - Going back to the store version never leaves it "newer" than the updates (see exitDeveloperChannel),
+ *   so a developer can install the same update again.
  */
 
 import { NativeModules } from 'react-native';
@@ -158,7 +160,7 @@ class UpdateService {
         this.started = true;
 
         if (!this.isEnabled()) {
-            this.logger.debug('Hot updates: off in this build');
+            this.logger.debug('OTA updates: off in this build');
             return;
         }
 
@@ -166,37 +168,37 @@ class UpdateService {
         const state = await this.getRecoveryState();
         const emergency = running.isEmergencyLaunch ? ': EMERGENCY LAUNCH, the update failed to start' : '';
         this.logger.debug(
-            `Hot updates: running ${this.describeRunning(running)}, store build ${running.runtimeVersion}${emergency}`,
+            `OTA updates: running ${this.describeRunning(running)}, store build ${running.runtimeVersion}${emergency}`,
         );
         if (state?.revertedUpdateId) {
             this.logger.warn(
-                `Hot updates: update ${state.revertedUpdateId} was reverted to the store version before this ` +
+                `OTA updates: update ${state.revertedUpdateId} was reverted to the store version before this ` +
                     'launch (by hand or by the launch watchdog); this device never installs it again',
             );
         }
         if (running.otaId > 0 && state && state.unhealthyLaunches > 1) {
             this.logger.warn(
-                `Hot updates: ${state.unhealthyLaunches - 1} earlier launch(es) of this update did not reach a ` +
+                `OTA updates: ${state.unhealthyLaunches - 1} earlier launch(es) of this update did not reach a ` +
                     `healthy screen; it is reverted after ${state.watchdogLimit}`,
             );
         }
         if (state?.blockedOtaIds?.length || state?.blockedUpdateIds?.length) {
             this.logger.debug(
-                `Hot updates: never installed again on this device: update(s) ${
+                `OTA updates: never installed again on this device: update(s) ${
                     state.blockedOtaIds?.join(', ') || '-'
                 } (${state.blockedUpdateIds?.length ?? 0} id(s))`,
             );
         }
         if (state?.automatedTest) {
             // e2e runs must test the build itself, not whatever update is published
-            this.logger.debug('Hot updates: automated test run, no checks');
+            this.logger.debug('OTA updates: automated test run, no checks');
             return;
         }
 
         setTimeout(this.markHealthy, HEALTHY_AFTER_MS);
         setTimeout(() => {
             this.checkAfterStart().catch((error) => {
-                this.logger.warn('Hot updates: the check after start failed', error);
+                this.logger.warn('OTA updates: the check after start failed', error);
             });
         }, AUTOMATIC_CHECK_DELAY_MS);
     };
@@ -210,7 +212,7 @@ class UpdateService {
             this.getRunningUpdate().channel === UpdateChannel.Developer &&
             !CoreRepository.isDeveloperModeEnabled()
         ) {
-            this.logger.debug('Hot updates: developer mode is off but a test update runs: leaving it');
+            this.logger.debug('OTA updates: developer mode is off but a test update runs: leaving it');
             return this.exitDeveloperChannel();
         }
         return this.checkAutomatically();
@@ -227,30 +229,30 @@ class UpdateService {
 
             if (result.isRollBackToEmbedded) {
                 // a signed directive: back to the store version on the next cold start
-                this.logger.warn('Hot updates: rollback to the store version received; it applies on the next start');
+                this.logger.warn('OTA updates: rollback to the store version received; it applies on the next start');
                 await Updates.fetchUpdateAsync();
                 return true;
             }
 
             if (!result.isAvailable) {
-                this.logger.debug('Hot updates: no new GA update');
+                this.logger.debug('OTA updates: no new GA update');
                 return false;
             }
 
             const offered = result.manifest as Manifest;
             if (this.channelOf(offered) !== UpdateChannel.General) {
-                this.logger.warn(`Hot updates: ignoring ${this.describeManifest(offered)}: not a GA update`);
+                this.logger.warn(`OTA updates: ignoring ${this.describeManifest(offered)}: not a GA update`);
                 return false;
             }
 
             // reverted on this device before (also when re-issued under a new id): never again,
             // whatever the server says
             if (await this.isBlocked(offered)) {
-                this.logger.warn(`Hot updates: ignoring ${this.describeManifest(offered)}: reverted on this device before`);
+                this.logger.warn(`OTA updates: ignoring ${this.describeManifest(offered)}: reverted on this device before`);
                 return false;
             }
 
-            this.logger.debug(`Hot updates: downloading ${this.describeManifest(offered)}`);
+            this.logger.debug(`OTA updates: downloading ${this.describeManifest(offered)}`);
             const fetched = await Updates.fetchUpdateAsync();
             await this.guard(fetched, [UpdateChannel.General]);
             this.logFetched(fetched);
@@ -264,7 +266,7 @@ class UpdateService {
      */
     installDeveloperUpdate = (manifestId: string, installToken: string): Promise<boolean> => {
         return this.enqueue(async () => {
-            this.logger.debug(`Hot updates: installing ${manifestId} by hand (developer mode)`);
+            this.logger.debug(`OTA updates: installing ${manifestId} by hand (developer mode)`);
             await this.setRequestParams({ 'ota-install': manifestId, 'ota-token': installToken });
             try {
                 const fetched = await Updates.fetchUpdateAsync();
@@ -273,7 +275,7 @@ class UpdateService {
                 }
                 await this.guard(fetched, [UpdateChannel.Developer, UpdateChannel.General]);
                 if (!fetched.isNew) {
-                    this.logger.debug('Hot updates: not installed: this device already has that update or a newer one');
+                    this.logger.debug('OTA updates: not installed: this device already has that update or a newer one');
                 }
                 this.logFetched(fetched);
                 return fetched.isNew;
@@ -294,17 +296,21 @@ class UpdateService {
                 return false;
             }
 
-            this.logger.debug(`Hot updates: leaving ${this.describeRunning(running)} for the public version`);
+            this.logger.debug(`OTA updates: leaving ${this.describeRunning(running)} for the public version`);
             await this.setRequestParams({ 'ota-exit': '1' });
             try {
                 const fetched = await Updates.fetchUpdateAsync();
                 if (fetched.isRollBackToEmbedded) {
-                    this.logger.debug('Hot updates: back to the store version from the next start');
+                    // expo-updates stamps the store version with the directive's time, which would make
+                    // every earlier update "older" on this phone. Clearing the downloaded updates at the
+                    // next start gives the same store version without the stamp.
+                    await OtaRecoveryModule.scheduleRevert(null, 0);
+                    this.logger.debug('OTA updates: back to the store version from the next start');
                     return true;
                 }
                 await this.guard(fetched, [UpdateChannel.Exit, UpdateChannel.General]);
                 if (!fetched.isNew) {
-                    this.logger.warn('Hot updates: no public version received: the test update stays for now');
+                    this.logger.warn('OTA updates: no public version received: the test update stays for now');
                 }
                 this.logFetched(fetched);
                 return fetched.isNew;
@@ -322,16 +328,26 @@ class UpdateService {
         const running = this.getRunningUpdate();
         await OtaRecoveryModule.scheduleRevert(running.updateId, running.otaId);
         this.logger.warn(
-            `Hot updates: revert to the store version scheduled for ${this.describeRunning(running)}; ` +
+            `OTA updates: revert to the store version scheduled for ${this.describeRunning(running)}; ` +
                 'it applies when the app opens again, and this device never installs that update again',
         );
+    };
+
+    /**
+     * Clears every downloaded update at the next start without blocking any: the store version runs, and
+     * any published update can be installed again (expo-updates only installs updates newer than what it
+     * last applied). The caller asks the user to close and reopen the app.
+     */
+    resetUpdateStorage = async (): Promise<void> => {
+        await OtaRecoveryModule.scheduleRevert(null, 0);
+        this.logger.warn('OTA updates: downloaded updates are cleared at the next start (nothing blocked)');
     };
 
     /**
      * Run the downloaded update (or the store version after a rollback) now
      */
     reloadNow = (): Promise<void> => {
-        this.logger.debug('Hot updates: restarting to run the downloaded update');
+        this.logger.debug('OTA updates: restarting to run the downloaded update');
         return Updates.reloadAsync();
     };
 
@@ -344,7 +360,7 @@ class UpdateService {
             }
             return state;
         } catch (error) {
-            this.logger.warn('Hot updates: unable to read the recovery state', error);
+            this.logger.warn('OTA updates: unable to read the recovery state', error);
             return undefined;
         }
     };
@@ -356,7 +372,7 @@ class UpdateService {
         const running = this.getRunningUpdate();
         this.healthyUpdateId = running.updateId;
         if (running.otaId > 0) {
-            this.logger.debug(`Hot updates: ${this.describeRunning(running)} reached a healthy screen`);
+            this.logger.debug(`OTA updates: ${this.describeRunning(running)} reached a healthy screen`);
         }
     };
 
@@ -376,7 +392,7 @@ class UpdateService {
     private logFetched = (fetched: Updates.UpdateFetchResult) => {
         if (fetched.isNew) {
             this.logger.debug(
-                `Hot updates: ${this.describeManifest(fetched.manifest as Manifest)} downloaded; it runs from the next start`,
+                `OTA updates: ${this.describeManifest(fetched.manifest as Manifest)} downloaded; it runs from the next start`,
             );
         }
     };
@@ -404,7 +420,7 @@ class UpdateService {
     private refuse = async (manifest: Manifest, reason: string) => {
         // wipes every downloaded update before the next launch; the GA update comes back later
         await OtaRecoveryModule.scheduleRevert(manifest?.id ?? null, Number(manifest?.extra?.xaman?.otaId) || 0);
-        this.logger.warn(`Hot updates: refused ${this.describeManifest(manifest)}: ${reason}; wiped before the next start`);
+        this.logger.warn(`OTA updates: refused ${this.describeManifest(manifest)}: ${reason}; wiped before the next start`);
         throw new Error(`Refused a downloaded update: ${reason}`);
     };
 
