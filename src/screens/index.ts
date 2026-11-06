@@ -95,6 +95,7 @@ import ChangePasscode from './Settings/Security/ChangePasscode';
 
 // session log
 import SessionLog from './Settings/Advanced/Logs';
+import RuntimeUpdates from './Settings/Advanced/RuntimeUpdates';
 import DeveloperSettings from './Settings/Advanced/DeveloperSettings';
 
 // global screens
@@ -175,6 +176,7 @@ export {
     EditThirdPartyApp,
     NetworkList,
     SessionLog,
+    RuntimeUpdates,
     DeveloperSettings,
     Picker,
     Placeholder,

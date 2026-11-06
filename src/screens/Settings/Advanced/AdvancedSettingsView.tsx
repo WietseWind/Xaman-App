@@ -29,6 +29,7 @@ import { NetworkSettingViewProps } from '@screens/Settings/Advanced/Network';
 import { DeveloperSettingViewProps } from '@screens/Settings/Advanced/DeveloperSettings';
 import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { ChangeLogOverlayProps } from '@screens/Overlay/ChangeLog';
+import { RuntimeUpdatesViewProps } from '@screens/Settings/Advanced/RuntimeUpdates';
 
 // style
 import { SettingsRow, SettingsSection } from '../SettingsSection';
@@ -46,7 +47,6 @@ export interface State {
     profile?: ProfileModel;
     // over-the-air updates (developer mode)
     otaBusy: boolean;
-    otaUpdates?: XamanBackend.OtaUpdate[];
     otaReady: boolean;
 }
 
@@ -67,7 +67,6 @@ class AdvancedSettingsView extends Component<Props, State> {
             coreSettings: CoreRepository.getSettings(),
             profile: ProfileRepository.getProfile(),
             otaBusy: false,
-            otaUpdates: undefined,
             otaReady: false,
         };
     }
@@ -188,7 +187,6 @@ class AdvancedSettingsView extends Component<Props, State> {
 
         // a test update runs: back to the public version (or the store version). Offline, this is
         // retried after the next start.
-        this.setState({ otaUpdates: undefined });
         if (UpdateService.getRunningUpdate().channel === UpdateChannel.Developer) {
             UpdateService.exitDeveloperChannel()
                 .then((changed) => {
@@ -292,77 +290,10 @@ class AdvancedSettingsView extends Component<Props, State> {
         Alert.alert(Localize.t('global.error'), error?.message ? String(error.message) : String(error));
     };
 
-    checkOtaUpdates = async () => {
-        const { otaBusy } = this.state;
-        const { runtimeVersion } = UpdateService.getRunningUpdate();
-
-        if (otaBusy || !runtimeVersion) {
-            return;
-        }
-
-        this.setState({ otaBusy: true });
-        try {
-            const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
-            this.setState({ otaUpdates: Array.isArray(updates) ? updates : [] });
-            logger.debug(
-                `Hot updates: ${Array.isArray(updates) ? updates.length : 0} update(s) published for store build ${runtimeVersion}`,
-            );
-        } catch (error: any) {
-            logger.warn('Hot updates: the update list could not be loaded', error);
-            this.showOtaError(error);
-        } finally {
-            this.setState({ otaBusy: false });
-        }
-    };
-
-    installOtaUpdate = (update: XamanBackend.OtaUpdate) => {
-        const { otaBusy } = this.state;
-
-        if (otaBusy) {
-            return;
-        }
-
-        Alert.alert(Localize.t('settings.otaInstallQuestion', { otaId: update.otaId }), update.message, [
-            { text: Localize.t('global.cancel'), style: 'cancel' },
-            { text: Localize.t('settings.otaInstall'), onPress: () => this.runOtaInstall(update.otaId) },
-        ]);
-    };
-
-    runOtaInstall = async (otaId: number) => {
-        const { runtimeVersion } = UpdateService.getRunningUpdate();
-
-        if (!runtimeVersion) {
-            return;
-        }
-
-        this.setState({ otaBusy: true });
-        try {
-            logger.debug(`Hot updates: install of update ${otaId} chosen`);
-            // a fresh install token: the one from the list expires after a few minutes
-            const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
-            this.setState({ otaUpdates: Array.isArray(updates) ? updates : [] });
-
-            const update = updates?.find((u) => u.otaId === otaId);
-            if (!update) {
-                logger.warn(`Hot updates: update ${otaId} is no longer published`);
-                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
-                return;
-            }
-
-            const isNew = await UpdateService.installDeveloperUpdate(update.manifest.uuid, update.installToken);
-            if (!isNew) {
-                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNotNewer'));
-                return;
-            }
-
-            this.setState({ otaReady: true });
-            this.promptOtaRestart();
-        } catch (error: any) {
-            logger.warn(`Hot updates: install of update ${otaId} failed`, error);
-            this.showOtaError(error);
-        } finally {
-            this.setState({ otaBusy: false });
-        }
+    showRuntimeUpdates = () => {
+        Navigator.push<RuntimeUpdatesViewProps>(AppScreens.Settings.RuntimeUpdates, {
+            onUpdateReady: () => this.setState({ otaReady: true }),
+        });
     };
 
     leaveTestUpdate = async () => {
@@ -434,21 +365,8 @@ class AdvancedSettingsView extends Component<Props, State> {
         return Localize.t('settings.otaUpdateNumber', { otaId: running.otaId });
     };
 
-    otaUpdateLabel = (update: XamanBackend.OtaUpdate, running: RunningUpdate): string => {
-        const status =
-            update.status === 'dev'
-                ? Localize.t('settings.otaStatusTest')
-                : Localize.t('settings.otaStatusPublic', { percent: update.rollout });
-
-        return [
-            `${update.otaId === running.otaId ? '✓ ' : ''}${update.otaId}`,
-            update.held ? `${status}, ${Localize.t('settings.otaStatusHeld')}` : status,
-            update.message,
-        ].join(' · ');
-    };
-
     renderHotUpdates = () => {
-        const { otaBusy, otaUpdates, otaReady } = this.state;
+        const { otaReady } = this.state;
 
         if (!UpdateService.isEnabled()) {
             return (
@@ -486,24 +404,9 @@ class AdvancedSettingsView extends Component<Props, State> {
                 key="check"
                 testID="ota-check"
                 label={Localize.t('settings.otaCheckForUpdates')}
-                value={otaBusy ? Localize.t('global.loading') : undefined}
-                onPress={this.checkOtaUpdates}
+                onPress={this.showRuntimeUpdates}
             />,
         );
-
-        if (otaUpdates?.length === 0) {
-            rows.push(<SettingsRow key="none" label={Localize.t('settings.otaNoUpdates')} />);
-        }
-
-        otaUpdates?.slice(0, 10).forEach((update) => {
-            rows.push(
-                <SettingsRow
-                    key={`update-${update.otaId}`}
-                    label={this.otaUpdateLabel(update, running)}
-                    onPress={() => this.installOtaUpdate(update)}
-                />,
-            );
-        });
 
         if (otaReady) {
             rows.push(

@@ -95,6 +95,7 @@ const screens = {
             Edit: 'app.Settings.ThirdPartyApps.Edit',
         },
         SessionLog: 'app.Settings.SessionLog',
+        RuntimeUpdates: 'app.Settings.RuntimeUpdates',
         DeveloperSettings: 'app.Settings.DeveloperSettings',
         General: 'app.Settings.General',
         Advanced: 'app.Settings.Advanced',
