@@ -7,7 +7,16 @@ import { Switch } from '@components/General/Switch';
 
 import styles from './sectionStyles';
 
-export const SettingsSection = ({ title, children }: { title?: string; children: ReactNode }) => {
+export const SettingsSection = ({
+    title,
+    footer,
+    children,
+}: {
+    title?: string;
+    /** a short note under the section */
+    footer?: string;
+    children: ReactNode;
+}) => {
     return (
         <View style={styles.section}>
             {!!title && (
@@ -23,6 +32,7 @@ export const SettingsSection = ({ title, children }: { title?: string; children:
                     </View>
                 ))}
             </View>
+            {!!footer && <Text style={styles.sectionFooter}>{footer}</Text>}
         </View>
     );
 };

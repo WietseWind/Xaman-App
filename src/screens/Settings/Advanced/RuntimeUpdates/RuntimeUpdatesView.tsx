@@ -3,6 +3,8 @@
  * Opened from Settings > Advanced > Check for updates, with the list already loaded there.
  * The header uses the short title (settings.otaScreenTitle): "Over The Air Updates" doesn't fit there.
  * Newest first; tap one to install it; pull down to load the list again.
+ * While an update downloads (otaInstall.ts), its row shows a spinner and no row can be tapped, also after
+ * leaving the screen and opening it again. A downloaded update's row asks to restart.
  */
 
 import React, { Component } from 'react';
@@ -10,14 +12,12 @@ import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
-import { ExitApp } from '@common/helpers/app';
 
-import BackendService from '@services/BackendService';
 import LoggerService from '@services/LoggerService';
 import StyleService from '@services/StyleService';
 import UpdateService, { RunningUpdate } from '@services/UpdateService';
 
-import { Header } from '@components/General';
+import { Header, LoadingIndicator } from '@components/General';
 
 import Localize from '@locale';
 
@@ -25,12 +25,20 @@ import { SettingsRow, SettingsSection } from '../../SettingsSection';
 import sectionStyles from '../../sectionStyles';
 import styles from '../styles';
 
+import {
+    OtaInstall,
+    OtaInstallStatus,
+    fetchOtaUpdates,
+    getOtaInstall,
+    installOtaUpdate,
+    promptOtaRestart,
+    subscribeOtaInstall,
+} from './otaInstall';
+
 /* types ==================================================================== */
 export interface Props {
     /** the list as loaded when Check for updates was tapped */
     updates?: XamanBackend.OtaUpdate[];
-    /** an update was downloaded and runs after a restart */
-    onUpdateReady?: () => void;
 }
 
 export interface State {
@@ -39,33 +47,18 @@ export interface State {
     loading: boolean;
     /** pull to refresh, only when the user pulls */
     refreshing: boolean;
-    busy: boolean;
+    /** the update downloading or downloaded in this session */
+    install?: OtaInstall;
 }
 
 // session log (Settings > Advanced > Session log)
 const logger = LoggerService.createLogger('Settings');
 
-const publishedAt = (update: XamanBackend.OtaUpdate) => new Date(update.manifest.createdAt).getTime();
-
-/** newest published (or re-published) first */
-export const newestFirst = (updates: XamanBackend.OtaUpdate[]) =>
-    [...updates].sort((a, b) => publishedAt(b) - publishedAt(a) || b.otaId - a.otaId);
-
-/** the published updates for the running store build, newest first, each with a fresh install token */
-export const fetchOtaUpdates = async (): Promise<XamanBackend.OtaUpdate[]> => {
-    const { runtimeVersion } = UpdateService.getRunningUpdate();
-    if (!runtimeVersion) {
-        return [];
-    }
-    const { updates } = await BackendService.getOtaUpdates(runtimeVersion);
-    const list = Array.isArray(updates) ? newestFirst(updates) : [];
-    logger.debug(`OTA updates: ${list.length} update(s) published for store build ${runtimeVersion}`);
-    return list;
-};
-
 /* Component ==================================================================== */
 class RuntimeUpdatesView extends Component<Props, State> {
     static screenName = AppScreens.Settings.RuntimeUpdates;
+
+    private unsubscribeInstall?: () => void;
 
     static options() {
         return {
@@ -80,16 +73,24 @@ class RuntimeUpdatesView extends Component<Props, State> {
             updates: props.updates,
             loading: !props.updates,
             refreshing: false,
-            busy: false,
+            install: getOtaInstall(),
         };
     }
 
     componentDidMount() {
         const { updates } = this.props;
 
+        this.unsubscribeInstall = subscribeOtaInstall((install) => this.setState({ install }));
+
         // opened without the list (not via Check for updates): load it, without the pull-to-refresh animation
         if (!updates) {
             this.load('loading');
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.unsubscribeInstall) {
+            this.unsubscribeInstall();
         }
     }
 
@@ -113,86 +114,19 @@ class RuntimeUpdatesView extends Component<Props, State> {
         this.load('refreshing');
     };
 
-    confirmInstall = (update: XamanBackend.OtaUpdate) => {
-        const { busy } = this.state;
+    onUpdatePress = (update: XamanBackend.OtaUpdate) => {
+        const { install } = this.state;
 
-        if (busy) {
+        // downloaded: it runs after a restart
+        if (install?.status === OtaInstallStatus.Ready && install.otaId === update.otaId) {
+            promptOtaRestart();
             return;
         }
 
         Alert.alert(Localize.t('settings.otaInstallQuestion', { otaId: update.otaId }), update.message, [
             { text: Localize.t('global.cancel'), style: 'cancel' },
-            { text: Localize.t('settings.otaInstall'), onPress: () => this.install(update.otaId) },
+            { text: Localize.t('settings.otaInstall'), onPress: () => installOtaUpdate(update.otaId) },
         ]);
-    };
-
-    install = async (otaId: number) => {
-        const { onUpdateReady } = this.props;
-
-        this.setState({ busy: true });
-        try {
-            logger.debug(`OTA updates: install of update ${otaId} chosen`);
-            // a fresh install token: the one from the list expires after a few minutes
-            const updates = await fetchOtaUpdates();
-            this.setState({ updates });
-
-            const update = updates.find((u) => u.otaId === otaId);
-            if (!update) {
-                logger.warn(`OTA updates: update ${otaId} is no longer published`);
-                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
-                return;
-            }
-
-            const isNew = await UpdateService.installDeveloperUpdate(update.manifest.uuid, update.installToken);
-            if (!isNew) {
-                if (UpdateService.getRunningUpdate().otaId === otaId) {
-                    Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNotNewer'));
-                } else {
-                    this.offerReset(otaId);
-                }
-                return;
-            }
-
-            if (typeof onUpdateReady === 'function') {
-                onUpdateReady();
-            }
-            Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaReadyRestart'), [
-                { text: Localize.t('global.notNow'), style: 'cancel' },
-                { text: Localize.t('settings.otaRestartNow'), onPress: this.restart },
-            ]);
-        } catch (error: any) {
-            logger.warn(`OTA updates: install of update ${otaId} failed`, error);
-            this.showError(error);
-        } finally {
-            this.setState({ busy: false });
-        }
-    };
-
-    /**
-     * expo-updates only installs updates newer than what the phone last applied, so an update can count
-     * as older after the phone went to a newer one or back to the store version. Clearing the downloaded
-     * updates at the next start (UpdateService.resetUpdateStorage) undoes that; then the same install works.
-     */
-    offerReset = (otaId: number) => {
-        Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaReinstallNeedsReset', { otaId }), [
-            { text: Localize.t('global.cancel'), style: 'cancel' },
-            {
-                text: Localize.t('settings.otaCloseApp'),
-                onPress: async () => {
-                    try {
-                        await UpdateService.resetUpdateStorage();
-                        ExitApp();
-                    } catch (error: any) {
-                        logger.warn('OTA updates: clearing the downloaded updates failed', error);
-                        this.showError(error);
-                    }
-                },
-            },
-        ]);
-    };
-
-    restart = () => {
-        UpdateService.reloadNow().catch(this.showError);
     };
 
     label = (update: XamanBackend.OtaUpdate, running: RunningUpdate): string => {
@@ -208,8 +142,42 @@ class RuntimeUpdatesView extends Component<Props, State> {
         ].join(' · ');
     };
 
+    renderUpdate = (update: XamanBackend.OtaUpdate, running: RunningUpdate) => {
+        const { install } = this.state;
+
+        const key = `update-${update.otaId}-${update.manifest.uuid}`;
+        const testID = `ota-update-${update.otaId}`;
+        const label = this.label(update, running);
+        const isInstall = install?.otaId === update.otaId;
+
+        // a download runs: no row can be tapped
+        if (install?.status === OtaInstallStatus.Downloading) {
+            return isInstall ? (
+                <SettingsRow key={key} testID={testID} label={label} value={Localize.t('settings.otaDownloading')}>
+                    <LoadingIndicator style={styles.downloadIndicator} />
+                </SettingsRow>
+            ) : (
+                <SettingsRow key={key} testID={testID} label={label} />
+            );
+        }
+
+        return (
+            <SettingsRow
+                key={key}
+                testID={testID}
+                label={label}
+                value={
+                    isInstall && install?.status === OtaInstallStatus.Ready
+                        ? Localize.t('settings.otaDownloaded')
+                        : undefined
+                }
+                onPress={() => this.onUpdatePress(update)}
+            />
+        );
+    };
+
     renderUpdates = () => {
-        const { loading, updates } = this.state;
+        const { loading, updates, install } = this.state;
 
         if (!updates) {
             return loading ? (
@@ -229,15 +197,15 @@ class RuntimeUpdatesView extends Component<Props, State> {
 
         const running = UpdateService.getRunningUpdate();
         return (
-            <SettingsSection title={Localize.t('settings.otaCheckForUpdates')}>
-                {updates.map((update) => (
-                    <SettingsRow
-                        key={`update-${update.otaId}-${update.manifest.uuid}`}
-                        testID={`ota-update-${update.otaId}`}
-                        label={this.label(update, running)}
-                        onPress={() => this.confirmInstall(update)}
-                    />
-                ))}
+            <SettingsSection
+                title={Localize.t('settings.otaCheckForUpdates')}
+                footer={
+                    install?.status === OtaInstallStatus.Downloading
+                        ? Localize.t('settings.otaDownloadingHint')
+                        : undefined
+                }
+            >
+                {updates.map((update) => this.renderUpdate(update, running))}
             </SettingsSection>
         );
     };

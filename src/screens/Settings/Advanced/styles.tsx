@@ -14,4 +14,6 @@ export default StyleService.create({
         fontSize: AppFonts.small.size,
         writingDirection: 'ltr',
     },
+    // OTA Updates: the spinner of the update that downloads
+    downloadIndicator: { marginLeft: 10 },
 });

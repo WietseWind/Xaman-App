@@ -16,6 +16,13 @@ export default StyleService.create({
         marginHorizontal: 10,
         marginBottom: 9,
     },
+    sectionFooter: {
+        fontFamily: AppFonts.base.family,
+        fontSize: AppFonts.small.size,
+        color: '$textSecondary',
+        marginHorizontal: 10,
+        marginTop: 9,
+    },
     group: { backgroundColor: '$tint', borderRadius: 16, overflow: 'hidden' },
     separator: {
         height: StyleSheet.hairlineWidth,

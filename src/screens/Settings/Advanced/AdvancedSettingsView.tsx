@@ -30,7 +30,15 @@ import { DeveloperSettingViewProps } from '@screens/Settings/Advanced/DeveloperS
 import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { ChangeLogOverlayProps } from '@screens/Overlay/ChangeLog';
 import { RuntimeUpdatesViewProps } from '@screens/Settings/Advanced/RuntimeUpdates';
-import { fetchOtaUpdates } from '@screens/Settings/Advanced/RuntimeUpdates/RuntimeUpdatesView';
+import {
+    OtaInstall,
+    OtaInstallStatus,
+    fetchOtaUpdates,
+    getOtaInstall,
+    promptOtaRestart,
+    restartIntoUpdate,
+    subscribeOtaInstall,
+} from '@screens/Settings/Advanced/RuntimeUpdates/otaInstall';
 
 // style
 import { SettingsRow, SettingsSection } from '../SettingsSection';
@@ -50,11 +58,15 @@ export interface State {
     otaBusy: boolean;
     otaChecking: boolean;
     otaReady: boolean;
+    /** an update downloading or downloaded from OTA Updates (otaInstall.ts) */
+    otaInstall?: OtaInstall;
 }
 
 /* Component ==================================================================== */
 class AdvancedSettingsView extends Component<Props, State> {
     static screenName = AppScreens.Settings.Advanced;
+
+    private unsubscribeOtaInstall?: () => void;
 
     static options() {
         return {
@@ -71,15 +83,20 @@ class AdvancedSettingsView extends Component<Props, State> {
             otaBusy: false,
             otaChecking: false,
             otaReady: false,
+            otaInstall: getOtaInstall(),
         };
     }
 
     componentDidMount() {
         CoreRepository.on('updateSettings', this.updateUI);
+        this.unsubscribeOtaInstall = subscribeOtaInstall((otaInstall) => this.setState({ otaInstall }));
     }
 
     componentWillUnmount() {
         CoreRepository.off('updateSettings', this.updateUI);
+        if (this.unsubscribeOtaInstall) {
+            this.unsubscribeOtaInstall();
+        }
     }
 
     updateUI = (coreSettings: CoreModel) => {
@@ -195,7 +212,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 .then((changed) => {
                     if (changed) {
                         this.setState({ otaReady: true });
-                        this.promptOtaRestart();
+                        promptOtaRestart();
                     }
                 })
                 .catch((error) => {
@@ -304,10 +321,7 @@ class AdvancedSettingsView extends Component<Props, State> {
         this.setState({ otaChecking: true });
         try {
             const updates = await fetchOtaUpdates();
-            Navigator.push<RuntimeUpdatesViewProps>(AppScreens.Settings.RuntimeUpdates, {
-                updates,
-                onUpdateReady: () => this.setState({ otaReady: true }),
-            });
+            Navigator.push<RuntimeUpdatesViewProps>(AppScreens.Settings.RuntimeUpdates, { updates });
         } catch (error: any) {
             logger.warn('OTA updates: the update list could not be loaded', error);
             this.showOtaError(error);
@@ -332,24 +346,13 @@ class AdvancedSettingsView extends Component<Props, State> {
                 return;
             }
             this.setState({ otaReady: true });
-            this.promptOtaRestart();
+            promptOtaRestart();
         } catch (error: any) {
             logger.warn('OTA updates: leaving the test update failed', error);
             this.showOtaError(error);
         } finally {
             this.setState({ otaBusy: false });
         }
-    };
-
-    promptOtaRestart = () => {
-        Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaReadyRestart'), [
-            { text: Localize.t('global.notNow'), style: 'cancel' },
-            { text: Localize.t('settings.otaRestartNow'), onPress: this.restartIntoUpdate },
-        ]);
-    };
-
-    restartIntoUpdate = () => {
-        UpdateService.reloadNow().catch(this.showOtaError);
     };
 
     revertToStoreVersion = () => {
@@ -385,8 +388,20 @@ class AdvancedSettingsView extends Component<Props, State> {
         return Localize.t('settings.otaUpdateNumber', { otaId: running.otaId });
     };
 
+    otaCheckValue = (): string | undefined => {
+        const { otaChecking, otaInstall } = this.state;
+
+        if (otaChecking) {
+            return Localize.t('global.loading');
+        }
+        if (otaInstall?.status === OtaInstallStatus.Downloading) {
+            return Localize.t('settings.otaDownloading');
+        }
+        return undefined;
+    };
+
     renderHotUpdates = () => {
-        const { otaReady, otaChecking } = this.state;
+        const { otaReady, otaInstall } = this.state;
 
         if (!UpdateService.isEnabled()) {
             return (
@@ -424,18 +439,14 @@ class AdvancedSettingsView extends Component<Props, State> {
                 key="check"
                 testID="ota-check"
                 label={Localize.t('settings.otaCheckForUpdates')}
-                value={otaChecking ? Localize.t('global.loading') : undefined}
+                value={this.otaCheckValue()}
                 onPress={this.showRuntimeUpdates}
             />,
         );
 
-        if (otaReady) {
+        if (otaReady || otaInstall?.status === OtaInstallStatus.Ready) {
             rows.push(
-                <SettingsRow
-                    key="restart"
-                    label={Localize.t('settings.otaRestartNow')}
-                    onPress={this.restartIntoUpdate}
-                />,
+                <SettingsRow key="restart" label={Localize.t('settings.otaRestartNow')} onPress={restartIntoUpdate} />,
             );
         }
 
