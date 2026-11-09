@@ -2,6 +2,7 @@ const { execFileSync } = require('child_process');
 const { Then } = require('@cucumber/cucumber');
 const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
+const { androidSerial } = require('../helpers/androidSerial');
 const { clickByTestId, waitUntilAndroidTestId, enterAndroidPasscode, androidTypeText } = require('../helpers/tapById');
 
 const { getCurrentTestPasscode, setCurrentTestPasscode } = require('../helpers/testCredentials');
@@ -87,7 +88,7 @@ Then('I type my new passcode', async () => {
 const typeIntoField = async (inputId, value) => {
     const field = element(by.id(inputId));
     if (device.getPlatform() === 'android') {
-        const serial = process.env.ANDROID_SERIAL || device.id;
+        const serial = androidSerial();
         await waitUntilAndroidTestId(inputId, 15000);
         await clickByTestId(inputId);
         try {

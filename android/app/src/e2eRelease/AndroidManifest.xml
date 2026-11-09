@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Merged into release builds for Detox e2e only (-DtestBuildType=release, see build.gradle), never
+     into store builds: the Detox test runner talks to the app over ws://localhost, and release builds
+     block cleartext traffic. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:networkSecurityConfig="@xml/e2e_network_security_config" />
+</manifest>

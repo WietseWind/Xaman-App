@@ -1,6 +1,7 @@
 const assert = require('assert');
 const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
+const { androidSerial } = require('../helpers/androidSerial');
 const { element, by, waitFor, device } = require('detox');
 const { getCurrentTestPasscode } = require('../helpers/testCredentials');
 
@@ -30,7 +31,7 @@ const {
     enterAndroidSecretNumbers,
     androidTypeText,
     androidBlurIme,
-    androidNudgeScroll,
+    enterAndroidMnemonicWords,
     androidDismissImeIfShown,
     isAdbTimeout,
     androidDumpIncludes,
@@ -103,11 +104,12 @@ Given('I should see same account address', async () => {
     assert.equal(this.address, attributes.text);
 });
 
-Then('I activate the account', async () => {
+// The faucet retries with backoff when it rate-limits, which can take minutes.
+Then('I activate the account', { timeout: 5 * 60 * 1000 }, async () => {
     await activateAccount(this.address);
 });
 
-Then('I generate testnet account', async () => {
+Then('I generate testnet account', { timeout: 5 * 60 * 1000 }, async () => {
     const testnetAccount = await generateFreshTestnetAccount();
 
     this.address = testnetAccount.address;
@@ -119,7 +121,7 @@ Then('I generate testnet account', async () => {
 
 Then('I enter the address in the input', async () => {
     if (device.getPlatform() === 'android') {
-        const serial = process.env.ANDROID_SERIAL || device.id;
+        const serial = androidSerial();
         const want = String(this.address || '');
         await waitUntilAndroidTestId('address-input', 10000);
         await clickByTestId('address-input');
@@ -181,7 +183,7 @@ Then('I enter my seed in the input', async () => {
         this.seed = acc.secret;
     }
     if (device.getPlatform() === 'android') {
-        const serial = process.env.ANDROID_SERIAL || device.id;
+        const serial = androidSerial();
         const want = String(this.seed || '');
         const sleepMs = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
         const clearField = () => {
@@ -195,7 +197,7 @@ Then('I enter my seed in the input', async () => {
             (await androidDumpIncludes('secp256k1')) ||
             (await androidDumpIncludes('ed25519')) ||
             (await androidDumpIncludes('Keypair curve')) ||
-            (await androidDumpIncludes('Keypair type'));
+            androidDumpIncludes('Keypair type');
         const readVisibleSeed = async () => {
             const raw = String((await androidReadTextByTestId('seed-input')) || '');
             if (!raw || /please|provide|family seed|secret/i.test(raw) || /^[•·.●]+$/.test(raw)) {
@@ -353,7 +355,7 @@ const tryTapAlertLabel = async (label) => {
 const androidImportedSecretAlert = async () =>
     (await androidDumpIncludes('account secret that you have entered')) ||
     (await androidDumpIncludes('already been imported')) ||
-    (await androidDumpIncludes('account already exists'));
+    androidDumpIncludes('account already exists');
 
 const dismissImportedSecretAlert = async () => {
     if (await dismissAndroidImportedSecretAlert()) {
@@ -428,7 +430,7 @@ const leaveAccountImportIfOpen = async () => {
             // screens, so it must not be the signal for this.
             if (hardwareBacks < 2 && (await androidHasTestId('account-import-explain-activation-view'))) {
                 hardwareBacks += 1;
-                const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+                const serial = androidSerial();
                 try {
                     execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '4'], { timeout: 4000 });
                 } catch (backErr) {
@@ -462,6 +464,7 @@ const leaveAccountImportIfOpen = async () => {
         // already unlocked
     }
 
+    // eslint-disable-next-line no-labels
     leaveLoop: for (let i = 0; i < 20; i += 1) {
         for (let d = 0; d < doneIds.length; d += 1) {
             try {
@@ -492,6 +495,7 @@ const leaveAccountImportIfOpen = async () => {
         for (let a = 0; a < alertLabels.length; a += 1) {
             if (await tryTapAlertLabel(alertLabels[a])) {
                 await sleepMs(250);
+                // eslint-disable-next-line no-labels
                 continue leaveLoop;
             }
         }
@@ -551,8 +555,7 @@ Then('I should see the recipient search settle', { timeout: 40 * 1000 }, async (
         if (device.getPlatform() === 'android') {
             return (
                 (await androidDumpIncludes('Search results')) &&
-                ((await androidHasTestId('recipient-no-search-result')) ||
-                    (await androidDumpIncludes('recipient-r')))
+                ((await androidHasTestId('recipient-no-search-result')) || androidDumpIncludes('recipient-r'))
             );
         }
         const settledIds = [
@@ -591,7 +594,7 @@ Then('I select a spendable account if Send is hidden', { timeout: 60 * 1000 }, a
         }
         await clickByTestId('account-switch-button');
         await waitUntilAndroidTestId('switch-account-overlay', 10000);
-        const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+        const serial = androidSerial();
         for (let pass = 0; pass < 8; pass += 1) {
             for (let i = 0; i < SPENDABLE_ACCOUNT_LABELS.length; i += 1) {
                 const label = SPENDABLE_ACCOUNT_LABELS[i];
@@ -728,7 +731,7 @@ Then('I choose family seed curve {string}', async (curve) => {
             await sleepMs(400);
         }
         const pickerOpen = async () =>
-            (await androidHasTestId('picker-modal')) || (await androidHasTestId(`${curve}-item`));
+            (await androidHasTestId('picker-modal')) || androidHasTestId(`${curve}-item`);
         await clickByTestId('keypair-curve-row');
         let opened = false;
         const openDeadline = Date.now() + 4000;
@@ -756,19 +759,26 @@ Then('I choose family seed curve {string}', async (curve) => {
         if (!opened) {
             throw new Error(`family seed curve picker did not open for ${curve}`);
         }
-        if (await androidHasTestId(`${curve}-item`)) {
-            await clickByTestId(`${curve}-item`);
-        } else if (!(await clickAndroidTextIncludes(curve))) {
-            await clickByTestId(`${curve}-item`);
-        }
-        const deadline = Date.now() + 15000;
         let last = '';
-        while (Date.now() < deadline) {
-            last = String((await androidReadTextByTestId('keypair-curve-value')) || '');
-            if (last.indexOf(curve) !== -1) {
-                return;
+        // A tap while the picker is still sliding in can miss the row: the picker then stays open
+        // with the old curve. Tap again while it is open.
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            if (attempt > 0 && !(await pickerOpen())) {
+                break;
             }
-            await sleepMs(400);
+            if (await androidHasTestId(`${curve}-item`)) {
+                await clickByTestId(`${curve}-item`);
+            } else if (!(await clickAndroidTextIncludes(curve))) {
+                await clickByTestId(`${curve}-item`);
+            }
+            const deadline = Date.now() + 5000;
+            while (Date.now() < deadline) {
+                last = String((await androidReadTextByTestId('keypair-curve-value')) || '');
+                if (last.indexOf(curve) !== -1) {
+                    return;
+                }
+                await sleepMs(400);
+            }
         }
         throw new Error(`did not select family seed curve ${curve}, value ${JSON.stringify(last)}`);
     }
@@ -1084,63 +1094,20 @@ Then('I activate expected mnemonic address', { timeout: 5 * 60 * 1000 }, async (
     await activateAccount(this.expectedMnemonicAddress);
 });
 
-Then('I enter my mnemonic', { timeout: 3 * 60 * 1000 }, async () => {
+Then('I enter my mnemonic', { timeout: 4 * 60 * 1000 }, async () => {
     const words = this.mnemonic;
     if (!Array.isArray(words) || words.length < 12) {
-        throw new Error(`mnemonic not ready: ${JSON.stringify(words)}`);
+        throw new Error(`mnemonic not ready: ${Array.isArray(words) ? words.length : typeof words} words`);
     }
 
     // iOS typeText + return advances to the next word field.
-    // Android must focus each row. Enter moves focus on a timer, and the
-    // next word otherwise lands in the previous row.
+    // Android taps, types and reads back each row (enterAndroidMnemonicWords).
     if (device.getPlatform() === 'android') {
-        const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
         // The 12/16/24 buttons sit above the list. A scroll gesture that
         // starts on them resets the length, so only swipe inside the list.
         await clickByTestId(`${words.length}-words-button`);
         await new Promise((resolve) => { setTimeout(resolve, 300); });
-        const revealWord = async (index) => {
-            const wordId = `word-${index}-input`;
-            if (await androidHasTestId(wordId)) {
-                return;
-            }
-            // The keyboard covers the next row. The review-sheet swipe also
-            // starts too low and never moves this list, so word 6 stays hidden.
-            await androidDismissImeIfShown();
-            if (await androidHasTestId(wordId)) {
-                return;
-            }
-            // 'down' returns to the top. Later words need 'up' first.
-            const directions = index === 0 ? ['down', 'up'] : ['up', 'down'];
-            const nudges = index === 0 ? 16 : 8;
-            for (let d = 0; d < directions.length; d += 1) {
-                for (let nudge = 0; nudge < nudges; nudge += 1) {
-                    await androidNudgeScroll('mnemonic-words-scroll', directions[d]);
-                    await new Promise((resolve) => { setTimeout(resolve, 250); });
-                    if (await androidHasTestId(wordId)) {
-                        return;
-                    }
-                }
-            }
-            throw new Error(`mnemonic word ${index + 1} never came on screen`);
-        };
-        for (let i = 0; i < words.length; i++) {
-            await revealWord(i);
-            await clickByTestId(`word-${i}-input`);
-            await new Promise((resolve) => { setTimeout(resolve, 200); });
-            // Developer mode prefills the 24-word ed25519 sample. input text
-            // appends, so clear the row before typing the phrase.
-            execFileSync(
-                'adb',
-                ['-s', serial, 'shell', 'input', 'keyevent', ...Array(16).fill('67')],
-                { timeout: 5000 },
-            );
-            androidTypeText(words[i]);
-            if (i + 1 < words.length) {
-                execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '66'], { timeout: 3000 });
-                await new Promise((resolve) => { setTimeout(resolve, 200); });
-            }
-        }
+        await enterAndroidMnemonicWords(words);
         await androidDismissImeIfShown();
         return;
     }

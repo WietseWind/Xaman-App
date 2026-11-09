@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+// The helpers below call each other; every call runs after this module has loaded.
 const { execFileSync } = require('child_process');
 const { element, by, waitFor, device } = require('detox');
 const { getCurrentTestPasscode } = require('./testCredentials');
@@ -5,14 +7,18 @@ const { getCurrentTestPasscode } = require('./testCredentials');
 const APP_ID = 'com.xrpllabs.xumm';
 const DUMP_NAME = 'xaman-detox-ui.xml';
 
+// Where the UI dump is written (by the Detox instrumentation, in the app's process) and read (by
+// adb). First the app's own external files directory: adb reads it without run-as, which a
+// release build refuses ("package not debuggable"). Then the app cache, read with run-as.
 const DUMP_SPECS = [
+    { abs: `/sdcard/Android/data/${APP_ID}/files/${DUMP_NAME}`, external: true },
     { abs: `/data/user/0/${APP_ID}/cache/${DUMP_NAME}`, pkg: APP_ID, rel: `cache/${DUMP_NAME}` },
-    { abs: `/data/data/${APP_ID}/cache/${DUMP_NAME}`, pkg: APP_ID, rel: `cache/${DUMP_NAME}` },
 ];
+let dumpSpecIndex = 0;
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
-const androidSerial = () => process.env.ANDROID_SERIAL || device.id;
+const { androidSerial } = require('./androidSerial');
 
 const adbOut = (args, timeout = 8000) =>
     execFileSync('adb', ['-s', androidSerial(), ...args], {
@@ -70,12 +76,17 @@ const ensureUncompressedDump = async () => {
 };
 
 const readDumpFile = (spec) => {
-    const attempts = [
-        ['exec-out', 'run-as', spec.pkg, 'cat', spec.rel],
-        ['shell', 'run-as', spec.pkg, 'cat', spec.rel],
-        ['exec-out', 'cat', spec.abs],
-        ['shell', 'cat', spec.abs],
-    ];
+    const attempts = spec.external
+        ? [
+              ['exec-out', 'cat', spec.abs],
+              ['shell', 'cat', spec.abs],
+          ]
+        : [
+              ['exec-out', 'run-as', spec.pkg, 'cat', spec.rel],
+              ['shell', 'run-as', spec.pkg, 'cat', spec.rel],
+              ['exec-out', 'cat', spec.abs],
+              ['shell', 'cat', spec.abs],
+          ];
     for (let i = 0; i < attempts.length; i += 1) {
         try {
             const xml = adbOut(attempts[i]);
@@ -168,24 +179,27 @@ const rememberDump = (xml) => {
     }
 };
 
+// A new app instance (launchApp with newInstance) is a new instrumentation session: dumps work
+// again, and the dump settings (uncompressed, no idle wait) must be applied again. Without this
+// reset, one disconnect broke dumps for the rest of the run, even after the app was restarted.
+const resetAndroidDumpState = () => {
+    dumpBroken = false;
+    compressedOff = false;
+    dumpInFlight = null;
+    cachedXml = '';
+    cachedAt = 0;
+    keypadBounds = null;
+    keypadAt = 0;
+};
+
 const detoxDisconnected = (err) => {
     const m = String((err && err.message) || err);
     return (
-        m.indexOf("can't seem to connect") !== -1 ||
+        m.indexOf('can\'t seem to connect') !== -1 ||
         m.indexOf('pending request') !== -1 ||
         m.indexOf('could not be delivered') !== -1 ||
         m.indexOf('unexpectedly disconnected') !== -1
     );
-};
-
-const readAnyDumpFile = () => {
-    for (let i = 0; i < DUMP_SPECS.length; i += 1) {
-        const xml = readDumpFile(DUMP_SPECS[i]);
-        if (xml) {
-            return xml;
-        }
-    }
-    return '';
 };
 
 const androidDumpXml = async () => {
@@ -206,32 +220,41 @@ const androidDumpXml = async () => {
         }
         await ensureUncompressedDump();
         const ui = device.getUiDevice();
-        const spec = DUMP_SPECS[0];
         const started = Date.now();
-        try {
-            await ui.dumpWindowHierarchy(spec.abs);
-        } catch (e) {
-            const msg = String((e && e.message) || e);
-            // eslint-disable-next-line no-console
-            console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, msg.slice(0, 180));
-            if (detoxDisconnected(e) || msg.indexOf('simultaneously') !== -1) {
-                dumpBroken = true;
-            }
-        }
-        // Invoke can return after waitForIdle while the file is still flushing.
-        for (let r = 0; r < 16; r += 1) {
-            const xml = readAnyDumpFile();
-            if (xml) {
-                rememberDump(xml);
-                if (Date.now() - started > 2000) {
-                    // eslint-disable-next-line no-console
-                    console.error('[tapById] dump', Date.now() - started, 'ms', dumpSummary(xml).slice(0, 160));
+        for (;;) {
+            const spec = DUMP_SPECS[dumpSpecIndex];
+            try {
+                await ui.dumpWindowHierarchy(spec.abs);
+            } catch (e) {
+                const msg = String((e && e.message) || e);
+                // eslint-disable-next-line no-console
+                console.error('[tapById] dumpWindowHierarchy failed:', spec.abs, msg.slice(0, 180));
+                if (detoxDisconnected(e) || msg.indexOf('simultaneously') !== -1) {
+                    dumpBroken = true;
                 }
-                return xml;
             }
-            await sleep(80);
+            // Invoke can return after waitForIdle while the file is still flushing.
+            for (let r = 0; r < 16; r += 1) {
+                const xml = readDumpFile(spec);
+                if (xml) {
+                    rememberDump(xml);
+                    if (Date.now() - started > 2000) {
+                        // eslint-disable-next-line no-console
+                        console.error('[tapById] dump', Date.now() - started, 'ms', dumpSummary(xml).slice(0, 160));
+                    }
+                    return xml;
+                }
+                await sleep(80);
+            }
+            // This location does not work for this app (no external files directory yet, or a
+            // release build refusing run-as): use the next one for the rest of the run.
+            if (dumpBroken || dumpSpecIndex + 1 >= DUMP_SPECS.length) {
+                return cachedXml || lastTabXml || '';
+            }
+            dumpSpecIndex += 1;
+            // eslint-disable-next-line no-console
+            console.error('[tapById] UI dumps now go to', DUMP_SPECS[dumpSpecIndex].abs);
         }
-        return cachedXml || lastTabXml || '';
     })().finally(() => {
         dumpInFlight = null;
     });
@@ -581,7 +604,8 @@ const clearAndroidPasscodePad = async () => {
     cachedXml = '';
     cachedAt = 0;
     const xml = await androidDumpXml();
-    const back = pickNodeForTestId(xml, 'x-key') || (keypadBounds && keypadBounds.x ? { bounds: keypadBounds.x } : null);
+    const back =
+        pickNodeForTestId(xml, 'x-key') || (keypadBounds && keypadBounds.x ? { bounds: keypadBounds.x } : null);
     if (!back) {
         return;
     }
@@ -691,7 +715,9 @@ const collapseAndroidStatusBar = async (xml) => {
         execFileSync('adb', ['-s', androidSerial(), 'shell', 'cmd', 'statusbar', 'collapse'], { timeout: 3000 });
     } catch (e) {
         try {
-            execFileSync('adb', ['-s', androidSerial(), 'shell', 'service', 'call', 'statusbar', '2'], { timeout: 3000 });
+            execFileSync('adb', ['-s', androidSerial(), 'shell', 'service', 'call', 'statusbar', '2'], {
+                timeout: 3000,
+            });
         } catch (e2) {
             // no status bar service
         }
@@ -815,7 +841,9 @@ const pickTabBarContainer = (nodes) => {
         return h >= 40 && h <= 280 && w >= 200;
     };
     const byId = (needles) =>
-        nodes.filter((n) => !isSystemUiNode(n) && strip(n) && needles.some((s) => (n.resourceId || '').indexOf(s) !== -1));
+        nodes.filter(
+            (n) => !isSystemUiNode(n) && strip(n) && needles.some((s) => (n.resourceId || '').indexOf(s) !== -1),
+        );
     const containers = byId(['bottom_navigation_container']);
     const bars = containers.length ? containers : byId(['bottomTabs', 'bottom_navigation']);
     if (!bars.length) {
@@ -921,6 +949,39 @@ const pickFooterNode = (xml, testId) => {
     return { ...hit, bounds: tabClickBounds(hit.bounds, nodes) };
 };
 
+// The app uses adjustNothing, so a button under the on-screen keyboard keeps its bounds and a tap
+// there lands on a key (a Next tap right after typing an account label was lost that way). Close
+// the keyboard first; true means the caller must read the bounds again.
+const closeImeOver = async (xml, bounds) => {
+    const keyboardTop = imeTopFromXml(xml);
+    if (keyboardTop === null || !bounds || bounds.y < keyboardTop) {
+        return false;
+    }
+    androidBlurIme();
+    const deadline = Date.now() + 1500;
+    while (androidImeShown() && Date.now() < deadline) {
+        await sleep(150);
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    return true;
+};
+
+// Hides the on-screen keyboard (Escape), so a scenario does not start with it covering the tab bar.
+const hideAndroidKeyboard = async () => {
+    if (!androidImeShown()) {
+        return false;
+    }
+    androidBlurIme();
+    const deadline = Date.now() + 1500;
+    while (androidImeShown() && Date.now() < deadline) {
+        await sleep(150);
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    return true;
+};
+
 const clickByTestId = async (testId) => {
     const el = element(by.id(testId));
     if (device.getPlatform() !== 'android') {
@@ -954,9 +1015,14 @@ const clickByTestId = async (testId) => {
         if (await dismissAndroidOverlaySheet(xml)) {
             return;
         }
-        const tab = pickTabNode(xml, testId) || (lastTabXml && pickTabNode(lastTabXml, testId));
+        let tab = pickTabNode(xml, testId) || (lastTabXml && pickTabNode(lastTabXml, testId));
         if (!tab) {
             throw new Error(`android hierarchy has no app tab for ${testId} (${dumpSummary(xml || lastTabXml)})`);
+        }
+        // With the keyboard up the tab bar sits under it: a tab tap opened Gboard's settings.
+        if (await closeImeOver(xml, tab.bounds)) {
+            xml = await androidDumpXml();
+            tab = pickTabNode(xml, testId) || tab;
         }
         if (pointHitsNetworkControl(xml, tab.bounds)) {
             return;
@@ -965,7 +1031,11 @@ const clickByTestId = async (testId) => {
         return;
     }
     if (FOOTER_LABELS[testId]) {
-        const footer = pickFooterNode(xml, testId);
+        let footer = pickFooterNode(xml, testId);
+        if (footer && (await closeImeOver(xml, footer.bounds))) {
+            xml = await androidDumpXml();
+            footer = pickFooterNode(xml, testId);
+        }
         if (footer) {
             await tapBounds(footer.bounds);
             return;
@@ -987,6 +1057,9 @@ const clickByTestId = async (testId) => {
     }
     if (!bounds) {
         throw new Error(`android hierarchy has no bounds for ${testId} (${dumpSummary(xml)})`);
+    }
+    if (await closeImeOver(await androidDumpXml(), bounds)) {
+        bounds = (await androidBoundsByTestId(testId)) || bounds;
     }
     await tapBounds(bounds);
 };
@@ -1051,6 +1124,37 @@ const androidDumpIncludes = async (snippet) => {
         return false;
     }
     return xml.toLowerCase().indexOf(String(snippet).toLowerCase()) !== -1;
+};
+
+const XML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'' };
+
+const normalizeText = (value) =>
+    String(value || '')
+        .replace(/&(amp|lt|gt|quot|apos);/g, (m, name) => XML_ENTITIES[name])
+        .replace(/&#(\d+);/g, (m, code) => String.fromCharCode(Number(code)))
+        .replace(/\s+/g, ' ')
+        .trim();
+
+// Waits until text on screen (an app view or a dialog, not the keyboard or system UI) contains
+// the snippet. Reads the hierarchy through Detox's own UiDevice, never a separate
+// `uiautomator dump` (that one disconnects the Detox agent).
+const waitUntilAndroidText = async (snippet, timeoutMs) => {
+    const want = normalizeText(snippet);
+    const deadline = Date.now() + timeoutMs;
+    let seen = [];
+    while (Date.now() < deadline) {
+        cachedXml = '';
+        cachedAt = 0;
+        seen = parseNodes(await androidDumpXml())
+            .filter((node) => !isSystemUiNode(node) && !/inputmethod/i.test(node.package || ''))
+            .map((node) => normalizeText(node.text || node.contentDesc))
+            .filter(Boolean);
+        if (seen.some((text) => text.includes(want))) {
+            return;
+        }
+        await sleep(500);
+    }
+    throw new Error(`"${want}" is not on screen; it shows: ${JSON.stringify(seen.slice(0, 12)).slice(0, 600)}`);
 };
 
 const dismissAndroidWipeDialog = async (xml) => {
@@ -1160,7 +1264,7 @@ const xmlLooksLikeChangelog = (xml) => {
     return (
         blob.indexOf('change-log-overlay') !== -1 ||
         blob.indexOf('close-change-log-button') !== -1 ||
-        blob.indexOf("what's new") !== -1 ||
+        blob.indexOf('what\'s new') !== -1 ||
         blob.indexOf('whats new') !== -1
     );
 };
@@ -1247,7 +1351,10 @@ const waitUntilAndroidTestId = async (testId, timeoutMs) => {
                 continue;
             }
         }
-        if (lastXml.toLowerCase().indexOf('alerttitle') !== -1 || lastXml.toLowerCase().indexOf('do not match') !== -1) {
+        if (
+            lastXml.toLowerCase().indexOf('alerttitle') !== -1 ||
+            lastXml.toLowerCase().indexOf('do not match') !== -1
+        ) {
             if (await clickDumpLabel(lastXml, 'OK')) {
                 await sleep(300);
                 continue;
@@ -1446,23 +1553,26 @@ const swipeBounds = async (x1, y1, x2, y2) => {
     cachedAt = 0;
 };
 
-// Short swipe inside a form list. The review-sheet swipe avoids the center
-// dock and misses rows that sit under the keyboard on the mnemonic screen.
-const androidNudgeScroll = async (testId, direction) => {
-    await waitUntilAndroidTestId(testId, 10000);
-    const bounds = await androidBoundsByTestId(testId);
-    if (!bounds) {
-        throw new Error(`android hierarchy has no bounds for ${testId}`);
-    }
-    const x = Math.round((bounds.x1 + bounds.x2) / 2);
-    const top = Math.round(bounds.y1 + 72);
-    const span = Math.max(240, Math.min(640, bounds.y2 - bounds.y1 - 120));
-    const mid = top + span;
-    if (direction === 'down') {
-        await swipeBounds(x, top, x, mid);
-        return;
-    }
-    await swipeBounds(x, mid, x, top);
+// A slow drag barely flings, so a list moves about as far as the finger did.
+const dragBounds = async (x1, y1, x2, y2, durationMs) => {
+    execFileSync(
+        'adb',
+        [
+            '-s',
+            androidSerial(),
+            'shell',
+            'input',
+            'swipe',
+            String(x1),
+            String(y1),
+            String(x2),
+            String(y2),
+            String(durationMs),
+        ],
+        { timeout: 5000 + durationMs },
+    );
+    cachedXml = '';
+    cachedAt = 0;
 };
 
 const androidSwipeTestId = async (testId, direction) => {
@@ -1547,8 +1657,10 @@ const androidDismissImeIfShown = async () => {
     cachedAt = 0;
     const xml = await androidDumpXml();
     const nodes = parseNodes(xml).filter((n) => !isSystemUiNode(n));
+    // The mnemonic title too: without it the blind tap below lands near the 12/16/24 buttons,
+    // and a different length drops the words typed so far.
     const prompt = nodes.find((n) =>
-        /please provide your account secret|family seed \/ privat/i.test(n.text || ''),
+        /please provide your account secret|family seed \/ privat|please enter your mnemonic/i.test(n.text || ''),
     );
     if (prompt) {
         await tapBounds(prompt.bounds);
@@ -1571,6 +1683,100 @@ const androidDismissImeIfShown = async () => {
     }
     await sleep(300);
     return true;
+};
+
+// Top edge of the on-screen keyboard in this dump, or null when it is down. The keyboard is its
+// own window; the app uses adjustNothing, so rows under it keep on-screen bounds in the app's
+// hierarchy and a tap on them lands on a key.
+const imeTopFromXml = (xml) => {
+    const ime = parseNodes(xml).filter((node) => /inputmethod/i.test(node.package || ''));
+    const keys = ime.filter((node) => /inputArea|input_area|keyboard_holder|key_pos_/.test(node.resourceId || ''));
+    const pool = keys.length ? keys : ime.filter((node) => node.clickable);
+    return pool.length ? Math.min(...pool.map((node) => node.bounds.y1)) : null;
+};
+
+const boundsLabel = (b) => (b ? `[${b.x1},${b.y1}][${b.x2},${b.y2}]` : 'not in dump');
+
+// Scroll a list until the row sits between the list top and the keyboard, and return the row's
+// bounds from that same dump. A second dump between finding and tapping the row is what lost
+// word 10: by then the row had moved under the keyboard ("no bounds for word-9-input").
+const revealAndroidRowAboveIme = async (testId, listTestId, expectBelow) => {
+    let state = '';
+    for (let attempt = 0; attempt < 16; attempt += 1) {
+        cachedXml = '';
+        cachedAt = 0;
+        const xml = await androidDumpXml();
+        const list = pickNodeForTestId(xml, listTestId);
+        if (!list) {
+            state = `no ${listTestId} (${dumpSummary(xml)})`;
+            await sleep(300);
+            continue;
+        }
+        const keyboardTop = imeTopFromXml(xml);
+        const top = list.bounds.y1 + 12;
+        const bottom = Math.min(list.bounds.y2, keyboardTop === null ? list.bounds.y2 : keyboardTop) - 12;
+        const row = pickNodeForTestId(xml, testId);
+        state = `${testId} ${boundsLabel(row && row.bounds)}, list ${boundsLabel(list.bounds)}, keyboard top ${keyboardTop}`;
+        if (row && row.bounds.y1 >= top && row.bounds.y2 <= bottom) {
+            return row.bounds;
+        }
+        // Rows that are not in the dump are below the last one typed (or above, for the first).
+        const below = row ? row.bounds.y2 > bottom : expectBelow;
+        // Drag in the middle of the list (a drag in its left gutter did not scroll it) and inside
+        // it: a drag that starts on the length buttons above the list changes the word count.
+        const x = Math.round((list.bounds.x1 + list.bounds.x2) / 2);
+        const span = Math.max(120, Math.min(360, Math.round((bottom - top) / 2)));
+        if (below) {
+            // A slow drag barely flings, so the row cannot jump over the band above the keyboard.
+            await dragBounds(x, bottom - 8, x, bottom - 8 - span, 700);
+            await sleep(450);
+        } else {
+            // Toward the top a fast swipe: slow drags stopped one row short of the top of the
+            // mnemonic list (the first word never showed), and a fling cannot overshoot the top.
+            await dragBounds(x, top + 8, x, Math.min(bottom - 8, top + 8 + 2 * span), 200);
+            await sleep(1200);
+        }
+    }
+    throw new Error(`${testId} never came between the list top and the keyboard (${state})`);
+};
+
+const readAndroidFieldText = async (testId) => {
+    cachedXml = '';
+    cachedAt = 0;
+    const node = pickNodeForTestId(await androidDumpXml(), testId);
+    return node ? node.text : null;
+};
+
+// One word per row: bring the row above the keyboard, tap it, clear it (developer mode prefills
+// a sample), type, and read the row back. No Enter: the screen moves focus to the next row on a
+// timer, and a word typed before that timer fired landed in the previous row. Words are never
+// logged.
+const enterAndroidMnemonicWords = async (words, listTestId = 'mnemonic-words-scroll') => {
+    for (let i = 0; i < words.length; i += 1) {
+        const testId = `word-${i}-input`;
+        let held = false;
+        for (let attempt = 0; attempt < 3 && !held; attempt += 1) {
+            const bounds = await revealAndroidRowAboveIme(testId, listTestId, i > 0);
+            await tapBounds(bounds);
+            await sleep(250);
+            androidClearFocusedField(20);
+            androidTypeText(words[i]);
+            const readBy = Date.now() + 2000;
+            while (!held && Date.now() < readBy) {
+                held = (await readAndroidFieldText(testId)) === words[i];
+                if (!held) {
+                    await sleep(250);
+                }
+            }
+            if (!held) {
+                // eslint-disable-next-line no-console
+                console.error(`[mnemonic] word ${i + 1} not in ${testId} after typing (attempt ${attempt + 1})`);
+            }
+        }
+        if (!held) {
+            throw new Error(`mnemonic word ${i + 1} did not stay in ${testId} after 3 attempts`);
+        }
+    }
 };
 
 const clickAndroidTextIncludes = async (snippet) => {
@@ -1611,12 +1817,14 @@ const androidPasteText = (value) => {
 
 const isAdbTimeout = (err) => {
     const m = String((err && err.message) || err);
-    return m.indexOf('ETIMEDOUT') !== -1 || m.indexOf('ETIMEDOUT'.toLowerCase()) !== -1 || m.indexOf('timed out') !== -1;
+    return (
+        m.indexOf('ETIMEDOUT') !== -1 || m.indexOf('ETIMEDOUT'.toLowerCase()) !== -1 || m.indexOf('timed out') !== -1
+    );
 };
 
 const androidTypeChunk = (chunk) => {
     const encoded = String(chunk).replace(/ /g, '%s');
-    const quoted = `'${encoded.replace(/'/g, `'\\''`)}'`;
+    const quoted = `'${encoded.replace(/'/g, '\'\\\'\'')}'`;
     let lastErr;
     for (let attempt = 0; attempt < 3; attempt += 1) {
         try {
@@ -2028,7 +2236,7 @@ module.exports = {
     androidReadTextByTestId,
     androidHasTestId,
     androidSwipeTestId,
-    androidNudgeScroll,
+    enterAndroidMnemonicWords,
     androidTypeText,
     androidClearFocusedField,
     androidPasteText,
@@ -2037,6 +2245,7 @@ module.exports = {
     clickAndroidTextIncludes,
     isAdbTimeout,
     androidDumpIncludes,
+    waitUntilAndroidText,
     clickAndroidLabel,
     disableAndroidStylusHandwriting,
     restoreAndroidAnimationScale,
@@ -2045,6 +2254,8 @@ module.exports = {
     captureAndroidTabBar,
     waitForAndroidDefaultRoot,
     isAndroidDumpBroken: () => dumpBroken,
+    resetAndroidDumpState,
+    hideAndroidKeyboard,
     clickAndroidAccountRow,
     androidReadSecretRow,
     enterAndroidSecretNumbers,

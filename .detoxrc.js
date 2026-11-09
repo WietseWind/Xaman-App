@@ -1,7 +1,15 @@
+// An exact adb serial pattern. Without ANDROID_SERIAL it matches no device, so a run never picks
+// emulator-5554 or a USB phone by accident.
+const androidSerialPattern = () => {
+    const serial = process.env.ANDROID_SERIAL;
+    return serial ? `^${serial.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$` : '^ANDROID_SERIAL-is-not-set$';
+};
+
 module.exports = {
     behavior: {
         init: {
-            reinstallApp: false,
+            // DETOX_REINSTALL=yes installs the freshly built app (throwaway runs do).
+            reinstallApp: String(process.env.DETOX_REINSTALL || '').toLowerCase() === 'yes',
         },
     },
     apps: {
@@ -22,15 +30,17 @@ module.exports = {
             binaryPath: 'android/app/build/outputs/apk/release/app-x86_64-release.apk',
             build: 'cd android && ./gradlew app:assembleRelease app:assembleAndroidTest -DtestBuildType=release && cd ..',
         },
-        // Apple Silicon AVD Xaman_API36 — never point Detox at the USB phone
+        // Release app on an Apple Silicon emulator; never point Detox at the USB phone.
+        // -DtestBuildType=release also builds the release test APK (proguard-e2e.pro).
         'xaman.android.arm64': {
             type: 'android.apk',
             launchArgs: { class: 'com.xrpllabs.xumm.DetoxTest' },
             binaryPath: 'android/app/build/outputs/apk/release/app-arm64-v8a-release.apk',
             testBinaryPath: 'android/app/build/outputs/apk/androidTest/release/app-release-androidTest.apk',
-            build: 'cd android && ./gradlew app:assembleRelease app:assembleAndroidTest -DtestBuildType=release && cd ..',
+            build:
+                'cd android && ./gradlew app:assembleRelease app:assembleAndroidTest -DtestBuildType=release -PreactNativeArchitectures=arm64-v8a && cd ..',
         },
-        // Debug + Metro: androidTest is not R8-minified (release test APK strips JUnit).
+        // Debug app + Metro.
         'xaman.android.debug.arm64': {
             type: 'android.apk',
             launchArgs: { class: 'com.xrpllabs.xumm.DetoxTest' },
@@ -73,13 +83,25 @@ module.exports = {
             type: 'android.emulator',
             device: { avdName: 'Xaman_API36' },
         },
+        // The device named by ANDROID_SERIAL ('.*' used to pick whichever device came first,
+        // which could be the USB phone).
         'android.attached': {
             type: 'android.attached',
             device: {
-                adbName: '.*',
+                adbName: androidSerialPattern(),
             },
         },
-        // SM-M215F only — never let android.attached '.*' pick the emulator
+        // Throwaway runs (scripts/e2e/run-throwaway.sh): the simulator and emulator that script
+        // made for this run, named by E2E_IOS_SIMULATOR and ANDROID_SERIAL.
+        'ios.simulator.e2e': {
+            type: 'ios.simulator',
+            device: { name: process.env.E2E_IOS_SIMULATOR || 'Xaman-e2e' },
+        },
+        'android.attached.e2e': {
+            type: 'android.attached',
+            device: { adbName: androidSerialPattern() },
+        },
+        // SM-M215F only (the USB phone): only by its exact serial, never picked by a run on its own
         'android.attached.usb': {
             type: 'android.attached',
             device: { adbName: 'R58NA2ZV7TK' },
@@ -128,6 +150,20 @@ module.exports = {
         },
         'android.attached.usb+xaman.android.debug.arm64': {
             device: 'android.attached.usb',
+            app: 'xaman.android.debug.arm64',
+        },
+        'ios.e2e+xaman.ios': {
+            device: 'ios.simulator.e2e',
+            app: 'xaman.ios',
+        },
+        // Release app + release test APK (build with -DtestBuildType=release)
+        'android.e2e+xaman.android.arm64': {
+            device: 'android.attached.e2e',
+            app: 'xaman.android.arm64',
+        },
+        // Debug app + Metro
+        'android.e2e+xaman.android.debug.arm64': {
+            device: 'android.attached.e2e',
             app: 'xaman.android.debug.arm64',
         },
     },

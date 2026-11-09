@@ -1,5 +1,6 @@
 const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
+const { androidSerial } = require('../helpers/androidSerial');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { tapAndroidAlertButton, waitForAndroidAlertText, appWindowCount } = require('../helpers/androidAlert');
@@ -16,10 +17,36 @@ const {
     androidClearFocusedField,
     androidBlurIme,
     androidDismissImeIfShown,
+    waitUntilAndroidText,
+    resetAndroidDumpState,
 } = require('../helpers/tapById');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
 let androidAlertPending = false;
+
+// iOS: Safari runs on this simulator (it took a universal link the app does not own yet).
+const iosSafariRunning = (udid) => {
+    try {
+        const out = execFileSync('xcrun', ['simctl', 'spawn', udid, 'launchctl', 'list'], {
+            encoding: 'utf8',
+            timeout: 10000,
+        });
+        return out.split('\n').some((line) => /^\d+\s.*UIKitApplication:com\.apple\.mobilesafari/.test(line));
+    } catch (e) {
+        return false;
+    }
+};
+
+const terminateIosSafari = (udid) => {
+    try {
+        execFileSync('xcrun', ['simctl', 'terminate', udid, 'com.apple.mobilesafari'], {
+            stdio: 'ignore',
+            timeout: 10000,
+        });
+    } catch (e) {
+        // Safari was not running
+    }
+};
 
 Then('I tap {string}', async (buttonId) => {
     // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
@@ -67,8 +94,16 @@ Then('I tap {string}', async (buttonId) => {
             }
             await clickByTestId(buttonId);
         } catch (e) {
-            if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
-                return;
+            // The add-token handoff cover can take the button away while the review screen is
+            // still opening (it failed with the review screen up a moment later).
+            if (buttonId === 'add-and-sign-button') {
+                const reviewBy = Date.now() + 8000;
+                while (Date.now() < reviewBy) {
+                    if (await androidHasTestId('review-transaction-modal')) {
+                        return;
+                    }
+                    await new Promise((resolve) => { setTimeout(resolve, 500); });
+                }
             }
             throw e;
         }
@@ -89,7 +124,11 @@ Then('I tap {string}', async (buttonId) => {
                     return;
                 }
                 if (await androidHasTestId('add-and-sign-button')) {
-                    await clickByTestId('add-and-sign-button');
+                    try {
+                        await clickByTestId('add-and-sign-button');
+                    } catch (e) {
+                        // the cover took the button; the review screen check decides
+                    }
                 }
                 await new Promise((resolve) => { setTimeout(resolve, 800); });
             }
@@ -487,7 +526,10 @@ Given('I should see alert with content {string}', async (title) => {
     if (device.getPlatform() === 'android') {
         androidAlertPending = true;
         await device.disableSynchronization();
+        // The window count says a dialog is up; the text check says it is the right one (it
+        // used to pass on "[missing … translation]").
         await waitForAndroidAlertText(title, device.id);
+        await waitUntilAndroidText(title, 10000);
         return;
     }
     await waitFor(element(by.label(title)))
@@ -505,7 +547,7 @@ Then('I close the app', async () => {
 
 // launchApp waitUntilReady uses Espresso.onIdle (240s MAIN_LOOPER / Home Choreographer).
 const androidStartActivity = (url) => {
-    const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+    const serial = androidSerial();
     const args = url
         ? [
               '-s',
@@ -533,6 +575,7 @@ Then('I launch the app', async () => {
             newInstance: true,
             launchArgs: { detoxEnableSynchronization: 0 },
         });
+        resetAndroidDumpState();
         await device.disableSynchronization();
         await waitUntilAndroidRnReady();
         return;
@@ -558,19 +601,39 @@ Then('I launch the app with url {string}', async (url) => {
     }
     // newInstance:true crashes Hermes on SE. Detox openURL from Springboard
     // often does not foreground Xaman — simctl openurl delivers the UL.
-    await device.sendToHome();
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    // The app goes to the background by opening Settings, not with device.sendToHome(): that
+    // waits for the app to confirm, and hung there ("app has not responded: waitForBackground").
+    terminateIosSafari(device.id);
+    execFileSync('xcrun', ['simctl', 'launch', device.id, 'com.apple.Preferences'], {
+        stdio: 'ignore',
+        timeout: 20000,
+    });
+    await new Promise((resolve) => { setTimeout(resolve, 1000); });
+    let opened = true;
     try {
         execFileSync('xcrun', ['simctl', 'openurl', device.id, url], { timeout: 15000 });
     } catch (e) {
-        await device.openURL({ url });
+        opened = false;
+    }
+    // Right after the app is (re)installed, iOS has not verified its associated domains yet and
+    // opens https links in Safari. Hand the link to the app through Detox instead (launchApp
+    // brings it to the foreground first; a Detox call to a backgrounded app can hang).
+    const deadline = Date.now() + 4000;
+    while (opened && Date.now() < deadline && !iosSafariRunning(device.id)) {
+        await new Promise((resolve) => { setTimeout(resolve, 500); });
+    }
+    if (!opened || iosSafariRunning(device.id)) {
+        // eslint-disable-next-line no-console
+        console.error(`[e2e] ${opened ? 'link opened in Safari' : 'simctl openurl failed'}; delivering it via Detox`);
+        terminateIosSafari(device.id);
+        await device.launchApp({ newInstance: false, url });
     }
 });
 
 Then('I open the url {string}', async (url) => {
     if (device.getPlatform() === 'android') {
         // Detox VIEW is activity-anonymous. After ToS loads xaman.app, Chrome can take the intent.
-        const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
+        const serial = androidSerial();
         execFileSync(
             'adb',
             [

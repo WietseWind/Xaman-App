@@ -1,13 +1,14 @@
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
+const { androidSerial } = require('./androidSerial');
 
 const sleep = (ms) =>
     new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 
-const resolveSerial = (serial) => process.env.ANDROID_SERIAL || serial || 'emulator-5554';
+const resolveSerial = (serial) => process.env.ANDROID_SERIAL || serial || androidSerial();
 
 const logLine = (msg) => {
     const line = `[androidAlert ${new Date().toISOString()}] ${msg}`;
