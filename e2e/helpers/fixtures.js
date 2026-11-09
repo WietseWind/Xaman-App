@@ -1,9 +1,23 @@
+const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const fetch = require('node-fetch');
 const { XrplClient } = require('xrpl-client');
 const AccountLib = require('xrpl-accountlib');
 
-const CRED_FILE = process.env.E2E_CRED_FILE || '/tmp/xaman-e2e-testnet-creds.json';
+// One faucet account per run (per artifacts directory) unless E2E_CRED_FILE says otherwise: a
+// single shared /tmp file let parallel runs (iOS and Android at once) spend the same account.
+// Kept outside the artifacts directory, which CI uploads.
+const ARTIFACTS_DIR = process.env.E2E_ARTIFACTS_DIR
+    ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
+    : path.resolve(__dirname, '../artifacts');
+const CRED_FILE =
+    process.env.E2E_CRED_FILE ||
+    path.join(
+        os.tmpdir(),
+        `xaman-e2e-creds-${crypto.createHash('sha256').update(ARTIFACTS_DIR).digest('hex').slice(0, 12)}.json`,
+    );
 // 100 XAH payment + fee + 1 XAH account reserve
 const ACTIVATION_DROPS = 100000000;
 const ACTIVATION_FEE_DROPS = 1000;
@@ -12,6 +26,7 @@ const MIN_FUND_BALANCE = ACTIVATION_DROPS + ACTIVATION_FEE_DROPS + ACTIVATION_RE
 let testNetCredits;
 
 // generate family seed
+// eslint-disable-next-line default-param-last
 const generateMnemonic = (strength = 256, algorithm) => {
     const options = { strength };
     if (algorithm) {
@@ -23,7 +38,8 @@ const generateMnemonic = (strength = 256, algorithm) => {
 };
 
 const SAMPLE_24_WORD_MNEMONIC =
-    'lamp elevator orchard music glare night upper race mixture bullet property nasty agent sword blind dynamic gossip life series shrug day ice control reunion';
+    'lamp elevator orchard music glare night upper race mixture bullet property nasty agent sword blind dynamic ' +
+    'gossip life series shrug day ice control reunion';
 
 // secp-encoded family seed whose ed25519 r-address is activated on Xahau Testnet
 const SAMPLE_FAMILY_SEED_ED_XAHAU = 'shk74ZM1V25arF1EnKvRnXNUCtSay';
@@ -70,6 +86,7 @@ const sleep = (ms) =>
 const persistCredits = (credits) => {
     testNetCredits = credits;
     try {
+        fs.mkdirSync(path.dirname(CRED_FILE), { recursive: true });
         fs.writeFileSync(CRED_FILE, JSON.stringify(credits));
     } catch (e) {
         // resume without file still works in-process

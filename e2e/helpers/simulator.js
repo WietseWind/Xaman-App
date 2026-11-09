@@ -6,14 +6,17 @@ const ARTIFACTS_DIR = process.env.E2E_ARTIFACTS_DIR
     ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
     : path.resolve(__dirname, '../artifacts');
 
-const startDeviceLogStream = (udid = 'booted') => {
-    if (process.platform !== 'darwin') {
+let logProcess = null;
+
+// iOS simulator log of the app, for this run's simulator only.
+const startDeviceLogStream = (udid) => {
+    if (process.platform !== 'darwin' || !udid) {
         return;
     }
     const logFile = `${ARTIFACTS_DIR}/simulator.log`;
 
     if (!existsSync(ARTIFACTS_DIR)) {
-        mkdirSync(ARTIFACTS_DIR);
+        mkdirSync(ARTIFACTS_DIR, { recursive: true });
     }
 
     if (existsSync(logFile)) {
@@ -31,6 +34,14 @@ const startDeviceLogStream = (udid = 'booted') => {
     proc.on('error', () => {
         proc.kill();
     });
+    logProcess = proc;
 };
 
-module.exports = { startDeviceLogStream };
+const stopDeviceLogStream = () => {
+    if (logProcess) {
+        logProcess.kill('SIGTERM');
+        logProcess = null;
+    }
+};
+
+module.exports = { startDeviceLogStream, stopDeviceLogStream };

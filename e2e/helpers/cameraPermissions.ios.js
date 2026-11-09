@@ -48,7 +48,10 @@ function target() {
     const { devices } = JSON.parse(command(['list', 'devices', 'available', '--json']));
     const simulator = Object.values(devices).flat().find((item) => item.udid === device.id);
     assert(simulator, 'Camera permission tests require a simulator, never a phone');
-    assert.strictEqual(simulator.name, process.env.E2E_CAMERA_IOS_SIMULATOR_NAME || 'Xaman-e2e');
+    assert.strictEqual(
+        simulator.name,
+        process.env.E2E_CAMERA_IOS_SIMULATOR_NAME || process.env.E2E_IOS_SIMULATOR || 'Xaman-e2e',
+    );
     return simulator.udid;
 }
 

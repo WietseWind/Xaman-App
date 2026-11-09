@@ -173,6 +173,13 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             testProguardFiles 'proguard-test.pro'
+            // Detox e2e on a release build (-DtestBuildType=release) runs its test APK inside the app
+            // process and uses classes the app's R8 would otherwise strip. Store builds never set
+            // testBuildType, so their rules (and APK/AAB) stay exactly as they are.
+            if (System.getProperty('testBuildType') == 'release') {
+                proguardFiles "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro",
+                    'proguard-e2e.pro'
+            }
             manifestPlaceholders = [excludeSystemAlertWindowPermission: "true"]
             /* Add the firebaseCrashlytics extension (by default,
             * it's disabled to improve build speeds) and set
@@ -184,6 +191,14 @@ android {
                 unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib'
             }
         }
+    }
+
+    // Detox e2e on a release build only: the release app must reach the Detox server on
+    // ws://localhost, which release builds block as cleartext (src/e2eRelease allows it for
+    // localhost and 10.0.2.2 only). Store builds never set testBuildType and never get this.
+    if (System.getProperty('testBuildType') == 'release') {
+        sourceSets.release.manifest.srcFile 'src/e2eRelease/AndroidManifest.xml'
+        sourceSets.release.res.srcDirs += 'src/e2eRelease/res'
     }
 
     // building in CI, change the singing config for release to debug
@@ -363,19 +378,14 @@ dependencies {
     // androidTest does not inherit the RN Firebase BOM, so unversioned ktx deps fail to resolve.
     androidTestImplementation platform('com.google.firebase:firebase-bom:33.1.2')
     androidTestImplementation 'com.wix:detox:+'
-    // Keep JUnit on the instrumentation APK. Do not bump past 4.12
-    // (resolutionStrategy in this repo is strict).
+    // Do not bump past 4.12 (resolutionStrategy in this repo is strict). The app itself also
+    // carries junit 4.12 (com.madgag.spongycastle:prov depends on it), so the release test APK
+    // leaves JUnit out and uses the app's copy: proguard-e2e.pro keeps it there.
     androidTestImplementation 'junit:junit:4.12'
 }
 
-// Release minifyEnabled=true also minifies the instrumentation APK and
-// strips JUnit (NoClassDefFoundError: RunListener). Disable every
-// minify*AndroidTest* task, not only the exact R8 name.
-tasks.configureEach { task ->
-    if (task.name.toLowerCase().contains('androidtest') && task.name.toLowerCase().contains('minify')) {
-        task.enabled = false
-    }
-}
+// Do not disable the minify*AndroidTest* tasks: with minifyEnabled they also dex the test APK,
+// and without them the release test APK has no code ("code is missing" on install).
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
