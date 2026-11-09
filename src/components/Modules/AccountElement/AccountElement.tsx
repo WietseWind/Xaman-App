@@ -253,11 +253,12 @@ class AccountElement extends Component<Props, State> {
     renderAddress = () => {
         const { address, textStyle } = this.props;
 
+        // the address accessibility (with its spell-out action) sits on a View: an iOS Text can't take the action
         return (
             // eslint-disable-next-line react/jsx-props-no-spreading
-            <Text style={[styles.addressText, textStyle]} {...AddressAccessibilityProps(address)}>
-                {address}
-            </Text>
+            <View {...AddressAccessibilityProps(address)}>
+                <Text style={[styles.addressText, textStyle]}>{address}</Text>
+            </View>
         );
     };
 

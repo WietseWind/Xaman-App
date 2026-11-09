@@ -33,6 +33,30 @@ const sourceFiles = (dir: string): string[] =>
 const LOGS_ACCESSIBILITY =
     /(console\.\w+|LoggerService\.\w+|logger\.\w+|crashlytics\(\)\.log|recordError)\([^)]*accessibility/i;
 
+// iOS: these accessibility events exist only on a View. On a Text the native setter is missing, React
+// Native drops the whole UI update and the screen stays blank (review screen of build 474).
+const VIEW_ONLY_ACCESSIBILITY =
+    /\b(onAccessibilityAction|onAccessibilityEscape|onAccessibilityTap|onMagicTap|AddressAccessibilityProps)\b/;
+
+// opening tags of <Text …> and <Animated.Text …>, braces balanced so arrow functions don't end the tag
+const textOpeningTags = (source: string): string[] => {
+    const tags: string[] = [];
+    const start = /<(Animated\.)?Text(?=[\s/>])/g;
+    let match = start.exec(source);
+    while (match) {
+        let depth = 0;
+        let end = match.index + match[0].length;
+        while (end < source.length && !(source[end] === '>' && depth === 0)) {
+            if (source[end] === '{') depth += 1;
+            if (source[end] === '}') depth -= 1;
+            end += 1;
+        }
+        tags.push(source.slice(match.index, end + 1));
+        match = start.exec(source);
+    }
+    return tags;
+};
+
 describe('accessibility guardrails', () => {
     it('only reviewed places announce to screen readers', () => {
         const announcers = sourceFiles(SRC)
@@ -53,5 +77,29 @@ describe('accessibility guardrails', () => {
             .map((file) => path.relative(SRC, file));
 
         expect(logsAccessibility).toEqual([]);
+    });
+
+    it('finds a View-only accessibility event on a Text', () => {
+        const tags = textOpeningTags(
+            '<View><Text style={[a, b]} onPress={() => go()} {...AddressAccessibilityProps(address)}>{x}</Text>' +
+                '<TextInput onAccessibilityAction={f} /><Animated.Text onMagicTap={f}>y</Animated.Text></View>',
+        );
+
+        expect(tags.filter((tag) => VIEW_ONLY_ACCESSIBILITY.test(tag))).toEqual([
+            '<Text style={[a, b]} onPress={() => go()} {...AddressAccessibilityProps(address)}>',
+            '<Animated.Text onMagicTap={f}>',
+        ]);
+    });
+
+    it('never puts a View-only accessibility event on a Text', () => {
+        const offenders = sourceFiles(SRC)
+            .filter((file) => file.endsWith('.tsx'))
+            .flatMap((file) =>
+                textOpeningTags(fs.readFileSync(file, 'utf8'))
+                    .filter((tag) => VIEW_ONLY_ACCESSIBILITY.test(tag))
+                    .map((tag) => `${path.relative(SRC, file)}: ${tag}`),
+            );
+
+        expect(offenders).toEqual([]);
     });
 });
