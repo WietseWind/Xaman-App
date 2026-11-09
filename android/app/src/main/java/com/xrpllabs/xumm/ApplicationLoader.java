@@ -146,6 +146,9 @@ public class ApplicationLoader extends NavigationApplication {
         // super
         super.onCreate();
 
+        // Android 8.0–12L: a framework accessibility bug must not crash the app
+        AccessibilityCrashGuard.install(this);
+
         // Force IPv4 for network connections to fix WebSocket issues on IPv6 networks
         System.setProperty("java.net.preferIPv4Stack", "true");
         System.setProperty("java.net.preferIPv6Addresses", "false");
