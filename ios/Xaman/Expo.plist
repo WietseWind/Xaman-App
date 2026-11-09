@@ -9,7 +9,7 @@
 	<string>https://xaman.app/api/v1/app/ota/manifest</string>
 	<!-- {version}.{build} of this native build; updates only install on this exact runtime -->
 	<key>EXUpdatesRuntimeVersion</key>
-	<string>5.4.0.473</string>
+	<string>5.4.0.474</string>
 	<!-- the native side never checks by itself; the app checks from JS after launch -->
 	<key>EXUpdatesCheckOnLaunch</key>
 	<string>NEVER</string>
