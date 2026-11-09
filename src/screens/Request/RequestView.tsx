@@ -474,7 +474,7 @@ class RequestView extends Component<Props, State> {
                             styles.qrCodeContainer,
                         ]}>
                             <View style={styles.qrCode}>
-                                <View style={styles.qrImgContainer}>
+                                <View style={styles.qrImgContainer} accessibilityIgnoresInvertColors>
                                     <QRCode size={140} value={`${this.getLink()}`} />
                                 </View>
                             </View>

@@ -2012,5 +2012,20 @@
     "identifyBody": "Escanea a tarxeta de respaldo vinculada a esta conta para comprobar que é a correcta.",
     "notYourBackup": "Esta non é a túa tarxeta de respaldo.",
     "yourBackup": "Esta é a túa tarxeta de respaldo."
+  },
+  "accessibility": {
+    "moreOptions": "Máis opcións",
+    "refresh": "Actualizar",
+    "help": "Axuda",
+    "moveToTop": "Mover ao principio",
+    "reorder": "Reordenar",
+    "showPassword": "Amosar o contrasinal",
+    "hidePassword": "Agochar o contrasinal",
+    "showOptions": "Amosar opcións",
+    "hideOptions": "Agochar opcións",
+    "amountHidden": "Importe agochado",
+    "qrCodeScanned": "Código QR escaneado",
+    "addressStartsEnds": "Dirección que comeza por %{start} e remata en %{end}",
+    "spellOutAddress": "Deletrear a dirección completa"
   }
 }

@@ -97,6 +97,8 @@ class AnimatedDialog extends PureComponent<Props, State> {
             <Animated.View
                 onStartShouldSetResponder={onStartShouldSetResponder}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
+                // VoiceOver stays in the dialog
+                accessibilityViewIsModal
             >
                 <Animated.View
                     style={[

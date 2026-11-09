@@ -2102,5 +2102,20 @@
     "identifyBody": "Skannaa tähän tiliin liitetty varakortti tarkistaaksesi, että se on oikea kortti.",
     "notYourBackup": "Tämä ei ole varakorttisi.",
     "yourBackup": "Tämä on varakorttisi."
+  },
+  "accessibility": {
+    "moreOptions": "Lisää vaihtoehtoja",
+    "refresh": "Päivitä",
+    "help": "Ohje",
+    "moveToTop": "Siirrä ylimmäksi",
+    "reorder": "Järjestä uudelleen",
+    "showPassword": "Näytä salasana",
+    "hidePassword": "Piilota salasana",
+    "showOptions": "Näytä vaihtoehdot",
+    "hideOptions": "Piilota vaihtoehdot",
+    "amountHidden": "Summa piilotettu",
+    "qrCodeScanned": "QR-koodi skannattu",
+    "addressStartsEnds": "Osoite: alku %{start}, loppu %{end}",
+    "spellOutAddress": "Tavaa koko osoite"
   }
 }

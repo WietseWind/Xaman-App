@@ -2115,5 +2115,20 @@
     "identifyBody": "Quét thẻ dự phòng được liên kết với tài khoản này để kiểm tra xem đó có phải thẻ đúng không.",
     "notYourBackup": "Đây không phải thẻ dự phòng của bạn.",
     "yourBackup": "Đây là thẻ dự phòng của bạn."
+  },
+  "accessibility": {
+    "moreOptions": "Tùy chọn khác",
+    "refresh": "Làm mới",
+    "help": "Trợ giúp",
+    "moveToTop": "Chuyển lên đầu",
+    "reorder": "Sắp xếp lại",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "showOptions": "Hiện tùy chọn",
+    "hideOptions": "Ẩn tùy chọn",
+    "amountHidden": "Số tiền đã ẩn",
+    "qrCodeScanned": "Đã quét mã QR",
+    "addressStartsEnds": "Địa chỉ bắt đầu bằng %{start}, kết thúc bằng %{end}",
+    "spellOutAddress": "Đánh vần toàn bộ địa chỉ"
   }
 }

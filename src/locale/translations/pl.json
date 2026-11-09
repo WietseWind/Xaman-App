@@ -2086,5 +2086,20 @@
     "identifyBody": "Zeskanuj kartę zapasową powiązaną z tym kontem, aby sprawdzić, czy jest właściwa.",
     "notYourBackup": "To nie jest Twoja karta zapasowa.",
     "yourBackup": "To jest Twoja karta zapasowa."
+  },
+  "accessibility": {
+    "moreOptions": "Więcej opcji",
+    "refresh": "Odśwież",
+    "help": "Pomoc",
+    "moveToTop": "Przenieś na górę",
+    "reorder": "Zmień kolejność",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "showOptions": "Pokaż opcje",
+    "hideOptions": "Ukryj opcje",
+    "amountHidden": "Kwota ukryta",
+    "qrCodeScanned": "Zeskanowano kod QR",
+    "addressStartsEnds": "Adres: początek %{start}, koniec %{end}",
+    "spellOutAddress": "Przeliteruj cały adres"
   }
 }

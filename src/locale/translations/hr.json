@@ -2012,5 +2012,20 @@
     "identifyBody": "Skenirajte pričuvnu karticu povezanu s ovim računom kako biste provjerili je li prava.",
     "notYourBackup": "Ovo nije vaša pričuvna kartica.",
     "yourBackup": "Ovo je vaša pričuvna kartica."
+  },
+  "accessibility": {
+    "moreOptions": "Više opcija",
+    "refresh": "Osvježi",
+    "help": "Pomoć",
+    "moveToTop": "Premjesti na vrh",
+    "reorder": "Promijeni redoslijed",
+    "showPassword": "Prikaži lozinku",
+    "hidePassword": "Sakrij lozinku",
+    "showOptions": "Prikaži opcije",
+    "hideOptions": "Sakrij opcije",
+    "amountHidden": "Iznos je skriven",
+    "qrCodeScanned": "QR kod skeniran",
+    "addressStartsEnds": "Adresa: početak %{start}, kraj %{end}",
+    "spellOutAddress": "Sriči cijelu adresu"
   }
 }

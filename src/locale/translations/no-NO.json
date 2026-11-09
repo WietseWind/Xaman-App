@@ -2112,5 +2112,20 @@
     "identifyBody": "Skann reservekortet som er knyttet til denne kontoen, for å kontrollere at det er riktig kort.",
     "notYourBackup": "Dette er ikke reservekortet ditt.",
     "yourBackup": "Dette er reservekortet ditt."
+  },
+  "accessibility": {
+    "moreOptions": "Flere alternativer",
+    "refresh": "Oppdater",
+    "help": "Hjelp",
+    "moveToTop": "Flytt til toppen",
+    "reorder": "Endre rekkefølge",
+    "showPassword": "Vis passord",
+    "hidePassword": "Skjul passord",
+    "showOptions": "Vis alternativer",
+    "hideOptions": "Skjul alternativer",
+    "amountHidden": "Beløp skjult",
+    "qrCodeScanned": "QR-kode skannet",
+    "addressStartsEnds": "Adresse som starter med %{start} og slutter med %{end}",
+    "spellOutAddress": "Stav hele adressen"
   }
 }

@@ -16,7 +16,15 @@ import { Payload } from '@common/libs/payload';
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 
 // components
-import { Button, InfoMessage, JsonTree, KeyboardAwareScrollView, Spacer, SwipeButton } from '@components/General';
+import {
+    Button,
+    InfoMessage,
+    JsonTree,
+    KeyboardAwareScrollView,
+    ScreenReaderAnnouncement,
+    Spacer,
+    SwipeButton,
+} from '@components/General';
 import { AccountPicker } from '@components/Modules';
 
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
@@ -657,6 +665,10 @@ class ReviewStep extends Component<Props, State> {
                                                 {isScamCounterpart && (
                                                     <>
                                                         <View testID="scam-danger-warning">
+                                                            {/* screen readers hear the warning at once */}
+                                                            <ScreenReaderAnnouncement
+                                                                message={Localize.t('payload.scamSignDanger')}
+                                                            />
                                                             <InfoMessage type="error">
                                                                 <Text style={[
                                                                     AppStyles.subtext,

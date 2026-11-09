@@ -2110,5 +2110,20 @@
     "identifyBody": "To‘g‘ri karta ekanini tekshirish uchun bu hisobga bog‘langan zaxira kartani skanerlang.",
     "notYourBackup": "Bu sizning zaxira kartangiz emas.",
     "yourBackup": "Bu sizning zaxira kartangiz."
+  },
+  "accessibility": {
+    "moreOptions": "Ko'proq sozlamalar",
+    "refresh": "Yangilash",
+    "help": "Yordam",
+    "moveToTop": "Eng yuqoriga ko'chirish",
+    "reorder": "Tartibni o'zgartirish",
+    "showPassword": "Parolni ko'rsatish",
+    "hidePassword": "Parolni yashirish",
+    "showOptions": "Variantlarni ko'rsatish",
+    "hideOptions": "Variantlarni yashirish",
+    "amountHidden": "Summa yashirilgan",
+    "qrCodeScanned": "QR kod skanerlandi",
+    "addressStartsEnds": "Manzil: boshi %{start}, oxiri %{end}",
+    "spellOutAddress": "Manzilni to'liq harfma-harf o'qish"
   }
 }

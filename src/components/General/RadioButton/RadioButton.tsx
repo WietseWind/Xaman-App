@@ -58,6 +58,8 @@ class RadioButton extends PureComponent<Props> {
         return (
             <TouchableDebounce
                 testID={testID}
+                accessibilityRole="radio"
+                accessibilityState={{ checked, disabled: !!disabled }}
                 activeOpacity={0.8}
                 disabled={disabled}
                 onPress={this.onPress}

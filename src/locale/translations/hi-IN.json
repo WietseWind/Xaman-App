@@ -2126,5 +2126,20 @@
     "identifyBody": "सही कार्ड की जाँच के लिए इस खाते से जुड़ा बैकअप कार्ड स्कैन करें।",
     "notYourBackup": "यह आपका बैकअप कार्ड नहीं है।",
     "yourBackup": "यह आपका बैकअप कार्ड है।"
+  },
+  "accessibility": {
+    "moreOptions": "और विकल्प",
+    "refresh": "रीफ़्रेश करें",
+    "help": "सहायता",
+    "moveToTop": "सबसे ऊपर ले जाएँ",
+    "reorder": "फिर से क्रम दें",
+    "showPassword": "पासवर्ड दिखाएँ",
+    "hidePassword": "पासवर्ड छिपाएँ",
+    "showOptions": "विकल्प दिखाएँ",
+    "hideOptions": "विकल्प छिपाएँ",
+    "amountHidden": "राशि छिपी है",
+    "qrCodeScanned": "QR कोड स्कैन हुआ",
+    "addressStartsEnds": "पता: शुरुआत %{start}, अंत %{end}",
+    "spellOutAddress": "पूरा पता अक्षर-अक्षर बोलें"
   }
 }

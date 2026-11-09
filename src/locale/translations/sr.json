@@ -2102,5 +2102,20 @@
     "identifyBody": "Скенирајте резервну картицу повезану са овим налогом да проверите да ли је права.",
     "notYourBackup": "Ово није ваша резервна картица.",
     "yourBackup": "Ово је ваша резервна картица."
+  },
+  "accessibility": {
+    "moreOptions": "Још опција",
+    "refresh": "Освежи",
+    "help": "Помоћ",
+    "moveToTop": "Премести на врх",
+    "reorder": "Промени редослед",
+    "showPassword": "Прикажи лозинку",
+    "hidePassword": "Сакриј лозинку",
+    "showOptions": "Прикажи опције",
+    "hideOptions": "Сакриј опције",
+    "amountHidden": "Износ је скривен",
+    "qrCodeScanned": "QR код је скениран",
+    "addressStartsEnds": "Адреса: почетак %{start}, крај %{end}",
+    "spellOutAddress": "Спелуј целу адресу"
   }
 }

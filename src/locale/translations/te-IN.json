@@ -2111,5 +2111,20 @@
     "identifyBody": "సరైన కార్డో కాదో తనిఖీ చేయడానికి ఈ ఖాతాకు లింక్ చేసిన బ్యాకప్ కార్డును స్కాన్ చేయండి.",
     "notYourBackup": "ఇది మీ బ్యాకప్ కార్డు కాదు.",
     "yourBackup": "ఇది మీ బ్యాకప్ కార్డు."
+  },
+  "accessibility": {
+    "moreOptions": "మరిన్ని ఎంపికలు",
+    "refresh": "రిఫ్రెష్ చేయి",
+    "help": "సహాయం",
+    "moveToTop": "పైకి తరలించు",
+    "reorder": "క్రమం మార్చు",
+    "showPassword": "పాస్‌వర్డ్ చూపించు",
+    "hidePassword": "పాస్‌వర్డ్ దాచు",
+    "showOptions": "ఎంపికలు చూపించు",
+    "hideOptions": "ఎంపికలు దాచు",
+    "amountHidden": "మొత్తం దాచబడింది",
+    "qrCodeScanned": "QR కోడ్ స్కాన్ అయింది",
+    "addressStartsEnds": "చిరునామా: ప్రారంభం %{start}, ముగింపు %{end}",
+    "spellOutAddress": "పూర్తి చిరునామాను అక్షరం అక్షరంగా చదువు"
   }
 }

@@ -2111,5 +2111,20 @@
     "identifyBody": "请扫描与此账户关联的备份卡，确认是否为正确的卡片。",
     "notYourBackup": "这不是您的备份卡。",
     "yourBackup": "这是您的备份卡。"
+  },
+  "accessibility": {
+    "moreOptions": "更多选项",
+    "refresh": "刷新",
+    "help": "帮助",
+    "moveToTop": "移到顶部",
+    "reorder": "重新排序",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "showOptions": "显示选项",
+    "hideOptions": "隐藏选项",
+    "amountHidden": "金额已隐藏",
+    "qrCodeScanned": "已扫描二维码",
+    "addressStartsEnds": "地址开头为 %{start}，结尾为 %{end}",
+    "spellOutAddress": "逐字读出完整地址"
   }
 }

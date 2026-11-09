@@ -2099,5 +2099,20 @@
     "identifyBody": "Noskenējiet šim kontam piesaistīto rezerves karti, lai pārbaudītu, vai tā ir pareizā karte.",
     "notYourBackup": "Šī nav jūsu rezerves karte.",
     "yourBackup": "Šī ir jūsu rezerves karte."
+  },
+  "accessibility": {
+    "moreOptions": "Vairāk opciju",
+    "refresh": "Atsvaidzināt",
+    "help": "Palīdzība",
+    "moveToTop": "Pārvietot uz augšu",
+    "reorder": "Mainīt secību",
+    "showPassword": "Rādīt paroli",
+    "hidePassword": "Slēpt paroli",
+    "showOptions": "Rādīt opcijas",
+    "hideOptions": "Slēpt opcijas",
+    "amountHidden": "Summa paslēpta",
+    "qrCodeScanned": "QR kods noskenēts",
+    "addressStartsEnds": "Adrese: sākums %{start}, beigas %{end}",
+    "spellOutAddress": "Nolasīt visu adresi pa burtam"
   }
 }

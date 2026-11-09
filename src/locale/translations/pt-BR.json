@@ -2110,5 +2110,20 @@
     "identifyBody": "Escaneie o cartão de backup vinculado a esta conta para verificar se é o cartão correto.",
     "notYourBackup": "Este não é seu cartão de backup.",
     "yourBackup": "Este é seu cartão de backup."
+  },
+  "accessibility": {
+    "moreOptions": "Mais opções",
+    "refresh": "Atualizar",
+    "help": "Ajuda",
+    "moveToTop": "Mover para o topo",
+    "reorder": "Reordenar",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "showOptions": "Mostrar opções",
+    "hideOptions": "Ocultar opções",
+    "amountHidden": "Valor oculto",
+    "qrCodeScanned": "Código QR escaneado",
+    "addressStartsEnds": "Endereço que começa com %{start} e termina com %{end}",
+    "spellOutAddress": "Soletrar o endereço completo"
   }
 }

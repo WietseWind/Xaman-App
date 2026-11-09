@@ -2012,5 +2012,20 @@
     "identifyBody": "Escaneja la targeta de reserva vinculada a aquest compte per comprovar que és la correcta.",
     "notYourBackup": "Aquesta no és la teva targeta de reserva.",
     "yourBackup": "Aquesta és la teva targeta de reserva."
+  },
+  "accessibility": {
+    "moreOptions": "Més opcions",
+    "refresh": "Actualitza",
+    "help": "Ajuda",
+    "moveToTop": "Mou a dalt de tot",
+    "reorder": "Reordena",
+    "showPassword": "Mostra la contrasenya",
+    "hidePassword": "Amaga la contrasenya",
+    "showOptions": "Mostra les opcions",
+    "hideOptions": "Amaga les opcions",
+    "amountHidden": "Import amagat",
+    "qrCodeScanned": "Codi QR escanejat",
+    "addressStartsEnds": "Adreça que comença per %{start} i acaba en %{end}",
+    "spellOutAddress": "Lletreja l'adreça completa"
   }
 }

@@ -2096,5 +2096,20 @@
     "identifyBody": "Scan de back-upkaart die aan dit account is gekoppeld om te controleren of het de juiste kaart is.",
     "notYourBackup": "Dit is niet je back-upkaart.",
     "yourBackup": "Dit is je back-upkaart."
+  },
+  "accessibility": {
+    "moreOptions": "Meer opties",
+    "refresh": "Vernieuwen",
+    "help": "Help",
+    "moveToTop": "Naar boven verplaatsen",
+    "reorder": "Volgorde wijzigen",
+    "showPassword": "Wachtwoord tonen",
+    "hidePassword": "Wachtwoord verbergen",
+    "showOptions": "Opties tonen",
+    "hideOptions": "Opties verbergen",
+    "amountHidden": "Bedrag verborgen",
+    "qrCodeScanned": "QR-code gescand",
+    "addressStartsEnds": "Adres begint met %{start} en eindigt op %{end}",
+    "spellOutAddress": "Volledig adres spellen"
   }
 }

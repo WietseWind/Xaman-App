@@ -73,6 +73,7 @@ exports[`[Switch] renders with given label 1`] = `
   >
     <View>
       <RCTSwitch
+        accessibilityLabel="A Label I Am"
         accessibilityRole="switch"
         onChange={[Function]}
         onResponderTerminationRequest={[Function]}

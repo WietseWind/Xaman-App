@@ -3,7 +3,16 @@
  */
 
 import React, { Component } from 'react';
-import { AppState, View, ImageBackground, Text, Linking, BackHandler, NativeEventSubscription } from 'react-native';
+import {
+    AccessibilityInfo,
+    AppState,
+    View,
+    ImageBackground,
+    Text,
+    Linking,
+    BackHandler,
+    NativeEventSubscription,
+} from 'react-native';
 
 import {
     Navigation,
@@ -802,6 +811,9 @@ class ScanModal extends Component<Props, State> {
             if (coreSettings.hapticFeedback) {
                 VibrateHapticFeedback('impactLight');
             }
+
+            // screen readers: the code was read; never what it says (it can be a secret)
+            AccessibilityInfo.announceForAccessibility(Localize.t('accessibility.qrCodeScanned'));
 
             // handle the content
             this.handle(data);

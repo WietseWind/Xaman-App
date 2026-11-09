@@ -2012,5 +2012,20 @@
     "identifyBody": "Skanna reservkortet som är kopplat till det här kontot för att kontrollera att det är rätt kort.",
     "notYourBackup": "Det här är inte ditt reservkort.",
     "yourBackup": "Det här är ditt reservkort."
+  },
+  "accessibility": {
+    "moreOptions": "Fler alternativ",
+    "refresh": "Uppdatera",
+    "help": "Hjälp",
+    "moveToTop": "Flytta överst",
+    "reorder": "Ändra ordning",
+    "showPassword": "Visa lösenord",
+    "hidePassword": "Dölj lösenord",
+    "showOptions": "Visa alternativ",
+    "hideOptions": "Dölj alternativ",
+    "amountHidden": "Belopp dolt",
+    "qrCodeScanned": "QR-kod skannad",
+    "addressStartsEnds": "Adress som börjar med %{start} och slutar med %{end}",
+    "spellOutAddress": "Stava hela adressen"
   }
 }

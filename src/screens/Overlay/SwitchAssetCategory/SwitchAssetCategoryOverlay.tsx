@@ -91,7 +91,11 @@ class SwitchAssetCategoryOverlay extends Component<Props, State> {
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.centerAligned]}>
                             <Text style={[AppStyles.p, AppStyles.bold]}>{Localize.t('global.select')}</Text>
                         </View>
-                        <TouchableDebounce activeOpacity={0.8} onPress={this.dismiss}>
+                        <TouchableDebounce
+                            activeOpacity={0.8}
+                            onPress={this.dismiss}
+                            accessibilityLabel={Localize.t('global.close')}
+                        >
                             <Icon name="IconX" size={20} style={styles.closeIcon} />
                         </TouchableDebounce>
                     </View>
@@ -99,6 +103,7 @@ class SwitchAssetCategoryOverlay extends Component<Props, State> {
                         <Button
                             light
                             label={Localize.t('global.assets')}
+                            isSelected={selected === ASSETS_CATEGORY.Tokens}
                             style={selected === ASSETS_CATEGORY.Tokens ? styles.selectedButton : {}}
                             /* eslint-disable-next-line react/jsx-no-bind */
                             onPress={this.onAssetPress.bind(null, ASSETS_CATEGORY.Tokens)}
@@ -107,6 +112,7 @@ class SwitchAssetCategoryOverlay extends Component<Props, State> {
                         <Button
                             light
                             label={Localize.t('global.nfts')}
+                            isSelected={selected === ASSETS_CATEGORY.NFTs}
                             style={selected === ASSETS_CATEGORY.NFTs ? styles.selectedButton : {}}
                             /* eslint-disable-next-line react/jsx-no-bind */
                             onPress={this.onAssetPress.bind(null, ASSETS_CATEGORY.NFTs)}

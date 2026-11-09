@@ -2113,5 +2113,20 @@
     "identifyBody": "이 계정에 연결된 백업 카드를 스캔하여 올바른 카드인지 확인하세요.",
     "notYourBackup": "이 카드는 회원님의 백업 카드가 아닙니다.",
     "yourBackup": "이 카드는 회원님의 백업 카드입니다."
+  },
+  "accessibility": {
+    "moreOptions": "추가 옵션",
+    "refresh": "새로고침",
+    "help": "도움말",
+    "moveToTop": "맨 위로 이동",
+    "reorder": "순서 변경",
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기",
+    "showOptions": "옵션 표시",
+    "hideOptions": "옵션 숨기기",
+    "amountHidden": "금액 숨김",
+    "qrCodeScanned": "QR 코드를 스캔했습니다",
+    "addressStartsEnds": "주소: 시작 %{start}, 끝 %{end}",
+    "spellOutAddress": "전체 주소를 한 글자씩 읽기"
   }
 }

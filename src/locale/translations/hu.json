@@ -2012,5 +2012,20 @@
     "identifyBody": "Olvasd be a fiókhoz kapcsolt tartalékkártyát, hogy ellenőrizd, ez a megfelelő kártya.",
     "notYourBackup": "Ez nem a tartalékkártyád.",
     "yourBackup": "Ez a tartalékkártyád."
+  },
+  "accessibility": {
+    "moreOptions": "További lehetőségek",
+    "refresh": "Frissítés",
+    "help": "Súgó",
+    "moveToTop": "Áthelyezés a tetejére",
+    "reorder": "Átrendezés",
+    "showPassword": "Jelszó megjelenítése",
+    "hidePassword": "Jelszó elrejtése",
+    "showOptions": "Lehetőségek megjelenítése",
+    "hideOptions": "Lehetőségek elrejtése",
+    "amountHidden": "Összeg elrejtve",
+    "qrCodeScanned": "QR-kód beolvasva",
+    "addressStartsEnds": "Cím: eleje %{start}, vége %{end}",
+    "spellOutAddress": "A teljes cím betűzése"
   }
 }

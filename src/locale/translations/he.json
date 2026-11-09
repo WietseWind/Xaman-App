@@ -2012,5 +2012,20 @@
     "identifyBody": "יש לסרוק את כרטיס הגיבוי המקושר לחשבון כדי לוודא שזהו הכרטיס הנכון.",
     "notYourBackup": "זה אינו כרטיס הגיבוי שלך.",
     "yourBackup": "זהו כרטיס הגיבוי שלך."
+  },
+  "accessibility": {
+    "moreOptions": "אפשרויות נוספות",
+    "refresh": "רענון",
+    "help": "עזרה",
+    "moveToTop": "העברה לראש",
+    "reorder": "סידור מחדש",
+    "showPassword": "הצגת הסיסמה",
+    "hidePassword": "הסתרת הסיסמה",
+    "showOptions": "הצגת אפשרויות",
+    "hideOptions": "הסתרת אפשרויות",
+    "amountHidden": "הסכום מוסתר",
+    "qrCodeScanned": "קוד QR נסרק",
+    "addressStartsEnds": "כתובת: התחלה %{start}, סוף %{end}",
+    "spellOutAddress": "איות הכתובת המלאה"
   }
 }

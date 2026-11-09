@@ -2111,5 +2111,20 @@
     "identifyBody": "યોગ્ય કાર્ડ છે કે નહીં તે તપાસવા આ ખાતા સાથે જોડાયેલ બેકઅપ કાર્ડ સ્કૅન કરો.",
     "notYourBackup": "આ તમારું બેકઅપ કાર્ડ નથી.",
     "yourBackup": "આ તમારું બેકઅપ કાર્ડ છે."
+  },
+  "accessibility": {
+    "moreOptions": "વધુ વિકલ્પો",
+    "refresh": "રિફ્રેશ કરો",
+    "help": "મદદ",
+    "moveToTop": "ટોચ પર ખસેડો",
+    "reorder": "ફરીથી ગોઠવો",
+    "showPassword": "પાસવર્ડ બતાવો",
+    "hidePassword": "પાસવર્ડ છુપાવો",
+    "showOptions": "વિકલ્પો બતાવો",
+    "hideOptions": "વિકલ્પો છુપાવો",
+    "amountHidden": "રકમ છુપાયેલી છે",
+    "qrCodeScanned": "QR કોડ સ્કેન થયો",
+    "addressStartsEnds": "સરનામું: શરૂઆત %{start}, અંત %{end}",
+    "spellOutAddress": "આખું સરનામું અક્ષરશઃ વાંચો"
   }
 }
