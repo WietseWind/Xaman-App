@@ -17,6 +17,7 @@ import {
     NativeSyntheticEvent,
     TextInputKeyPressEventData,
     ViewStyle,
+    AccessibilityInfo,
 } from 'react-native';
 
 import StyleService from '@services/StyleService';
@@ -27,6 +28,7 @@ import Localize from '@locale';
 
 import { Icon } from '@components/General/Icon';
 import { LoadingIndicator } from '@components/General/LoadingIndicator';
+import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
 
 import styles from './styles';
 import { AppStyles } from '@theme/index';
@@ -41,9 +43,15 @@ interface Props {
     enableHapticFeedback?: boolean;
     isLoading?: boolean;
     pinPadStyle?: ViewStyle | ViewStyle[];
+    // what screen readers call the digits field; the passcode unless set
+    accessibilityLabel?: string;
+    accessibilityHint?: string;
     onInputFinish: (pin: string) => void;
     onBiometryPress: () => void;
 }
+
+// VoiceOver treats keyboard keys as keys (typing modes); TalkBack only knows it for input method windows
+const KEY_ROLE = Platform.OS === 'ios' ? 'keyboardkey' : 'button';
 
 interface State {
     digits: string;
@@ -125,6 +133,13 @@ class SecurePinInput extends Component<Props, State> {
         }
     };
 
+    // screen readers: say how many digits are entered, never which
+    announceProgress = (count: number) => {
+        const { length } = this.props;
+
+        AccessibilityInfo.announceForAccessibility(Localize.t('global.passcodeDigitsEntered', { count, length }));
+    };
+
     onInput = (key: string) => {
         const { enableHapticFeedback, length } = this.props;
         const { digits } = this.state;
@@ -135,9 +150,11 @@ class SecurePinInput extends Component<Props, State> {
 
         // BackSpace
         if (key === 'Backspace') {
+            const remaining = digits.slice(0, -1);
             this.setState({
-                digits: digits.slice(0, -1),
+                digits: remaining,
             });
+            this.announceProgress(remaining.length);
             return;
         }
 
@@ -148,6 +165,11 @@ class SecurePinInput extends Component<Props, State> {
             this.setState({
                 digits: newDigits,
             });
+        }
+
+        // the last digit submits: the screen announces the result instead
+        if (newDigits.length < length) {
+            this.announceProgress(newDigits.length);
         }
 
         // User filling the last pin ?
@@ -179,6 +201,12 @@ class SecurePinInput extends Component<Props, State> {
         });
     };
 
+    // long press on delete
+    clearAllInput = () => {
+        this.clearInput();
+        this.announceProgress(0);
+    };
+
     renderNumText = (flag: number) => {
         const { supportBiometric, onBiometryPress } = this.props;
 
@@ -193,11 +221,13 @@ class SecurePinInput extends Component<Props, State> {
                             styles.line,
                         ]}
                         key="x-key"
-                        accessible accessibilityLabel="Backspace"
+                        accessible
+                        accessibilityRole={KEY_ROLE}
+                        accessibilityLabel={Localize.t('global.delete')}
                         onPress={() => {
                             this.onInput('Backspace');
                         }}
-                        onLongPress={this.clearInput}
+                        onLongPress={this.clearAllInput}
                     >
                         <Icon name="IconChevronLeft" style={[
                             styles.iconStyle,
@@ -215,7 +245,9 @@ class SecurePinInput extends Component<Props, State> {
                             style={[
                                 styles.line,
                             ]}
-                            accessible accessibilityLabel="Biometrics"
+                            accessible
+                            accessibilityRole="button"
+                            accessibilityLabel={Localize.t('settings.biometricAuthentication')}
                             activeOpacity={0.7}
                             key="y-key"
                             onPress={() => {
@@ -261,7 +293,9 @@ class SecurePinInput extends Component<Props, State> {
                     onPress={() => {
                         this.onInput(item);
                     }}
-                    accessible accessibilityLabel={item}
+                    accessible
+                    accessibilityRole={KEY_ROLE}
+                    accessibilityLabel={item}
                 >
                     <>
                         <Text style={styles.numTextInt}>{item}</Text>
@@ -307,7 +341,8 @@ class SecurePinInput extends Component<Props, State> {
     };
 
     render() {
-        const { condensed, virtualKeyboard, length, isLoading, pinPadStyle } = this.props;
+        const { condensed, virtualKeyboard, length, isLoading, pinPadStyle, accessibilityLabel, accessibilityHint } =
+            this.props;
         const { digits } = this.state;
 
         let props: {};
@@ -320,9 +355,11 @@ class SecurePinInput extends Component<Props, State> {
             props = { style: styles.hiddenInput };
         }
 
+        // Sensitive on Android 14+: apps that aren't accessibility tools (TalkBack is one)
+        // can't see which keys are pressed
         return (
             <TouchableWithoutFeedback testID="pin-input-container" onPress={this.focus} accessible={false}>
-                <View
+                <SensitiveAccessibilityView
                     style={[
                         styles.container,
                     ]}
@@ -354,7 +391,12 @@ class SecurePinInput extends Component<Props, State> {
                             condensed && styles.digitsCondensed,
                         ]}
                         accessible
-                        accessibilityHint={Localize.t('global.pleaseEnterYourPasscode')}
+                        accessibilityLabel={accessibilityLabel ?? Localize.t('global.passcode')}
+                        accessibilityHint={accessibilityHint ?? Localize.t('global.pleaseEnterYourPasscode')}
+                        accessibilityValue={{
+                            text: Localize.t('global.passcodeDigitsEntered', { count: digits.length, length }),
+                        }}
+                        accessibilityState={{ busy: !!isLoading }}
                     >{isLoading ? this.renderLoading() : this.renderDots()}</View>
 
                     {virtualKeyboard && (
@@ -368,7 +410,7 @@ class SecurePinInput extends Component<Props, State> {
                             {this.renderNum()}
                         </View>
                     )}
-                </View>
+                </SensitiveAccessibilityView>
             </TouchableWithoutFeedback>
         );
     }

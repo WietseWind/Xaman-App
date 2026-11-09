@@ -13,8 +13,10 @@
     import { CoreRepository } from '@store/repositories';
     
     import { AppStyles } from '@theme';
-    
-    import SecretNumberRow from './SecretNumberRow';
+
+    import Localize from '@locale';
+
+    import SecretNumberRow, { ROW_LETTERS } from './SecretNumberRow';
     
     /* Types ==================================================================== */
     interface Props {
@@ -138,12 +140,12 @@
     
         render() {
             const { readonly } = this.props;
-            const { isBiometricAvailable, coreSettings } = this.state;
-    
+            const { isBiometricAvailable, coreSettings, currentRow } = this.state;
+
             if (readonly) {
                 return <SensitiveAccessibilityView>{this.renderRows()}</SensitiveAccessibilityView>;
             }
-    
+
             return (
                 <SensitiveAccessibilityView style={AppStyles.stretchSelf}>
                     <SecurePinInput
@@ -153,6 +155,10 @@
                         supportBiometric={isBiometricAvailable}
                         enableHapticFeedback={coreSettings.hapticFeedback}
                         length={6}
+                        accessibilityLabel={Localize.t('account.secretNumbersOfRow', {
+                            row: ROW_LETTERS[currentRow],
+                        })}
+                        accessibilityHint=""
                     />
                 </SensitiveAccessibilityView>
             );

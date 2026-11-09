@@ -12,6 +12,8 @@ import { SecretNumberInput } from '@components/Modules';
 // locale
 import Localize from '@locale';
 
+import { WarnSecretReadAloud } from '@common/helpers/accessibility';
+
 // style
 import { AppStyles } from '@theme';
 
@@ -41,6 +43,10 @@ class ViewPrivateKeyStep extends Component<Props, State> {
         };
 
         this.secretNumberInputRef = React.createRef();
+    }
+
+    componentDidMount() {
+        WarnSecretReadAloud();
     }
 
     goBack = () => {

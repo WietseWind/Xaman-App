@@ -3,7 +3,16 @@
  */
 
 import React, { Component } from 'react';
-import { Image, InteractionManager, Keyboard, Platform, SafeAreaView, Text, View } from 'react-native';
+import {
+    AccessibilityInfo,
+    Image,
+    InteractionManager,
+    Keyboard,
+    Platform,
+    SafeAreaView,
+    Text,
+    View,
+} from 'react-native';
 
 import { CoreRepository } from '@store/repositories';
 
@@ -138,9 +147,13 @@ class LockOverlay extends Component<Props, State> {
                 }
 
                 // set the error message
+                const error = e.toString().replace('Error: ', '');
                 this.setState({
-                    error: e.toString().replace('Error: ', ''),
+                    error,
                 });
+
+                // screen readers: the red text under the logo is silent otherwise
+                AccessibilityInfo.announceForAccessibility(error);
             });
     };
 

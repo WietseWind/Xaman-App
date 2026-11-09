@@ -6,8 +6,12 @@ import { isEqual, get } from 'lodash';
 import React, { Component } from 'react';
 import { View, Text, Animated } from 'react-native';
 
+import Localize from '@locale';
+
 import { AppStyles, AppColors } from '@theme';
 import styles from './styles';
+
+export const ROW_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 /* Types ==================================================================== */
 interface Props {
@@ -98,10 +102,25 @@ class SecretNumberRow extends Component<Props, State> {
         return columns;
     };
 
+    // One element per row for screen readers: "Secret numbers of row A, 4 8 2 9 1 7" (digit by digit).
+    // Only rendered inside SecretNumberInput's SensitiveAccessibilityView: on Android 14+ only
+    // accessibility tools such as TalkBack can read it, the same as the digits on screen.
+    rowAccessibilityProps = () => {
+        const { rowNumber, numbers } = this.props;
+
+        const digits = (numbers || []).filter((n) => n !== undefined && n !== null && `${n}` !== '');
+
+        return {
+            accessible: true,
+            accessibilityLabel: Localize.t('account.secretNumbersOfRow', { row: ROW_LETTERS[rowNumber] }),
+            accessibilityValue: { text: digits.join(' ') },
+        };
+    };
+
     render() {
         const { rowChecksumError, rowChecksumCorrect, rowActive, rowNumber, readonly } = this.props;
 
-        const abcdefgh = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        const abcdefgh = ROW_LETTERS;
 
         if (!rowActive) {
             return (
@@ -127,10 +146,14 @@ class SecretNumberRow extends Component<Props, State> {
                         styles.rowStyleActiveId,
                         { backgroundColor: !readonly ? AppColors.blue : AppColors.orange },
                     ]}
+                    // the row element below names the row
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                 >
                     {abcdefgh[rowNumber]}
                 </Text>
-                <View style={[styles.rowStyle, styles.rowStyleActive]}>
+                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                <View style={[styles.rowStyle, styles.rowStyleActive]} {...this.rowAccessibilityProps()}>
                     <Animated.View
                         style={[
                             AppStyles.row,

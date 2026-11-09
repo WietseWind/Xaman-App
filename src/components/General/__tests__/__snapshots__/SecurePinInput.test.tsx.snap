@@ -12,6 +12,7 @@ exports[`[SecurePinInput] renders correctly 1`] = `
     }
   }
   accessible={false}
+  collapsable={false}
   focusable={true}
   onClick={[Function]}
   onResponderGrant={[Function]}
@@ -50,6 +51,17 @@ exports[`[SecurePinInput] renders correctly 1`] = `
   />
   <View
     accessibilityHint="Please enter your passcode"
+    accessibilityLabel="Passcode"
+    accessibilityState={
+      {
+        "busy": false,
+      }
+    }
+    accessibilityValue={
+      {
+        "text": "0 of 6 digits entered",
+      }
+    }
     accessible={true}
     style={
       [
@@ -176,6 +188,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
     }
   }
   accessible={false}
+  collapsable={false}
   focusable={true}
   onClick={[Function]}
   onResponderGrant={[Function]}
@@ -196,6 +209,17 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
 >
   <View
     accessibilityHint="Please enter your passcode"
+    accessibilityLabel="Passcode"
+    accessibilityState={
+      {
+        "busy": false,
+      }
+    }
+    accessibilityValue={
+      {
+        "text": "0 of 6 digits entered",
+      }
+    }
     accessible={true}
     style={
       [
@@ -330,6 +354,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
     >
       <View
         accessibilityLabel="1"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -386,6 +411,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="2"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -444,6 +470,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="3"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -511,6 +538,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
     >
       <View
         accessibilityLabel="4"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -569,6 +597,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="5"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -627,6 +656,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="6"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -694,6 +724,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
     >
       <View
         accessibilityLabel="7"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -752,6 +783,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="8"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -810,6 +842,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="9"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -876,7 +909,8 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       }
     >
       <View
-        accessibilityLabel="Biometrics"
+        accessibilityLabel="Biometric authentication"
+        accessibilityRole="button"
         accessibilityValue={
           {
             "max": undefined,
@@ -930,6 +964,7 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
       </View>
       <View
         accessibilityLabel="0"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
@@ -985,7 +1020,8 @@ exports[`[SecurePinInput] renders correctly with virtualKeyboard 1`] = `
         />
       </View>
       <View
-        accessibilityLabel="Backspace"
+        accessibilityLabel="Delete"
+        accessibilityRole="keyboardkey"
         accessibilityValue={
           {
             "max": undefined,
