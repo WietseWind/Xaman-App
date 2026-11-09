@@ -141,16 +141,14 @@ class ShareAccountOverlay extends Component<Props> {
                             {Localize.t('global.address')} ({Localize.t('global.holdToCopy')}):
                         </Text>
                         <View style={styles.addressTextContainer}>
-                            <Text
-                                selectable
-                                adjustsFontSizeToFit
-                                numberOfLines={1}
-                                style={styles.addressText}
-                                // eslint-disable-next-line react/jsx-props-no-spreading
-                                {...AddressAccessibilityProps(account.address)}
-                            >
-                                {account.address}
-                            </Text>
+                            {/* address accessibility (with its spell-out action) sits on a View: */}
+                            {/* an iOS Text can't take the action */}
+                            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                            <View {...AddressAccessibilityProps(account.address)}>
+                                <Text selectable adjustsFontSizeToFit numberOfLines={1} style={styles.addressText}>
+                                    {account.address}
+                                </Text>
+                            </View>
                             <View style={[AppStyles.row, styles.sharebtnContainer]}>
                                 <Button
                                     light

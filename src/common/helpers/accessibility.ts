@@ -60,6 +60,10 @@ const IconAccessibilityLabel = (icon?: string): string | undefined => {
 /**
  * Screen readers garble an XRPL address. Read its start and end, and offer an action that spells out
  * the whole address. Addresses are public, so announcing one is fine (never use this for secrets).
+ *
+ * Spread these on a View that wraps the address Text, never on the Text itself: the iOS native Text
+ * view has no onAccessibilityAction setter, so React Native drops the whole UI update and the screen
+ * stays blank (seen in e2e on the review screen of build 474).
  */
 const spaced = (text: string) => text.split('').join(' ');
 
