@@ -15,6 +15,7 @@ import { XAppOrigin } from '@common/libs/payload';
 
 import { Toast } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
+import { WarnSecretReadAloud } from '@common/helpers/accessibility';
 
 import { SHA256 } from '@common/libs/crypto';
 
@@ -58,6 +59,10 @@ import NetworkService from '@services/NetworkService';
 /* types ==================================================================== */
 import { ImportSteps, Props, SecretTypes, State } from './types';
 import { shouldFinishTangemUpgrade, stateForSecretType } from './tangemUpgradeReset';
+
+/* Constants ==================================================================== */
+// the steps where the user types a secret: screen reader users are asked to use headphones first
+export const SECRET_ENTRY_STEPS: ImportSteps[] = ['EnterSecretNumbers', 'EnterMnemonic', 'EnterSeed'];
 
 /* Component ==================================================================== */
 class AccountImportView extends Component<Props, State> {
@@ -127,7 +132,25 @@ class AccountImportView extends Component<Props, State> {
         if (tangemCard) {
             this.populateTangemCard();
         }
+
+        this.warnIfSecretEntryStep();
     }
+
+    componentDidUpdate(prevProps: Props, prevState: State) {
+        const { currentStep } = this.state;
+
+        if (prevState.currentStep !== currentStep) {
+            this.warnIfSecretEntryStep();
+        }
+    }
+
+    warnIfSecretEntryStep = () => {
+        const { currentStep } = this.state;
+
+        if (SECRET_ENTRY_STEPS.includes(currentStep)) {
+            WarnSecretReadAloud();
+        }
+    };
 
     populateTangemCard = () => {
         const { tangemCard } = this.props;
