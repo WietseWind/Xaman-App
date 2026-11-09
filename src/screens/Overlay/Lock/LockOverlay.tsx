@@ -188,7 +188,12 @@ class LockOverlay extends Component<Props, State> {
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >
-                <SafeAreaView testID="lock-overlay" style={styles.container}>
+                <SafeAreaView
+                    testID="lock-overlay"
+                    style={styles.container}
+                    // VoiceOver can't move to the app behind the lock screen
+                    accessibilityViewIsModal
+                >
                     <View style={[AppStyles.centerAligned, AppStyles.paddingSml]}>
                         <Image style={styles.logo} source={StyleService.getImage('XamanLogo')} />
                     </View>

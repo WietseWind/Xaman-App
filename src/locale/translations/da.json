@@ -2012,5 +2012,20 @@
     "identifyBody": "Scan det backupkort, der er knyttet til denne konto, for at kontrollere, at det er det rigtige kort.",
     "notYourBackup": "Dette er ikke dit backupkort.",
     "yourBackup": "Dette er dit backupkort."
+  },
+  "accessibility": {
+    "moreOptions": "Flere valgmuligheder",
+    "refresh": "Opdater",
+    "help": "Hjælp",
+    "moveToTop": "Flyt til toppen",
+    "reorder": "Omarranger",
+    "showPassword": "Vis adgangskode",
+    "hidePassword": "Skjul adgangskode",
+    "showOptions": "Vis valgmuligheder",
+    "hideOptions": "Skjul valgmuligheder",
+    "amountHidden": "Beløb skjult",
+    "qrCodeScanned": "QR-kode scannet",
+    "addressStartsEnds": "Adresse, der starter med %{start} og slutter med %{end}",
+    "spellOutAddress": "Stav hele adressen"
   }
 }

@@ -2103,5 +2103,20 @@
     "identifyBody": "Scanne die mit diesem Konto verknüpfte Backup-Karte, um zu prüfen, ob es die richtige Karte ist.",
     "notYourBackup": "Dies ist nicht deine Backup-Karte.",
     "yourBackup": "Dies ist deine Backup-Karte."
+  },
+  "accessibility": {
+    "moreOptions": "Weitere Optionen",
+    "refresh": "Aktualisieren",
+    "help": "Hilfe",
+    "moveToTop": "Nach oben verschieben",
+    "reorder": "Neu anordnen",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "showOptions": "Optionen anzeigen",
+    "hideOptions": "Optionen ausblenden",
+    "amountHidden": "Betrag verborgen",
+    "qrCodeScanned": "QR-Code gescannt",
+    "addressStartsEnds": "Adresse beginnt mit %{start}, endet mit %{end}",
+    "spellOutAddress": "Ganze Adresse buchstabieren"
   }
 }

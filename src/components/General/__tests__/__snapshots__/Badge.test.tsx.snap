@@ -2,6 +2,7 @@
 
 exports[`[Badge] applies correct color based on the type 1`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,
@@ -65,6 +66,7 @@ exports[`[Badge] applies correct color based on the type 1`] = `
 
 exports[`[Badge] renders correctly with a label 1`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,
@@ -128,6 +130,7 @@ exports[`[Badge] renders correctly with a label 1`] = `
 
 exports[`[Badge] renders correctly with default props 1`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,
@@ -171,6 +174,7 @@ exports[`[Badge] renders correctly with default props 1`] = `
 
 exports[`[Badge] renders correctly with different sizes 1`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,
@@ -214,6 +218,7 @@ exports[`[Badge] renders correctly with different sizes 1`] = `
 
 exports[`[Badge] renders correctly with different sizes 2`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,
@@ -257,6 +262,7 @@ exports[`[Badge] renders correctly with different sizes 2`] = `
 
 exports[`[Badge] renders correctly with different sizes 3`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,
@@ -300,6 +306,7 @@ exports[`[Badge] renders correctly with different sizes 3`] = `
 
 exports[`[Badge] renders correctly with specified type 1`] = `
 <View
+  accessibilityRole="button"
   accessibilityState={
     {
       "busy": undefined,

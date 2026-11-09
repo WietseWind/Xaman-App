@@ -15,6 +15,7 @@ import { AccountModel } from '@store/models';
 import { Footer, ActionPanel, Button, QRCode } from '@components/General';
 
 import Localize from '@locale';
+import { AddressAccessibilityProps } from '@common/helpers/accessibility';
 
 import { RequestViewProps } from '@screens/Request';
 
@@ -140,7 +141,14 @@ class ShareAccountOverlay extends Component<Props> {
                             {Localize.t('global.address')} ({Localize.t('global.holdToCopy')}):
                         </Text>
                         <View style={styles.addressTextContainer}>
-                            <Text selectable adjustsFontSizeToFit numberOfLines={1} style={styles.addressText}>
+                            <Text
+                                selectable
+                                adjustsFontSizeToFit
+                                numberOfLines={1}
+                                style={styles.addressText}
+                                // eslint-disable-next-line react/jsx-props-no-spreading
+                                {...AddressAccessibilityProps(account.address)}
+                            >
                                 {account.address}
                             </Text>
                             <View style={[AppStyles.row, styles.sharebtnContainer]}>
@@ -180,7 +188,7 @@ class ShareAccountOverlay extends Component<Props> {
                             styles.qrCodeContainer,
                         ]}>
                             <View style={styles.qrCode}>
-                                <View style={styles.qrImgContainer}>
+                                <View style={styles.qrImgContainer} accessibilityIgnoresInvertColors>
                                     <QRCode size={150} value={`${account.address}`} />
                                 </View>
                             </View>

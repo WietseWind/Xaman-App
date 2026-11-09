@@ -12,6 +12,7 @@ import { WebLinks } from '@common/constants/endpoints';
 import { TouchableDebounce, Avatar, Badge, Icon, LoadingIndicator } from '@components/General';
 
 import Localize from '@locale';
+import { AddressAccessibilityProps } from '@common/helpers/accessibility';
 
 import { Props as ParticipantMenuOverlayProps } from '@screens/Overlay/ParticipantMenu/types';
 import { type cachedTokenDetailsState } from '@components/Modules/EventsList/EventListItems/Transaction';
@@ -252,7 +253,12 @@ class AccountElement extends Component<Props, State> {
     renderAddress = () => {
         const { address, textStyle } = this.props;
 
-        return <Text style={[styles.addressText, textStyle]}>{address}</Text>;
+        return (
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            <Text style={[styles.addressText, textStyle]} {...AddressAccessibilityProps(address)}>
+                {address}
+            </Text>
+        );
     };
 
     renderDestinationTag = () => {
@@ -277,6 +283,7 @@ class AccountElement extends Component<Props, State> {
         return (
             <TouchableDebounce
                 onPress={this.onMenuPress}
+                accessibilityLabel={Localize.t('accessibility.moreOptions')}
                 activeOpacity={0.7}
                 style={[AppStyles.flex1, AppStyles.rightAligned, AppStyles.centerContent]}
             >

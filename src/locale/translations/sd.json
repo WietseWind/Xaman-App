@@ -2110,5 +2110,20 @@
     "identifyBody": "صحيح ڪارڊ جي جاچ لاءِ هن اڪائونٽ سان ڳنڍيل بيڪ اپ ڪارڊ اسڪين ڪريو.",
     "notYourBackup": "هي توهان جو بيڪ اپ ڪارڊ ناهي.",
     "yourBackup": "هي توهان جو بيڪ اپ ڪارڊ آهي."
+  },
+  "accessibility": {
+    "moreOptions": "وڌيڪ اختيار",
+    "refresh": "تازو ڪريو",
+    "help": "مدد",
+    "moveToTop": "مٿي تي منتقل ڪريو",
+    "reorder": "ترتيب بدلايو",
+    "showPassword": "پاسورڊ ڏيکاريو",
+    "hidePassword": "پاسورڊ لڪايو",
+    "showOptions": "اختيار ڏيکاريو",
+    "hideOptions": "اختيار لڪايو",
+    "amountHidden": "رقم لڪيل آهي",
+    "qrCodeScanned": "QR ڪوڊ اسڪين ٿيو",
+    "addressStartsEnds": "پتو: شروعات %{start}، آخر %{end}",
+    "spellOutAddress": "سڄو پتو اکر اکر پڙهو"
   }
 }

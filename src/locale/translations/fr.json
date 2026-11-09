@@ -2110,5 +2110,20 @@
     "identifyBody": "Scannez la carte de secours liée à ce compte pour vérifier qu’il s’agit de la bonne carte.",
     "notYourBackup": "Ce n’est pas votre carte de secours.",
     "yourBackup": "C’est votre carte de secours."
+  },
+  "accessibility": {
+    "moreOptions": "Plus d'options",
+    "refresh": "Actualiser",
+    "help": "Aide",
+    "moveToTop": "Déplacer en haut",
+    "reorder": "Réorganiser",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "showOptions": "Afficher les options",
+    "hideOptions": "Masquer les options",
+    "amountHidden": "Montant masqué",
+    "qrCodeScanned": "Code QR scanné",
+    "addressStartsEnds": "Adresse commençant par %{start} et finissant par %{end}",
+    "spellOutAddress": "Épeler l'adresse complète"
   }
 }

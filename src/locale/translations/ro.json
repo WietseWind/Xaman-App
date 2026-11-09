@@ -2104,5 +2104,20 @@
     "identifyBody": "Scanează cardul de rezervă asociat acestui cont pentru a verifica dacă este cel corect.",
     "notYourBackup": "Acesta nu este cardul tău de rezervă.",
     "yourBackup": "Acesta este cardul tău de rezervă."
+  },
+  "accessibility": {
+    "moreOptions": "Mai multe opțiuni",
+    "refresh": "Reîmprospătare",
+    "help": "Ajutor",
+    "moveToTop": "Mută sus",
+    "reorder": "Reordonare",
+    "showPassword": "Afișează parola",
+    "hidePassword": "Ascunde parola",
+    "showOptions": "Afișează opțiunile",
+    "hideOptions": "Ascunde opțiunile",
+    "amountHidden": "Sumă ascunsă",
+    "qrCodeScanned": "Cod QR scanat",
+    "addressStartsEnds": "Adresă care începe cu %{start} și se termină cu %{end}",
+    "spellOutAddress": "Citește întreaga adresă literă cu literă"
   }
 }

@@ -15,7 +15,7 @@ import { Clipboard } from '@common/helpers/clipboard';
 import { ContactRepository, AccountRepository } from '@store/repositories';
 
 import { AppScreens } from '@common/constants';
-import { Button, Footer, AmountText, Spacer } from '@components/General';
+import { Button, Footer, AmountText, Spacer, ScreenReaderAnnouncement } from '@components/General';
 
 import Localize from '@locale';
 import { AddContactViewProps } from '@screens/Settings/AddressBook/Add';
@@ -157,9 +157,13 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="send-result-view" style={[styles.container, styles.containerSuccess]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorGreen, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorGreen, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.sendingDone')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.sendingDone')} />
                     <Text
                         style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorGreen, AppStyles.textCenterAligned]}
                     >
@@ -199,9 +203,8 @@ class ResultStep extends Component<Props, State> {
 
         const hookMessages = formatHookReturnMessages(_tx?.MetaData?.HookExecutions);
 
-        const errorMsg = hookMessages
-            ? hookMessages
-            : _tx?.FinalResult?.message ||
+        const errorMsg = hookMessages ||
+            _tx?.FinalResult?.message ||
             _tx?.SubmitResult?.message ||
             _tx.SubmitResult?.message ||
             Localize.t('global.noInformationToShow');
@@ -209,15 +212,21 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="send-result-view" style={[styles.container, styles.containerFailed]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorRed, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorRed, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.sendingFailed')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.sendingFailed')} />
                     <Text style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorRed, AppStyles.textCenterAligned]}>
                         {Localize.t('send.somethingWentWrong')}
                     </Text>
                 </View>
 
+                {/* eslint-disable-next-line react-native/no-inline-styles */}
                 <View style={[AppStyles.flex2, { minHeight: 0 }]}>
+                    {/* eslint-disable-next-line react-native/no-inline-styles */}
                     <View style={[styles.detailsCard, AppStyles.flex1, { minHeight: 0 }]}>
                         <Text style={[AppStyles.subtext, AppStyles.bold]}>{Localize.t('global.code')}:</Text>
                         <Spacer />
@@ -271,9 +280,13 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="send-result-view" style={[styles.container, styles.containerVerificationFailed]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorOrange, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorOrange, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.verificationFailed')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.verificationFailed')} />
                     <Text
                         style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorOrange, AppStyles.textCenterAligned]}
                     >
@@ -304,9 +317,13 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="send-result-view" style={[styles.container, styles.containerVerificationQueued]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorBlue, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorBlue, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.txResultQueued')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.txResultQueued')} />
                     <Text
                         style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorBlue, AppStyles.textCenterAligned]}
                     >

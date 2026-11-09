@@ -1,4 +1,5 @@
 import {
+    AccessibilityInfo,
     Platform,
     ActionSheetIOS,
     ToastAndroid,
@@ -25,6 +26,11 @@ const Toast = (message: string, duration?: number) => {
         duration === undefined ? toast.SHORT : duration,
         Platform.OS === 'android' ? ToastAndroid.CENTER : 2,
     );
+
+    // TalkBack reads Android toasts; VoiceOver hears the iOS toast only when it is announced
+    if (Platform.OS === 'ios') {
+        AccessibilityInfo.announceForAccessibility(message);
+    }
 };
 
 const ActionSheet = (options: ActionSheetIOSOptions, callback: any, style?: 'dark' | 'light') => {

@@ -2110,5 +2110,20 @@
     "identifyBody": "Pindai kartu cadangan yang terhubung ke akun ini untuk memeriksa apakah kartunya benar.",
     "notYourBackup": "Ini bukan kartu cadangan Anda.",
     "yourBackup": "Ini kartu cadangan Anda."
+  },
+  "accessibility": {
+    "moreOptions": "Opsi lainnya",
+    "refresh": "Segarkan",
+    "help": "Bantuan",
+    "moveToTop": "Pindahkan ke atas",
+    "reorder": "Urutkan ulang",
+    "showPassword": "Tampilkan kata sandi",
+    "hidePassword": "Sembunyikan kata sandi",
+    "showOptions": "Tampilkan opsi",
+    "hideOptions": "Sembunyikan opsi",
+    "amountHidden": "Jumlah disembunyikan",
+    "qrCodeScanned": "Kode QR dipindai",
+    "addressStartsEnds": "Alamat diawali %{start}, diakhiri %{end}",
+    "spellOutAddress": "Eja alamat lengkap"
   }
 }

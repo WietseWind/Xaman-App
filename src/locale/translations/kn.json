@@ -2012,5 +2012,20 @@
     "identifyBody": "ಸರಿಯಾದ ಕಾರ್ಡ್ ಎಂಬುದನ್ನು ಪರಿಶೀಲಿಸಲು ಈ ಖಾತೆಗೆ ಜೋಡಿಸಿರುವ ಬ್ಯಾಕಪ್ ಕಾರ್ಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.",
     "notYourBackup": "ಇದು ನಿಮ್ಮ ಬ್ಯಾಕಪ್ ಕಾರ್ಡ್ ಅಲ್ಲ.",
     "yourBackup": "ಇದು ನಿಮ್ಮ ಬ್ಯಾಕಪ್ ಕಾರ್ಡ್."
+  },
+  "accessibility": {
+    "moreOptions": "ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು",
+    "refresh": "ರಿಫ್ರೆಶ್",
+    "help": "ಸಹಾಯ",
+    "moveToTop": "ಮೇಲಕ್ಕೆ ಸರಿಸಿ",
+    "reorder": "ಮರುಕ್ರಮಗೊಳಿಸಿ",
+    "showPassword": "ಗುಪ್ತಪದ ತೋರಿಸಿ",
+    "hidePassword": "ಗುಪ್ತಪದ ಮರೆಮಾಡಿ",
+    "showOptions": "ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸಿ",
+    "hideOptions": "ಆಯ್ಕೆಗಳನ್ನು ಮರೆಮಾಡಿ",
+    "amountHidden": "ಮೊತ್ತ ಮರೆಮಾಡಲಾಗಿದೆ",
+    "qrCodeScanned": "QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಆಗಿದೆ",
+    "addressStartsEnds": "ವಿಳಾಸ: ಆರಂಭ %{start}, ಅಂತ್ಯ %{end}",
+    "spellOutAddress": "ಪೂರ್ಣ ವಿಳಾಸವನ್ನು ಅಕ್ಷರಶಃ ಓದಿ"
   }
 }

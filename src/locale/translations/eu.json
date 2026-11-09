@@ -2116,5 +2116,20 @@
     "identifyBody": "Eskaneatu kontu honi lotutako babeskopia-txartela zuzena dela egiaztatzeko.",
     "notYourBackup": "Hau ez da zure babeskopia-txartela.",
     "yourBackup": "Hau zure babeskopia-txartela da."
+  },
+  "accessibility": {
+    "moreOptions": "Aukera gehiago",
+    "refresh": "Freskatu",
+    "help": "Laguntza",
+    "moveToTop": "Eraman goraino",
+    "reorder": "Berrordenatu",
+    "showPassword": "Erakutsi pasahitza",
+    "hidePassword": "Ezkutatu pasahitza",
+    "showOptions": "Erakutsi aukerak",
+    "hideOptions": "Ezkutatu aukerak",
+    "amountHidden": "Zenbatekoa ezkutatuta",
+    "qrCodeScanned": "QR kodea eskaneatuta",
+    "addressStartsEnds": "Helbidea: hasiera %{start}, amaiera %{end}",
+    "spellOutAddress": "Letreiatu helbide osoa"
   }
 }

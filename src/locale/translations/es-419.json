@@ -2092,5 +2092,20 @@
     "identifyBody": "Escanea la tarjeta de respaldo vinculada a esta cuenta para comprobar que es la correcta.",
     "notYourBackup": "Esta no es tu tarjeta de respaldo.",
     "yourBackup": "Esta es tu tarjeta de respaldo."
+  },
+  "accessibility": {
+    "moreOptions": "Más opciones",
+    "refresh": "Actualizar",
+    "help": "Ayuda",
+    "moveToTop": "Mover al principio",
+    "reorder": "Reordenar",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "showOptions": "Mostrar opciones",
+    "hideOptions": "Ocultar opciones",
+    "amountHidden": "Monto oculto",
+    "qrCodeScanned": "Código QR escaneado",
+    "addressStartsEnds": "Dirección que empieza con %{start} y termina con %{end}",
+    "spellOutAddress": "Deletrear la dirección completa"
   }
 }

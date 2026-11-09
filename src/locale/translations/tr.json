@@ -2012,5 +2012,20 @@
     "identifyBody": "Doğru kart olduğunu kontrol etmek için bu hesaba bağlı yedek kartı tarayın.",
     "notYourBackup": "Bu sizin yedek kartınız değil.",
     "yourBackup": "Bu sizin yedek kartınız."
+  },
+  "accessibility": {
+    "moreOptions": "Diğer seçenekler",
+    "refresh": "Yenile",
+    "help": "Yardım",
+    "moveToTop": "En üste taşı",
+    "reorder": "Yeniden sırala",
+    "showPassword": "Parolayı göster",
+    "hidePassword": "Parolayı gizle",
+    "showOptions": "Seçenekleri göster",
+    "hideOptions": "Seçenekleri gizle",
+    "amountHidden": "Tutar gizli",
+    "qrCodeScanned": "QR kod tarandı",
+    "addressStartsEnds": "Adres: başı %{start}, sonu %{end}",
+    "spellOutAddress": "Adresin tamamını harf harf oku"
   }
 }

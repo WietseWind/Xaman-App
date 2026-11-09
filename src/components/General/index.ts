@@ -52,3 +52,4 @@ export * from './JsonTree';
 export * from './CountDown';
 
 export * from './ServiceFeeSpendable';
+export * from './ScreenReaderAnnouncement';

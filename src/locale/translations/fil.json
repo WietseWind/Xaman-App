@@ -2012,5 +2012,20 @@
     "identifyBody": "I-scan ang backup card na naka-link sa account na ito para masuri kung ito ang tamang card.",
     "notYourBackup": "Hindi ito ang iyong backup card.",
     "yourBackup": "Ito ang iyong backup card."
+  },
+  "accessibility": {
+    "moreOptions": "Higit pang opsyon",
+    "refresh": "I-refresh",
+    "help": "Tulong",
+    "moveToTop": "Ilipat sa itaas",
+    "reorder": "Ayusin muli",
+    "showPassword": "Ipakita ang password",
+    "hidePassword": "Itago ang password",
+    "showOptions": "Ipakita ang mga opsyon",
+    "hideOptions": "Itago ang mga opsyon",
+    "amountHidden": "Nakatago ang halaga",
+    "qrCodeScanned": "Na-scan ang QR code",
+    "addressStartsEnds": "Tirahan na nagsisimula sa %{start} at nagtatapos sa %{end}",
+    "spellOutAddress": "I-spell ang buong tirahan"
   }
 }

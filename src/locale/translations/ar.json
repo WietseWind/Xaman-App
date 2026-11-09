@@ -2099,5 +2099,20 @@
     "identifyBody": "امسح البطاقة الاحتياطية المرتبطة بهذا الحساب للتحقق من أنها البطاقة الصحيحة.",
     "notYourBackup": "هذه ليست بطاقتك الاحتياطية.",
     "yourBackup": "هذه هي بطاقتك الاحتياطية."
+  },
+  "accessibility": {
+    "moreOptions": "مزيد من الخيارات",
+    "refresh": "تحديث",
+    "help": "مساعدة",
+    "moveToTop": "نقل إلى الأعلى",
+    "reorder": "إعادة الترتيب",
+    "showPassword": "إظهار كلمة السر",
+    "hidePassword": "إخفاء كلمة السر",
+    "showOptions": "إظهار الخيارات",
+    "hideOptions": "إخفاء الخيارات",
+    "amountHidden": "المبلغ مخفي",
+    "qrCodeScanned": "تم مسح رمز QR",
+    "addressStartsEnds": "العنوان يبدأ بـ %{start} وينتهي بـ %{end}",
+    "spellOutAddress": "تهجئة العنوان كاملاً"
   }
 }

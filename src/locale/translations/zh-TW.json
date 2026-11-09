@@ -2113,5 +2113,20 @@
     "identifyBody": "請掃描與此帳戶連結的備份卡，確認是否為正確的卡片。",
     "notYourBackup": "這不是您的備份卡。",
     "yourBackup": "這是您的備份卡。"
+  },
+  "accessibility": {
+    "moreOptions": "更多選項",
+    "refresh": "重新整理",
+    "help": "說明",
+    "moveToTop": "移到最上方",
+    "reorder": "重新排序",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
+    "showOptions": "顯示選項",
+    "hideOptions": "隱藏選項",
+    "amountHidden": "金額已隱藏",
+    "qrCodeScanned": "已掃描 QR 碼",
+    "addressStartsEnds": "地址開頭為 %{start}，結尾為 %{end}",
+    "spellOutAddress": "逐字唸出完整地址"
   }
 }

@@ -12,7 +12,11 @@ import {
     GestureResponderEvent,
     PanResponderGestureState,
     PanResponderInstance,
+    AccessibilityInfo,
+    findNodeHandle,
 } from 'react-native';
+
+import Localize from '@locale';
 
 // style
 import { AppStyles, AppSizes } from '@theme';
@@ -59,6 +63,8 @@ class ActionPanel extends Component<Props, State> {
     private closeRequested: boolean;
     private startedOnHeader: boolean;
     private slideTimeout?: ReturnType<typeof setTimeout>;
+    private focusTimeout?: ReturnType<typeof setTimeout>;
+    private panelRef = React.createRef<View>();
 
     constructor(props: Props) {
         super(props);
@@ -98,11 +104,31 @@ class ActionPanel extends Component<Props, State> {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(this.slideUp);
+
+        // screen readers: start in the panel, not on what is behind it
+        this.focusTimeout = setTimeout(this.focusPanel, 600);
     }
+
+    focusPanel = async () => {
+        try {
+            if (!(await AccessibilityInfo.isScreenReaderEnabled())) return;
+        } catch {
+            return;
+        }
+
+        const node = this.panelRef.current ? findNodeHandle(this.panelRef.current) : null;
+        if (node) {
+            AccessibilityInfo.setAccessibilityFocus(node);
+        }
+    };
 
     componentWillUnmount() {
         if (this.slideTimeout) {
             clearTimeout(this.slideTimeout);
+        }
+
+        if (this.focusTimeout) {
+            clearTimeout(this.focusTimeout);
         }
 
         this.translateY.removeAllListeners();
@@ -325,8 +351,18 @@ class ActionPanel extends Component<Props, State> {
         if (!panelHeight) return null;
 
         return (
-            <View testID={testID} style={AppStyles.flex1}>
-                <TouchableWithoutFeedback onPress={this.slideDown}>
+            <View
+                testID={testID}
+                style={AppStyles.flex1}
+                // VoiceOver stays in the panel; its escape gesture closes it
+                accessibilityViewIsModal
+                onAccessibilityEscape={this.slideDown}
+            >
+                <TouchableWithoutFeedback
+                    onPress={this.slideDown}
+                    accessibilityRole="button"
+                    accessibilityLabel={Localize.t('global.close')}
+                >
                     <Animated.View
                         style={[
                             styles.shadowContent,
@@ -349,7 +385,10 @@ class ActionPanel extends Component<Props, State> {
                         },
                     ]}
                 >
-                    <View style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}>
+                    <View
+                        ref={this.panelRef}
+                        style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}
+                    >
                         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                         <View style={styles.panelHeader} {...this.panResponder.panHandlers}>
                             <View style={styles.panelHandle} />

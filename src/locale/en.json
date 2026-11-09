@@ -2012,5 +2012,20 @@
     "identifyBody": "Scan the back-up card linked to this account to check that it is the right card.",
     "notYourBackup": "This is not your back-up card.",
     "yourBackup": "This is your back-up card."
+  },
+  "accessibility": {
+    "moreOptions": "More options",
+    "refresh": "Refresh",
+    "help": "Help",
+    "moveToTop": "Move to top",
+    "reorder": "Reorder",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "showOptions": "Show options",
+    "hideOptions": "Hide options",
+    "amountHidden": "Amount hidden",
+    "qrCodeScanned": "QR code scanned",
+    "addressStartsEnds": "Address starting with %{start}, ending with %{end}",
+    "spellOutAddress": "Spell out the full address"
   }
 }

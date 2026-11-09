@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Platform, Text, TextStyle, View, ViewStyle, ImageStyle } from 'react-native';
 
 import { Images } from '@common/helpers/images';
+import { IconAccessibilityLabel } from '@common/helpers/accessibility';
 
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { Icon } from '@components/General/Icon';
@@ -15,6 +16,8 @@ type placementType = 'left' | 'right' | 'center';
 
 export interface ChildrenProps {
     testID?: string;
+    // what screen readers say; defaults to the text, or to what the icon does
+    accessibilityLabel?: string;
     text?: string;
     textStyle?: TextStyle | TextStyle[];
     icon?: Extract<keyof typeof Images, string>;
@@ -85,9 +88,24 @@ const Children = ({
         return children?.element;
     };
 
+    // Screen readers: the title is the screen's heading; the sides are buttons when they do something.
+    // Custom elements keep reading their own content.
+    const pressable = typeof children.onPress === 'function';
+    let accessibilityRole: 'header' | 'button' | 'none' = pressable ? 'button' : 'none';
+    if (placement === 'center' && !pressable) {
+        accessibilityRole = 'header';
+    }
+    const accessibilityLabel =
+        children.accessibilityLabel ??
+        (children.element || children.extraComponent
+            ? undefined
+            : children.text || IconAccessibilityLabel(children.icon));
+
     return (
         <TouchableDebounce
             testID={children.testID}
+            accessibilityRole={accessibilityRole}
+            accessibilityLabel={accessibilityLabel}
             style={[
                 {
                     alignItems: ALIGN_STYLE[placement],

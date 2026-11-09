@@ -2109,5 +2109,20 @@
     "identifyBody": "Skandeer die rugsteunkaart wat aan hierdie rekening gekoppel is om te kyk of dit die regte kaart is.",
     "notYourBackup": "Dit is nie jou rugsteunkaart nie.",
     "yourBackup": "Dit is jou rugsteunkaart."
+  },
+  "accessibility": {
+    "moreOptions": "Meer opsies",
+    "refresh": "Verfris",
+    "help": "Hulp",
+    "moveToTop": "Skuif na bo",
+    "reorder": "Herrangskik",
+    "showPassword": "Wys wagwoord",
+    "hidePassword": "Versteek wagwoord",
+    "showOptions": "Wys opsies",
+    "hideOptions": "Versteek opsies",
+    "amountHidden": "Bedrag versteek",
+    "qrCodeScanned": "QR-kode geskandeer",
+    "addressStartsEnds": "Adres begin met %{start}, eindig met %{end}",
+    "spellOutAddress": "Spel die volle adres"
   }
 }

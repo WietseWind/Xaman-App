@@ -48,12 +48,14 @@ exports[`[ExpandableView] renders correctly when collapsed 1`] = `
     </Text>
   </View>
   <View
+    accessibilityLabel="Read more"
+    accessibilityRole="button"
     accessibilityState={
       {
         "busy": undefined,
         "checked": undefined,
         "disabled": undefined,
-        "expanded": undefined,
+        "expanded": false,
         "selected": undefined,
       }
     }
@@ -158,12 +160,14 @@ exports[`[ExpandableView] renders correctly when expanded 1`] = `
     </Text>
   </View>
   <View
+    accessibilityLabel="Read less"
+    accessibilityRole="button"
     accessibilityState={
       {
         "busy": undefined,
         "checked": undefined,
         "disabled": undefined,
-        "expanded": undefined,
+        "expanded": true,
         "selected": undefined,
       }
     }

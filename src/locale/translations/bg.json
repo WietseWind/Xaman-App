@@ -2108,5 +2108,20 @@
     "identifyBody": "Сканирайте резервната карта, свързана с този акаунт, за да проверите дали е правилната.",
     "notYourBackup": "Това не е вашата резервна карта.",
     "yourBackup": "Това е вашата резервна карта."
+  },
+  "accessibility": {
+    "moreOptions": "Още опции",
+    "refresh": "Опресни",
+    "help": "Помощ",
+    "moveToTop": "Премести най-горе",
+    "reorder": "Пренареди",
+    "showPassword": "Покажи паролата",
+    "hidePassword": "Скрий паролата",
+    "showOptions": "Покажи опциите",
+    "hideOptions": "Скрий опциите",
+    "amountHidden": "Сумата е скрита",
+    "qrCodeScanned": "QR кодът е сканиран",
+    "addressStartsEnds": "Адрес: начало %{start}, край %{end}",
+    "spellOutAddress": "Прочети целия адрес буква по буква"
   }
 }

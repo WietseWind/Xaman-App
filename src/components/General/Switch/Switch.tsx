@@ -55,7 +55,7 @@ class Switch extends Component<Props> {
                     <View>
                         <RNSwitch
                             testID={testID}
-                            accessibilityLabel={accessibilityLabel}
+                            accessibilityLabel={accessibilityLabel ?? title}
                             disabled={isDisabled}
                             onValueChange={this.onValueChange}
                             // eslint-disable-next-line react-native/no-inline-styles

@@ -2012,5 +2012,20 @@
     "identifyBody": "Skenirajte rezervno kartico, povezano s tem računom, da preverite, ali je prava.",
     "notYourBackup": "To ni vaša rezervna kartica.",
     "yourBackup": "To je vaša rezervna kartica."
+  },
+  "accessibility": {
+    "moreOptions": "Več možnosti",
+    "refresh": "Osveži",
+    "help": "Pomoč",
+    "moveToTop": "Premakni na vrh",
+    "reorder": "Spremeni vrstni red",
+    "showPassword": "Pokaži geslo",
+    "hidePassword": "Skrij geslo",
+    "showOptions": "Pokaži možnosti",
+    "hideOptions": "Skrij možnosti",
+    "amountHidden": "Znesek skrit",
+    "qrCodeScanned": "Koda QR optično prebrana",
+    "addressStartsEnds": "Naslov: začetek %{start}, konec %{end}",
+    "spellOutAddress": "Črkuj celoten naslov"
   }
 }

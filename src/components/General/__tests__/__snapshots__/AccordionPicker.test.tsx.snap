@@ -16,6 +16,7 @@ exports[`[AccordionPicker] renders correctly with items 1`] = `
   }
 >
   <View
+    accessibilityRole="button"
     accessibilityState={
       {
         "busy": undefined,
@@ -79,12 +80,14 @@ exports[`[AccordionPicker] renders correctly with items 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Show options"
+        accessibilityRole="button"
         accessibilityState={
           {
             "busy": undefined,
             "checked": undefined,
             "disabled": undefined,
-            "expanded": undefined,
+            "expanded": false,
             "selected": undefined,
           }
         }

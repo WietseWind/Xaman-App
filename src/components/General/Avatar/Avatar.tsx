@@ -143,6 +143,7 @@ class Avatar extends PureComponent<Props> {
 
         return (
             <Animated.View
+                accessibilityIgnoresInvertColors
                 style={[
                     styles.container,
                     border && styles.border,

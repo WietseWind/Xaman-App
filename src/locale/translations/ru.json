@@ -2143,5 +2143,20 @@
     "identifyBody": "Отсканируйте резервную карту, связанную с этим аккаунтом, чтобы проверить, что это нужная карта.",
     "notYourBackup": "Это не ваша резервная карта.",
     "yourBackup": "Это ваша резервная карта."
+  },
+  "accessibility": {
+    "moreOptions": "Другие параметры",
+    "refresh": "Обновить",
+    "help": "Справка",
+    "moveToTop": "Переместить наверх",
+    "reorder": "Изменить порядок",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "showOptions": "Показать варианты",
+    "hideOptions": "Скрыть варианты",
+    "amountHidden": "Сумма скрыта",
+    "qrCodeScanned": "QR-код отсканирован",
+    "addressStartsEnds": "Адрес: начало %{start}, конец %{end}",
+    "spellOutAddress": "Прочитать весь адрес по буквам"
   }
 }

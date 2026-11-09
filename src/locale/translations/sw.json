@@ -2111,5 +2111,20 @@
     "identifyBody": "Changanua kadi ya akiba iliyounganishwa na akaunti hii ili uhakikishe kuwa ndiyo kadi sahihi.",
     "notYourBackup": "Hii si kadi yako ya akiba.",
     "yourBackup": "Hii ndiyo kadi yako ya akiba."
+  },
+  "accessibility": {
+    "moreOptions": "Chaguo zaidi",
+    "refresh": "Onyesha upya",
+    "help": "Msaada",
+    "moveToTop": "Hamishia juu",
+    "reorder": "Panga upya",
+    "showPassword": "Onyesha nenosiri",
+    "hidePassword": "Ficha nenosiri",
+    "showOptions": "Onyesha chaguo",
+    "hideOptions": "Ficha chaguo",
+    "amountHidden": "Kiasi kimefichwa",
+    "qrCodeScanned": "Msimbo wa QR umechanganuliwa",
+    "addressStartsEnds": "Anuani inayoanza na %{start} na kuishia na %{end}",
+    "spellOutAddress": "Taja herufi zote za anuani"
   }
 }

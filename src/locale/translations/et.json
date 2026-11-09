@@ -2099,5 +2099,20 @@
     "identifyBody": "Skanni selle kontoga seotud varukaarti, et kontrollida, kas see on õige kaart.",
     "notYourBackup": "See ei ole sinu varukaart.",
     "yourBackup": "See on sinu varukaart."
+  },
+  "accessibility": {
+    "moreOptions": "Rohkem valikuid",
+    "refresh": "Värskenda",
+    "help": "Abi",
+    "moveToTop": "Liiguta üles",
+    "reorder": "Muuda järjestust",
+    "showPassword": "Näita parooli",
+    "hidePassword": "Peida parool",
+    "showOptions": "Näita valikuid",
+    "hideOptions": "Peida valikud",
+    "amountHidden": "Summa peidetud",
+    "qrCodeScanned": "QR-kood skannitud",
+    "addressStartsEnds": "Aadress: algus %{start}, lõpp %{end}",
+    "spellOutAddress": "Veeri kogu aadress"
   }
 }

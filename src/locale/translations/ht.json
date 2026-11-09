@@ -2127,5 +2127,20 @@
     "identifyBody": "Eskane kat sekou ki lye ak kont sa a pou verifye si se bon kat la.",
     "notYourBackup": "Sa a se pa kat sekou ou a.",
     "yourBackup": "Sa a se kat sekou ou a."
+  },
+  "accessibility": {
+    "moreOptions": "Plis opsyon",
+    "refresh": "Rafrechi",
+    "help": "Èd",
+    "moveToTop": "Mete l anwo",
+    "reorder": "Reòganize",
+    "showPassword": "Montre modpas la",
+    "hidePassword": "Kache modpas la",
+    "showOptions": "Montre opsyon yo",
+    "hideOptions": "Kache opsyon yo",
+    "amountHidden": "Montan an kache",
+    "qrCodeScanned": "Kòd QR la eskane",
+    "addressStartsEnds": "Adrès ki kòmanse ak %{start} epi ki fini ak %{end}",
+    "spellOutAddress": "Eple tout adrès la"
   }
 }

@@ -2127,5 +2127,20 @@
     "identifyBody": "ਸਹੀ ਕਾਰਡ ਦੀ ਜਾਂਚ ਲਈ ਇਸ ਖਾਤੇ ਨਾਲ ਜੁੜਿਆ ਬੈਕਅੱਪ ਕਾਰਡ ਸਕੈਨ ਕਰੋ।",
     "notYourBackup": "ਇਹ ਤੁਹਾਡਾ ਬੈਕਅੱਪ ਕਾਰਡ ਨਹੀਂ ਹੈ।",
     "yourBackup": "ਇਹ ਤੁਹਾਡਾ ਬੈਕਅੱਪ ਕਾਰਡ ਹੈ।"
+  },
+  "accessibility": {
+    "moreOptions": "ਹੋਰ ਵਿਕਲਪ",
+    "refresh": "ਰਿਫ੍ਰੈਸ਼ ਕਰੋ",
+    "help": "ਮਦਦ",
+    "moveToTop": "ਸਭ ਤੋਂ ਉੱਪਰ ਲਿਜਾਓ",
+    "reorder": "ਮੁੜ ਤਰਤੀਬ ਦਿਓ",
+    "showPassword": "ਪਾਸਵਰਡ ਦਿਖਾਓ",
+    "hidePassword": "ਪਾਸਵਰਡ ਲੁਕਾਓ",
+    "showOptions": "ਵਿਕਲਪ ਦਿਖਾਓ",
+    "hideOptions": "ਵਿਕਲਪ ਲੁਕਾਓ",
+    "amountHidden": "ਰਕਮ ਲੁਕੀ ਹੋਈ ਹੈ",
+    "qrCodeScanned": "QR ਕੋਡ ਸਕੈਨ ਹੋਇਆ",
+    "addressStartsEnds": "ਪਤਾ: ਸ਼ੁਰੂ %{start}, ਅੰਤ %{end}",
+    "spellOutAddress": "ਪੂਰਾ ਪਤਾ ਅੱਖਰ-ਅੱਖਰ ਪੜ੍ਹੋ"
   }
 }

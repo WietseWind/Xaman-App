@@ -2097,5 +2097,20 @@
     "identifyBody": "Naskenujte záložní kartu propojenou s tímto účtem a ověřte, zda je správná.",
     "notYourBackup": "Toto není vaše záložní karta.",
     "yourBackup": "Toto je vaše záložní karta."
+  },
+  "accessibility": {
+    "moreOptions": "Další možnosti",
+    "refresh": "Obnovit",
+    "help": "Nápověda",
+    "moveToTop": "Přesunout nahoru",
+    "reorder": "Změnit pořadí",
+    "showPassword": "Zobrazit heslo",
+    "hidePassword": "Skrýt heslo",
+    "showOptions": "Zobrazit možnosti",
+    "hideOptions": "Skrýt možnosti",
+    "amountHidden": "Částka skryta",
+    "qrCodeScanned": "QR kód naskenován",
+    "addressStartsEnds": "Adresa: začátek %{start}, konec %{end}",
+    "spellOutAddress": "Hláskovat celou adresu"
   }
 }

@@ -219,6 +219,7 @@ class AppItem extends Component<Props, State> {
                     <Image
                         source={{ uri: item.icon }}
                         resizeMode="cover"
+                        accessibilityIgnoresInvertColors
                         style={[styles.appIcon, featured && styles.featuredIcon]}
                         onError={() => this.onImageError(item.icon)}
                         onLoad={() => this.onImageLoad(item.icon)}

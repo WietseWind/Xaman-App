@@ -11,7 +11,7 @@ import { Clipboard } from '@common/helpers/clipboard';
 import { InstanceTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 
 // components
-import { Avatar, Button, Footer, Spacer } from '@components/General';
+import { Avatar, Button, Footer, Spacer, ScreenReaderAnnouncement } from '@components/General';
 import Localize from '@locale';
 
 // style
@@ -83,9 +83,13 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="success-result-view" style={[styles.container, styles.containerSuccess]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorGreen, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorGreen, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.transactionSubmittedSuccessfully')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.transactionSubmittedSuccessfully')} />
                     <Text
                         style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorGreen, AppStyles.textCenterAligned]}
                     >
@@ -116,9 +120,13 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="failed-result-view" style={[styles.container, styles.containerQueued]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorBlue, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorBlue, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.txResultQueued')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.txResultQueued')} />
                     <Text
                         style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorBlue, AppStyles.textCenterAligned]}
                     >
@@ -153,14 +161,19 @@ class ResultStep extends Component<Props, State> {
         return (
             <SafeAreaView testID="failed-result-view" style={[styles.container, styles.containerFailed]}>
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorRed, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorRed, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.submitFailed')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.submitFailed')} />
                     <Text style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorRed, AppStyles.textCenterAligned]}>
                         {Localize.t('send.somethingWentWrong')}
                     </Text>
                 </View>
 
+                {/* eslint-disable-next-line react-native/no-inline-styles */}
                 <View style={[AppStyles.flex2, styles.detailsCard, AppStyles.marginBottom, { minHeight: 0 }]}>
                     <Text style={[AppStyles.subtext, AppStyles.bold]}>{Localize.t('global.code')}:</Text>
                     <Spacer />
@@ -219,6 +232,7 @@ class ResultStep extends Component<Props, State> {
                         >
                             {Localize.t('send.signed')}
                         </Text>
+                        <ScreenReaderAnnouncement message={Localize.t('send.signed')} />
                         <Text style={[AppStyles.p, AppStyles.bold, AppStyles.textCenterAligned, AppStyles.colorBlue]}>
                             {Localize.t('send.transactionSignedSuccessfully')}
                         </Text>
@@ -285,9 +299,13 @@ class ResultStep extends Component<Props, State> {
                 style={[styles.container, styles.containerVerificationFailed]}
             >
                 <View style={[AppStyles.flex1, AppStyles.centerContent, AppStyles.paddingSml]}>
-                    <Text style={[AppStyles.h3, AppStyles.strong, AppStyles.colorOrange, AppStyles.textCenterAligned]}>
+                    <Text
+                        style={[AppStyles.h3, AppStyles.strong, AppStyles.colorOrange, AppStyles.textCenterAligned]}
+                        accessibilityRole="header"
+                    >
                         {Localize.t('send.verificationFailed')}
                     </Text>
+                    <ScreenReaderAnnouncement message={Localize.t('send.verificationFailed')} />
                     <Text
                         style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorOrange, AppStyles.textCenterAligned]}
                     >

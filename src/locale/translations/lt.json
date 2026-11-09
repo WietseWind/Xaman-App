@@ -2131,5 +2131,20 @@
     "identifyBody": "Nuskaitykite su šia paskyra susietą atsarginę kortelę, kad patikrintumėte, ar ji tinkama.",
     "notYourBackup": "Tai ne jūsų atsarginė kortelė.",
     "yourBackup": "Tai jūsų atsarginė kortelė."
+  },
+  "accessibility": {
+    "moreOptions": "Daugiau parinkčių",
+    "refresh": "Atnaujinti",
+    "help": "Pagalba",
+    "moveToTop": "Perkelti į viršų",
+    "reorder": "Pakeisti tvarką",
+    "showPassword": "Rodyti slaptažodį",
+    "hidePassword": "Slėpti slaptažodį",
+    "showOptions": "Rodyti parinktis",
+    "hideOptions": "Slėpti parinktis",
+    "amountHidden": "Suma paslėpta",
+    "qrCodeScanned": "QR kodas nuskaitytas",
+    "addressStartsEnds": "Adresas: pradžia %{start}, pabaiga %{end}",
+    "spellOutAddress": "Paraidžiui perskaityti visą adresą"
   }
 }

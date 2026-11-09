@@ -2,10 +2,11 @@
 
 exports[`[CheckBox] renders correctly when checked 1`] = `
 <View
+  accessibilityRole="checkbox"
   accessibilityState={
     {
       "busy": undefined,
-      "checked": undefined,
+      "checked": true,
       "disabled": undefined,
       "expanded": undefined,
       "selected": undefined,
@@ -158,10 +159,11 @@ exports[`[CheckBox] renders correctly when checked 1`] = `
 
 exports[`[CheckBox] renders correctly when unchecked 1`] = `
 <View
+  accessibilityRole="checkbox"
   accessibilityState={
     {
       "busy": undefined,
-      "checked": undefined,
+      "checked": false,
       "disabled": undefined,
       "expanded": undefined,
       "selected": undefined,

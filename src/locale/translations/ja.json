@@ -2168,5 +2168,20 @@
     "identifyBody": "このアカウントにリンクされたバックアップカードをスキャンして、正しいカードか確認してください。",
     "notYourBackup": "これはあなたのバックアップカードではありません。",
     "yourBackup": "これはあなたのバックアップカードです。"
+  },
+  "accessibility": {
+    "moreOptions": "その他のオプション",
+    "refresh": "更新",
+    "help": "ヘルプ",
+    "moveToTop": "一番上へ移動",
+    "reorder": "並べ替え",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを隠す",
+    "showOptions": "オプションを表示",
+    "hideOptions": "オプションを隠す",
+    "amountHidden": "金額は非表示",
+    "qrCodeScanned": "QR コードをスキャンしました",
+    "addressStartsEnds": "アドレス: 先頭 %{start}、末尾 %{end}",
+    "spellOutAddress": "アドレス全体を 1 文字ずつ読み上げ"
   }
 }

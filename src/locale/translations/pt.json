@@ -2012,5 +2012,20 @@
     "identifyBody": "Leia o cartão de cópia de segurança associado a esta conta para verificar se é o cartão correto.",
     "notYourBackup": "Este não é o seu cartão de cópia de segurança.",
     "yourBackup": "Este é o seu cartão de cópia de segurança."
+  },
+  "accessibility": {
+    "moreOptions": "Mais opções",
+    "refresh": "Atualizar",
+    "help": "Ajuda",
+    "moveToTop": "Mover para o topo",
+    "reorder": "Reordenar",
+    "showPassword": "Mostrar palavra-passe",
+    "hidePassword": "Ocultar palavra-passe",
+    "showOptions": "Mostrar opções",
+    "hideOptions": "Ocultar opções",
+    "amountHidden": "Montante oculto",
+    "qrCodeScanned": "Código QR lido",
+    "addressStartsEnds": "Endereço que começa por %{start} e termina em %{end}",
+    "spellOutAddress": "Soletrar o endereço completo"
   }
 }

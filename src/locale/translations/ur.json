@@ -2012,5 +2012,20 @@
     "identifyBody": "درست کارڈ کی جانچ کے لیے اس اکاؤنٹ سے منسلک بیک اپ کارڈ اسکین کریں۔",
     "notYourBackup": "یہ آپ کا بیک اپ کارڈ نہیں ہے۔",
     "yourBackup": "یہ آپ کا بیک اپ کارڈ ہے۔"
+  },
+  "accessibility": {
+    "moreOptions": "مزید اختیارات",
+    "refresh": "تازہ کریں",
+    "help": "مدد",
+    "moveToTop": "سب سے اوپر منتقل کریں",
+    "reorder": "ترتیب بدلیں",
+    "showPassword": "پاس ورڈ دکھائیں",
+    "hidePassword": "پاس ورڈ چھپائیں",
+    "showOptions": "اختیارات دکھائیں",
+    "hideOptions": "اختیارات چھپائیں",
+    "amountHidden": "رقم پوشیدہ ہے",
+    "qrCodeScanned": "QR کوڈ اسکین ہو گیا",
+    "addressStartsEnds": "پتہ: شروع %{start}، آخر %{end}",
+    "spellOutAddress": "پورا پتہ حرف بہ حرف پڑھیں"
   }
 }

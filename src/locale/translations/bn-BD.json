@@ -2110,5 +2110,20 @@
     "identifyBody": "সঠিক কার্ড কি না যাচাই করতে এই অ্যাকাউন্টের সঙ্গে যুক্ত ব্যাকআপ কার্ড স্ক্যান করুন।",
     "notYourBackup": "এটি আপনার ব্যাকআপ কার্ড নয়।",
     "yourBackup": "এটি আপনার ব্যাকআপ কার্ড।"
+  },
+  "accessibility": {
+    "moreOptions": "আরও বিকল্প",
+    "refresh": "রিফ্রেশ",
+    "help": "সাহায্য",
+    "moveToTop": "উপরে সরান",
+    "reorder": "পুনর্বিন্যাস",
+    "showPassword": "পাসওয়ার্ড দেখান",
+    "hidePassword": "পাসওয়ার্ড লুকান",
+    "showOptions": "বিকল্প দেখান",
+    "hideOptions": "বিকল্প লুকান",
+    "amountHidden": "পরিমাণ লুকানো",
+    "qrCodeScanned": "QR কোড স্ক্যান হয়েছে",
+    "addressStartsEnds": "ঠিকানা: শুরু %{start}, শেষ %{end}",
+    "spellOutAddress": "পুরো ঠিকানা বানান করে পড়ুন"
   }
 }
