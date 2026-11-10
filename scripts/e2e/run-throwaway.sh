@@ -103,17 +103,11 @@ else
     if [ "$PLATFORM" = ios ] && [ ! -d "$SOURCE/ios/Pods" ]; then
         die "$SOURCE has no ios/Pods (run pod install there first)"
     fi
-    # node_modules must match the checkout: every patch applied (scripts/post-install.sh ignores a
-    # failed patch-package), and for iOS React Native's codegen output, which npm ci deletes and only
-    # pod install makes again (the build otherwise fails minutes in, at "[RN]Check rncore").
-    for patch in "$SOURCE"/patches/*.patch; do
-        [ -f "$patch" ] || continue
-        (cd "$SOURCE" && git apply --check --reverse "patches/$(basename "$patch")" 2>/dev/null) ||
-            die "$SOURCE: $(basename "$patch") is not applied in node_modules (run npm ci there first)"
-    done
-    if [ "$PLATFORM" = ios ] && [ ! -d "$SOURCE/node_modules/react-native/ReactCommon/react/renderer/components/rncore" ]; then
-        die "$SOURCE has no React Native codegen output for iOS (run pod install in ios/ there; npm ci deletes it)"
-    fi
+    # The source's node_modules must match its commit: package.json, every patch applied and, for iOS,
+    # the Pods and React Native's codegen output (npm ci deletes it; the build otherwise fails minutes
+    # in, at "[RN]Check rncore"). The check prints what differs and what to run.
+    if [ "$PLATFORM" = ios ]; then deps_scope=--ios; else deps_scope=--no-ios; fi
+    "$ROOT/scripts/check-native-deps.sh" "$deps_scope" "$SOURCE" || die "$SOURCE: the installed packages do not match its commit (see above)"
     mkdir -p "$WORK"
     log "cloning $SOURCE -> $CLONE (APFS clone, copy-on-write)"
     cp -Rc "$SOURCE" "$CLONE"
