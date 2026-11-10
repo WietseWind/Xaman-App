@@ -8,7 +8,9 @@ import { explainRetiredTangemBackup, isRetiredTangemBackup } from '@common/helpe
 import React, { Component } from 'react';
 import {
     Alert,
+    Appearance,
     BackHandler,
+    ColorSchemeName,
     Image,
     InteractionManager,
     Linking,
@@ -82,13 +84,15 @@ import { AppColors, AppStyles } from '@theme';
 import styles from './styles';
 
 /* types ==================================================================== */
-import { IEvent, Props, State, XAppMethods, XAppSpecialPermissions } from './types';
+import { IEvent, Props, State, XAppEvents, XAppMethods, XAppSpecialPermissions } from './types';
+import { resolveXAppColorScheme } from './colorScheme';
 
 /* Component ==================================================================== */
 class XAppBrowserModal extends Component<Props, State> {
     static screenName = AppScreens.Modal.XAppBrowser;
 
     private backHandler?: NativeEventSubscription;
+    private appearanceListener?: NativeEventSubscription;
     private softLoadingTimeout?: ReturnType<typeof setTimeout>;
     private readonly webView: React.RefObject<WebViewHandle>;
     private lastMessageReceived: number;
@@ -126,6 +130,8 @@ class XAppBrowserModal extends Component<Props, State> {
             isRequiredNetworkSwitch: false,
             appVersionCode: GetAppVersionCode(),
             coreSettings,
+            // the theme Xaman shows now, like the xAppStyle launch parameter
+            colorScheme: StyleService.getCurrentTheme() === 'light' ? 'light' : 'dark',
         };
 
         this.webView = React.createRef();
@@ -143,6 +149,9 @@ class XAppBrowserModal extends Component<Props, State> {
 
         // listen for authentication lock state changes
         AuthenticationService.on('lockStateChange', this.onLockStateChange);
+
+        // follow the OS appearance when Xaman auto switches its theme
+        this.appearanceListener = Appearance.addChangeListener(this.onAppearanceChange);
     }
 
     componentWillUnmount() {
@@ -152,7 +161,30 @@ class XAppBrowserModal extends Component<Props, State> {
         }
 
         AuthenticationService.off('lockStateChange', this.onLockStateChange);
+
+        if (this.appearanceListener) {
+            this.appearanceListener.remove();
+        }
     }
+
+    // With "auto switch" the page follows the OS appearance at once, also while Xaman itself waits
+    // for this modal to close before it switches its own theme. The xApp sees the change in
+    // prefers-color-scheme and as a colorSchemeChange event.
+    onAppearanceChange = ({ colorScheme: osColorScheme }: { colorScheme: ColorSchemeName }) => {
+        const coreSettings = CoreRepository.getSettings();
+        if (!coreSettings?.themeAutoSwitch) {
+            return;
+        }
+
+        const { colorScheme: current } = this.state;
+        const { colorScheme, style } = resolveXAppColorScheme(coreSettings.theme, true, osColorScheme);
+        if (colorScheme === current) {
+            return;
+        }
+
+        this.setState({ colorScheme });
+        this.sendEvent({ method: XAppEvents.ColorSchemeChange, colorScheme, style: toUpper(style) });
+    };
 
     onLockStateChange = (lockState: LockStatus) => {
         if (lockState === LockStatus.LOCKED) {
@@ -1177,6 +1209,8 @@ class XAppBrowserModal extends Component<Props, State> {
     };
 
     renderApp = () => {
+        const { colorScheme } = this.state;
+
         return (
             <WebView
                 testID="xapp-webview"
@@ -1189,6 +1223,7 @@ class XAppBrowserModal extends Component<Props, State> {
                 source={this.getSource()}
                 onMessage={this.onMessage}
                 userAgent={this.getUserAgent()}
+                colorScheme={colorScheme}
             />
         );
     };

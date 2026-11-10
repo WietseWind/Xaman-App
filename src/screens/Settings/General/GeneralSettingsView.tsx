@@ -353,7 +353,11 @@ class GeneralSettingsView extends Component<Props, State> {
                     </SettingsSection>
                     <SettingsSection title={Localize.t('global.theme')}>
                         <SettingsRow label={Localize.t('settings.themeAutoSwitch')}>
-                            <Switch checked={coreSettings.themeAutoSwitch} onChange={this.themeAutoSwitch} />
+                            <Switch
+                                testID="theme-auto-switch"
+                                checked={coreSettings.themeAutoSwitch}
+                                onChange={this.themeAutoSwitch}
+                            />
                         </SettingsRow>
                         {(Object.keys(themeItems) as Themes[])
                             .filter((theme) => !coreSettings.themeAutoSwitch || theme !== 'light')
