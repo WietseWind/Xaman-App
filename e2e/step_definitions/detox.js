@@ -15,38 +15,15 @@ const {
     androidSwipeTestId,
     androidTypeText,
     androidClearFocusedField,
-    androidBlurIme,
     androidDismissImeIfShown,
     waitUntilAndroidText,
     resetAndroidDumpState,
+    hideAndroidKeyboard,
 } = require('../helpers/tapById');
+const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLaunch');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
 let androidAlertPending = false;
-
-// iOS: Safari runs on this simulator (it took a universal link the app does not own yet).
-const iosSafariRunning = (udid) => {
-    try {
-        const out = execFileSync('xcrun', ['simctl', 'spawn', udid, 'launchctl', 'list'], {
-            encoding: 'utf8',
-            timeout: 10000,
-        });
-        return out.split('\n').some((line) => /^\d+\s.*UIKitApplication:com\.apple\.mobilesafari/.test(line));
-    } catch (e) {
-        return false;
-    }
-};
-
-const terminateIosSafari = (udid) => {
-    try {
-        execFileSync('xcrun', ['simctl', 'terminate', udid, 'com.apple.mobilesafari'], {
-            stdio: 'ignore',
-            timeout: 10000,
-        });
-    } catch (e) {
-        // Safari was not running
-    }
-};
 
 Then('I tap {string}', async (buttonId) => {
     // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
@@ -224,7 +201,7 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
                 try {
                     await element(by.id(textInputId)).tapReturnKey();
                 } catch (e) {
-                    androidBlurIme();
+                    await hideAndroidKeyboard();
                 }
                 return;
             } catch (e) {
@@ -264,7 +241,8 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
                 typeValue();
             }
         }
-        androidBlurIme();
+        // Wait until the keyboard is gone: a Next tap while it was still animating out was lost.
+        await hideAndroidKeyboard();
         return;
     }
     const input = element(by.id(textInputId));
@@ -538,6 +516,10 @@ Given('I should see alert with content {string}', async (title) => {
 });
 
 Then('I send the app to the background', async () => {
+    if (device.getPlatform() === 'ios') {
+        await sendIosAppToBackground();
+        return;
+    }
     await device.sendToHome();
 });
 
@@ -599,35 +581,16 @@ Then('I launch the app with url {string}', async (url) => {
         androidStartActivity(url);
         return;
     }
-    // newInstance:true crashes Hermes on SE. Detox openURL from Springboard
-    // often does not foreground Xaman — simctl openurl delivers the UL.
-    // The app goes to the background by opening Settings, not with device.sendToHome(): that
-    // waits for the app to confirm, and hung there ("app has not responded: waitForBackground").
-    terminateIosSafari(device.id);
-    execFileSync('xcrun', ['simctl', 'launch', device.id, 'com.apple.Preferences'], {
-        stdio: 'ignore',
-        timeout: 20000,
+    // A cold start with the link, handed over the way iOS hands a universal link to the app
+    // (NSUserActivityTypeBrowsingWeb, continueUserActivity). Not simctl openurl: right after an
+    // install iOS has not verified the associated domains and opens https links in Safari. Not
+    // launchApp(url) on the running app: Detox sends the link to it first, and a backgrounded app
+    // never answers (the step hung).
+    await device.launchApp({
+        newInstance: true,
+        userActivity: { activityType: 'NSUserActivityTypeBrowsingWeb', webpageURL: url },
     });
-    await new Promise((resolve) => { setTimeout(resolve, 1000); });
-    let opened = true;
-    try {
-        execFileSync('xcrun', ['simctl', 'openurl', device.id, url], { timeout: 15000 });
-    } catch (e) {
-        opened = false;
-    }
-    // Right after the app is (re)installed, iOS has not verified its associated domains yet and
-    // opens https links in Safari. Hand the link to the app through Detox instead (launchApp
-    // brings it to the foreground first; a Detox call to a backgrounded app can hang).
-    const deadline = Date.now() + 4000;
-    while (opened && Date.now() < deadline && !iosSafariRunning(device.id)) {
-        await new Promise((resolve) => { setTimeout(resolve, 500); });
-    }
-    if (!opened || iosSafariRunning(device.id)) {
-        // eslint-disable-next-line no-console
-        console.error(`[e2e] ${opened ? 'link opened in Safari' : 'simctl openurl failed'}; delivering it via Detox`);
-        terminateIosSafari(device.id);
-        await device.launchApp({ newInstance: false, url });
-    }
+    await settleAfterLaunch();
 });
 
 Then('I open the url {string}', async (url) => {

@@ -73,6 +73,10 @@ SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
 ADB="$SDK/platform-tools/adb"
 EMULATOR="$SDK/emulator/emulator"
 
+# The run that starts an emulator tags it with its name (a debug property that is gone once the
+# emulator stops), so an emulator that another run started on a reused port is never taken as ours.
+owner_of() { "$ADB" -s "$1" shell getprop debug.xaman.e2e.owner 2>/dev/null | tr -d '\r'; }
+
 # ---------------------------------------------------------------- checks (before anything is made)
 if [ "$PLATFORM" = android ]; then
     [ -x "$ADB" ] && [ -x "$EMULATOR" ] || die "Android SDK not found at $SDK"
@@ -81,8 +85,7 @@ if [ "$PLATFORM" = android ]; then
         if [ "$PORT" -lt 5556 ] || [ "$PORT" -gt 5584 ] || [ $((PORT % 2)) -ne 0 ]; then
             die "--port must be even and within 5556-5584 (5554 is the developer emulator; adb ignores ports above 5584)"
         fi
-        if "$ADB" devices | grep -q "^emulator-$PORT[[:space:]]" &&
-            [ "$(cat "$CLONE/.e2e-device" 2>/dev/null)" != "emulator-$PORT" ]; then
+        if "$ADB" devices | grep -q "^emulator-$PORT[[:space:]]" && [ "$(owner_of "emulator-$PORT")" != "$NAME" ]; then
             die "emulator-$PORT is already running; it is not this run's device"
         fi
     fi
@@ -108,6 +111,9 @@ fi
 cd "$CLONE"
 # A throwaway build is debug-signed (CI=1) and never holds the release key.
 find android/app -maxdepth 1 -name '*.keystore' ! -name 'debug.keystore' -exec rm -f {} +
+# Swift's module cache keeps absolute paths: one copied from another checkout fails the build
+# ("was compiled with module cache path ..."). Xcode rebuilds it.
+rm -rf ios/build/ModuleCache.noindex
 mkdir -p "$ART"
 export CI=1
 export XAMAN_SOURCEMAPS_DIR="$CLONE/.sourcemaps"
@@ -143,9 +149,9 @@ if [ "$PLATFORM" = ios ]; then
     export E2E_IOS_SIMULATOR="$SIM_NAME" E2E_CAMERA_IOS_SIMULATOR_NAME="$SIM_NAME"
     export DETOX_CONFIGURATION=ios.e2e+xaman.ios
 else
-    # An emulator this clone started earlier (--keep-device) is reused; any other one is refused.
+    # An emulator this run started earlier (--keep-device) is reused; any other one is refused.
     KEPT="$(cat .e2e-device 2>/dev/null || true)"
-    if [ -n "$KEPT" ] && "$ADB" devices | grep -q "^$KEPT[[:space:]]*device" &&
+    if [ -n "$KEPT" ] && "$ADB" devices | grep -q "^$KEPT[[:space:]]*device" && [ "$(owner_of "$KEPT")" = "$NAME" ] &&
         { [ -z "$PORT" ] || [ "$KEPT" = "emulator-$PORT" ]; }; then
         SERIAL="$KEPT"
         log "reusing this clone's emulator $SERIAL"
@@ -187,6 +193,7 @@ else
     fi
     [ "$("$ADB" -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] ||
         die "$SERIAL did not boot in 10 minutes"
+    "$ADB" -s "$SERIAL" shell setprop debug.xaman.e2e.owner "$NAME"
     export ANDROID_SERIAL="$SERIAL"
     if [ "$BUILD_TYPE" = release ]; then
         export DETOX_CONFIGURATION=android.e2e+xaman.android.arm64

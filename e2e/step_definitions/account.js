@@ -30,7 +30,6 @@ const {
     androidReadSecretRow,
     enterAndroidSecretNumbers,
     androidTypeText,
-    androidBlurIme,
     enterAndroidMnemonicWords,
     androidDismissImeIfShown,
     isAdbTimeout,
@@ -39,6 +38,7 @@ const {
     clickAndroidTextIncludes,
     dismissAndroidImportedSecretAlert,
     unlockAndroidPasscodeIfPresent,
+    hideAndroidKeyboard,
 } = require('../helpers/tapById');
 
 Then('I write down secret numbers', { timeout: 10 * 60 * 1000 }, async () => {
@@ -155,12 +155,9 @@ Then('I enter the address in the input', async () => {
         if (got !== want && got.indexOf(want) === -1) {
             throw new Error(`address-input got ${JSON.stringify(got)} want ${want}`);
         }
-        // BACK while focused can immediately reopen IME; ESC blurs.
-        try {
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 4000 });
-        } catch (e) {
-            // IME
-        }
+        // BACK while focused can immediately reopen IME; ESC blurs. Wait until the keyboard is gone:
+        // a Next tap while it was still animating out was lost.
+        await hideAndroidKeyboard();
         return;
     }
     const input = element(by.id('address-input'));
@@ -878,7 +875,8 @@ Then('I finish importing this family seed unless it is already in Xaman', { time
         } catch (e) {
             // field may already hold the label
         }
-        androidBlurIme();
+        // Wait until the keyboard is gone: a Next tap while it was still animating out was lost.
+        await hideAndroidKeyboard();
         await clickByTestId('next-button');
         await waitUntilAndroidTestId('account-import-finish-view', 20000);
         await clickByTestId('finish-button');

@@ -6,6 +6,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { device, element, by, waitFor, system } = require('detox');
 const { getCurrentTestPasscode } = require('./testCredentials');
+const { sendIosAppToBackground } = require('./appLaunch');
 
 const BUNDLE = 'com.xrpllabs.xumm';
 const CASES = [
@@ -303,7 +304,8 @@ async function lockedCameraSession(udid, report) {
         await waitFor(view(readyCamera)).toBeVisible(100).withTimeout(15000);
         await stableFrame(readyCamera);
         report.beforeLockScreenshot = snapshot(udid, 'locked-camera-session-before');
-        await device.sendToHome();
+        // not device.sendToHome(): it hung waiting for the app to confirm ("waitForBackground")
+        await sendIosAppToBackground();
         await device.launchApp({ newInstance: false, launchArgs: { detoxEnableSynchronization: 0 } });
         await device.disableSynchronization();
         await exists('lock-overlay');

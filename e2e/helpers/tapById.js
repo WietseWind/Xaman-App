@@ -952,34 +952,43 @@ const pickFooterNode = (xml, testId) => {
 // The app uses adjustNothing, so a button under the on-screen keyboard keeps its bounds and a tap
 // there lands on a key (a Next tap right after typing an account label was lost that way). Close
 // the keyboard first; true means the caller must read the bounds again.
-const closeImeOver = async (xml, bounds) => {
-    const keyboardTop = imeTopFromXml(xml);
-    if (keyboardTop === null || !bounds || bounds.y < keyboardTop) {
-        return false;
-    }
-    androidBlurIme();
-    const deadline = Date.now() + 1500;
-    while (androidImeShown() && Date.now() < deadline) {
-        await sleep(150);
-    }
-    cachedXml = '';
-    cachedAt = 0;
-    return true;
-};
-
-// Hides the on-screen keyboard (Escape), so a scenario does not start with it covering the tab bar.
+// Hides the on-screen keyboard (Escape) and waits until it is gone. dumpsys says when; the UI dump
+// can drop the keyboard while its window is still animating out and still takes taps.
 const hideAndroidKeyboard = async () => {
     if (!androidImeShown()) {
         return false;
     }
     androidBlurIme();
-    const deadline = Date.now() + 1500;
+    const deadline = Date.now() + 2000;
     while (androidImeShown() && Date.now() < deadline) {
         await sleep(150);
     }
+    await sleep(300);
     cachedXml = '';
     cachedAt = 0;
     return true;
+};
+
+const screenBottom = (xml) => parseNodes(xml).reduce((bottom, node) => Math.max(bottom, node.bounds.y2), 0);
+
+// The app uses adjustNothing, so a button under the on-screen keyboard keeps its bounds and a tap
+// there lands on a key: a Next tap right after typing an account label was lost, and a tab tap
+// opened Gboard's settings. Close the keyboard first when it covers the target, or when the target
+// sits in the lower half while dumpsys still reports a keyboard the dump no longer shows. True
+// means the caller must read the bounds again.
+const closeImeOver = async (xml, bounds) => {
+    if (!bounds) {
+        return false;
+    }
+    const keyboardTop = imeTopFromXml(xml);
+    const covered =
+        keyboardTop !== null
+            ? bounds.y >= keyboardTop
+            : bounds.y > screenBottom(xml) * 0.5 && androidImeShown();
+    if (!covered) {
+        return false;
+    }
+    return hideAndroidKeyboard();
 };
 
 const clickByTestId = async (testId) => {

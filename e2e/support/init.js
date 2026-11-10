@@ -33,14 +33,11 @@ const {
 const {
     tapByTestIdIfPresent,
     unlockAndroidPasscodeIfPresent,
-    waitUntilAndroidRnReady,
-    disableAndroidStylusHandwriting,
     restoreAndroidAnimationScale,
-    clearAndroidBlockingDialogs,
     adbTapChangelogClose,
-    resetAndroidDumpState,
     hideAndroidKeyboard,
 } = require('../helpers/tapById');
+const { settleAfterLaunch } = require('../helpers/appLaunch');
 
 const log = (msg) => {
     // eslint-disable-next-line no-console
@@ -54,37 +51,10 @@ const short = (error) =>
 
 const isAndroid = () => device.getPlatform() === 'android';
 
-const URL_BLACKLIST = [
-    '.*xumm.app.*',
-    '.*xaman.app.*',
-    // Fresh sim: Firebase checkin holds Detox iOS sync and misses agreement-setup-screen.
-    '.*device-provisioning.googleapis.com.*',
-    '.*firebaseinstallations.googleapis.com.*',
-    '.*firebase.googleapis.com.*',
-    '.*firebaselogging.googleapis.com.*',
-    '.*app-measurement.com.*',
-];
-
 // Set when the app could not be restarted twice in a row or the device went away: every later
 // scenario then fails at once with this reason instead of hanging on a dead device.
 let deviceBroken = null;
 let failedRestarts = 0;
-
-// After launchApp: the same settling as the first launch, and the URL blacklist again (it lives
-// in the app process, so a new instance starts without it).
-const settleAfterLaunch = async () => {
-    if (isAndroid()) {
-        await device.disableSynchronization();
-        disableAndroidStylusHandwriting();
-        await waitUntilAndroidRnReady();
-        await clearAndroidBlockingDialogs();
-        await unlockAndroidPasscodeIfPresent();
-    } else {
-        // iPhone SE: Firebase/main-queue idling hides onboarding-screen for 90s.
-        await device.disableSynchronization();
-    }
-    await device.setURLBlacklist(URL_BLACKLIST);
-};
 
 BeforeAll({ timeout: 15 * 60 * 1000 }, async () => {
     // fail fast with a clear message when the suite cannot possibly pass
@@ -174,9 +144,6 @@ const restartAppAfterFailure = async (scenario) => {
             newInstance: true,
             launchArgs: isAndroid() ? { detoxEnableSynchronization: 0 } : undefined,
         });
-        if (isAndroid()) {
-            resetAndroidDumpState();
-        }
         await settleAfterLaunch();
         await dismissIosLockIfPresent();
         failedRestarts = 0;

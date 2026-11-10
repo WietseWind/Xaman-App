@@ -102,25 +102,37 @@ const forgetCredits = () => {
     }
 };
 
-// the faucet rate-limits per IP, retry with backoff
+// The faucet rate-limits per IP (parallel runs share one) and sometimes answers with an error
+// page or not at all. Retry every kind of bad answer with backoff for about three minutes; a
+// single error page used to fail the step at once, and a request without timeout could hang it.
 const allocateFaucetAccount = async () => {
-    for (let attempt = 0; attempt < 6; attempt++) {
-        const resp = await fetch('https://xahau-test.net/newcreds', { method: 'POST' });
-        const json = await resp.json();
-
-        if (json.secret && json.address) {
-            // give the faucet funding transaction time to validate
-            await sleep(10000);
-            return {
-                address: json.address,
-                secret: json.secret,
-            };
+    let last = '';
+    for (let attempt = 0; attempt < 10; attempt++) {
+        try {
+            const resp = await fetch('https://xahau-test.net/newcreds', { method: 'POST', timeout: 20000 });
+            const text = await resp.text();
+            let json = {};
+            try {
+                json = JSON.parse(text);
+            } catch (e) {
+                // an error page, not JSON
+            }
+            if (resp.ok && json.secret && json.address) {
+                // give the faucet funding transaction time to validate
+                await sleep(10000);
+                return {
+                    address: json.address,
+                    secret: json.secret,
+                };
+            }
+            last = `HTTP ${resp.status}: ${text.replace(/"secret"\s*:\s*"[^"]*"/g, '"secret":"…"').slice(0, 120)}`;
+        } catch (e) {
+            last = e.message;
         }
-
-        await sleep(15000);
+        await sleep(Math.min(30000, 5000 * (attempt + 1)));
     }
 
-    throw new Error('unable to get funded account from the testnet faucet');
+    throw new Error(`unable to get a funded account from the testnet faucet (last answer: ${last})`);
 };
 
 const fetchNewFaucetAccount = async () => {
