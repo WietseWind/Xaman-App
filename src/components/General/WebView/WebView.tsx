@@ -16,7 +16,14 @@ const rejectFileDownload = () => {
     // Providing this handler makes iOS cancel attachment / non-renderable downloads.
 };
 
-export type WebViewProps = IOSWebViewProps & AndroidWebViewProps;
+export type WebViewProps = IOSWebViewProps &
+    AndroidWebViewProps & {
+        /**
+         * The page's prefers-color-scheme (light or dark), live; unset follows the OS. A native
+         * view property only (patches/react-native-webview): no script is injected into the page.
+         */
+        colorScheme?: 'light' | 'dark';
+    };
 
 export type WebViewHandle = {
     goBack: () => void;
@@ -36,12 +43,12 @@ export type WebViewHandle = {
 export type WebView = WebViewHandle;
 
 type NativeWebViewComponent = React.ComponentType<
-    WebViewProps & { ref?: React.Ref<WebViewHandle> }
+    Omit<WebViewProps, 'colorScheme'> & { ref?: React.Ref<WebViewHandle>; xamanColorScheme?: string }
 >;
 
 const NativeWebView = CommunityWebView as unknown as NativeWebViewComponent;
 
-const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) => {
+const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>(({ colorScheme, ...props }, ref) => {
     const innerRef = useRef<WebViewHandle>(null);
 
     useImperativeHandle(
@@ -108,6 +115,7 @@ const WebViewComponent = forwardRef<WebViewHandle, WebViewProps>((props, ref) =>
             // eslint-disable-next-line react/jsx-no-useless-fragment -- native loader requires an element
             renderLoading={() => <></>}
             onFileDownload={rejectFileDownload}
+            xamanColorScheme={colorScheme ?? ''}
         />
     );
 });

@@ -1,7 +1,8 @@
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java
+index 07f73fd..1e341c7 100644
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java
-@@ -3,6 +3,8 @@
+@@ -3,6 +3,8 @@ package com.reactnativecommunity.webview;
  import android.Manifest;
  import android.annotation.TargetApi;
  import android.app.Activity;
@@ -10,7 +11,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.content.pm.PackageManager;
  import android.net.Uri;
  import android.os.Build;
-@@ -12,6 +14,8 @@
+@@ -12,6 +14,8 @@ import android.view.View;
  import android.view.ViewGroup;
  import android.webkit.ConsoleMessage;
  import android.webkit.GeolocationPermissions;
@@ -19,7 +20,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.webkit.PermissionRequest;
  import android.webkit.ValueCallback;
  import android.webkit.WebChromeClient;
-@@ -148,6 +152,7 @@
+@@ -148,6 +152,7 @@ public class RNCWebChromeClient extends WebChromeClient implements LifecycleEven
          grantedPermissions = new ArrayList<>();
  
          ArrayList<String> requestedAndroidPermissions = new ArrayList<>();
@@ -27,43 +28,14 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
          for (String requestedResource : request.getResources()) {
              String androidPermission = null;
  
-@@ -155,38 +160,79 @@
+@@ -155,38 +160,79 @@ public class RNCWebChromeClient extends WebChromeClient implements LifecycleEven
                  androidPermission = Manifest.permission.RECORD_AUDIO;
              } else if (requestedResource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
                  androidPermission = Manifest.permission.CAMERA;
 -            } else if(requestedResource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
 -                if (mAllowsProtectedMedia) {
 -                  grantedPermissions.add(requestedResource);
-+            } else if (requestedResource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID) && mAllowsProtectedMedia) {
-+                alreadyGrantedResources.add(requestedResource);
-+                continue;
-+            } else {
-+                // Deny the whole request if the page asks for anything besides camera/mic
-+                // (DRM, MIDI, etc.). Matches the previous in-app WebView fork.
-+                request.deny();
-+                grantedPermissions = null;
-+                return;
-+            }
-+
-+            if (ContextCompat.checkSelfPermission(this.mWebView.getThemedReactContext(), androidPermission) == PackageManager.PERMISSION_GRANTED) {
-+                alreadyGrantedResources.add(requestedResource);
-+            } else {
-+                requestedAndroidPermissions.add(androidPermission);
-+            }
-+        }
-+
-+        // Even when the OS permission is already granted, prompt again so the
-+        // inner third-party page cannot silently capture camera / microphone.
-+        if (requestedAndroidPermissions.isEmpty()) {
-+            ArrayList<String> finalGrantedPermissions = new ArrayList<>();
-+            ArrayList<String> processedPermissions = new ArrayList<>();
-+            for (String permission : alreadyGrantedResources) {
-+                String permissionName = permission;
-+                if (permission.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
-+                    permissionName = "Microphone";
-+                } else if (permission.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
-+                    permissionName = "Camera";
-                 } else {
+-                } else {
 -                  /**
 -                   * Legacy handling (Kept in case it was working under some conditions (given Android version or something))
 -                   *
@@ -79,6 +51,39 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 -                    grantedPermissions.add(requestedResource);
 -                } else {
 -                    requestedAndroidPermissions.add(androidPermission);
+-                }
++            } else if (requestedResource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID) && mAllowsProtectedMedia) {
++                alreadyGrantedResources.add(requestedResource);
++                continue;
++            } else {
++                // Deny the whole request if the page asks for anything besides camera/mic
++                // (DRM, MIDI, etc.). Matches the previous in-app WebView fork.
++                request.deny();
++                grantedPermissions = null;
++                return;
++            }
++
++            if (ContextCompat.checkSelfPermission(this.mWebView.getThemedReactContext(), androidPermission) == PackageManager.PERMISSION_GRANTED) {
++                alreadyGrantedResources.add(requestedResource);
++            } else {
++                requestedAndroidPermissions.add(androidPermission);
+             }
+         }
+ 
+-        // If all the permissions are already granted, send the response to the WebView synchronously
++        // Even when the OS permission is already granted, prompt again so the
++        // inner third-party page cannot silently capture camera / microphone.
+         if (requestedAndroidPermissions.isEmpty()) {
+-            request.grant(grantedPermissions.toArray(new String[0]));
++            ArrayList<String> finalGrantedPermissions = new ArrayList<>();
++            ArrayList<String> processedPermissions = new ArrayList<>();
++            for (String permission : alreadyGrantedResources) {
++                String permissionName = permission;
++                if (permission.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
++                    permissionName = "Microphone";
++                } else if (permission.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
++                    permissionName = "Camera";
++                } else {
 +                    processedPermissions.add(permission);
 +                    if (processedPermissions.size() == alreadyGrantedResources.size()) {
 +                        if (finalGrantedPermissions.isEmpty()) {
@@ -88,13 +93,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +                        }
 +                    }
 +                    continue;
-                 }
--            }
--        }
--
--        // If all the permissions are already granted, send the response to the WebView synchronously
--        if (requestedAndroidPermissions.isEmpty()) {
--            request.grant(grantedPermissions.toArray(new String[0]));
++                }
 +                AlertDialog.Builder builder = new AlertDialog.Builder(this.mWebView.getThemedReactContext());
 +                builder.setMessage(String.format("Allow Browser to use your %s?", permissionName))
 +                        .setCancelable(false)
@@ -133,11 +132,13 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
          this.permissionRequest = request;
  
          requestPermissions(requestedAndroidPermissions);
-@@ -195,21 +241,34 @@
+@@ -195,21 +241,34 @@ public class RNCWebChromeClient extends WebChromeClient implements LifecycleEven
  
      @Override
      public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
--
++        callback.invoke(origin, false, false);
++    }
+ 
 -        if (ContextCompat.checkSelfPermission(this.mWebView.getThemedReactContext(), Manifest.permission.ACCESS_FINE_LOCATION)
 -                != PackageManager.PERMISSION_GRANTED) {
 -
@@ -146,15 +147,6 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 -             */
 -            geolocationPermissionCallback = callback;
 -            geolocationPermissionOrigin = origin;
--
--            requestPermissions(Collections.singletonList(Manifest.permission.ACCESS_FINE_LOCATION));
--
--        } else {
--            callback.invoke(origin, true, false);
--        }
-+        callback.invoke(origin, false, false);
-+    }
-+
 +    @Override
 +    public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
 +        if (view.getProgress() < 100) {
@@ -163,7 +155,8 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +        }
 +        return super.onJsAlert(view, url, message, result);
 +    }
-+
+ 
+-            requestPermissions(Collections.singletonList(Manifest.permission.ACCESS_FINE_LOCATION));
 +    @Override
 +    public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
 +        if (view.getProgress() < 100) {
@@ -172,21 +165,24 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +        }
 +        return super.onJsConfirm(view, url, message, result);
 +    }
-+
+ 
+-        } else {
+-            callback.invoke(origin, true, false);
 +    @Override
 +    public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
 +        if (view.getProgress() < 100) {
 +            result.cancel();
 +            return true;
-+        }
+         }
 +        return super.onJsPrompt(view, url, message, defaultValue, result);
      }
  
      private PermissionAwareActivity getPermissionAwareActivity() {
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+index 80c6803..e443687 100644
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
-@@ -9,6 +9,7 @@
+@@ -9,6 +9,7 @@ import android.view.Menu;
  import android.view.MenuItem;
  import android.view.MotionEvent;
  import android.view.View;
@@ -194,7 +190,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.webkit.JavascriptInterface;
  import android.webkit.ValueCallback;
  import android.webkit.WebChromeClient;
-@@ -49,6 +50,66 @@
+@@ -49,6 +50,66 @@ import java.util.Map;
  import java.util.Set;
  
  public class RNCWebView extends WebView implements LifecycleEventListener {
@@ -261,7 +257,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
      protected @Nullable
      String injectedJS;
      protected @Nullable
-@@ -410,6 +471,10 @@
+@@ -410,6 +471,10 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
      }
  
      protected void cleanupCallbacksAndDestroy() {
@@ -273,9 +269,10 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
          destroy();
      }
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java
+index 0287e1c..e49b6d4 100644
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java
-@@ -44,6 +44,7 @@
+@@ -44,6 +44,7 @@ public class RNCWebViewClient extends WebViewClient {
      protected boolean mLastLoadFailed = false;
      protected RNCWebView.ProgressChangedFilter progressChangedFilter = null;
      protected @Nullable RNCBasicAuthCredential basicAuthCredential = null;
@@ -283,7 +280,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  
      public void setBasicAuthCredential(@Nullable RNCBasicAuthCredential credential) {
          basicAuthCredential = credential;
-@@ -87,12 +88,36 @@
+@@ -87,12 +88,36 @@ public class RNCWebViewClient extends WebViewClient {
        mLastLoadFailed = false;
  
        RNCWebView reactWebView = (RNCWebView) webView;
@@ -297,8 +294,8 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +          + org.json.JSONObject.quote(agent) + ";}});", null);
 +      }
        reactWebView.callInjectedJavaScriptBeforeContentLoaded();
-+    }
-+
+     }
+ 
 +    void prepareXamanOttDocument(RNCWebView view, String url) {
 +        if (view.xamanOttUserAgent == null) return;
 +        android.net.Uri uri = android.net.Uri.parse(url);
@@ -311,8 +308,8 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +            keep = xamanOttScope.observe(uri.getHost(), uri.getPath(), true, false);
 +        }
 +        view.installXamanOttUserAgent(url, keep);
-     }
- 
++    }
++
      @Override
      public boolean shouldOverrideUrlLoading(WebView view, String url) {
          final RNCWebView rncWebView = (RNCWebView) view;
@@ -320,10 +317,11 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
          final boolean isJsDebugging = rncWebView.getReactApplicationContext().getJavaScriptContextHolder().get() == 0;
  
          if (!isJsDebugging && rncWebView.mMessagingJSModule != null) {
-@@ -147,6 +172,19 @@
+@@ -146,6 +171,19 @@ public class RNCWebViewClient extends WebViewClient {
+         return this.shouldOverrideUrlLoading(view, url);
      }
  
-     @Override
++    @Override
 +    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 +        if (request == null) {
 +            return null;
@@ -336,14 +334,14 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 +        }
 +    }
 +
-+    @Override
+     @Override
      public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
          if (basicAuthCredential != null) {
-             handler.proceed(basicAuthCredential.username, basicAuthCredential.password);
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
+index f83033b..ffb9279 100644
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
-@@ -1,18 +1,14 @@
+@@ -1,18 +1,15 @@
  package com.reactnativecommunity.webview
  
 -import android.app.DownloadManager
@@ -354,6 +352,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.os.Build
 -import android.os.Environment
  import android.util.Log
++import android.view.ContextThemeWrapper
  import android.view.View
  import android.view.ViewGroup
  import android.view.WindowManager
@@ -362,7 +361,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
  import android.webkit.WebSettings
  import android.webkit.WebView
  import androidx.webkit.WebSettingsCompat
-@@ -20,16 +16,11 @@
+@@ -20,17 +17,12 @@ import androidx.webkit.WebViewFeature
  import com.facebook.react.bridge.ReadableArray
  import com.facebook.react.bridge.ReadableMap
  import com.facebook.react.common.MapBuilder
@@ -374,12 +373,50 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
 -import java.net.MalformedURLException
 -import java.net.URL
  import java.util.Locale
--
--val invalidCharRegex = "[\\\\/%\"]".toRegex()
  
+-val invalidCharRegex = "[\\\\/%\"]".toRegex()
+-
  class RNCWebViewManagerImpl(private val newArch: Boolean = false) {
      companion object {
-@@ -88,53 +79,8 @@
+         const val NAME = "RNCWebView"
+@@ -60,7 +52,35 @@ class RNCWebViewManagerImpl(private val newArch: Boolean = false) {
+         "Cannot download files as permission was denied. Please provide permission to write to storage, in order to download files."
+ 
+     fun createRNCWebViewInstance(context: ThemedReactContext): RNCWebView {
+-        return RNCWebView(context)
++        // Xaman: each WebView gets its own copy of the theme, so setXamanColorScheme can set its
++        // prefers-color-scheme without changing the Activity's theme.
++        val theme = context.resources.newTheme()
++        theme.setTo(context.theme)
++        val themedContext = ThemedReactContext(
++            context.reactApplicationContext,
++            ContextThemeWrapper(context.baseContext, theme),
++            context.moduleName,
++            context.surfaceId
++        )
++        return RNCWebView(themedContext)
++    }
++
++    // Xaman: "light" or "dark" sets the page's prefers-color-scheme. For apps targeting Android 13+
++    // WebView takes it from its theme's isLightTheme (this WebView's own theme copy). Chromium reads
++    // the theme again when it rebuilds its web preferences, which a settings change triggers, so an
++    // open page and its media query listeners follow at once. Empty leaves the WebView as it is.
++    fun setXamanColorScheme(viewWrapper: RNCWebViewWrapper, value: String?) {
++        val webView = viewWrapper.webView
++        val style = when (value) {
++            "dark" -> R.style.XamanWebViewDark
++            "light" -> R.style.XamanWebViewLight
++            else -> return
++        }
++        webView.context.theme.applyStyle(style, true)
++        val settings = webView.settings
++        val zoom = settings.textZoom
++        settings.textZoom = zoom + 1
++        settings.textZoom = zoom
+     }
+ 
+     fun createViewInstance(context: ThemedReactContext): RNCWebViewWrapper {
+@@ -88,53 +108,8 @@ class RNCWebViewManagerImpl(private val newArch: Boolean = false) {
              ViewGroup.LayoutParams.MATCH_PARENT,
              ViewGroup.LayoutParams.MATCH_PARENT
          )
@@ -435,7 +472,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
          return RNCWebViewWrapper(context, webView)
      }
  
-@@ -243,9 +189,11 @@
+@@ -243,9 +218,11 @@ class RNCWebViewManagerImpl(private val newArch: Boolean = false) {
  
      private fun setUserAgentString(viewWrapper: RNCWebViewWrapper) {
          val view = viewWrapper.webView
@@ -450,6 +487,7 @@ diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactna
                  view.settings.userAgentString = mUserAgentWithApplicationName
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java
 new file mode 100644
+index 0000000..e4eb76d
 --- /dev/null
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttInterceptor.java
 @@ -0,0 +1,351 @@
@@ -806,6 +844,7 @@ new file mode 100644
 +}
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java
 new file mode 100644
+index 0000000..7458b16
 --- /dev/null
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/XamanOttScope.java
 @@ -0,0 +1,246 @@
@@ -1055,7 +1094,55 @@ new file mode 100644
 +        return false;
 +    }
 +}
+diff --git a/node_modules/react-native-webview/android/src/main/res/values/xaman_webview_themes.xml b/node_modules/react-native-webview/android/src/main/res/values/xaman_webview_themes.xml
+new file mode 100644
+index 0000000..50ef009
+--- /dev/null
++++ b/node_modules/react-native-webview/android/src/main/res/values/xaman_webview_themes.xml
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Xaman: overlays for a WebView's own theme copy (RNCWebViewManagerImpl.setXamanColorScheme).
++     WebView sets prefers-color-scheme from isLightTheme for apps targeting Android 13+. -->
++<resources xmlns:tools="http://schemas.android.com/tools">
++    <style name="XamanWebViewDark">
++        <item name="android:isLightTheme" tools:targetApi="q">false</item>
++    </style>
++    <style name="XamanWebViewLight">
++        <item name="android:isLightTheme" tools:targetApi="q">true</item>
++    </style>
++</resources>
+diff --git a/node_modules/react-native-webview/android/src/oldarch/com/reactnativecommunity/webview/RNCWebViewManager.java b/node_modules/react-native-webview/android/src/oldarch/com/reactnativecommunity/webview/RNCWebViewManager.java
+index 974337f..5db2815 100644
+--- a/node_modules/react-native-webview/android/src/oldarch/com/reactnativecommunity/webview/RNCWebViewManager.java
++++ b/node_modules/react-native-webview/android/src/oldarch/com/reactnativecommunity/webview/RNCWebViewManager.java
+@@ -127,6 +127,12 @@ public class RNCWebViewManager extends ViewGroupManager<RNCWebViewWrapper> {
+         mRNCWebViewManagerImpl.setIncognito(view, value);
+     }
+ 
++    // Xaman: "light" or "dark" for the page's prefers-color-scheme, "" leaves it as it is.
++    @ReactProp(name = "xamanColorScheme")
++    public void setXamanColorScheme(RNCWebViewWrapper view, @Nullable String value) {
++        mRNCWebViewManagerImpl.setXamanColorScheme(view, value);
++    }
++
+     @ReactProp(name = "injectedJavaScript")
+     public void setInjectedJavaScript(RNCWebViewWrapper view, @Nullable String value) {
+         mRNCWebViewManagerImpl.setInjectedJavaScript(view, value);
+diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.h b/node_modules/react-native-webview/apple/RNCWebViewImpl.h
+index 1f637c1..50c2fa4 100644
+--- a/node_modules/react-native-webview/apple/RNCWebViewImpl.h
++++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.h
+@@ -113,6 +113,8 @@ shouldStartLoadForRequest:(NSMutableDictionary<NSString *, id> *)request
+ @property (nonatomic, assign) BOOL enableApplePay;
+ @property (nonatomic, copy) NSArray<NSDictionary *> * _Nullable menuItems;
+ @property (nonatomic, copy) NSArray<NSString *> * _Nullable suppressMenuItems;
++// Xaman: "light" or "dark" sets the page's prefers-color-scheme; empty follows the system.
++@property (nonatomic, copy) NSString * _Nullable xamanColorScheme;
+ @property (nonatomic, copy) RCTDirectEventBlock onCustomMenuSelection;
+ #if !TARGET_OS_OSX
+ @property (nonatomic, assign) WKDataDetectorTypes dataDetectorTypes;
 diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
+index 3890426..daf9075 100644
 --- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 +++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 @@ -6,6 +6,7 @@
@@ -1066,11 +1153,10 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
  #import <React/RCTConvert.h>
  #import <React/RCTAutoInsetsProtocol.h>
  #import "RNCWKProcessPoolManager.h"
-@@ -24,6 +25,21 @@
- static NSDictionary* customCertificatesForHost;
+@@ -25,6 +26,21 @@ static NSDictionary* customCertificatesForHost;
  
  NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
-+
+ 
 +// Incognito uses a private in-memory store. Cookies, localStorage and IndexedDB
 +// survive navigation inside this WebView and are discarded with the view.
 +// Service workers remain disabled.
@@ -1085,10 +1171,11 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
 +    "try{navigator.serviceWorker.getRegistrations=none;}catch(e3){}"
 +    "}}catch(e){}"
 +    "})();";
- 
++
  #if TARGET_OS_IOS
  // runtime trick to remove WKWebView keyboard default toolbar
-@@ -55,6 +71,17 @@
+ // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
+@@ -55,6 +71,17 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
  #endif // !TARGET_OS_OSX
  @end
  @implementation RNCWKWebView
@@ -1106,7 +1193,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
  #if !TARGET_OS_OSX
  - (NSString *)stringFromAction:(SEL) action {
    NSString *sel = NSStringFromSelector(action);
-@@ -516,7 +543,30 @@
+@@ -516,7 +543,30 @@ RCTAutoInsetsProtocol>
  {
    if (self.window != nil && _webView == nil) {
      WKWebViewConfiguration *wkWebViewConfig = [self setUpWkWebViewConfig];
@@ -1138,7 +1225,15 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
      [self setBackgroundColor: _savedBackgroundColor];
  #if !TARGET_OS_OSX
      // Apply once at creation time. The prop is documented as non-reactive —
-@@ -628,6 +678,11 @@
+@@ -586,6 +636,7 @@ RCTAutoInsetsProtocol>
+ #endif
+ 
+     [self addSubview:_webView];
++    [self applyXamanColorScheme];
+     [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
+     [self setKeyboardDisplayRequiresUserAction: _savedKeyboardDisplayRequiresUserAction];
+     [self visitSource];
+@@ -628,6 +679,11 @@ RCTAutoInsetsProtocol>
  #endif
  {
    if (_webView) {
@@ -1150,7 +1245,40 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:HistoryShimName];
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:MessageHandlerName];
      [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
-@@ -1216,6 +1271,10 @@
+@@ -979,6 +1035,32 @@ RCTAutoInsetsProtocol>
+   method_setImplementation(method, override);
+ }
+ 
++// Xaman: the host's light/dark setting for the page. WebKit maps the view's interface style to
++// prefers-color-scheme and re-evaluates media queries (and their change events) when it changes.
++- (void)setXamanColorScheme:(NSString *)xamanColorScheme
++{
++  _xamanColorScheme = [xamanColorScheme copy];
++  [self applyXamanColorScheme];
++}
++
++- (void)applyXamanColorScheme
++{
++#if !TARGET_OS_OSX
++  if (_webView == nil) {
++    return;
++  }
++  if (@available(iOS 13.0, *)) {
++    UIUserInterfaceStyle style = UIUserInterfaceStyleUnspecified;
++    if ([_xamanColorScheme isEqualToString:@"dark"]) {
++      style = UIUserInterfaceStyleDark;
++    } else if ([_xamanColorScheme isEqualToString:@"light"]) {
++      style = UIUserInterfaceStyleLight;
++    }
++    _webView.overrideUserInterfaceStyle = style;
++  }
++#endif // !TARGET_OS_OSX
++}
++
+ -(void)setHideKeyboardAccessoryView:(BOOL)hideKeyboardAccessoryView
+ {
+   _hideKeyboardAccessoryView = hideKeyboardAccessoryView;
+@@ -1216,6 +1298,10 @@ RCTAutoInsetsProtocol>
  - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
  {
  #if !TARGET_OS_OSX
@@ -1161,7 +1289,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler();
-@@ -1235,6 +1294,10 @@
+@@ -1235,6 +1321,10 @@ RCTAutoInsetsProtocol>
   */
  - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler{
  #if !TARGET_OS_OSX
@@ -1172,7 +1300,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler(YES);
-@@ -1260,6 +1323,10 @@
+@@ -1260,6 +1350,10 @@ RCTAutoInsetsProtocol>
   */
  - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler{
  #if !TARGET_OS_OSX
@@ -1183,7 +1311,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
      textField.text = defaultText;
-@@ -1875,6 +1942,12 @@
+@@ -1875,6 +1969,12 @@ didFinishNavigation:(WKNavigation *)navigation
    ];
    WKUserScript *userScript = [[WKUserScript alloc] initWithSource:html5HistoryAPIShimSource injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
    [wkWebViewConfig.userContentController addUserScript:userScript];
@@ -1196,8 +1324,21 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_mod
  
    if(_sharedCookiesEnabled) {
      // More info to sending cookies with WKWebView
+diff --git a/node_modules/react-native-webview/apple/RNCWebViewManager.mm b/node_modules/react-native-webview/apple/RNCWebViewManager.mm
+index a510ffd..9de1787 100644
+--- a/node_modules/react-native-webview/apple/RNCWebViewManager.mm
++++ b/node_modules/react-native-webview/apple/RNCWebViewManager.mm
+@@ -117,6 +117,7 @@ RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(enableApplePay, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(menuItems, NSArray);
+ RCT_EXPORT_VIEW_PROPERTY(suppressMenuItems, NSArray);
++RCT_EXPORT_VIEW_PROPERTY(xamanColorScheme, NSString)
+ 
+ // New arch only
+ RCT_CUSTOM_VIEW_PROPERTY(hasOnFileDownload, BOOL, RNCWebViewImpl) {}
 diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h
 new file mode 100644
+index 0000000..4b4fa04
 --- /dev/null
 +++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h
 @@ -0,0 +1,11 @@
@@ -1214,6 +1355,7 @@ new file mode 100644
 +@end
 diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
 new file mode 100644
+index 0000000..8d34c14
 --- /dev/null
 +++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
 @@ -0,0 +1,1012 @@
