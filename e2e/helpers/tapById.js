@@ -969,6 +969,19 @@ const hideAndroidKeyboard = async () => {
     return true;
 };
 
+// Waits until the on-screen keyboard is up (dumpsys) after a text field was tapped. False when it
+// never came, so the tap gave the field no focus.
+const waitForAndroidIme = async (timeoutMs = 3000) => {
+    const deadline = Date.now() + timeoutMs;
+    while (!androidImeShown()) {
+        if (Date.now() >= deadline) {
+            return false;
+        }
+        await sleep(150);
+    }
+    return true;
+};
+
 const screenBottom = (xml) => parseNodes(xml).reduce((bottom, node) => Math.max(bottom, node.bounds.y2), 0);
 
 // The app uses adjustNothing, so a button under the on-screen keyboard keeps its bounds and a tap
@@ -2265,6 +2278,7 @@ module.exports = {
     isAndroidDumpBroken: () => dumpBroken,
     resetAndroidDumpState,
     hideAndroidKeyboard,
+    waitForAndroidIme,
     clickAndroidAccountRow,
     androidReadSecretRow,
     enterAndroidSecretNumbers,
