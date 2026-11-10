@@ -19,6 +19,7 @@ const {
     waitUntilAndroidText,
     resetAndroidDumpState,
     hideAndroidKeyboard,
+    waitForAndroidIme,
 } = require('../helpers/tapById');
 const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLaunch');
 
@@ -215,8 +216,12 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
         const current = String((await androidReadTextByTestId(textInputId)) || '');
         const needle = String(value).trim();
         const placeholder = /enter a name|please enter|search|amount|label|password|passphrase/i.test(current);
+        // what the field reads right before typing; a dump is cached for 400 ms, so wait longer than that
+        let before = current;
         if (!(needle && current.indexOf(needle) !== -1) && current.trim() && !placeholder) {
             androidClearFocusedField(Math.min(80, current.length + 6));
+            await new Promise((resolve) => { setTimeout(resolve, 500); });
+            before = String((await androidReadTextByTestId(textInputId)) || '');
         }
         const typeValue = () => {
             try {
@@ -227,6 +232,23 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
         };
         if (!(needle && current.indexOf(needle) !== -1)) {
             typeValue();
+            // Keystrokes sent before the field has focus go nowhere: the step passed with an empty
+            // account label, and the Next tap after it did nothing. While the field still reads as it
+            // did before typing, tap it again, wait for the keyboard and type again; fail here if
+            // nothing ever arrives, not at a later step.
+            for (let attempt = 1; ; attempt += 1) {
+                await new Promise((resolve) => { setTimeout(resolve, 500); });
+                const after = String((await androidReadTextByTestId(textInputId)) || '');
+                if (after !== before) {
+                    break;
+                }
+                if (attempt >= 3) {
+                    throw new Error(`typed '${value}' into ${textInputId} ${attempt} times, but it still reads '${after}'`);
+                }
+                await clickByTestId(textInputId);
+                await waitForAndroidIme(3000);
+                typeValue();
+            }
         }
         // input text can drop the start of a long destination. One more try.
         if (needle.length >= 24) {
