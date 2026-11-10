@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks that the installed packages of a checkout match its commit, the way every build needs them:
-#   - node_modules matches package.json (npm ls),
+#   - every package is installed at its package-lock.json version,
 #   - every patch in patches/ is applied. patch-package only runs on npm ci / npm install, so a checkout keeps the
 #     patches of its last install: a later commit that changes a patch is not in node_modules until the next install,
 #   - iOS (when ios/Pods exists, or with --ios): the Pods match ios/Podfile.lock, and React Native's codegen output
@@ -36,10 +36,23 @@ problems=()
 if [ ! -d node_modules ]; then
     problems+=("there is no node_modules")
 else
-    if [ "$PATCHES_ONLY" = no ] && command -v npm >/dev/null 2>&1; then
-        if ! npm ls --depth=0 >/dev/null 2>&1; then
-            problems+=("node_modules does not match package.json (npm ls --depth=0 lists what differs)")
-        fi
+    if [ "$PATCHES_ONLY" = no ] && command -v node >/dev/null 2>&1 && [ -f package-lock.json ]; then
+        # every package in package-lock.json installed at that exact version (optional ones may be absent:
+        # they are for other platforms)
+        lockfile=$(node -e '
+            const fs = require("fs");
+            const packages = JSON.parse(fs.readFileSync("package-lock.json", "utf8")).packages || {};
+            const off = [];
+            for (const [where, entry] of Object.entries(packages)) {
+                if (!where.startsWith("node_modules/") || entry.link) continue;
+                let installed = null;
+                try { installed = JSON.parse(fs.readFileSync(where + "/package.json", "utf8")).version; } catch (e) {}
+                if (installed === null && entry.optional) continue;
+                if (installed !== entry.version) off.push(`${where.slice(13)} ${installed || "missing"} (lock: ${entry.version})`);
+            }
+            if (off.length) console.log(`${off.length} packages differ from package-lock.json, e.g. ${off.slice(0, 3).join(", ")}`);
+        ' 2>&1)
+        [ -z "$lockfile" ] || problems+=("$lockfile")
     fi
     for patch in patches/*.patch; do
         [ -f "$patch" ] || continue
