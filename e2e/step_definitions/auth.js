@@ -3,7 +3,13 @@ const { Then } = require('@cucumber/cucumber');
 const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
 const { androidSerial } = require('../helpers/androidSerial');
-const { clickByTestId, waitUntilAndroidTestId, enterAndroidPasscode, androidTypeText } = require('../helpers/tapById');
+const {
+    clickByTestId,
+    waitUntilAndroidTestId,
+    enterAndroidPasscode,
+    androidTypeText,
+    hideAndroidKeyboard,
+} = require('../helpers/tapById');
 
 const { getCurrentTestPasscode, setCurrentTestPasscode } = require('../helpers/testCredentials');
 
@@ -101,11 +107,9 @@ const typeIntoField = async (inputId, value) => {
             // empty field
         }
         androidTypeText(value);
-        try {
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 8000 });
-        } catch (e) {
-            // IME already down
-        }
+        // Wait until the keyboard is gone: a tap on Next or Sign while it was still animating out
+        // was lost.
+        await hideAndroidKeyboard();
         return;
     }
     await waitFor(field).toBeVisible().withTimeout(5000);
