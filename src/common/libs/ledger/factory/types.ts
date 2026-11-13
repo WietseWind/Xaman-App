@@ -139,6 +139,17 @@ export abstract class ExplainerAbstract<T, M = unknown> {
     getAssetDetails(): AssetDetails[] {
         return [];
     }
+    /**
+     * Is the effect on the account's balance known yet?
+     *
+     * False while part of the outcome still has to be loaded, as for the inner transactions of a Batch. Until then
+     * the monetary details can be incomplete, and "no balance change" must not be claimed.
+     *
+     * @returns {boolean}
+     */
+    isBalanceEffectKnown(): boolean {
+        return true;
+    }
 }
 
 /**

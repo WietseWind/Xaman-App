@@ -38,10 +38,10 @@ import styles from './styles';
 import lpStyles from '@components/Modules/AssetsList/Tokens/TokenItem/styles';
 import ContactRepository from '@store/repositories/contact';
 import trustLine from '@store/repositories/trustLine';
-import { OperationActions } from '@common/libs/ledger/parser/types';
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
 import { ContactAddressSource, createContactAddressFanout } from './contactAddressFanout';
+import { hasOwnEffect } from './thirdParty';
 
 // One subscription for the whole list. Rows compare the address themselves.
 const contactAddressChanges = createContactAddressFanout(ContactRepository as unknown as ContactAddressSource);
@@ -498,23 +498,7 @@ class TransactionItem extends Component<Props, State> {
 
         const isRejected = item.MetaData?.TransactionResult === 'tecHOOK_REJECTED';
 
-        let hasBalanceChanges = true;
-        const mutations = item.BalanceChange(account.address);
-        if (!mutations?.[OperationActions.INC]?.[0] && !mutations?.[OperationActions.DEC]?.[0]) {
-            // if (item.Account !== account.address) {
-            //     if (!showDespiteThirdParty) {
-            //         hasBalanceChanges = false;
-            //     }
-            // }
-            if (
-                !showDespiteThirdParty &&
-                item?.Account !== account.address &&
-                (item as any)?.Issuer !== account.address && // credential
-                (item as any)?.Holder !== account.address // clawback
-            ) {
-                hasBalanceChanges = false;
-            }
-        }
+        const hasBalanceChanges = hasOwnEffect(item, account.address, showDespiteThirdParty);
 
         const batchInfo = {
             txCount: 0,
