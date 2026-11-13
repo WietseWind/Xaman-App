@@ -7,11 +7,31 @@ import Batch from './Batch.class';
 /* Types ==================================================================== */
 import { MutationsMixinType } from '@common/libs/ledger/mixin/types';
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
+import {
+    BatchInnerTransaction,
+    batchInnerBalanceChange,
+    netBalanceChanges,
+} from '@common/libs/ledger/utils/batchInner';
 
 /* Descriptor ==================================================================== */
 class BatchInfo extends ExplainerAbstract<Batch, MutationsMixinType> {
+    // the inner transactions as looked up in the ledger; undefined until loaded
+    private innerTransactions?: BatchInnerTransaction[];
+
     constructor(item: Batch & MutationsMixinType, account: AccountModel) {
         super(item, account);
+    }
+
+    /**
+     * The metadata of a Batch only has the fee of its own account: what a Batch did to an account is in its inner
+     * transactions, which are loaded separately.
+     */
+    setInnerTransactions(innerTransactions: BatchInnerTransaction[]) {
+        this.innerTransactions = innerTransactions;
+    }
+
+    isBalanceEffectKnown(): boolean {
+        return Array.isArray(this.innerTransactions);
     }
 
     getEventsLabel(): string {
@@ -84,8 +104,16 @@ class BatchInfo extends ExplainerAbstract<Batch, MutationsMixinType> {
     }
 
     getMonetaryDetails() {
+        const own = this.item.BalanceChange(this.account.address);
+
         return {
-            mutate: this.item.BalanceChange(this.account.address),
+            // the Batch itself, plus the inner transactions that ran in it
+            mutate: Array.isArray(this.innerTransactions)
+                ? netBalanceChanges([
+                      own,
+                      batchInnerBalanceChange(this.innerTransactions, this.item.hash, this.account.address),
+                  ])
+                : own,
             factor: undefined,
         };
     }

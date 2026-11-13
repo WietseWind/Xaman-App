@@ -54,6 +54,8 @@ class Label extends PureComponent<Props, State> {
         
         if (
             noMutation &&
+            // not while the outcome still has to be loaded (the inner transactions of a Batch)
+            explainer?.isBalanceEffectKnown?.() !== false &&
             !item.Type.match(/Credential/) &&
             !item.Type.match(/Cron/) &&
             !item.Type.match(/Vault/)

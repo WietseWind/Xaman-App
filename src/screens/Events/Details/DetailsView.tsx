@@ -12,6 +12,8 @@ import StyleService from '@services/StyleService';
 import { ComponentTypes } from '@services/NavigationService';
 
 import { ExplainerFactory } from '@common/libs/ledger/factory';
+import { BatchInfo } from '@common/libs/ledger/transactions/genuine/Batch';
+import { BatchInnerTransaction } from '@common/libs/ledger/utils/batchInner';
 
 import { AppScreens } from '@common/constants';
 
@@ -105,6 +107,22 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                 break;
             default:
                 throw new Error('Component can only be presented as Modal or Screen');
+        }
+    };
+
+    // A Batch has no balance changes of its own: what it did to this account is in its inner transactions.
+    // Once those are looked up, the explainer is rebuilt with them so the title and the amounts include them.
+    onBatchInnerLoaded = (innerTransactions: BatchInnerTransaction[]) => {
+        const { item, account } = this.props;
+
+        if (!this.mounted) {
+            return;
+        }
+
+        const explainer = ExplainerFactory.fromInstance(item, account);
+        if (explainer instanceof BatchInfo) {
+            explainer.setInnerTransactions(innerTransactions);
+            this.setState({ explainer });
         }
     };
 
@@ -250,6 +268,7 @@ class TransactionDetailsView extends Component<Props & { componentType: Componen
                 componentType,
                 cachedTokenDetails,
                 TransactionComponent: Transaction,
+                onBatchInnerLoaded: this.onBatchInnerLoaded,
             },
         );
 

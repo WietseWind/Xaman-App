@@ -12,6 +12,7 @@ import { ComponentTypes } from '@services/NavigationService';
 import { ExplainerAbstract } from '@common/libs/ledger/factory/types';
 
 import { type cachedTokenDetailsState } from '@components/Modules/EventsList/EventListItems/Transaction';
+import { BatchInnerTransaction } from '@common/libs/ledger/utils/batchInner';
 
 // Props for the Transaction component used by BatchTransactions
 export interface TransactionComponentProps {
@@ -37,4 +38,6 @@ export interface Props {
     cachedTokenDetails?: cachedTokenDetailsState;
     // Optional Transaction component for BatchTransactions widget
     TransactionComponent?: React.ComponentType<TransactionComponentProps>;
+    // BatchTransactions reports the inner transactions of a Batch once they are looked up
+    onBatchInnerLoaded?: (innerTransactions: BatchInnerTransaction[]) => void;
 }

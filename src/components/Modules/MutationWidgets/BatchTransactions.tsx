@@ -23,6 +23,7 @@ import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { Batch } from '@common/libs/ledger/transactions';
 import NetworkService from '@services/NetworkService';
 import { AccountTxTransaction, ErrorResponse, TxResponse } from '@common/libs/ledger/types/methods';
+import { BatchInnerTransaction, ranInBatch } from '@common/libs/ledger/utils/batchInner';
 
 interface State {
     // participants?: any;
@@ -40,13 +41,9 @@ interface ChildTransaction {
     account: AccountModel;
 }
 
-interface InnerTransaction {
+interface InnerTransaction extends BatchInnerTransaction {
     transaction: Transactions & MutationsMixinType;
-    hash: string;
-    index: number;
-    found: boolean;
     resp: TxResponse | ErrorResponse;
-    parentBatchId?: string;
 }
 
 interface ParentTransaction {
@@ -165,7 +162,7 @@ class BatchTransactions extends PureComponent<Props, State> {
 
     fetchInnerTransactions = async () => {
         try {
-            const { item } = this.props;
+            const { item, onBatchInnerLoaded } = this.props;
 
             const txData = await Promise.all((item as any || {}).RawTransactions
                 ?.map((innerTx: TransactionJson, index: number) => {
@@ -206,6 +203,9 @@ class BatchTransactions extends PureComponent<Props, State> {
                 innerTransactions: txData,
                 loadingInner: false,
             });
+
+            // the details screen needs the inner results too: a Batch has no balance changes of its own
+            onBatchInnerLoaded?.(txData);
 
             return txData;
         } catch (error) {
@@ -281,11 +281,16 @@ class BatchTransactions extends PureComponent<Props, State> {
                         !loadingInner && innerTransactions && innerTransactions
                             .map((innerTx: InnerTransaction, index: number) => {
                                 const { transaction, hash } = innerTx;
+                                // An inner transaction that ran in this Batch is shown like any other event of
+                                // the account we are looking with: its own balance change, or a third party row
+                                // without an amount when it did nothing to this account. One that did not run
+                                // keeps its full row, for the failed marker.
+                                const ran = ranInBatch(innerTx, (item as any)?.hash);
 
                                 return (
                                     <View key={`tx-${index}`}>
                                         <TransactionComponent
-                                            showDespiteThirdParty
+                                            showDespiteThirdParty={!ran}
                                             notFound={!innerTx.found}
                                             isReplayed={
                                                 innerTx.found && innerTx?.parentBatchId !== (item as any)?.hash
@@ -298,13 +303,11 @@ class BatchTransactions extends PureComponent<Props, State> {
                                                     childTransaction: transaction,
                                                     hash,
                                                     index,
-                                                    account: { address: transaction.Account } as AccountModel,
+                                                    account,
                                                 });
                                             }}
                                             item={transaction as Transactions & MutationsMixinType}
-                                            account={
-                                                { address: transaction.Account } as AccountModel
-                                            }
+                                            account={account}
                                             timestamp={0}
                                         />
                                     </View>
