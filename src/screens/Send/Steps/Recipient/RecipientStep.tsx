@@ -872,8 +872,9 @@ class RecipientStep extends Component<Props, State> {
             // console.log('___5')
             // if account is set to black hole then reject sending
             // IMMEDIATE REJECT
+            // (not for an account that is whitelisted and controlled by its Hook)
             if (
-                destinationInfo.blackHole &&
+                Advisory.shouldWarnBlackHole(destinationInfo) &&
                 passedChecks.indexOf(PassableChecks.ALLOW_BLACKHOLE_DEVMODE) === -1
             ) {
                 setTimeout(() => {

@@ -5,6 +5,7 @@ Advisory helper
 import BigNumber from 'bignumber.js';
 
 import LedgerService from '@services/LedgerService';
+import NetworkService from '@services/NetworkService';
 
 import { AccountRoot } from '@common/libs/ledger/types/ledger';
 import { AccountInfoAccountFlags } from '@common/libs/ledger/types/methods/accountInfo';
@@ -22,6 +23,9 @@ const Advisory = {
     MIN_TRANSACTION_TAG: 9999,
     HIGH_SENDER_COUNT: 10,
     HIGH_PERCENTAGE_TAGGED_TX: 50,
+    // Network IDs of the networks with Hooks (Xahau mainnet 21337, its test and dev networks above it)
+    HOOKS_NETWORK_ID_MIN: 21337,
+    HOOKS_NETWORK_ID_MAX: 32000,
 
     /**
      * Determines whether a possible exchange can take place based on the account balance.
@@ -58,6 +62,116 @@ const Advisory = {
             Advisory.BLACK_HOLE_KEYS.includes(String(accountData?.Account || '')) ||
             Advisory.LOST_KEYS.includes(String(accountData?.Account || ''))
         );
+    },
+
+    /**
+     * The address itself is a black hole (or lost-key) address: nobody and nothing can ever sign for it.
+     *
+     * @param {string} address - The account address.
+     * @returns {boolean} - True for the known black hole and lost-key addresses.
+     */
+    checkHardBlackHoleAddress: (address?: string): boolean => {
+        const account = String(address || '');
+        return Advisory.BLACK_HOLE_KEYS.includes(account) || Advisory.LOST_KEYS.includes(account);
+    },
+
+    /**
+     * The connected network is a Hooks network (Xahau and its test networks).
+     *
+     * @param {number} networkId - The network ID of the connected network.
+     * @returns {boolean} - True when the network ID is in the Hooks network range.
+     */
+    checkHooksNetwork: (networkId?: number): boolean => {
+        return (
+            typeof networkId === 'number' &&
+            Number.isInteger(networkId) &&
+            networkId >= Advisory.HOOKS_NETWORK_ID_MIN &&
+            networkId <= Advisory.HOOKS_NETWORK_ID_MAX
+        );
+    },
+
+    /**
+     * Checks if a black holed account is controlled by its Hook, so paying it is not a payment into the void.
+     *
+     * Only true when every one of these holds:
+     * 1. The backend says we whitelisted the account ourselves (`force_whitelist`). Without this anyone could
+     *    black hole an account, install a Hook and lose the warning.
+     * 2. The connected network is a Hooks network (see checkHooksNetwork).
+     * 3. The account gave up its keys with a black hole regular key and a disabled master key. The black hole and
+     *    lost-key addresses themselves never qualify.
+     * 4. The account has at least one Hook installed, in the validated ledger of the connected network.
+     *
+     * Anything missing, unexpected or failing means false: the caller then warns as it always did.
+     *
+     * @param {string} address - The account address.
+     * @param {XamanBackend.AccountAdvisoryResponse} advisory - Advisory response of the backend for this address.
+     * @param {AccountRoot} accountData - The account data from the ledger.
+     * @param {AccountInfoAccountFlags} accountFlags - The account flags from the ledger.
+     * @returns {Promise<boolean>} - True if the account is whitelisted, black holed and Hook controlled.
+     */
+    checkBlackHoleHookControlled: async (
+        address: string,
+        advisory?: Partial<XamanBackend.AccountAdvisoryResponse>,
+        accountData?: AccountRoot,
+        accountFlags?: AccountInfoAccountFlags,
+    ): Promise<boolean> => {
+        try {
+            if (advisory?.force_whitelist !== true) {
+                return false;
+            }
+
+            const networkId = NetworkService.getNetworkId();
+            if (!Advisory.checkHooksNetwork(networkId)) {
+                return false;
+            }
+
+            if (
+                !address ||
+                accountData?.Account !== address ||
+                Advisory.checkHardBlackHoleAddress(address) ||
+                !accountData?.RegularKey ||
+                accountFlags?.disableMasterKey !== true ||
+                !Advisory.BLACK_HOLE_KEYS.includes(accountData.RegularKey)
+            ) {
+                return false;
+            }
+
+            // the Hook object of this account (one per account, holds the installed Hooks)
+            const resp: any = await LedgerService.getLedgerEntry({ hook: { account: address } });
+
+            // still on the network we started on?
+            if (NetworkService.getNetworkId() !== networkId) {
+                return false;
+            }
+
+            if (!resp || typeof resp !== 'object' || 'error' in resp) {
+                return false;
+            }
+
+            const { node } = resp;
+            if (node?.LedgerEntryType !== 'Hook' || node?.Account !== address || !Array.isArray(node?.Hooks)) {
+                return false;
+            }
+
+            // an emptied Hook position has no HookHash
+            return node.Hooks.some(
+                (entry: any) =>
+                    typeof entry?.Hook?.HookHash === 'string' && /^[A-Fa-f0-9]{64}$/.test(entry.Hook.HookHash),
+            );
+        } catch {
+            return false;
+        }
+    },
+
+    /**
+     * A payment to this account needs the black hole warning: the account is black holed, and it is not a
+     * whitelisted account controlled by its Hook (see checkBlackHoleHookControlled).
+     *
+     * @param info - The resolved advisory info of the destination.
+     * @returns {boolean} - True if the black hole warning must be shown.
+     */
+    shouldWarnBlackHole: (info?: { blackHole?: boolean; blackHoleHookControlled?: boolean }): boolean => {
+        return !!info?.blackHole && info?.blackHoleHookControlled !== true;
     },
 
     /**

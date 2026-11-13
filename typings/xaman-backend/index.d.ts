@@ -197,6 +197,8 @@ declare namespace XamanBackend {
         account: string;
         danger: string;
         force_dtag: boolean;
+        // true when the account is whitelisted by us (absent on older backends)
+        force_whitelist?: boolean;
         confirmations: any;
     }
     interface AppCategory {

@@ -22,6 +22,7 @@ import { PatchSuccessType, PayloadOrigin } from '@common/libs/payload';
 
 import { Toast, VibrateHapticFeedback } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
+import Advisory from '@common/helpers/advisory';
 
 import Localize from '@locale';
 
@@ -520,8 +521,8 @@ class ReviewTransactionModal extends Component<Props, State> {
                         return;
                     }
 
-                    // if sending to a blackHoled account
-                    if (destinationInfo.blackHole) {
+                    // if sending to a blackHoled account (not one that is whitelisted and controlled by its Hook)
+                    if (Advisory.shouldWarnBlackHole(destinationInfo)) {
                         Navigator.showAlertModal({
                             type: 'warning',
                             text: Localize.t('payload.paymentToBlackHoledAccountWarning'),
