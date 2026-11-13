@@ -447,7 +447,10 @@
     "hideZeroValue": "Döljer tillgångar utan värde",
     "showZeroValue": "Visar tillgångar utan värde",
     "showFavsOnly": "Visar endast favoriter",
-    "showAll": "Visar alla tillgångar"
+    "showAll": "Visar alla tillgångar",
+    "deviceIsRootedWarning": "Den här enheten verkar vara rootad. På en rootad enhet kan andra appar eventuellt läsa de data som Xaman skyddar, inklusive dina kontohemligheter. Använd Xaman på den här enheten på egen risk.",
+    "deviceIsJailBrokenWarning": "Den här enheten verkar vara jailbreakad. På en jailbreakad enhet kan andra appar eventuellt läsa de data som Xaman skyddar, inklusive dina kontohemligheter. Använd Xaman på den här enheten på egen risk.",
+    "hiddenWhileScreenIsCaptured": "Dold medan din skärm spelas in eller delas."
   },
   "onboarding": {
     "slideOne_title": "Betalningar och begäran om betalningar på XRP Ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Rensa resolver-cache",
     "cacheClearedSuccessfully": "Cache rensad framgångsrikt",
-    "restartRequired": "En omstart krävs för att dessa ändringar ska träda i kraft"
+    "restartRequired": "En omstart krävs för att dessa ändringar ska träda i kraft",
+    "vaultInfo": "Valvinformation",
+    "keychainGroup": "Nyckelringsgrupp"
   },
   "account": {
     "addAccount": "Lägg till ett konto",

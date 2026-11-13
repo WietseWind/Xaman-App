@@ -29,6 +29,8 @@
 		A2805CE224D1982400B5552E /* LocalNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = A2805CE124D1982400B5552E /* LocalNotification.m */; };
 		A28BA8A6282409B600109CC8 /* SecurityProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = A28BA8A5282409B600109CC8 /* SecurityProvider.m */; };
 		A2A9F31428858F45009AE778 /* BlurViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A2A9F31328858F45009AE778 /* BlurViewManager.m */; };
+		5EC0F1E12F00A10000C5E003 /* CaptureShieldViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EC0F1E12F00A10000C5E001 /* CaptureShieldViewManager.m */; };
+		5EC0F1E12F00A10000C5E006 /* CaptureShieldViewTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EC0F1E12F00A10000C5E005 /* CaptureShieldViewTest.m */; };
 		A2A9F3182885965C009AE778 /* UIView+Blur.m in Sources */ = {isa = PBXBuildFile; fileRef = A2A9F3172885965C009AE778 /* UIView+Blur.m */; };
 		A2A9F31E28859AF4009AE778 /* BlurEffectWithAmount.m in Sources */ = {isa = PBXBuildFile; fileRef = A2A9F31D28859AF4009AE778 /* BlurEffectWithAmount.m */; };
 		A2A9F32D28AA460D009AE778 /* VaultManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A2A9F32B28AA460D009AE778 /* VaultManager.m */; };
@@ -124,6 +126,9 @@
 		A28BA8A728240A4500109CC8 /* SecurityProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SecurityProvider.h; sourceTree = "<group>"; };
 		A2A9F31328858F45009AE778 /* BlurViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BlurViewManager.m; sourceTree = "<group>"; };
 		A2A9F31528858FA0009AE778 /* BlurViewManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlurViewManager.h; sourceTree = "<group>"; };
+		5EC0F1E12F00A10000C5E001 /* CaptureShieldViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CaptureShieldViewManager.m; sourceTree = "<group>"; };
+		5EC0F1E12F00A10000C5E002 /* CaptureShieldViewManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CaptureShieldViewManager.h; sourceTree = "<group>"; };
+		5EC0F1E12F00A10000C5E005 /* CaptureShieldViewTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CaptureShieldViewTest.m; sourceTree = "<group>"; };
 		A2A9F31628859650009AE778 /* UIView+Blur.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+Blur.h"; sourceTree = "<group>"; };
 		A2A9F3172885965C009AE778 /* UIView+Blur.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+Blur.m"; sourceTree = "<group>"; };
 		A2A9F31D28859AF4009AE778 /* BlurEffectWithAmount.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BlurEffectWithAmount.m; sourceTree = "<group>"; };
@@ -225,6 +230,7 @@
 				A2021F6828E591F300506772 /* XamanTests-Bridging-Header.h */,
 				A2021F7428E5C53000506772 /* CipherTest.m */,
 				A2021F7628E6DF9700506772 /* VaultMangerTest.m */,
+				5EC0F1E12F00A10000C5E005 /* CaptureShieldViewTest.m */,
 			);
 			path = XamanTests;
 			sourceTree = "<group>";
@@ -408,6 +414,15 @@
 			path = BlurView;
 			sourceTree = "<group>";
 		};
+		5EC0F1E12F00A10000C5E004 /* CaptureShieldView */ = {
+			isa = PBXGroup;
+			children = (
+				5EC0F1E12F00A10000C5E001 /* CaptureShieldViewManager.m */,
+				5EC0F1E12F00A10000C5E002 /* CaptureShieldViewManager.h */,
+			);
+			path = CaptureShieldView;
+			sourceTree = "<group>";
+		};
 		A2A9F31C28859AB0009AE778 /* HapticFeedback */ = {
 			isa = PBXGroup;
 			children = (
@@ -479,6 +494,7 @@
 			children = (
 				A2A9F31C28859AB0009AE778 /* HapticFeedback */,
 				A2A9F31B28859A98009AE778 /* BlurView */,
+				5EC0F1E12F00A10000C5E004 /* CaptureShieldView */,
 				A2A9F31A28859A6B009AE778 /* ToastView */,
 				A2A9F31928859A3F009AE778 /* QRCodeView */,
 			);
@@ -1046,6 +1062,7 @@
 				A2021F7528E5C53000506772 /* CipherTest.m in Sources */,
 				A2021F6A28E591F300506772 /* CryptoTest.swift in Sources */,
 				A2021F7728E6DF9700506772 /* VaultMangerTest.m in Sources */,
+				5EC0F1E12F00A10000C5E006 /* CaptureShieldViewTest.m in Sources */,
 				BDFF48F99E375F02C4E7E26D /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1056,6 +1073,7 @@
 			files = (
 				A248635D28229379004633C9 /* BiometricModule.m in Sources */,
 				A2A9F31428858F45009AE778 /* BlurViewManager.m in Sources */,
+				5EC0F1E12F00A10000C5E003 /* CaptureShieldViewManager.m in Sources */,
 				A2B9D13E2449BAA400259841 /* SharedPreferences.m in Sources */,
 				A20C14202524C8A000686A2A /* AppUpdate.m in Sources */,
 				A22A152028C61E97001A632E /* Crypto.swift in Sources */,

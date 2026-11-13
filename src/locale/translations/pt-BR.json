@@ -447,7 +447,10 @@
     "hideZeroValue": "Ocultando ativos sem valor",
     "showZeroValue": "Mostrando ativos sem valor",
     "showFavsOnly": "Mostrando apenas favoritos",
-    "showAll": "Mostrando todos os ativos"
+    "showAll": "Mostrando todos os ativos",
+    "deviceIsRootedWarning": "Este dispositivo parece ter acesso root. Em um dispositivo com root, outros aplicativos podem conseguir ler os dados que o Xaman protege, incluindo os segredos da sua conta. Use o Xaman neste dispositivo por sua conta e risco.",
+    "deviceIsJailBrokenWarning": "Este dispositivo parece ter jailbreak. Em um dispositivo com jailbreak, outros aplicativos podem conseguir ler os dados que o Xaman protege, incluindo os segredos da sua conta. Use o Xaman neste dispositivo por sua conta e risco.",
+    "hiddenWhileScreenIsCaptured": "Oculto enquanto sua tela está sendo gravada ou compartilhada."
   },
   "onboarding": {
     "slideOne_title": "Pagamentos e\npedidos de pagamento\nno ledger XRP",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Limpar cache do resolver",
     "cacheClearedSuccessfully": "Cache Limpo com Sucesso",
-    "restartRequired": "É necessário reiniciar para que essas alterações tenham efeito"
+    "restartRequired": "É necessário reiniciar para que essas alterações tenham efeito",
+    "vaultInfo": "Informações do cofre",
+    "keychainGroup": "Grupo das Chaves"
   },
   "account": {
     "addAccount": "Adicionar uma conta",

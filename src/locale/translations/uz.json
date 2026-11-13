@@ -447,7 +447,10 @@
     "hideZeroValue": "Qiymatsiz aktivlarni yashirish",
     "showZeroValue": "Qiymatsiz aktivlarni ko'rsatish",
     "showFavsOnly": "Faqat sevimlilarni ko'rsatish",
-    "showAll": "Barcha aktivlarni ko'rsatish"
+    "showAll": "Barcha aktivlarni ko'rsatish",
+    "deviceIsRootedWarning": "Bu qurilma root qilinganga o'xshaydi. Root qilingan qurilmada boshqa ilovalar Xaman himoya qiladigan ma'lumotlarni, jumladan hisob sirlaringizni o'qiy olishi mumkin. Bu qurilmada Xaman ilovasidan foydalanish xavfi o'z zimmangizda.",
+    "deviceIsJailBrokenWarning": "Bu qurilma jailbreak qilinganga o'xshaydi. Jailbreak qilingan qurilmada boshqa ilovalar Xaman himoya qiladigan ma'lumotlarni, jumladan hisob sirlaringizni o'qiy olishi mumkin. Bu qurilmada Xaman ilovasidan foydalanish xavfi o'z zimmangizda.",
+    "hiddenWhileScreenIsCaptured": "Ekran yozib olinayotganda yoki ulashilayotganda yashiriladi."
   },
   "onboarding": {
     "slideOne_title": "To'lovlar va\r\nto'lov talablari\r\nXRP Ledger da",
@@ -996,7 +999,9 @@
     "cache": "Kesh",
     "clearResolverCache": "Resolver keshini tozalash",
     "cacheClearedSuccessfully": "Kesh muvaffaqiyatli tozalandi",
-    "restartRequired": "Ushbu o'zgarishlar kuchga kirishi uchun qayta ishga tushirish kerak"
+    "restartRequired": "Ushbu o'zgarishlar kuchga kirishi uchun qayta ishga tushirish kerak",
+    "vaultInfo": "Ombor ma'lumoti",
+    "keychainGroup": "Keychain guruhi"
   },
   "account": {
     "addAccount": "Hisob qo'shish",

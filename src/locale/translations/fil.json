@@ -447,7 +447,10 @@
     "hideZeroValue": "Itinatago ang mga walang halaga na asset",
     "showZeroValue": "Ipinapakita ang mga walang halaga na asset",
     "showFavsOnly": "Ipinapakita lang ang mga paborito",
-    "showAll": "Ipinapakita ang lahat ng asset"
+    "showAll": "Ipinapakita ang lahat ng asset",
+    "deviceIsRootedWarning": "Mukhang naka-root ang device na ito. Sa naka-root na device, maaaring mabasa ng ibang mga app ang data na pinoprotektahan ng Xaman, kabilang ang mga lihim ng iyong account. Gamitin ang Xaman sa device na ito sa sarili mong pananagutan.",
+    "deviceIsJailBrokenWarning": "Mukhang naka-jailbreak ang device na ito. Sa naka-jailbreak na device, maaaring mabasa ng ibang mga app ang data na pinoprotektahan ng Xaman, kabilang ang mga lihim ng iyong account. Gamitin ang Xaman sa device na ito sa sarili mong pananagutan.",
+    "hiddenWhileScreenIsCaptured": "Nakatago habang nire-record o ibinabahagi ang iyong screen."
   },
   "onboarding": {
     "slideOne_title": "Mga Pagbabayad at\r\nmga kahilingan sa pagbabayad\r\nsa XRP Ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "I-clear ang resolver cache",
     "cacheClearedSuccessfully": "Matagumpay na Na-clear ang Cache",
-    "restartRequired": "Kailangan ng pag-restart para magkabisa ang mga pagbabagong ito"
+    "restartRequired": "Kailangan ng pag-restart para magkabisa ang mga pagbabagong ito",
+    "vaultInfo": "Impormasyon ng vault",
+    "keychainGroup": "Grupo ng Keychain"
   },
   "account": {
     "addAccount": "Magdagdag ng isang account",

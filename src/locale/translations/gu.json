@@ -447,7 +447,10 @@
     "hideZeroValue": "શૂન્ય-મૂલ્ય સંપત્તિઓ છુપાવી રહ્યું છે",
     "showZeroValue": "શૂન્ય-મૂલ્ય સંપત્તિઓ બતાવી રહ્યું છે",
     "showFavsOnly": "ફક્ત મનપસંદ બતાવી રહ્યું છે",
-    "showAll": "બધું બતાવો"
+    "showAll": "બધું બતાવો",
+    "deviceIsRootedWarning": "આ ઉપકરણ રૂટ કરેલું હોય તેવું લાગે છે. રૂટ કરેલા ઉપકરણ પર, અન્ય એપ્સ Xaman જે ડેટાનું રક્ષણ કરે છે તે વાંચી શકે છે, જેમાં તમારી ગુપ્ત એકાઉન્ટ કી પણ સામેલ છે. આ ઉપકરણ પર Xaman નો ઉપયોગ તમારા પોતાના જોખમે કરો.",
+    "deviceIsJailBrokenWarning": "આ ઉપકરણ જેલબ્રેક કરેલું હોય તેવું લાગે છે. જેલબ્રેક કરેલા ઉપકરણ પર, અન્ય એપ્સ Xaman જે ડેટાનું રક્ષણ કરે છે તે વાંચી શકે છે, જેમાં તમારી ગુપ્ત એકાઉન્ટ કી પણ સામેલ છે. આ ઉપકરણ પર Xaman નો ઉપયોગ તમારા પોતાના જોખમે કરો.",
+    "hiddenWhileScreenIsCaptured": "સ્ક્રીન રેકોર્ડ કે શેર થતી હોય ત્યારે છુપાવેલું રહે છે."
   },
   "onboarding": {
     "slideOne_title": "ચુકવણીઓ અને\r\nચુકવણી વિનંતીઓ\r\nXRP લેજર પર",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "તિજોરીની માહિતી",
+    "keychainGroup": "કીચેન ગ્રૂપ"
   },
   "account": {
     "addAccount": "એક એકાઉન્ટ ઉમેરો",

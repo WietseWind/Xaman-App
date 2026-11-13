@@ -447,7 +447,10 @@
     "hideZeroValue": "Versteek bates sonder waarde",
     "showZeroValue": "Wys bates sonder waarde",
     "showFavsOnly": "Wys slegs gunstelinge",
-    "showAll": "Wys alle bates"
+    "showAll": "Wys alle bates",
+    "deviceIsRootedWarning": "Dit lyk asof hierdie toestel geroot is. Op 'n geroote toestel kan ander apps moontlik die data lees wat Xaman beskerm, insluitend jou rekeninggeheime. Gebruik Xaman op hierdie toestel op jou eie risiko.",
+    "deviceIsJailBrokenWarning": "Dit lyk asof hierdie toestel gejailbreak is. Op 'n gejailbreakte toestel kan ander apps moontlik die data lees wat Xaman beskerm, insluitend jou rekeninggeheime. Gebruik Xaman op hierdie toestel op jou eie risiko.",
+    "hiddenWhileScreenIsCaptured": "Versteek terwyl jou skerm opgeneem of gedeel word."
   },
   "onboarding": {
     "slideOne_title": "Betalings en\r\nbetalingsversoeke\r\nop die XRP Grootboek",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Maak skoon resolver cache",
     "cacheClearedSuccessfully": "Cache Suksesvol Skoongemaak",
-    "restartRequired": "'n Herbegin word vereis vir hierdie veranderinge om effek te hê"
+    "restartRequired": "'n Herbegin word vereis vir hierdie veranderinge om effek te hê",
+    "vaultInfo": "Kluisinligting",
+    "keychainGroup": "Keychain-groep"
   },
   "account": {
     "addAccount": "Voeg 'n rekening by",

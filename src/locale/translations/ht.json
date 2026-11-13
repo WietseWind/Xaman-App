@@ -447,7 +447,10 @@
     "hideZeroValue": "Kache jeton san valè",
     "showZeroValue": "Montre jeton san valè",
     "showFavsOnly": "Montre favori sèlman",
-    "showAll": "Montre tout jeton"
+    "showAll": "Montre tout jeton",
+    "deviceIsRootedWarning": "Sanble aparèy sa a root. Sou yon aparèy ki root, lòt aplikasyon ka rive li done Xaman pwoteje yo, enkli sekrè kont ou yo. Itilize Xaman sou aparèy sa a sou pwòp risk ou.",
+    "deviceIsJailBrokenWarning": "Sanble aparèy sa a jailbreak. Sou yon aparèy ki jailbreak, lòt aplikasyon ka rive li done Xaman pwoteje yo, enkli sekrè kont ou yo. Itilize Xaman sou aparèy sa a sou pwòp risk ou.",
+    "hiddenWhileScreenIsCaptured": "Kache pandan y ap anrejistre oswa pataje ekran ou."
   },
   "onboarding": {
     "slideOne_title": "Peman ak\r\ndemann peman\r\nsou Ledger XRP la",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Efase cache resolver",
     "cacheClearedSuccessfully": "Cache Efase Avèk Siksè",
-    "restartRequired": "Yon redemaraj obligatwa pou chanjman sa yo pran efè"
+    "restartRequired": "Yon redemaraj obligatwa pou chanjman sa yo pran efè",
+    "vaultInfo": "Enfò kofrefò",
+    "keychainGroup": "Gwoup Keychain"
   },
   "account": {
     "addAccount": "Ajoute yon kont",

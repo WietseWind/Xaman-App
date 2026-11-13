@@ -27,6 +27,7 @@ import {
 import { SetFlagSecure, ExitApp, GetAppVersionCode, GetAppBuildNumber, IsDebugBuild } from '@common/helpers/app';
 
 import Vault from '@common/libs/vault';
+import { getKeychainGroupInfo } from '@common/libs/vaultInfo';
 import CrashReporter from '@common/libs/crash';
 
 // Storage
@@ -50,6 +51,7 @@ class Application {
     private storage: DataStorage;
     private initialized: boolean;
     private settingsReported: boolean;
+    private isModifiedDevice: boolean;
     private logger: any;
 
     constructor() {
@@ -57,6 +59,7 @@ class Application {
         this.logger = services.LoggerService.createLogger('App');
         this.initialized = false;
         this.settingsReported = false;
+        this.isModifiedDevice = false;
     }
 
     run() {
@@ -103,6 +106,7 @@ class Application {
                     this.initialized = true;
                     this.reportSettings();
                     this.boot();
+                    this.warnOnModifiedDevice();
                 })
                 .catch(this.handleError);
         });
@@ -142,10 +146,27 @@ class Application {
             Alert.alert('Error', 'Unexpected error happened');
         }
 
-        // if error is not caused from device being jail-broken or rooted then report error to the crashlytics
-        if (![ErrorMessages.runningOnRootedDevice, ErrorMessages.runningOnJailBrokenDevice].includes(message)) {
-            services.LoggerService.logError('APP_STARTUP_ERROR', exception);
+        services.LoggerService.logError('APP_STARTUP_ERROR', exception);
+    };
+
+    /**
+     * Rooted (Android) or jailbroken (iOS) device: tell the user once per app start, then carry on.
+     */
+    warnOnModifiedDevice = () => {
+        if (!this.isModifiedDevice) {
+            return;
         }
+        // once per process: a soft boot (activity re-created) doesn't repeat it
+        this.isModifiedDevice = false;
+
+        const Localize = require('@locale').default;
+
+        Alert.alert(
+            Localize.t('global.warning'),
+            Localize.t(Platform.OS === 'android' ? 'global.deviceIsRootedWarning' : 'global.deviceIsJailBrokenWarning'),
+            [{ text: Localize.t('global.IUnderstand') }],
+            { cancelable: false },
+        );
     };
 
     /**
@@ -281,7 +302,9 @@ class Application {
     // initialize the storage
     initializeStorage = () => {
         return this.storage.initialize().then(() => {
-            return Vault.inspectHealth().then(() => undefined);
+            return Vault.inspectHealth()
+                .then(() => getKeychainGroupInfo())
+                .then(() => undefined);
         });
     };
 
@@ -366,24 +389,12 @@ class Application {
         return new Promise<void>(async (resolve, reject) => {
             try {
                 //  ====== check for device root or jailBroken ======
-                if (Platform.OS === 'android') {
-                    const isRooted = await IsDeviceRooted();
-                    if (isRooted) {
-                        // reject(new Error(ErrorMessages.runningOnRootedDevice));
-                        // return;
-                    }
-                } else if (Platform.OS === 'ios') {
-                    if (process?.env?.NODE_ENV === 'development') {
-                        // That's fine
-                    } else {
-                        const isJailBroken = await IsDeviceJailBroken();
-
-                        if (isJailBroken) {
-                            // console.log('isJailBroken', isJailBroken);
-                            // reject(new Error(ErrorMessages.runningOnJailBrokenDevice));
-                            return;
-                        }
-                    }
+                // Warn only, never block: the warning shows once the app is up (warnOnModifiedDevice).
+                // Not on debug builds. Simulators and emulators report false natively, so e2e and CI
+                // runs never see it.
+                if (!IsDebugBuild()) {
+                    const check = Platform.OS === 'android' ? IsDeviceRooted : IsDeviceJailBroken;
+                    this.isModifiedDevice = (await check().catch(() => false)) === true;
                 }
 
                 //  ====== check if we need to clean up the vault ======

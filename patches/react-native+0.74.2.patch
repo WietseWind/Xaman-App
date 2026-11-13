@@ -1,20 +1,41 @@
 diff --git a/node_modules/react-native/Libraries/Network/RCTNetworking.mm b/node_modules/react-native/Libraries/Network/RCTNetworking.mm
-index 0eae618..c21cd86 100644
+index 0eae618..d611f21 100644
 --- a/node_modules/react-native/Libraries/Network/RCTNetworking.mm
 +++ b/node_modules/react-native/Libraries/Network/RCTNetworking.mm
-@@ -571,6 +571,15 @@ - (void)sendRequest:(NSURLRequest *)request
+@@ -571,6 +571,36 @@ - (void)sendRequest:(NSURLRequest *)request
          responseSender:(RCTResponseSenderBlock)responseSender
  {
    RCTAssertThread([self requestQueue], @"sendRequest: must be called on request queue");
-+  // Define the allowed endpoints
-+  NSSet *allowedEndpoints = [NSSet setWithObjects:@"clients3.google.com", @"xaman.app", nil];
-+  #if DEBUG
-+    // Debug build, skip the check
-+  #else
-+    // Production build, perform the check
-+    NSString* host = [request.URL host];
-+    NSAssert([allowedEndpoints containsObject: host], [@"fetch() unsecure endpoint " stringByAppendingString:domain]);
-+  #endif
++#if !DEBUG
++  // fetch() and XMLHttpRequest reach known hosts only; any other http(s) request fails.
++  // Android has the same list in HTTPClientFactory.
++  static NSSet<NSString *> *allowedHosts;
++  static dispatch_once_t allowedHostsOnce;
++  dispatch_once(&allowedHostsOnce, ^{
++    allowedHosts = [NSSet setWithObjects:@"xaman.app", @"cdn.xaman.app", @"xumm.app", @"cdn.xumm.pro",
++                                         @"xumm-cdn.imgix.net", @"image-proxy.xrpl-labs.com", @"xrplcluster.com",
++                                         @"xahau.network", @"xahau-test.net", @"custom-node.xrpl-labs.com",
++                                         @"rpc.xrpl-labs.com", @"rpc.xahau.network", @"rpc.xahau-test.net",
++                                         @"mainnet.xrpl-rpc.com", @"testnet.xrpl-rpc.com", @"clients3.google.com", nil];
++  });
++  NSString *scheme = request.URL.scheme.lowercaseString;
++  if ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) {
++    NSString *host = request.URL.host.lowercaseString;
++    BOOL allowed = host != nil && [allowedHosts containsObject:host];
++    if (!allowed) {
++      NSLog(@"Request to %@ denied - not in allowed endpoints", host);
++      RCTNetworkTask *denied = [self networkTaskWithRequest:request
++                                            completionBlock:^(__unused NSURLResponse *response, __unused NSData *data, __unused NSError *error) {
++                                            }];
++      if (denied) {
++        responseSender(@[ denied.requestID ]);
++        [self sendEventWithName:@"didCompleteNetworkResponse"
++                           body:@[ denied.requestID, @"Request denied: host is not allowed", @NO ]];
++      }
++      return;
++    }
++  }
++#endif
    __weak __typeof(self) weakSelf = self;
    __block RCTNetworkTask *task;
    RCTURLRequestProgressBlock uploadProgressBlock = ^(int64_t progress, int64_t total) {

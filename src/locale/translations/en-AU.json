@@ -447,7 +447,10 @@
     "hideZeroValue": "Hiding no-value assets",
     "showZeroValue": "Showing no-value assets",
     "showFavsOnly": "Showing favourites only",
-    "showAll": "Showing all assets"
+    "showAll": "Showing all assets",
+    "deviceIsRootedWarning": "This device appears to be rooted. On a rooted device, other apps may be able to read the data Xaman protects, including your account secrets. Use Xaman on this device at your own risk.",
+    "deviceIsJailBrokenWarning": "This device appears to be jailbroken. On a jailbroken device, other apps may be able to read the data Xaman protects, including your account secrets. Use Xaman on this device at your own risk.",
+    "hiddenWhileScreenIsCaptured": "Hidden while your screen is being recorded or shared."
   },
   "onboarding": {
     "slideOne_title": "Payments and\r\npayment requests\r\non the ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Vault info",
+    "keychainGroup": "Keychain group"
   },
   "account": {
     "addAccount": "Add an account",

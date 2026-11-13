@@ -447,7 +447,10 @@
     "hideZeroValue": "Nascondi asset senza valore",
     "showZeroValue": "Mostra asset senza valore",
     "showFavsOnly": "Mostra solo preferiti",
-    "showAll": "Mostra tutti gli asset"
+    "showAll": "Mostra tutti gli asset",
+    "deviceIsRootedWarning": "Sembra che su questo dispositivo sia stato eseguito il root. Su un dispositivo con root, altre app potrebbero leggere i dati protetti da Xaman, incluse le chiavi segrete dei tuoi account. Usa Xaman su questo dispositivo a tuo rischio e pericolo.",
+    "deviceIsJailBrokenWarning": "Sembra che su questo dispositivo sia stato eseguito il jailbreak. Su un dispositivo con jailbreak, altre app potrebbero leggere i dati protetti da Xaman, incluse le chiavi segrete dei tuoi account. Usa Xaman su questo dispositivo a tuo rischio e pericolo.",
+    "hiddenWhileScreenIsCaptured": "Nascosto durante la registrazione o la condivisione dello schermo."
   },
   "onboarding": {
     "slideOne_title": "Pagamenti e richieste di pagamento sul registro XRP",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Cancella cache resolver",
     "cacheClearedSuccessfully": "Cache cancellata con successo",
-    "restartRequired": "È necessario un riavvio per applicare queste modifiche"
+    "restartRequired": "È necessario un riavvio per applicare queste modifiche",
+    "vaultInfo": "Info cassaforte",
+    "keychainGroup": "Gruppo portachiavi"
   },
   "account": {
     "addAccount": "Aggiungi un account",

@@ -447,7 +447,10 @@
     "hideZeroValue": "Nulla értékű eszközök elrejtése",
     "showZeroValue": "Nulla értékű eszközök megjelenítése",
     "showFavsOnly": "Csak kedvencek megjelenítése",
-    "showAll": "Összes eszköz megjelenítése"
+    "showAll": "Összes eszköz megjelenítése",
+    "deviceIsRootedWarning": "Úgy tűnik, ez az eszköz rootolva van. Rootolt eszközön más alkalmazások hozzáférhetnek a Xaman által védett adatokhoz, beleértve a fiókok titkos kulcsait is. A Xaman használata ezen az eszközön saját felelősségre történik.",
+    "deviceIsJailBrokenWarning": "Úgy tűnik, ezen az eszközön jailbreaket hajtottak végre. Jailbreakelt eszközön más alkalmazások hozzáférhetnek a Xaman által védett adatokhoz, beleértve a fiókok titkos kulcsait is. A Xaman használata ezen az eszközön saját felelősségre történik.",
+    "hiddenWhileScreenIsCaptured": "Rejtve, amíg a képernyőt rögzítik vagy megosztják."
   },
   "onboarding": {
     "slideOne_title": "Fizetések és\r\nfizetési kérések\r\na főkönyvön",
@@ -996,7 +999,9 @@
     "cache": "Gyorsítótár",
     "clearResolverCache": "Resolver gyorsítótár törlése",
     "cacheClearedSuccessfully": "Gyorsítótár sikeresen törölve",
-    "restartRequired": "Újraindítás szükséges a változások életbelépéséhez"
+    "restartRequired": "Újraindítás szükséges a változások életbelépéséhez",
+    "vaultInfo": "Széfinformáció",
+    "keychainGroup": "Kulcskarika-csoport"
   },
   "account": {
     "addAccount": "Fiók hozzáadása",

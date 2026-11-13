@@ -447,7 +447,10 @@
     "hideZeroValue": "Peida väärtuseta varad",
     "showZeroValue": "Näita väärtuseta varasid",
     "showFavsOnly": "Näita ainult lemmikuid",
-    "showAll": "Näita kõiki varasid"
+    "showAll": "Näita kõiki varasid",
+    "deviceIsRootedWarning": "Näib, et see seade on ruuditud (root-õigustega). Ruuditud seadmes võivad teised rakendused lugeda andmeid, mida Xaman kaitseb, sealhulgas sinu konto saladusi. Kasuta Xamani selles seadmes omal vastutusel.",
+    "deviceIsJailBrokenWarning": "Näib, et sellele seadmele on tehtud jailbreak. Jailbreak'iga seadmes võivad teised rakendused lugeda andmeid, mida Xaman kaitseb, sealhulgas sinu konto saladusi. Kasuta Xamani selles seadmes omal vastutusel.",
+    "hiddenWhileScreenIsCaptured": "Peidetud, kuni sinu ekraani salvestatakse või jagatakse."
   },
   "onboarding": {
     "slideOne_title": "Maksed ja maksetaotlused XRP Ledgeris",
@@ -996,7 +999,9 @@
     "cache": "Vahemälu",
     "clearResolverCache": "Tühjenda lahendaja vahemälu",
     "cacheClearedSuccessfully": "Vahemälu edukalt tühjendatud",
-    "restartRequired": "Nende muudatuste jõustumiseks on vajalik taaskäivitus"
+    "restartRequired": "Nende muudatuste jõustumiseks on vajalik taaskäivitus",
+    "vaultInfo": "Hoidla info",
+    "keychainGroup": "Keychaini grupp"
   },
   "account": {
     "addAccount": "Lisa konto",

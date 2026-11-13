@@ -447,7 +447,10 @@
     "hideZeroValue": "Menyembunyikan aset tanpa nilai",
     "showZeroValue": "Menampilkan aset tanpa nilai",
     "showFavsOnly": "Menampilkan favorit saja",
-    "showAll": "Menampilkan semua aset"
+    "showAll": "Menampilkan semua aset",
+    "deviceIsRootedWarning": "Perangkat ini tampaknya telah di-root. Pada perangkat yang di-root, aplikasi lain mungkin dapat membaca data yang dilindungi Xaman, termasuk rahasia akun Anda. Gunakan Xaman di perangkat ini dengan risiko Anda sendiri.",
+    "deviceIsJailBrokenWarning": "Perangkat ini tampaknya telah di-jailbreak. Pada perangkat yang di-jailbreak, aplikasi lain mungkin dapat membaca data yang dilindungi Xaman, termasuk rahasia akun Anda. Gunakan Xaman di perangkat ini dengan risiko Anda sendiri.",
+    "hiddenWhileScreenIsCaptured": "Disembunyikan selama layar Anda direkam atau dibagikan."
   },
   "onboarding": {
     "slideOne_title": "Pembayaran dan permintaan pembayaran pada XRP Ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Hapus cache resolver",
     "cacheClearedSuccessfully": "Cache Berhasil Dihapus",
-    "restartRequired": "Restart diperlukan agar perubahan ini berlaku"
+    "restartRequired": "Restart diperlukan agar perubahan ini berlaku",
+    "vaultInfo": "Info brankas",
+    "keychainGroup": "Grup Rantai Kunci"
   },
   "account": {
     "addAccount": "Tambahkan akun",

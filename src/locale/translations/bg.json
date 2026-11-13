@@ -447,7 +447,10 @@
     "hideZeroValue": "Скриване на активи без стойност",
     "showZeroValue": "Показване на активи без стойност",
     "showFavsOnly": "Показване само на любими",
-    "showAll": "Показване на всички активи"
+    "showAll": "Показване на всички активи",
+    "deviceIsRootedWarning": "Изглежда, че това устройство е с root достъп. На устройство с root достъп други приложения може да успеят да прочетат данните, които Xaman защитава, включително тайните ключове на акаунта ви. Използвайте Xaman на това устройство на собствен риск.",
+    "deviceIsJailBrokenWarning": "Изглежда, че на това устройство е направен jailbreak. На устройство с jailbreak други приложения може да успеят да прочетат данните, които Xaman защитава, включително тайните ключове на акаунта ви. Използвайте Xaman на това устройство на собствен риск.",
+    "hiddenWhileScreenIsCaptured": "Скрито, докато екранът ви се записва или споделя."
   },
   "onboarding": {
     "slideOne_title": "Плащания и\r\nискания за плащане\r\nна XRP Ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Информация за трезора",
+    "keychainGroup": "Група на ключодържателя"
   },
   "account": {
     "addAccount": "Добавяне на сметка",

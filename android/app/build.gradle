@@ -355,7 +355,9 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.11.0'
     
     // Your existing app-specific dependencies
-    implementation 'com.google.firebase:firebase-messaging:+'
+    // Pinned: '+' takes whatever is newest on the day of the build (26.0.2 came out 2026-11-13).
+    // 26.0.1 is what store builds up to 481 shipped. Bump on purpose, with a test run.
+    implementation 'com.google.firebase:firebase-messaging:26.0.1'
     implementation 'com.google.firebase:firebase-common-ktx'
     implementation 'com.google.firebase:firebase-analytics-ktx'
     // over-the-air updates: tag crashes with the running bundle before JS starts (ApplicationLoader)

@@ -447,7 +447,10 @@
     "hideZeroValue": "ნულოვანი ღირებულების აქტივების დამალვა",
     "showZeroValue": "ნულოვანი ღირებულების აქტივების ჩვენება",
     "showFavsOnly": "მხოლოდ რჩეულების ჩვენება",
-    "showAll": "ყველა აქტივის ჩვენება"
+    "showAll": "ყველა აქტივის ჩვენება",
+    "deviceIsRootedWarning": "როგორც ჩანს, ამ მოწყობილობას root-წვდომა აქვს. Root-წვდომის მქონე მოწყობილობაზე სხვა აპლიკაციებმა შესაძლოა წაიკითხონ მონაცემები, რომლებსაც Xaman იცავს, მათ შორის თქვენი ანგარიშის საიდუმლოებები. გამოიყენეთ Xaman ამ მოწყობილობაზე საკუთარი რისკით.",
+    "deviceIsJailBrokenWarning": "როგორც ჩანს, ამ მოწყობილობაზე jailbreak არის გაკეთებული. Jailbreak-ის მქონე მოწყობილობაზე სხვა აპლიკაციებმა შესაძლოა წაიკითხონ მონაცემები, რომლებსაც Xaman იცავს, მათ შორის თქვენი ანგარიშის საიდუმლოებები. გამოიყენეთ Xaman ამ მოწყობილობაზე საკუთარი რისკით.",
+    "hiddenWhileScreenIsCaptured": "დამალულია ეკრანის ჩაწერის ან გაზიარების დროს."
   },
   "onboarding": {
     "slideOne_title": "გადახდები და\r\nგადახდის მოთხოვნები\r\nXRP ლეჯერზე",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "სეიფის ინფო",
+    "keychainGroup": "Keychain-ის ჯგუფი"
   },
   "account": {
     "addAccount": "ანგარიშის დამატება",

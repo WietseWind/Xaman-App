@@ -447,7 +447,10 @@
     "hideZeroValue": "価値のない資産を非表示",
     "showZeroValue": "価値のない資産を表示",
     "showFavsOnly": "お気に入りのみ表示",
-    "showAll": "すべての資産を表示"
+    "showAll": "すべての資産を表示",
+    "deviceIsRootedWarning": "このデバイスはroot化されているようです。root化されたデバイスでは、アカウントシークレットを含め、Xamanが保護しているデータを他のアプリが読み取れる可能性があります。このデバイスでのXamanの使用は、ご自身の責任で行ってください。",
+    "deviceIsJailBrokenWarning": "このデバイスは脱獄（ジェイルブレイク）されているようです。脱獄されたデバイスでは、アカウントシークレットを含め、Xamanが保護しているデータを他のアプリが読み取れる可能性があります。このデバイスでのXamanの使用は、ご自身の責任で行ってください。",
+    "hiddenWhileScreenIsCaptured": "画面の録画中・共有中は非表示になります。"
   },
   "onboarding": {
     "slideOne_title": "XRPレジャーでの\r\n支払いと\r\n支払いリクエスト",
@@ -996,7 +999,9 @@
     "cache": "キャッシュ",
     "clearResolverCache": "リゾルバーキャッシュをクリア",
     "cacheClearedSuccessfully": "キャッシュが正常にクリアされました",
-    "restartRequired": "これらの変更を有効にするには再起動が必要です"
+    "restartRequired": "これらの変更を有効にするには再起動が必要です",
+    "vaultInfo": "ボールト情報",
+    "keychainGroup": "キーチェーングループ"
   },
   "account": {
     "addAccount": "アカウントを追加",

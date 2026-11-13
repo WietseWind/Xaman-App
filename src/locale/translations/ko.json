@@ -447,7 +447,10 @@
     "hideZeroValue": "가치 없는 자산 숨기기",
     "showZeroValue": "가치 없는 자산 표시",
     "showFavsOnly": "즐겨찾기만 표시",
-    "showAll": "모든 자산 표시"
+    "showAll": "모든 자산 표시",
+    "deviceIsRootedWarning": "이 기기는 루팅된 것으로 보입니다. 루팅된 기기에서는 다른 앱이 계정 비밀 키를 포함하여 Xaman이 보호하는 데이터를 읽을 수 있습니다. 이 기기에서 Xaman을 사용하는 데 따른 책임은 사용자 본인에게 있습니다.",
+    "deviceIsJailBrokenWarning": "이 기기는 탈옥된 것으로 보입니다. 탈옥된 기기에서는 다른 앱이 계정 비밀 키를 포함하여 Xaman이 보호하는 데이터를 읽을 수 있습니다. 이 기기에서 Xaman을 사용하는 데 따른 책임은 사용자 본인에게 있습니다.",
+    "hiddenWhileScreenIsCaptured": "화면이 녹화되거나 공유되는 동안에는 숨겨집니다."
   },
   "onboarding": {
     "slideOne_title": "XRP 원장에서 지불 및 지불 요청",
@@ -996,7 +999,9 @@
     "cache": "캐시",
     "clearResolverCache": "resolver 캐시 지우기",
     "cacheClearedSuccessfully": "캐시가 성공적으로 지워졌습니다",
-    "restartRequired": "이러한 변경 사항을 적용하려면 재시작이 필요합니다"
+    "restartRequired": "이러한 변경 사항을 적용하려면 재시작이 필요합니다",
+    "vaultInfo": "금고 정보",
+    "keychainGroup": "키체인 그룹"
   },
   "account": {
     "addAccount": "계정 추가",

@@ -447,7 +447,10 @@
     "hideZeroValue": "Skjuler tokens uten verdi",
     "showZeroValue": "Viser tokens uten verdi",
     "showFavsOnly": "Viser kun favoritter",
-    "showAll": "Viser alle tokens"
+    "showAll": "Viser alle tokens",
+    "deviceIsRootedWarning": "Denne enheten ser ut til å være rootet. På en rootet enhet kan andre apper kanskje lese dataene Xaman beskytter, inkludert kontohemmelighetene dine. Bruk Xaman på denne enheten på egen risiko.",
+    "deviceIsJailBrokenWarning": "Denne enheten ser ut til å være jailbreaket. På en jailbreaket enhet kan andre apper kanskje lese dataene Xaman beskytter, inkludert kontohemmelighetene dine. Bruk Xaman på denne enheten på egen risiko.",
+    "hiddenWhileScreenIsCaptured": "Skjult mens skjermen din tas opp eller deles."
   },
   "onboarding": {
     "slideOne_title": "Betalinger og\r\nbetalingsforespørsler\r\npå XRP ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Tøm resolver-cache",
     "cacheClearedSuccessfully": "Cache tømt vellykket",
-    "restartRequired": "En omstart er nødvendig for at disse endringene skal tre i kraft"
+    "restartRequired": "En omstart er nødvendig for at disse endringene skal tre i kraft",
+    "vaultInfo": "Hvelvinfo",
+    "keychainGroup": "Nøkkelringgruppe"
   },
   "account": {
     "addAccount": "Legg til en konto",

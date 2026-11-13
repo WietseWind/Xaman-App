@@ -19,6 +19,7 @@ import { AppScreens, NetworkConfig } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 
 import { SetFlagSecure, GetAppVersionCode, ExitApp } from '@common/helpers/app';
+import { KeychainGroupInfo, getKeychainGroupInfo } from '@common/libs/vaultInfo';
 
 import { Header, Switch, MultiPressDetector } from '@components/General';
 
@@ -60,6 +61,8 @@ export interface State {
     otaReady: boolean;
     /** an update downloading or downloaded from OTA Updates (otaInstall.ts) */
     otaInstall?: OtaInstall;
+    // iOS, developer mode: the access groups the keychain items are in
+    keychainGroupInfo?: KeychainGroupInfo;
 }
 
 /* Component ==================================================================== */
@@ -67,6 +70,8 @@ class AdvancedSettingsView extends Component<Props, State> {
     static screenName = AppScreens.Settings.Advanced;
 
     private unsubscribeOtaInstall?: () => void;
+    private mounted = false;
+    private keychainGroupInfoRequested = false;
 
     static options() {
         return {
@@ -84,25 +89,48 @@ class AdvancedSettingsView extends Component<Props, State> {
             otaChecking: false,
             otaReady: false,
             otaInstall: getOtaInstall(),
+            keychainGroupInfo: undefined,
         };
     }
 
     componentDidMount() {
+        this.mounted = true;
         CoreRepository.on('updateSettings', this.updateUI);
         this.unsubscribeOtaInstall = subscribeOtaInstall((otaInstall) => this.setState({ otaInstall }));
+        this.loadKeychainGroupInfo();
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         CoreRepository.off('updateSettings', this.updateUI);
         if (this.unsubscribeOtaInstall) {
             this.unsubscribeOtaInstall();
         }
     }
 
-    updateUI = (coreSettings: CoreModel) => {
-        this.setState({
-            coreSettings,
+    // iOS, developer mode: where the keychain items are (also goes to the session log)
+    loadKeychainGroupInfo = () => {
+        const { coreSettings } = this.state;
+
+        if (Platform.OS !== 'ios' || !coreSettings.developerMode || this.keychainGroupInfoRequested) {
+            return;
+        }
+        this.keychainGroupInfoRequested = true;
+
+        getKeychainGroupInfo().then((keychainGroupInfo) => {
+            if (this.mounted) {
+                this.setState({ keychainGroupInfo });
+            }
         });
+    };
+
+    updateUI = (coreSettings: CoreModel) => {
+        this.setState(
+            {
+                coreSettings,
+            },
+            this.loadKeychainGroupInfo,
+        );
     };
 
     showChangeLog = () => {
@@ -400,6 +428,30 @@ class AdvancedSettingsView extends Component<Props, State> {
         return undefined;
     };
 
+    renderVaultInfo = () => {
+        const { keychainGroupInfo } = this.state;
+
+        const groups = keychainGroupInfo?.groups ?? {};
+        // the shared group first, then any group that still holds items
+        const names = Object.keys(groups).sort((a, b) => {
+            if (a === keychainGroupInfo?.sharedGroup) return -1;
+            if (b === keychainGroupInfo?.sharedGroup) return 1;
+            return a.localeCompare(b);
+        });
+
+        return (
+            <SettingsSection title={Localize.t('settings.vaultInfo')}>
+                <SettingsRow
+                    testID="vault-keychain-group"
+                    label={Localize.t('settings.keychainGroup')}
+                    value={names.length > 0 ? names.map((name) => `${name} (${groups[name]})`).join('\n') : '—'}
+                    valueStyle={styles.identifier}
+                    selectableValue
+                />
+            </SettingsSection>
+        );
+    };
+
     renderHotUpdates = () => {
         const { otaReady, otaInstall } = this.state;
 
@@ -536,6 +588,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                         />
                     </SettingsSection>
                     {coreSettings.developerMode && this.renderHotUpdates()}
+                    {coreSettings.developerMode && Platform.OS === 'ios' && this.renderVaultInfo()}
                 </ScrollView>
             </View>
         );

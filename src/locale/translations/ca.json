@@ -447,7 +447,10 @@
     "hideZeroValue": "Ocultant actius sense valor",
     "showZeroValue": "Mostrant actius sense valor",
     "showFavsOnly": "Mostrant només favorits",
-    "showAll": "Mostrant tots els actius"
+    "showAll": "Mostrant tots els actius",
+    "deviceIsRootedWarning": "Sembla que aquest dispositiu està rootejat. En un dispositiu rootejat, altres aplicacions podrien llegir les dades que Xaman protegeix, incloses les claus privades dels teus comptes. Fes servir Xaman en aquest dispositiu sota la teva responsabilitat.",
+    "deviceIsJailBrokenWarning": "Sembla que aquest dispositiu té jailbreak. En un dispositiu amb jailbreak, altres aplicacions podrien llegir les dades que Xaman protegeix, incloses les claus privades dels teus comptes. Fes servir Xaman en aquest dispositiu sota la teva responsabilitat.",
+    "hiddenWhileScreenIsCaptured": "Ocult mentre es grava o es comparteix la pantalla."
   },
   "onboarding": {
     "slideOne_title": "Pagaments i sol·licituds de pagament a l'XRPL",
@@ -996,7 +999,9 @@
     "cache": "Memòria cau",
     "clearResolverCache": "Esborrar memòria cau del resolutor",
     "cacheClearedSuccessfully": "Memòria cau esborrada amb èxit",
-    "restartRequired": "Es requereix un reinici perquè aquests canvis tinguin efecte"
+    "restartRequired": "Es requereix un reinici perquè aquests canvis tinguin efecte",
+    "vaultInfo": "Informació de la caixa forta",
+    "keychainGroup": "Grup del clauer"
   },
   "account": {
     "addAccount": "Afegeix un compte",

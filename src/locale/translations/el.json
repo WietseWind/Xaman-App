@@ -447,7 +447,10 @@
     "hideZeroValue": "Απόκρυψη περιουσιακών στοιχείων χωρίς αξία",
     "showZeroValue": "Εμφάνιση περιουσιακών στοιχείων χωρίς αξία",
     "showFavsOnly": "Εμφάνιση μόνο αγαπημένων",
-    "showAll": "Εμφάνιση όλων των περιουσιακών στοιχείων"
+    "showAll": "Εμφάνιση όλων των περιουσιακών στοιχείων",
+    "deviceIsRootedWarning": "Αυτή η συσκευή φαίνεται να είναι rooted. Σε μια rooted συσκευή, άλλες εφαρμογές ενδέχεται να μπορούν να διαβάσουν τα δεδομένα που προστατεύει το Xaman, συμπεριλαμβανομένων των μυστικών του λογαριασμού σας. Χρησιμοποιήστε το Xaman σε αυτή τη συσκευή με δική σας ευθύνη.",
+    "deviceIsJailBrokenWarning": "Αυτή η συσκευή φαίνεται να έχει υποστεί jailbreak. Σε μια συσκευή με jailbreak, άλλες εφαρμογές ενδέχεται να μπορούν να διαβάσουν τα δεδομένα που προστατεύει το Xaman, συμπεριλαμβανομένων των μυστικών του λογαριασμού σας. Χρησιμοποιήστε το Xaman σε αυτή τη συσκευή με δική σας ευθύνη.",
+    "hiddenWhileScreenIsCaptured": "Κρυφό κατά την εγγραφή ή την κοινή χρήση της οθόνης."
   },
   "onboarding": {
     "slideOne_title": "Αποστολές και αιτήσεις συναλλαγών στο σύστημα του XRP",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Πληροφορίες θησαυροφυλακίου",
+    "keychainGroup": "Ομάδα κλειδοθήκης"
   },
   "account": {
     "addAccount": "Προσθήκη λογαριασμού",
