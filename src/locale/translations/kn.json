@@ -447,7 +447,10 @@
     "hideZeroValue": "Hiding no-value assets",
     "showZeroValue": "Showing no-value assets",
     "showFavsOnly": "Showing favorites only",
-    "showAll": "Showing all assets"
+    "showAll": "Showing all assets",
+    "deviceIsRootedWarning": "ಈ ಸಾಧನವನ್ನು ರೂಟ್ ಮಾಡಲಾಗಿದೆ ಎಂದು ತೋರುತ್ತದೆ. ರೂಟ್ ಮಾಡಿದ ಸಾಧನದಲ್ಲಿ, ನಿಮ್ಮ ಖಾತೆಯ ರಹಸ್ಯಗಳು ಸೇರಿದಂತೆ Xaman ರಕ್ಷಿಸುವ ಡೇಟಾವನ್ನು ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಓದಲು ಸಾಧ್ಯವಾಗಬಹುದು. ಈ ಸಾಧನದಲ್ಲಿ Xaman ಅನ್ನು ನಿಮ್ಮ ಸ್ವಂತ ಜವಾಬ್ದಾರಿಯಲ್ಲಿ ಬಳಸಿ.",
+    "deviceIsJailBrokenWarning": "ಈ ಸಾಧನವನ್ನು ಜೈಲ್‌ಬ್ರೇಕ್ ಮಾಡಲಾಗಿದೆ ಎಂದು ತೋರುತ್ತದೆ. ಜೈಲ್‌ಬ್ರೇಕ್ ಮಾಡಿದ ಸಾಧನದಲ್ಲಿ, ನಿಮ್ಮ ಖಾತೆಯ ರಹಸ್ಯಗಳು ಸೇರಿದಂತೆ Xaman ರಕ್ಷಿಸುವ ಡೇಟಾವನ್ನು ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಓದಲು ಸಾಧ್ಯವಾಗಬಹುದು. ಈ ಸಾಧನದಲ್ಲಿ Xaman ಅನ್ನು ನಿಮ್ಮ ಸ್ವಂತ ಜವಾಬ್ದಾರಿಯಲ್ಲಿ ಬಳಸಿ.",
+    "hiddenWhileScreenIsCaptured": "ಪರದೆಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುವಾಗ ಅಥವಾ ಹಂಚಿಕೊಳ್ಳುವಾಗ ಮರೆಮಾಡಲಾಗುತ್ತದೆ."
   },
   "onboarding": {
     "slideOne_title": "ಪಾವತಿಗಳು ಮತ್ತು\r\nಪಾವತಿ ವಿನಂತಿಗಳು\r\nXRP ಲೆಡ್ಜರ್‌ನಲ್ಲಿ",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "ಖಜಾನೆ ಮಾಹಿತಿ",
+    "keychainGroup": "ಕೀಚೇನ್ ಗುಂಪು"
   },
   "account": {
     "addAccount": "ಖಾತೆಯನ್ನು ಸೇರಿಸಿ",

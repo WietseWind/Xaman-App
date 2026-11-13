@@ -447,7 +447,10 @@
     "hideZeroValue": "Slēpj bezvertīgus aktīvus",
     "showZeroValue": "Rāda bezvertīgus aktīvus",
     "showFavsOnly": "Rāda tikai izlasi",
-    "showAll": "Rāda visus aktīvus"
+    "showAll": "Rāda visus aktīvus",
+    "deviceIsRootedWarning": "Šķiet, ka šai ierīcei ir root piekļuve. Ierīcē ar root piekļuvi citas lietotnes, iespējams, var nolasīt Xaman aizsargātos datus, tostarp jūsu kontu slepenās atslēgas. Izmantojiet Xaman šajā ierīcē uz savu risku.",
+    "deviceIsJailBrokenWarning": "Šķiet, ka šai ierīcei ir veikts jailbreak. Ierīcē ar jailbreak citas lietotnes, iespējams, var nolasīt Xaman aizsargātos datus, tostarp jūsu kontu slepenās atslēgas. Izmantojiet Xaman šajā ierīcē uz savu risku.",
+    "hiddenWhileScreenIsCaptured": "Paslēpts, kamēr jūsu ekrāns tiek ierakstīts vai kopīgots."
   },
   "onboarding": {
     "slideOne_title": "Maksājumu un maksājumu pieprasījumi par XRP virsgrāmatu",
@@ -996,7 +999,9 @@
     "cache": "Kešatmiņa",
     "clearResolverCache": "Notīrīt resolver kešatmiņu",
     "cacheClearedSuccessfully": "Kešatmiņa veiksmīgi notīrīta",
-    "restartRequired": "Nepieciešama atkārtota palaišana, lai šīs izmaiņas stātos spēkā"
+    "restartRequired": "Nepieciešama atkārtota palaišana, lai šīs izmaiņas stātos spēkā",
+    "vaultInfo": "Glabātavas informācija",
+    "keychainGroup": "Keychain grupa"
   },
   "account": {
     "addAccount": "Pievienot kontu",

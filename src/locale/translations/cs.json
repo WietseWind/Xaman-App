@@ -447,7 +447,10 @@
     "hideZeroValue": "Skrývání aktiv bez hodnoty",
     "showZeroValue": "Zobrazování aktiv bez hodnoty",
     "showFavsOnly": "Zobrazování pouze oblíbených",
-    "showAll": "Zobrazování všech aktiv"
+    "showAll": "Zobrazování všech aktiv",
+    "deviceIsRootedWarning": "Toto zařízení je pravděpodobně rootnuté. Na rootnutém zařízení mohou jiné aplikace číst data, která Xaman chrání, včetně tajných klíčů k vašim účtům. Xaman na tomto zařízení používáte na vlastní riziko.",
+    "deviceIsJailBrokenWarning": "Na tomto zařízení byl pravděpodobně proveden jailbreak. Na zařízení s jailbreakem mohou jiné aplikace číst data, která Xaman chrání, včetně tajných klíčů k vašim účtům. Xaman na tomto zařízení používáte na vlastní riziko.",
+    "hiddenWhileScreenIsCaptured": "Skryto během nahrávání nebo sdílení obrazovky."
   },
   "onboarding": {
     "slideOne_title": "Platby a požadavky na platbu v síti XRP",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Informace o trezoru",
+    "keychainGroup": "Skupina Klíčenky"
   },
   "account": {
     "addAccount": "Přidat účet",

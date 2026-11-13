@@ -2,6 +2,7 @@
 // https://gist.github.com/miguelcma/e8f291e54b025815ca46
 
 #import "UniqueIdProvider.h"
+#import "../Vault/Storage/Keychain.h"
 
 @import UIKit;
 
@@ -60,6 +61,14 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceUniqueId) {
  At last, the UID is persisted if needed to.
  */
 - (NSString *)getUniqueId {
+  // the device id is part of the vault key: keep it in the same access group as the vaults
+  static BOOL movedToSharedGroup = NO;
+  if (!movedToSharedGroup) {
+    movedToSharedGroup = [Keychain moveItemsToSharedGroup:(__bridge id)kSecClassGenericPassword
+                                                matching:@{ (__bridge id)kSecAttrAccount: UNIQUE_UUID_KEY,
+                                                            (__bridge id)kSecAttrService: UNIQUE_UUID_KEY }];
+  }
+
   if (!_unique_uuid) _unique_uuid = [self valueForKeychainKey:UNIQUE_UUID_KEY service:UNIQUE_UUID_KEY];
   if (!_unique_uuid) _unique_uuid = [self valueForUserDefaultsKey:UNIQUE_UUID_KEY];
   if (!_unique_uuid) _unique_uuid = [self appleIFV];
@@ -101,11 +110,11 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceUniqueId) {
 - (OSStatus)setValue:(NSString *)value forKeychainKey:(NSString *)key inService:(NSString *)service {
   NSMutableDictionary *keychainItem = [[self class] keychainItemForKey:key service:service];
   keychainItem[(__bridge id)kSecValueData] = [value dataUsingEncoding:NSUTF8StringEncoding];
-  OSStatus status = SecItemAdd((__bridge CFDictionaryRef)keychainItem, NULL);
+  OSStatus status = [Keychain addItem:keychainItem];
   
   if (status == errSecDuplicateItem) {
     [self deleteValue:key inService:service];
-    status =  SecItemAdd((__bridge CFDictionaryRef)keychainItem, NULL);
+    status = [Keychain addItem:keychainItem];
   }
   return  status;
 }

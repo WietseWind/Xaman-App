@@ -447,7 +447,10 @@
     "hideZeroValue": "Piilotetaan nolla-arvoiset omaisuuserät",
     "showZeroValue": "Näytetään nolla-arvoiset omaisuuserät",
     "showFavsOnly": "Näytetään vain suosikit",
-    "showAll": "Näytetään kaikki omaisuuserät"
+    "showAll": "Näytetään kaikki omaisuuserät",
+    "deviceIsRootedWarning": "Tämä laite vaikuttaa olevan rootattu. Rootatussa laitteessa muut sovellukset voivat mahdollisesti lukea Xamanin suojaamia tietoja, mukaan lukien tilisi salaisuudet. Käytä Xamania tällä laitteella omalla vastuullasi.",
+    "deviceIsJailBrokenWarning": "Tämä laite vaikuttaa olevan jailbreakattu. Jailbreakatussa laitteessa muut sovellukset voivat mahdollisesti lukea Xamanin suojaamia tietoja, mukaan lukien tilisi salaisuudet. Käytä Xamania tällä laitteella omalla vastuullasi.",
+    "hiddenWhileScreenIsCaptured": "Piilotettu, kun näyttöäsi tallennetaan tai jaetaan."
   },
   "onboarding": {
     "slideOne_title": "Maksut ja\r\nmaksupyynnöt\r\nXRP Ledgerissä",
@@ -996,7 +999,9 @@
     "cache": "Välimuisti",
     "clearResolverCache": "Tyhjennä resolver-välimuisti",
     "cacheClearedSuccessfully": "Välimuisti tyhjennetty onnistuneesti",
-    "restartRequired": "Uudelleenkäynnistys vaaditaan, jotta nämä muutokset tulevat voimaan"
+    "restartRequired": "Uudelleenkäynnistys vaaditaan, jotta nämä muutokset tulevat voimaan",
+    "vaultInfo": "Holvin tiedot",
+    "keychainGroup": "Avainnippuryhmä"
   },
   "account": {
     "addAccount": "Lisää tili",

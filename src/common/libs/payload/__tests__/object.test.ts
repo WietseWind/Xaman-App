@@ -121,6 +121,26 @@ describe('Payload', () => {
         expect(fetchedPayload.getOrigin()).toEqual(PayloadOrigin.UNKNOWN);
     });
 
+    it('Should only return a return URL the app may open', async () => {
+        const { AccountSet: AccountSetPayload }: any = PayloadTemplate;
+
+        const fetchedPayload = await Payload.from(AccountSetPayload);
+        const withReturnURL = (url: any) => {
+            // @ts-ignore
+            fetchedPayload.meta = { ...fetchedPayload.meta, return_url_app: url };
+            return fetchedPayload.getReturnURL();
+        };
+
+        expect(withReturnURL('https://example.com/done')).toBe('https://example.com/done');
+        expect(withReturnURL('myapp://signed')).toBe('myapp://signed');
+        expect(withReturnURL('tel:+31612345678')).toBeUndefined();
+        expect(withReturnURL('intent://x/#Intent;end')).toBeUndefined();
+        expect(withReturnURL('app-settings:')).toBeUndefined();
+        expect(withReturnURL(' JavaScript:alert(1)')).toBeUndefined();
+        expect(withReturnURL(null)).toBeNull();
+        expect(withReturnURL(undefined)).toBeUndefined();
+    });
+
     it('Should be able return right values SignIn payload', async () => {
         const { SignIn: SignInPayload }: any = PayloadTemplate;
         const fetchedPayload = await Payload.from(SignInPayload, PayloadOrigin.DEEP_LINK);

@@ -447,7 +447,10 @@
     "hideZeroValue": "Ascunde activele fără valoare",
     "showZeroValue": "Afișează activele fără valoare",
     "showFavsOnly": "Afișează doar favoritele",
-    "showAll": "Afișează toate activele"
+    "showAll": "Afișează toate activele",
+    "deviceIsRootedWarning": "Acest dispozitiv pare să fie rootat. Pe un dispozitiv rootat, alte aplicații ar putea citi datele pe care Xaman le protejează, inclusiv cheile secrete ale conturilor dvs. Folosiți Xaman pe acest dispozitiv pe propria răspundere.",
+    "deviceIsJailBrokenWarning": "Acest dispozitiv pare să aibă jailbreak. Pe un dispozitiv cu jailbreak, alte aplicații ar putea citi datele pe care Xaman le protejează, inclusiv cheile secrete ale conturilor dvs. Folosiți Xaman pe acest dispozitiv pe propria răspundere.",
+    "hiddenWhileScreenIsCaptured": "Ascuns cât timp ecranul dvs. este înregistrat sau partajat."
   },
   "onboarding": {
     "slideOne_title": "Plăți și cereri\r\nde plată\r\nîn registru",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Șterge cache-ul de rezolvare",
     "cacheClearedSuccessfully": "Cache șters cu succes",
-    "restartRequired": "Este necesară o repornire pentru ca aceste modificări să aibă efect"
+    "restartRequired": "Este necesară o repornire pentru ca aceste modificări să aibă efect",
+    "vaultInfo": "Informații seif",
+    "keychainGroup": "Grup portchei"
   },
   "account": {
     "addAccount": "Adăugaţi un cont. ",

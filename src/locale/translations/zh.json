@@ -447,7 +447,10 @@
     "hideZeroValue": "隐藏无价值资产",
     "showZeroValue": "显示无价值资产",
     "showFavsOnly": "仅显示收藏",
-    "showAll": "显示所有资产"
+    "showAll": "显示所有资产",
+    "deviceIsRootedWarning": "此设备似乎已被 Root。在已 Root 的设备上，其他应用可能能够读取 Xaman 保护的数据，包括您的账户密钥。在此设备上使用 Xaman 的风险由您自行承担。",
+    "deviceIsJailBrokenWarning": "此设备似乎已越狱。在已越狱的设备上，其他应用可能能够读取 Xaman 保护的数据，包括您的账户密钥。在此设备上使用 Xaman 的风险由您自行承担。",
+    "hiddenWhileScreenIsCaptured": "屏幕被录制或共享期间将隐藏。"
   },
   "onboarding": {
     "slideOne_title": "XRP分布式账本上的付款和付款请求",
@@ -996,7 +999,9 @@
     "cache": "缓存",
     "clearResolverCache": "清除解析器缓存",
     "cacheClearedSuccessfully": "缓存清除成功",
-    "restartRequired": "需要重启才能使这些更改生效"
+    "restartRequired": "需要重启才能使这些更改生效",
+    "vaultInfo": "金库信息",
+    "keychainGroup": "钥匙串群组"
   },
   "account": {
     "addAccount": "新增帐号",

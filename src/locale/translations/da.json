@@ -447,7 +447,10 @@
     "hideZeroValue": "Skjuler aktiver uden værdi",
     "showZeroValue": "Viser aktiver uden værdi",
     "showFavsOnly": "Viser kun favoritter",
-    "showAll": "Viser alle aktiver"
+    "showAll": "Viser alle aktiver",
+    "deviceIsRootedWarning": "Denne enhed ser ud til at være rootet. På en rootet enhed kan andre apps muligvis læse de data, som Xaman beskytter, herunder dine kontohemmeligheder. Brug Xaman på denne enhed på egen risiko.",
+    "deviceIsJailBrokenWarning": "Denne enhed ser ud til at være jailbreaket. På en jailbreaket enhed kan andre apps muligvis læse de data, som Xaman beskytter, herunder dine kontohemmeligheder. Brug Xaman på denne enhed på egen risiko.",
+    "hiddenWhileScreenIsCaptured": "Skjult, mens din skærm optages eller deles."
   },
   "onboarding": {
     "slideOne_title": "Betalinger og \r\nbetalingsanmodninger \r\npå XRP-ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Boksinfo",
+    "keychainGroup": "Nøgleringsgruppe"
   },
   "account": {
     "addAccount": "Tilføj konto",

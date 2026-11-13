@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java
-index 07f73fd..1e341c7 100644
+index 07f73fd..832a96f 100644
 --- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java
 +++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebChromeClient.java
 @@ -3,6 +3,8 @@ package com.reactnativecommunity.webview;
@@ -132,7 +132,7 @@ index 07f73fd..1e341c7 100644
          this.permissionRequest = request;
  
          requestPermissions(requestedAndroidPermissions);
-@@ -195,21 +241,34 @@ public class RNCWebChromeClient extends WebChromeClient implements LifecycleEven
+@@ -195,21 +241,32 @@ public class RNCWebChromeClient extends WebChromeClient implements LifecycleEven
  
      @Override
      public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
@@ -147,6 +147,8 @@ index 07f73fd..1e341c7 100644
 -             */
 -            geolocationPermissionCallback = callback;
 -            geolocationPermissionOrigin = origin;
+-
+-            requestPermissions(Collections.singletonList(Manifest.permission.ACCESS_FINE_LOCATION));
 +    @Override
 +    public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
 +        if (view.getProgress() < 100) {
@@ -156,25 +158,22 @@ index 07f73fd..1e341c7 100644
 +        return super.onJsAlert(view, url, message, result);
 +    }
  
--            requestPermissions(Collections.singletonList(Manifest.permission.ACCESS_FINE_LOCATION));
+-        } else {
+-            callback.invoke(origin, true, false);
 +    @Override
 +    public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
 +        if (view.getProgress() < 100) {
 +            result.cancel();
 +            return true;
-+        }
+         }
 +        return super.onJsConfirm(view, url, message, result);
 +    }
- 
--        } else {
--            callback.invoke(origin, true, false);
++
 +    @Override
 +    public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-+        if (view.getProgress() < 100) {
-+            result.cancel();
-+            return true;
-         }
-+        return super.onJsPrompt(view, url, message, defaultValue, result);
++        // prompt() is disabled: its dialog takes input without showing which page asks.
++        result.cancel();
++        return true;
      }
  
      private PermissionAwareActivity getPermissionAwareActivity() {
@@ -1142,7 +1141,7 @@ index 1f637c1..50c2fa4 100644
  #if !TARGET_OS_OSX
  @property (nonatomic, assign) WKDataDetectorTypes dataDetectorTypes;
 diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
-index 3890426..daf9075 100644
+index 3890426..b9a0fca 100644
 --- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 +++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
 @@ -6,6 +6,7 @@
@@ -1153,7 +1152,7 @@ index 3890426..daf9075 100644
  #import <React/RCTConvert.h>
  #import <React/RCTAutoInsetsProtocol.h>
  #import "RNCWKProcessPoolManager.h"
-@@ -25,6 +26,21 @@ static NSDictionary* customCertificatesForHost;
+@@ -25,6 +26,33 @@
  
  NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
  
@@ -1172,10 +1171,22 @@ index 3890426..daf9075 100644
 +    "}}catch(e){}"
 +    "})();";
 +
++// Page scripts read the user agent without the one-time token. This script
++// asks native for the full one at document start; native answers only for an
++// https origin the token is scoped to (see runJavaScriptTextInputPanel).
++static NSString *const RNCXamanOttUserAgentPrompt = @"xaman:ott-user-agent";
++static NSString *const RNCXamanOttUserAgentScript =
++    @"(function(){"
++    "try{var ua=window.prompt('xaman:ott-user-agent');"
++    "if(typeof ua==='string'&&ua.length>0){"
++    "Object.defineProperty(navigator,'userAgent',{configurable:true,get:function(){return ua;}});"
++    "}}catch(e){}"
++    "})();";
++
  #if TARGET_OS_IOS
  // runtime trick to remove WKWebView keyboard default toolbar
  // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
-@@ -55,6 +71,17 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
+@@ -55,6 +83,17 @@ @interface RNCWKWebView : WKWebView
  #endif // !TARGET_OS_OSX
  @end
  @implementation RNCWKWebView
@@ -1193,7 +1204,15 @@ index 3890426..daf9075 100644
  #if !TARGET_OS_OSX
  - (NSString *)stringFromAction:(SEL) action {
    NSString *sel = NSStringFromSelector(action);
-@@ -516,7 +543,30 @@ RCTAutoInsetsProtocol>
+@@ -152,6 +191,7 @@ @implementation RNCWebViewImpl
+ #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 /* __IPHONE_13_0 */
+   BOOL _savedAutomaticallyAdjustsScrollIndicatorInsets;
+ #endif
++  XamanOttSchemeHandler *_xamanOttHandler;
+ }
+ 
+ - (instancetype)initWithFrame:(CGRect)frame
+@@ -516,7 +556,34 @@ - (void)didMoveToWindow
  {
    if (self.window != nil && _webView == nil) {
      WKWebViewConfiguration *wkWebViewConfig = [self setUpWkWebViewConfig];
@@ -1201,6 +1220,7 @@ index 3890426..daf9075 100644
 +    // Only the xApp webview carries `(ott:...)` in its user agent. Claiming
 +    // http(s) here leaves every other webview on WebKit's own loader.
 +    __block BOOL xamanOttHandlerInstalled = NO;
++    _xamanOttHandler = nil;
 +    if ([_userAgent containsString:@"(ott:"]) {
 +      XamanOttSchemeHandler *ottHandler = [XamanOttSchemeHandler new];
 +      [XamanOttSchemeHandler claimBuiltinSchemesWhile:^{
@@ -1214,6 +1234,9 @@ index 3890426..daf9075 100644
 +        } @catch (NSException *exception) {
 +        }
 +      }];
++      if (xamanOttHandlerInstalled) {
++        _xamanOttHandler = ottHandler;
++      }
 +    }
 +    if (xamanOttHandlerInstalled) {
 +      [XamanOttSchemeHandler claimBuiltinSchemesWhile:^{
@@ -1225,7 +1248,16 @@ index 3890426..daf9075 100644
      [self setBackgroundColor: _savedBackgroundColor];
  #if !TARGET_OS_OSX
      // Apply once at creation time. The prop is documented as non-reactive —
-@@ -586,6 +636,7 @@ RCTAutoInsetsProtocol>
+@@ -564,7 +631,7 @@ - (void)didMoveToWindow
+     [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:nil];
+     _webView.allowsBackForwardNavigationGestures = _allowsBackForwardNavigationGestures;
+ 
+-    _webView.customUserAgent = _userAgent;
++    _webView.customUserAgent = [self xamanReportedUserAgent];
+ 
+ #if !TARGET_OS_OSX
+     if ([_webView.scrollView respondsToSelector:@selector(setContentInsetAdjustmentBehavior:)]) {
+@@ -586,6 +653,7 @@ - (void)didMoveToWindow
  #endif
  
      [self addSubview:_webView];
@@ -1233,7 +1265,7 @@ index 3890426..daf9075 100644
      [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
      [self setKeyboardDisplayRequiresUserAction: _savedKeyboardDisplayRequiresUserAction];
      [self visitSource];
-@@ -628,6 +679,11 @@ RCTAutoInsetsProtocol>
+@@ -628,6 +696,11 @@ - (void)removeFromSuperview
  #endif
  {
    if (_webView) {
@@ -1245,7 +1277,7 @@ index 3890426..daf9075 100644
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:HistoryShimName];
      [_webView.configuration.userContentController removeScriptMessageHandlerForName:MessageHandlerName];
      [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
-@@ -979,6 +1035,32 @@ RCTAutoInsetsProtocol>
+@@ -979,6 +1052,32 @@ -(void)setKeyboardDisplayRequiresUserAction:(BOOL)keyboardDisplayRequiresUserAct
    method_setImplementation(method, override);
  }
  
@@ -1278,7 +1310,27 @@ index 3890426..daf9075 100644
  -(void)setHideKeyboardAccessoryView:(BOOL)hideKeyboardAccessoryView
  {
    _hideKeyboardAccessoryView = hideKeyboardAccessoryView;
-@@ -1216,6 +1298,10 @@ RCTAutoInsetsProtocol>
+@@ -1045,7 +1144,18 @@ - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+ - (void)setUserAgent:(NSString*)userAgent
+ {
+   _userAgent = userAgent;
+-  _webView.customUserAgent = userAgent;
++  _webView.customUserAgent = [self xamanReportedUserAgent];
++}
++
++// With the ott handler installed the webview reports the user agent without
++// the one-time token; the handler puts it back for requests in scope.
++- (NSString *)xamanReportedUserAgent
++{
++  if (_xamanOttHandler == nil || _userAgent.length == 0) {
++    return _userAgent;
++  }
++  _xamanOttHandler.ottUserAgent = _userAgent;
++  return [XamanOttSchemeHandler stripOtt:_userAgent];
+ }
+ 
+ - (void)setScrollEnabled:(BOOL)scrollEnabled
+@@ -1216,6 +1326,10 @@ - (void)                    webView:(WKWebView *)webView
  - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
  {
  #if !TARGET_OS_OSX
@@ -1289,7 +1341,7 @@ index 3890426..daf9075 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler();
-@@ -1235,6 +1321,10 @@ RCTAutoInsetsProtocol>
+@@ -1235,6 +1349,10 @@ - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSStrin
   */
  - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler{
  #if !TARGET_OS_OSX
@@ -1300,18 +1352,62 @@ index 3890426..daf9075 100644
    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
      completionHandler(YES);
-@@ -1260,6 +1350,10 @@ RCTAutoInsetsProtocol>
+@@ -1259,44 +1377,17 @@ - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSStr
+  * prompt
   */
  - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler{
- #if !TARGET_OS_OSX
-+  if (webView.isLoading) {
-+    completionHandler(nil);
-+    return;
-+  }
-   UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
-   [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-     textField.text = defaultText;
-@@ -1875,6 +1969,12 @@ didFinishNavigation:(WKNavigation *)navigation
+-#if !TARGET_OS_OSX
+-  UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
+-  [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+-    textField.text = defaultText;
+-  }];
+-  UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(__unused UIAlertAction *action) {
+-    completionHandler([[alert.textFields lastObject] text]);
+-  }];
+-  [alert addAction:okAction];
+-  UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(__unused UIAlertAction *action) {
+-    completionHandler(nil);
+-  }];
+-  [alert addAction:cancelAction];
+-  alert.preferredAction = okAction;
+-  [[self topViewController] presentViewController:alert animated:YES completion:NULL];
+-#else
+-  NSAlert *alert = [[NSAlert alloc] init];
+-  [alert setMessageText:prompt];
+-
+-  const NSRect RCTSingleTextFieldFrame = NSMakeRect(0.0, 0.0, 275.0, 22.0);
+-  NSTextField *textField = [[NSTextField alloc] initWithFrame:RCTSingleTextFieldFrame];
+-  textField.cell.scrollable = YES;
+-  if (@available(macOS 10.11, *)) {
+-    textField.maximumNumberOfLines = 1;
++  // prompt() is disabled: its dialog takes input without showing which page
++  // asks. The one call answered is the document-start script asking for the
++  // xApp user agent, and only for an https origin the token is scoped to.
++  NSString *answer = nil;
++  if ([prompt isEqualToString:RNCXamanOttUserAgentPrompt]
++      && _xamanOttHandler != nil
++      && [_userAgent containsString:@"(ott:"]
++      && [_xamanOttHandler keepsOttForOrigin:frame.securityOrigin]) {
++    answer = _userAgent;
+   }
+-  textField.stringValue = defaultText;
+-  [alert setAccessoryView:textField];
+-
+-  [alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+-  [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Cancel button")];
+-  [alert beginSheetModalForWindow:[NSApp keyWindow] completionHandler:^(NSModalResponse response) {
+-    if (response == NSAlertFirstButtonReturn) {
+-      completionHandler([textField stringValue]);
+-    } else {
+-      completionHandler(nil);
+-    }
+-  }];
+-#endif // !TARGET_OS_OSX
++  completionHandler(answer);
+ }
+ 
+ #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000 /* iOS 15 */
+@@ -1875,6 +1966,18 @@ - (void)resetupScripts:(WKWebViewConfiguration *)wkWebViewConfig {
    ];
    WKUserScript *userScript = [[WKUserScript alloc] initWithSource:html5HistoryAPIShimSource injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
    [wkWebViewConfig.userContentController addUserScript:userScript];
@@ -1321,6 +1417,12 @@ index 3890426..daf9075 100644
 +                                                       forMainFrameOnly:NO];
 +    [wkWebViewConfig.userContentController addUserScript:lockdownScript];
 +  }
++  if ([_userAgent containsString:@"(ott:"]) {
++    WKUserScript *ottUserAgentScript = [[WKUserScript alloc] initWithSource:RNCXamanOttUserAgentScript
++                                                              injectionTime:WKUserScriptInjectionTimeAtDocumentStart
++                                                           forMainFrameOnly:NO];
++    [wkWebViewConfig.userContentController addUserScript:ottUserAgentScript];
++  }
  
    if(_sharedCookiesEnabled) {
      // More info to sending cookies with WKWebView
@@ -1328,7 +1430,7 @@ diff --git a/node_modules/react-native-webview/apple/RNCWebViewManager.mm b/node
 index a510ffd..9de1787 100644
 --- a/node_modules/react-native-webview/apple/RNCWebViewManager.mm
 +++ b/node_modules/react-native-webview/apple/RNCWebViewManager.mm
-@@ -117,6 +117,7 @@ RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
+@@ -117,6 +117,7 @@ - (RNCView *)view
  RCT_EXPORT_VIEW_PROPERTY(enableApplePay, BOOL)
  RCT_EXPORT_VIEW_PROPERTY(menuItems, NSArray);
  RCT_EXPORT_VIEW_PROPERTY(suppressMenuItems, NSArray);
@@ -1338,10 +1440,10 @@ index a510ffd..9de1787 100644
  RCT_CUSTOM_VIEW_PROPERTY(hasOnFileDownload, BOOL, RNCWebViewImpl) {}
 diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h
 new file mode 100644
-index 0000000..4b4fa04
+index 0000000..af3269f
 --- /dev/null
 +++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.h
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,17 @@
 +#import <WebKit/WebKit.h>
 +
 +// Proxies the xApp webview so the one-time token stays on sandbox hosts and
@@ -1352,13 +1454,19 @@ index 0000000..4b4fa04
 ++ (void)claimBuiltinSchemesWhile:(void (^)(void))block;
 ++ (BOOL)isClaimingBuiltinSchemes;
 +
++// The webview itself reports the user agent without the token. The full one
++// is kept here and goes only to https requests and documents in scope.
++@property (atomic, copy) NSString *ottUserAgent;
++- (BOOL)keepsOttForOrigin:(WKSecurityOrigin *)origin;
+++ (NSString *)stripOtt:(NSString *)userAgent;
++
 +@end
 diff --git a/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
 new file mode 100644
-index 0000000..8d34c14
+index 0000000..4a4359c
 --- /dev/null
 +++ b/node_modules/react-native-webview/apple/XamanOttSchemeHandler.m
-@@ -0,0 +1,1012 @@
+@@ -0,0 +1,1031 @@
 +#import "XamanOttSchemeHandler.h"
 +
 +#import <objc/runtime.h>
@@ -1837,12 +1945,31 @@ index 0000000..8d34c14
 +  return [a.string.lowercaseString isEqualToString:b.string.lowercaseString];
 +}
 +
+++ (NSString *)stripOtt:(NSString *)userAgent {
++  return [XamanOttScope stripOtt:userAgent];
++}
++
++- (BOOL)keepsOttForOrigin:(WKSecurityOrigin *)origin {
++  if (origin.host.length == 0 || ![origin.protocol.lowercaseString isEqualToString:@"https"]) {
++    return NO;
++  }
++  return [self.scope keeps:origin.host];
++}
++
 +- (NSMutableURLRequest *)forwardingRequest:(NSURLRequest *)request keepOtt:(BOOL)keep {
 +  NSMutableURLRequest *next = [request mutableCopy];
 +  NSData *body = [self bodyOf:request];
 +  if (body != nil) {
 +    next.HTTPBodyStream = nil;
 +    next.HTTPBody = body;
++  }
++  NSString *ottUserAgent = self.ottUserAgent;
++  if (keep && ottUserAgent.length > 0 && [next.URL.scheme.lowercaseString isEqualToString:@"https"]) {
++    // WebKit sends the user agent without the token; put it back in scope.
++    NSString *sent = [next valueForHTTPHeaderField:@"User-Agent"];
++    if (sent == nil || [sent isEqualToString:[XamanOttScope stripOtt:ottUserAgent]]) {
++      [next setValue:ottUserAgent forHTTPHeaderField:@"User-Agent"];
++    }
 +  }
 +  if (!keep) {
 +    NSString *userAgent = [next valueForHTTPHeaderField:@"User-Agent"];

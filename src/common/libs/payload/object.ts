@@ -13,6 +13,8 @@ import { TransactionFactory } from '@common/libs/ledger/factory';
 
 import Localize from '@locale';
 
+import { StringTypeCheck } from '@common/utils/string';
+
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { PseudoTransactionTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 import { MutatedTransaction, SignableTransaction } from '@common/libs/ledger/transactions/types';
@@ -417,7 +419,12 @@ export class Payload {
      * get payload return url
      */
     getReturnURL = () => {
-        return this.meta.return_url_app;
+        const returnURL = this.meta.return_url_app;
+        // never hand a system scheme (tel:, sms:, intent:, settings, ...) to the OS
+        if (returnURL && StringTypeCheck.isBlockedReturnURL(returnURL)) {
+            return undefined;
+        }
+        return returnURL;
     };
 
     /**

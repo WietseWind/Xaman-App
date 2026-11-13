@@ -356,10 +356,13 @@ class SecurePinInput extends Component<Props, State> {
         }
 
         // Sensitive on Android 14+: apps that aren't accessibility tools (TalkBack is one)
-        // can't see which keys are pressed
+        // can't see which keys are pressed.
+        // No iOS capture cover here: the pad is also the app lock, which has to work while
+        // the screen is mirrored. Secret numbers add the cover around this pad themselves.
         return (
             <TouchableWithoutFeedback testID="pin-input-container" onPress={this.focus} accessible={false}>
                 <SensitiveAccessibilityView
+                    captureShield={false}
                     style={[
                         styles.container,
                     ]}

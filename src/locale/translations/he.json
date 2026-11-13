@@ -447,7 +447,10 @@
     "hideZeroValue": "הסתר נכסים ללא ערך",
     "showZeroValue": "הצג נכסים ללא ערך",
     "showFavsOnly": "הצג מועדפים בלבד",
-    "showAll": "הצג את כל הנכסים"
+    "showAll": "הצג את כל הנכסים",
+    "deviceIsRootedWarning": "נראה שבמכשיר זה בוצע רוט (Root). במכשיר עם הרשאות רוט, אפליקציות אחרות עשויות לקרוא את הנתונים ש-Xaman מגן עליהם, כולל סודות החשבון שלך. השימוש ב-Xaman במכשיר זה הוא על אחריותך בלבד.",
+    "deviceIsJailBrokenWarning": "נראה שמכשיר זה פרוץ (Jailbreak). במכשיר פרוץ, אפליקציות אחרות עשויות לקרוא את הנתונים ש-Xaman מגן עליהם, כולל סודות החשבון שלך. השימוש ב-Xaman במכשיר זה הוא על אחריותך בלבד.",
+    "hiddenWhileScreenIsCaptured": "מוסתר בזמן שהמסך שלך מוקלט או משותף."
   },
   "onboarding": {
     "slideOne_title": "תשלומים ו\r\nבקשות תשלום\r\nעל ספר החשבונות XRP",
@@ -996,7 +999,9 @@
     "cache": "מטמון",
     "clearResolverCache": "נקה מטמון פותר",
     "cacheClearedSuccessfully": "המטמון נוקה בהצלחה",
-    "restartRequired": "נדרשת הפעלה מחדש כדי שהשינויים ייכנסו לתוקף"
+    "restartRequired": "נדרשת הפעלה מחדש כדי שהשינויים ייכנסו לתוקף",
+    "vaultInfo": "מידע על הכספת",
+    "keychainGroup": "קבוצת צרור המפתחות"
   },
   "account": {
     "addAccount": "הוסף חשבון",

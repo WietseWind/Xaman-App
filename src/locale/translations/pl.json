@@ -447,7 +447,10 @@
     "hideZeroValue": "Ukryj aktywa bez wartości",
     "showZeroValue": "Pokaż aktywa bez wartości",
     "showFavsOnly": "Pokaż tylko ulubione",
-    "showAll": "Pokaż wszystkie aktywa"
+    "showAll": "Pokaż wszystkie aktywa",
+    "deviceIsRootedWarning": "Wygląda na to, że to urządzenie jest zrootowane. Na zrootowanym urządzeniu inne aplikacje mogą odczytać dane chronione przez Xaman, w tym sekrety Twoich kont. Korzystasz z Xaman na tym urządzeniu na własne ryzyko.",
+    "deviceIsJailBrokenWarning": "Wygląda na to, że na tym urządzeniu wykonano jailbreak. Na urządzeniu z jailbreakiem inne aplikacje mogą odczytać dane chronione przez Xaman, w tym sekrety Twoich kont. Korzystasz z Xaman na tym urządzeniu na własne ryzyko.",
+    "hiddenWhileScreenIsCaptured": "Ukryte podczas nagrywania lub udostępniania ekranu."
   },
   "onboarding": {
     "slideOne_title": "Płatności i wezwania do zapłaty w sieci XRPL.",
@@ -996,7 +999,9 @@
     "cache": "Pamięć podręczna",
     "clearResolverCache": "Wyczyść pamięć podręczną resolvera",
     "cacheClearedSuccessfully": "Pamięć podręczna wyczyszczona pomyślnie",
-    "restartRequired": "Wymagane jest ponowne uruchomienie, aby te zmiany weszły w życie"
+    "restartRequired": "Wymagane jest ponowne uruchomienie, aby te zmiany weszły w życie",
+    "vaultInfo": "Informacje o skarbcu",
+    "keychainGroup": "Grupa pęku kluczy"
   },
   "account": {
     "addAccount": "Dodaj konto",

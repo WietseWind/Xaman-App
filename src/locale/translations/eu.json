@@ -447,7 +447,10 @@
     "hideZeroValue": "Ezkutatu balio gabeko aktiboak",
     "showZeroValue": "Erakutsi balio gabeko aktiboak",
     "showFavsOnly": "Gogokoak soilik erakusten",
-    "showAll": "Aktibo guztiak erakusten"
+    "showAll": "Aktibo guztiak erakusten",
+    "deviceIsRootedWarning": "Badirudi gailu hau rootatuta dagoela. Rootatutako gailu batean, baliteke beste aplikazio batzuek Xamanek babesten dituen datuak irakurri ahal izatea, zure kontuaren sekretuak barne. Erabili Xaman gailu honetan zure ardurapean.",
+    "deviceIsJailBrokenWarning": "Badirudi gailu honi jailbreak egin zaiola. Jailbreak egindako gailu batean, baliteke beste aplikazio batzuek Xamanek babesten dituen datuak irakurri ahal izatea, zure kontuaren sekretuak barne. Erabili Xaman gailu honetan zure ardurapean.",
+    "hiddenWhileScreenIsCaptured": "Ezkutatuta, pantaila grabatzen edo partekatzen ari den bitartean."
   },
   "onboarding": {
     "slideOne_title": "Ordainketak eta\r\nordainketa eskaerak\r\nXRP Ledger-en",
@@ -996,7 +999,9 @@
     "cache": "Cachea",
     "clearResolverCache": "Garbitu ebazle cachea",
     "cacheClearedSuccessfully": "Cachea arrakastaz garbitu da",
-    "restartRequired": "Berrabiaraztea beharrezkoa da aldaketa hauek indarrean sartzeko"
+    "restartRequired": "Berrabiaraztea beharrezkoa da aldaketa hauek indarrean sartzeko",
+    "vaultInfo": "Kutxa gotorraren informazioa",
+    "keychainGroup": "Keychain taldea"
   },
   "account": {
     "addAccount": "Gehitu kontua",

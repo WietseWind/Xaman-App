@@ -13,5 +13,9 @@
 	<array>
 		<string>TAG</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.app.xaman</string>
+	</array>
 </dict>
 </plist>

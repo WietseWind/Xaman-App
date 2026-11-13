@@ -22,6 +22,4 @@ export default {
         'The secure Xaman datastore could not be opened. ' +
         'This can occur when the OS tries to update Xaman to a new version. Please force quit and relaunch Xaman.',
 
-    runningOnRootedDevice: 'For your security, Xaman cannot be opened on a rooted phone.',
-    runningOnJailBrokenDevice: 'For your security, Xaman cannot be opened on a Jail Broken phone.',
 };

@@ -447,7 +447,10 @@
     "hideZeroValue": "Slepiamas neturintis vertės turtas",
     "showZeroValue": "Rodomas neturintis vertės turtas",
     "showFavsOnly": "Rodomi tik mėgstamiausi",
-    "showAll": "Rodomas visas turtas"
+    "showAll": "Rodomas visas turtas",
+    "deviceIsRootedWarning": "Panašu, kad šiame įrenginyje suteiktos root teisės. Įrenginyje su root teisėmis kitos programėlės gali perskaityti Xaman saugomus duomenis, įskaitant jūsų sąskaitų slaptus raktus. Naudokite Xaman šiame įrenginyje savo rizika.",
+    "deviceIsJailBrokenWarning": "Panašu, kad šiame įrenginyje atliktas jailbreak. Įrenginyje su jailbreak kitos programėlės gali perskaityti Xaman saugomus duomenis, įskaitant jūsų sąskaitų slaptus raktus. Naudokite Xaman šiame įrenginyje savo rizika.",
+    "hiddenWhileScreenIsCaptured": "Paslėpta, kol jūsų ekranas įrašomas arba bendrinamas."
   },
   "onboarding": {
     "slideOne_title": "Mokėjimai ir\r\nmokėjimo prašymai\r\nXRP knygoje",
@@ -996,7 +999,9 @@
     "cache": "Talpykla",
     "clearResolverCache": "Išvalyti resolver talpyklą",
     "cacheClearedSuccessfully": "Talpykla sėkmingai išvalyta",
-    "restartRequired": "Reikalingas paleidimas iš naujo, kad šie pakeitimai įsigaliotų"
+    "restartRequired": "Reikalingas paleidimas iš naujo, kad šie pakeitimai įsigaliotų",
+    "vaultInfo": "Saugyklos informacija",
+    "keychainGroup": "Raktų saugyklos grupė"
   },
   "account": {
     "addAccount": "Pridėti sąskaitą",

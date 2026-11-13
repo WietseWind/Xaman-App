@@ -447,7 +447,10 @@
     "hideZeroValue": "విలువ లేని ఆస్తులను దాచడం",
     "showZeroValue": "విలువ లేని ఆస్తులను చూపడం",
     "showFavsOnly": "ఇష్టమైనవి మాత్రమే చూపడం",
-    "showAll": "అన్ని ఆస్తులను చూపడం"
+    "showAll": "అన్ని ఆస్తులను చూపడం",
+    "deviceIsRootedWarning": "ఈ పరికరం రూట్ చేయబడినట్లు కనిపిస్తోంది. రూట్ చేయబడిన పరికరంలో, మీ ఖాతా రహస్యాలతో సహా Xaman రక్షించే డేటాను ఇతర యాప్‌లు చదవగలిగే అవకాశం ఉంది. ఈ పరికరంలో Xaman వాడకం మీ స్వంత బాధ్యతపైనే ఉంటుంది.",
+    "deviceIsJailBrokenWarning": "ఈ పరికరం జైల్‌బ్రేక్ చేయబడినట్లు కనిపిస్తోంది. జైల్‌బ్రేక్ చేయబడిన పరికరంలో, మీ ఖాతా రహస్యాలతో సహా Xaman రక్షించే డేటాను ఇతర యాప్‌లు చదవగలిగే అవకాశం ఉంది. ఈ పరికరంలో Xaman వాడకం మీ స్వంత బాధ్యతపైనే ఉంటుంది.",
+    "hiddenWhileScreenIsCaptured": "స్క్రీన్ రికార్డ్ అవుతున్నప్పుడు లేదా షేర్ అవుతున్నప్పుడు దాచబడుతుంది."
   },
   "onboarding": {
     "slideOne_title": "లెడ్జర్‌లో చెల్లింపులు మరియు చెల్లింపు అభ్యర్థనలు",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "ఖజానా సమాచారం",
+    "keychainGroup": "కీచైన్ గ్రూప్"
   },
   "account": {
     "addAccount": "ఖాతాను జోడించండి\r\n",

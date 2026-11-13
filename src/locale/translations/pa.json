@@ -447,7 +447,10 @@
     "hideZeroValue": "ਬਿਨਾਂ-ਮੁੱਲ ਸੰਪੱਤੀਆਂ ਛੁਪਾ ਰਿਹਾ ਹੈ",
     "showZeroValue": "ਬਿਨਾਂ-ਮੁੱਲ ਸੰਪੱਤੀਆਂ ਦਿਖਾ ਰਿਹਾ ਹੈ",
     "showFavsOnly": "ਸਿਰਫ਼ ਪਸੰਦੀਦਾ ਦਿਖਾ ਰਿਹਾ ਹੈ",
-    "showAll": "ਸਾਰੀਆਂ ਸੰਪੱਤੀਆਂ ਦਿਖਾ ਰਿਹਾ ਹੈ"
+    "showAll": "ਸਾਰੀਆਂ ਸੰਪੱਤੀਆਂ ਦਿਖਾ ਰਿਹਾ ਹੈ",
+    "deviceIsRootedWarning": "ਇਹ ਡਿਵਾਈਸ ਰੂਟ ਕੀਤਾ ਹੋਇਆ ਜਾਪਦਾ ਹੈ। ਰੂਟ ਕੀਤੇ ਡਿਵਾਈਸ 'ਤੇ, ਹੋਰ ਐਪਸ ਉਹ ਡਾਟਾ ਪੜ੍ਹ ਸਕਦੀਆਂ ਹਨ ਜਿਸਦੀ Xaman ਸੁਰੱਖਿਆ ਕਰਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਤੁਹਾਡੇ ਖਾਤੇ ਦੀਆਂ ਗੁਪਤ ਕੁੰਜੀਆਂ ਵੀ ਸ਼ਾਮਲ ਹਨ। ਇਸ ਡਿਵਾਈਸ 'ਤੇ Xaman ਦੀ ਵਰਤੋਂ ਆਪਣੇ ਜੋਖਮ 'ਤੇ ਕਰੋ।",
+    "deviceIsJailBrokenWarning": "ਇਹ ਡਿਵਾਈਸ ਜੇਲਬ੍ਰੇਕ ਕੀਤਾ ਹੋਇਆ ਜਾਪਦਾ ਹੈ। ਜੇਲਬ੍ਰੇਕ ਕੀਤੇ ਡਿਵਾਈਸ 'ਤੇ, ਹੋਰ ਐਪਸ ਉਹ ਡਾਟਾ ਪੜ੍ਹ ਸਕਦੀਆਂ ਹਨ ਜਿਸਦੀ Xaman ਸੁਰੱਖਿਆ ਕਰਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਤੁਹਾਡੇ ਖਾਤੇ ਦੀਆਂ ਗੁਪਤ ਕੁੰਜੀਆਂ ਵੀ ਸ਼ਾਮਲ ਹਨ। ਇਸ ਡਿਵਾਈਸ 'ਤੇ Xaman ਦੀ ਵਰਤੋਂ ਆਪਣੇ ਜੋਖਮ 'ਤੇ ਕਰੋ।",
+    "hiddenWhileScreenIsCaptured": "ਸਕ੍ਰੀਨ ਰਿਕਾਰਡ ਜਾਂ ਸਾਂਝੀ ਕੀਤੇ ਜਾਣ ਦੌਰਾਨ ਲੁਕਿਆ ਰਹਿੰਦਾ ਹੈ।"
   },
   "onboarding": {
     "slideOne_title": "ਭੁਗਤਾਨ ਅਤੇ\r\nਭੁਗਤਾਨ ਲਈ ਬੇਨਤੀ\r\nਐਕਸਆਰਪੀ ਲੇਜ਼ਰ ਤੇ",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "ਵਾਲਟ ਜਾਣਕਾਰੀ",
+    "keychainGroup": "ਕੀਚੇਨ ਗਰੁੱਪ"
   },
   "account": {
     "addAccount": "ਇੱਕ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰੋ",

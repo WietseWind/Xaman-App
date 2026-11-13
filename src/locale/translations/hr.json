@@ -447,7 +447,10 @@
     "hideZeroValue": "Skrivanje sredstava bez vrijednosti",
     "showZeroValue": "Prikaz sredstava bez vrijednosti",
     "showFavsOnly": "Prikazivanje samo favorita",
-    "showAll": "Prikaz svih sredstava"
+    "showAll": "Prikaz svih sredstava",
+    "deviceIsRootedWarning": "Čini se da je ovaj uređaj rootan. Na rootanom uređaju druge aplikacije mogle bi čitati podatke koje Xaman štiti, uključujući tajne vaših računa. Xaman na ovom uređaju koristite na vlastitu odgovornost.",
+    "deviceIsJailBrokenWarning": "Čini se da je na ovom uređaju napravljen jailbreak. Na uređaju s jailbreakom druge aplikacije mogle bi čitati podatke koje Xaman štiti, uključujući tajne vaših računa. Xaman na ovom uređaju koristite na vlastitu odgovornost.",
+    "hiddenWhileScreenIsCaptured": "Skriveno dok se vaš zaslon snima ili dijeli."
   },
   "onboarding": {
     "slideOne_title": "Plaćanja i zahtjevi za plaćanjem na XRPL",
@@ -996,7 +999,9 @@
     "cache": "Predmemorija",
     "clearResolverCache": "Očisti predmemoriju razrješavanja",
     "cacheClearedSuccessfully": "Predmemorija uspješno očišćena",
-    "restartRequired": "Ponovno pokretanje je potrebno da bi ove promjene stupile na snagu"
+    "restartRequired": "Ponovno pokretanje je potrebno da bi ove promjene stupile na snagu",
+    "vaultInfo": "Informacije o trezoru",
+    "keychainGroup": "Grupa privjeska ključeva"
   },
   "account": {
     "addAccount": "Dodavanje računa",

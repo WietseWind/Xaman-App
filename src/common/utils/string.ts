@@ -108,6 +108,32 @@ const Capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
+// schemes a payload return URL may never open (see StringTypeCheck.isBlockedReturnURL)
+const BlockedReturnURLSchemes = [
+    'tel',
+    'telprompt',
+    'sms',
+    'smsto',
+    'mms',
+    'mmsto',
+    'mailto',
+    'facetime',
+    'facetime-audio',
+    'facetime-group',
+    'app-settings',
+    'prefs',
+    'app-prefs',
+    'itms-services',
+    'intent',
+    'android-app',
+    'content',
+    'file',
+    'javascript',
+    'data',
+    'blob',
+    'about',
+];
+
 /**
  * Check string type
  * @param str value in string
@@ -129,6 +155,25 @@ const StringTypeCheck = {
         // eslint-disable-next-line prefer-regex-literals,no-control-regex
         const urlRegExp = new RegExp('^https://[a-zA-Z0-9][a-zA-Z0-9-.]+[a-zA-Z0-9].[a-zA-Z]{1,}[?/]{0,3}[^\r\n\t]+');
         return !!input && urlRegExp.test(input);
+    },
+
+    /**
+     * Return URLs come from the payload creator and are opened after signing. App deeplinks and
+     * https stay allowed; schemes that make the OS act (call, message, settings, install, local
+     * content, script) are not.
+     */
+    isBlockedReturnURL: (input: string): boolean => {
+        if (typeof input !== 'string') {
+            return true;
+        }
+        // drop whitespace and control characters, which URL parsers skip before the scheme
+        // eslint-disable-next-line no-control-regex
+        const match = input.replace(/[\u0000-\u0020\u007f-\u009f]/g, '').match(/^([a-z][a-z0-9+.-]*):/i);
+        if (!match) {
+            // no scheme: nothing the OS can open
+            return true;
+        }
+        return BlockedReturnURLSchemes.includes(match[1].toLowerCase());
     },
 
     isValidAmount: (input: string): boolean => {

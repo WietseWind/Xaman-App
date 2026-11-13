@@ -532,6 +532,18 @@ RCT_EXPORT_METHOD(isStorageEncryptionKeyExist:(RCTPromiseResolveBlock)resolve
   }
 }
 
+// access groups the keychain items are in, with item counts: no item names, no data
+RCT_EXPORT_METHOD(getKeychainGroupInfo:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  @try {
+    resolve([Keychain sharedGroupInfo]);
+  }
+  @catch (NSError *error) {
+    rejectWithError(reject, error);
+  }
+}
+
 RCT_EXPORT_METHOD(getStorageEncryptionKey:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {

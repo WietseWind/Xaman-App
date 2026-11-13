@@ -447,7 +447,10 @@
     "hideZeroValue": "Sakrivanje sredstava bez vrednosti",
     "showZeroValue": "Prikazivanje sredstava bez vrednosti",
     "showFavsOnly": "Prikazivanje samo omiljenih",
-    "showAll": "Prikazivanje svih sredstava"
+    "showAll": "Prikazivanje svih sredstava",
+    "deviceIsRootedWarning": "Изгледа да је овај уређај рутован. На рутованом уређају друге апликације могу да прочитају податке које Xaman штити, укључујући тајне ваших рачуна. Xaman на овом уређају користите на сопствену одговорност.",
+    "deviceIsJailBrokenWarning": "Изгледа да је на овом уређају урађен jailbreak. На уређају са jailbreak-ом друге апликације могу да прочитају податке које Xaman штити, укључујући тајне ваших рачуна. Xaman на овом уређају користите на сопствену одговорност.",
+    "hiddenWhileScreenIsCaptured": "Сакривено док се ваш екран снима или дели."
   },
   "onboarding": {
     "slideOne_title": "Уплате и захтеви за плаћање на XRP главној књизи",
@@ -996,7 +999,9 @@
     "cache": "Keš",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Информације о трезору",
+    "keychainGroup": "Keychain група"
   },
   "account": {
     "addAccount": "Додај налог",

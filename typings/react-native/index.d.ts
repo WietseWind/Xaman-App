@@ -337,6 +337,16 @@ interface VaultManagerModuleInterface extends NativeModule {
     }>;
 
     /**
+     * iOS: the access groups the keychain items are in, with the item count per group.
+     */
+    getKeychainGroupInfo?: () => Promise<{
+        sharedGroup: string;
+        groups: { [group: string]: number };
+        moved: number;
+        lastError: number;
+    }>;
+
+    /**
      * Checks if the storage encryption key exists.
      * @returns A Promise resolving to true if the key exists, otherwise false.
      */

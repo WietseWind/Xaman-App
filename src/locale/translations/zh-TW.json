@@ -447,7 +447,10 @@
     "hideZeroValue": "隱藏無價值資產",
     "showZeroValue": "顯示無價值資產",
     "showFavsOnly": "僅顯示收藏",
-    "showAll": "顯示所有資產"
+    "showAll": "顯示所有資產",
+    "deviceIsRootedWarning": "此裝置似乎已取得 Root 權限。在已 Root 的裝置上，其他應用程式可能可以讀取 Xaman 所保護的資料，包括您的帳戶私鑰。在此裝置上使用 Xaman 的風險須由您自行承擔。",
+    "deviceIsJailBrokenWarning": "此裝置似乎已越獄（Jailbreak）。在已越獄的裝置上，其他應用程式可能可以讀取 Xaman 所保護的資料，包括您的帳戶私鑰。在此裝置上使用 Xaman 的風險須由您自行承擔。",
+    "hiddenWhileScreenIsCaptured": "螢幕錄製或分享期間將會隱藏。"
   },
   "onboarding": {
     "slideOne_title": "帳本上的\r\n付款與\r\n付款請求",
@@ -996,7 +999,9 @@
     "cache": "快取",
     "clearResolverCache": "清除解析器快取",
     "cacheClearedSuccessfully": "快取已成功清除",
-    "restartRequired": "需要重新啟動才能使這些變更生效"
+    "restartRequired": "需要重新啟動才能使這些變更生效",
+    "vaultInfo": "金庫資訊",
+    "keychainGroup": "鑰匙圈群組"
   },
   "account": {
     "addAccount": "新增帳戶",

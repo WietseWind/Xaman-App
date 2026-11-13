@@ -447,7 +447,10 @@
     "hideZeroValue": "Tokens zonder waarde verborgen",
     "showZeroValue": "Tokens zonder waarde getoond",
     "showFavsOnly": "Alleen favorieten getoond",
-    "showAll": "Alle tokens getoond"
+    "showAll": "Alle tokens getoond",
+    "deviceIsRootedWarning": "Dit apparaat lijkt geroot te zijn. Op een geroot apparaat kunnen andere apps mogelijk de gegevens lezen die Xaman beschermt, waaronder uw accountgeheimen. Het gebruik van Xaman op dit apparaat is op eigen risico.",
+    "deviceIsJailBrokenWarning": "Dit apparaat lijkt gejailbreakt te zijn. Op een gejailbreakt apparaat kunnen andere apps mogelijk de gegevens lezen die Xaman beschermt, waaronder uw accountgeheimen. Het gebruik van Xaman op dit apparaat is op eigen risico.",
+    "hiddenWhileScreenIsCaptured": "Verborgen terwijl uw scherm wordt opgenomen of gedeeld."
   },
   "onboarding": {
     "slideOne_title": "Betalingen en\r\nbetaalverzoeken\r\nop de ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Resolver cache wissen",
     "cacheClearedSuccessfully": "Cache succesvol gewist",
-    "restartRequired": "Een herstart is vereist om deze wijzigingen toe te passen"
+    "restartRequired": "Een herstart is vereist om deze wijzigingen toe te passen",
+    "vaultInfo": "Kluisinfo",
+    "keychainGroup": "Sleutelhangergroep"
   },
   "account": {
     "addAccount": "Account toevoegen",

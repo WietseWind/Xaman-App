@@ -447,7 +447,10 @@
     "hideZeroValue": "Skryť aktíva bez hodnoty",
     "showZeroValue": "Zobraziť aktíva bez hodnoty",
     "showFavsOnly": "Zobraziť len obľúbené",
-    "showAll": "Zobraziť všetky aktíva"
+    "showAll": "Zobraziť všetky aktíva",
+    "deviceIsRootedWarning": "Zdá sa, že toto zariadenie je rootnuté. Na rootnutom zariadení môžu iné aplikácie čítať údaje, ktoré Xaman chráni, vrátane secretov vašich účtov. Xaman na tomto zariadení používate na vlastné riziko.",
+    "deviceIsJailBrokenWarning": "Zdá sa, že na tomto zariadení bol vykonaný jailbreak. Na zariadení s jailbreakom môžu iné aplikácie čítať údaje, ktoré Xaman chráni, vrátane secretov vašich účtov. Xaman na tomto zariadení používate na vlastné riziko.",
+    "hiddenWhileScreenIsCaptured": "Skryté počas nahrávania alebo zdieľania obrazovky."
   },
   "onboarding": {
     "slideOne_title": "Platby a žiadosti o platby v účtovnej knihe XRP",
@@ -996,7 +999,9 @@
     "cache": "Vyrovnávacia pamäť",
     "clearResolverCache": "Vyčistiť vyrovnávaciu pamäť resolvera",
     "cacheClearedSuccessfully": "Vyrovnávacia pamäť úspešne vyčistená",
-    "restartRequired": "Na uplatnenie týchto zmien je potrebný reštart"
+    "restartRequired": "Na uplatnenie týchto zmien je potrebný reštart",
+    "vaultInfo": "Informácie o trezore",
+    "keychainGroup": "Skupina kľúčenky"
   },
   "account": {
     "addAccount": "Pridať účet",

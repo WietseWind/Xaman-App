@@ -447,7 +447,10 @@
     "hideZeroValue": "Değersiz varlıklar gizleniyor",
     "showZeroValue": "Değersiz varlıklar gösteriliyor",
     "showFavsOnly": "Sadece favoriler gösteriliyor",
-    "showAll": "Tüm varlıklar gösteriliyor"
+    "showAll": "Tüm varlıklar gösteriliyor",
+    "deviceIsRootedWarning": "Bu cihaz root'lanmış görünüyor. Root'lu bir cihazda diğer uygulamalar, hesap sırlarınız dahil Xaman'ın koruduğu verileri okuyabilir. Xaman'ı bu cihazda kullanmanın sorumluluğu size aittir.",
+    "deviceIsJailBrokenWarning": "Bu cihaza jailbreak yapılmış görünüyor. Jailbreak'li bir cihazda diğer uygulamalar, hesap sırlarınız dahil Xaman'ın koruduğu verileri okuyabilir. Xaman'ı bu cihazda kullanmanın sorumluluğu size aittir.",
+    "hiddenWhileScreenIsCaptured": "Ekranınız kaydedilirken veya paylaşılırken gizlenir."
   },
   "onboarding": {
     "slideOne_title": "XRP defterinde ödemeler ve ödeme istekleri",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Kasa bilgisi",
+    "keychainGroup": "Anahtar Zinciri grubu"
   },
   "account": {
     "addAccount": "Hesap ekle",

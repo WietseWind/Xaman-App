@@ -447,7 +447,10 @@
     "hideZeroValue": "Assets ohne Wert verbergen",
     "showZeroValue": "Assets ohne Wert anzeigen",
     "showFavsOnly": "Nur Favoriten anzeigen",
-    "showAll": "Alle Assets anzeigen"
+    "showAll": "Alle Assets anzeigen",
+    "deviceIsRootedWarning": "Dieses Gerät scheint gerootet zu sein. Auf einem gerooteten Gerät können andere Apps möglicherweise die von Xaman geschützten Daten lesen, einschließlich Ihrer Kontoschlüssel. Die Verwendung von Xaman auf diesem Gerät erfolgt auf eigenes Risiko.",
+    "deviceIsJailBrokenWarning": "Auf diesem Gerät scheint ein Jailbreak durchgeführt worden zu sein. Auf einem Gerät mit Jailbreak können andere Apps möglicherweise die von Xaman geschützten Daten lesen, einschließlich Ihrer Kontoschlüssel. Die Verwendung von Xaman auf diesem Gerät erfolgt auf eigenes Risiko.",
+    "hiddenWhileScreenIsCaptured": "Ausgeblendet, solange Ihr Bildschirm aufgezeichnet oder geteilt wird."
   },
   "onboarding": {
     "slideOne_title": "Zahlungen und Zahlungsanfragen auf dem XRP-Ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Resolver-Cache leeren",
     "cacheClearedSuccessfully": "Cache erfolgreich geleert",
-    "restartRequired": "Ein Neustart ist erforderlich, damit diese Änderungen wirksam werden"
+    "restartRequired": "Ein Neustart ist erforderlich, damit diese Änderungen wirksam werden",
+    "vaultInfo": "Tresor-Info",
+    "keychainGroup": "Schlüsselbundgruppe"
   },
   "account": {
     "addAccount": "Konto hinzufügen",

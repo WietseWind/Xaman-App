@@ -447,7 +447,10 @@
     "hideZeroValue": "Kuficha mali zisizo na thamani",
     "showZeroValue": "Kuonyesha mali zisizo na thamani",
     "showFavsOnly": "Kuonyesha vipenzi tu",
-    "showAll": "Kuonyesha mali zote"
+    "showAll": "Kuonyesha mali zote",
+    "deviceIsRootedWarning": "Kifaa hiki kinaonekana kuwa kimefanyiwa root. Kwenye kifaa kilichofanyiwa root, programu nyingine zinaweza kusoma data ambayo Xaman inalinda, ikiwemo siri za akaunti yako. Tumia Xaman kwenye kifaa hiki kwa hatari yako mwenyewe.",
+    "deviceIsJailBrokenWarning": "Kifaa hiki kinaonekana kuwa kimefanyiwa jailbreak. Kwenye kifaa kilichofanyiwa jailbreak, programu nyingine zinaweza kusoma data ambayo Xaman inalinda, ikiwemo siri za akaunti yako. Tumia Xaman kwenye kifaa hiki kwa hatari yako mwenyewe.",
+    "hiddenWhileScreenIsCaptured": "Imefichwa wakati skrini yako inarekodiwa au kushirikiwa."
   },
   "onboarding": {
     "slideOne_title": "Malipo na\r\\maombi ya malipo\r\nkwenye ledger",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "Maelezo ya kabati",
+    "keychainGroup": "Kikundi cha Keychain"
   },
   "account": {
     "addAccount": "Ongeza akaunti",

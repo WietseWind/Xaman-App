@@ -447,7 +447,10 @@
     "hideZeroValue": "Ocultando activos sin valor",
     "showZeroValue": "Mostrando activos sin valor",
     "showFavsOnly": "Mostrando solo favoritos",
-    "showAll": "Mostrando todos los activos"
+    "showAll": "Mostrando todos los activos",
+    "deviceIsRootedWarning": "Este dispositivo parece estar rooteado. En un dispositivo rooteado, otras aplicaciones podrían leer los datos que Xaman protege, incluidos los secretos de su cuenta. Use Xaman en este dispositivo bajo su propio riesgo.",
+    "deviceIsJailBrokenWarning": "Este dispositivo parece tener jailbreak. En un dispositivo con jailbreak, otras aplicaciones podrían leer los datos que Xaman protege, incluidos los secretos de su cuenta. Use Xaman en este dispositivo bajo su propio riesgo.",
+    "hiddenWhileScreenIsCaptured": "Oculto mientras se graba o se comparte la pantalla."
   },
   "onboarding": {
     "slideOne_title": "Pagos y solicitudes de pago en el XRP ledger",
@@ -996,7 +999,9 @@
     "cache": "Caché",
     "clearResolverCache": "Limpiar caché de resolución",
     "cacheClearedSuccessfully": "Caché limpiado exitosamente",
-    "restartRequired": "Se requiere un reinicio para que estos cambios surtan efecto"
+    "restartRequired": "Se requiere un reinicio para que estos cambios surtan efecto",
+    "vaultInfo": "Información de la bóveda",
+    "keychainGroup": "Grupo del llavero"
   },
   "account": {
     "addAccount": "Agregar una cuenta",

@@ -447,7 +447,10 @@
     "hideZeroValue": "शून्य-मूल्य संपत्ति छुपाना",
     "showZeroValue": "शून्य-मूल्य संपत्ति दिखाना",
     "showFavsOnly": "केवल पसंदीदा दिखाना",
-    "showAll": "सभी संपत्तियां दिखाना"
+    "showAll": "सभी संपत्तियां दिखाना",
+    "deviceIsRootedWarning": "ऐसा लगता है कि यह डिवाइस रूट किया हुआ है। रूट किए गए डिवाइस पर, अन्य ऐप्स वह डेटा पढ़ सकते हैं जिसे Xaman सुरक्षित रखता है, जिसमें आपकी गुप्त खाता कुंजियाँ भी शामिल हैं। इस डिवाइस पर Xaman का उपयोग अपने जोखिम पर करें।",
+    "deviceIsJailBrokenWarning": "ऐसा लगता है कि यह डिवाइस जेलब्रेक किया हुआ है। जेलब्रेक किए गए डिवाइस पर, अन्य ऐप्स वह डेटा पढ़ सकते हैं जिसे Xaman सुरक्षित रखता है, जिसमें आपकी गुप्त खाता कुंजियाँ भी शामिल हैं। इस डिवाइस पर Xaman का उपयोग अपने जोखिम पर करें।",
+    "hiddenWhileScreenIsCaptured": "स्क्रीन रिकॉर्ड या शेयर होने के दौरान छिपा रहता है।"
   },
   "onboarding": {
     "slideOne_title": "खाता बही पर\nभुगतान और\nभुगतान अनुरोध",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "वॉल्ट की जानकारी",
+    "keychainGroup": "कीचेन समूह"
   },
   "account": {
     "addAccount": "एक खाता जोड़ें",

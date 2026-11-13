@@ -447,7 +447,10 @@
     "hideZeroValue": "Đang ẩn tài sản không có giá trị",
     "showZeroValue": "Đang hiển thị tài sản không có giá trị",
     "showFavsOnly": "Chỉ hiển thị yêu thích",
-    "showAll": "Hiển thị tất cả tài sản"
+    "showAll": "Hiển thị tất cả tài sản",
+    "deviceIsRootedWarning": "Thiết bị này có vẻ đã bị root. Trên thiết bị đã root, các ứng dụng khác có thể đọc được dữ liệu mà Xaman bảo vệ, bao gồm cả khóa bí mật tài khoản của bạn. Bạn tự chịu rủi ro khi sử dụng Xaman trên thiết bị này.",
+    "deviceIsJailBrokenWarning": "Thiết bị này có vẻ đã bị jailbreak. Trên thiết bị đã jailbreak, các ứng dụng khác có thể đọc được dữ liệu mà Xaman bảo vệ, bao gồm cả khóa bí mật tài khoản của bạn. Bạn tự chịu rủi ro khi sử dụng Xaman trên thiết bị này.",
+    "hiddenWhileScreenIsCaptured": "Bị ẩn trong khi màn hình đang được ghi hoặc chia sẻ."
   },
   "onboarding": {
     "slideOne_title": "Thanh toán và\r\nyêu cầu thanh toán\r\ntrên Sổ cái XRP",
@@ -996,7 +999,9 @@
     "cache": "Bộ nhớ đệm",
     "clearResolverCache": "Xóa bộ nhớ đệm resolver",
     "cacheClearedSuccessfully": "Đã xóa bộ nhớ đệm thành công",
-    "restartRequired": "Cần khởi động lại để các thay đổi có hiệu lực"
+    "restartRequired": "Cần khởi động lại để các thay đổi có hiệu lực",
+    "vaultInfo": "Thông tin kho bảo mật",
+    "keychainGroup": "Nhóm chuỗi khóa"
   },
   "account": {
     "addAccount": "Thêm một tài khoản",

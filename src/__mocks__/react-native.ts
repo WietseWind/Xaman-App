@@ -113,6 +113,14 @@ ReactNative.NativeModules.VaultManagerModule = {
         ),
     ),
     isStorageEncryptionKeyExist: jest.fn(() => Promise.resolve(true)),
+    getKeychainGroupInfo: jest.fn(() =>
+        Promise.resolve({
+            sharedGroup: 'group.app.xaman',
+            groups: { 'group.app.xaman': 3 },
+            moved: 0,
+            lastError: 0,
+        }),
+    ),
     inspectVaultHealth: jest.fn(() =>
         Promise.resolve({
             lastKnownPresent: true,

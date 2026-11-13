@@ -447,7 +447,10 @@
     "hideZeroValue": "मूल्य नसलेल्या मालमत्ता लपवत आहे",
     "showZeroValue": "मूल्य नसलेल्या मालमत्ता दाखवत आहे",
     "showFavsOnly": "फक्त आवडते दाखवत आहे",
-    "showAll": "सर्व मालमत्ता दाखवत आहे"
+    "showAll": "सर्व मालमत्ता दाखवत आहे",
+    "deviceIsRootedWarning": "हे डिव्हाइस रूट केलेले असल्याचे दिसते. रूट केलेल्या डिव्हाइसवर, इतर अॅप्स Xaman संरक्षित करत असलेला डेटा वाचू शकतात, ज्यामध्ये आपल्या खात्याची गुपिते देखील समाविष्ट आहेत. या डिव्हाइसवर Xaman चा वापर आपल्या स्वतःच्या जोखमीवर करा.",
+    "deviceIsJailBrokenWarning": "हे डिव्हाइस जेलब्रेक केलेले असल्याचे दिसते. जेलब्रेक केलेल्या डिव्हाइसवर, इतर अॅप्स Xaman संरक्षित करत असलेला डेटा वाचू शकतात, ज्यामध्ये आपल्या खात्याची गुपिते देखील समाविष्ट आहेत. या डिव्हाइसवर Xaman चा वापर आपल्या स्वतःच्या जोखमीवर करा.",
+    "hiddenWhileScreenIsCaptured": "स्क्रीन रेकॉर्ड किंवा शेअर होत असताना लपवलेले राहते."
   },
   "onboarding": {
     "slideOne_title": "देयके आणि\r\nदेयक विनंत्या\r\nएक्सआरपी लेजर वर",
@@ -996,7 +999,9 @@
     "cache": "Cache",
     "clearResolverCache": "Clear resolver cache",
     "cacheClearedSuccessfully": "Cache Cleared Successfully",
-    "restartRequired": "A restart is required for these changes to take effect"
+    "restartRequired": "A restart is required for these changes to take effect",
+    "vaultInfo": "तिजोरीची माहिती",
+    "keychainGroup": "कीचेन गट"
   },
   "account": {
     "addAccount": "खाते जोडा",
