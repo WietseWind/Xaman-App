@@ -44,6 +44,8 @@ export interface AccountAdvisoryResolveType {
     possibleExchange?: boolean;
     disallowIncomingXRP?: boolean;
     blackHole?: boolean;
+    // black holed, but whitelisted and controlled by its Hook (Hooks networks only): no black hole warning needed
+    blackHoleHookControlled?: boolean;
 }
 
 /* Service  ==================================================================== */
@@ -275,11 +277,17 @@ class ResolverService {
 
         const { account_data: accountData, account_flags: accountFlags } = accountInfo;
 
+        const blackHole = Advisory.checkBlackHoleAccount(accountData, accountFlags);
+
         return {
             exist: true,
             danger: accountAdvisory.danger,
             possibleExchange: Advisory.checkPossibleExchange(accountData),
-            blackHole: Advisory.checkBlackHoleAccount(accountData, accountFlags),
+            blackHole,
+            // only looked up for a black holed account; false on any doubt
+            blackHoleHookControlled: blackHole
+                ? await Advisory.checkBlackHoleHookControlled(address, accountAdvisory, accountData, accountFlags)
+                : false,
             disallowIncomingXRP: Advisory.checkDisallowIncomingXRP(accountFlags),
             requireDestinationTag: await Advisory.checkRequireDestinationTag(address, accountAdvisory, accountFlags),
         };
