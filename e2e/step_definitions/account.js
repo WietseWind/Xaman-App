@@ -1222,6 +1222,7 @@ Then('I tap my account in the list', async () => {
     // so the list does not move (I-ReadOnly stays below the fold). Swipe from
     // the middle of the list instead.
     // Edit Button + inner native control share account-{address} (multiple match).
+    let scrolled = false;
     for (let i = 0; i < 12; i += 1) {
         try {
             await waitFor(row).toBeVisible().withTimeout(400);
@@ -1229,6 +1230,7 @@ Then('I tap my account in the list', async () => {
         } catch (e) {
             try {
                 await list.swipe('up', 'slow', 0.55);
+                scrolled = true;
             } catch (scrollErr) {
                 break;
             }
@@ -1238,9 +1240,26 @@ Then('I tap my account in the list', async () => {
         }
     }
 
+    // The last row of a long list: the list still bounces at its end right after the swipe and a
+    // tap then only stops the bounce. Let it settle, and tap again when the settings did not open.
+    if (scrolled) {
+        await sleepMs(1200);
+    }
+
+    const tapRow = async () => {
+        try {
+            await row.tap();
+        } catch (e) {
+            await row.tap({ x: 24, y: 24 });
+        }
+    };
+
+    await tapRow();
     try {
-        await row.tap();
+        await waitFor(element(by.id('account-settings-screen')))
+            .toExist()
+            .withTimeout(5000);
     } catch (e) {
-        await row.tap({ x: 24, y: 24 });
+        await tapRow();
     }
 });
