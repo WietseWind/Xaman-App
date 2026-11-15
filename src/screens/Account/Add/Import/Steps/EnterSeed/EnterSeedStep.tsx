@@ -33,10 +33,11 @@ import {
     FamilySeedAlgorithm,
     deriveFamilySeedAccount,
     deriveFamilySeedAddresses,
+    deriveFamilySeedCandidates,
     isFamilySeedCurvePickerEligible,
     pickFamilySeedCurve,
 } from '@common/utils/familySeedImport';
-import { curveChoiceButtonLabel, curvePickerItemTitle } from '@common/utils/mnemonicImport';
+import { curveChoiceButtonLabel, curvePickerItemTitle, getMnemonicAlgorithm } from '@common/utils/mnemonicImport';
 
 import LedgerService from '@services/LedgerService';
 import NetworkService from '@services/NetworkService';
@@ -157,9 +158,35 @@ class EnterSeedStep extends Component<Props, State> {
         });
     };
 
+    // the secret as typed: the field reports it before the state has it
+    currentSecret = (): string | undefined => {
+        const { secret } = this.state;
+
+        return this.pendingSecret !== undefined ? this.pendingSecret : secret;
+    };
+
+    // the curve of an account the app already knows for this seed, when there is one
+    knownCurve = (secret?: string): FamilySeedAlgorithm | undefined => {
+        const { pickKnownAccount } = this.context;
+
+        try {
+            const known = pickKnownAccount(deriveFamilySeedCandidates(this.resolveFamilySeed(secret as string)));
+            return known ? getMnemonicAlgorithm(known) : undefined;
+        } catch {
+            return undefined;
+        }
+    };
+
     runCurveAutodetect = async (token: number, secret?: string): Promise<FamilySeedAlgorithm> => {
         if (!isFamilySeedCurvePickerEligible(secret) || this.userSelectedCurve || token !== this.curveDetectToken) {
             return this.getSecretType();
+        }
+
+        // the app already knows which account this seed belongs to: show that curve, ask nothing
+        const known = this.knownCurve(secret);
+        if (known) {
+            this.setState({ secretType: known });
+            return known;
         }
 
         try {
@@ -248,7 +275,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     ensureCurveAutodetect = async (): Promise<FamilySeedAlgorithm> => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
 
         if (this.curveDetectTimer) {
             clearTimeout(this.curveDetectTimer);
@@ -295,7 +322,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     driveFamilySeed = async () => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
 
         try {
             if (!secret) {
@@ -305,6 +332,15 @@ class EnterSeedStep extends Component<Props, State> {
             this.setState({ isLoading: true });
 
             const xrplSecret = this.resolveFamilySeed(secret);
+
+            // an account the app already knows (the one being upgraded, or a read-only one) tells
+            // which curve is meant: no ledger lookup, no prompt
+            const { pickKnownAccount } = this.context;
+            const known = pickKnownAccount(deriveFamilySeedCandidates(xrplSecret), this.userSelectedCurve);
+            if (known) {
+                await this.goNext(known);
+                return;
+            }
 
             if (!this.userSelectedCurve) {
                 await this.ensureCurveAutodetect();
@@ -356,7 +392,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     derivePrivateKey = () => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
         try {
             if (!secret) {
                 throw new Error('Private key is required!');
@@ -401,7 +437,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     onNextPress = () => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
 
         try {
             // normal family seed

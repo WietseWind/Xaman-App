@@ -59,6 +59,7 @@ import NetworkService from '@services/NetworkService';
 /* types ==================================================================== */
 import { ImportSteps, Props, SecretTypes, State } from './types';
 import { shouldFinishTangemUpgrade, stateForSecretType } from './tangemUpgradeReset';
+import { canUpgradeExisting, pickKnownCandidate } from './importIntent';
 
 /* Constants ==================================================================== */
 // the steps where the user types a secret: screen reader users are asked to use headphones first
@@ -391,6 +392,25 @@ class AccountImportView extends Component<Props, State> {
         );
     };
 
+    /**
+     * Of the accounts a secret can give (one per curve), the one the app already knows:
+     * the account that is being upgraded, or the only one that is in the app as read-only.
+     */
+    pickKnownAccount = (
+        candidates: Array<AccountLib.XRPL_Account | undefined>,
+        curvePickedByHand = false,
+    ): AccountLib.XRPL_Account | undefined => {
+        const { upgradeAccount } = this.state;
+
+        return pickKnownCandidate({
+            candidates,
+            upgradeAddress: upgradeAccount?.address,
+            isReadonlyInApp: (address) =>
+                AccountRepository.findOne({ address })?.accessLevel === AccessLevels.Readonly,
+            curvePickedByHand,
+        });
+    };
+
     goNext = async (nextStep?: ImportSteps) => {
         const {
             account, upgradeAccount, importedAccount, alternativeSeedAlphabet, currentStep, prevSteps,
@@ -414,11 +434,28 @@ class AccountImportView extends Component<Props, State> {
             return;
         }
 
-        // if it's upgrade check if entered secret is match the account
+        // an upgrade: the entered secret has to belong to an account that can be upgraded
+        let upgradeOther: AccountModel | undefined;
+
         if (nextStep === 'ConfirmPublicKey' && upgradeAccount) {
             if (importedAccount!.address !== upgradeAccount.address) {
-                Alert.alert(Localize.t('global.error'), Localize.t('account.upgradeAccountSecretIsNotMatch'));
-                return;
+                const other = AccountRepository.findOne({ address: importedAccount!.address! });
+
+                if (other && canUpgradeExisting(other, account)) {
+                    // the secret belongs to another read-only account in the app: continue with that
+                    // one, and show its address first
+                    upgradeOther = other;
+                    this.setState({ upgradeAccount: other });
+                } else if (other) {
+                    Alert.alert(
+                        Localize.t('global.error'),
+                        Localize.t('account.importingSecretAccountExist', { address: importedAccount!.address }),
+                    );
+                    return;
+                } else {
+                    Alert.alert(Localize.t('global.error'), Localize.t('account.upgradeAccountSecretIsNotMatch'));
+                    return;
+                }
             }
         }
 
@@ -429,11 +466,7 @@ class AccountImportView extends Component<Props, State> {
             const exist = AccountRepository.findOne({ address: importedAccount!.address! });
 
             if (exist) {
-                if (
-                    exist.accessLevel === AccessLevels.Full ||
-                    account.accessLevel === AccessLevels.Readonly ||
-                    account.type === AccountTypes.Tangem
-                ) {
+                if (!canUpgradeExisting(exist, account)) {
                     // alert the r address in case of importing full access
                     if (account.accessLevel === AccessLevels.Full && account.type === AccountTypes.Regular) {
                         Alert.alert(
@@ -492,7 +525,7 @@ class AccountImportView extends Component<Props, State> {
                 currentStep: 'FinishStep',
                 prevSteps,
             });
-        } else if (nextStep === 'ConfirmPublicKey' && upgradeAccount) {
+        } else if (nextStep === 'ConfirmPublicKey' && upgradeAccount && !upgradeOther) {
             this.setState({
                 currentStep: 'SecurityStep',
                 prevSteps,
@@ -506,12 +539,15 @@ class AccountImportView extends Component<Props, State> {
     };
 
     goBack = () => {
+        const { upgradeAccount: upgradeFromProps } = this.props;
         const { upgradeAccount, prevSteps, currentStep } = this.state;
 
-        // clear upgrade if we manually added it on back
-        if (currentStep === 'ConfirmPublicKey' && !upgradeAccount) {
+        // an upgrade the import switched to by itself (the entered secret matched a read-only account)
+        // belongs to that secret: on the way back, return to how the import was started, so another
+        // secret is checked from scratch. an upgrade started from the account settings stays.
+        if (currentStep === 'ConfirmPublicKey' && upgradeAccount !== upgradeFromProps) {
             this.setState({
-                upgradeAccount: undefined,
+                upgradeAccount: upgradeFromProps,
             });
         }
 
@@ -694,6 +730,7 @@ class AccountImportView extends Component<Props, State> {
                     setLabel: this.setLabel,
                     setPassphrase: this.setPassphrase,
                     setImportedAccount: this.setImportedAccount,
+                    pickKnownAccount: this.pickKnownAccount,
                     setAccountType: this.setAccountType,
                     setAdditionalInfo: this.setAdditionalInfo,
                     setTangemSignature: this.setTangemSignature,
