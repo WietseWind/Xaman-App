@@ -1148,6 +1148,61 @@ Then('I enter my mnemonic', { timeout: 4 * 60 * 1000 }, async () => {
     await dismissKeyboard();
 });
 
+// Import and upgrade pick the intended account (feature 11). The accounts are made up for the
+// scenario: nothing is activated or funded, the app only has to recognise the address.
+Then('I prepare a new mnemonic account on curve {string}', async (curve) => {
+    // 12 words: 24 rows do not fit the Android emulator screen
+    this.mnemonic = generateMnemonic(128);
+    this.seed = undefined;
+    this.address = deriveMnemonicAddress(this.mnemonic, curve);
+});
+
+Then('I prepare a new family seed account on curve {string}', async (curve) => {
+    this.seed = generateFamilySeed();
+    this.mnemonic = undefined;
+    this.address = deriveFamilySeedAddress(this.seed, curve);
+});
+
+Then('I prepare a new address without a secret', async () => {
+    this.seed = undefined;
+    this.mnemonic = undefined;
+    this.address = deriveFamilySeedAddress(generateFamilySeed());
+});
+
+Then('I keep this account as {string}', async (name) => {
+    this.keptAccounts = this.keptAccounts || {};
+    this.keptAccounts[name] = { address: this.address, seed: this.seed, mnemonic: this.mnemonic };
+});
+
+Then('I use the account kept as {string}', async (name) => {
+    const kept = (this.keptAccounts || {})[name];
+    if (!kept) {
+        throw new Error(`no account was kept as ${name}`);
+    }
+    this.address = kept.address;
+    this.seed = kept.seed;
+    this.mnemonic = kept.mnemonic;
+});
+
+// Back on the address confirmation asks first: the secret has to be entered again.
+Then('I go back from the address confirmation', { timeout: 30 * 1000 }, async () => {
+    if (device.getPlatform() === 'android') {
+        await clickByTestId('back-button');
+        const deadline = Date.now() + 15000;
+        while (Date.now() < deadline) {
+            if ((await androidDumpIncludes('go back')) && (await clickAndroidLabel('GO BACK'))) {
+                return;
+            }
+            await sleepMs(400);
+        }
+        throw new Error('the Go back prompt did not show on the address confirmation');
+    }
+    await element(by.id('back-button')).tap();
+    const goBack = element(by.label('Go back').and(by.type('_UIAlertControllerActionView')));
+    await waitFor(goBack).toExist().withTimeout(8000);
+    await goBack.tap();
+});
+
 Then('I tap my account in the list', async () => {
     const rowId = `account-${this.address}`;
     const row = element(by.id(rowId)).atIndex(0);
