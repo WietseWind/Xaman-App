@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "არჩეული ანგარიში არ არის გააქტიურებული. ტრანზაქციის დასადასტურებლად უნდა აირჩიოთ გააქტიურებული ანგარიში!",
     "accountAlreadyExist": "ანგარიში უკვე არსებობს!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "თქვენ მიერ შეყვანილი ანგარიშის სეკრეტი ეკუთვნის ამ \"r\" მისამართს და უკვე იმპორტირებულია Xaman-ში, როგორც სრული წვდომის ანგარიში.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "შეყვანილი სეკრეტი ეკუთვნის სხვა \"r\" მისამართს. თუ გსურთ რეგულარული გასაღების იმპორტი, გთხოვთ გადმოიტანეთ ახალი ანგარიში. თუ არა, მაშინ გთხოვთ გააუქმოეთ თქვენი შექმნილი ჩეკი.",
     "toTheseExistingAccounts": "ეს არის არსებული ანგარიში(ები) ",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "ამ ანგარიშისთვის მესიჯ-გასაღები გამორთულია და რეგულარული გასაღების მატარებელი ანგარიში ნაპოვნი არ არის სიაში! ",

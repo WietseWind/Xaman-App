@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "Ang napiling account ay hindi naaktibo. Upang pirmahan ang transaksyong ito kailangan mong pumili ng isang aktibong account!",
     "accountAlreadyExist": "Umiiral na ang account!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "Ang ipinasok mong lihim ng account ay kabilang sa r-address na ito at na-import na sa Xaman bilang account na may Full Access.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "Ang ipinasok na lihim ay kabilang sa isa pang r-address. Kung nais mong mag-import ng isang regular na susi, mangyaring [Mag-import ng bagong account]. Kung hindi, mangyaring [kanselahin] at suriin ang iyong pagpasok.",
     "toTheseExistingAccounts": "Sa ganito/ ang mga ito ay  umiiral na account(s)",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "Ang mahalagang susi para sa account na ito ay hindi gumagana at ang pangkaraniwang susi ay hindi makita sa  listahan ng mga account!",

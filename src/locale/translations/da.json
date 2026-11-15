@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "Den valgte konto er ikke aktiveret. Hvis du vil underskrive denne transaktion, skal du vælge en aktiveret konto!",
     "accountAlreadyExist": "Kontoen findes allerede!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "Den indtastede kontohemmelighed tilhører denne r-adresse og er allerede importeret i Xaman som en konto med fuld adgang.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "Den indtastede hemmelighed tilhører en anden r-adresse. Hvis du vil importere en Regular Key, bedes du vælge [ Importér ny konto ]. Hvis du ikke vil, bedes du vælge [ annullér ] og tjekke din indtastning.",
     "toTheseExistingAccounts": "Til denne / disse eksisterende konti",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "Masternøgle for denne konto er deaktiveret, og Regular Key konto findes ikke i listen over konti.",

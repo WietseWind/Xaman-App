@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "ਚੁਣਿਆ ਹੋਇਆ ਖਾਤਾ ਚਾਲੂ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਹੈ. ਇਸ ਟ੍ਰਾਂਜੈਕਸ਼ਨ ਤੇ ਦਸਤਖਤ ਕਰਨ ਲਈ ਤੁਹਾਨੂੰ ਇੱਕ ਕਿਰਿਆਸ਼ੀਲ ਖਾਤਾ ਚੁਣਨ ਦੀ ਜ਼ਰੂਰਤ ਹੈ!",
     "accountAlreadyExist": "ਖਾਤਾ ਪਹਿਲਾਂ ਹੀ ਮੌਜੂਦ ਹੈ!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਾਖਲ ਕੀਤਾ ਖਾਤੇ ਦਾ ਰਾਜ਼ ਇਸ r-ਐਡਰੈਸ ਨਾਲ ਸਬੰਧਤ ਹੈ ਅਤੇ ਪਹਿਲਾਂ ਹੀ Xaman ਵਿੱਚ ਪੂਰੀ ਪਹੁੰਚ ਵਾਲੇ ਖਾਤੇ ਵਜੋਂ ਆਯਾਤ ਕੀਤਾ ਜਾ ਚੁੱਕਾ ਹੈ।\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "ਦਾਖਲ ਹੋਇਆ ਰਾਜ਼ ਕਿਸੇ ਹੋਰ ਆਰ-ਐਡਰੈਸ ਨਾਲ ਸਬੰਧਤ ਹੈ. ਜੇ ਤੁਸੀਂ ਨਿਯਮਤ ਕੁੰਜੀ ਨੂੰ ਆਯਾਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ, ਕਿਰਪਾ ਕਰਕੇ [ਨਵਾਂ ਖਾਤਾ ਅਯਾਤ ਕਰੋ]. ਜੇ ਨਹੀਂ, ਕਿਰਪਾ ਕਰਕੇ [ਰੱਦ ਕਰੋ] ਅਤੇ ਆਪਣੀ ਐਂਟਰੀ ਦੀ ਜਾਂਚ ਕਰੋ.",
     "toTheseExistingAccounts": "ਇਸ / ਇਹ ਮੌਜੂਦਾ ਖਾਤੇ (ਖਾਤਿਆਂ) ਨੂੰ",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "ਇਸ ਖਾਤੇ ਲਈ ਮਾਸਟਰ ਕੁੰਜੀ ਅਯੋਗ ਹੈ ਅਤੇ ਨਿਯਮਤ ਕੁੰਜੀ ਖਾਤਾ ਅਕਾਉਂਟ ਸੂਚੀ ਵਿੱਚ ਨਹੀਂ ਮਿਲਦਾ!",
