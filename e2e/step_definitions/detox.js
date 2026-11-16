@@ -19,8 +19,8 @@ const {
     waitUntilAndroidText,
     resetAndroidDumpState,
     hideAndroidKeyboard,
-    waitForAndroidIme,
 } = require('../helpers/tapById');
+const { focusAndroidTextField, typeAndroidTextVerified } = require('../helpers/androidTextEntry');
 const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLaunch');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
@@ -210,7 +210,7 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
             }
         }
         await waitUntilAndroidTestId(textInputId, 10000);
-        await clickByTestId(textInputId);
+        await focusAndroidTextField(textInputId);
         // Let a preceding Clear search setState land before keystrokes append.
         await new Promise((resolve) => { setTimeout(resolve, 300); });
         const current = String((await androidReadTextByTestId(textInputId)) || '');
@@ -231,24 +231,11 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
             }
         };
         if (!(needle && current.indexOf(needle) !== -1)) {
-            typeValue();
-            // Keystrokes sent before the field has focus go nowhere: the step passed with an empty
-            // account label, and the Next tap after it did nothing. While the field still reads as it
-            // did before typing, tap it again, wait for the keyboard and type again; fail here if
+            // Keystrokes that never reach the field (no focus yet, or a keyboard that lost its link
+            // to the field) left an empty account label and a dead Next tap. The helper reads the
+            // field back and takes another route while it still reads as before; it fails here if
             // nothing ever arrives, not at a later step.
-            for (let attempt = 1; ; attempt += 1) {
-                await new Promise((resolve) => { setTimeout(resolve, 500); });
-                const after = String((await androidReadTextByTestId(textInputId)) || '');
-                if (after !== before) {
-                    break;
-                }
-                if (attempt >= 3) {
-                    throw new Error(`typed '${value}' into ${textInputId} ${attempt} times, but it still reads '${after}'`);
-                }
-                await clickByTestId(textInputId);
-                await waitForAndroidIme(3000);
-                typeValue();
-            }
+            await typeAndroidTextVerified(textInputId, value, before);
         }
         // input text can drop the start of a long destination. One more try.
         if (needle.length >= 24) {

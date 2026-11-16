@@ -184,6 +184,7 @@ const rememberDump = (xml) => {
 // reset, one disconnect broke dumps for the rest of the run, even after the app was restarted.
 const resetAndroidDumpState = () => {
     dumpBroken = false;
+    dumpSpecIndex = 0;
     compressedOff = false;
     dumpInFlight = null;
     cachedXml = '';
@@ -246,9 +247,21 @@ const androidDumpXml = async () => {
                 }
                 await sleep(80);
             }
-            // This location does not work for this app (no external files directory yet, or a
-            // release build refusing run-as): use the next one for the rest of the run.
-            if (dumpBroken || dumpSpecIndex + 1 >= DUMP_SPECS.length) {
+            // This location gave nothing (no external files directory yet, or a release build
+            // refusing run-as): try the next one.
+            if (dumpBroken) {
+                return cachedXml || lastTabXml || '';
+            }
+            if (dumpSpecIndex + 1 >= DUMP_SPECS.length) {
+                // No location gave a dump. Do not stay on the last one: a release build can never
+                // read it, and the first one may only have been slow (the first dump right after
+                // the emulator booted took longer than these reads; the whole run then died in
+                // BeforeAll). The next call starts at the first location again; callers poll.
+                if (dumpSpecIndex !== 0) {
+                    dumpSpecIndex = 0;
+                    // eslint-disable-next-line no-console
+                    console.error('[tapById] no UI dump from any location; back to', DUMP_SPECS[0].abs);
+                }
                 return cachedXml || lastTabXml || '';
             }
             dumpSpecIndex += 1;
