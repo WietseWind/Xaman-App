@@ -57,6 +57,20 @@ export const deriveFamilySeedAddresses = (
     }
 };
 
+/**
+ * The accounts a family seed can give: one per curve, or one only for a seed that has a single
+ * curve (sEd…).
+ */
+export const deriveFamilySeedCandidates = (secret: string): XRPL_Account[] => {
+    const account = deriveFamilySeedAccount(secret);
+
+    if (!isFamilySeedCurvePickerEligible(secret)) {
+        return [account];
+    }
+
+    return [account, deriveFamilySeedAccount(secret, 'ed25519')];
+};
+
 export const pickFamilySeedCurve = async ({
     secret,
     getAccountInfo,

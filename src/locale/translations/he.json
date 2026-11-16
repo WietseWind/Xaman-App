@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "אם ברצונך להשתמש בחשבון זה כמפתח רגיל בלבד, אין צורך להפעיל את החשבון.\n\nעם זאת, אם ברצונך לשלוח עסקאות מחשבון זה, יהיה עליך להפעיל אותו.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "החשבון שנבחר אינו מופעל. כדי לחתום על עסקה זו עליך לבחור חשבון מופעל!",
     "accountAlreadyExist": "החשבון כבר קיים!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "סוד החשבון שהזנת שייך לכתובת r זו וכבר יובא ל-Xaman כחשבון עם גישה מלאה.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "הסוד שהוזן שייך לכתובת r אחרת. אם ברצונך לייבא מפתח רגיל, אנא [ייבא חשבון חדש]. אם לא, אנא [בטל] ובדוק את הערך שלך.",
     "toTheseExistingAccounts": "לחשבונות קיימים אלה",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "מפתח ראשי לחשבון זה מושבת וחשבון מפתח רגיל לא נמצא ברשימת החשבונות!",

@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "ఎంపికచేసిన ఖాతా క్రియాశీలము చేయబడలేదు. ఈ లావాదేవీపై సంతకం చేయడానికి  మీరు ఒక క్రియాశీల ఖాతాను ఎంచుకోవాలి!",
     "accountAlreadyExist": "ఖాతా ఇప్పటికే ఉంది!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "మీరు నమోదు చేసిన ఖాతా రహస్యం ఈ r-చిరునామాకు చెందినది మరియు ఇది ఇప్పటికే Xaman లోకి పూర్తి ప్రాప్యత ఖాతాగా దిగుమతి చేయబడింది.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "నమోదు చేసిన రహస్యం మరొక r- చిరునామాకు చెందినది. మీరు సాధారణ కీని దిగుమతి చేయాలనుకుంటే, దయచేసి [క్రొత్త ఖాతాను దిగుమతి చేయండి]. లేకపోతే, దయచేసి [రద్దు] మరియు మీ ఎంట్రీని తనిఖీ చేయండి.\r\n",
     "toTheseExistingAccounts": "దీనికి / ఈ ప్రస్తుత ఖాతా (ల) కు\r\n\r\n",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "ఈ ఖాతా కోసం మాస్టర్ కీ నిలిపివేయబడింది మరియు ఖాతాల జాబితాలో సాధారణ కీ ఖాతా కనుగొనబడలేదు!\r\n",

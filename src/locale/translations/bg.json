@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "Избраната сметка не е активирана. За да подпишете тази транзакция, трябва да изберете активирана сметка!",
     "accountAlreadyExist": "Акаунтът вече съществува!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "Въведената тайна на акаунта принадлежи на този r-адрес и вече е импортирана в Xaman като акаунт с пълен достъп.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "Въведената тайна принадлежи на друг r-адрес. Ако искате да импортирате regular key, моля [импортирайте нова сметка]. Ако не, моля, [анулирайте] и проверете въведеното.",
     "toTheseExistingAccounts": "За тази/тези съществуващи сметка (и)",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "Master Key за тази сметка е деактивиран и не е намерен Regular Key за сметката от списъка със сметки!",

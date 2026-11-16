@@ -15,6 +15,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
 import {
     curveChoiceButtonLabel,
+    deriveMnemonicCandidates,
     MnemonicAlgorithm,
     MnemonicDeriveOptions,
     mnemonicWordFromChange,
@@ -204,10 +205,22 @@ class EnterMnemonicStep extends Component<Props, State> {
 
         try {
             const mnemonic = words.filter(Boolean).join(' ');
+
+            // an account the app already knows (the one being upgraded, or a read-only one) tells
+            // which curve is meant: no ledger lookup, no prompt
+            const { pickKnownAccount } = this.context;
+            const derived = deriveMnemonicCandidates(mnemonic, deriveOptions);
+            const known = pickKnownAccount([derived.secp, derived.ed], !!explicitAlgorithm);
+            if (known) {
+                await this.finishImport(known);
+                return;
+            }
+
             const picked = await pickMnemonicImport({
                 mnemonic,
                 deriveOptions,
                 explicitAlgorithm,
+                derived,
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
 
@@ -425,6 +438,7 @@ class EnterMnemonicStep extends Component<Props, State> {
                         }}
                         autoCapitalize="none"
                         keyboardType={Platform.OS === 'android' ? 'visible-password' : 'default'}
+                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...noAutofillProps}
                         value={value}
                         style={[styles.input, isActive && styles.inputActive]}
@@ -536,13 +550,13 @@ class EnterMnemonicStep extends Component<Props, State> {
                             onChange={(enabled) => {
                                 const next = { useCurve: enabled };
                                 this.setState(
-                                    {
+                                    (state) => ({
                                         useCurve: enabled,
                                         words:
                                             enabled && this.canPrefillDebugEdMnemonic(next)
                                                 ? this.debugEdMnemonicWords()
-                                                : this.state.words,
-                                    },
+                                                : state.words,
+                                    }),
                                     this.scrollToBottom,
                                 );
                             }}
@@ -580,12 +594,12 @@ class EnterMnemonicStep extends Component<Props, State> {
                             light
                             onPress={() => {
                                 const next = { curve: 'ed25519' as MnemonicAlgorithm };
-                                this.setState({
+                                this.setState((state) => ({
                                     ...next,
                                     words: this.canPrefillDebugEdMnemonic(next)
                                         ? this.debugEdMnemonicWords()
-                                        : this.state.words,
-                                });
+                                        : state.words,
+                                }));
                             }}
                             roundedSmall
                             icon={curve === 'ed25519' ? 'IconCheck' : undefined}

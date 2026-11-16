@@ -172,6 +172,17 @@ export const deriveMnemonicAddresses = (
     }
 };
 
+/** Both accounts a mnemonic can give: one per curve. */
+export const deriveMnemonicCandidates = (
+    mnemonic: string,
+    options?: MnemonicDeriveOptions,
+): { secp: XRPL_Account; ed: XRPL_Account } => {
+    return {
+        secp: deriveMnemonicAccount(mnemonic, options),
+        ed: deriveMnemonicAccount(mnemonic, { ...options, algorithm: 'ed25519' }),
+    };
+};
+
 export const isLedgerAccountActivated = (accountInfo: any): boolean => {
     return classifyLedgerAccount(accountInfo) === 'activated';
 };
@@ -181,22 +192,29 @@ export const pickMnemonicImport = async ({
     deriveOptions,
     explicitAlgorithm,
     getAccountInfo,
+    derived,
 }: {
     mnemonic: string;
     deriveOptions?: MnemonicDeriveOptions;
     explicitAlgorithm?: MnemonicAlgorithm;
     getAccountInfo: (address: string) => Promise<any>;
+    // accounts already derived from this mnemonic with these options, to not derive them twice
+    derived?: { secp: XRPL_Account; ed: XRPL_Account };
 }): Promise<MnemonicImportPick> => {
     if (explicitAlgorithm) {
+        const explicitAccount = explicitAlgorithm === 'ed25519' ? derived?.ed : derived?.secp;
+
         return {
             status: 'ready',
             algorithm: explicitAlgorithm,
-            account: deriveMnemonicAccount(mnemonic, { ...deriveOptions, algorithm: explicitAlgorithm }),
+            account:
+                explicitAccount ??
+                deriveMnemonicAccount(mnemonic, { ...deriveOptions, algorithm: explicitAlgorithm }),
         };
     }
 
-    const secp = deriveMnemonicAccount(mnemonic, deriveOptions);
-    const ed = deriveMnemonicAccount(mnemonic, { ...deriveOptions, algorithm: 'ed25519' });
+    const secp = derived?.secp ?? deriveMnemonicAccount(mnemonic, deriveOptions);
+    const ed = derived?.ed ?? deriveMnemonicAccount(mnemonic, { ...deriveOptions, algorithm: 'ed25519' });
 
     const [secpState, edState] = await Promise.all([
         lookupLedgerAccount(getAccountInfo, secp.address as string),

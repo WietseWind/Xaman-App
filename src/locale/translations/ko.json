@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "선택한 계정이 활성화되지 않았습니다. 이 거래에 서명하려면 활성화된 계정을 선택해야 합니다.",
     "accountAlreadyExist": "계정이 이미 존재합니다!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "입력한 계정 시크릿은 이 r-주소에 속하며 이미 전체 액세스 계정으로 Xaman에 가져왔습니다.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "입력한 시크릿 번호는 다른  r- 주소입니다. 일반 키를 가져오려면 [새 계정 가져오기]를 하십시오. 아닐 경우, [취소] 하고 입력한 내용을 확인하십시요. ",
     "toTheseExistingAccounts": "기존 계좌에",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "이 계정의 마스터 키가 비활성화되어 있으며 계정 목록에서 일반 키 계정을 찾을 수 없습니다!",

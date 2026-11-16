@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "ಆಯ್ದ ಖಾತೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿಲ್ಲ. ಈ ವಹಿವಾಟಿಗೆ ಸಹಿ ಮಾಡಲು ನೀವು ಸಕ್ರಿಯ ಖಾತೆಯನ್ನು ಆರಿಸಬೇಕಾಗುತ್ತದೆ!",
     "accountAlreadyExist": "ಖಾತೆ ಈಗಾಗಲೇ ಇದೆ!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "ನೀವು ನಮೂದಿಸಿದ ಖಾತೆಯ ರಹಸ್ಯವು ಈ r-ವಿಳಾಸಕ್ಕೆ ಸೇರಿದೆ ಮತ್ತು ಅದನ್ನು ಈಗಾಗಲೇ Xaman ಗೆ ಪೂರ್ಣ ಪ್ರವೇಶ ಖಾತೆಯಾಗಿ ಆಮದು ಮಾಡಲಾಗಿದೆ.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "ನಮೂದಿಸಿದ ರಹಸ್ಯವು ಮತ್ತೊಂದು ಆರ್-ವಿಳಾಸಕ್ಕೆ ಸೇರಿದೆ. ನೀವು ಸಾಮಾನ್ಯ ಕೀಲಿಯನ್ನು ಆಮದು ಮಾಡಲು ಬಯಸಿದರೆ, ದಯವಿಟ್ಟು [ಹೊಸ ಖಾತೆಯನ್ನು ಆಮದು ಮಾಡಿ]. ಇಲ್ಲದಿದ್ದರೆ, ದಯವಿಟ್ಟು [ರದ್ದುಗೊಳಿಸಿ] ಮತ್ತು ನಿಮ್ಮ ನಮೂದನ್ನು ಪರಿಶೀಲಿಸಿ.",
     "toTheseExistingAccounts": "ಈ / ಈ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಖಾತೆ (ಗಳಿಗೆ) ಗೆ",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "ಈ ಖಾತೆಯ ಮಾಸ್ಟರ್ ಕೀ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ ಮತ್ತು ಖಾತೆಗಳ ಪಟ್ಟಿಯಲ್ಲಿ ಸಾಮಾನ್ಯ ಕೀ ಖಾತೆ ಕಂಡುಬಂದಿಲ್ಲ!",

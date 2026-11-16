@@ -1157,7 +1157,7 @@
     "activateRegularKeyAccountWarning": "If you want to use this account as Regular key only, you DO NOT have to activate the account.\n\nHowever, if you want to use this account also to transact, you can activate this account.",
     "selectedAccountIsNotActivatedPleaseChooseAnotherOne": "Izbrani račun ni aktiviran. Za podpis te transakcije je potrebno izbrati aktiviran račun!",
     "accountAlreadyExist": "Račun že obstaja!\n\n%{address}",
-    "importingSecretAccountExist": "The account secret that you have entered belongs to this r-address and has already been imported into Xaman as a full access account.\n\n%{address}",
+    "importingSecretAccountExist": "Skrivnost računa, ki ste jo vnesli, pripada temu r-naslovu in je že bila uvožena v Xaman kot račun s polnim dostopom.\n\n%{address}",
     "upgradeAccountSecretIsNotMatch": "Vnesena skrivnost pripada drugemu r-naslovu. Če želite uvoziti običajni ključ, prosimo izberite [Uvoz novega računa]. V nasprotnem primeru [Prekličite] in preverite svoj vnos.",
     "toTheseExistingAccounts": "Na ta / te obstoječe račune",
     "masterKeyForThisAccountDisableRegularKeyNotFound": "Glavni ključ za ta račun je onemogočen, računa običajnega ključa pa ni na seznamu računov!",
