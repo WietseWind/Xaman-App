@@ -30,7 +30,8 @@ export default StyleService.create({
         marginBottom: 10,
     },
     cardControls: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
-    cardControlsStacked: { flexDirection: 'column', alignItems: 'flex-start' },
+    // No wrap in the column: with it Android gives the card ID less height than its line (cut off).
+    cardControlsStacked: { flexDirection: 'column', flexWrap: 'nowrap', alignItems: 'flex-start' },
     cardDetailValue: {
         flexGrow: 1,
         flexShrink: 1,
@@ -42,6 +43,7 @@ export default StyleService.create({
         marginRight: 10,
     },
     identifyButton: { height: 'auto', minHeight: 44, paddingVertical: 9, marginVertical: 2 },
+    identifyButtonStacked: { alignSelf: 'flex-start' },
     cardDetailValueStacked: { alignSelf: 'stretch', flexGrow: 0, flexShrink: 0, marginRight: 0, marginBottom: 6 },
     backupName: { fontFamily: AppFonts.base.familyBold, fontSize: AppFonts.base.size, color: '$textPrimary' },
     backupNotSet: { fontFamily: AppFonts.base.family, fontSize: AppFonts.small.size,

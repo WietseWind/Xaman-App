@@ -66,7 +66,7 @@ const CardDetails = ({ cardId, onIdentify }: { cardId: string; onIdentify: () =>
                 </Text>
                 <Button testID="identify-tangem-button" label={Localize.t('account.identify')}
                     icon="IconScanCard" onPress={onIdentify} roundedMini nonBlock allowFontScaling
-                    style={styles.identifyButton} />
+                    style={[styles.identifyButton, fontScale > 1.2 && styles.identifyButtonStacked]} />
             </View>
         </View>
     );
