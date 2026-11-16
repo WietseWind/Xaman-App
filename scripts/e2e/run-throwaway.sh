@@ -198,6 +198,12 @@ else
     fi
     [ "$("$ADB" -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] ||
         die "$SERIAL did not boot in 10 minutes"
+    # boot_completed comes before external storage is there, and the UI dumps of a release build can
+    # only be read from the app's external files directory: a run started too early died in BeforeAll.
+    for _ in $(seq 1 60); do
+        "$ADB" -s "$SERIAL" shell 'ls -d /sdcard/Android/data' </dev/null >/dev/null 2>&1 && break
+        sleep 2
+    done
     "$ADB" -s "$SERIAL" shell setprop debug.xaman.e2e.owner "$NAME"
     export ANDROID_SERIAL="$SERIAL"
     if [ "$BUILD_TYPE" = release ]; then
@@ -244,6 +250,7 @@ fi
 export DETOX_REINSTALL=yes
 export E2E_ARTIFACTS_DIR="$ART"
 export DETOX_CONTINUE_ON_FAIL="${DETOX_CONTINUE_ON_FAIL:-yes}"
+rm -f "$ART/text-entry-fallbacks.txt"
 log "running ${FEATURES[*]} on ${ANDROID_SERIAL:-$E2E_IOS_SIMULATOR} ($DETOX_CONFIGURATION); log: $ART/run.log"
 set -m
 npx cucumber-js "${FEATURES[@]}" \
@@ -278,6 +285,10 @@ if [ "$STATUS" = 0 ]; then
 fi
 
 tail -n 4 "$ART/run.log" || true
+# Android: text that only arrived by a second route (see e2e/helpers/androidTextEntry.js)
+if [ -s "$ART/text-entry-fallbacks.txt" ]; then
+    log "text entry needed a second route $(grep -c 'nothing arrived' "$ART/text-entry-fallbacks.txt" | tr -d ' ') time(s): $ART/text-entry-fallbacks.txt"
+fi
 log "exit $STATUS; artifacts in $ART"
 log "delete the clone when done: rm -rf '$CLONE'"
 exit "$STATUS"

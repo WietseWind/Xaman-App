@@ -40,6 +40,7 @@ const {
     unlockAndroidPasscodeIfPresent,
     hideAndroidKeyboard,
 } = require('../helpers/tapById');
+const { focusAndroidTextField, typeAndroidTextVerified } = require('../helpers/androidTextEntry');
 
 Then('I write down secret numbers', { timeout: 10 * 60 * 1000 }, async () => {
     this.numbers = [...Array(8)].map(() => Array(6));
@@ -869,12 +870,13 @@ Then('I finish importing this family seed unless it is already in Xaman', { time
         await waitUntilAndroidTestId('account-import-security-view', 20000);
         await clickByTestId('next-button');
         await waitUntilAndroidTestId('account-import-label-view', 20000);
-        await clickByTestId('label-input');
-        try {
-            androidTypeText('E2E-FS-Secp');
-        } catch (e) {
-            // field may already hold the label
-        }
+        await focusAndroidTextField('label-input');
+        await new Promise((resolve) => { setTimeout(resolve, 500); });
+        await typeAndroidTextVerified(
+            'label-input',
+            'E2E-FS-Secp',
+            String((await androidReadTextByTestId('label-input')) || ''),
+        );
         // Wait until the keyboard is gone: a Next tap while it was still animating out was lost.
         await hideAndroidKeyboard();
         await clickByTestId('next-button');
