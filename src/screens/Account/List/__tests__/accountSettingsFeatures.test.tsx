@@ -1,5 +1,5 @@
 import renderer, { act, ReactTestRenderer } from 'react-test-renderer';
-import { Text } from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 import { ActionSheet } from '@common/helpers/interface';
 import NetworkService from '@services/NetworkService';
 import Localize from '@locale';
@@ -104,6 +104,33 @@ it('preserves Tangem identification and enforced security without exposing regul
     expect(Navigator.push).toHaveBeenCalledWith(AppScreens.Account.Edit.IdentifyTangemCard, {
         account: screen.state.account,
     });
+});
+
+// Issue 496: with a large system font the card ID sits above the button. The column must not wrap:
+// with wrap Android gives the card ID less height than its line and cuts the text off at the top.
+it.each([
+    [1, 'row', 'wrap', undefined],
+    [1.3, 'column', 'nowrap', 'flex-start'],
+    [2, 'column', 'nowrap', 'flex-start'],
+])('shows the whole Tangem card ID at font scale %s (%s, %s)', (fontScale, direction, wrap, buttonAlign) => {
+    const window = Dimensions.get('window');
+    act(() => Dimensions.set({ window: { ...window, fontScale }, screen: Dimensions.get('screen') }));
+    try {
+        renderEdit({ type: AccountTypes.Tangem, additionalInfo: { cardId: 'AA00000000000001' } });
+        const value = tree.root.findAllByType(Text).find((node) => node.props.children === 'AA00000000000001');
+        const controls = StyleSheet.flatten(value!.parent!.props.style);
+        expect(controls.flexDirection).toBe(direction);
+        expect(controls.flexWrap).toBe(wrap);
+        if (direction === 'column') {
+            expect(StyleSheet.flatten(value!.props.style).flexShrink).toBe(0);
+        }
+        const identify = tree.root
+            .findAllByType(Button)
+            .find((node) => node.props.testID === 'identify-tangem-button');
+        expect(StyleSheet.flatten(identify!.props.style).alignSelf).toBe(buttonAlign);
+    } finally {
+        act(() => Dimensions.set({ window, screen: Dimensions.get('screen') }));
+    }
 });
 
 it.each([
