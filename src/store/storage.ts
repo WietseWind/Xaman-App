@@ -36,10 +36,21 @@ export default class Storage {
         return new Promise<void>(async (resolve, reject) => {
             try {
                 // fetch the configuration
-                const config = await this.getConfig();
+                let config = await this.getConfig();
 
                 // run check up, this will trigger migrations if necessary
-                const latestSchemaVersion = await this.runMigrations(config);
+                let latestSchemaVersion: number;
+                try {
+                    latestSchemaVersion = await this.runMigrations(config);
+                } catch (error) {
+                    // the keychain may hold a second storage key: the one this datastore was made with
+                    const otherKey = await this.findOtherEncryptionKey(config, error);
+                    if (!otherKey) {
+                        throw error;
+                    }
+                    config = { ...config, encryptionKey: otherKey };
+                    latestSchemaVersion = await this.runMigrations(config);
+                }
 
                 // open the datastore and get instance
                 this.dataStore = await this.open(config, latestSchemaVersion);
@@ -63,6 +74,54 @@ export default class Storage {
                 reject(e);
             }
         });
+    };
+
+    /**
+     * The datastore could not be decrypted with the storage key from the keychain: look for another
+     * stored key that opens it (see Vault.getStorageEncryptionKeyCandidates).
+     *
+     * Only acts on a decryption failure and tries each other key by reading the schema version.
+     * A key that opens the datastore proves which set of keychain items is in use, so the leftovers
+     * of the other set (storage key and device id, which is part of the passcode hash and of the vault
+     * key) are set aside, and the keychain must then return that key by itself.
+     * Returns nothing when no key opens the file or the keychain could not be put right: the original
+     * error is then reported as before.
+     */
+    findOtherEncryptionKey = async (config: Realm.Configuration, error: any): Promise<Buffer | undefined> => {
+        const message = String(error?.message ?? error ?? '');
+        if (message.indexOf('Realm file decryption failed') === -1) {
+            return undefined;
+        }
+
+        const current = Buffer.from(config.encryptionKey as Uint8Array);
+        const candidates = await Vault.getStorageEncryptionKeyCandidates();
+
+        for (const candidate of candidates) {
+            if (Buffer.compare(candidate, current) === 0) {
+                continue;
+            }
+
+            try {
+                Realm.schemaVersion(config.path!, candidate);
+            } catch {
+                continue;
+            }
+
+            this.logger.warn('The datastore opens with a second storage key in the keychain, not with the first one.');
+
+            const settled = await Vault.setAsideStaleKeychainItems();
+            const key = settled ? await Vault.getStorageEncryptionKey().catch(() => undefined) : undefined;
+
+            if (!key || Buffer.compare(key, candidate) !== 0) {
+                this.logger.error('The keychain still does not return the storage key that opens the datastore.');
+                return undefined;
+            }
+
+            this.logger.warn('Keychain items of an earlier install were set aside; the ones in use are left.');
+            return key;
+        }
+
+        return undefined;
     };
 
     /**

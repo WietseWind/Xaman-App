@@ -7,6 +7,15 @@ extern NSString * const XamanKeychainSharedGroup;
 
 @interface Keychain : NSObject
 + (NSDictionary *)getItem:(NSString *)name error:(NSError **)error;
+// every item with this name ({ name, account, data }), the ones in the shared access group first;
+// more than one only after a build without the app group stored its own (see Keychain.m)
++ (NSArray<NSDictionary *> *)getItems:(NSString *)name error:(NSError **)error;
+// rename the item in the shared access group that has the same name as one outside it (never deletes);
+// only once the item outside it is proven to be the one in use. YES when no such twin is left.
++ (BOOL)setAsideSharedItem:(id)secClass
+                  matching:(NSDictionary *)match
+                  renaming:(id)attribute
+          ifOutsideValueIs:(NSString *)expected;
 + (BOOL)deleteItem:(NSString *)name error:(NSError **)error;
 + (BOOL)setItem:(NSString *)name account:(NSString *)account data:(NSString *)data error:(NSError **)error;
 + (BOOL)itemExist:(NSString *)name error:(NSError **)error;
