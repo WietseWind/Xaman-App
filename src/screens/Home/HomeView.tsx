@@ -40,6 +40,7 @@ import { AppScreens, AppConfig } from '@common/constants';
 
 import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 
+import { glassTabBarClearance } from '@common/helpers/glassTabBar';
 import { Navigator } from '@common/helpers/navigator';
 import { Prompt, Toast } from '@common/helpers/interface';
 
@@ -450,7 +451,7 @@ class HomeView extends Component<Props, State> {
         if ((account?.details || []).length === 0 || account.getStateVersion() === 0) {
             // No account information loaded/cached yet, so not saying "not activated"
             return (
-                <View style={AppStyles.flex1}>
+                <View style={[AppStyles.flex1, glassTabBarClearance]}>
                     <LoadingIndicator size='large' />
                 </View>
             );
@@ -604,7 +605,7 @@ class HomeView extends Component<Props, State> {
                 <ImageBackground
                     resizeMode="cover"
                     source={StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')}
-                    style={[AppStyles.contentContainer, AppStyles.paddingHorizontal]}
+                    style={[AppStyles.contentContainer, AppStyles.paddingHorizontal, glassTabBarClearance]}
                 >
                     <View style={[AppStyles.flex1, AppStyles.centerAligned, AppStyles.padding]}>
                         <Image

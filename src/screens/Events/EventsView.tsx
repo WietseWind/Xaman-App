@@ -15,6 +15,7 @@ import { AccountModel, CoreModel } from '@store/models';
 // Constants/Helpers
 import AppConfig from '@common/constants/config';
 import { AppScreens } from '@common/constants';
+import { glassTabBarHeight } from '@common/helpers/glassTabBar';
 import { Toast } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
 
@@ -56,7 +57,7 @@ import { EventsFilterModalProps } from '@screens/Modal/FilterEvents';
 
 import { DataSourceItem, RowItemType } from '@components/Modules/EventsList/EventsList';
 
-import { AppStyles } from '@theme';
+import { AppSizes, AppStyles } from '@theme';
 import styles from './styles';
 import { isRegularKeyForDestination, shouldLookupAdvisorySender } from './shouldHideAdvisoryEvent';
 import { shouldFetchNextEventPage } from './loadMoreGuard';
@@ -1475,7 +1476,12 @@ class EventsView extends Component<Props, State> {
                     source={
                         StyleService.getImageIfLightModeIfDarkMode('BackgroundShapesLight', 'BackgroundShapes')
                     }
-                    style={[AppStyles.contentContainer, AppStyles.padding]}
+                    style={[
+                        AppStyles.contentContainer,
+                        AppStyles.padding,
+                        // the glass tab bar covers the end of the screen: keep the centre above it
+                        glassTabBarHeight > 0 && { paddingBottom: AppSizes.padding + glassTabBarHeight },
+                    ]}
                 >
                     <Image style={AppStyles.emptyIcon} source={StyleService.getImage('ImageNoEvents')} />
                     <Spacer size={10} />

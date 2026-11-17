@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 
+import AppSizes from '@theme/sizes';
+
 /** End clearance for a platform. Zero everywhere except iOS 26 and later. */
 export const glassTabScrollPaddingFor = (os: string, version: string | number): number => {
     const major = parseInt(String(version), 10);
@@ -15,3 +17,29 @@ export const iosGlassTabBar = glassTabScrollPaddingFor(Platform.OS, Platform.Ver
  * just above the glass, not a second copy of the whole tab bar.
  */
 export const glassTabScrollPadding = glassTabScrollPaddingFor(Platform.OS, Platform.Version);
+
+/**
+ * How far the floating glass bar reaches up from the end of the screen: 62pt of bar, 21pt above the
+ * edge. The same on phones with and without a home indicator (measured on iPhone 17 Pro Max and
+ * iPhone SE, iOS 27.2), so it is not the old tab bar height, which is 50pt without a home indicator.
+ */
+const GLASS_TAB_BAR_REACH = 84;
+
+/** What the tab bar covers on a platform: the reach of the glass bar where it floats, else zero. */
+export const glassTabBarHeightFor = (os: string, version: string | number, tabbarHeight: number): number => {
+    if (glassTabScrollPaddingFor(os, version) === 0) {
+        return 0;
+    }
+    return Math.max(GLASS_TAB_BAR_REACH, Number(tabbarHeight) || 0);
+};
+
+/**
+ * The strip at the end of a tab screen that the glass bar covers. A tab state that does not
+ * scroll (buttons at the bottom, a centred message) takes this as bottom padding, so it is laid
+ * out in the space above the bar, as it was when the bar had its own. Lists need none of it: iOS
+ * insets them by itself. Zero on Android and below iOS 26.
+ */
+export const glassTabBarHeight = glassTabBarHeightFor(Platform.OS, Platform.Version, AppSizes.tabbarHeight);
+
+/** Style for the container of such a state; undefined where the bar covers nothing. */
+export const glassTabBarClearance = glassTabBarHeight > 0 ? { paddingBottom: glassTabBarHeight } : undefined;
