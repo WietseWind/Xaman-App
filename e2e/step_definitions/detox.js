@@ -19,6 +19,7 @@ const {
     waitUntilAndroidText,
     resetAndroidDumpState,
     hideAndroidKeyboard,
+    unlockAndroidPasscodeWhenItShows,
 } = require('../helpers/tapById');
 const { focusAndroidTextField, typeAndroidTextVerified } = require('../helpers/androidTextEntry');
 const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLaunch');
@@ -623,6 +624,9 @@ Then('I open the url {string}', async (url) => {
             ],
             { timeout: 10000 },
         );
+        // The intent brings the app to the front again. More than the auto lock time after the last
+        // unlock, that locks the app a moment later: what the link opened is then behind the lock screen.
+        await unlockAndroidPasscodeWhenItShows();
         return;
     }
     await device.openURL({ url });

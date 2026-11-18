@@ -92,9 +92,16 @@ class RequestDeclineOverlay extends Component<Props, State> {
                     </Text>
                 </View>
                 <View style={[AppStyles.flex2, AppStyles.paddingHorizontalSml]}>
-                    <Button secondary numberOfLines={1} onPress={this.onClose} label={Localize.t('global.close')} />
+                    <Button
+                        testID="request-decline-close-button"
+                        secondary
+                        numberOfLines={1}
+                        onPress={this.onClose}
+                        label={Localize.t('global.close')}
+                    />
                     <Spacer size={20} />
                     <Button
+                        testID="request-decline-decline-button"
                         onPress={this.onDecline}
                         style={styles.declineButton}
                         label={Localize.t('global.decline')}

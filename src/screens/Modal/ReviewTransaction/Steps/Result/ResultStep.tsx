@@ -283,7 +283,7 @@ class ResultStep extends Component<Props, State> {
                 </View>
 
                 <Footer>
-                    <Button onPress={onFinish} label={closeButtonLabel} />
+                    <Button testID="close-button" onPress={onFinish} label={closeButtonLabel} />
                 </Footer>
             </SafeAreaView>
         );
