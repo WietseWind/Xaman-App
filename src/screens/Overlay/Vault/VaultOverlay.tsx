@@ -49,6 +49,7 @@ import { SelectSigner } from './SelectSinger';
 import { AuthMethods, Props, SignOptions, State, Steps } from './types';
 import { computeBinaryTransactionHash } from 'xrpl-accountlib/dist/utils';
 import { batchJsonForSigning } from '@common/libs/ledger/utils/batchSigners';
+import { completeRawMultiSign, prepareRawMultiSign } from '@common/libs/ledger/utils/rawMultiSign';
 
 /* Component ==================================================================== */
 class VaultOverlay extends Component<Props, State> {
@@ -482,6 +483,24 @@ class VaultOverlay extends Component<Props, State> {
                 definitions,
             );
 
+            // Multi sign: sign as the selected account, also when the card is its regular key (the same rule
+            // as with a private key). Except when the selected account is the transaction Account: it can not
+            // multi sign for itself, so the account of the card then signs as itself.
+            const preparedMultiSign = multiSign
+                ? prepareRawMultiSign(
+                    txJson,
+                    publicKey,
+                    account.address === transaction.Account
+                        ? AccountLib.rawSigning.accountAddress(publicKey)
+                        : account.address,
+                    definitions,
+                )
+                : undefined;
+
+            if (preparedMultiSign) {
+                preparedTx.hashToSign = preparedMultiSign.hashToSign;
+            }
+
             let preparedFeeTx: ReturnType<typeof AccountLib.rawSigning.prepare>;
 
             if (isBatchCoSign) {
@@ -548,17 +567,8 @@ class VaultOverlay extends Component<Props, State> {
                     let signedObject: SignedObjectType;
                     let signedFeeObject: SignedObjectType;
 
-                    if (multiSign) {
-                        signedObject = AccountLib.rawSigning.completeMultiSigned(
-                            txJson,
-                            [
-                                {
-                                    pubKey: publicKey,
-                                    signature: sig,
-                                },
-                            ],
-                            definitions,
-                        );
+                    if (preparedMultiSign) {
+                        signedObject = completeRawMultiSign(preparedMultiSign, sig, definitions);
                     } else {
                         signedObject = AccountLib.rawSigning.complete(preparedTx, sig, definitions);
                         // console.log('a')
