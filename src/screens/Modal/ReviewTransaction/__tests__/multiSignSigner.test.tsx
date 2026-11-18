@@ -2,7 +2,8 @@
  * Which account signs a sign request, and "as" which account a multi signature is made.
  *
  * Runs the real account selection of the review (PreflightStep.loadSingingAccount) and the real signing
- * of the vault overlay (setSigners + signWithPrivateKey) with real keys, then reads the signed blob.
+ * of the vault overlay (setSigners + signWithPrivateKey, or signWithTangemCard with a mock card) with real
+ * keys, then reads the signed blob.
  *
  * Ledger rule behind it (checked on XRPL Testnet): a multi signature is made by a member of the signer
  * list of the transaction Account. The Account can not sign for itself: such a transaction is refused
@@ -10,6 +11,7 @@
  */
 import * as AccountLib from 'xrpl-accountlib';
 import { verify } from 'ripple-keypairs';
+import RNTangemSdk from 'tangem-sdk-react-native';
 
 import NetworkService from '@services/NetworkService';
 import LedgerService from '@services/LedgerService';
@@ -20,12 +22,22 @@ import Vault from '@common/libs/vault';
 import { SignMixin } from '@common/libs/ledger/mixin/Sign.mixin';
 import { AccountSet } from '@common/libs/ledger/transactions/genuine/AccountSet';
 import { Batch } from '@common/libs/ledger/transactions/genuine/Batch';
+import mockTangemCard, { mockTangemSdkSign } from '@common/utils/__tests__/helpers/mockTangemCard';
 
 import VaultOverlay from '@screens/Overlay/Vault/VaultOverlay';
 import { AuthMethods } from '@screens/Overlay/Vault/types';
 
 import PreflightStep from '../Steps/Preflight/PreflightStep';
 
+jest.mock('tangem-sdk-react-native', () => ({
+    __esModule: true,
+    default: {
+        sign: jest.fn(),
+        startSession: jest.fn(async () => undefined),
+        stopSession: jest.fn(async () => undefined),
+    },
+    EllipticCurve: { Secp256k1: 'secp256k1', Secp256r1: 'secp256r1', Ed25519: 'ed25519' },
+}));
 jest.mock('@services/NetworkService');
 jest.mock('@services/LedgerService');
 jest.mock('@services/LoggerService', () => ({
@@ -49,8 +61,6 @@ jest.mock('@common/helpers/keyboard', () => ({ __esModule: true, default: { dism
 jest.mock('@common/helpers/navigator', () => ({
     Navigator: { dismissModal: jest.fn(), dismissOverlay: jest.fn(), push: jest.fn(), showOverlay: jest.fn() },
 }));
-jest.mock('@common/utils/tangem', () => ({ GetSignOptions: jest.fn(), GetWalletDerivedPublicKey: jest.fn() }));
-jest.mock('@common/utils/tangemSession', () => ({ startTangemOfflineSession: jest.fn() }));
 jest.mock('@components/General', () => ({
     Button: 'Button', Icon: 'Icon', Spacer: 'Spacer', InfoMessage: 'InfoMessage',
 }));
@@ -66,6 +76,11 @@ jest.mock('../Steps/Preflight/styles', () => ({}));
 /* Accounts ==================================================================== */
 // A = transaction Account, S = member of the signer list of A, K = regular key of S,
 // M = another member of the signer list of A, X = an account that has nothing to do with A
+// C and D = accounts of a Tangem card (secp256k1 and ed25519): the key is on the card, see mockTangemCard
+const cards = {
+    C: mockTangemCard('multisign-C'),
+    D: mockTangemCard('multisign-D', { curve: 'ed25519' }),
+};
 const keys = {
     A: AccountLib.derive.passphrase('xaman-test-multisign-A'),
     S: AccountLib.derive.passphrase('xaman-test-multisign-S'),
@@ -73,10 +88,11 @@ const keys = {
     M: AccountLib.derive.passphrase('xaman-test-multisign-M'),
     X: AccountLib.derive.passphrase('xaman-test-multisign-X'),
 };
-type Name = keyof typeof keys;
-const names = Object.keys(keys) as Name[];
-const address = (name: Name) => String(keys[name].address);
-const publicKey = (name: Name) => String(keys[name].keypair.publicKey);
+type Name = keyof typeof keys | keyof typeof cards;
+const names = [...Object.keys(keys), ...Object.keys(cards)] as Name[];
+const isCard = (name: Name): name is keyof typeof cards => name in cards;
+const address = (name: Name) => (isCard(name) ? cards[name].address : String(keys[name].address));
+const publicKey = (name: Name) => (isCard(name) ? cards[name].publicKey : String(keys[name].keypair.publicKey));
 const nameOf = (value?: string) =>
     names.find((name) => address(name) === value || publicKey(name) === value) ?? `unknown ${value}`;
 
@@ -86,7 +102,8 @@ const model = (name: Name, options: AccountOptions = {}) => ({
     publicKey: publicKey(name),
     label: name,
     accessLevel: options.readonly ? AccessLevels.Readonly : AccessLevels.Full,
-    encryptionLevel: EncryptionLevels.Passcode,
+    encryptionLevel: isCard(name) ? EncryptionLevels.Physical : EncryptionLevels.Passcode,
+    additionalInfo: isCard(name) ? cards[name].card : undefined,
     regularKey: options.regularKey ? address(options.regularKey) : undefined,
     flags: { disableMasterKey: !!options.masterDisabled },
     hidden: !!options.hidden,
@@ -171,10 +188,18 @@ const signRequest = async (request: Request) => {
         if (!picked) throw new Error(`the key of ${request.pickKey} is not offered in the vault overlay`);
         overlay.onPreferredSignerSelect(picked);
     }
-    jest.mocked(Vault.open).mockImplementation(
-        (async (key: string) => keys[nameOf(key) as Name].keypair.privateKey) as any,
-    );
-    await (overlay as any).signWithPrivateKey(AuthMethods.PIN, { encryptionKey: 'passcode' });
+    const { preferredSigner } = overlay.state;
+    if (preferredSigner?.encryptionLevel === EncryptionLevels.Physical) {
+        // the key is on a card: the Tangem method asks the card of that key (TangemMethod)
+        overlay.sign(AuthMethods.TANGEM, { tangemCard: preferredSigner.additionalInfo as any });
+        // the overlay hands the result over after 2 seconds and stops the card session after 10
+        await jest.advanceTimersByTimeAsync(12000);
+    } else {
+        jest.mocked(Vault.open).mockImplementation(
+            (async (key: string) => (keys as any)[nameOf(key)].keypair.privateKey) as any,
+        );
+        await (overlay as any).signWithPrivateKey(AuthMethods.PIN, { encryptionKey: 'passcode' });
+    }
     expect(onSign).toHaveBeenCalledTimes(1);
 
     // 3) read the signed blob
@@ -206,13 +231,18 @@ const signRequest = async (request: Request) => {
 };
 
 beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
+    jest.mocked(RNTangemSdk.sign).mockImplementation(mockTangemSdkSign(Object.values(cards)) as any);
     jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue(undefined as any);
     jest.spyOn(NetworkService, 'getNetworkId').mockReturnValue(0);
     (NetworkService as any).getNetwork = jest.fn(() => ({ id: 'network', key: 'TESTNET' }));
     (LedgerService as any).getLedgerStatus = jest.fn(() => ({ LastLedger: 1000 }));
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+});
 
 /* Tests ==================================================================== */
 describe('multi sign request: the signer is a member of the signer list, never the transaction Account', () => {
@@ -318,6 +348,87 @@ describe('multi sign request: the signer is a member of the signer list, never t
         expect(result.json).toMatchObject({ Account: address('A'), Sequence: 7, Fee: '200', SigningPubKey: '' });
         expect(result.json.LastLedgerSequence).toBeUndefined();
         expect(result.signedObject.signers).toStrictEqual([address('S')]);
+    });
+});
+
+describe('multi sign request signed with a Tangem card', () => {
+    it.each(['C', 'D'] as const)('case 1: forced signer %s is a card account: it signs as itself', async (name) => {
+        const result = await signRequest({ accounts: [model(name)], multisign: true, signers: [name] });
+
+        expect(result).toMatchObject({ source: name, signerAccount: name, key: name, signatureValid: true });
+        expect(result).toMatchObject({ transactionAccount: 'A', signers: 1, topLevelSigningPubKey: '' });
+        expect(result.signedObject).toMatchObject({ signMethod: AuthMethods.TANGEM, signers: [address(name)] });
+    });
+
+    it.each(['C', 'D'] as const)(
+        'case 2: read-only signer S with the card %s as regular key signs as S with the card key',
+        async (name) => {
+            const accounts = [model('S', { regularKey: name, readonly: true }), model(name)];
+            const result = await signRequest({ accounts, multisign: true, signers: ['S'] });
+
+            expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: name, signatureValid: true });
+            expect(result.signedObject).toMatchObject({ signMethod: AuthMethods.TANGEM, signers: [address('S')] });
+        },
+    );
+
+    it('case 2: signer S with a card as regular key: its own key and the card key both sign as S', async () => {
+        const accounts = [model('S', { regularKey: 'C' }), model('C')];
+
+        const own = await signRequest({ accounts, multisign: true, signers: ['S'] });
+        expect(own).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
+
+        const card = await signRequest({ accounts, multisign: true, signers: ['S'], pickKey: 'C' });
+        expect(card).toMatchObject({ source: 'S', signerAccount: 'S', key: 'C', signatureValid: true });
+    });
+
+    it('case 2: signer C is a card account with regular key K: the key of K signs as C', async () => {
+        const accounts = [model('C', { regularKey: 'K' }), model('K')];
+        const result = await signRequest({ accounts, multisign: true, signers: ['C'], pickKey: 'K' });
+
+        expect(result).toMatchObject({ source: 'C', signerAccount: 'C', key: 'K', signatureValid: true });
+    });
+
+    it('case 2: signer C is a card account with another card D as regular key: D signs as C', async () => {
+        const accounts = [model('C', { regularKey: 'D' }), model('D')];
+        const result = await signRequest({ accounts, multisign: true, signers: ['C'], pickKey: 'D' });
+
+        expect(result).toMatchObject({ source: 'C', signerAccount: 'C', key: 'D', signatureValid: true });
+    });
+
+    it('case 3: forced signer C (a card) is also the regular key of A: C signs as itself', async () => {
+        const accounts = [model('A', { regularKey: 'C', masterDisabled: true }), model('C')];
+        const result = await signRequest({ accounts, multisign: true, signers: ['C'] });
+
+        expect(result.offered).toStrictEqual(['C']);
+        expect(result).toMatchObject({ source: 'C', signerAccount: 'C', key: 'C', signatureValid: true });
+    });
+
+    it('case 4: the user picks A, its regular key is a card: the card account signs as itself, not as A', async () => {
+        const accounts = [model('A', { regularKey: 'C', masterDisabled: true }), model('C')];
+        const result = await signRequest({ accounts, multisign: true, pickSource: 'A' });
+
+        expect(result).toMatchObject({ signerAccount: 'C', key: 'C', signatureValid: true });
+    });
+
+    it('the card gets the signing data for the account it signs as', async () => {
+        const accounts = [model('S', { regularKey: 'C', readonly: true }), model('C')];
+        const before = cards.C.signedHashes.length;
+        const result = await signRequest({ accounts, multisign: true, signers: ['S'] });
+
+        const data = AccountLib.binary.encodeForMultisigning(result.json, address('S'));
+        expect(cards.C.signedHashes.slice(before)).toStrictEqual([
+            AccountLib.utils.bytesToHex(AccountLib.utils.hash(data)).toUpperCase(),
+        ]);
+        expect(result.json).toMatchObject({ Account: address('A'), Sequence: 7, Fee: '200', SigningPubKey: '' });
+        expect(result.json.LastLedgerSequence).toBeUndefined();
+    });
+
+    it('unchanged, not multi sign: A with a card as regular key: normal signature for A, card key', async () => {
+        const accounts = [model('A', { regularKey: 'C', masterDisabled: true }), model('C')];
+        const result = await signRequest({ accounts, multisign: false });
+
+        expect(result).toMatchObject({ source: 'A', transactionAccount: 'A', key: 'C', signatureValid: true });
+        expect(result).toMatchObject({ signers: 0, signerAccount: undefined });
     });
 });
 
