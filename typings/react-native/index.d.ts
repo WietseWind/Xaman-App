@@ -325,6 +325,18 @@ interface VaultManagerModuleInterface extends NativeModule {
     getStorageEncryptionKey(): Promise<string>;
 
     /**
+     * iOS: every stored storage encryption key, the one getStorageEncryptionKey returns first.
+     * More than one only when the keychain holds a second item in another access group.
+     */
+    getStorageEncryptionKeyCandidates?: () => Promise<string[]>;
+
+    /**
+     * iOS: rename what an earlier install left in the shared keychain group next to the storage key
+     * and device id in use. True when one of each is left.
+     */
+    setAsideStaleSharedItems?: () => Promise<boolean>;
+
+    /**
      * Probe Keystore wrap health without the passphrase.
      */
     inspectVaultHealth?: () => Promise<{
