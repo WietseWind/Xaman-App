@@ -42,6 +42,7 @@ import { Destination } from '@common/libs/ledger/parser/types';
 import { StringTypeCheck } from '@common/utils/string';
 
 import AuthenticationService, { LockStatus } from '@services/AuthenticationService';
+import AppService, { AppStateStatus } from '@services/AppService';
 import { AccountAdvisoryResolveType } from '@services/ResolverService';
 import NetworkService from '@services/NetworkService';
 
@@ -86,6 +87,7 @@ import styles from './styles';
 /* types ==================================================================== */
 import { IEvent, Props, State, XAppEvents, XAppMethods, XAppSpecialPermissions } from './types';
 import { resolveXAppColorScheme } from './colorScheme';
+import { PageWatch } from './pageWatch';
 
 /* Component ==================================================================== */
 class XAppBrowserModal extends Component<Props, State> {
@@ -96,6 +98,8 @@ class XAppBrowserModal extends Component<Props, State> {
     private softLoadingTimeout?: ReturnType<typeof setTimeout>;
     private readonly webView: React.RefObject<WebViewHandle>;
     private lastMessageReceived: number;
+    // notices when the OS ended the process of the page (see ./pageWatch)
+    private readonly pageWatch: PageWatch;
 
     static options() {
         return {
@@ -132,12 +136,20 @@ class XAppBrowserModal extends Component<Props, State> {
             coreSettings,
             // the theme Xaman shows now, like the xAppStyle launch parameter
             colorScheme: StyleService.getCurrentTheme() === 'light' ? 'light' : 'dark',
+            webViewKey: 0,
         };
 
         this.webView = React.createRef();
 
         // last message received from webview, preventing spamming
         this.lastMessageReceived = 0;
+
+        this.pageWatch = new PageWatch({
+            restart: this.restartPage,
+            giveUp: this.onPageKeepsStopping,
+            inject: (script) => this.webView?.current?.injectJavaScript(script),
+            isPageInUse: this.isPageInUse,
+        });
     }
 
     componentDidMount() {
@@ -150,6 +162,9 @@ class XAppBrowserModal extends Component<Props, State> {
         // listen for authentication lock state changes
         AuthenticationService.on('lockStateChange', this.onLockStateChange);
 
+        // the page can be gone when Xaman comes back to the foreground
+        AppService.on('appStateChange', this.onAppStateChange);
+
         // follow the OS appearance when Xaman auto switches its theme
         this.appearanceListener = Appearance.addChangeListener(this.onAppearanceChange);
     }
@@ -161,6 +176,12 @@ class XAppBrowserModal extends Component<Props, State> {
         }
 
         AuthenticationService.off('lockStateChange', this.onLockStateChange);
+        AppService.off('appStateChange', this.onAppStateChange);
+        this.pageWatch.dispose();
+
+        if (this.softLoadingTimeout) {
+            clearTimeout(this.softLoadingTimeout);
+        }
 
         if (this.appearanceListener) {
             this.appearanceListener.remove();
@@ -184,6 +205,72 @@ class XAppBrowserModal extends Component<Props, State> {
 
         this.setState({ colorScheme });
         this.sendEvent({ method: XAppEvents.ColorSchemeChange, colorScheme, style: toUpper(style) });
+    };
+
+    onAppStateChange = (status: AppStateStatus) => {
+        this.pageWatch.onAppState(status === AppStateStatus.Active);
+    };
+
+    /**
+     * iOS ended the web content process of the page, or Android ended the renderer of the WebView. The
+     * view is blank and does nothing from here on: start the xApp again.
+     */
+    onPageProcessGone = () => {
+        this.pageWatch.onProcessGone(AppService.currentAppState === AppStateStatus.Active);
+    };
+
+    /**
+     * The page is loaded and shown: only then it can be asked for a sign of life.
+     */
+    isPageInUse = (): boolean => {
+        const { ott, isLaunchingApp, isLoadingApp, isAppReady, isRequiredNetworkSwitch, error } = this.state;
+        return !!ott && isAppReady && !isLaunchingApp && !isLoadingApp && !isRequiredNetworkSwitch && !error;
+    };
+
+    /**
+     * Start the xApp again after its page went away: a new WebView (on Android the old one can not load
+     * anything any more) and a new launch, which gets a new token. What the xApp had on screen is lost,
+     * as it was already.
+     */
+    restartPage = () => {
+        if (this.softLoadingTimeout) {
+            clearTimeout(this.softLoadingTimeout);
+        }
+
+        this.setState(
+            (state) => ({
+                webViewKey: state.webViewKey + 1,
+                ott: undefined,
+                error: undefined,
+                isLaunchingApp: true,
+                isLoadingApp: false,
+                isAppReady: false,
+                isAppReadyTimeout: false,
+            }),
+            () => {
+                this.launchApp();
+            },
+        );
+    };
+
+    /**
+     * The page went away again right after it was started again: do not keep restarting, show the
+     * "unable to load" screen with Try again.
+     */
+    onPageKeepsStopping = () => {
+        if (this.softLoadingTimeout) {
+            clearTimeout(this.softLoadingTimeout);
+        }
+
+        this.setState((state) => ({
+            webViewKey: state.webViewKey + 1,
+            ott: undefined,
+            isLaunchingApp: false,
+            isLoadingApp: false,
+            isAppReady: false,
+            isAppReadyTimeout: false,
+            error: new Error(Localize.t('global.unexpectedErrorOccurred')),
+        }));
     };
 
     onLockStateChange = (lockState: LockStatus) => {
@@ -612,6 +699,11 @@ class XAppBrowserModal extends Component<Props, State> {
     };
 
     onMessage = (event: any) => {
+        // the answer of the page to Xaman's own sign of life check is not a message of the xApp
+        if (this.pageWatch.onMessage(event?.nativeEvent?.data)) {
+            return;
+        }
+
         // should be at least 1500 ms delay between each message
         if (this.lastMessageReceived) {
             if (moment().diff(moment.unix(this.lastMessageReceived), 'millisecond') < 1500) {
@@ -1209,12 +1301,16 @@ class XAppBrowserModal extends Component<Props, State> {
     };
 
     renderApp = () => {
-        const { colorScheme } = this.state;
+        const { colorScheme, webViewKey } = this.state;
 
         return (
             <WebView
-                testID="xapp-webview"
+                key={`xapp-webview-${webViewKey}`}
+                // the number shows that the page was started again (for the e2e suite)
+                testID={webViewKey === 0 ? 'xapp-webview' : `xapp-webview-${webViewKey}`}
                 ref={this.webView}
+                onContentProcessDidTerminate={this.onPageProcessGone}
+                onRenderProcessGone={this.onPageProcessGone}
                 containerStyle={styles.webViewContainer}
                 style={styles.webView}
                 startInLoadingState

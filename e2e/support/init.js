@@ -35,6 +35,7 @@ const {
     unlockAndroidPasscodeIfPresent,
     restoreAndroidAnimationScale,
     adbTapChangelogClose,
+    androidHasTestId,
     hideAndroidKeyboard,
 } = require('../helpers/tapById');
 const { settleAfterLaunch } = require('../helpers/appLaunch');
@@ -101,6 +102,11 @@ BeforeAll({ timeout: 15 * 60 * 1000 }, async () => {
 // modal shortly after launch; its full-screen backdrop swallows taps on the
 // screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
+    // An open xApp has a Close button of its own in its header. On Android the changelog button is also
+    // found by its label ("Close"), so this closed the xApp at the start of every scenario.
+    if (isAndroid() && (await androidHasTestId('xapp-browser-modal'))) {
+        return;
+    }
     // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
     await tapByTestIdIfPresent('close-change-log-button', 1500);
     if (isAndroid()) {
