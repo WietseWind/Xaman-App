@@ -23,6 +23,17 @@
     <!-- Network state -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Wi-Fi is only read as part of the network state. Without this line the permission above counts as
+         "needs Wi-Fi hardware" and Google Play hides the app from devices without it. -->
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <!-- The app is shown in portrait, but does not need a screen that is portrait by nature. Without this line the
+         portrait lock of the activities counts as a hardware requirement and Google Play hides the app from
+         devices such as desktops, some tablets and Android XR. -->
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
 
     <!-- Tangem SDK && Veriff KYC-->
     <uses-permission android:name="android.permission.NFC" />
