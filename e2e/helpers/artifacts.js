@@ -112,6 +112,10 @@ const stopRecordingVideo = () => {
 };
 
 module.exports = {
+    artifactsDir: () => ARTIFACTS_DIR,
+    stepShotDir: () => STEP_SHOT_DIR,
+    currentStepIndex: () => stepIndex,
+    sanitize,
     setDeviceUdid,
     setScreenshotPlatform,
     nextStepIndex,

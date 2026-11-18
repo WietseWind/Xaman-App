@@ -5,7 +5,8 @@
 #
 #   scripts/e2e/run-throwaway.sh ios|android [options] [-- cucumber paths]
 #
-#   --name NAME         run name; the clone is $E2E_WORK/xaman-e2e-NAME (default: <platform>-<date>-<time>)
+#   --name NAME         run name; the clone is $E2E_WORK/clones.noindex/xaman-e2e-NAME
+#                       (default: <platform>-<date>-<time>)
 #   --source DIR        checkout to clone (default: this one); needs node_modules, and ios/Pods for iOS
 #   --release|--debug   Android build type (default: release; debug starts its own Metro)
 #   --port N            Android emulator console port: even, 5556-5584 (default: the first free one)
@@ -15,9 +16,22 @@
 #   --runtime ID        iOS runtime for it, e.g. com.apple.CoreSimulator.SimRuntime.iOS-26-5 (default: newest)
 #   --skip-build        reuse the build already in the clone (use with --name of an earlier run)
 #   --keep-device       leave the simulator or emulator running afterwards
+#   --cleanup           afterwards delete the clone and, on iOS, the simulator (the results are kept, see below)
 #
 # Paths after -- go to cucumber-js (default: ./e2e). The run stops with exit code 124 when its log
-# stays silent for E2E_STALL_MINUTES (default 20). Results land in <clone>/.e2e-artifacts.
+# stays silent for E2E_STALL_MINUTES (default 20). Results land in <clone>/.e2e-artifacts; what is
+# worth keeping (outcome, logs, notes, evidence of failures) is copied to $E2E_WORK/results/NAME.
+#
+# A failed scenario gets a second attempt at once (E2E_RETRY, default 1; the app is restarted first).
+# When a scenario still failed, the story is run once more from its first feature on a clean app, up to
+# the last feature with a failure (E2E_RERUN_FAILED=no: never; E2E_RERUN_MAX=N: only when at most N
+# scenarios failed). The suite is one story, so one failure usually takes the scenarios that build on
+# it with it: the rerun shows whether the story holds from start to end.
+# outcome.txt says which it was: passed / passed, with scenarios that needed a second attempt /
+# passed on the rerun / failed. Exit code 0 for the first three: read the outcome, not only the code.
+#
+# One run at a time: a second run on the same machine waits until the first has ended, because two
+# runs next to each other make both slow and their timing different (E2E_PARALLEL=yes: do not wait).
 
 set -eo pipefail # no -u: bash 3.2 (macOS) rejects empty arrays under it
 
@@ -40,6 +54,7 @@ DEVICE_TYPE="iPhone 17 Pro"
 RUNTIME=""
 SKIP_BUILD=no
 KEEP_DEVICE=no
+CLEAN_UP=no
 FEATURES=()
 
 while [ $# -gt 0 ]; do
@@ -54,6 +69,7 @@ while [ $# -gt 0 ]; do
         --runtime) RUNTIME="$2"; shift 2 ;;
         --skip-build) SKIP_BUILD=yes; shift ;;
         --keep-device) KEEP_DEVICE=yes; shift ;;
+        --cleanup) CLEAN_UP=yes; shift ;;
         --) shift; FEATURES=("$@"); break ;;
         -h | --help) usage 0 ;;
         *) echo "unknown option: $1" >&2; usage 2 ;;
@@ -62,7 +78,13 @@ done
 [ ${#FEATURES[@]} -eq 0 ] && FEATURES=(./e2e)
 
 WORK="${E2E_WORK:-$HOME/Code/e2e-runs}"
-CLONE="$WORK/xaman-e2e-$NAME"
+# Clones live in a folder Spotlight skips (a name ending in .noindex) and Time Machine leaves out. A
+# clone is some 600,000 files: indexing each new one kept the machine at twice its core count in load
+# for the whole run, which changes the timing of everything in it.
+CLONES="$WORK/clones.noindex"
+CLONE="$CLONES/xaman-e2e-$NAME"
+# a clone of before this layout is still found (--skip-build)
+[ -d "$WORK/xaman-e2e-$NAME" ] && CLONE="$WORK/xaman-e2e-$NAME"
 ART="$CLONE/.e2e-artifacts"
 STALL_MINUTES="${E2E_STALL_MINUTES:-20}"
 
@@ -108,7 +130,10 @@ else
     # in, at "[RN]Check rncore"). The check prints what differs and what to run.
     if [ "$PLATFORM" = ios ]; then deps_scope=--ios; else deps_scope=--no-ios; fi
     "$ROOT/scripts/check-native-deps.sh" "$deps_scope" "$SOURCE" || die "$SOURCE: the installed packages do not match its commit (see above)"
-    mkdir -p "$WORK"
+    if [ ! -d "$CLONES" ]; then
+        mkdir -p "$CLONES"
+        tmutil addexclusion "$CLONES" >/dev/null 2>&1 || true
+    fi
     log "cloning $SOURCE -> $CLONE (APFS clone, copy-on-write)"
     cp -Rc "$SOURCE" "$CLONE"
     SKIP_BUILD=no
@@ -132,14 +157,33 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# ---------------------------------------------------------------- one run at a time
+LOCK="$WORK/.e2e-run.lock"
+if [ "${E2E_PARALLEL:-no}" != yes ]; then
+    told=no
+    while ! mkdir "$LOCK" 2>/dev/null; do
+        owner="$(cat "$LOCK/pid" 2>/dev/null || true)"
+        if [ -n "$owner" ] && ! kill -0 "$owner" 2>/dev/null; then
+            # the run that held it is gone (killed, or the machine restarted)
+            rm -rf "$LOCK"
+            continue
+        fi
+        if [ "$told" = no ]; then
+            log "another e2e run is going ($(cat "$LOCK/name" 2>/dev/null || echo unknown), pid ${owner:-unknown}): waiting for it to end"
+            told=yes
+        fi
+        sleep 20
+    done
+    echo $$ >"$LOCK/pid"
+    echo "$NAME" >"$LOCK/name"
+    CLEANUP+=("rm -rf '$LOCK'")
+fi
+machine_load() { uptime | sed 's/.*load averages*: *//'; }
+LOAD_START="$(machine_load)"
+OTHER_BUILDS="$({ pgrep -f 'xcodebuild|GradleDaemon|GradleWrapperMain' 2>/dev/null || true; } | wc -l | tr -d ' ')"
+
 # ---------------------------------------------------------------- device
-if [ "$PLATFORM" = ios ]; then
-    SIM_NAME="Xaman-e2e-$NAME"
-    UDID="$(xcrun simctl list devices available | sed -n "s/^ *$SIM_NAME (\([0-9A-F-]*\)) .*/\1/p" | head -1)"
-    if [ -z "$UDID" ]; then
-        log "creating simulator $SIM_NAME ($DEVICE_TYPE)"
-        UDID="$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" $RUNTIME)"
-    fi
+boot_simulator() {
     log "booting $SIM_NAME ($UDID); a first boot takes minutes"
     xcrun simctl bootstatus "$UDID" -b >/dev/null
     # bootstatus returns before the home screen is up: wait until an app actually launches.
@@ -150,6 +194,22 @@ if [ "$PLATFORM" = ios ]; then
         fi
         sleep 5
     done
+}
+
+if [ "$PLATFORM" = ios ]; then
+    SIM_NAME="Xaman-e2e-$NAME"
+    UDID="$(xcrun simctl list devices available | sed -n "s/^ *$SIM_NAME (\([0-9A-F-]*\)) .*/\1/p" | head -1)"
+    if [ -z "$UDID" ]; then
+        log "creating simulator $SIM_NAME ($DEVICE_TYPE)"
+        UDID="$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" $RUNTIME)"
+    elif [ "$(printf '%s' "${DETOX_REUSE:-no}" | tr '[:upper:]' '[:lower:]')" != yes ]; then
+        # A simulator of an earlier run keeps its keychain (the app's keys outlive a reinstall): a run
+        # that installs the app fresh has to start on an empty one, or it starts in another state.
+        log "erasing simulator $SIM_NAME of an earlier run"
+        xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
+        xcrun simctl erase "$UDID"
+    fi
+    boot_simulator
     [ "$KEEP_DEVICE" = yes ] || CLEANUP+=("xcrun simctl shutdown $UDID")
     export E2E_IOS_SIMULATOR="$SIM_NAME" E2E_CAMERA_IOS_SIMULATOR_NAME="$SIM_NAME"
     export DETOX_CONFIGURATION=ios.e2e+xaman.ios
@@ -248,47 +308,202 @@ if [ "$SKIP_BUILD" = no ]; then
 fi
 # ---------------------------------------------------------------- run
 export DETOX_REINSTALL=yes
-export E2E_ARTIFACTS_DIR="$ART"
 export DETOX_CONTINUE_ON_FAIL="${DETOX_CONTINUE_ON_FAIL:-yes}"
-rm -f "$ART/text-entry-fallbacks.txt"
-log "running ${FEATURES[*]} on ${ANDROID_SERIAL:-$E2E_IOS_SIMULATOR} ($DETOX_CONFIGURATION); log: $ART/run.log"
-set -m
-npx cucumber-js "${FEATURES[@]}" \
-    --require ./e2e/support --require ./e2e/step_definitions --require ./e2e/helpers \
-    --format progress \
-    --format "summary:$ART/summary.txt" \
-    --format "json:$ART/cucumber.json" \
-    --format "rerun:$ART/rerun.txt" >"$ART/run.log" 2>&1 &
-RUN_PID=$!
-set +m
+RETRY="${E2E_RETRY:-1}"
+RERUN_FAILED="${E2E_RERUN_FAILED:-yes}"
+RERUN_MAX="${E2E_RERUN_MAX:-0}" # 0: no limit
 
-# Watchdog: a run whose log stays silent for STALL_MINUTES is stuck; stop its whole process group.
-last_size=-1
-quiet=0
-STATUS=0
-while kill -0 "$RUN_PID" 2>/dev/null; do
-    sleep 60
-    size=$(wc -c <"$ART/run.log" | tr -d ' ')
-    if [ "$size" = "$last_size" ]; then quiet=$((quiet + 1)); else quiet=0; fi
-    last_size=$size
-    if [ "$quiet" -ge "$STALL_MINUTES" ]; then
-        log "no output for $STALL_MINUTES minutes: stopping the stuck run"
-        kill -TERM -- "-$RUN_PID" 2>/dev/null || true
-        sleep 15
-        kill -KILL -- "-$RUN_PID" 2>/dev/null || true
-        STATUS=124
-        break
+# Runs cucumber on the given features with its results in the given directory; sets STATUS.
+# A run whose log stays silent for STALL_MINUTES is stuck: its whole process group is stopped (124).
+run_cucumber() {
+    local art="$1"
+    shift
+    mkdir -p "$art"
+    export E2E_ARTIFACTS_DIR="$art"
+    # nothing of an earlier run in a reused clone may end up in this run's results
+    rm -f "$art/text-entry-fallbacks.txt" "$art/tap-checks.txt" "$art/tap-effects.tsv" "$art/outcome.txt"
+    rm -rf "$art/failures" "$art/steps" "$art/rerun"
+    log "running $* on ${ANDROID_SERIAL:-$E2E_IOS_SIMULATOR} ($DETOX_CONFIGURATION); log: $art/run.log"
+    set -m
+    npx cucumber-js "$@" \
+        --require ./e2e/support --require ./e2e/step_definitions --require ./e2e/helpers \
+        --retry "$RETRY" \
+        --format progress \
+        --format "summary:$art/summary.txt" \
+        --format "json:$art/cucumber.json" \
+        --format "rerun:$art/rerun.txt" >"$art/run.log" 2>&1 &
+    RUN_PID=$!
+    set +m
+
+    local last_size=-1 quiet=0 size
+    STATUS=0
+    while kill -0 "$RUN_PID" 2>/dev/null; do
+        sleep 60
+        size=$(wc -c <"$art/run.log" | tr -d ' ')
+        if [ "$size" = "$last_size" ]; then quiet=$((quiet + 1)); else quiet=0; fi
+        last_size=$size
+        if [ "$quiet" -ge "$STALL_MINUTES" ]; then
+            log "no output for $STALL_MINUTES minutes: stopping the stuck run"
+            kill -TERM -- "-$RUN_PID" 2>/dev/null || true
+            sleep 15
+            kill -KILL -- "-$RUN_PID" 2>/dev/null || true
+            STATUS=124
+            break
+        fi
+    done
+    if [ "$STATUS" = 0 ]; then
+        wait "$RUN_PID" || STATUS=$?
     fi
-done
-if [ "$STATUS" = 0 ]; then
-    wait "$RUN_PID" || STATUS=$?
+    tail -n 4 "$art/run.log" || true
+    # Android: text that only arrived by a second route (see e2e/helpers/androidTextEntry.js)
+    if [ -s "$art/text-entry-fallbacks.txt" ]; then
+        log "text entry needed a second route $(grep -c 'nothing arrived' "$art/text-entry-fallbacks.txt" | tr -d ' ') time(s): $art/text-entry-fallbacks.txt"
+    fi
+    # Android: taps that did not arrive and were sent a second time (see e2e/helpers/androidTapCheck.js)
+    if [ -s "$art/tap-checks.txt" ]; then
+        log "taps sent a second time: $(grep -c ': tapped again' "$art/tap-checks.txt" | tr -d ' '); see $art/tap-checks.txt"
+    fi
+}
+
+# Scenarios that failed an attempt and passed a later one, one per line ("name # file:line").
+flaky_scenarios() {
+    [ -f "$1/summary.txt" ] || return 0
+    sed -n 's/^[0-9]*) Scenario: \(.*\) (attempt [0-9]*, retried) \(# .*\)$/\1 \2/p' "$1/summary.txt" | sort -u |
+        while IFS= read -r line; do
+            where="${line##*# }"
+            # still failing after its last attempt: a failure, not a flaky scenario
+            grep -q "^${where%%:*}:.*\b${where##*:}\b" "$1/rerun.txt" 2>/dev/null || echo "$line"
+        done
+}
+
+# The scenarios that failed their last attempt, as cucumber's rerun file names them (file:line[:line]).
+failed_count() {
+    [ -s "$1/rerun.txt" ] || { echo 0; return; }
+    { grep -o ':[0-9][0-9]*' "$1/rerun.txt" || true; } | wc -l | tr -d ' '
+}
+
+# The feature files of this run, in order, up to and including the last one with a failed scenario.
+# The suite is one story: a feature needs the state the features before it left behind.
+story_until_last_failure() {
+    local entry file last=""
+    local files=()
+    for entry in "${FEATURES[@]}"; do
+        entry="${entry#./}"
+        if [ -d "$entry" ]; then
+            while IFS= read -r file; do files+=("$file"); done < <(ls "$entry"/*.feature | sort)
+        else
+            files+=("${entry%%:*}")
+        fi
+    done
+    for file in "${files[@]}"; do
+        if grep -q "^$file:" "$1/rerun.txt"; then last="$file"; fi
+    done
+    [ -n "$last" ] || return 0
+    for file in "${files[@]}"; do
+        echo "$file"
+        if [ "$file" = "$last" ]; then break; fi
+    done
+}
+
+run_cucumber "$ART" "${FEATURES[@]}"
+FIRST_STATUS=$STATUS
+FLAKY="$(flaky_scenarios "$ART")"
+FAILED=$(failed_count "$ART")
+RESULT=passed
+if [ -n "$FLAKY" ]; then RESULT="passed, with scenarios that needed a second attempt"; fi
+if [ "$STATUS" != 0 ]; then RESULT=failed; fi
+
+# Scenarios failed every attempt: run the story again from its start on a clean app, once. A stuck
+# run (124) is not run again.
+if [ "$STATUS" != 0 ] && [ "$STATUS" != 124 ] && [ "$RERUN_FAILED" != no ] && [ "$FAILED" -ge 1 ] &&
+    { [ "$RERUN_MAX" = 0 ] || [ "$FAILED" -le "$RERUN_MAX" ]; }; then
+    STORY=()
+    while IFS= read -r file; do STORY+=("$file"); done < <(story_until_last_failure "$ART")
+    if [ ${#STORY[@]} -gt 0 ]; then
+        log "$FAILED scenario(s) failed: running the story again on a clean app (${#STORY[@]} feature file(s))"
+        if [ "$PLATFORM" = ios ]; then
+            # the keychain outlives the app on a simulator: erase it
+            xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
+            xcrun simctl erase "$UDID"
+            boot_simulator
+        fi
+        export E2E_RERUN=1
+        run_cucumber "$ART/rerun" "${STORY[@]}"
+        if [ "$STATUS" = 0 ]; then
+            RESULT="passed on the rerun (failed in the first run)"
+        else
+            RESULT="failed (also in the rerun)"
+        fi
+    fi
 fi
 
-tail -n 4 "$ART/run.log" || true
-# Android: text that only arrived by a second route (see e2e/helpers/androidTextEntry.js)
-if [ -s "$ART/text-entry-fallbacks.txt" ]; then
-    log "text entry needed a second route $(grep -c 'nothing arrived' "$ART/text-entry-fallbacks.txt" | tr -d ' ') time(s): $ART/text-entry-fallbacks.txt"
+{
+    echo "result: $RESULT"
+    echo "run: $NAME, $PLATFORM$([ "$PLATFORM" = android ] && echo " $BUILD_TYPE"), ${FEATURES[*]}"
+    echo "code: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$([ -n "$(git status --porcelain --untracked-files=no 2>/dev/null | head -1)" ] && echo " + uncommitted changes")"
+    if [ "$PLATFORM" = ios ]; then
+        echo "device: $DEVICE_TYPE, $(xcrun simctl list devices | grep -B 30 "$UDID" | grep '^-- ' | tail -1 | tr -d '-' | xargs), $(xcodebuild -version 2>/dev/null | tr '\n' ' ')"
+    else
+        echo "device: AVD ${AVD:-kept emulator}, Android $("$ADB" -s "$SERIAL" shell getprop ro.build.version.release 2>/dev/null | tr -d '\r') (API $("$ADB" -s "$SERIAL" shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r'))"
+    fi
+    echo "node: $(node --version 2>/dev/null)"
+    echo "machine load (1, 5, 15 min) at the start: $LOAD_START; at the end: $(machine_load); other builds running at the start: $OTHER_BUILDS"
+    echo "first run: exit $FIRST_STATUS, $(grep -E '^[0-9]+ scenarios' "$ART/summary.txt" 2>/dev/null | tail -1)"
+    if [ -n "$FLAKY" ]; then
+        echo
+        echo "needed a second attempt in the first run (failed once, then passed):"
+        echo "$FLAKY" | sed 's/^/  /'
+    fi
+    if [ "$FAILED" -gt 0 ]; then
+        echo
+        echo "failed every attempt in the first run:"
+        sed 's/^/  /' "$ART/rerun.txt"
+        echo
+    fi
+    if [ -f "$ART/rerun/summary.txt" ]; then
+        echo "rerun: exit $STATUS, $(grep -E '^[0-9]+ scenarios' "$ART/rerun/summary.txt" | tail -1)"
+        RERUN_FLAKY="$(flaky_scenarios "$ART/rerun")"
+        if [ -n "$RERUN_FLAKY" ]; then
+            echo "needed a second attempt in the rerun:"
+            echo "$RERUN_FLAKY" | sed 's/^/  /'
+        fi
+        if [ -s "$ART/rerun/rerun.txt" ]; then
+            echo "failed every attempt in the rerun:"
+            sed 's/^/  /' "$ART/rerun/rerun.txt"
+            echo
+        fi
+    fi
+    for notes in "$ART/tap-checks.txt" "$ART/rerun/tap-checks.txt" "$ART/text-entry-fallbacks.txt" "$ART/rerun/text-entry-fallbacks.txt"; do
+        if [ -s "$notes" ]; then echo "notes: ${notes#"$ART/"} ($(wc -l <"$notes" | tr -d ' ') line(s))"; fi
+    done
+    if [ -d "$ART/failures" ]; then echo "evidence of failed attempts: failures/"; fi
+    if [ -d "$ART/rerun/failures" ]; then echo "evidence of failed attempts in the rerun: rerun/failures/"; fi
+} >"$ART/outcome.txt"
+
+# What is worth keeping goes out of the clone, so deleting the clone does not delete the evidence.
+KEEP="$WORK/results/$NAME"
+[ -n "$NAME" ] && rm -rf "$KEEP"
+mkdir -p "$KEEP"
+for part in "" rerun/; do
+    [ -d "$ART/$part" ] || continue
+    mkdir -p "$KEEP/$part"
+    for file in outcome.txt summary.txt run.log rerun.txt tap-checks.txt tap-effects.tsv text-entry-fallbacks.txt; do
+        if [ -f "$ART/$part$file" ]; then cp "$ART/$part$file" "$KEEP/$part"; fi
+    done
+    if [ -d "$ART/${part}failures" ]; then cp -R "$ART/${part}failures" "$KEEP/$part"; fi
+done
+
+echo
+cat "$ART/outcome.txt"
+log "exit $STATUS; results kept in $KEEP"
+if [ "$CLEAN_UP" = yes ]; then
+    cd "$WORK"
+    cleanup
+    CLEANUP=()
+    if [ "$PLATFORM" = ios ]; then xcrun simctl delete "$UDID" >/dev/null 2>&1 || true; fi
+    rm -rf "$CLONE"
+    log "the clone$([ "$PLATFORM" = ios ] && echo " and the simulator") of this run are deleted"
+else
+    log "all artifacts in $ART; delete the clone when done: rm -rf '$CLONE'"
 fi
-log "exit $STATUS; artifacts in $ART"
-log "delete the clone when done: rm -rf '$CLONE'"
 exit "$STATUS"

@@ -20,7 +20,17 @@ const {
     resetAndroidDumpState,
     hideAndroidKeyboard,
     unlockAndroidPasscodeWhenItShows,
+    androidDumpXml,
+    isAndroidDumpBroken,
 } = require('../helpers/tapById');
+const { tapNoted, waitAfterTap } = require('../helpers/androidTapCheck');
+const { currentStepIndex } = require('../helpers/artifacts');
+
+// Android: the screen as the tap check reads it (helpers/androidTapCheck.js)
+const androidScreen = { dump: androidDumpXml, broken: isAndroidDumpBroken, has: androidHasTestId };
+// Android: the wait of a step; right after a tap that changed nothing, a Next, Back or tab tap is sent again
+const waitForAndroidTestId = (testId, timeoutMs) =>
+    waitAfterTap(testId, () => waitUntilAndroidTestId(testId, timeoutMs), androidScreen, currentStepIndex());
 const { focusAndroidTextField, typeAndroidTextVerified } = require('../helpers/androidTextEntry');
 const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLaunch');
 
@@ -71,7 +81,8 @@ Then('I tap {string}', async (buttonId) => {
             ) {
                 await androidDismissImeIfShown();
             }
-            await clickByTestId(buttonId);
+            // the tap; the screen from right before it is kept for the wait step that follows
+            await tapNoted(buttonId, () => clickByTestId(buttonId), androidScreen, currentStepIndex());
         } catch (e) {
             // The add-token handoff cover can take the button away while the review screen is
             // still opening (it failed with the review screen up a moment later).
@@ -256,7 +267,8 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
         return;
     }
     const input = element(by.id(textInputId));
-    await waitFor(input).toBeVisible().withTimeout(5000);
+    // 10 s as every other wait for a screen: a field can take longer than 5 s to show on a loaded machine
+    await waitFor(input).toBeVisible().withTimeout(10000);
     await input.replaceText(value);
     try {
         await input.tapReturnKey();
@@ -282,7 +294,7 @@ Given('I should have {string}', async (elementId) => {
             ? 90000
             : 10000;
     if (device.getPlatform() === 'android') {
-        await waitUntilAndroidTestId(elementId, timeout);
+        await waitForAndroidTestId(elementId, timeout);
         return;
     }
     await waitFor(element(by.id(elementId)))
@@ -331,7 +343,7 @@ Given('I should see {string}', async (elementId) => {
                 }
             }
         }
-        await waitUntilAndroidTestId(elementId, timeout);
+        await waitForAndroidTestId(elementId, timeout);
         return;
     }
     // A fast submit finishes Verifying before Detox is idle enough to see it.
@@ -394,7 +406,7 @@ Given('I should see {string} in {string}', async (value, elementId) => {
     }
     await waitFor(element(by.id(elementId)))
         .toHaveText(value)
-        .withTimeout(5000);
+        .withTimeout(10000);
 });
 
 Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
@@ -403,7 +415,7 @@ Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
             elementId === 'home-tab-empty-view' || elementId === 'home-tab-view'
                 ? Math.max(timeout * 1000, 60000)
                 : timeout * 1000;
-        await waitUntilAndroidTestId(elementId, ms);
+        await waitForAndroidTestId(elementId, ms);
         return;
     }
     await waitFor(element(by.id(elementId)))

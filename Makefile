@@ -1,5 +1,5 @@
 .EXPORT_ALL_VARIABLES:
-.PHONY: clean validate-style start stop run run-ios run-android build build-ios build-android lear test help test-e2e test-e2e-local test-e2e-throwaway test-e2e-smoke verify-step ios-by-id
+.PHONY: clean validate-style start stop run run-ios run-android build build-ios build-android lear test help test-e2e test-e2e-local test-e2e-throwaway test-e2e-suite test-e2e-smoke verify-step ios-by-id
 
 OS := $(shell sh -c 'uname -s 2>/dev/null')
 VARIANT ?= Debug
@@ -128,6 +128,10 @@ test-e2e:  ## Runs e2e tests
 # make test-e2e-throwaway PLATFORM=android ARGS="--debug -- ./e2e/03_import_account.feature"
 test-e2e-throwaway: ## e2e on a throwaway clone with its own simulator or emulator
 	@scripts/e2e/run-throwaway.sh $(PLATFORM) $(ARGS)
+
+# make test-e2e-suite ARGS="--name my-round --rounds 2"
+test-e2e-suite: ## the whole e2e suite on iOS and Android, one after the other (throwaway clones and devices)
+	@scripts/e2e/run-suite.sh $(ARGS)
 
 # Dedicated sim so e2e never wipes the onboarded Android emulator or iOS dev sim.
 # Create once: xcrun simctl create "Xaman-e2e" "iPhone 17 Pro"
