@@ -303,7 +303,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     private signWithPrivateKey = async (method: AuthMethods, options: SignOptions) => {
-        const { preferredSigner, signerDelegate } = this.state;
+        const { preferredSigner } = this.state;
         const { account, transaction, multiSign } = this.props;
         const { encryptionKey } = options;
         
@@ -332,13 +332,12 @@ class VaultOverlay extends Component<Props, State> {
             let signerInstance = AccountLib.derive.privatekey(privateKey);
             // check if multi sign then add sign as
             if (multiSign) {
-                // if we are signing with signerDelegate
-                if (preferredSigner.publicKey === signerDelegate?.publicKey) {
-                    signerInstance = signerInstance.signAs(account.address);
-                } else {
-                    // else sign as signer
-                    signerInstance = signerInstance.signAs(preferredSigner.address);
-                }
+                // Sign as the selected account, also when its regular key (signerDelegate) signs.
+                // Except when the selected account is the transaction Account: it can not multi sign for
+                // itself (the ledger refuses it), so its regular key account then signs as itself.
+                signerInstance = signerInstance.signAs(
+                    account.address === transaction.Account ? preferredSigner.address : account.address,
+                );
             }
 
             // get current network definitions

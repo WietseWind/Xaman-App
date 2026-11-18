@@ -304,9 +304,21 @@ class PreflightStep extends Component<Props, State> {
                     return;
                 }
 
+                // A multi signature is made by a member of the signer list of the transaction Account. That
+                // Account can not sign for itself, with its master key or with its regular key: the ledger
+                // refuses it ("Invalid multisigner"). So do not start with it when another account can sign.
+                const multiSign = payload.isMultiSign();
+                if (multiSign && transaction?.Account && source.address === transaction.Account) {
+                    const others = filter(availableAccounts, (account) => account.address !== transaction.Account);
+                    const defaultAccount = CoreRepository.getDefaultAccount();
+                    source = find(others, { address: defaultAccount?.address }) || first(others) || source;
+                }
+
                 // case & logic for below: 
                 //    https://github.com/WietseWind/Xaman-App/issues/67
-                if (Array.isArray(forcedSigners) && forcedSigners.length > 0) {
+                // Not for multi sign: there the forced signer (a signer list member) signs as itself, also
+                // when it is the regular key of the transaction Account.
+                if (!multiSign && Array.isArray(forcedSigners) && forcedSigners.length > 0) {
                     if (transaction?.Account) {
                         const fullAccessAccounts = AccountRepository.getFullAccessAccounts();
                         if (!forcedSigners.includes(transaction.Account)) {
