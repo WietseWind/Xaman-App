@@ -80,6 +80,8 @@ src/.vscode/settings.json
 
 #others
 e2e/artifacts*/
+# Xaman API key + secret for the e2e scenarios that need a real sign request (e2e/helpers/signRequests.js)
+.e2e-xaman-api.json
 
 # local agent / session notes
 **/.claude/

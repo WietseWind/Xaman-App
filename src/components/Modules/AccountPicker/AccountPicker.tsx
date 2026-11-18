@@ -108,9 +108,14 @@ class AccountPicker extends Component<Props, State> {
         }
 
         return (
-            <TouchableDebounce activeOpacity={0.9} onPress={this.showPicker} style={styles.pickerContainer}>
+            <TouchableDebounce
+                testID="account-picker"
+                activeOpacity={0.9}
+                onPress={this.showPicker}
+                style={styles.pickerContainer}
+            >
                 <View style={AppStyles.row}>
-                    <View style={AppStyles.flex1}>
+                    <View testID={`account-picker-selected-${selectedItem.address}`} style={AppStyles.flex1}>
                         <Text numberOfLines={1} style={styles.accountItemTitle}>
                             {accountListLabel(selectedItem)}
                         </Text>

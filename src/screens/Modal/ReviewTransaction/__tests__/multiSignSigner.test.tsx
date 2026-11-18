@@ -82,6 +82,7 @@ jest.mock('../Steps/Preflight/styles', () => ({}));
 const cards = {
     C: mockTangemCard('multisign-C'),
     D: mockTangemCard('multisign-D', { curve: 'ed25519' }),
+    H: mockTangemCard('multisign-H', { hdWallet: 'ios' }), // a card with HD wallets: a derived key signs
 };
 const keys = {
     A: AccountLib.derive.passphrase('xaman-test-multisign-A'),
@@ -435,6 +436,16 @@ describe('multi sign request signed with a Tangem card', () => {
         expect(result).toMatchObject({ signerAccount: 'C', key: 'C', signatureValid: true });
     });
 
+    it('case 2: read-only signer S with a card with HD wallets as regular key signs as S, derived key', async () => {
+        const accounts = [model('S', { regularKey: 'H', readonly: true }), model('H')];
+        const result = await signRequest({ accounts, multisign: true, signers: ['S'], signerList: ['S'] });
+
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'H', signatureValid: true });
+        expect(cards.H.signCalls[cards.H.signCalls.length - 1]).toMatchObject({
+            walletPublicKey: cards.H.card.wallets[0].publicKey, derivationPath: 'm/44\'/144\'/0\'/0/0',
+        });
+    });
+
     it('the card gets the signing data for the account it signs as', async () => {
         const accounts = [model('S', { regularKey: 'C', readonly: true }), model('C')];
         const before = cards.C.signedHashes.length;
@@ -558,6 +569,90 @@ describe('multi sign request: the signer list of the transaction Account decides
         await jest.advanceTimersByTimeAsync(200);
         await loading;
         expect(context.setSource.mock.calls[0][0].label).toBe('S');
+    });
+
+    it('a signer with its master key disabled and no regular key in the app can not sign: not offered', async () => {
+        const accounts = [model('X'), model('S', { masterDisabled: true }), model('M')];
+        const result = await signRequest({ accounts, multisign: true, signerList: ['S', 'M'] });
+
+        expect(result.offered).toStrictEqual(['M']);
+        expect(result).toMatchObject({ source: 'M', signerAccount: 'M', key: 'M', signatureValid: true });
+    });
+
+    it('a signer with its master key disabled signs with its regular key from the app', async () => {
+        const accounts = [model('S', { masterDisabled: true, regularKey: 'K' }), model('K')];
+        const result = await signRequest({ accounts, multisign: true, signerList: ['S'] });
+
+        expect(result.offered).toStrictEqual(['S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'K', signatureValid: true });
+    });
+
+    it('the regular key of a signer is in the app but the signer is not: it can not sign as the signer', async () => {
+        // K could sign for S, but only as S, and S is not an account in the app
+        const request = signRequest({ accounts: [model('K')], multisign: true, signerList: ['S'] });
+
+        await expect(request).rejects.toMatchObject({
+            action: 'MULTI_SIGN_SIGNER', data: { signers: [address('S')] },
+        });
+    });
+
+    it('a multi sign request for a Batch: the signer list member signs the Batch as itself', async () => {
+        const batch = new MixedBatch({
+            TransactionType: 'Batch', Account: address('A'), Sequence: 7, Flags: 65536, Fee: '40',
+            RawTransactions: [
+                { RawTransaction: {
+                    TransactionType: 'AccountSet', Account: address('A'), Fee: '0', Flags: 1073741824,
+                    SigningPubKey: '', Sequence: 8,
+                } },
+            ],
+        } as any);
+        const accounts = [model('A'), model('X'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, transaction: batch, signerList: ['S'] });
+
+        expect(result.offered).toStrictEqual(['S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
+        expect(result.json).toMatchObject({ TransactionType: 'Batch', Account: address('A'), SigningPubKey: '' });
+        expect(result.json.BatchSigners).toBeUndefined();
+    });
+
+    it('a multi sign request without an Account in the transaction: no lookup, the accounts of before', async () => {
+        const transaction = new MixedAccountSet({ TransactionType: 'AccountSet', Sequence: 7, Fee: '200' } as any);
+        const accounts = [model('X'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, transaction, signerList: ['M'] });
+
+        expect(signerListLookup).not.toHaveBeenCalled();
+        expect(result.offered).toStrictEqual(['X', 'S']);
+        expect(result.source).toBe('X');
+    });
+
+    it('the review is closed while the signer list is asked: nothing is set afterwards', async () => {
+        const accounts = [model('A'), model('S')];
+        let answer: (signers: string[]) => void = () => undefined;
+        signerListLookup.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    answer = resolve;
+                }),
+        );
+        jest.mocked(AccountRepository.getSignableAccounts).mockReturnValue(accounts as any);
+        jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue(accounts[0] as any);
+        const context = {
+            transaction: accountSet(),
+            payload: { isMultiSign: () => true, getSigners: () => [] },
+            setAccounts: jest.fn(),
+            setSource: jest.fn(),
+        };
+        const step = new PreflightStep({});
+        (step as any).context = context;
+        let open = true;
+        const loading = step.loadSingingAccount(() => open);
+
+        open = false; // the user closes the review
+        answer([address('S')]);
+        await loading;
+
+        expect(context.setSource).not.toHaveBeenCalled();
+        expect(context.setAccounts).not.toHaveBeenCalled();
     });
 
     it('a request that is not multi sign does not ask for the signer list', async () => {

@@ -1558,6 +1558,24 @@ const unlockAndroidPasscodeIfPresent = async () => {
     return false;
 };
 
+/**
+ * After something brought the app to the front again (a link opened by intent): the app checks its auto
+ * lock a moment later, so the lock screen can come up after the first look. Watch for it for a few seconds.
+ */
+const unlockAndroidPasscodeWhenItShows = async (timeoutMs = 5000) => {
+    if (device.getPlatform() !== 'android') {
+        return false;
+    }
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+        if (await unlockAndroidPasscodeIfPresent()) {
+            return true;
+        }
+        await sleep(700);
+    }
+    return false;
+};
+
 const androidHasTestId = async (testId) => {
     cachedXml = '';
     cachedAt = 0;
@@ -2267,6 +2285,7 @@ module.exports = {
     waitUntilAndroidEnabled,
     waitUntilAndroidRnReady,
     unlockAndroidPasscodeIfPresent,
+    unlockAndroidPasscodeWhenItShows,
     enterAndroidPasscode,
     androidReadTextByTestId,
     androidHasTestId,

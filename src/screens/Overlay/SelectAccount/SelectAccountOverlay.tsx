@@ -120,6 +120,7 @@ class SelectAccountOverlay extends Component<Props, State> {
         return (
             <TouchableDebounce
                 key={account.address}
+                testID={`select-account-${account.address}`}
                 onPress={() => {
                     this.onSelect(account);
                 }}
@@ -202,7 +203,11 @@ class SelectAccountOverlay extends Component<Props, State> {
                         />
                     </View>
                 </View>
-                <ScrollView style={AppStyles.flex1} contentContainerStyle={{ paddingBottom }}>
+                <ScrollView
+                    testID="select-account-list"
+                    style={AppStyles.flex1}
+                    contentContainerStyle={{ paddingBottom }}
+                >
                     {this.renderContent()}
                 </ScrollView>
             </ActionPanel>
