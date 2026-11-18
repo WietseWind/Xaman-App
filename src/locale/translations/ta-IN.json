@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "இந்த எஸ்க்ரோவை ரத்து செய்ய முடியாது. பின்னர் வெளியிட நிபந்தனை நிறைவேற வேண்டும். நிபந்தனை நிறைவேறும் என்று நம்பினால், அல்லது மறுதரப்பு தேவையானதை சரியான நேரத்தில் தரும் என்று நம்பினால் மட்டுமே தொடரவும்.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "இந்த கோரிக்கையை கையொப்பமிட முடியும் \n\n%{accounts}\n\nஇந்த கணக்குகள் கையொப்ப அணுகலுடன் இல்லை.",
+    "multiSignNoSignerAccountPresent": "இது இந்தக் கணக்கிற்கான பல கையொப்ப கோரிக்கை \n\n%{account}\n\nஇந்தக் கணக்கின் கையொப்பமிடுபவர்கள் மட்டுமே இதில் கையொப்பமிட முடியும், அவர்களில் யாரும் கையொப்ப அணுகலுடன் இல்லை.",
     "tradeEntireTokenWorthWarning": "எச்சரிக்கை: %{currency} அளவு உங்கள் %{currency} இருப்புக்குச் சமமாகவோ அதிகமாகவோ உள்ளது. இந்தச் சலுகை நிறைவேற்றப்பட்டால், உங்கள் %{currency} இருப்பு முழுவதும் விற்கப்படும்.",
     "paymentToDisallowedNativeAssetWarning": "இலக்குக் கணக்கு உள்வரும் %{nativeAsset} கட்டணங்களை (டோக்கன் கட்டணங்கள் அல்ல) மறுக்கும்படி அமைக்கப்பட்டுள்ளது. தொடர்ந்தால், இலக்குக் கணக்கின் உரிமையாளரின் உதவி தேவைப்படலாம்.",
     "paymentToBlackHoledAccountWarning": "இலக்கு கணக்கு 'பிளாக் ஹோல்ட்' ஆகும், அதாவது இலக்கிற்கு அனுப்பப்படும் அனைத்து நிதிகளும் நிரந்தரமாக இழக்கப்படும்",

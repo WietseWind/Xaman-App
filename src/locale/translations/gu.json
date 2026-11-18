@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "આ એસ્ક્રો રદ કરી શકાતું નથી. પછી છોડવા માટે શરત પૂરી થવી જોઈએ. શરત પૂરી થઈ શકે અથવા બીજી પાર્ટી જરૂરી વસ્તુ સમયસર આપશે તેમ વિશ્વાસ હોય તો જ આગળ વધો.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "આ વિનંતી પર ફક્ત નીચેના એકાઉન્ટ્સ સહી કરી શકે છે:\n\n%{accounts}\n\nઆ એકાઉન્ટ્સ સહી કરવાની ઍક્સેસ સાથે હાજર નથી.",
+    "multiSignNoSignerAccountPresent": "આ આ એકાઉન્ટ માટે મલ્ટિ-સાઇન વિનંતી છે \n\n%{account}\n\nફક્ત આ એકાઉન્ટના સહી કરનારાઓ જ તેના પર સહી કરી શકે છે, અને તેમાંથી કોઈ પણ સહી કરવાની ઍક્સેસ સાથે હાજર નથી.",
     "tradeEntireTokenWorthWarning": "ચેતવણી: %{currency} ની રકમ તમારા %{currency} બેલેન્સ જેટલી અથવા વધુ છે. જો આ ઑફર અમલમાં આવશે, તો તમારી સંપૂર્ણ %{currency} પોઝિશન વેચાઈ જશે.",
     "paymentToDisallowedNativeAssetWarning": "ગંતવ્ય એકાઉન્ટે આવતી %{nativeAsset} ચૂકવણીઓ (ટોકન સિવાયની) નકારવા માટે સેટિંગ કર્યું છે. આગળ વધશો તો કદાચ તેના માલિકની મદદ લેવી પડશે.",
     "paymentToBlackHoledAccountWarning": "ગંતવ્ય એકાઉન્ટ બ્લેકહોલ કરેલું છે. અહીં મોકલેલું તમામ ભંડોળ અપ્રાપ્ય બનશે અને પાછું મેળવી શકાશે નહીં. શું તમે ખરેખર આ ગંતવ્ય પર ભંડોળ મોકલવા માગો છો?",

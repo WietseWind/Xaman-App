@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "Denne escrow kan ikke annulleres. For at frigive den senere skal betingelsen opfyldes. Fortsæt kun, hvis du stoler på, at betingelsen kan opfyldes, eller at modparten leverer det nødvendige i tide.",
     "notVettedTokenTradeWarning": "Handel er på egen risiko! Den token, du er ved at handle med, er *** ikke blevet undersøgt * * *\r\n\r\nAlle kan oprette en token, herunder lave falske versioner af eksisterende tokens, som hævder at repræsentere projekter. Hvis du bytter denne token, kan du måske ikke sælge den tilbage. Du risikerer at sætte dine aktiver / opsparinger i fare!",
     "forcedSignersAccountsDoesNotExist": "Denne anmodning kan kun underskrives af\n\n%{accounts}\n\ndu har ikke denne konto.",
+    "multiSignNoSignerAccountPresent": "Dette er en multisignatur-anmodning for \n\n%{account}\n\nKun underskriverne for denne konto kan underskrive den, og ingen af dem er til stede med signeringsadgang.",
     "tradeEntireTokenWorthWarning": "Advarsel: mængden af %{currency} er lig med eller større end din samlede beholdning af dette token.",
     "paymentToDisallowedNativeAssetWarning": "Destinationskontoen konfigurerede deres konto til ikke at acceptere %{nativeAsset}. Denne betaling vil mislykkes.",
     "paymentToBlackHoledAccountWarning": "Destinationskontoen er 'black holed', hvilket betyder, at ingen kan få adgang til midler sendt til denne konto.",

@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "Toto escrow nemožno zrušiť. Neskoršie uvoľnenie vyžaduje splnenie podmienky. Pokračujte len vtedy, ak veríte, že podmienku možno splniť, alebo že protistrana včas dodá, čo treba.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Túto žiadosť môžu podpísať iba\n\n%{accounts}\n\nTieto účty nie sú prítomné s prístupom na podpisovanie.",
+    "multiSignNoSignerAccountPresent": "Toto je žiadosť o viacnásobný podpis pre \n\n%{account}\n\nPodpísať ju môžu iba podpisovatelia tohto účtu a žiadny z nich nie je prítomný s prístupom na podpisovanie.",
     "tradeEntireTokenWorthWarning": "Upozornenie: suma %{currency} sa rovná alebo je vyššia ako váš zostatok %{currency} tohto aktíva. Uistite sa, že vykonávate takúto výmenu vedome alebo upravte sumu.",
     "paymentToDisallowedNativeAssetWarning": "Cieľový účet nakonfiguroval svoj účet na zakázanie prichádzajúcich %{nativeAsset} (mimo Escrow/Payment Channel). Táto platba sa nepodarí.",
     "paymentToBlackHoledAccountWarning": "Cieľový účet je 'black holed', čo znamená, že všetky prostriedky odoslané na tento cieľový účet sú stratené: NIKDY SA NEBUDÚ MÔCŤ PRESUNÚŤ. Zrušte túto platbu, pokiaľ si nie ste úplne istí!",

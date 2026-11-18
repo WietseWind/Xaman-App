@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "Bu eskrouni bekor qilib bo‘lmaydi. Keyinroq ozod qilish uchun shart bajarilishi kerak. Shart bajarilishiga yoki qarshi tomon keraklisini o‘z vaqtida berishiga ishonsangizgina davom eting.",
     "notVettedTokenTradeWarning": "O'z xavfi savdo! Agar savdo haqida belgi * * vetted qilinmagan**.\r\n\r\nHar bir inson, shu jumladan, loyihalarni taqdim etishni talab qiladigan mavjud belgilarning soxta versiyalarini yaratishi mumkin. Agar siz ushbu tovarni sotsangiz, uni qaytarib sotolmaysiz. Potentsial xavfi sizning aktivlar/omonat qo'yib bor!",
     "forcedSignersAccountsDoesNotExist": "Bu so'rovni faqat quyidagilar imzolashi mumkin\n\n%{accounts}\n\nBu hisoblar hali mavjud emas yoki ular faollashtirilmagan.",
+    "multiSignNoSignerAccountPresent": "Bu quyidagi hisob uchun ko'p imzoli so'rov: \n\n%{account}\n\nUni faqat ushbu hisobning imzolovchilari imzolashi mumkin va ularning hech biri imzolash huquqi bilan mavjud emas.",
     "tradeEntireTokenWorthWarning": "Ogohlantirish: %{currency} miqdori sizning butun %{currency} balansingizga teng yoki undan ortiq.",
     "paymentToDisallowedNativeAssetWarning": "Manzil hisobi o'z hisobini %{nativeAsset} to'lovlarini rad etish uchun sozlagan. Agar bu tranzaksiya yuborilsa, rad etiladi.",
     "paymentToBlackHoledAccountWarning": "Manzil hisobi 'qora tuynukka aylantirilgan', ya'ni barcha mablag'lar abadiy yo'qoladi",

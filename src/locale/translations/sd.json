@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "هن ايسڪرو کي منسوخ نٿو ڪري سگهجي. بعد ۾ ڇڏڻ لاءِ شرط پورو ٿيڻ گهرجي. صرف تڏهن اڳتي وڌو جڏهن توهان کي ڀروسو هجي ته شرط پورو ٿي سگهي ٿو، يا ٻيو طرف گهربل شيءِ وقت تي ڏيندو.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "ھن درخواست تي رڳو ھي اڪائونٽ دستخط ڪري سگھن ٿا:\n\n%{accounts}\n\nھي اڪائونٽ دستخط جي رسائي سان موجود ناھن.",
+    "multiSignNoSignerAccountPresent": "ھي ھن اڪائونٽ لاءِ ملٽي سائن جي درخواست آھي \n\n%{account}\n\nصرف ھن اڪائونٽ جا دستخط ڪندڙ ئي ان تي دستخط ڪري سگھن ٿا، ۽ انھن مان ڪو به دستخط جي رسائي سان موجود ناھي.",
     "tradeEntireTokenWorthWarning": "خبردار: %{currency} جي رقم توھان جي %{currency} بيلنس جي برابر يا ان کان وڌيڪ آھي. آڇ پوري ٿيڻ سان توھان پنھنجي سموري %{currency} پوزيشن وڪڻي ڇڏيندا.",
     "paymentToDisallowedNativeAssetWarning": "منزل اڪائونٽ ايندڙ %{nativeAsset} ادائيگين (ٽوڪن کان سواءِ) کي منع ڪيو آھي. اڳتي وڌڻ سان توھان کي شايد منزل اڪائونٽ جي مالڪ جي مدد گھربل ھوندي.",
     "paymentToBlackHoledAccountWarning": "منزل اڪائونٽ ”بليڪ ھول“ آھي: ان ڏانھن موڪليل سڀ رقم ناقابل رسائي ٿيندي ۽ بحال نه ٿي سگھندي. ڇا توھان پڪ سان ھن منزل ڏانھن رقم موڪلڻ چاھيو ٿا؟",
