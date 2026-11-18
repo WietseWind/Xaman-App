@@ -72,6 +72,8 @@ export interface State {
     appVersionCode: string;
     // light or dark for the page (prefers-color-scheme), follows Xaman's theme live
     colorScheme: 'light' | 'dark';
+    // a new number gives a new WebView: after the OS ended the process of the page
+    webViewKey: number;
 }
 
 export enum XAppMethods {
