@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "לא ניתן לבטל את ה-escrow הזה. שחרור מאוחר יותר מחייב שהתנאי יתקיים. המשיכו רק אם אתם סומכים על כך שהתנאי יכול להתקיים, או שהצד השני יספק את הנדרש בזמן.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "ניתן לחתום על בקשה זו רק על ידי\n\n%{accounts}\n\nחשבונות אלה אינם קיימים עם גישה לחתימה.",
+    "multiSignNoSignerAccountPresent": "זוהי בקשת חתימה מרובה עבור \n\n%{account}\n\nרק החותמים של חשבון זה יכולים לחתום עליה, ואף אחד מהם אינו קיים עם גישה לחתימה.",
     "tradeEntireTokenWorthWarning": "אזהרה: כמות %{currency} שווה או גבוהה מיתרת %{currency} שלך של נכס זה.",
     "paymentToDisallowedNativeAssetWarning": "חשבון היעד הגדיר את החשבון שלו לאסור תשלומי %{nativeAsset} נכנסים (שאינם טוקן).",
     "paymentToBlackHoledAccountWarning": "חשבון היעד הוא 'חור שחור', כלומר כל הכספים שנשלחים לחשבון היעד יהיו אבודים לצמיתות.",

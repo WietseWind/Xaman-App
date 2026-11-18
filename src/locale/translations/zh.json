@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "此托管无法取消。以后释放资金必须满足该条件。仅当您相信条件可以实现，或对方会按时提供所需内容时再继续。",
     "notVettedTokenTradeWarning": "风险自负！您即将交易的代币**未经审核**。\r\n\r\n任何人都可以创建代币，包括创建声称代表项目的现有代币的假版本。如果您交易此代币，您可能无法将其卖回。您可能会使您的资产/储蓄面临风险！",
     "forcedSignersAccountsDoesNotExist": "此请求只能由以下账户签名\n\n%{accounts}\n\n这些账户不具有签名访问权限。",
+    "multiSignNoSignerAccountPresent": "这是以下账户的多重签名请求 \n\n%{account}\n\n只有此账户的签名者可以签名，且其中没有任何一个具有签名访问权限。",
     "tradeEntireTokenWorthWarning": "警告： %{currency} 的数量等于或高于您此资产的 %{currency} 余额。如果此报价被执行，您将完全清算您的 %{currency} 头寸。",
     "paymentToDisallowedNativeAssetWarning": "目标账户已配置其账户以禁止接收 %{nativeAsset} （非代币）付款。如果您继续，您很可能需要目标账户所有者的支持。",
     "paymentToBlackHoledAccountWarning": "目标账户已\"黑洞化\"，这意味着发送到目标账户的所有资金将无法访问且无法恢复。您确定要继续向此目标账户发送资金吗？",

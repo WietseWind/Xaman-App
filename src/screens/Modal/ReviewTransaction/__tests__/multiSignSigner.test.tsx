@@ -5,9 +5,11 @@
  * of the vault overlay (setSigners + signWithPrivateKey, or signWithTangemCard with a mock card) with real
  * keys, then reads the signed blob.
  *
- * Ledger rule behind it (checked on XRPL Testnet): a multi signature is made by a member of the signer
- * list of the transaction Account. The Account can not sign for itself: such a transaction is refused
- * ("fails local checks: Invalid multisigner."), with its master key and with its regular key alike.
+ * Ledger rule behind it (checked on XRPL Testnet and Xahau Testnet): a multi signature is made by a member
+ * of the signer list of the transaction Account. The Account can not sign for itself: such a transaction is
+ * refused ("fails local checks: Invalid multisigner."), with its master key and with its regular key alike.
+ *
+ * The review asks the ledger for that signer list (LedgerService.getAccountSignerList, mocked here).
  */
 import * as AccountLib from 'xrpl-accountlib';
 import { verify } from 'ripple-keypairs';
@@ -117,9 +119,15 @@ type Request = {
     multisign: boolean;
     signers?: Name[]; // forced signers of the payload
     transaction?: any; // default: an AccountSet of A
+    signerList?: Name[]; // the signer list of the transaction Account on the ledger; not given: not known
+    signerListFails?: boolean; // the ledger can not be asked
     pickSource?: Name; // the user picks another account in the review
+    giveVault?: Name; // skip the review: hand this account to the vault overlay
     pickKey?: Name; // the user picks another key in the vault overlay ("Sign with")
 };
+
+// LedgerService.getAccountSignerList: what the ledger says about the signer list of the transaction Account
+const signerListLookup = jest.fn();
 
 const MixedAccountSet = SignMixin(AccountSet);
 const MixedBatch = SignMixin(Batch);
@@ -155,6 +163,10 @@ const signRequest = async (request: Request) => {
         isMultiSign: () => multisign,
         getSigners: () => (request.signers ?? []).map(address),
     };
+    signerListLookup.mockImplementation(async () => {
+        if (request.signerListFails) throw new Error('not connected');
+        return request.signerList?.map(address);
+    });
     const context = { transaction, payload, setAccounts: jest.fn(), setSource: jest.fn() };
     const step = new PreflightStep({});
     (step as any).context = context;
@@ -162,6 +174,9 @@ const signRequest = async (request: Request) => {
 
     const offered: Model[] = context.setAccounts.mock.calls[0][0];
     let source: Model = context.setSource.mock.calls[0][0];
+    if (request.giveVault) {
+        source = accounts.find((account) => account.label === request.giveVault)!;
+    }
     if (request.pickSource) {
         const picked = offered.find((account) => account.label === request.pickSource);
         if (!picked) throw new Error(`${request.pickSource} is not offered in the review`);
@@ -233,6 +248,8 @@ const signRequest = async (request: Request) => {
 beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
+    signerListLookup.mockReset();
+    (LedgerService as any).getAccountSignerList = signerListLookup;
     jest.mocked(RNTangemSdk.sign).mockImplementation(mockTangemSdkSign(Object.values(cards)) as any);
     jest.spyOn(NetworkService, 'getNetworkDefinitions').mockReturnValue(undefined as any);
     jest.spyOn(NetworkService, 'getNetworkId').mockReturnValue(0);
@@ -324,9 +341,17 @@ describe('multi sign request: the signer is a member of the signer list, never t
         expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
     });
 
-    it('case 4: the user picks A and then the key of its regular key S: S signs as itself, not as A', async () => {
+    it('case 4: A is not offered, also not as the last account of the list', async () => {
+        const accounts = [model('X'), model('S'), model('A', { regularKey: 'S' })];
+        const result = await signRequest({ accounts, multisign: true, defaultAccount: 'A' });
+
+        expect(result.offered).toStrictEqual(['X', 'S']);
+        expect(result.source).toBe('X');
+    });
+
+    it('vault overlay, given A anyway: the key of its regular key S signs as S, not as A', async () => {
         const accounts = [model('A', { regularKey: 'S' }), model('S')];
-        const result = await signRequest({ accounts, multisign: true, pickSource: 'A', pickKey: 'S' });
+        const result = await signRequest({ accounts, multisign: true, giveVault: 'A', pickKey: 'S' });
 
         expect(result).toMatchObject({ signerAccount: 'S', key: 'S', signatureValid: true });
     });
@@ -403,9 +428,9 @@ describe('multi sign request signed with a Tangem card', () => {
         expect(result).toMatchObject({ source: 'C', signerAccount: 'C', key: 'C', signatureValid: true });
     });
 
-    it('case 4: the user picks A, its regular key is a card: the card account signs as itself, not as A', async () => {
+    it('vault overlay, given A anyway, its regular key is a card: the card account signs as itself', async () => {
         const accounts = [model('A', { regularKey: 'C', masterDisabled: true }), model('C')];
-        const result = await signRequest({ accounts, multisign: true, pickSource: 'A' });
+        const result = await signRequest({ accounts, multisign: true, giveVault: 'A' });
 
         expect(result).toMatchObject({ signerAccount: 'C', key: 'C', signatureValid: true });
     });
@@ -432,18 +457,196 @@ describe('multi sign request signed with a Tangem card', () => {
     });
 });
 
-describe('unchanged: a multi sign request with only the transaction Account in the app', () => {
-    // nothing better can be offered; the ledger does not accept this signature (as before)
-    it('no forced signers, only A in the app: A is still offered and signs as A', async () => {
-        const result = await signRequest({ accounts: [model('A')], multisign: true });
+describe('multi sign request: the signer list of the transaction Account decides who is offered', () => {
+    it('no forced signers: only the accounts in the signer list are offered, the first one to start with', async () => {
+        const accounts = [model('X'), model('A'), model('M'), model('K'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, defaultAccount: 'X', signerList: ['S', 'M'] });
 
-        expect(result).toMatchObject({ source: 'A', signerAccount: 'A', key: 'A', signatureValid: true });
+        expect(signerListLookup).toHaveBeenCalledWith(address('A'));
+        expect(result.offered).toStrictEqual(['M', 'S']);
+        expect(result).toMatchObject({ source: 'M', signerAccount: 'M', key: 'M', signatureValid: true });
     });
 
-    it('A is the forced signer of its own transaction: A signs as A', async () => {
-        const result = await signRequest({ accounts: [model('A'), model('S')], multisign: true, signers: ['A'] });
+    it('no forced signers: the default account starts when it is in the signer list', async () => {
+        const accounts = [model('X'), model('M'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, defaultAccount: 'S', signerList: ['S', 'M'] });
 
-        expect(result).toMatchObject({ source: 'A', signerAccount: 'A', key: 'A', signatureValid: true });
+        expect(result.offered).toStrictEqual(['M', 'S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
+    });
+
+    it('a hidden account that is in the signer list is offered, a hidden account that is not is left out', async () => {
+        const accounts = [model('X', { hidden: true }), model('S', { hidden: true })];
+        const result = await signRequest({ accounts, multisign: true, signerList: ['S', 'M'] });
+
+        expect(result.offered).toStrictEqual(['S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
+    });
+
+    it('a read-only signer with its regular key in the app is offered and signs as itself', async () => {
+        const accounts = [model('X'), model('S', { regularKey: 'K', readonly: true }), model('K')];
+        const result = await signRequest({ accounts, multisign: true, signerList: ['S', 'M'] });
+
+        expect(result.offered).toStrictEqual(['S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'K', signatureValid: true });
+    });
+
+    it('A is never offered, also when its regular key is in the signer list', async () => {
+        const accounts = [model('A', { regularKey: 'S' }), model('S')];
+        const result = await signRequest({ accounts, multisign: true, defaultAccount: 'A', signerList: ['S'] });
+
+        expect(result.offered).toStrictEqual(['S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
+    });
+
+    it('forced signers: the requester decides who is offered, a signer list member to start with', async () => {
+        const accounts = [model('X'), model('S'), model('M')];
+        const result = await signRequest({
+            accounts, multisign: true, defaultAccount: 'X', signers: ['X', 'S', 'M'], signerList: ['M'],
+        });
+
+        expect(result.offered).toStrictEqual(['X', 'S', 'M']);
+        expect(result).toMatchObject({ source: 'M', signerAccount: 'M', key: 'M', signatureValid: true });
+    });
+
+    it('forced signers, none of them in the signer list: they are still offered', async () => {
+        const accounts = [model('X'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, signers: ['S'], signerList: ['M'] });
+
+        expect(result.offered).toStrictEqual(['S']);
+        expect(result).toMatchObject({ source: 'S', signerAccount: 'S', key: 'S', signatureValid: true });
+    });
+
+    it('the signer list is not known (no answer): every other account is offered, as before', async () => {
+        const accounts = [model('A'), model('X'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, defaultAccount: 'A' });
+
+        expect(result.offered).toStrictEqual(['X', 'S']);
+        expect(result.source).toBe('X');
+    });
+
+    it('the lookup fails: every other account is offered, as before', async () => {
+        const accounts = [model('A'), model('X'), model('S')];
+        const result = await signRequest({ accounts, multisign: true, defaultAccount: 'S', signerListFails: true });
+
+        expect(result.offered).toStrictEqual(['X', 'S']);
+        expect(result.source).toBe('S');
+    });
+
+    it('the lookup does not answer: the review goes on after 5 seconds with every other account', async () => {
+        const accounts = [model('A'), model('S')];
+        signerListLookup.mockImplementation(
+            () =>
+                new Promise(() => {
+                    // never answers
+                }),
+        );
+        jest.mocked(AccountRepository.getSignableAccounts).mockReturnValue(accounts as any);
+        jest.mocked(CoreRepository.getDefaultAccount).mockReturnValue(accounts[0] as any);
+        const context = {
+            transaction: accountSet(),
+            payload: { isMultiSign: () => true, getSigners: () => [] },
+            setAccounts: jest.fn(),
+            setSource: jest.fn(),
+        };
+        const step = new PreflightStep({});
+        (step as any).context = context;
+        const loading = step.loadSingingAccount();
+
+        await jest.advanceTimersByTimeAsync(4900);
+        expect(context.setSource).not.toHaveBeenCalled();
+        await jest.advanceTimersByTimeAsync(200);
+        await loading;
+        expect(context.setSource.mock.calls[0][0].label).toBe('S');
+    });
+
+    it('a request that is not multi sign does not ask for the signer list', async () => {
+        await signRequest({ accounts: [model('A'), model('S')], multisign: false, signerList: ['S'] });
+
+        expect(signerListLookup).not.toHaveBeenCalled();
+    });
+});
+
+describe('multi sign request that nobody in the app can sign: the review stops and says who can', () => {
+    const stopped = async (request: Request) => {
+        try {
+            await signRequest(request);
+        } catch (error: any) {
+            return { action: error.action, ...error.data };
+        }
+        throw new Error('the review went on');
+    };
+    const screenText = (data: any) => {
+        const step = new PreflightStep({});
+        (step as any).context = { transaction: accountSet(), coreSettings: {} };
+        step.state = { ...step.state, requiredAction: 'MULTI_SIGN_SIGNER' as any, requiredActionData: data };
+        const find = (node: any): any => {
+            if (Array.isArray(node)) return node.map(find).find(Boolean);
+            if (!node || typeof node !== 'object') return undefined;
+            if (node.type === 'InfoMessage') return node.props.label;
+            return find(node.props?.children);
+        };
+        return find(step.render());
+    };
+
+    it('only A in the app, no forced signers, signer list known: names the signers', async () => {
+        const data = await stopped({ accounts: [model('A')], multisign: true, signerList: ['S', 'M'] });
+
+        expect(data).toStrictEqual({
+            action: 'MULTI_SIGN_SIGNER', account: address('A'), signers: [address('S'), address('M')],
+        });
+        expect(screenText(data)).toBe(
+            `This request can only be signed by \n\n${address('S')}\n${address('M')}\n\n` +
+                'This accounts are not present with signing access.',
+        );
+    });
+
+    it('accounts in the app, none of them in the signer list: names the signers', async () => {
+        const accounts = [model('A'), model('X'), model('K')];
+        const data = await stopped({ accounts, multisign: true, signerList: ['S'] });
+
+        expect(data).toMatchObject({ action: 'MULTI_SIGN_SIGNER', signers: [address('S')] });
+    });
+
+    it('a signer that is in the app without signing access does not count', async () => {
+        const accounts = [model('X'), model('S', { readonly: true })];
+        const data = await stopped({ accounts, multisign: true, signerList: ['S'] });
+
+        expect(data).toMatchObject({ action: 'MULTI_SIGN_SIGNER', signers: [address('S')] });
+    });
+
+    it('only A in the app and the signer list is not known: explains that A can not sign for itself', async () => {
+        const data = await stopped({ accounts: [model('A')], multisign: true });
+
+        expect(data).toStrictEqual({ action: 'MULTI_SIGN_SIGNER', account: address('A'), signers: [] });
+        expect(screenText(data)).toBe(
+            `This is a multi sign request for \n\n${address('A')}\n\n` +
+                'Only the signers of this account can sign it, and none of them is present with signing access.',
+        );
+    });
+
+    it('A has no signer list on the ledger: nobody can multi sign for it', async () => {
+        const data = await stopped({ accounts: [model('A'), model('S')], multisign: true, signerList: [] });
+
+        expect(data).toStrictEqual({ action: 'MULTI_SIGN_SIGNER', account: address('A'), signers: [] });
+    });
+
+    it('A is the forced signer of its own transaction: stops', async () => {
+        const data = await stopped({ accounts: [model('A'), model('S')], multisign: true, signers: ['A'] });
+
+        expect(data).toStrictEqual({ action: 'MULTI_SIGN_SIGNER', account: address('A'), signers: [] });
+    });
+
+    it('forced signers A and S, only A in the app: names S', async () => {
+        const data = await stopped({ accounts: [model('A'), model('X')], multisign: true, signers: ['A', 'S'] });
+
+        expect(data).toStrictEqual({ action: 'MULTI_SIGN_SIGNER', account: address('A'), signers: [address('S')] });
+    });
+
+    it('unchanged: forced signers that are not in the app at all give the forced signer screen', async () => {
+        const data = await stopped({ accounts: [model('X')], multisign: true, signers: ['S'] });
+
+        expect(data).toStrictEqual({ action: 'FORCED_SIGNER', forcedSigners: [address('S')] });
     });
 });
 

@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "ഈ എസ്ക്രോ റദ്ദാക്കാനാകില്ല. പിന്നീട് വിട്ടയക്കാൻ വ്യവസ്ഥ പൂർത്തിയാകണം. വ്യവസ്ഥ പൂർത്തിയാകുമെന്നോ മറുപക്ഷം ആവശ്യമായത് കൃത്യസമയത്ത് നൽകുമെന്നോ വിശ്വസിക്കുന്നുവെങ്കിൽ മാത്രം തുടരുക.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "ഈ അഭ്യർത്ഥന ഒപ്പിടാൻ കഴിയുന്നത്\n\n%{accounts}\n\nഈ അക്കൗണ്ടുകൾ നിങ്ങൾക്ക് ലഭ്യമല്ല.",
+    "multiSignNoSignerAccountPresent": "ഇത് ഈ അക്കൗണ്ടിനായുള്ള ഒരു മൾട്ടി-സൈൻ അഭ്യർത്ഥനയാണ് \n\n%{account}\n\nഈ അക്കൗണ്ടിന്റെ ഒപ്പിടുന്നവർക്ക് മാത്രമേ ഇതിൽ ഒപ്പിടാൻ കഴിയൂ, അവരിൽ ആരും ഒപ്പിടാനുള്ള ആക്‌സസോടെ ലഭ്യമല്ല.",
     "tradeEntireTokenWorthWarning": "Warning: the amount of %{currency} is equal to or higher than your %{currency} balance of this asset. If this offer is executed, you will fully liquidate your %{currency} position.",
     "paymentToDisallowedNativeAssetWarning": "The destination account configured their account to disallow incoming %{nativeAsset} (non-token) payments. If you proceed, you will most likely need support from the destination account owner.",
     "paymentToBlackHoledAccountWarning": "ലക്ഷ്യസ്ഥാന അക്കൗണ്ട് 'ബ്ലാക്ക് ഹോൾ' ചെയ്തിരിക്കുന്നു, അതിനർത്ഥം അയച്ച എല്ലാ ഫണ്ടുകളും ശാശ്വതമായി നഷ്ടപ്പെടും!",

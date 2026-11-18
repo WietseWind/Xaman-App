@@ -146,6 +146,44 @@ class LedgerService extends EventEmitter {
         });
     };
 
+    /**
+     * The accounts in the signer list of an account (the accounts that can multi sign for it).
+     * @returns the addresses; an empty list when the account has no signer list; undefined when it is
+     * not known (no answer, an error, the account is not on this ledger)
+     */
+    getAccountSignerList = async (account: string): Promise<string[] | undefined> => {
+        try {
+            const resp: any = await NetworkService.send<AccountInfoRequest, AccountInfoResponse>({
+                command: 'account_info',
+                account,
+                ledger_index: 'validated',
+                signer_lists: true,
+            });
+
+            if (!resp || 'error' in resp || !resp.account_data) {
+                return undefined;
+            }
+
+            // inside account_data (API v1), or next to it (API v2)
+            const signerLists = resp.account_data.signer_lists ?? resp.signer_lists;
+            if (!Array.isArray(signerLists)) {
+                return undefined;
+            }
+
+            const signers: string[] = [];
+            signerLists.forEach((signerList: any) => {
+                (Array.isArray(signerList?.SignerEntries) ? signerList.SignerEntries : []).forEach((entry: any) => {
+                    if (typeof entry?.SignerEntry?.Account === 'string') {
+                        signers.push(entry.SignerEntry.Account);
+                    }
+                });
+            });
+            return signers;
+        } catch {
+            return undefined;
+        }
+    };
+
     simulateTransaction = (tx: TransactionJson) => {
         return NetworkService.send<SimulateRequest, SubmitResponse>({
             command: 'simulate',

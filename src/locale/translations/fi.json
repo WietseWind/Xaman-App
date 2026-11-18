@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "Tätä escrow’ta ei voi peruuttaa. Sen vapauttaminen myöhemmin edellyttää, että ehto täyttyy. Jatka vain, jos luotat siihen, että ehto voidaan täyttää tai että vastapuoli toimittaa tarvittavan ajoissa.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Tämä pyyntö voidaan allekirjoittaa vain tilillä\r\n\r\n %{accounts}\r\n\r\nTämä tili ei ole Xaman-sovelluksessasi.",
+    "multiSignNoSignerAccountPresent": "Tämä on monallekirjoituspyyntö tilille \n\n%{account}\n\nVain tämän tilin allekirjoittajat voivat allekirjoittaa sen, eikä yhtäkään heistä ole lisätty allekirjoitusoikeuksin.",
     "tradeEntireTokenWorthWarning": "Varoitus: %{currency} määrä on yhtä suuri tai suurempi kuin hallussasi oleva määrä",
     "paymentToDisallowedNativeAssetWarning": "Kohdetili on määritetty estämään saapuvat %{nativeAsset}-maksut (ei tokenmaksuja). Jos jatkat, tarvitset todennäköisesti kohdetilin omistajan apua.",
     "paymentToBlackHoledAccountWarning": "Kohdetili on 'black holed', mikä tarkoittaa, että kaikki kohdetilille lähetetyt varat ovat saavuttamattomissa ja palautumattomia. Haluatko varmasti jatkaa varojesi lähettämistä tälle kohdetilille?",

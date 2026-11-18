@@ -7,6 +7,7 @@ import React, { Component } from 'react';
 import { Image, InteractionManager, Text, View } from 'react-native';
 
 import NetworkService from '@services/NetworkService';
+import LedgerService from '@services/LedgerService';
 
 import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
 import { NetworkType } from '@store/types';
@@ -36,7 +37,11 @@ enum RequiredActionsType {
     SWITCH_NETWORK = 'SWITCH_NETWORK',
     FORCED_SIGNER = 'FORCED_SIGNER',
     ADD_ACCOUNT = 'ADD_ACCOUNTS',
+    MULTI_SIGN_SIGNER = 'MULTI_SIGN_SIGNER',
 }
+
+// how long the review waits for the signer list of the transaction Account (multi sign)
+const SIGNER_LIST_TIMEOUT = 5000;
 
 export interface Props {}
 
@@ -115,7 +120,11 @@ class PreflightStep extends Component<Props, State> {
             return this.mounted && !this.closing && attempt === this.preflightAttempt && currentPayload === payload;
         };
         // necessary jobs in order
-        const jobs = [this.checkForcedNetwork, () => this.setTransaction(isActive), this.loadSingingAccount];
+        const jobs = [
+            this.checkForcedNetwork,
+            () => this.setTransaction(isActive),
+            () => this.loadSingingAccount(isActive),
+        ];
 
         // run them in waterfall
         return jobs.reduce((accumulator: Promise<void>, callback) => {
@@ -219,8 +228,21 @@ class PreflightStep extends Component<Props, State> {
     /*
     Load the accounts which this payload can be signed with
      */
-    loadSingingAccount = (): Promise<void> => {
-        return new Promise((resolve, reject): void => {
+    /*
+    Multi sign: the accounts in the signer list of the transaction Account, undefined when not known in time
+     */
+    getSignerList = (account: string): Promise<string[] | undefined> => {
+        return Promise.race([
+            LedgerService.getAccountSignerList(account).catch(() => undefined),
+            new Promise<undefined>((resolve) => {
+                setTimeout(() => resolve(undefined), SIGNER_LIST_TIMEOUT);
+            }),
+        ]);
+    };
+
+    loadSingingAccount = (isActive: () => boolean = () => true): Promise<void> => {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject): Promise<void> => {
             const { transaction, payload, setAccounts, setSource } = this.context;
 
             try {
@@ -250,6 +272,46 @@ class PreflightStep extends Component<Props, State> {
                         reject(
                             new PreflightError(RequiredActionsType.FORCED_SIGNER, {
                                 forcedSigners,
+                            }),
+                        );
+                        return;
+                    }
+                }
+
+                // Multi sign: the signature is made by an account in the signer list of the transaction Account.
+                // That Account can never sign for itself, with its master key or with its regular key: the
+                // ledger refuses it ("Invalid multisigner").
+                const multiSign = payload.isMultiSign();
+                const multiSignAccount = multiSign ? transaction?.Account : undefined;
+                let signerList: string[] | undefined;
+
+                if (multiSignAccount) {
+                    // who can sign: ask the ledger. Not known in time: go on with the accounts there are.
+                    signerList = await this.getSignerList(multiSignAccount);
+                    if (!isActive()) {
+                        resolve();
+                        return;
+                    }
+
+                    availableAccounts = filter(availableAccounts, (account) => account.address !== multiSignAccount);
+
+                    // The requester did not say who signs: offer the accounts that are in the signer list, and
+                    // only those (also when hidden or not activated). With forced signers the requester decides.
+                    const hasForcedSigners = Array.isArray(forcedSigners) && forcedSigners.length > 0;
+                    if (!hasForcedSigners && signerList) {
+                        availableAccounts = filter(availableAccounts, (account) =>
+                            signerList!.includes(account.address));
+                    }
+
+                    // nobody in the app can sign this request: say who can
+                    if (isEmpty(availableAccounts)) {
+                        reject(
+                            new PreflightError(RequiredActionsType.MULTI_SIGN_SIGNER, {
+                                account: multiSignAccount,
+                                signers: filter(
+                                    hasForcedSigners ? forcedSigners : signerList ?? [],
+                                    (address) => address !== multiSignAccount,
+                                ),
                             }),
                         );
                         return;
@@ -304,14 +366,11 @@ class PreflightStep extends Component<Props, State> {
                     return;
                 }
 
-                // A multi signature is made by a member of the signer list of the transaction Account. That
-                // Account can not sign for itself, with its master key or with its regular key: the ledger
-                // refuses it ("Invalid multisigner"). So do not start with it when another account can sign.
-                const multiSign = payload.isMultiSign();
-                if (multiSign && transaction?.Account && source.address === transaction.Account) {
-                    const others = filter(availableAccounts, (account) => account.address !== transaction.Account);
+                // Multi sign with forced signers: start with one that is in the signer list (when known)
+                if (multiSignAccount && signerList && !signerList.includes(source.address)) {
+                    const members = filter(availableAccounts, (account) => signerList!.includes(account.address));
                     const defaultAccount = CoreRepository.getDefaultAccount();
-                    source = find(others, { address: defaultAccount?.address }) || first(others) || source;
+                    source = find(members, { address: defaultAccount?.address }) || first(members) || source;
                 }
 
                 // case & logic for below: 
@@ -465,6 +524,38 @@ class PreflightStep extends Component<Props, State> {
         );
     };
 
+    renderMultiSignSigners = () => {
+        const { requiredActionData } = this.state;
+        const signers: string[] = requiredActionData?.signers ?? [];
+
+        return (
+            <View testID="preflight-multi-sign-signers" style={styles.contentContainer}>
+                <Icon name="IconInfo" style={styles.infoIcon} size={80} />
+                <Spacer size={18} />
+                <Text style={AppStyles.h5}>{Localize.t('global.noAccountConfigured')}</Text>
+                <Spacer size={18} />
+                <InfoMessage
+                    type="neutral"
+                    labelStyle={styles.actionDescription}
+                    label={
+                        signers.length > 0
+                            ? Localize.t('payload.forcedSignersAccountsDoesNotExist', {
+                                accounts: signers.join('\n'),
+                            })
+                            : Localize.t('payload.multiSignNoSignerAccountPresent', {
+                                account: requiredActionData?.account,
+                            })
+                    }
+                    containerStyle={styles.actionContainer}
+                    actionButtonLabel={Localize.t('account.addAccount')}
+                    actionButtonIcon="IconPlus"
+                    actionButtonIconSize={17}
+                    onActionButtonPress={this.onAddAccountPress}
+                />
+            </View>
+        );
+    };
+
     renderAddAccountAction = () => {
         return (
             <View style={styles.contentContainer}>
@@ -546,6 +637,9 @@ class PreflightStep extends Component<Props, State> {
                 break;
             case RequiredActionsType.FORCED_SIGNER:
                 ActionRenderer = this.renderForcedSigners;
+                break;
+            case RequiredActionsType.MULTI_SIGN_SIGNER:
+                ActionRenderer = this.renderMultiSignSigners;
                 break;
             default:
                 return null;

@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "Eskwo sa a pa ka anile. Pou lage l pita, kondisyon an dwe satisfè. Kontinye sèlman si ou fè konfyans kondisyon an ka satisfè, oswa lòt pati a pral bay sa ki nesesè a lè.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "Demann sa a ka sèlman siyen pa\n\n %{accounts}\n\nKont sa a (yo) pa egziste nan Xaman ou.",
+    "multiSignNoSignerAccountPresent": "Sa a se yon demann siyati miltip pou \n\n%{account}\n\nSèlman siyatè kont sa a ka siyen li, e okenn nan yo pa prezan ak aksè pou siyen.",
     "tradeEntireTokenWorthWarning": "Atansyon: kantite %{currency} egal oswa pi wo pase total balans ou. Sa ap echanje tout jeton ou an.",
     "paymentToDisallowedNativeAssetWarning": "Kont destinasyon an konfigirasyon kont li pou pa pèmèt peman %{nativeAsset}.",
     "paymentToBlackHoledAccountWarning": "Kont destinasyon an se yon «twou nwa»: tout lajan ou voye ladan l ap vin inaksesib epi p ap ka rekipere. Èske ou sèten ou vle kontinye voye lajan nan kont sa a?",

@@ -1424,6 +1424,7 @@
     "escrowIrrevocableConditionWarning": "لا يمكن إلغاء هذا الضمان. يتطلب تحريره لاحقًا استيفاء الشرط. تابع فقط إذا كنت تثق بإمكانية استيفاء الشرط، أو بأن الطرف الآخر سيقدّم المطلوب في الوقت المناسب.",
     "notVettedTokenTradeWarning": "Trade at your own risk! The token you are about to trade **has not been vetted**.\r\n\r\nAnyone can create a token, including creating fake versions of existing tokens that claim to represent projects. If you trade this token, you may not be able to sell it back. You are potentially putting your assets/savings at risk!",
     "forcedSignersAccountsDoesNotExist": "يمكن التوقيع على هذا الطلب فقط من قبل \n\n%{accounts}\n\nهذه الحسابات غير موجودة مع حق الوصول للتوقيع.",
+    "multiSignNoSignerAccountPresent": "هذا طلب توقيع متعدد للحساب \n\n%{account}\n\nيمكن فقط للموقّعين على هذا الحساب توقيعه، ولا يوجد أي منهم مع حق الوصول للتوقيع.",
     "tradeEntireTokenWorthWarning": "تحذير: مبلغ %{currency} يساوي أو أعلى من رصيدك %{currency} لهذا الأصل. إذا تم تنفيذ هذا العرض، ستقوم بتصفية موضعك %{currency} بالكامل.",
     "paymentToDisallowedNativeAssetWarning": "قام حساب الوجهة بتهيئة حسابه لعدم السماح بمدفوعات %{nativeAsset} (غير الرمزية) الواردة. إذا تابعت، ستحتاج على الأرجح إلى دعم من مالك حساب الوجهة.",
     "paymentToBlackHoledAccountWarning": "حساب الوجهة 'ثقب أسود'، مما يعني أن جميع الأموال المرسلة إلى حساب الوجهة ستكون غير قابلة للوصول ولا يمكن استردادها. هل أنت متأكد من أنك تريد الاستمرار في إرسال أموالك إلى حساب الوجهة هذا؟",
