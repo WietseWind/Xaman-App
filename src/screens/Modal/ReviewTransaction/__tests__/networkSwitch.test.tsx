@@ -56,7 +56,7 @@ let views: PreflightStep[];
 const setup = async (developerMode = true) => {
     const transaction = { TransactionType: 'Payment', Account: account.address, assertSigningContext: jest.fn() };
     const payload = {
-        getForcedNetwork: jest.fn(() => test.key), isPseudoTransaction: () => false,
+        getForcedNetwork: jest.fn(() => test.key), isPseudoTransaction: () => false, isMultiSign: () => false,
         getTransactionType: () => 'Payment', getTransaction: jest.fn(() => transaction), getSigners: () => undefined,
     };
     const context: any = {
