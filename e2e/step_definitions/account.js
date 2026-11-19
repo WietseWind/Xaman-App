@@ -158,7 +158,8 @@ Then('I enter the address in the input', async () => {
         }
         // BACK while focused can immediately reopen IME; ESC blurs. Wait until the keyboard is gone:
         // a Next tap while it was still animating out was lost.
-        await hideAndroidKeyboard();
+        // (1000 ms: also a keyboard that comes back after the keystrokes)
+        await hideAndroidKeyboard(1000);
         return;
     }
     const input = element(by.id('address-input'));
@@ -878,7 +879,8 @@ Then('I finish importing this family seed unless it is already in Xaman', { time
             String((await androidReadTextByTestId('label-input')) || ''),
         );
         // Wait until the keyboard is gone: a Next tap while it was still animating out was lost.
-        await hideAndroidKeyboard();
+        // (1000 ms: also a keyboard that comes back after the keystrokes)
+        await hideAndroidKeyboard(1000);
         await clickByTestId('next-button');
         await waitUntilAndroidTestId('account-import-finish-view', 20000);
         await clickByTestId('finish-button');

@@ -22,12 +22,21 @@ const {
     unlockAndroidPasscodeWhenItShows,
     androidDumpXml,
     isAndroidDumpBroken,
+    closeAndroidKeyboardOver,
 } = require('../helpers/tapById');
 const { tapNoted, waitAfterTap } = require('../helpers/androidTapCheck');
 const { currentStepIndex } = require('../helpers/artifacts');
+const { keepKeyboardUp } = require('../helpers/faultInjection');
 
+// Android: after text entry, how long to look for a keyboard that comes back (see hideAndroidKeyboard)
+const LATE_KEYBOARD_MS = 1000;
 // Android: the screen as the tap check reads it (helpers/androidTapCheck.js)
-const androidScreen = { dump: androidDumpXml, broken: isAndroidDumpBroken, has: androidHasTestId };
+const androidScreen = {
+    dump: androidDumpXml,
+    broken: isAndroidDumpBroken,
+    has: androidHasTestId,
+    closeKeyboardOver: closeAndroidKeyboardOver,
+};
 // Android: the wait of a step; right after a tap that changed nothing, a Next, Back or tab tap is sent again
 const waitForAndroidTestId = (testId, timeoutMs) =>
     waitAfterTap(testId, () => waitUntilAndroidTestId(testId, timeoutMs), androidScreen, currentStepIndex());
@@ -262,8 +271,11 @@ Then('I enter {string} in {string}', async (value, textInputId) => {
                 typeValue();
             }
         }
-        // Wait until the keyboard is gone: a Next tap while it was still animating out was lost.
-        await hideAndroidKeyboard();
+        // Wait until the keyboard is gone: a Next tap while it was still closing was lost. After the
+        // keystrokes the keyboard can be away for a moment and come back, so look for it a little longer.
+        if (!keepKeyboardUp()) {
+            await hideAndroidKeyboard(LATE_KEYBOARD_MS);
+        }
         return;
     }
     const input = element(by.id(textInputId));

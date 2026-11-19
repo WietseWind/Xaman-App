@@ -113,7 +113,11 @@ const typeAndroidTextVerified = async (testId, value, before) => {
         }
         if (attempt === 1) {
             reportTextEntryFallback(testId, 'nothing arrived; keyboard closed and reopened, typed again');
-            await hideAndroidKeyboard();
+            try {
+                await hideAndroidKeyboard();
+            } catch (e) {
+                // the field is tapped again below; the read-back decides
+            }
             await clickByTestId(testId);
             await waitForAndroidIme(3000);
             keystrokes();

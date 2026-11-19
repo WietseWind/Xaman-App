@@ -195,6 +195,42 @@ describe('a tap, and the wait of the step after it', () => {
         ]);
     });
 
+    it('a keyboard over the button is closed first, so a lost tap after it is still seen as lost', async () => {
+        const h = load();
+        // with the keyboard up the focused field has a cursor handle of its own in the dump
+        const handle = node(
+            'index="9" text="" resource-id="android:id/insertion_handle" package="com.xrpllabs.xumm" ' +
+                'bounds="[500,700][560,780]"',
+        );
+        const d = device(
+            screen(statusBar('6:47'), keyboard(), appNode('label-input', 'x'), handle, appNode('next-button', 'Next')),
+        );
+        const closed = screen(statusBar('6:47'), appNode('label-input', 'x'), appNode('next-button', 'Next'));
+        d.screen.closeKeyboardOver = jest.fn(async () => { d.state.xml = closed; return true; });
+        // the first tap is lost, the second arrives
+        const tap = jest.fn(async () => {
+            if (tap.mock.calls.length === 2) {
+                d.state.xml = FINISH;
+            }
+        });
+
+        await tapThenWait(h, d, 'next-button', tap, 'account-import-finish-view');
+
+        expect(d.screen.closeKeyboardOver).toHaveBeenCalledWith('next-button');
+        expect(tap).toHaveBeenCalledTimes(2);
+    });
+
+    it('no keyboard in the dump: nothing is closed', async () => {
+        const h = load();
+        const d = device(LABEL);
+        d.screen.closeKeyboardOver = jest.fn(async () => true);
+        const tap = jest.fn(async () => { d.state.xml = FINISH; });
+
+        await tapThenWait(h, d, 'next-button', tap, 'account-import-finish-view');
+
+        expect(d.screen.closeKeyboardOver).not.toHaveBeenCalled();
+    });
+
     it('a slow next screen is not tapped twice: showing up just before the limit counts', async () => {
         const h = load();
         const d = device(LABEL);

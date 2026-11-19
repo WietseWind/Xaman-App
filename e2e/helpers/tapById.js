@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 // The helpers below call each other; every call runs after this module has loaded.
 const { execFileSync } = require('child_process');
+const { appendFileSync, mkdirSync } = require('fs');
+const path = require('path');
 const { element, by, waitFor, device } = require('detox');
 const { getCurrentTestPasscode } = require('./testCredentials');
+
+const { imeDumpsysBlind, imeEscapeDead } = require('./faultInjection');
 
 const APP_ID = 'com.xrpllabs.xumm';
 const DUMP_NAME = 'xaman-detox-ui.xml';
@@ -967,26 +971,114 @@ const pickFooterNode = (xml, testId) => {
 // the keyboard first; true means the caller must read the bounds again.
 // Hides the on-screen keyboard (Escape) and waits until it is gone. dumpsys says when; the UI dump
 // can drop the keyboard while its window is still animating out and still takes taps.
-const hideAndroidKeyboard = async () => {
-    if (!androidImeShown()) {
-        return false;
+// The keyboard is up when dumpsys says so, or when its window is in a fresh UI dump. One signal is not
+// enough. In a full run dumpsys said "not shown" (mInputShown=false) while the keyboard was on screen:
+// the text step left it up, the tap helper did not close it either, and the Next tap that followed
+// landed on the keyboard (the lost tap of the full suite runs). And a keyboard on its way out is gone
+// from dumpsys before its window stops taking the touches.
+const androidKeyboardUp = async () => {
+    if (androidImeShown()) {
+        return true;
     }
-    androidBlurIme();
-    const deadline = Date.now() + 2000;
-    while (androidImeShown() && Date.now() < deadline) {
-        await sleep(150);
-    }
-    await sleep(300);
     cachedXml = '';
     cachedAt = 0;
-    return true;
+    // eslint-disable-next-line no-use-before-define
+    return imeTopFromXml(await androidDumpXml()) !== null;
 };
 
-// Waits until the on-screen keyboard is up (dumpsys) after a text field was tapped. False when it
+// Every time the keyboard needed more than Escape is written to keyboard-fallbacks.txt in the artifacts
+// directory, so a run that passed with this help says so (the runner counts the lines).
+const reportKeyboardFallback = (what) => {
+    const line = `${new Date().toISOString()} ${what}`;
+    // eslint-disable-next-line no-console
+    console.log(`[keyboard] ${line}`);
+    try {
+        const dir = process.env.E2E_ARTIFACTS_DIR
+            ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
+            : path.resolve(__dirname, '../artifacts');
+        mkdirSync(dir, { recursive: true });
+        appendFileSync(path.join(dir, 'keyboard-fallbacks.txt'), `${line}\n`);
+    } catch (e) {
+        // the console line is in run.log
+    }
+};
+
+// The key of the on-screen keyboard that ends the entry (Done, Next, Go, ...), from a UI dump.
+const imeActionKeyFromXml = (xml) => {
+    const ime = parseNodes(xml).filter((node) => /inputmethod/i.test(node.package || ''));
+    return (
+        ime.find((node) => /key_pos_ime_action/.test(node.resourceId || '')) ||
+        ime.find((node) => /^(done|enter|go|next|search|send)$/i.test((node.contentDesc || node.text || '').trim())) ||
+        null
+    );
+};
+
+// True when the keyboard is gone for `clearLooks` looks in a row within `timeoutMs`.
+const waitUntilKeyboardGone = async (timeoutMs, clearLooks = 2) => {
+    const deadline = Date.now() + timeoutMs;
+    let clear = 0;
+    while (clear < clearLooks && Date.now() < deadline) {
+        await sleep(250);
+        clear = (await androidKeyboardUp()) ? 0 : clear + 1;
+    }
+    return clear >= clearLooks;
+};
+
+// Closes the on-screen keyboard and returns only when it is gone: not in dumpsys and not in two UI
+// dumps in a row. A tap that is sent while a keyboard is over its target lands on a key.
+//
+// Escape normally closes it. In full runs it sometimes did nothing for 25 seconds (the keyboard was
+// on screen while Android counted it as not shown, so the key never reached it); the Next tap that
+// followed then hit the keyboard's own Done key. So when Escape does not work, the Done key of the
+// keyboard is tapped (a touch does reach it), then Escape once more. When nothing closes it, this
+// throws: the step fails here, with the reason, and no tap is sent onto a keyboard.
+//
+// `waitForLateMs`: after text entry, how long to look for a keyboard that is not up at this moment
+// but comes back. Returns false when there was no keyboard.
+const hideAndroidKeyboard = async (waitForLateMs = 0) => {
+    let up = await androidKeyboardUp();
+    const lateBy = Date.now() + waitForLateMs;
+    while (!up && Date.now() < lateBy) {
+        await sleep(250);
+        up = await androidKeyboardUp();
+    }
+    if (!up) {
+        return false;
+    }
+    const done = () => {
+        cachedXml = '';
+        cachedAt = 0;
+        return true;
+    };
+
+    androidBlurIme();
+    if (await waitUntilKeyboardGone(2500)) {
+        return done();
+    }
+    cachedXml = '';
+    cachedAt = 0;
+    const actionKey = imeActionKeyFromXml(await androidDumpXml());
+    reportKeyboardFallback(
+        `Escape did not close the keyboard: ${actionKey ? 'tapped its action key' : 'no action key in the dump, Escape again'}`,
+    );
+    if (actionKey) {
+        await tapBounds(actionKey.bounds);
+        if (await waitUntilKeyboardGone(4000)) {
+            return done();
+        }
+    }
+    androidBlurIme();
+    if (await waitUntilKeyboardGone(6000)) {
+        return done();
+    }
+    throw new Error('the on-screen keyboard did not close (Escape, its action key, Escape again)');
+};
+
+// Waits until the on-screen keyboard is up (dumpsys or the UI dump) after a text field was tapped. False when it
 // never came, so the tap gave the field no focus.
 const waitForAndroidIme = async (timeoutMs = 3000) => {
     const deadline = Date.now() + timeoutMs;
-    while (!androidImeShown()) {
+    while (!(await androidKeyboardUp())) {
         if (Date.now() >= deadline) {
             return false;
         }
@@ -1015,6 +1107,22 @@ const closeImeOver = async (xml, bounds) => {
         return false;
     }
     return hideAndroidKeyboard();
+};
+
+// Closes the keyboard when it covers the target of a tap on this test id (the rule of closeImeOver).
+// For the tap step: it has to know the screen as it is right before the tap, without a keyboard that
+// the tap itself would close. True when a keyboard was closed.
+const closeAndroidKeyboardOver = async (testId) => {
+    const xml = await androidDumpXml();
+    // eslint-disable-next-line no-use-before-define
+    if (imeTopFromXml(xml) === null && !androidImeShown()) {
+        return false;
+    }
+    const node =
+        (TAB_LABELS[testId] && pickTabNode(xml, testId)) ||
+        (FOOTER_LABELS[testId] && pickFooterNode(xml, testId)) ||
+        pickNodeForTestId(xml, testId);
+    return node ? closeImeOver(xml, node.bounds) : false;
 };
 
 const clickByTestId = async (testId) => {
@@ -1681,6 +1789,10 @@ const androidAdb = (args, timeout = 8000) =>
     execFileSync('adb', ['-s', androidSerial(), ...args], { timeout, encoding: 'utf8' });
 
 const androidBlurIme = () => {
+    // proof runs only (helpers/faultInjection.js): Escape that does not reach the keyboard
+    if (imeEscapeDead()) {
+        return;
+    }
     try {
         androidAdb(['shell', 'input', 'keyevent', '111'], 4000);
     } catch (e) {
@@ -1694,6 +1806,10 @@ const androidBlurIme = () => {
 // prompt, then Escape. Escape dismisses an AlertDialog, so callers must
 // not use this while a curve prompt is open.
 const androidImeShown = () => {
+    // proof runs only (helpers/faultInjection.js): dumpsys that does not report a keyboard that is up
+    if (imeDumpsysBlind()) {
+        return false;
+    }
     try {
         const out = androidAdb(['shell', 'dumpsys', 'input_method'], 5000);
         return /mInputShown=true/.test(String(out));
@@ -1703,7 +1819,7 @@ const androidImeShown = () => {
 };
 
 const androidDismissImeIfShown = async () => {
-    if (!androidImeShown()) {
+    if (!(await androidKeyboardUp())) {
         return false;
     }
     cachedXml = '';
@@ -1724,7 +1840,7 @@ const androidDismissImeIfShown = async () => {
     }
     const deadline = Date.now() + 1200;
     while (Date.now() < deadline) {
-        if (!androidImeShown()) {
+        if (!(await androidKeyboardUp())) {
             return true;
         }
         await sleep(150);
@@ -2311,6 +2427,7 @@ module.exports = {
     androidDumpXml,
     resetAndroidDumpState,
     hideAndroidKeyboard,
+    closeAndroidKeyboardOver,
     waitForAndroidIme,
     clickAndroidAccountRow,
     androidReadSecretRow,

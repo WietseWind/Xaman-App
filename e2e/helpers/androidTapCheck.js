@@ -88,6 +88,8 @@ const screenSignature = (xml) => {
     return nodes.length ? nodes.join('\n') : null;
 };
 
+const isKeyboardInDump = (xml) => /<node\b[^>]*package="[^"]*inputmethod[^"]*"/i.test(xml || '');
+
 /* Notes ==================================================================== */
 const recent = [];
 
@@ -129,7 +131,8 @@ let lastTap = null;
  * Sends a tap and remembers the screen from right before it, for the wait step that follows.
  * @param testId the test id that is tapped
  * @param tap sends the tap (it looks the target up again each time it is called)
- * @param screen `{ dump, broken }`: a fresh UI dump, and whether dumps stopped working for this run
+ * @param screen `{ dump, broken, closeKeyboardOver }`: a fresh UI dump, whether dumps stopped working for
+ * this run, and `closeKeyboardOver(testId)`: close the keyboard when it covers that target
  * @param stepIndex the number of this step in the run
  */
 const tapNoted = async (testId, tap, screen, stepIndex) => {
@@ -138,7 +141,13 @@ const tapNoted = async (testId, tap, screen, stepIndex) => {
         await tap();
         return;
     }
-    const beforeXml = await screen.dump();
+    let beforeXml = await screen.dump();
+    // A keyboard over the target is closed by the tap helper first. Close it here, so that "before" is
+    // the screen the tap really meets: with the keyboard up the focused field looks different, and a
+    // lost tap then looked like a tap that changed the screen.
+    if (isKeyboardInDump(beforeXml) && screen.closeKeyboardOver && (await screen.closeKeyboardOver(testId))) {
+        beforeXml = await screen.dump();
+    }
     const before = screenSignature(beforeXml);
     if (dropTap(testId)) {
         reportTapCheck(testId, 'tap not sent (injected by E2E_DROP_TAP)');

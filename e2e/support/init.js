@@ -178,7 +178,11 @@ Before({ timeout: 3 * 60 * 1000 }, async (context) => {
             throw e;
         }
         // A keyboard left up by the previous scenario covers the tab bar.
-        await hideAndroidKeyboard();
+        try {
+            await hideAndroidKeyboard();
+        } catch (e) {
+            log(`before the scenario: ${short(e)}`);
+        }
     }
     await unlockAndroidPasscodeIfPresent();
     await dismissIosLockIfPresent();
