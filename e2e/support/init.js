@@ -37,7 +37,10 @@ const {
     adbTapChangelogClose,
     androidHasTestId,
     hideAndroidKeyboard,
+    androidDumpXml,
 } = require('../helpers/tapById');
+const { saveFailureEvidence } = require('../helpers/failureEvidence');
+const { failScenarioIfAsked } = require('../helpers/faultInjection');
 const { settleAfterLaunch } = require('../helpers/appLaunch');
 
 const log = (msg) => {
@@ -165,7 +168,7 @@ const restartAppAfterFailure = async (scenario) => {
 
 Before({ timeout: 3 * 60 * 1000 }, async (context) => {
     if (deviceBroken) {
-        throw new Error(`e2e: skipped, the device is unusable: ${deviceBroken}`);
+        throw new Error(`e2e: not run: ${deviceBroken}`);
     }
     if (isAndroid()) {
         try {
@@ -181,6 +184,8 @@ Before({ timeout: 3 * 60 * 1000 }, async (context) => {
     await dismissIosLockIfPresent();
     await dismissChangelogOverlay();
     await adapter.beforeEach(context);
+    // proof runs only (helpers/faultInjection.js)
+    failScenarioIfAsked(context.pickle.name);
 });
 
 // A step that runs much longer than usual is usually stuck: keep a screenshot of where it
@@ -207,10 +212,31 @@ AfterStep(async (context) => {
 After({ timeout: 6 * 60 * 1000 }, async (context) => {
     clearTimeout(stallTimer);
     const failed = context.result && context.result.status === 'FAILED';
-    if (failed) {
+    // not run at all (the device or the set-up is gone): there is nothing new to keep
+    const notRun = failed && /e2e: not run/.test(String(context.result.message || ''));
+    if (failed && !notRun) {
         takeNamedScreenshot(`FAIL-${context.pickle.name}`);
+        const kept = await saveFailureEvidence(
+            {
+                name: context.pickle.name,
+                uri: context.pickle.uri,
+                message: context.result.message,
+                willBeRetried: context.willBeRetried,
+            },
+            isAndroid() && !deviceBroken ? { dump: androidDumpXml } : undefined,
+        );
+        log(
+            `scenario failed${context.willBeRetried ? ' (it is tried once more)' : ''}: ` +
+                `"${context.pickle.name}"; evidence in ${kept || 'no folder (it could not be written)'}`,
+        );
     }
     await adapter.afterEach(context);
+    // Without the set-up (feature 01) nothing after it can pass: do not let every later scenario run
+    // into its timeouts. The runner then runs the story again on a clean app.
+    if (failed && !context.willBeRetried && !deviceBroken && /(^|\/)01_setup\.feature$/.test(context.pickle.uri)) {
+        deviceBroken = `the set-up failed ("${context.pickle.name}")`;
+        log(`${deviceBroken}: the scenarios after it are not run`);
+    }
     if (failed && !deviceBroken && adapter.continueOnFail()) {
         await restartAppAfterFailure(context.pickle.name);
     }

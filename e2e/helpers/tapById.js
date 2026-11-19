@@ -2308,6 +2308,7 @@ module.exports = {
     captureAndroidTabBar,
     waitForAndroidDefaultRoot,
     isAndroidDumpBroken: () => dumpBroken,
+    androidDumpXml,
     resetAndroidDumpState,
     hideAndroidKeyboard,
     waitForAndroidIme,
