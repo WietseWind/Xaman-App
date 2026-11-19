@@ -37,6 +37,9 @@ that it builds on: at least 01 and 02). The round's outcome is in `~/Code/e2e-ru
 - builds and installs fresh. Android builds Release with its release test APK by default; `--debug` runs its own Metro;
 - waits when another run is going on the same machine: two runs next to each other make both slow and change
   their timing (`E2E_PARALLEL=yes` runs anyway);
+- starts the tests on a quiet machine: it waits until the CPU is mostly idle for half a minute
+  (`E2E_QUIET_MAX_SECONDS`, default 600). A simulator that just booted for the first time keeps the whole machine
+  busy for minutes, and the app is then several times slower;
 - stops a run whose log stays silent for 20 minutes (`E2E_STALL_MINUTES`);
 - leaves everything in `<clone>/.e2e-artifacts` and copies what is worth keeping to
   `~/Code/e2e-runs/results/<name>/`, so the clone can be deleted (`--cleanup` does that, with the simulator).

@@ -313,6 +313,30 @@ RETRY="${E2E_RETRY:-1}"
 RERUN_FAILED="${E2E_RERUN_FAILED:-yes}"
 RERUN_MAX="${E2E_RERUN_MAX:-0}" # 0: no limit
 
+# The run starts on a quiet machine. A simulator that just booted for the first time (new or erased)
+# keeps the whole machine busy for minutes (no idle CPU at all, a load of 150 on 10 cores): the app is
+# then several times slower and a passcode save that takes 2 seconds did not finish in 15. The same
+# goes for the last work of a build, or for anything else that happens to run. So: wait until the CPU
+# is mostly idle for half a minute, at most E2E_QUIET_MAX_SECONDS (default 600).
+cpu_idle() { top -l 2 -n 0 -s 1 2>/dev/null | awk '/CPU usage/ { v = $7 } END { sub("%", "", v); printf "%d\n", v }'; }
+QUIET_NOTE=""
+wait_until_quiet() {
+    local need="${E2E_QUIET_IDLE:-60}" max="${E2E_QUIET_MAX_SECONDS:-600}" quiet=0 idle=0
+    local started=$SECONDS
+    while [ $((SECONDS - started)) -lt "$max" ]; do
+        idle="$(cpu_idle)"
+        if [ "${idle:-0}" -ge "$need" ]; then quiet=$((quiet + 1)); else quiet=0; fi
+        if [ "$quiet" -ge 6 ]; then break; fi
+        sleep 4
+    done
+    if [ "$quiet" -ge 6 ]; then
+        QUIET_NOTE="the machine was quiet after $((SECONDS - started)) s (CPU ${idle}% idle)"
+    else
+        QUIET_NOTE="the machine did NOT get quiet in $max s (CPU ${idle}% idle): the timing of this run may differ"
+    fi
+    log "$QUIET_NOTE"
+}
+
 # Runs cucumber on the given features with its results in the given directory; sets STATUS.
 # A run whose log stays silent for STALL_MINUTES is stuck: its whole process group is stopped (124).
 run_cucumber() {
@@ -323,6 +347,8 @@ run_cucumber() {
     # nothing of an earlier run in a reused clone may end up in this run's results
     rm -f "$art/text-entry-fallbacks.txt" "$art/tap-checks.txt" "$art/tap-effects.tsv" "$art/outcome.txt"
     rm -rf "$art/failures" "$art/steps" "$art/rerun"
+    wait_until_quiet
+    echo "$QUIET_NOTE" >"$art/quiet.txt"
     log "running $* on ${ANDROID_SERIAL:-$E2E_IOS_SIMULATOR} ($DETOX_CONFIGURATION); log: $art/run.log"
     set -m
     npx cucumber-js "$@" \
@@ -448,6 +474,8 @@ fi
     fi
     echo "node: $(node --version 2>/dev/null)"
     echo "machine load (1, 5, 15 min) at the start: $LOAD_START; at the end: $(machine_load); other builds running at the start: $OTHER_BUILDS"
+    echo "before the first run: $(cat "$ART/quiet.txt" 2>/dev/null)"
+    if [ -f "$ART/rerun/quiet.txt" ]; then echo "before the rerun: $(cat "$ART/rerun/quiet.txt")"; fi
     echo "first run: exit $FIRST_STATUS, $(grep -E '^[0-9]+ scenarios' "$ART/summary.txt" 2>/dev/null | tail -1)"
     if [ -n "$FLAKY" ]; then
         echo

@@ -5,18 +5,31 @@
 //   tap-notes.txt    Android: the last taps and whether the screen reacted (androidTapCheck.js);
 //   ui.xml           Android: the UI hierarchy at the moment of the failure;
 //   device.txt       Android: keyboard and window focus state;
-//   logcat.txt       Android: the last lines of the device log.
+//   logcat.txt       Android: the last lines of the device log;
+//   simulator-log.txt  iOS: the last lines of the app's log on the simulator.
 // The runner copies this folder out of the throwaway clone (scripts/e2e/run-throwaway.sh).
 //
 // Only test data ends up here: the accounts of a run are made for that run, on a test network.
 const { execFileSync } = require('child_process');
-const { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } = require('fs');
+const {
+    closeSync,
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    openSync,
+    readdirSync,
+    readSync,
+    statSync,
+    writeFileSync,
+} = require('fs');
 const path = require('path');
 const { androidSerial } = require('./androidSerial');
 const { artifactsDir, stepShotDir, currentStepIndex, sanitize } = require('./artifacts');
 const { recentTapNotes } = require('./androidTapCheck');
 
 const STEPS_KEPT = 4;
+const LOG_LINES_KEPT = 400;
+const LOG_TAIL_BYTES = 256 * 1024;
 let failureIndex = 0;
 
 const adb = (args, timeout = 8000) =>
@@ -52,6 +65,24 @@ const copyLastStepShots = (dir) => {
     }
     mkdirSync(path.join(dir, 'steps'), { recursive: true });
     shots.forEach((name) => copyFileSync(path.join(from, name), path.join(dir, 'steps', name)));
+};
+
+// The end of the app log that helpers/simulator.js streams into the artifacts directory.
+const simulatorLogTail = () => {
+    const file = path.join(artifactsDir(), 'simulator.log');
+    if (!existsSync(file)) {
+        return 'no simulator.log';
+    }
+    const { size } = statSync(file);
+    const length = Math.min(size, LOG_TAIL_BYTES);
+    const buffer = Buffer.alloc(length);
+    const fd = openSync(file, 'r');
+    try {
+        readSync(fd, buffer, 0, length, size - length);
+    } finally {
+        closeSync(fd);
+    }
+    return buffer.toString('utf8').split('\n').slice(-LOG_LINES_KEPT).join('\n');
 };
 
 /**
@@ -106,7 +137,12 @@ const saveFailureEvidence = async (scenario, android) => {
                     '',
                 ].join('\n'),
             );
-            writeFileSync(path.join(dir, 'logcat.txt'), attempt(() => adb(['logcat', '-d', '-t', '400'], 10000)));
+            writeFileSync(
+                path.join(dir, 'logcat.txt'),
+                attempt(() => adb(['logcat', '-d', '-t', String(LOG_LINES_KEPT)], 10000)),
+            );
+        } else {
+            writeFileSync(path.join(dir, 'simulator-log.txt'), attempt(simulatorLogTail));
         }
         return dir;
     } catch (e) {
