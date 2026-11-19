@@ -109,7 +109,8 @@ const typeIntoField = async (inputId, value) => {
         androidTypeText(value);
         // Wait until the keyboard is gone: a tap on Next or Sign while it was still animating out
         // was lost.
-        await hideAndroidKeyboard();
+        // (1000 ms: also a keyboard that comes back after the keystrokes)
+        await hideAndroidKeyboard(1000);
         return;
     }
     await waitFor(field).toBeVisible().withTimeout(5000);

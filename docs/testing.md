@@ -50,6 +50,10 @@ A failure that comes from timing must not need a person. In this order:
    tap knows what the screen looked like before it: when the screen it waits for stays away and nothing changed for
    8 seconds, a Next, Back or tab tap is sent once more. A button that signs, submits, confirms or toggles is never
    tapped twice (`e2e/helpers/androidTapCheck.js`).
+   Before a tap the on-screen keyboard has to be gone when it covers the target. "Is it up" is read from `dumpsys`
+   and from the UI dump, because one of the two was wrong in full runs. Escape normally closes it; when Escape does
+   nothing, the keyboard's own Done key is tapped. When nothing closes it, the step fails with that reason: a tap is
+   never sent onto a keyboard (it would hit a key, which is how a Next tap got lost).
 2. **A second attempt.** A failed scenario is tried once more at once, after the app is restarted (`E2E_RETRY`,
    default 1).
 3. **A rerun of the story.** When a scenario still failed, the features are run once more from the first one on a
@@ -72,7 +76,9 @@ error, the screenshots of the last steps and, on Android, the UI dump, the last 
 the device log.
 
 To prove the recovery itself, faults can be injected (`e2e/helpers/faultInjection.js`): `E2E_DROP_TAP` withholds
-taps, `E2E_FAIL_SCENARIO` fails a scenario once, for a whole run, or always. Never for a run whose result counts.
+taps, `E2E_FAIL_SCENARIO` fails a scenario once, for a whole run, or always, and `E2E_KEEP_KEYBOARD`,
+`E2E_IME_DUMPSYS_BLIND` and `E2E_IME_ESCAPE_DEAD` together make the keyboard fault of the full runs. Never for a run
+whose result counts.
 
 ### When something goes wrong
 - A step fails after 2 minutes unless it sets its own timeout. A step still running after 1 minute leaves a
