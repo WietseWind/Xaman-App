@@ -345,7 +345,8 @@ run_cucumber() {
     mkdir -p "$art"
     export E2E_ARTIFACTS_DIR="$art"
     # nothing of an earlier run in a reused clone may end up in this run's results
-    rm -f "$art/text-entry-fallbacks.txt" "$art/tap-checks.txt" "$art/tap-effects.tsv" "$art/outcome.txt"
+    rm -f "$art/text-entry-fallbacks.txt" "$art/tap-checks.txt" "$art/tap-effects.tsv" "$art/outcome.txt" \
+        "$art/keyboard-fallbacks.txt"
     rm -rf "$art/failures" "$art/steps" "$art/rerun"
     wait_until_quiet
     echo "$QUIET_NOTE" >"$art/quiet.txt"
@@ -384,6 +385,10 @@ run_cucumber() {
     # Android: text that only arrived by a second route (see e2e/helpers/androidTextEntry.js)
     if [ -s "$art/text-entry-fallbacks.txt" ]; then
         log "text entry needed a second route $(grep -c 'nothing arrived' "$art/text-entry-fallbacks.txt" | tr -d ' ') time(s): $art/text-entry-fallbacks.txt"
+    fi
+    # Android: a keyboard that Escape did not close (see hideAndroidKeyboard in e2e/helpers/tapById.js)
+    if [ -s "$art/keyboard-fallbacks.txt" ]; then
+        log "the keyboard needed more than Escape $(wc -l <"$art/keyboard-fallbacks.txt" | tr -d ' ') time(s): $art/keyboard-fallbacks.txt"
     fi
     # Android: taps that did not arrive and were sent a second time (see e2e/helpers/androidTapCheck.js)
     if [ -s "$art/tap-checks.txt" ]; then
@@ -501,7 +506,8 @@ fi
             echo
         fi
     fi
-    for notes in "$ART/tap-checks.txt" "$ART/rerun/tap-checks.txt" "$ART/text-entry-fallbacks.txt" "$ART/rerun/text-entry-fallbacks.txt"; do
+    for notes in "$ART/tap-checks.txt" "$ART/rerun/tap-checks.txt" "$ART/text-entry-fallbacks.txt" \
+        "$ART/rerun/text-entry-fallbacks.txt" "$ART/keyboard-fallbacks.txt" "$ART/rerun/keyboard-fallbacks.txt"; do
         if [ -s "$notes" ]; then echo "notes: ${notes#"$ART/"} ($(wc -l <"$notes" | tr -d ' ') line(s))"; fi
     done
     if [ -d "$ART/failures" ]; then echo "evidence of failed attempts: failures/"; fi
@@ -515,7 +521,8 @@ mkdir -p "$KEEP"
 for part in "" rerun/; do
     [ -d "$ART/$part" ] || continue
     mkdir -p "$KEEP/$part"
-    for file in outcome.txt summary.txt run.log rerun.txt tap-checks.txt tap-effects.tsv text-entry-fallbacks.txt; do
+    for file in outcome.txt summary.txt run.log rerun.txt tap-checks.txt tap-effects.tsv text-entry-fallbacks.txt \
+        keyboard-fallbacks.txt; do
         if [ -f "$ART/$part$file" ]; then cp "$ART/$part$file" "$KEEP/$part"; fi
     done
     if [ -d "$ART/${part}failures" ]; then cp -R "$ART/${part}failures" "$KEEP/$part"; fi

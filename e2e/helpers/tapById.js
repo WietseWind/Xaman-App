@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 // The helpers below call each other; every call runs after this module has loaded.
 const { execFileSync } = require('child_process');
+const { appendFileSync, mkdirSync } = require('fs');
+const path = require('path');
 const { element, by, waitFor, device } = require('detox');
 const { getCurrentTestPasscode } = require('./testCredentials');
 
@@ -984,6 +986,23 @@ const androidKeyboardUp = async () => {
     return imeTopFromXml(await androidDumpXml()) !== null;
 };
 
+// Every time the keyboard needed more than Escape is written to keyboard-fallbacks.txt in the artifacts
+// directory, so a run that passed with this help says so (the runner counts the lines).
+const reportKeyboardFallback = (what) => {
+    const line = `${new Date().toISOString()} ${what}`;
+    // eslint-disable-next-line no-console
+    console.log(`[keyboard] ${line}`);
+    try {
+        const dir = process.env.E2E_ARTIFACTS_DIR
+            ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
+            : path.resolve(__dirname, '../artifacts');
+        mkdirSync(dir, { recursive: true });
+        appendFileSync(path.join(dir, 'keyboard-fallbacks.txt'), `${line}\n`);
+    } catch (e) {
+        // the console line is in run.log
+    }
+};
+
 // The key of the on-screen keyboard that ends the entry (Done, Next, Go, ...), from a UI dump.
 const imeActionKeyFromXml = (xml) => {
     const ime = parseNodes(xml).filter((node) => /inputmethod/i.test(node.package || ''));
@@ -1039,10 +1058,8 @@ const hideAndroidKeyboard = async (waitForLateMs = 0) => {
     cachedXml = '';
     cachedAt = 0;
     const actionKey = imeActionKeyFromXml(await androidDumpXml());
-    // eslint-disable-next-line no-console
-    console.log(
-        `[keyboard] ${new Date().toISOString()} Escape did not close the keyboard: ` +
-            `${actionKey ? 'tapping its action key' : 'no action key in the dump, Escape again'}`,
+    reportKeyboardFallback(
+        `Escape did not close the keyboard: ${actionKey ? 'tapped its action key' : 'no action key in the dump, Escape again'}`,
     );
     if (actionKey) {
         await tapBounds(actionKey.bounds);

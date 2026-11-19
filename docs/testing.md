@@ -71,6 +71,7 @@ A failure that comes from timing must not need a person. In this order:
 
 The exit code is 0 for the first three, so read the outcome and not only the code. What helped is written down:
 `tap-checks.txt` (taps sent a second time), `text-entry-fallbacks.txt` (text that needed another route),
+`keyboard-fallbacks.txt` (a keyboard that Escape did not close),
 `tap-effects.tsv` (how long each tap took to show). Every failed attempt leaves a folder in `failures/` with the
 error, the screenshots of the last steps and, on Android, the UI dump, the last taps, keyboard and focus state and
 the device log.
