@@ -288,6 +288,14 @@ Given('the Remit review should show {string}', { timeout: 2 * 60 * 1000 }, async
     await scrollTo(testId);
 });
 
+// A long review (a Batch with several inner transactions, a Remit with many parts): one swipe does not get
+// to its end, and a slide button that is only partly on screen does not take the slide.
+Then('I scroll the review to the slide button', { timeout: 2 * 60 * 1000 }, async () => {
+    await scrollTo('accept-button');
+    // to the very end: the slide button has to be on screen as a whole
+    await scrollReviewDown();
+});
+
 Given('the Remit review showed no extra fields on the way', async () => {
     if (state.sawExtraFields || (await has('payload-extra-fields', 300))) {
         throw new Error(
