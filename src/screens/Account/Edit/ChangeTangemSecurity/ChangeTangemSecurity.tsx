@@ -13,7 +13,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
 
 import { GetCardEnforcedSecurity, GetCardSecurityOptions, TangemSecurity } from '@common/utils/tangem';
-import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 
 import { AccountRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
@@ -109,7 +109,7 @@ class ChangeTangemSecurityView extends Component<Props, State> {
         const { account } = this.props;
         const { cardId } = account.additionalInfo as Card;
 
-        RNTangemSdk.resetUserCodes({ cardId })
+        TangemCard.resetUserCodes({ cardId })
             .then(this.onSuccessChange.bind(null, { isPasscodeSet: false, isAccessCodeSet: false }))
             .catch(() => {
                 // ignore
@@ -120,7 +120,7 @@ class ChangeTangemSecurityView extends Component<Props, State> {
         const { account } = this.props;
         const { cardId } = account.additionalInfo as Card;
 
-        RNTangemSdk.setAccessCode({ cardId })
+        TangemCard.setAccessCode({ cardId })
             .then(this.onSuccessChange.bind(null, { isAccessCodeSet: true }))
             .catch(() => {
                 // ignore
@@ -131,7 +131,7 @@ class ChangeTangemSecurityView extends Component<Props, State> {
         const { account } = this.props;
         const { cardId } = account.additionalInfo as Card;
 
-        RNTangemSdk.setPasscode({ cardId })
+        TangemCard.setPasscode({ cardId })
             .then(this.onSuccessChange.bind(null, { isPasscodeSet: true }))
             .catch(() => {
                 // ignore

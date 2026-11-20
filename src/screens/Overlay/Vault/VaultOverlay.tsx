@@ -23,7 +23,7 @@ import Vault from '@common/libs/vault';
 import CrashReporter from '@common/libs/crash';
 
 import { GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
-import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 
 import Keyboard from '@common/helpers/keyboard';
 import { Navigator } from '@common/helpers/navigator';
@@ -556,7 +556,7 @@ class VaultOverlay extends Component<Props, State> {
                 }
             }
 
-            await RNTangemSdk.sign(tangemSignOptions as unknown as OptionsSign)
+            await TangemCard.sign(tangemSignOptions as unknown as OptionsSign)
                 .then((resp) => {
                     const { signatures } = resp;
 

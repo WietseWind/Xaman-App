@@ -65,6 +65,7 @@ const errorKey = (error: TangemBackupErrorCode) => {
 
 class BackupTangemCardView extends Component<Props, State> {
     static screenName = AppScreens.Account.Edit.BackupTangemCard;
+    static QUIET_AFTER_CARD_MS = 700;
     static options() {
         return {
             bottomTabs: { visible: false },
@@ -85,6 +86,9 @@ class BackupTangemCardView extends Component<Props, State> {
     private viewportHeight = 0;
     private contentHeight = 0;
     private scrollOffset = 0;
+    // Touches count again from this moment. The NFC prompt of the Tangem SDK covers the lower half
+    // of the screen; a tap that was meant for it, just after it closed, must not land on a button.
+    private quietUntil = 0;
 
     constructor(props: Props) {
         super(props);
@@ -123,7 +127,11 @@ class BackupTangemCardView extends Component<Props, State> {
             }
         });
         const back = BackHandler.addEventListener('hardwareBackPress', () => {
-            this.leave();
+            const { busy, step } = this.state;
+            // during a card operation the back key belongs to the NFC prompt
+            if (busy && step !== 'checking') return true;
+            if (this.canStepBack()) this.flow.back();
+            else this.leave();
             return true;
         });
         this.disposers.push(
@@ -141,6 +149,7 @@ class BackupTangemCardView extends Component<Props, State> {
             this.updateOverflow();
         }
         if (previous.step !== 'checking' && step === 'checking') this.statusChecks = 0;
+        if (previous.busy && !busy) this.quietUntil = Date.now() + BackupTangemCardView.QUIET_AFTER_CARD_MS;
         if (previous.busy && !busy && error && !this.isConfirming() && !this.exiting) {
             this.showStepError();
         }
@@ -187,6 +196,19 @@ class BackupTangemCardView extends Component<Props, State> {
     };
     leave = () => {
         this.requestExit().catch((error) => LoggerService.recordError('Unable to close Tangem back-up', error));
+    };
+    /** A press counts when no card operation runs and the NFC prompt did not close a moment ago. */
+    private pressed = (action?: () => unknown) => () => {
+        const { busy, step } = this.state;
+        if ((busy && step !== 'checking') || Date.now() < this.quietUntil) return;
+        action?.();
+    };
+    /** One step back inside the flow exists (the review, and the summary before it). */
+    canStepBack = () => {
+        const { step, error } = this.state;
+        const { removeKey } = this.props;
+        const terminal = error === 'contextChanged' || error === 'accountChanged' || error === 'masterDisabled';
+        return !removeKey && ['ready', 'review'].includes(step) && !terminal;
     };
     onLayout = ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
         if (Platform.OS !== 'android') return;
@@ -442,58 +464,34 @@ class BackupTangemCardView extends Component<Props, State> {
             checking: this.retryConfirmation,
             done: this.leave,
         }[step];
-        return (
-            <>
-                {this.isConfirming() ? (
-                    <View testID="backup-confirming" accessibilityLiveRegion="polite" style={styles.confirming}>
-                        <LoadingIndicator />
-                        <Text style={styles.confirmingText}>
-                            {Localize.t(removing ? 'tangemBackup.removeCheckingTitle' : 'tangemBackup.checkingTitle')}
-                        </Text>
-                    </View>
-                ) : (
-                    <Button
-                        testID="backup-next"
-                        label={terminal ? Localize.t('global.close') : removing && step === 'review'
-                            ? Localize.t('tangemBackup.scanOriginal') : label}
-                        icon={!terminal && (['source', 'backup'].includes(step) || (removing && step === 'review'))
-                            ? 'IconScanCard' : undefined}
-                        iconStyle={styles.buttonIcon}
-                        onPress={terminal ? this.leave : action}
-                        isLoading={busy}
-                        isDisabled={busy}
-                        style={styles.button}
-                        textStyle={styles.primaryButtonText}
-                        loadingIndicatorStyle="light"
-                    />
-                )}
-                {step !== 'done' && (
-                    <>
-                        <Spacer size={4} />
-                        <Button
-                            testID="backup-back"
-                            label={Localize.t(
-                                removing ? 'global.close' : step === 'intro'
-                                    ? 'global.notNow'
-                                    : ['ready', 'review'].includes(step)
-                                      ? 'global.back'
-                                      : 'global.close',
-                            )}
-                            onPress={!removing && ['ready', 'review'].includes(step) && !terminal
-                                ? this.flow.back : this.leave}
-                            isDisabled={busy && step !== 'checking'}
-                            transparent
-                            style={[styles.button, styles.secondaryButton]}
-                            textStyle={styles.secondaryButtonText}
-                        />
-                    </>
-                )}
-            </>
+        return this.isConfirming() ? (
+            <View testID="backup-confirming" accessibilityLiveRegion="polite" style={styles.confirming}>
+                <LoadingIndicator />
+                <Text style={styles.confirmingText}>
+                    {Localize.t(removing ? 'tangemBackup.removeCheckingTitle' : 'tangemBackup.checkingTitle')}
+                </Text>
+            </View>
+        ) : (
+            <Button
+                testID="backup-next"
+                label={terminal ? Localize.t('global.close') : removing && step === 'review'
+                    ? Localize.t('tangemBackup.scanOriginal') : label}
+                icon={!terminal && (['source', 'backup'].includes(step) || (removing && step === 'review'))
+                    ? 'IconScanCard' : undefined}
+                iconStyle={styles.buttonIcon}
+                onPress={this.pressed(terminal ? this.leave : action)}
+                isLoading={busy}
+                isDisabled={busy}
+                style={styles.button}
+                textStyle={styles.primaryButtonText}
+                loadingIndicatorStyle="light"
+            />
         );
     };
     render() {
-        const { androidBottomInset, moreBelow } = this.state;
+        const { androidBottomInset, moreBelow, step } = this.state;
         const { removeKey } = this.props;
+        const stepBack = this.canStepBack();
         return (
             <SafeAreaView
                 testID="backup-tangem-card-screen"
@@ -508,13 +506,34 @@ class BackupTangemCardView extends Component<Props, State> {
             >
                 <Header
                     containerStyle={styles.header}
-                    leftComponent={{
-                        testID: 'backup-close',
-                        icon: 'IconChevronLeft',
-                        iconSize: 20,
-                        iconStyle: styles.headerIcon,
-                        onPress: this.leave,
-                    }}
+                    // The arrow goes back: one step inside the flow, or out of the screen before the
+                    // flow started. The cross closes a flow that started. They are never at the same
+                    // place, and nothing but the main button is in the part of the screen that the
+                    // NFC prompt covers.
+                    leftComponent={
+                        stepBack || step === 'intro'
+                            ? {
+                                  testID: 'backup-back',
+                                  icon: 'IconChevronLeft',
+                                  iconSize: 20,
+                                  iconStyle: styles.headerIcon,
+                                  accessibilityLabel: Localize.t('global.back'),
+                                  onPress: this.pressed(stepBack ? this.flow.back : this.leave),
+                              }
+                            : undefined
+                    }
+                    rightComponent={
+                        step !== 'intro' && step !== 'done'
+                            ? {
+                                  testID: 'backup-close',
+                                  icon: 'IconX',
+                                  iconSize: 20,
+                                  iconStyle: styles.headerIcon,
+                                  accessibilityLabel: Localize.t('global.close'),
+                                  onPress: this.pressed(this.leave),
+                              }
+                            : undefined
+                    }
                     centerComponent={{
                         text: Localize.t(removeKey ? 'tangemBackup.remove' : 'tangemBackup.title'),
                         textStyle: styles.headerTitle,

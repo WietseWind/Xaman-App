@@ -28,7 +28,7 @@ import { Navigator } from '@common/helpers/navigator';
 // import { Prompt } from '@common/helpers/interface';
 
 import { GetPreferCurve, GetWalletDerivedPublicKey, DefaultDerivationPaths } from '@common/utils/tangem';
-import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 
 import { AppScreens } from '@common/constants';
 
@@ -166,7 +166,7 @@ class AccountAddView extends Component<Props, State> {
         const { cardId, supportedCurves } = card;
 
         try {
-            const resp = await RNTangemSdk.createWallet({ cardId, curve: GetPreferCurve(supportedCurves) });
+            const resp = await TangemCard.createWallet({ cardId, curve: GetPreferCurve(supportedCurves) });
 
             // validate response
             const { wallet } = resp;
@@ -200,7 +200,7 @@ class AccountAddView extends Component<Props, State> {
 
     scanTangemCard = async () => {
         try {
-            const card = await RNTangemSdk.scanCard();
+            const card = await TangemCard.scanCard();
 
             // get current card wallets status
             const { wallets } = card;
