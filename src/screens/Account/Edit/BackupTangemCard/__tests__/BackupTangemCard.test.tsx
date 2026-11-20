@@ -1,6 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, BackHandler, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
+import { Navigation } from 'react-native-navigation';
 import { utils } from 'xrpl-accountlib';
 import { Card } from 'tangem-sdk-react-native';
 import { AccessLevels, AccountTypes } from '@store/types';
@@ -60,6 +61,8 @@ let root: any;
 let tree: renderer.ReactTestRenderer;
 let originalAppState: typeof AppService.currentAppState;
 let scrollTo: jest.Mock;
+// the handler the screen gave to the Android back key
+let backKey: () => unknown = () => undefined;
 const press = async () => {
     await act(async () => {
         await tree.root.findByProps({ testID: 'backup-next' }).props.onPress();
@@ -71,7 +74,16 @@ const text = () =>
         .flatMap((node) => node.props.children)
         .join(' ')
         .replace(/\s+/g, ' ');
+const header = () => tree.root.findByType('Header' as any).props;
+const toReady = async () => {
+    await press();
+    await press();
+    deps.scan = jest.fn(async () => backup);
+    await press();
+};
 beforeEach(() => {
+    // the quiet time after a card operation has tests of its own
+    BackupTangemCard.QUIET_AFTER_CARD_MS = 0;
     originalAppState = AppService.currentAppState;
     jest.mocked(Navigator.showAlertModal).mockClear();
     StyleService.setTheme('light');
@@ -100,6 +112,10 @@ beforeEach(() => {
         refresh: jest.fn(async () => undefined),
     };
     jest.mocked(nativeBackupDependencies).mockReturnValue(deps);
+    jest.spyOn(BackHandler, 'addEventListener').mockImplementation(((_name: string, handler: () => unknown) => {
+        backKey = handler;
+        return { remove: jest.fn() };
+    }) as any);
     act(() => {
         tree = renderer.create(<BackupTangemCard account={account} />);
     });
@@ -346,4 +362,150 @@ it('guides removal with only the original-card scan, confirmation loader and rem
     expect(tree.root.findAllByProps({ testID: 'backup-destination-card' })).toHaveLength(0);
     expect(deps.sign).toHaveBeenCalledWith(expect.anything(), expect.not.objectContaining({ RegularKey: destination }));
     expect(deps.scan).not.toHaveBeenCalled();
+});
+
+// a second tap at the same place closed the whole flow by accident
+describe('back and close are in the header, the bottom has one button', () => {
+    let pop: jest.SpyInstance;
+    beforeEach(() => {
+        pop = jest.spyOn(Navigation, 'pop').mockResolvedValue(undefined as any);
+        pop.mockClear();
+    });
+
+    it('before the flow starts: the arrow leaves the screen, there is no cross', async () => {
+        expect(header().leftComponent).toMatchObject({ testID: 'backup-back', icon: 'IconChevronLeft' });
+        expect(header().rightComponent).toBeUndefined();
+        await act(async () => {
+            await header().leftComponent.onPress();
+        });
+        expect(pop).toHaveBeenCalledTimes(1);
+    });
+
+    it('in a scan step: no arrow, the cross closes the flow', async () => {
+        await press();
+        expect(text()).toContain('Step 1 of 3');
+        expect(header().leftComponent).toBeUndefined();
+        expect(header().rightComponent).toMatchObject({ testID: 'backup-close', icon: 'IconX' });
+        await act(async () => {
+            await header().rightComponent.onPress();
+        });
+        expect(pop).toHaveBeenCalledTimes(1);
+    });
+
+    it('with the back-up card ready: the arrow goes one step back and does not close', async () => {
+        await toReady();
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props.label).toBe(Localize.t('global.continue'));
+        expect(header().leftComponent).toMatchObject({ testID: 'backup-back' });
+        expect(header().rightComponent).toMatchObject({ testID: 'backup-close' });
+        await act(async () => {
+            await header().leftComponent.onPress();
+        });
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props.label).toBe(
+            Localize.t('tangemBackup.scanBackup'),
+        );
+        // the same place, one step earlier: there is no arrow, so a second tap there does nothing
+        expect(header().leftComponent).toBeUndefined();
+        expect(pop).not.toHaveBeenCalled();
+    });
+
+    it('in the review: the arrow goes back to the summary', async () => {
+        await toReady();
+        await press();
+        expect(text()).toContain('Step 3 of 3');
+        await act(async () => {
+            await header().leftComponent.onPress();
+        });
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props.label).toBe(Localize.t('global.continue'));
+        expect(pop).not.toHaveBeenCalled();
+    });
+
+    it('the bottom has only the main button, in every step', async () => {
+        const buttons = () => tree.root.findAllByType('Button' as any).map((button) => button.props.testID);
+        expect(buttons()).toEqual(['backup-next']);
+        await press();
+        expect(buttons()).toEqual(['backup-next']);
+        await press();
+        expect(buttons()).toEqual(['backup-next']);
+        deps.scan = jest.fn(async () => backup);
+        await press();
+        expect(buttons()).toEqual(['backup-next']);
+        await press();
+        expect(buttons()).toEqual(['backup-next']);
+    });
+
+    it('the Android back key does what the arrow does, and closes where there is no arrow', async () => {
+        await toReady();
+        await act(async () => {
+            backKey();
+        });
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props.label).toBe(
+            Localize.t('tangemBackup.scanBackup'),
+        );
+        expect(pop).not.toHaveBeenCalled();
+        await act(async () => {
+            backKey();
+        });
+        expect(pop).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('touches just after a card operation do not count (they were meant for the NFC prompt)', () => {
+    let pop: jest.SpyInstance;
+    beforeEach(() => {
+        pop = jest.spyOn(Navigation, 'pop').mockResolvedValue(undefined as any);
+        pop.mockClear();
+        BackupTangemCard.QUIET_AFTER_CARD_MS = 700;
+        jest.useFakeTimers();
+    });
+
+    it('right after the scan nothing reacts; a moment later everything does', async () => {
+        await press();
+        await act(async () => {
+            jest.advanceTimersByTime(700);
+        });
+        await press();
+        // the scan of the original card ended just now
+        expect(text()).toContain('Step 2 of 3');
+        const scans = jest.mocked(deps.scan).mock.calls.length;
+
+        await press();
+        await act(async () => {
+            await header().rightComponent.onPress();
+        });
+        expect(deps.scan).toHaveBeenCalledTimes(scans);
+        expect(pop).not.toHaveBeenCalled();
+
+        await act(async () => {
+            jest.advanceTimersByTime(700);
+        });
+        await act(async () => {
+            await header().rightComponent.onPress();
+        });
+        expect(pop).toHaveBeenCalledTimes(1);
+    });
+
+    it('while the card operation runs, the header and the back key do nothing', async () => {
+        await press();
+        await act(async () => {
+            jest.advanceTimersByTime(700);
+        });
+        let finish: (card: Card) => void = () => undefined;
+        deps.scan = jest.fn(() => new Promise<Card>((resolve) => { finish = resolve; }));
+        act(() => {
+            tree.root.findByProps({ testID: 'backup-next' }).props.onPress();
+        });
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(tree.root.findByProps({ testID: 'backup-next' }).props.isLoading).toBe(true);
+        await act(async () => {
+            await header().rightComponent.onPress();
+            backKey();
+        });
+        expect(pop).not.toHaveBeenCalled();
+        await act(async () => {
+            finish(sourceCard);
+            for (let i = 0; i < 6; i++) await Promise.resolve();
+        });
+    });
 });

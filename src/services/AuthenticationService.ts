@@ -7,6 +7,7 @@ import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 import { GetElapsedRealtime } from '@common/helpers/device';
 import { ExitApp } from '@common/helpers/app';
+import { tangemCardPromptOpen } from '@common/utils/tangemSession';
 import CrashReporter from '@common/libs/crash';
 
 import { Biometric, BiometricErrors } from '@common/libs/biometric';
@@ -437,7 +438,20 @@ class AuthenticationService extends EventEmitter {
     /**
      * Listen for app state change to check for lock the app
      */
-    onAppStateChange = async () => {
+    onAppStateChange = async (state?: AppStateStatus, previous?: AppStateStatus) => {
+        // A card prompt of the Tangem SDK can pause and resume the app (the scan, on Android). That
+        // is not the user leaving Xaman: the pause is shorter than the 15 s after which the app
+        // counts as inactive, and the prompt of Xaman itself is open. The lock check does not run
+        // for it; a lock at that moment closed a flow in the middle (the back-up card set-up needs
+        // three scans). A pause that lasts until the app is inactive is checked as before.
+        const shortPause =
+            state === AppStateStatus.Background ||
+            (state === AppStateStatus.Active && previous === AppStateStatus.Background);
+        if (shortPause && tangemCardPromptOpen()) {
+            this.logger.debug('no lock check: a Tangem card prompt is open');
+            return;
+        }
+
         // let's check the lock screen in any app state change
         try {
             await this.checkLockScreen();

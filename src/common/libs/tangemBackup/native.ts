@@ -10,7 +10,7 @@ import { AccountModel } from '@store/models';
 import { AccountRepository } from '@store/repositories';
 import { AccessLevels, AccountTypes, EncryptionLevels } from '@store/types';
 import { DefaultDerivationPaths, GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
-import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 import { waitForTangemIdentifyCleanup } from '@common/utils/tangemIdentifyNavigation';
 import { Navigator } from '@common/helpers/navigator';
 import { NormalizeFeeDataSet, PrepareTxForHookFee } from '@common/utils/fee';
@@ -91,7 +91,7 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
             await startTangemOfflineSession({ defaultDerivationPaths: DefaultDerivationPaths });
         },
         stop: RNTangemSdk.stopSession,
-        scan: () => RNTangemSdk.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } }),
+        scan: () => TangemCard.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } }),
         confirmImport: (_scanned, empty) =>
             new Promise<boolean>((resolve, reject) => {
                 const finish = (confirmed: boolean) => resolve(confirmed && current());
@@ -132,7 +132,7 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
                   ? EllipticCurve.Ed25519
                   : undefined;
             if (!curve) throw new TangemBackupError('invalidCard');
-            const result = await RNTangemSdk.createWallet({
+            const result = await TangemCard.createWallet({
                 cardId: backupCardSerial(scanned),
                 curve,
                 initialMessage: { body: Localize.t('tangemBackup.backupTitle') },
@@ -194,7 +194,7 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
             const publicKey = GetWalletDerivedPublicKey(original);
             if (utils.deriveAddress(publicKey) !== source.address) throw new TangemBackupError('cardChanged');
             const prepared = rawSigning.prepare(transaction, publicKey, false, definitions);
-            const result = await RNTangemSdk.sign({
+            const result = await TangemCard.sign({
                 ...GetSignOptions(original, prepared.hashToSign),
                 hashes: [prepared.hashToSign],
                 initialMessage: { body: Localize.t('tangemBackup.sourceTitle') },

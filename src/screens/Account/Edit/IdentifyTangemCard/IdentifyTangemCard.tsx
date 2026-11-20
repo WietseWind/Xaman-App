@@ -29,7 +29,7 @@ import { accountListLabel } from '@common/helpers/accountListLabel';
 import { AppScreens } from '@common/constants';
 import { WebLinks } from '@common/constants/endpoints';
 import { DefaultDerivationPaths, GetCardId, GetWalletDerivedPublicKey } from '@common/utils/tangem';
-import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 import { matchesBackupCard } from '@common/utils/tangemBackup';
 import { Navigator } from '@common/helpers/navigator';
 import { registerTangemIdentifyExit, waitForTangemIdentifyCleanup } from '@common/utils/tangemIdentifyNavigation';
@@ -252,7 +252,7 @@ class IdentifyTangemCardView extends Component<Props, State> {
             }
 
             stage = 'scan';
-            const card = await RNTangemSdk.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } });
+            const card = await TangemCard.scanCard({ initialMessage: { body: Localize.t('account.tangemScanHint') } });
             const { account } = this.props;
 
             if (!this.backupContextCurrent()) {

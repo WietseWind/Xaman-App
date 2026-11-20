@@ -9,7 +9,6 @@ import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'reac
 
 import * as AccountLib from 'xrpl-accountlib';
 
-import RNTangemSdk from 'tangem-sdk-react-native';
 
 import { XAppOrigin } from '@common/libs/payload';
 
@@ -27,7 +26,7 @@ import {
     GetWalletDerivedPublicKey,
     TangemCardMatchesAccount,
 } from '@common/utils/tangem';
-import { startTangemOfflineSession } from '@common/utils/tangemSession';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 
 import { AppScreens } from '@common/constants';
 
@@ -280,7 +279,7 @@ class AccountImportView extends Component<Props, State> {
                 // The scan below still runs. Offline mode matches the other Tangem entry points.
             });
 
-            const card = await RNTangemSdk.scanCard();
+            const card = await TangemCard.scanCard();
             const publicKey = GetWalletDerivedPublicKey(card);
             const address = AccountLib.utils.deriveAddress(publicKey);
 
