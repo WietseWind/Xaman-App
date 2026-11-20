@@ -147,6 +147,74 @@ describe('the contents of a Remit, one by one', () => {
     });
 });
 
+// The platform refuses most malformed lists when the sign request is made; it takes an entry with an
+// empty AmountEntry and an entry of another kind. The review cannot show those, so it must refuse them
+// with an error that says what is wrong (the review modal shows the message and declines the request).
+describe('amounts that are not amounts', () => {
+    const amountsOf = (Amounts: unknown) => remit({ ...tipbot, Amounts }).Amounts;
+
+    it.each([
+        ['an entry with an empty AmountEntry', [{ AmountEntry: {} }], 'Amounts[0] has no amount'],
+        ['an entry of another kind', [{ Memo: { MemoData: 'AA' } }], 'Amounts[0] is not an amount entry'],
+        ['an empty entry', [{}], 'Amounts[0] is not an amount entry'],
+        ['no entry', [null], 'Amounts[0] is not an amount entry'],
+        ['an amount that is null', [{ AmountEntry: { Amount: null } }], 'Amounts[0] has no amount'],
+        ['an amount that is a number', [{ AmountEntry: { Amount: 5 } }], 'Amounts[0] has no amount'],
+        ['an issued amount without value', [{ AmountEntry: { Amount: { currency: 'EUR' } } }], 'Amounts[0] has no amount'],
+        ['an issued amount with an empty value', [{ AmountEntry: { Amount: { currency: 'EUR', value: '' } } }], 'Amounts[0] has no amount'],
+        ['an issued amount with a value that is true', [{ AmountEntry: { Amount: { value: true } } }], 'Amounts[0] has no amount'],
+        ['an AmountEntry that is text', [{ AmountEntry: 'x' }], 'Amounts[0] is not an amount entry'],
+        ['a native amount that is not drops', [{ AmountEntry: { Amount: '1.5' } }], 'Amounts[0] is not an amount'],
+        ['a list that is not a list', 'x', 'Amounts is not a list'],
+    ])('%s: an error that says which entry, not an accident of the code', (_name, Amounts, message) => {
+        expect(() => amountsOf(Amounts)).toThrow(`This transaction cannot be shown: ${message}`);
+    });
+
+    it('names the entry that is wrong, after entries that are right', () => {
+        expect(() => amountsOf([{ AmountEntry: { Amount: '1000000' } }, { AmountEntry: {} }])).toThrow(
+            'Amounts[1] has no amount',
+        );
+    });
+
+    it('amounts that are amounts are read as before, also one without a currency', () => {
+        expect(amountsOf(full.Amounts)).toEqual([
+            { currency: 'XAH', value: '2.5' },
+            { currency: 'EUR', value: '12.5', issuer: Issuer },
+        ]);
+        expect(amountsOf([{ AmountEntry: { Amount: { value: '7' } } }])).toEqual([
+            { currency: '', value: '7', issuer: '' },
+        ]);
+        expect(amountsOf(undefined)).toBeUndefined();
+        expect(amountsOf([])).toBeUndefined();
+    });
+
+    it('an issued amount whose value is a number is read as that amount (the platform takes it, the codec signs it)', () => {
+        const numeric = { ...tipbot, Amounts: [{ AmountEntry: { Amount: { currency: 'EUR', issuer: Issuer, value: 12.5 } } }] };
+        expect(remit(numeric).Amounts).toEqual([{ currency: 'EUR', value: '12.5', issuer: Issuer }]);
+        // what is signed is the request as it came
+        expect(remit(numeric).JsonForSigning.Amounts).toEqual(numeric.Amounts);
+    });
+
+    it('a hex currency code and a value in scientific notation are amounts', () => {
+        const currency = '0158415500000000C1F76FF6ECB0BAC600000000';
+        expect(amountsOf([{ AmountEntry: { Amount: { currency, issuer: Issuer, value: '1e-5' } } }])).toEqual([
+            { currency, value: '1e-5', issuer: Issuer },
+        ]);
+    });
+
+    it('the review of such a Remit throws that error while it renders, for the error screen of the modal', () => {
+        const errors = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+        expect(() =>
+            renderer.create(
+                React.createElement(RemitTemplate as any, {
+                    transaction: remit({ ...tipbot, Amounts: [{ AmountEntry: {} }] }),
+                }),
+            ),
+        ).toThrow('This transaction cannot be shown: Amounts[0] has no amount.');
+        errors.mockRestore();
+    });
+});
+
 describe('the Remit screen', () => {
     let tree: ReactTestRenderer;
     const render = (json: Record<string, unknown>) => {
