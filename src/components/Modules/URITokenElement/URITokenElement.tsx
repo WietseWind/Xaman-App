@@ -35,9 +35,16 @@ interface State {
     image?: string;
 }
 
+// The look-up of the token asks the ledger and then the backend. Without an answer (no connection, a
+// slow node) the placeholder would stay until both requests time out, which is minutes. After this
+// long the card shows what it has: the token ID. An answer that comes later still fills the card in.
+export const URITOKEN_PLACEHOLDER_MAX_MS = 6000;
+
 /* Component ==================================================================== */
 class URITokenElement extends PureComponent<Props, State> {
     private readonly animatedPlaceholder: Animated.Value;
+    private mounted = false;
+    private placeholderTimer?: ReturnType<typeof setTimeout>;
 
     declare readonly props: Props & Required<Pick<Props, keyof typeof URITokenElement.defaultProps>>;
 
@@ -60,18 +67,40 @@ class URITokenElement extends PureComponent<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
+        this.placeholderTimer = setTimeout(this.stopWaiting, URITOKEN_PLACEHOLDER_MAX_MS);
         InteractionManager.runAfterInteractions(this.fetchDetails);
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+        if (this.placeholderTimer) clearTimeout(this.placeholderTimer);
+        this.animatedPlaceholder.stopAnimation();
+    }
+
+    // no answer yet: show the token ID instead of the placeholder
+    stopWaiting = () => {
+        const { isLoading } = this.state;
+        if (this.mounted && isLoading) {
+            this.setState({ isLoading: false });
+        }
+    };
+
     fetchDetails = async () => {
         const { object } = this.props;
+
+        if (!this.mounted) return;
 
         // start placeholder animation
         this.startPlaceholderAnimation();
 
         // try to fetch the object
         const uriTokenObject = object ?? (await this.fetchURITokenObject());
+        if (!this.mounted) return;
         const tokenDetails = uriTokenObject?.Owner ? await this.getDetailsFromBackend(uriTokenObject) : undefined;
+
+        if (!this.mounted) return;
+        if (this.placeholderTimer) clearTimeout(this.placeholderTimer);
 
         this.setState({
             isLoading: false,
@@ -128,7 +157,7 @@ class URITokenElement extends PureComponent<Props, State> {
     startPlaceholderAnimation = () => {
         const { isLoading } = this.state;
 
-        if (!isLoading) {
+        if (!isLoading || !this.mounted) {
             return;
         }
 

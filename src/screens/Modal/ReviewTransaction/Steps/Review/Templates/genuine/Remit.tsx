@@ -1,21 +1,23 @@
-import { isEmpty, isUndefined } from 'lodash';
+import { isUndefined } from 'lodash';
 
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 
 import { Remit } from '@common/libs/ledger/transactions';
+import { AmountType } from '@common/libs/ledger/parser/types';
 
 import { Clipboard } from '@common/helpers/clipboard';
 import { Toast } from '@common/helpers/interface';
 
-import { AmountText, Icon, ReadMore, TouchableDebounce } from '@components/General';
-import { AccountElement } from '@components/Modules';
+import { AmountText, Icon, InfoMessage, ReadMore, TouchableDebounce } from '@components/General';
+import { AccountElement, CurrencyElement, URITokenElement } from '@components/Modules';
 
 import Localize from '@locale';
 
 import styles from '../styles';
 
 import { TemplateProps } from '../types';
+import { remitContents, RemitContent } from './remitContents';
 import { AppStyles } from '@theme';
 
 /* types ==================================================================== */
@@ -33,36 +35,132 @@ class RemitTemplate extends Component<Props, State> {
         this.state = {};
     }
 
-    renderAmounts = () => {
-        const { transaction } = this.props;
+    renderAmount = (amount: AmountType) => {
+        const value = <AmountText value={amount.value} currency={amount.currency} style={styles.amount} immutable />;
 
-        if (isEmpty(transaction.Amounts)) {
-            return <Text style={styles.value}>{Localize.t('global.empty')}</Text>;
-        }
-
-        return transaction.Amounts.map((amount) => {
+        if (!amount.issuer) {
+            // the native asset has no issuer to show: icon and name left, the amount right, on one line
             return (
-                <View key={`${amount.currency}-${amount.value}`}>
-                    <AmountText value={amount.value} currency={amount.currency} style={styles.amount} immutable />
+                <View testID="remit-native-amount" style={[styles.contentBox, styles.remitNativeAmount]}>
+                    <CurrencyElement currency={amount.currency} containerStyle={styles.remitNativeCurrency} />
+                    {value}
                 </View>
             );
-        });
-    };
-
-    renderURITokenIDs = () => {
-        const { transaction } = this.props;
-
-        if (isEmpty(transaction.URITokenIDs)) {
-            return <Text style={styles.value}>{Localize.t('global.empty')}</Text>;
         }
 
-        return transaction.URITokenIDs?.map((id) => {
+        return (
+            <>
+                <View style={styles.contentBox}>
+                    <CurrencyElement issuer={amount.issuer} currency={amount.currency} />
+                </View>
+                <View testID="remit-issued-amount" style={[styles.contentBox, AppStyles.centerAligned]}>
+                    {value}
+                </View>
+            </>
+        );
+    };
+
+    renderURIToken = (id: string) => {
+        return (
+            <View style={styles.contentBox}>
+                <URITokenElement
+                    uriTokenId={id}
+                    showBurnableStatus
+                    truncate={false}
+                    containerStyle={styles.uriTokenContainer}
+                />
+            </View>
+        );
+    };
+
+    renderMint = (mint: Extract<RemitContent, { kind: 'mint' }>) => {
+        return (
+            <>
+                {!isUndefined(mint.uri) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.uri')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text selectable style={styles.value}>
+                                {mint.uriText ?? mint.uri}
+                            </Text>
+                            {/* the bytes that are signed, next to the text they stand for */}
+                            {!isUndefined(mint.uriText) && (
+                                <Text selectable style={styles.valueSubtext}>
+                                    {mint.uri}
+                                </Text>
+                            )}
+                        </View>
+                    </>
+                )}
+
+                {!isUndefined(mint.digest) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.digest')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text selectable style={styles.valueSubtext}>
+                                {mint.digest}
+                            </Text>
+                        </View>
+                    </>
+                )}
+
+                {mint.burnable && (
+                    <View style={styles.contentBox}>
+                        <InfoMessage type="warning" flat label={Localize.t('payload.theIssuerCanBurnThisToken')} />
+                    </View>
+                )}
+
+                {!isUndefined(mint.otherFlags) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.flags')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.valueSubtext}>{mint.otherFlags}</Text>
+                        </View>
+                    </>
+                )}
+            </>
+        );
+    };
+
+    /**
+     * Every amount, every URIToken and the URIToken to mint as a block of its own, in the way a
+     * Batch shows its transactions: the signer sees how many things this one Remit does.
+     */
+    renderContents = () => {
+        const { transaction } = this.props;
+        const contents = remitContents(transaction);
+
+        if (!contents.length) {
             return (
-                <Text key={`${id}`} style={styles.value}>
-                    {id}
-                </Text>
+                <View style={styles.contentBox}>
+                    <Text style={styles.value}>{Localize.t('global.empty')}</Text>
+                </View>
             );
-        });
+        }
+
+        const title = {
+            amount: Localize.t('global.amount'),
+            uritoken: Localize.t('global.uritoken'),
+            mint: Localize.t('events.mintURIToken'),
+        };
+
+        return contents.map((content, index) => (
+            <View key={content.key} testID={`remit-content-${content.key}`} style={styles.transactionContainer}>
+                <View style={styles.innerTransactionHeader}>
+                    <Text style={styles.headerDesc}>{title[content.kind]}</Text>
+                    <View style={styles.headerCountContainer}>
+                        <Text style={styles.headerCount}>
+                            ({index + 1}/{contents.length})
+                        </Text>
+                    </View>
+                </View>
+                <View style={styles.innerTransactionContainerBorder}>
+                    {content.kind === 'amount' && this.renderAmount(content.amount)}
+                    {content.kind === 'uritoken' && this.renderURIToken(content.id)}
+                    {content.kind === 'mint' && this.renderMint(content)}
+                </View>
+            </View>
+        ));
     };
 
     copyBlob = () => {
@@ -93,53 +191,9 @@ class RemitTemplate extends Component<Props, State> {
                     </>
                 )}
 
-                {!isUndefined(transaction.Amounts) && (
-                    <>
-                        <Text style={styles.label}>{Localize.t('events.amounts')}</Text>
-                        <View style={styles.contentBox}>{this.renderAmounts()}</View>
-                    </>
-                )}
-
-                {!isUndefined(transaction.URITokenIDs) && (
-                    <>
-                        <Text style={styles.label}>{Localize.t('events.uriTokenIDs')}</Text>
-                        <View style={styles.contentBox}>{this.renderURITokenIDs()}</View>
-                    </>
-                )}
-
-                {!isUndefined(transaction.MintURIToken) && (
-                    <>
-                        <Text style={styles.label}>{Localize.t('events.mintURIToken')}</Text>
-                        <View style={[styles.contentBoxSecondary]}>
-                            {!isUndefined(transaction.MintURIToken.URI) && (
-                                <>
-                                    <Text style={styles.label}>{Localize.t('global.uri')}</Text>
-                                    <View style={styles.contentBox}>
-                                        <Text style={styles.value}>{transaction.MintURIToken.URI}</Text>
-                                    </View>
-                                </>
-                            )}
-
-                            {!isUndefined(transaction.MintURIToken.Digest) && (
-                                <>
-                                    <Text style={styles.label}>{Localize.t('global.digest')}</Text>
-                                    <View style={styles.contentBox}>
-                                        <Text style={styles.valueSubtext}>{transaction.MintURIToken.Digest}</Text>
-                                    </View>
-                                </>
-                            )}
-
-                            {!isUndefined(transaction.MintURIToken.Flags) && (
-                                <>
-                                    <Text style={styles.label}>{Localize.t('global.flags')}</Text>
-                                    <View style={styles.contentBox}>
-                                        <Text style={styles.valueSubtext}>{transaction.MintURIToken.Flags}</Text>
-                                    </View>
-                                </>
-                            )}
-                        </View>
-                    </>
-                )}
+                {/* what this Remit sends, transfers and mints: one block each */}
+                <Text style={styles.label}>{Localize.t('events.remitContents')}</Text>
+                <View style={AppStyles.marginBottomSml}>{this.renderContents()}</View>
 
                 {!isUndefined(transaction.Blob) && (
                     <>

@@ -14,6 +14,9 @@ const nestedReviewFields: Record<string, string[]> = {
     Memo: ['MemoType', 'MemoFormat', 'MemoData'],
     Signers: ['Signer'],
     Signer: ['Account', 'SigningPubKey', 'TxnSignature'],
+    // Remit (Xahau): each amount is wrapped in an AmountEntry, which the bundled (XRPL) fields do not have
+    Amounts: ['AmountEntry'],
+    AmountEntry: ['Amount'],
 };
 const nestedKnown = (parent: string, name: string) =>
     nestedReviewFields[parent]?.includes(name) ?? bundledFields.has(name);
