@@ -1,7 +1,12 @@
 import crypto from 'crypto';
 
 import { generate } from 'xrpl-accountlib';
-import { classicAddressToXAddress, encodeAccountPublic, encodeNodePublic } from 'ripple-address-codec';
+import {
+    classicAddressToXAddress,
+    encodeAccountPublic,
+    encodeNodePublic,
+    encodeSeed,
+} from 'ripple-address-codec';
 
 import {
     scrubText,
@@ -424,6 +429,83 @@ describe('helpers', () => {
         expect(groupingName({ context: 'Vault sign', errorName: 'TypeError', message: 'x', frames: [] })).toBe(
             'Vault sign: TypeError: x',
         );
+    });
+});
+
+// A rule that takes a piece out of a text (six digits, a run of words) must not get to a secret before the
+// rule that takes the whole token. Seen in the fuzz test below: a seed with exactly six digits in a row lost
+// those six digits only, and the 16 characters before them and the 9 after them stayed in the text. Six
+// base58 digits are 531441 possibilities: with the checksum that is the whole seed.
+describe('a secret with a piece that another rule also takes', () => {
+    // seeds with a real checksum and a given shape, found by counting up the entropy (no key is derived)
+    const seedsWith = (shape: RegExp, type: 'ed25519' | 'secp256k1', count: number): string[] => {
+        const found: string[] = [];
+        for (let i = 0; found.length < count && i < 2000000; i++) {
+            const entropy = crypto.createHash('sha256').update(`scrub-shape-${type}-${i}`).digest().subarray(0, 16);
+            const seed = encodeSeed(entropy, type);
+            if (shape.test(seed)) {
+                found.push(seed);
+            }
+        }
+        expect(found).toHaveLength(count);
+        return found;
+    };
+    const contexts = (secret: string) => [
+        secret,
+        `failed: ${secret}`,
+        `failed: ${secret}.`,
+        `could not import ${secret} for the account`,
+        `{"value":"${secret}"}`,
+        `[${secret}]`,
+        `${secret}x`,
+        `x${secret}`,
+    ];
+    const expectGone = (secret: string) => {
+        contexts(secret).forEach((text) => {
+            const output = scrubText(text, 100000);
+            expect(leaks(output, secret)).toEqual([]);
+            // not even a short piece next to the marker: the whole token went
+            expect(output).not.toContain(secret.slice(0, 8));
+            expect(output).not.toContain(secret.slice(-8));
+        });
+    };
+
+    it.each(['ed25519', 'secp256k1'] as const)('%s seed with exactly six digits in a row', (type) => {
+        seedsWith(/[^0-9][0-9]{6}[^0-9]/, type, 5).forEach(expectGone);
+    });
+
+    it.each(['ed25519', 'secp256k1'] as const)('%s seed that ends with six digits', (type) => {
+        seedsWith(/[^0-9][0-9]{6}$/, type, 2).forEach(expectGone);
+    });
+
+    it('seed with two groups of six digits', () => {
+        // rare as a real seed: made from a seed with one group, the checksum is then wrong (random base58)
+        const [seed] = seedsWith(/[^0-9][0-9]{6}[^0-9]/, 'ed25519', 1);
+        expectGone(`${seed.slice(0, 5)}123456${seed.slice(11)}`);
+    });
+
+    it('seed with a run of letters that looks like words', () => {
+        seedsWith(/[a-z]{6,}/, 'secp256k1', 3).forEach(expectGone);
+    });
+
+    it('a public key in base58 with six digits in a row', () => {
+        for (let i = 0, found = 0; found < 3; i++) {
+            const key = encodeAccountPublic(
+                Buffer.concat([Buffer.from([2]), crypto.createHash('sha256').update(`scrub-public-${i}`).digest()]),
+            );
+            if (/[^0-9][0-9]{6}[^0-9]/.test(key)) {
+                found += 1;
+                expectGone(key);
+            }
+        }
+    });
+
+    it('unchanged: six digits alone, in a group, and in a word are taken; an address stays', () => {
+        expect(scrubText('code 123456 was typed')).not.toContain('123456');
+        expect(scrubText('rows 123456 234567 345678')).not.toMatch(/[0-9]{6}/);
+        expect(scrubText('passcode123456')).not.toContain('123456');
+        const address = 'rwietsevLFg8XSmG3bEZzFein1g8RBqWDZ';
+        expect(scrubText(`account ${address} failed`)).toContain(address);
     });
 });
 

@@ -279,14 +279,10 @@ const RULES: Array<(text: string) => string> = [
         ),
     // hex: private keys, public keys (66), hashes (64), encryption keys
     (text) => text.replace(/(?:0x)?[0-9a-fA-F]{32,}/g, REDACTED),
-    // secret numbers (and the passcode): long digit runs, 6-digit groups, lone 6-digit numbers.
-    // A lone number is kept only as the fraction of a decimal (1.123456); stack positions are kept
-    // by the frame rewrite in scrubStack, not here.
-    (text) => text.replace(/\d{24,}/g, REDACTED),
-    (text) => text.replace(/(^|\D)(\d{6}(?:[\s.,;:|/"'[\]\\-]{1,6}\d{6})+)(?!\d)/g, `$1${REDACTED}`),
-    (text) => text.replace(/(^|[^\d.]|\D\.)\d{6}(?!\d)/g, `$1${REDACTED}`),
-    // mnemonics, in any case and with any common separator
-    (text) => text.replace(/[a-z]+(?:[\s,._"'[\]\\-]{1,6}[a-z]+)*/gi, redactMnemonicRun),
+    // Whole tokens first (base64, base58), then the rules that take a piece out of a text (digits,
+    // words). In the other order a piece rule cuts a secret in two and the token rule does not see it any
+    // more: a seed with six digits in a row lost only those six, and both halves stayed (found by the fuzz
+    // test: about 1 seed in 4000 has that shape).
     // base64 key material (pure base58 runs are left to the next rule)
     (text) =>
         text.replace(/[A-Za-z0-9+/]{40,}={0,2}/g, (token) =>
@@ -304,6 +300,14 @@ const RULES: Array<(text: string) => string> = [
             }
             return token;
         }),
+    // secret numbers (and the passcode): long digit runs, 6-digit groups, lone 6-digit numbers.
+    // A lone number is kept only as the fraction of a decimal (1.123456); stack positions are kept
+    // by the frame rewrite in scrubStack, not here.
+    (text) => text.replace(/\d{24,}/g, REDACTED),
+    (text) => text.replace(/(^|\D)(\d{6}(?:[\s.,;:|/"'[\]\\-]{1,6}\d{6})+)(?!\d)/g, `$1${REDACTED}`),
+    (text) => text.replace(/(^|[^\d.]|\D\.)\d{6}(?!\d)/g, `$1${REDACTED}`),
+    // mnemonics, in any case and with any common separator
+    (text) => text.replace(/[a-z]+(?:[\s,._"'[\]\\-]{1,6}[a-z]+)*/gi, redactMnemonicRun),
 ];
 
 const truncate = (text: string, maxLength: number): string => {
