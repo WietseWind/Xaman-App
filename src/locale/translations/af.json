@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment channel geëis tot dusver",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Wat jy sal stuur",
     "burnNFT": "Verbrand NFT",
     "modifyNFT": "Wysig NFT",
     "burnURIToken": "Brand URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Ekstra velde",
     "extraFieldsWarning": "Xaman kan hierdie ekstra velde nie volledig dekodeer nie. Teken net as jy dit verstaan en hierdie versoek verwag het. Stop as iemand jou belonings of voordele belowe.",
+    "remitPaysReserves": "Waarskuwing: %{amount} %{asset} ekstra sal gestuur word om die reserwes by die bestemming te dek:",
+    "remitPaysActivation": "Rekeningaktivering",
+    "remitPaysTrustLines": "Trustlines: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman het geen spesifieke skerm vir hierdie transaksietipe nie. Kontroleer alle velde. Teken slegs as jy hierdie versoek verstaan en verwag het. Stop as iemand belonings belowe.",
     "universalTransactionUnavailable": "Die gekose netwerk ondersteun nie hierdie transaksietipe nie.",
     "definitionsChanged": "Netwerkbesonderhede het verander. Sluit hierdie versoek en hersien dit weer.",

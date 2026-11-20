@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment Channel-belopp hämtat hittills",
     "mintNFT": "Skapa NFT",
     "mintURIToken": "Skapa URI Token",
+    "remitContents": "Det här skickar du",
     "burnNFT": "Bränn NFT",
     "modifyNFT": "Modifiera NFT",
     "burnURIToken": "Bränn URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Extra fält",
     "extraFieldsWarning": "Xaman kan inte avkoda dessa fält helt. Signera bara om du förstår dem och förväntade dig denna begäran. Avbryt om någon lovar dig belöningar eller förmåner.",
+    "remitPaysReserves": "Varning: %{amount} %{asset} extra skickas för att täcka reserverna hos mottagaren:",
+    "remitPaysActivation": "Kontoaktivering",
+    "remitPaysTrustLines": "Trust lines: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman har ingen särskild skärm för den här transaktionstypen. Kontrollera alla fält. Signera bara om du förstår och förväntade dig denna begäran. Avbryt om någon lovar belöningar.",
     "universalTransactionUnavailable": "Det valda nätverket stöder inte den här transaktionstypen.",
     "definitionsChanged": "Nätverksuppgifterna har ändrats. Stäng begäran och granska den igen.",

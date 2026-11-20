@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment channel claimed so far",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Ce vei trimite",
     "burnNFT": "Burn NFT",
     "modifyNFT": "Modify NFT",
     "burnURIToken": "Burn URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Câmpuri suplimentare",
     "extraFieldsWarning": "Xaman nu poate decoda complet aceste câmpuri. Semnați doar dacă le înțelegeți și vă așteptați la această cerere. Opriți-vă dacă cineva vă promite recompense sau beneficii.",
+    "remitPaysReserves": "Atenție: se vor trimite suplimentar %{amount} %{asset} pentru a acoperi rezervele la destinație:",
+    "remitPaysActivation": "Activarea contului",
+    "remitPaysTrustLines": "Linii de încredere: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman nu are un ecran dedicat acestui tip de tranzacție. Verificați toate câmpurile. Semnați numai dacă înțelegeți și așteptați această cerere. Opriți-vă dacă cineva promite recompense.",
     "universalTransactionUnavailable": "Rețeaua selectată nu acceptă acest tip de tranzacție.",
     "definitionsChanged": "Datele rețelei s-au schimbat. Închideți cererea și verificați-o din nou.",

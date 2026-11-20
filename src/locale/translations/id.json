@@ -605,6 +605,7 @@
     "payChannelBalance": "Saluran pembayaran diklaim sejauh ini",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Yang akan Anda kirim",
     "burnNFT": "Bakar NFT",
     "modifyNFT": "Modify NFT",
     "burnURIToken": "Burn URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Kolom tambahan",
     "extraFieldsWarning": "Xaman tidak dapat sepenuhnya mendekode kolom ini. Tanda tangani hanya jika Anda memahaminya dan mengharapkan permintaan ini. Berhenti jika seseorang menjanjikan hadiah atau keuntungan.",
+    "remitPaysReserves": "Perhatian: %{amount} %{asset} tambahan akan dikirim untuk menutup cadangan di tujuan:",
+    "remitPaysActivation": "Aktivasi akun",
+    "remitPaysTrustLines": "Trust line: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman tidak memiliki layar khusus untuk jenis transaksi ini. Periksa semua kolom. Tanda tangani hanya jika Anda memahami dan mengharapkan permintaan ini. Hentikan jika seseorang menjanjikan hadiah.",
     "universalTransactionUnavailable": "Jaringan yang dipilih tidak mendukung jenis transaksi ini.",
     "definitionsChanged": "Detail jaringan berubah. Tutup permintaan ini dan periksa kembali.",

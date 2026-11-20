@@ -605,6 +605,7 @@
     "payChannelBalance": "Betalingskanal krevd så langt",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Dette sender du",
     "burnNFT": "Brenn NFT",
     "modifyNFT": "Modifiser NFT",
     "burnURIToken": "Brenn URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Ekstra felt",
     "extraFieldsWarning": "Xaman kan ikke dekode disse feltene fullt ut. Signer bare hvis du forstår dem og forventet denne forespørselen. Stopp hvis noen lover deg belønninger eller fordeler.",
+    "remitPaysReserves": "Advarsel: %{amount} %{asset} ekstra sendes for å dekke reservene hos mottakeren:",
+    "remitPaysActivation": "Kontoaktivering",
+    "remitPaysTrustLines": "Trust lines: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman har ingen egen skjerm for denne transaksjonstypen. Kontroller alle feltene. Signer bare hvis du forstår og forventet denne forespørselen. Stopp hvis noen lover belønninger.",
     "universalTransactionUnavailable": "Det valgte nettverket støtter ikke denne transaksjonstypen.",
     "definitionsChanged": "Nettverksdetaljene er endret. Lukk forespørselen og se gjennom den på nytt.",

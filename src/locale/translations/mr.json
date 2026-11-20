@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment channel claimed so far",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "तुम्ही काय पाठवाल",
     "burnNFT": "Burn NFT",
     "modifyNFT": "Modify NFT",
     "burnURIToken": "Burn URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "अतिरिक्त फील्ड",
     "extraFieldsWarning": "Xaman ही फील्ड पूर्णपणे डिकोड करू शकत नाही. ती समजत असतील व ही विनंती अपेक्षित असेल तरच स्वाक्षरी करा. कोणी बक्षीस किंवा फायद्याचे वचन दिल्यास थांबा.",
+    "remitPaysReserves": "सावधान: गंतव्यस्थानी राखीव रकमेसाठी अतिरिक्त %{amount} %{asset} पाठवले जातील:",
+    "remitPaysActivation": "खाते सक्रियकरण",
+    "remitPaysTrustLines": "ट्रस्ट लाइन: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "या व्यवहार प्रकारासाठी Xaman मध्ये विशिष्ट स्क्रीन नाही. सर्व फील्ड तपासा. ही विनंती समजत असेल आणि अपेक्षित असेल तरच स्वाक्षरी करा. कोणी बक्षीस देण्याचे आश्वासन दिल्यास थांबा.",
     "universalTransactionUnavailable": "निवडलेले नेटवर्क या व्यवहार प्रकाराला समर्थन देत नाही.",
     "definitionsChanged": "नेटवर्कचे तपशील बदलले. विनंती बंद करून पुन्हा तपासा.",

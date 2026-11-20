@@ -152,6 +152,19 @@ const styles = StyleService.create({
         borderTopWidth: 1,
         borderTopColor: '$grey',
     },
+    // Remit: the native amount on one line with its icon and name
+    remitNativeAmount: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    remitNativeCurrency: {
+        flexShrink: 1,
+        marginBottom: 0,
+        marginRight: AppSizes.paddingExtraSml,
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
+    },
     amount: {
         fontFamily: AppFonts.base.familyMonoBold,
         fontWeight: '600',

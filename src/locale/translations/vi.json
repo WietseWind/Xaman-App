@@ -605,6 +605,7 @@
     "payChannelBalance": "Số dư đã claim của Payment Channel",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Những gì bạn sẽ gửi",
     "burnNFT": "Đốt NFT",
     "modifyNFT": "Sửa đổi NFT",
     "burnURIToken": "Đốt URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Trường bổ sung",
     "extraFieldsWarning": "Xaman không thể giải mã đầy đủ các trường này. Chỉ ký nếu bạn hiểu chúng và đã dự kiến yêu cầu này. Dừng lại nếu ai đó hứa hẹn phần thưởng hoặc lợi ích.",
+    "remitPaysReserves": "Lưu ý: %{amount} %{asset} sẽ được gửi thêm để trang trải các khoản dự trữ tại đích đến:",
+    "remitPaysActivation": "Kích hoạt tài khoản",
+    "remitPaysTrustLines": "Trust line: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman không có màn hình riêng cho loại giao dịch này. Kiểm tra tất cả các trường. Chỉ ký nếu bạn hiểu và đã dự kiến yêu cầu này. Dừng lại nếu có người hứa hẹn phần thưởng.",
     "universalTransactionUnavailable": "Mạng đã chọn không hỗ trợ loại giao dịch này.",
     "definitionsChanged": "Thông tin mạng đã thay đổi. Đóng yêu cầu và kiểm tra lại.",

@@ -605,6 +605,7 @@
     "payChannelBalance": "Zatím nárokováno z Payment Channel",
     "mintNFT": "Razba NFT",
     "mintURIToken": "Razba URI Token",
+    "remitContents": "Co odešlete",
     "burnNFT": "Vypálit NFT",
     "modifyNFT": "Upravit NFT",
     "burnURIToken": "Vypálit URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Další pole",
     "extraFieldsWarning": "Xaman tato pole neumí plně dekódovat. Podepište jen tehdy, pokud jim rozumíte a tento požadavek očekáváte. Pokud vám někdo slibuje odměny či výhody, nepokračujte.",
+    "remitPaysReserves": "Upozornění: navíc bude odesláno %{amount} %{asset} na pokrytí rezerv u příjemce:",
+    "remitPaysActivation": "Aktivace účtu",
+    "remitPaysTrustLines": "Linky důvěry: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman nemá zvláštní obrazovku pro tento typ transakce. Zkontrolujte všechna pole. Podepište pouze tehdy, pokud tomuto požadavku rozumíte a očekávali jste jej. Pokud někdo slibuje odměny, zastavte se.",
     "universalTransactionUnavailable": "Vybraná síť tento typ transakce nepodporuje.",
     "definitionsChanged": "Údaje sítě se změnily. Zavřete požadavek a znovu jej zkontrolujte.",

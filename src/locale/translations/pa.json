@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment channel claimed so far",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "ਤੁਸੀਂ ਕੀ ਭੇਜੋਗੇ",
     "burnNFT": "Burn NFT",
     "modifyNFT": "Modify NFT",
     "burnURIToken": "Burn URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "ਵਾਧੂ ਖੇਤਰ",
     "extraFieldsWarning": "Xaman ਇਹ ਖੇਤਰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਡੀਕੋਡ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਇਨ੍ਹਾਂ ਨੂੰ ਸਮਝਦੇ ਹੋ ਅਤੇ ਇਸ ਬੇਨਤੀ ਦੀ ਉਮੀਦ ਸੀ ਤਾਂ ਹੀ ਦਸਤਖਤ ਕਰੋ। ਕੋਈ ਇਨਾਮ ਜਾਂ ਲਾਭ ਦਾ ਵਾਅਦਾ ਕਰੇ ਤਾਂ ਰੁਕੋ।",
+    "remitPaysReserves": "ਸਾਵਧਾਨ: ਮੰਜ਼ਿਲ 'ਤੇ ਰਿਜ਼ਰਵ ਲਈ ਵਾਧੂ %{amount} %{asset} ਭੇਜੇ ਜਾਣਗੇ:",
+    "remitPaysActivation": "ਖਾਤਾ ਐਕਟੀਵੇਸ਼ਨ",
+    "remitPaysTrustLines": "ਟਰੱਸਟ ਲਾਈਨਾਂ: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "ਇਸ ਲੈਣ-ਦੇਣ ਦੀ ਕਿਸਮ ਲਈ Xaman ਵਿੱਚ ਕੋਈ ਖਾਸ ਸਕ੍ਰੀਨ ਨਹੀਂ ਹੈ। ਸਾਰੇ ਖੇਤਰਾਂ ਦੀ ਜਾਂਚ ਕਰੋ। ਸਿਰਫ਼ ਤਾਂ ਹੀ ਦਸਤਖ਼ਤ ਕਰੋ ਜੇ ਤੁਸੀਂ ਇਸ ਬੇਨਤੀ ਨੂੰ ਸਮਝਦੇ ਹੋ ਅਤੇ ਇਸ ਦੀ ਉਮੀਦ ਸੀ। ਜੇ ਕੋਈ ਇਨਾਮਾਂ ਦਾ ਵਾਅਦਾ ਕਰਦਾ ਹੈ ਤਾਂ ਰੁਕੋ।",
     "universalTransactionUnavailable": "ਚੁਣਿਆ ਨੈੱਟਵਰਕ ਇਸ ਲੈਣ-ਦੇਣ ਦੀ ਕਿਸਮ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦਾ।",
     "definitionsChanged": "ਨੈੱਟਵਰਕ ਦੇ ਵੇਰਵੇ ਬਦਲ ਗਏ ਹਨ। ਬੇਨਤੀ ਬੰਦ ਕਰਕੇ ਮੁੜ ਜਾਂਚੋ।",

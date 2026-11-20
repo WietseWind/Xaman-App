@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment Channel отримано досі",
     "mintNFT": "Карбування NFT",
     "mintURIToken": "Карбування URIToken",
+    "remitContents": "Що ви надішлете",
     "burnNFT": "Спалити NFT",
     "modifyNFT": "Змінити NFT",
     "burnURIToken": "Спалити URIToken",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Додаткові поля",
     "extraFieldsWarning": "Xaman не може повністю розшифрувати ці поля. Підписуйте лише якщо розумієте їх і очікували цей запит. Зупиніться, якщо хтось обіцяє винагороди чи вигоди.",
+    "remitPaysReserves": "Увага: додатково буде надіслано %{amount} %{asset} для покриття резервів в отримувача:",
+    "remitPaysActivation": "Активація акаунта",
+    "remitPaysTrustLines": "Лінії довіри: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "У Xaman немає окремого екрана для цього типу транзакції. Перевірте всі поля. Підписуйте лише якщо розумієте й очікували цей запит. Зупиніться, якщо хтось обіцяє винагороду.",
     "universalTransactionUnavailable": "Вибрана мережа не підтримує цей тип транзакції.",
     "definitionsChanged": "Дані мережі змінилися. Закрийте запит і перевірте його знову.",

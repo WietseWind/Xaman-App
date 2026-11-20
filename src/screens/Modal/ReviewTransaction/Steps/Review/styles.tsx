@@ -64,6 +64,21 @@ const styles = StyleService.create({
     keyboardAvoidContainerStyle: {
         flexGrow: 1,
     },
+    // Remit: the reserves that are sent along, amounts under each other
+    remitCostLines: {
+        marginTop: 6,
+    },
+    remitCostLine: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+    },
+    remitCostAmount: {
+        fontWeight: '600',
+        marginRight: 10,
+    },
+    remitCostLabel: {
+        flexShrink: 1,
+    },
 });
 
 export default styles;

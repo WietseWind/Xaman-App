@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment Channel reclamat fins ara",
     "mintNFT": "Encunyar NFT",
     "mintURIToken": "Encunyar URI Token",
+    "remitContents": "Què enviaràs",
     "burnNFT": "Cremar NFT",
     "modifyNFT": "Modificar NFT",
     "burnURIToken": "Cremar URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Camps addicionals",
     "extraFieldsWarning": "Xaman no pot descodificar del tot aquests camps. Signa només si els entens i esperaves aquesta sol·licitud. Atura't si algú et promet recompenses o beneficis.",
+    "remitPaysReserves": "Atenció: s'enviaran %{amount} %{asset} addicionals per cobrir les reserves a la destinació:",
+    "remitPaysActivation": "Activació del compte",
+    "remitPaysTrustLines": "Línies de confiança: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman no té una pantalla específica per a aquest tipus de transacció. Comprova tots els camps. Signa només si entens i esperaves aquesta sol·licitud. Atura’t si algú promet recompenses.",
     "universalTransactionUnavailable": "La xarxa seleccionada no admet aquest tipus de transacció.",
     "definitionsChanged": "Les dades de la xarxa han canviat. Tanca la sol·licitud i revisa-la de nou.",

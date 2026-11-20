@@ -605,6 +605,7 @@
     "payChannelBalance": "چينل بيلنس",
     "mintNFT": "NFT مِنٽ ڪريو",
     "mintURIToken": "URIToken مِنٽ ڪريو",
+    "remitContents": "توهان ڇا موڪليندا",
     "burnNFT": "NFT ساڙيو",
     "modifyNFT": "NFT تبديل ڪريو",
     "burnURIToken": "URIToken ساڙيو",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "اضافي فيلڊ",
     "extraFieldsWarning": "Xaman هي اضافي فيلڊ مڪمل طرح ڊيڪوڊ نٿو ڪري سگهي. رڳو تڏهن صحيح ڪريو جڏهن اهي سمجهو ۽ هن درخواست جي اميد هجي. ڪو انعام يا فائدي جو واعدو ڪري ته رڪجي وڃو.",
+    "remitPaysReserves": "خبردار: منزل تي رزروز پوري ڪرڻ لاءِ وڌيڪ %{amount} %{asset} موڪليا ويندا:",
+    "remitPaysActivation": "اڪائونٽ چالو ڪرڻ",
+    "remitPaysTrustLines": "ٽرسٽ لائينون: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman ۾ هن قسم جي ٽرانزيڪشن لاءِ مخصوص اسڪرين ناهي. سڀ خانا چيڪ ڪريو. رڳو تڏهن صحيح ڪريو جڏهن توهان هن درخواست کي سمجهو ٿا ۽ ان جي اميد رکندا هئا. جيڪڏهن ڪو انعام جو واعدو ڪري ته روڪيو.",
     "universalTransactionUnavailable": "چونڊيل نيٽ ورڪ هن قسم جي ٽرانزيڪشن کي سپورٽ نٿو ڪري.",
     "definitionsChanged": "نيٽ ورڪ جا تفصيل بدلجي ويا آهن. درخواست بند ڪري ٻيهر جاچيو.",

@@ -605,6 +605,7 @@
     "payChannelBalance": "رصيد Payment Channel المطالب به حتى الآن",
     "mintNFT": "سك NFT",
     "mintURIToken": "سك URI Token",
+    "remitContents": "ما سترسله",
     "burnNFT": "حرق NFT",
     "modifyNFT": "تعديل NFT",
     "burnURIToken": "حرق URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "حقول إضافية",
     "extraFieldsWarning": "لا يستطيع Xaman فك ترميز هذه الحقول الإضافية بالكامل. وقّع فقط إذا كنت تفهمها وتتوقع هذا الطلب. توقّف إذا وعدك أحد بمكافآت أو مزايا.",
+    "remitPaysReserves": "تنبيه: سيُرسل %{amount} %{asset} إضافية لتغطية الاحتياطيات لدى الوجهة:",
+    "remitPaysActivation": "تفعيل الحساب",
+    "remitPaysTrustLines": "خطوط الثقة: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "لا توجد في Xaman شاشة خاصة بهذا النوع من المعاملات. تحقّق من جميع الحقول. لا توقّع إلا إذا كنت تفهم هذا الطلب وتتوقعه. توقّف إذا وعدك أحد بمكافآت.",
     "universalTransactionUnavailable": "الشبكة المحددة لا تدعم هذا النوع من المعاملات.",
     "definitionsChanged": "تغيّرت تفاصيل الشبكة. أغلق هذا الطلب وراجعه من جديد.",

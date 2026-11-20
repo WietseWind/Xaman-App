@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment Channel қазіргі талап етілген",
     "mintNFT": "NFT жасау",
     "mintURIToken": "URI Token жасау",
+    "remitContents": "Не жібересіз",
     "burnNFT": "NFT жағу",
     "modifyNFT": "NFT өзгерту",
     "burnURIToken": "URI Token жағу",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Қосымша өрістер",
     "extraFieldsWarning": "Xaman бұл өрістерді толық декодтай алмайды. Оларды түсініп, осы сұрауды күткен болсаңыз ғана қол қойыңыз. Біреу сыйақы не пайда уәде етсе, тоқтаңыз.",
+    "remitPaysReserves": "Назар аударыңыз: алушыдағы резервтерді жабу үшін қосымша %{amount} %{asset} жіберіледі:",
+    "remitPaysActivation": "Тіркелгіні белсендіру",
+    "remitPaysTrustLines": "Сенім желілері: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman қолданбасында бұл транзакция түріне арналған арнайы экран жоқ. Барлық өрістерді тексеріңіз. Бұл сұрауды түсініп, күткен болсаңыз ғана қол қойыңыз. Біреу сыйақы уәде етсе, тоқтаңыз.",
     "universalTransactionUnavailable": "Таңдалған желі бұл транзакция түрін қолдамайды.",
     "definitionsChanged": "Желі деректері өзгерді. Сұрауды жауып, қайта тексеріңіз.",

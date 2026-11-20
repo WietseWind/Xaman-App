@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment Channel dagoeneko eskatuta",
     "mintNFT": "Sortu NFT",
     "mintURIToken": "Sortu URI Token",
+    "remitContents": "Zer bidaliko duzun",
     "burnNFT": "Erre NFT",
     "modifyNFT": "Aldatu NFT",
     "burnURIToken": "Erre URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Eremu gehigarriak",
     "extraFieldsWarning": "Xamanek ezin ditu eremu hauek guztiz deskodetu. Sinatu soilik ulertzen badituzu eta eskaera hau espero bazenuen. Gelditu norbaitek sariak edo onurak agintzen badizkizu.",
+    "remitPaysReserves": "Kontuz: %{amount} %{asset} gehiago bidaliko dira helmugako erreserbak estaltzeko:",
+    "remitPaysActivation": "Kontuaren aktibazioa",
+    "remitPaysTrustLines": "Konfiantza-lerroak: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xamanek ez du transakzio mota honetarako pantaila berezirik. Egiaztatu eremu guztiak. Sinatu eskaera ulertzen baduzu eta espero bazenuen soilik. Gelditu norbaitek sariak agintzen baditu.",
     "universalTransactionUnavailable": "Hautatutako sareak ez du transakzio mota hau onartzen.",
     "definitionsChanged": "Sareko datuak aldatu dira. Itxi eskaera eta berrikusi berriro.",

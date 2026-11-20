@@ -605,6 +605,7 @@
     "payChannelBalance": "Saldo Payment Channel richiesto finora",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Cosa invierai",
     "burnNFT": "Brucia NFT",
     "modifyNFT": "Modifica NFT",
     "burnURIToken": "Brucia URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Campi aggiuntivi",
     "extraFieldsWarning": "Xaman non può decodificare del tutto questi campi. Firma solo se li comprendi e ti aspettavi questa richiesta. Fermati se qualcuno ti promette premi o vantaggi.",
+    "remitPaysReserves": "Attenzione: %{amount} %{asset} in più saranno inviati per coprire le riserve presso il destinatario:",
+    "remitPaysActivation": "Attivazione dell'account",
+    "remitPaysTrustLines": "Trust line: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman non ha una schermata specifica per questo tipo di transazione. Controlla tutti i campi. Firma solo se comprendi e ti aspettavi questa richiesta. Fermati se qualcuno promette ricompense.",
     "universalTransactionUnavailable": "La rete selezionata non supporta questo tipo di transazione.",
     "definitionsChanged": "I dati di rete sono cambiati. Chiudi la richiesta e controllala di nuovo.",

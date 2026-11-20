@@ -605,6 +605,7 @@
     "payChannelBalance": "Canle de pago reclamado ata agora",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "O que enviarás",
     "burnNFT": "Queimar NFT",
     "modifyNFT": "Modificar NFT",
     "burnURIToken": "Queimar URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Campos adicionais",
     "extraFieldsWarning": "Xaman non pode descodificar por completo estes campos. Asina só se os entendes e esperabas esta solicitude. Detente se alguén che promete recompensas ou beneficios.",
+    "remitPaysReserves": "Atención: enviaranse %{amount} %{asset} adicionais para cubrir as reservas no destino:",
+    "remitPaysActivation": "Activación da conta",
+    "remitPaysTrustLines": "Liñas de confianza: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman non ten unha pantalla específica para este tipo de transacción. Revisa todos os campos. Asina só se entendes e esperabas esta solicitude. Detente se alguén promete recompensas.",
     "universalTransactionUnavailable": "A rede seleccionada non admite este tipo de transacción.",
     "definitionsChanged": "Os datos da rede cambiaron. Pecha a solicitude e revísaa de novo.",

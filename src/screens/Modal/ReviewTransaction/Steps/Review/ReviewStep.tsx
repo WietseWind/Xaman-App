@@ -27,7 +27,7 @@ import {
 } from '@components/General';
 import { AccountPicker } from '@components/Modules';
 
-import { InstanceTypes } from '@common/libs/ledger/types/enums';
+import { InstanceTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
 import { transactionHasCriticalDelegation } from '@common/libs/ledger/utils/delegationDetails';
 
 import { AppInfo, SignerLabel, SignForAccount } from '@components/Modules/ReviewTransaction';
@@ -46,6 +46,8 @@ import * as GenuineTransactionTemplates from './Templates/genuine';
 import * as PseudoTransactionTemplates from './Templates/pseudo';
 import { FallbackTemplate } from './Templates/fallback';
 import ExtraFields from './ExtraFields';
+import RemitCostsCaution from './RemitCostsCaution';
+import { Remit } from '@common/libs/ledger/transactions';
 import { AmountInputEditingContext } from '@components/General/AmountInput/EditingContext';
 
 import { StepsContext } from '../../Context';
@@ -723,6 +725,10 @@ class ReviewStep extends Component<Props, State> {
                                                         />
                                                         <Spacer size={15} />
                                                     </>
+                                                )}
+                                                {/* a Remit also pays for what it makes at the destination */}
+                                                {transaction.Type === TransactionTypes.Remit && (
+                                                    <RemitCostsCaution transaction={transaction as Remit} />
                                                 )}
                                                 {canSendFee && (
                                                     <SwipeButton

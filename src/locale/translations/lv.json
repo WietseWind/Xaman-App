@@ -605,6 +605,7 @@
     "payChannelBalance": "Payment Channel līdz šim pieprasīts",
     "mintNFT": "Mint NFT",
     "mintURIToken": "Mint URI Token",
+    "remitContents": "Ko jūs nosūtīsiet",
     "burnNFT": "Dedzināt NFT",
     "modifyNFT": "Modificēt NFT",
     "burnURIToken": "Dedzināt URI Token",
@@ -1383,6 +1384,10 @@
   "payload": {
     "extraFields": "Papildu lauki",
     "extraFieldsWarning": "Xaman nevar pilnībā atkodēt šos laukus. Parakstiet tikai tad, ja tos saprotat un gaidījāt šo pieprasījumu. Apstājieties, ja kāds sola atlīdzību vai labumus.",
+    "remitPaysReserves": "Uzmanību: papildus tiks nosūtīti %{amount} %{asset}, lai segtu rezerves saņēmēja pusē:",
+    "remitPaysActivation": "Konta aktivizēšana",
+    "remitPaysTrustLines": "Uzticības līnijas: %{count}",
+    "remitPaysURITokens": "URITokens: %{count}",
     "universalTransactionWarning": "Xaman nav īpaša ekrāna šim darījuma veidam. Pārbaudiet visus laukus. Parakstiet tikai tad, ja saprotat šo pieprasījumu un to gaidījāt. Apstājieties, ja kāds sola atlīdzību.",
     "universalTransactionUnavailable": "Izvēlētais tīkls neatbalsta šo darījuma veidu.",
     "definitionsChanged": "Tīkla dati ir mainījušies. Aizveriet pieprasījumu un pārskatiet to vēlreiz.",
