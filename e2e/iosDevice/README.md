@@ -10,6 +10,7 @@ project.
 | `detox.js` | The part of the Detox API that the steps use, sent to WDA. |
 | `wda.js` | The HTTP client for WDA. |
 | `aliases.js` | Test IDs that a phone does not show on their own, and the group that stands in for each. |
+| `readBack.js` | Whether typed text arrived, also for a field whose text the app changes itself. |
 
 A simulator or Android run never loads these files.
 
@@ -48,7 +49,9 @@ WDA sees the accessibility tree, the same that VoiceOver uses. Detox sees every 
   numbers, a mnemonic word row) hides the test IDs inside it. `aliases.js` names the group for an
   inner ID; a few steps have a branch for a phone (`process.env.E2E_IOS_DEVICE`).
 - Text is typed with the keyboard of the phone, slowly (8 keys a second, a pause after the first
-  character) and read back where the field shows it. Faster typing lost characters.
+  character) and read back where the field shows it. Faster typing lost characters. A field that
+  the app rewrites (a typed Bithomp URL becomes its account) is typed twice: the same part of the
+  text after both tries counts as the app's doing.
 - A real phone asks things a simulator does not: biometrics and notifications in the set-up.
 - Skipped on a phone, and reported as skipped:
   - the camera permission cases (iOS has no way to take back the camera answer of one app from

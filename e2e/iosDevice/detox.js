@@ -13,6 +13,7 @@
  */
 const wda = require('./wda');
 const aliasFor = require('./aliases');
+const { readBack } = require('./readBack');
 
 const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 const quote = (value) => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
@@ -203,7 +204,7 @@ const element = (m, index = 0) => {
             await wda.clear(await id());
         },
         // Detox writes the text into the field; on a phone it is typed, and read back where the
-        // field shows it (a password field does not)
+        // field shows it (a password field does not). See ./readBack.js for what counts as arrived.
         async replaceText(text) {
             const want = String(text);
             const target = await id();
@@ -211,6 +212,7 @@ const element = (m, index = 0) => {
             // an empty field gives its placeholder as its value
             const placeholder = await wda.attribute(target, 'placeholderValue');
             let got = '';
+            let before;
             for (let attempt = 0; attempt < 3; attempt += 1) {
                 await wda.click(target);
                 await keyboardUp();
@@ -223,11 +225,16 @@ const element = (m, index = 0) => {
                 await sleep(200);
                 const value = await wda.attribute(target, 'value');
                 got = value === null || value === undefined || value === placeholder ? '' : String(value);
-                // spaces around the text are not in the value that the phone gives (the search
-                // field for a recipient gets an address with spaces on purpose)
-                if (got === want || got === want.trim()) {
+                const verdict = readBack(want, got, before);
+                if (verdict === 'same') {
                     return;
                 }
+                if (verdict === 'rewritten') {
+                    // eslint-disable-next-line no-console
+                    console.error(`[e2e] ${describe(m, index)}: the app made ${JSON.stringify(got)} of ${JSON.stringify(want)}`);
+                    return;
+                }
+                before = got;
             }
             throw new Error(`e2e on an iPhone: typed ${JSON.stringify(want)} into ${describe(m, index)} three times, the field has ${JSON.stringify(got)}`);
         },

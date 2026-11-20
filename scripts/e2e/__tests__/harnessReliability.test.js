@@ -559,3 +559,36 @@ describe('scenarios a step skipped on purpose are not failures', () => {
         expect(withoutSkipped('a.feature:3:9\n', {})).toBe('a.feature:3:9');
     });
 });
+
+describe('a physical iPhone: what a field holds after text was typed into it', () => {
+    // eslint-disable-next-line global-require
+    const { readBack } = require('../../../e2e/iosDevice/readBack');
+    const ADDRESS = 'rJ9uJ32u3Y46RenZrfvdYWjVf5ReKwf5Wr';
+    const URL = `https://bithomp.com/account/${ADDRESS}`;
+
+    it('what was typed, with or without the spaces around it: arrived', () => {
+        expect(readBack('G-Passcode-1', 'G-Passcode-1')).toBe('same');
+        expect(readBack(` ${ADDRESS} `, ADDRESS)).toBe('same');
+    });
+
+    it('a lost character: type it again, also when the next try loses the same one', () => {
+        expect(readBack('elevator', 'elvator')).toBe('again');
+        expect(readBack('elevator', 'elvator', 'elvator')).toBe('again');
+        expect(readBack('G-Passcode-1', '')).toBe('again');
+        expect(readBack('G-Passcode-1', '', '')).toBe('again');
+    });
+
+    it('a part of what was typed is not taken at the first try (it can be a cut-off entry)', () => {
+        expect(readBack(URL, ADDRESS)).toBe('again');
+        expect(readBack('elevator', 'elevato')).toBe('again');
+    });
+
+    it('the same part after two tries: the app made this of the text (a URL becomes its account)', () => {
+        expect(readBack(URL, ADDRESS, ADDRESS)).toBe('rewritten');
+    });
+
+    it('another part than the try before, or a very short one: type it again', () => {
+        expect(readBack(URL, ADDRESS, ADDRESS.slice(0, -1))).toBe('again');
+        expect(readBack('elevator', 'ele', 'ele')).toBe('again');
+    });
+});
