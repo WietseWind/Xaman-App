@@ -830,3 +830,131 @@ describe('unchanged: case 8, Batch with an inner account of someone else', () =>
         });
     });
 });
+
+// Issue 533: a Batch that needs more inner signers, signed as a multi sign request. The store version (5.3.0)
+// removed SigningPubKey (and TxnSignature) from every Batch with more inner signers, also from a multi signed
+// one, and added a BatchSigner of the multi signer. A multi signed transaction must have SigningPubKey
+// present and empty. The cases of the issue, with a key in the app and with a card:
+describe('issue 533: the signed blob of a Batch keeps an empty SigningPubKey when it is multi signed', () => {
+    const inner = (Account: string, Sequence: number) => ({
+        RawTransaction: {
+            TransactionType: 'AccountSet', Account, Fee: '0', Flags: 1073741824, SigningPubKey: '', Sequence,
+        },
+    });
+    // A is the Batch Account; X and M are inner accounts of other people: two inner signers are necessary
+    const batch = (fields: Record<string, unknown> = {}) =>
+        new MixedBatch({
+            TransactionType: 'Batch', Account: address('A'), Sequence: 7, Flags: 65536, Fee: '40',
+            RawTransactions: [inner(address('A'), 8), inner(address('X'), 3), inner(address('M'), 5)],
+            ...fields,
+        } as any);
+    // the BatchSigner an inner account made before (outside the app)
+    const batchSignerOf = (name: 'X' | 'M') =>
+        AccountLib.signInnerBatch(batch().JsonForSigning as any, keys[name] as any);
+    const hasField = (json: any, field: string) => Object.prototype.hasOwnProperty.call(json, field);
+
+    describe.each([
+        ['a key in the app', 'S'],
+        ['a card (secp256k1)', 'C'],
+        ['a card (ed25519)', 'D'],
+    ] as const)('multi signed with %s', (_how, signer) => {
+        it('more inner signers, none collected yet: Signers, SigningPubKey "", no TxnSignature', async () => {
+            const result = await signRequest({
+                accounts: [model('A'), model(signer)], multisign: true, transaction: batch(), signerList: [signer],
+            });
+
+            expect(result).toMatchObject({ source: signer, signerAccount: signer, key: signer, signers: 1 });
+            expect(result.signatureValid).toBe(true);
+            expect(hasField(result.json, 'SigningPubKey')).toBe(true);
+            expect(result.json.SigningPubKey).toBe('');
+            expect(hasField(result.json, 'TxnSignature')).toBe(false);
+            // the multi signer signs for the Batch Account: it is no inner signer, so it adds no BatchSigner
+            expect(result.json.BatchSigners).toBeUndefined();
+            expect(result.json.Account).toBe(address('A'));
+        });
+
+        it('more inner signers, collected in the request: they stay as they are, next to Signers', async () => {
+            const collected = [batchSignerOf('X'), batchSignerOf('M')];
+            const result = await signRequest({
+                accounts: [model('A'), model(signer)],
+                multisign: true,
+                transaction: batch({ BatchSigners: collected }),
+                signerList: [signer],
+            });
+
+            expect(result).toMatchObject({ signerAccount: signer, key: signer, signers: 1, signatureValid: true });
+            expect(result.json.SigningPubKey).toBe('');
+            expect(hasField(result.json, 'TxnSignature')).toBe(false);
+            // the same entries (account, key, signature), in the order of the ledger
+            expect(result.json.BatchSigners).toHaveLength(2);
+            for (const entry of collected) {
+                expect(result.json.BatchSigners).toContainEqual(entry);
+            }
+            // every BatchSigner signature is still valid for the Batch in the blob
+            for (const { BatchSigner } of result.json.BatchSigners) {
+                const data = AccountLib.utils.batchSignerSigningData(result.json, BatchSigner.Account);
+                expect(verify(data, BatchSigner.TxnSignature, BatchSigner.SigningPubKey)).toBe(true);
+            }
+        });
+
+        it('the id of the signed object is the hash of the blob, and the public key is that of the signer', async () => {
+            const result = await signRequest({
+                accounts: [model('A'), model(signer)], multisign: true, transaction: batch(), signerList: [signer],
+            });
+
+            expect(result.signedObject.id).toBe(AccountLib.utils.computeBinaryTransactionHash(result.blob));
+            expect(result.signedObject.signerPubKey).toBe(publicKey(signer));
+        });
+
+        it('unchanged: multi signed, not a Batch: Signers and SigningPubKey ""', async () => {
+            const result = await signRequest({
+                accounts: [model('A'), model(signer)], multisign: true, signerList: [signer],
+            });
+
+            expect(result).toMatchObject({ signerAccount: signer, key: signer, signers: 1, signatureValid: true });
+            expect(result.json.SigningPubKey).toBe('');
+            expect(hasField(result.json, 'TxnSignature')).toBe(false);
+        });
+    });
+
+    describe.each([
+        ['a key in the app', 'X'],
+        ['a card (secp256k1)', 'C'],
+    ] as const)('unchanged, not multi signed, with %s', (_how, signer) => {
+        // the inner account of someone else: here the account in the app
+        const ownBatch = (fields: Record<string, unknown> = {}) =>
+            new MixedBatch({
+                TransactionType: 'Batch', Account: address('A'), Sequence: 7, Flags: 65536, Fee: '40',
+                RawTransactions: [inner(address('A'), 8), inner(address(signer), 3), inner(address('M'), 5)],
+                ...fields,
+            } as any);
+
+        it('more inner signers, an inner account signs: its BatchSigner only, no SigningPubKey, no TxnSignature', async () => {
+            const result = await signRequest({ accounts: [model(signer)], multisign: false, transaction: ownBatch() });
+
+            expect(result.source).toBe(signer);
+            expect(hasField(result.json, 'SigningPubKey')).toBe(false);
+            expect(hasField(result.json, 'TxnSignature')).toBe(false);
+            expect(result.json.Signers).toBeUndefined();
+            expect(result.json.BatchSigners).toHaveLength(1);
+            const { BatchSigner } = result.json.BatchSigners[0];
+            expect(BatchSigner).toMatchObject({ Account: address(signer), SigningPubKey: publicKey(signer) });
+            const data = AccountLib.utils.batchSignerSigningData(result.json, address(signer));
+            expect(verify(data, BatchSigner.TxnSignature, BatchSigner.SigningPubKey)).toBe(true);
+            expect(result.signedObject.id).toBe(AccountLib.utils.computeBinaryTransactionHash(result.blob));
+        });
+    });
+
+    it('unchanged: the last stage, the Batch Account signs: a normal signed transaction with the BatchSigners', async () => {
+        const collected = [batchSignerOf('X'), batchSignerOf('M')];
+        const result = await signRequest({
+            accounts: [model('A')], multisign: false, transaction: batch({ BatchSigners: collected }),
+        });
+
+        expect(result).toMatchObject({ source: 'A', key: 'A', signers: 0, signatureValid: true });
+        expect(result.json.SigningPubKey).toBe(publicKey('A'));
+        expect(hasField(result.json, 'TxnSignature')).toBe(true);
+        expect(result.json.BatchSigners).toHaveLength(2);
+    });
+});
+
