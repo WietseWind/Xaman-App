@@ -35,13 +35,19 @@ export const Amounts = {
                 };
             }
 
-            if (!Amount || typeof Amount !== 'object' || typeof (Amount as { value?: unknown }).value !== 'string') {
-                return malformed(
-                    entry?.AmountEntry ? `Amounts[${index}] has no amount` : `Amounts[${index}] is not an amount entry`,
-                );
+            if (!entry?.AmountEntry || typeof entry.AmountEntry !== 'object') {
+                return malformed(`Amounts[${index}] is not an amount entry`);
             }
 
-            const issued = Amount as { currency?: string; value: string; issuer?: string };
+            // the value of an issued amount is text; a request can have a number, which the codec signs as it is
+            const given: unknown = Amount && typeof Amount === 'object' ? (Amount as { value?: unknown }).value : undefined;
+            const value = typeof given === 'number' && Number.isFinite(given) ? String(given) : given;
+
+            if (typeof value !== 'string' || value === '') {
+                return malformed(`Amounts[${index}] has no amount`);
+            }
+
+            const issued = { ...(Amount as { currency?: string; issuer?: string }), value };
 
             if (!('currency' in issued)) {
                 return {

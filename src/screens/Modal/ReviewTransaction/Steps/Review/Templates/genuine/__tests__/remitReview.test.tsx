@@ -161,6 +161,9 @@ describe('amounts that are not amounts', () => {
         ['an amount that is null', [{ AmountEntry: { Amount: null } }], 'Amounts[0] has no amount'],
         ['an amount that is a number', [{ AmountEntry: { Amount: 5 } }], 'Amounts[0] has no amount'],
         ['an issued amount without value', [{ AmountEntry: { Amount: { currency: 'EUR' } } }], 'Amounts[0] has no amount'],
+        ['an issued amount with an empty value', [{ AmountEntry: { Amount: { currency: 'EUR', value: '' } } }], 'Amounts[0] has no amount'],
+        ['an issued amount with a value that is true', [{ AmountEntry: { Amount: { value: true } } }], 'Amounts[0] has no amount'],
+        ['an AmountEntry that is text', [{ AmountEntry: 'x' }], 'Amounts[0] is not an amount entry'],
         ['a native amount that is not drops', [{ AmountEntry: { Amount: '1.5' } }], 'Amounts[0] is not an amount'],
         ['a list that is not a list', 'x', 'Amounts is not a list'],
     ])('%s: an error that says which entry, not an accident of the code', (_name, Amounts, message) => {
@@ -183,6 +186,20 @@ describe('amounts that are not amounts', () => {
         ]);
         expect(amountsOf(undefined)).toBeUndefined();
         expect(amountsOf([])).toBeUndefined();
+    });
+
+    it('an issued amount whose value is a number is read as that amount (the platform takes it, the codec signs it)', () => {
+        const numeric = { ...tipbot, Amounts: [{ AmountEntry: { Amount: { currency: 'EUR', issuer: Issuer, value: 12.5 } } }] };
+        expect(remit(numeric).Amounts).toEqual([{ currency: 'EUR', value: '12.5', issuer: Issuer }]);
+        // what is signed is the request as it came
+        expect(remit(numeric).JsonForSigning.Amounts).toEqual(numeric.Amounts);
+    });
+
+    it('a hex currency code and a value in scientific notation are amounts', () => {
+        const currency = '0158415500000000C1F76FF6ECB0BAC600000000';
+        expect(amountsOf([{ AmountEntry: { Amount: { currency, issuer: Issuer, value: '1e-5' } } }])).toEqual([
+            { currency, value: '1e-5', issuer: Issuer },
+        ]);
     });
 
     it('the review of such a Remit throws that error while it renders, for the error screen of the modal', () => {
