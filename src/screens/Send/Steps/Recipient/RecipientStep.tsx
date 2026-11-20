@@ -119,6 +119,13 @@ class RecipientStep extends Component<Props, State> {
     doAccountLookUp = async (result: XrplDestination) => {
         const { setDestination } = this.context;
 
+        // This lookup takes over from a text search that is still waiting or under way. Without
+        // this, the search for the text before the last key of a typed address ran half a second
+        // later, found nothing and replaced the account that was found here.
+        clearTimeout(this.lookupTimeout);
+        this.sequence += 1;
+        const { sequence } = this;
+
         this.setState({
             searchText: result.to,
             isSearching: true,
@@ -188,6 +195,11 @@ class RecipientStep extends Component<Props, State> {
                     }),
                 ]),
             ]);
+
+            // the text changed while the answers were on their way: they are for an earlier text
+            if (sequence !== this.sequence) {
+                return;
+            }
 
             this.setState({
                 dataSource: this.getSearchResultSource([
@@ -355,6 +367,10 @@ class RecipientStep extends Component<Props, State> {
     onSearch = (searchText: string) => {
         const { setDestination } = this.context;
 
+        // Every change of the text makes the searches that started before it stale: what they
+        // find is for another text than the one in the field (see the sequence checks).
+        this.sequence += 1;
+
         this.setState({
             searchText,
         });
@@ -370,6 +386,8 @@ class RecipientStep extends Component<Props, State> {
             }
         } else {
             clearTimeout(this.lookupTimeout);
+            // a search that is under way does not report back any more (it is stale)
+            this.setState({ isSearching: false });
             // get default source
             this.setDefaultDataSource();
             // clear the destination if set
