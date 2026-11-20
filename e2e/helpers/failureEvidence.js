@@ -141,6 +141,15 @@ const saveFailureEvidence = async (scenario, android) => {
                 path.join(dir, 'logcat.txt'),
                 attempt(() => adb(['logcat', '-d', '-t', String(LOG_LINES_KEPT)], 10000)),
             );
+        } else if (process.env.E2E_IOS_DEVICE) {
+            // a physical iPhone: the screen as WebDriverAgent sees it (the accessibility tree)
+            // eslint-disable-next-line global-require
+            const wda = require('../iosDevice/wda');
+            const tree = await Promise.race([
+                wda.source().catch((e) => `no screen tree: ${e.message}`),
+                new Promise((resolve) => { setTimeout(() => resolve('no screen tree: no answer in 40 s'), 40000); }),
+            ]);
+            writeFileSync(path.join(dir, 'screen-tree.txt'), `${tree || 'no screen tree'}\n`);
         } else {
             writeFileSync(path.join(dir, 'simulator-log.txt'), attempt(simulatorLogTail));
         }

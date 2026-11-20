@@ -128,6 +128,24 @@ describe('what counts as the same screen', () => {
     });
 });
 
+describe('which nodes are the on-screen keyboard', () => {
+    // eslint-disable-next-line global-require
+    const { isKeyboardPackage, setKeyboardPackage } = require('../../../e2e/helpers/androidKeyboardPackage');
+
+    afterEach(() => setKeyboardPackage(''));
+
+    it('a package with inputmethod in its name, or the keyboard that is set on the device', () => {
+        expect(isKeyboardPackage('com.google.android.inputmethod.latin')).toBe(true);
+        expect(isKeyboardPackage('com.samsung.android.honeyboard')).toBe(false);
+        expect(isKeyboardPackage('com.xrpllabs.xumm')).toBe(false);
+        expect(isKeyboardPackage('')).toBe(false);
+
+        setKeyboardPackage('com.samsung.android.honeyboard\n');
+        expect(isKeyboardPackage('com.samsung.android.honeyboard')).toBe(true);
+        expect(isKeyboardPackage('com.xrpllabs.xumm')).toBe(false);
+    });
+});
+
 describe('which buttons may be tapped a second time', () => {
     const { isRepeatable, isChecked } = load();
 
@@ -484,5 +502,60 @@ describe('faults on purpose', () => {
         expect(shouldFail('run', 2, false)).toBe(true);
         expect(shouldFail('run', 1, true)).toBe(false);
         expect(shouldFail('always', 2, true)).toBe(true);
+    });
+});
+
+describe('scenarios a step skipped on purpose are not failures', () => {
+    // eslint-disable-next-line global-require
+    const { skippedScenarios, withoutSkipped } = require('../skippedScenarios');
+    const step = (status) => ({ result: { status } });
+    const report = [
+        {
+            uri: 'e2e/14_xapp_page_gone.feature',
+            elements: [
+                { line: 9, name: 'Open the support xApp', steps: [step('passed'), step('passed')] },
+                { line: 22, name: 'The OS ends the page', steps: [step('passed'), step('skipped'), step('skipped')] },
+                { line: 27, name: 'The OS ends the page in the background', steps: [step('skipped'), step('skipped')] },
+                { line: 34, name: 'Close the xApp', steps: [step('passed'), step('failed'), step('skipped')] },
+            ],
+        },
+        {
+            uri: 'e2e/12_camera_permissions.feature',
+            elements: [{ line: 11, name: 'Camera', steps: [step('passed'), step('failed')] }],
+        },
+    ];
+
+    it('skipped = a skipped step and no failed step; steps skipped after a failure do not count', () => {
+        expect(skippedScenarios(report)).toEqual({
+            'e2e/14_xapp_page_gone.feature:22': 'The OS ends the page',
+            'e2e/14_xapp_page_gone.feature:27': 'The OS ends the page in the background',
+        });
+    });
+
+    it('an attempt that failed makes it a failure, also when another attempt was skipped', () => {
+        const twice = [
+            {
+                uri: 'a.feature',
+                elements: [
+                    { line: 3, name: 'x', steps: [step('failed')] },
+                    { line: 3, name: 'x', steps: [step('skipped')] },
+                ],
+            },
+        ];
+        expect(skippedScenarios(twice)).toEqual({});
+    });
+
+    it('the skipped scenarios go out of the rerun list, a file without any left goes out whole', () => {
+        const skipped = skippedScenarios(report);
+        const rerun = 'e2e/12_camera_permissions.feature:11\ne2e/14_xapp_page_gone.feature:22:27:34\n';
+        expect(withoutSkipped(rerun, skipped)).toBe(
+            'e2e/12_camera_permissions.feature:11\ne2e/14_xapp_page_gone.feature:34',
+        );
+        expect(withoutSkipped('e2e/14_xapp_page_gone.feature:22:27\n', skipped)).toBe('');
+    });
+
+    it('no report, or nothing skipped: the rerun list stays as it is', () => {
+        expect(skippedScenarios(undefined)).toEqual({});
+        expect(withoutSkipped('a.feature:3:9\n', {})).toBe('a.feature:3:9');
     });
 });

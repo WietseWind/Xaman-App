@@ -39,6 +39,12 @@ const settleAfterLaunch = async () => {
 // iOS: sends the app to the background by opening Settings. device.sendToHome() waits for the app
 // to confirm it went to the background and hung there ("app has not responded: waitForBackground").
 const sendIosAppToBackground = async () => {
+    if (process.env.E2E_IOS_DEVICE) {
+        // a physical iPhone: the home button (e2e/iosDevice)
+        await device.sendToHome();
+        await new Promise((resolve) => { setTimeout(resolve, 1000); });
+        return;
+    }
     execFileSync('xcrun', ['simctl', 'launch', device.id, 'com.apple.Preferences'], {
         stdio: 'ignore',
         timeout: 20000,

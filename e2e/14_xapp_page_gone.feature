@@ -4,7 +4,8 @@ Feature: An xApp comes back after the OS ended its page
     # then stayed up with a blank page that did nothing. Xaman now starts the xApp again, with a new token.
     #
     # The test ID of the page shows a restart: 'xapp-webview', then 'xapp-webview-1', 'xapp-webview-2'.
-    # Android: ending the renderer needs root on the device; without it those scenarios are skipped.
+    # Android: ending the renderer needs root on the device; without it (a phone) those scenarios are
+    # skipped at their first step.
 
     Scenario: Open the support xApp
         Then I open the url 'https://xumm.app/detect/xapp:xumm.support'
@@ -19,10 +20,12 @@ Feature: An xApp comes back after the OS ended its page
         Given I should not have 'xapp-webview-1'
 
     Scenario: The OS ends the page while the xApp is open: the xApp is started again
+        Given the test can end the page process of the xApp
         Then the OS ends the page process of the xApp
         Given I should wait 60 sec to see 'xapp-webview-1'
 
     Scenario: The OS ends the page while Xaman is in the background: the xApp is started again on return
+        Given the test can end the page process of the xApp
         Then I send the app to the background
         Then the OS ends the page process of the xApp
         Then I wait 3 sec and then bring the app to foreground

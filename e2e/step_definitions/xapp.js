@@ -1,6 +1,6 @@
 // xApps: what happens when the OS ends the process of the page (see src/screens/Modal/XAppBrowser/pageWatch.ts)
 const { execFileSync } = require('child_process');
-const { Then } = require('@cucumber/cucumber');
+const { Given, Then } = require('@cucumber/cucumber');
 const { element, by, waitFor, device } = require('detox');
 
 const { androidSerial } = require('../helpers/androidSerial');
@@ -37,6 +37,22 @@ const androidPageProcesses = () =>
         .filter((line) => line.indexOf('sandboxed_process') !== -1)
         .map((line) => line.trim().split(/\s+/)[0])
         .filter((pid) => /^\d+$/.test(pid));
+
+// First step of the scenarios that end the page process. On a device without root (a phone) the
+// scenario is skipped here, before any of its steps changed the app: a skip in the middle left
+// Xaman in the background, and the next scenario then failed on a screen that was not there.
+Given('the test can end the page process of the xApp', async () => {
+    if (device.getPlatform() !== 'android') {
+        // a physical iPhone: the processes of the phone are out of reach
+        return process.env.E2E_IOS_DEVICE ? 'skipped' : undefined;
+    }
+    try {
+        androidShell('su 0 true');
+    } catch (e) {
+        return 'skipped';
+    }
+    return undefined;
+});
 
 Then('the OS ends the page process of the xApp', { timeout: 60 * 1000 }, async () => {
     if (device.getPlatform() === 'android') {

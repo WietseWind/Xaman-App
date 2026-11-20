@@ -12,6 +12,17 @@
 #   --port N            Android emulator console port: even, 5556-5584 (default: the first free one)
 #   --avd NAME          Android AVD to start read-only (default: $E2E_AVD, else the first AVD that is
 #                       not Xaman_API36)
+#   --usb SERIAL        Android: run on this USB phone and start no emulator. The phone has to be
+#                       unlocked. Xaman on it is REPLACED by the test build and its data is deleted;
+#                       the test build stays on the phone afterwards. Only on a phone that was named
+#                       for this on purpose: nothing in this script picks a phone by itself.
+#   --device UDID       iOS: run on this physical iPhone (USB) and make no simulator; needs --app.
+#                       Xaman on it is REPLACED by that build and its data is deleted; the build stays
+#                       on the phone afterwards. The steps go through WebDriverAgent (e2e/iosDevice),
+#                       built once for the phone in $E2E_WDA_DIR (default: $E2E_WORK/wda). Only on a
+#                       phone that was named for this on purpose.
+#   --app FILE          iOS with --device: the signed .ipa or .app to install (its provisioning
+#                       profile has to include the phone). Nothing is built for a phone.
 #   --device-type TYPE  iOS simulator type for the new simulator (default: "iPhone 17 Pro")
 #   --runtime ID        iOS runtime for it, e.g. com.apple.CoreSimulator.SimRuntime.iOS-26-5 (default: newest)
 #   --skip-build        reuse the build already in the clone (use with --name of an earlier run)
@@ -50,6 +61,9 @@ NAME="$PLATFORM-$(date +%Y%m%d-%H%M%S)"
 BUILD_TYPE=release
 PORT=""
 AVD="${E2E_AVD:-}"
+USB_SERIAL=""
+IOS_DEVICE=""
+IOS_APP=""
 DEVICE_TYPE="iPhone 17 Pro"
 RUNTIME=""
 SKIP_BUILD=no
@@ -65,6 +79,9 @@ while [ $# -gt 0 ]; do
         --debug) BUILD_TYPE=debug; shift ;;
         --port) PORT="$2"; shift 2 ;;
         --avd) AVD="$2"; shift 2 ;;
+        --usb) USB_SERIAL="$2"; shift 2 ;;
+        --device) IOS_DEVICE="$2"; shift 2 ;;
+        --app) IOS_APP="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"; shift 2 ;;
         --device-type) DEVICE_TYPE="$2"; shift 2 ;;
         --runtime) RUNTIME="$2"; shift 2 ;;
         --skip-build) SKIP_BUILD=yes; shift ;;
@@ -87,6 +104,7 @@ CLONE="$CLONES/xaman-e2e-$NAME"
 [ -d "$WORK/xaman-e2e-$NAME" ] && CLONE="$WORK/xaman-e2e-$NAME"
 ART="$CLONE/.e2e-artifacts"
 STALL_MINUTES="${E2E_STALL_MINUTES:-20}"
+WDA_DIR="${E2E_WDA_DIR:-$WORK/wda}"
 
 log() { echo "[e2e-throwaway $(date +%H:%M:%S)] $*"; }
 die() { echo "[e2e-throwaway] ERROR: $*" >&2; exit 1; }
@@ -112,9 +130,24 @@ if [ "$PLATFORM" = android ]; then
         fi
     fi
     [ "$AVD" = Xaman_API36 ] && die "AVD Xaman_API36 is the developer emulator; pass another --avd"
+    if [ -n "$USB_SERIAL" ]; then
+        case "$USB_SERIAL" in emulator-*) die "--usb takes the serial of a USB phone, not an emulator" ;; esac
+        "$ADB" devices | grep -q "^$USB_SERIAL[[:space:]]*device" || die "no USB phone $USB_SERIAL in adb devices (connected, unlocked, USB debugging allowed?)"
+        [ -z "$PORT" ] || die "--port and --usb do not go together"
+    fi
 else
-    xcrun simctl list devicetypes | grep -q "^$DEVICE_TYPE (" || die "no simulator type \"$DEVICE_TYPE\""
+    [ -z "$USB_SERIAL" ] || die "--usb is for Android"
+    if [ -n "$IOS_DEVICE" ]; then
+        xcrun devicectl list devices 2>/dev/null | grep -q "$IOS_DEVICE" ||
+            die "no iPhone $IOS_DEVICE in 'xcrun devicectl list devices' (on USB, unlocked, trusted, Developer Mode on?)"
+        [ -n "$IOS_APP" ] && [ -e "$IOS_APP" ] || die "--device needs --app FILE: the signed .ipa or .app to install on the phone"
+        [ -n "$(ls "$WDA_DIR"/dd/Build/Products/*.xctestrun 2>/dev/null | head -1)" ] ||
+            die "no WebDriverAgent build for a phone in $WDA_DIR (see e2e/iosDevice/README.md)"
+    else
+        xcrun simctl list devicetypes | grep -q "^$DEVICE_TYPE (" || die "no simulator type \"$DEVICE_TYPE\""
+    fi
 fi
+[ -z "$IOS_DEVICE" ] || [ "$PLATFORM" = ios ] || die "--device is for iOS"
 
 # ---------------------------------------------------------------- clone
 if [ -d "$CLONE" ]; then
@@ -122,13 +155,14 @@ if [ -d "$CLONE" ]; then
     log "reusing $CLONE"
 else
     [ -d "$SOURCE/node_modules" ] || die "$SOURCE has no node_modules (run npm ci there first)"
-    if [ "$PLATFORM" = ios ] && [ ! -d "$SOURCE/ios/Pods" ]; then
+    if [ "$PLATFORM" = ios ] && [ -z "$IOS_DEVICE" ] && [ ! -d "$SOURCE/ios/Pods" ]; then
         die "$SOURCE has no ios/Pods (run pod install there first)"
     fi
     # The source's node_modules must match its commit: package.json, every patch applied and, for iOS,
     # the Pods and React Native's codegen output (npm ci deletes it; the build otherwise fails minutes
     # in, at "[RN]Check rncore"). The check prints what differs and what to run.
-    if [ "$PLATFORM" = ios ]; then deps_scope=--ios; else deps_scope=--no-ios; fi
+    # (a run on a physical iPhone builds nothing: it installs the build given with --app)
+    if [ "$PLATFORM" = ios ] && [ -z "$IOS_DEVICE" ]; then deps_scope=--ios; else deps_scope=--no-ios; fi
     "$ROOT/scripts/check-native-deps.sh" "$deps_scope" "$SOURCE" || die "$SOURCE: the installed packages do not match its commit (see above)"
     if [ ! -d "$CLONES" ]; then
         mkdir -p "$CLONES"
@@ -196,7 +230,44 @@ boot_simulator() {
     done
 }
 
-if [ "$PLATFORM" = ios ]; then
+if [ "$PLATFORM" = ios ] && [ -n "$IOS_DEVICE" ]; then
+    # A physical iPhone. Its keychain outlives the app (there is no "erase" as for a simulator); the
+    # app starts its set-up again on a fresh install all the same.
+    install_iphone_app() {
+        xcrun devicectl device uninstall app --device "$IOS_DEVICE" com.xrpllabs.xumm >/dev/null 2>&1 || true
+        xcrun devicectl device install app --device "$IOS_DEVICE" "$IOS_APP" >"$ART/install.log" 2>&1 ||
+            die "the app could not be installed on the iPhone; see $ART/install.log"
+    }
+    iphone_info() { xcrun devicectl device info details --device "$IOS_DEVICE" 2>/dev/null | sed -n "s/.*$1: //p" | head -1; }
+    PHONE="$(iphone_info 'Marketing Name'), iOS $(iphone_info 'OS Version')"
+    log "using the iPhone $IOS_DEVICE ($PHONE): Xaman on it is replaced by $IOS_APP and its data is deleted"
+    install_iphone_app
+    TUNNEL="$(iphone_info 'Tunnel IP Address')"
+    [ -n "$TUNNEL" ] || die "the iPhone has no tunnel address (on USB and unlocked?)"
+    export E2E_IOS_DEVICE="$IOS_DEVICE" E2E_WDA_URL="http://[$TUNNEL]:8100"
+    wda_ready() { curl -s -g -m 5 "$E2E_WDA_URL/status" 2>/dev/null | grep -q '"ready" *: *true'; }
+    if wda_ready; then
+        log "WebDriverAgent is already running on the iPhone"
+    else
+        log "starting WebDriverAgent on the iPhone; log: $ART/wda.log"
+        # the first start after a while can end in "Timed out while enabling automation mode"; the
+        # next one works
+        for _ in 1 2 3; do
+            (cd "$WDA_DIR" && exec xcodebuild test-without-building -project package/WebDriverAgent.xcodeproj \
+                -scheme WebDriverAgentRunner -destination "id=$IOS_DEVICE" -derivedDataPath dd) >"$ART/wda.log" 2>&1 &
+            WDA_PID=$!
+            for _ in $(seq 1 40); do
+                if wda_ready || ! kill -0 "$WDA_PID" 2>/dev/null; then break; fi
+                sleep 3
+            done
+            if wda_ready; then break; fi
+            kill "$WDA_PID" 2>/dev/null || true
+            sleep 3
+        done
+        wda_ready || die "WebDriverAgent did not start on the iPhone; see $ART/wda.log"
+        CLEANUP+=("kill $WDA_PID 2>/dev/null")
+    fi
+elif [ "$PLATFORM" = ios ]; then
     SIM_NAME="Xaman-e2e-$NAME"
     UDID="$(xcrun simctl list devices available | sed -n "s/^ *$SIM_NAME (\([0-9A-F-]*\)) .*/\1/p" | head -1)"
     if [ -z "$UDID" ]; then
@@ -216,7 +287,16 @@ if [ "$PLATFORM" = ios ]; then
 else
     # An emulator this run started earlier (--keep-device) is reused; any other one is refused.
     KEPT="$(cat .e2e-device 2>/dev/null || true)"
-    if [ -n "$KEPT" ] && "$ADB" devices | grep -q "^$KEPT[[:space:]]*device" && [ "$(owner_of "$KEPT")" = "$NAME" ] &&
+    if [ -n "$USB_SERIAL" ]; then
+        SERIAL="$USB_SERIAL"
+        PHONE="$("$ADB" -s "$SERIAL" shell getprop ro.product.model </dev/null 2>/dev/null | tr -d '\r')"
+        log "using the USB phone $SERIAL ($PHONE): Xaman on it is replaced by the test build and its data is deleted"
+        # keep the screen on while it is on USB; put the setting back afterwards
+        STAY_ON="$("$ADB" -s "$SERIAL" shell settings get global stay_on_while_plugged_in </dev/null 2>/dev/null | tr -d '\r')"
+        "$ADB" -s "$SERIAL" shell svc power stayon usb </dev/null >/dev/null 2>&1 || true
+        "$ADB" -s "$SERIAL" shell input keyevent KEYCODE_WAKEUP </dev/null >/dev/null 2>&1 || true
+        CLEANUP+=("'$ADB' -s $SERIAL shell settings put global stay_on_while_plugged_in ${STAY_ON:-0} </dev/null >/dev/null 2>&1")
+    elif [ -n "$KEPT" ] && "$ADB" devices | grep -q "^$KEPT[[:space:]]*device" && [ "$(owner_of "$KEPT")" = "$NAME" ] &&
         { [ -z "$PORT" ] || [ "$KEPT" = "emulator-$PORT" ]; }; then
         SERIAL="$KEPT"
         log "reusing this clone's emulator $SERIAL"
@@ -264,8 +344,10 @@ else
         "$ADB" -s "$SERIAL" shell 'ls -d /sdcard/Android/data' </dev/null >/dev/null 2>&1 && break
         sleep 2
     done
-    "$ADB" -s "$SERIAL" shell setprop debug.xaman.e2e.owner "$NAME"
+    "$ADB" -s "$SERIAL" shell setprop debug.xaman.e2e.owner "$NAME" </dev/null || true
     export ANDROID_SERIAL="$SERIAL"
+    # The phone named with --usb: the tests that are for emulators only accept this one phone too.
+    export E2E_USB_PHONE="$USB_SERIAL"
     if [ "$BUILD_TYPE" = release ]; then
         export DETOX_CONFIGURATION=android.e2e+xaman.android.arm64
     else
@@ -290,7 +372,7 @@ else
 fi
 
 # ---------------------------------------------------------------- build
-if [ "$SKIP_BUILD" = no ]; then
+if [ "$SKIP_BUILD" = no ] && [ -z "$IOS_DEVICE" ]; then
     log "building the $PLATFORM app$([ "$PLATFORM" = android ] && echo " ($BUILD_TYPE)"); log: $ART/build.log"
     if [ "$PLATFORM" = ios ]; then
         npx detox build -c "$DETOX_CONFIGURATION" >"$ART/build.log" 2>&1 || die "build failed; see $ART/build.log"
@@ -350,9 +432,12 @@ run_cucumber() {
     rm -rf "$art/failures" "$art/steps" "$art/rerun"
     wait_until_quiet
     echo "$QUIET_NOTE" >"$art/quiet.txt"
-    log "running $* on ${ANDROID_SERIAL:-$E2E_IOS_SIMULATOR} ($DETOX_CONFIGURATION); log: $art/run.log"
+    log "running $* on ${ANDROID_SERIAL:-${E2E_IOS_DEVICE:-$E2E_IOS_SIMULATOR}} (${DETOX_CONFIGURATION:-WebDriverAgent}); log: $art/run.log"
+    # a physical iPhone: the steps' Detox calls go to WebDriverAgent (this file has to load first)
+    local device_driver=()
+    if [ -n "$IOS_DEVICE" ]; then device_driver=(--require ./e2e/iosDevice/register.js); fi
     set -m
-    npx cucumber-js "$@" \
+    npx cucumber-js "$@" "${device_driver[@]}" \
         --require ./e2e/support --require ./e2e/step_definitions --require ./e2e/helpers \
         --retry "$RETRY" \
         --format progress \
@@ -382,6 +467,12 @@ run_cucumber() {
         wait "$RUN_PID" || STATUS=$?
     fi
     tail -n 4 "$art/run.log" || true
+    # Scenarios a step skipped on purpose (the device can not do them) are not failures: they go
+    # out of rerun.txt and into skipped.txt (see scripts/e2e/skippedScenarios.js)
+    node scripts/e2e/skippedScenarios.js "$art" || true
+    if [ -s "$art/skipped.txt" ]; then
+        log "$(wc -l <"$art/skipped.txt" | tr -d ' ') scenario(s) skipped (this device can not do them): $art/skipped.txt"
+    fi
     # Android: text that only arrived by a second route (see e2e/helpers/androidTextEntry.js)
     if [ -s "$art/text-entry-fallbacks.txt" ]; then
         log "text entry needed a second route $(grep -c 'nothing arrived' "$art/text-entry-fallbacks.txt" | tr -d ' ') time(s): $art/text-entry-fallbacks.txt"
@@ -452,7 +543,9 @@ if [ "$STATUS" != 0 ] && [ "$STATUS" != 124 ] && [ "$RERUN_FAILED" != no ] && [ 
     while IFS= read -r file; do STORY+=("$file"); done < <(story_until_last_failure "$ART")
     if [ ${#STORY[@]} -gt 0 ]; then
         log "$FAILED scenario(s) failed: running the story again on a clean app (${#STORY[@]} feature file(s))"
-        if [ "$PLATFORM" = ios ]; then
+        if [ -n "$IOS_DEVICE" ]; then
+            install_iphone_app
+        elif [ "$PLATFORM" = ios ]; then
             # the keychain outlives the app on a simulator: erase it
             xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
             xcrun simctl erase "$UDID"
@@ -472,10 +565,12 @@ fi
     echo "result: $RESULT"
     echo "run: $NAME, $PLATFORM$([ "$PLATFORM" = android ] && echo " $BUILD_TYPE"), ${FEATURES[*]}"
     echo "code: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$([ -n "$(git status --porcelain --untracked-files=no 2>/dev/null | head -1)" ] && echo " + uncommitted changes")"
-    if [ "$PLATFORM" = ios ]; then
+    if [ -n "$IOS_DEVICE" ]; then
+        echo "device: USB phone $PHONE, app $(basename "$IOS_APP"), $(xcodebuild -version 2>/dev/null | tr '\n' ' ')"
+    elif [ "$PLATFORM" = ios ]; then
         echo "device: $DEVICE_TYPE, $(xcrun simctl list devices | grep -B 30 "$UDID" | grep '^-- ' | tail -1 | tr -d '-' | xargs), $(xcodebuild -version 2>/dev/null | tr '\n' ' ')"
     else
-        echo "device: AVD ${AVD:-kept emulator}, Android $("$ADB" -s "$SERIAL" shell getprop ro.build.version.release 2>/dev/null | tr -d '\r') (API $("$ADB" -s "$SERIAL" shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r'))"
+        echo "device: $([ -n "$USB_SERIAL" ] && echo "USB phone $("$ADB" -s "$SERIAL" shell getprop ro.product.model </dev/null 2>/dev/null | tr -d '\r')" || echo "AVD ${AVD:-kept emulator}"), Android $("$ADB" -s "$SERIAL" shell getprop ro.build.version.release 2>/dev/null | tr -d '\r') (API $("$ADB" -s "$SERIAL" shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r'))"
     fi
     echo "node: $(node --version 2>/dev/null)"
     echo "machine load (1, 5, 15 min) at the start: $LOAD_START; at the end: $(machine_load); other builds running at the start: $OTHER_BUILDS"
@@ -486,6 +581,11 @@ fi
         echo
         echo "needed a second attempt in the first run (failed once, then passed):"
         echo "$FLAKY" | sed 's/^/  /'
+    fi
+    if [ -s "$ART/skipped.txt" ]; then
+        echo
+        echo "skipped, this device can not do them (not failures):"
+        sed 's/^/  /' "$ART/skipped.txt"
     fi
     if [ "$FAILED" -gt 0 ]; then
         echo
@@ -521,8 +621,8 @@ mkdir -p "$KEEP"
 for part in "" rerun/; do
     [ -d "$ART/$part" ] || continue
     mkdir -p "$KEEP/$part"
-    for file in outcome.txt summary.txt run.log rerun.txt tap-checks.txt tap-effects.tsv text-entry-fallbacks.txt \
-        keyboard-fallbacks.txt; do
+    for file in outcome.txt summary.txt run.log rerun.txt skipped.txt tap-checks.txt tap-effects.tsv \
+        text-entry-fallbacks.txt keyboard-fallbacks.txt; do
         if [ -f "$ART/$part$file" ]; then cp "$ART/$part$file" "$KEEP/$part"; fi
     done
     if [ -d "$ART/${part}failures" ]; then cp -R "$ART/${part}failures" "$KEEP/$part"; fi
@@ -535,9 +635,9 @@ if [ "$CLEAN_UP" = yes ]; then
     cd "$WORK"
     cleanup
     CLEANUP=()
-    if [ "$PLATFORM" = ios ]; then xcrun simctl delete "$UDID" >/dev/null 2>&1 || true; fi
+    if [ "$PLATFORM" = ios ] && [ -z "$IOS_DEVICE" ]; then xcrun simctl delete "$UDID" >/dev/null 2>&1 || true; fi
     rm -rf "$CLONE"
-    log "the clone$([ "$PLATFORM" = ios ] && echo " and the simulator") of this run are deleted"
+    log "the clone$([ "$PLATFORM" = ios ] && [ -z "$IOS_DEVICE" ] && echo " and the simulator") of this run are deleted"
 else
     log "all artifacts in $ART; delete the clone when done: rm -rf '$CLONE'"
 fi

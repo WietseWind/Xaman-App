@@ -10,7 +10,8 @@ let logProcess = null;
 
 // iOS simulator log of the app, for this run's simulator only.
 const startDeviceLogStream = (udid) => {
-    if (process.platform !== 'darwin' || !udid) {
+    // a physical iPhone (E2E_IOS_DEVICE) has no simctl
+    if (process.platform !== 'darwin' || !udid || process.env.E2E_IOS_DEVICE) {
         return;
     }
     const logFile = `${ARTIFACTS_DIR}/simulator.log`;
