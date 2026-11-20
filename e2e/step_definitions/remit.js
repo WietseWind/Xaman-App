@@ -19,6 +19,7 @@ const {
     FEE,
     createSignRequest,
     readSignedRequest,
+    signRequestMeta,
     newAccount,
 } = require('../helpers/signRequests');
 const {
@@ -168,6 +169,19 @@ const REMITS = {
             },
         };
     },
+    // Not a Remit that the app can show: the platform takes these two shapes (it refuses the others), so
+    // they get to the app. The review has to refuse them: it cannot show what would be signed.
+    // A platform that refuses them too (XRPL-Labs/Xaman-API#723) leaves nothing to test here: skipped.
+    'an amount entry without amount': async () => ({
+        fields: { Destination: state.accounts.existing.address, Amounts: [{ AmountEntry: {} }] },
+        platformMayRefuse: true,
+        check: async () => {},
+    }),
+    'an entry that is not an amount entry': async () => ({
+        fields: { Destination: state.accounts.existing.address, Amounts: [{ Memo: { MemoData: hex('e2e') } }] },
+        platformMayRefuse: true,
+        check: async () => {},
+    }),
     // review only: the URIToken card has to say that it found nothing, not spin forever
     'a URIToken that does not exist': async () => ({
         fields: {
@@ -198,14 +212,24 @@ Then('I use the Remit sender account', async () => {
 Then('I create a Remit sign request with {string}', { timeout: 2 * 60 * 1000 }, async (what) => {
     assert(REMITS[what], `no Remit named "${what}"`);
     assert(state.accounts, 'the Remit accounts are not prepared');
-    const { fields, check } = await REMITS[what]();
+    const { fields, check, platformMayRefuse } = await REMITS[what]();
     state.sawExtraFields = false;
     state.cautionDrops = undefined;
     state.expected = { what, check };
-    state.request = await createSignRequest(
-        { TransactionType: 'Remit', Account: state.accounts.sender.address, Fee: FEE, ...fields },
-        { submit: true },
-    );
+    try {
+        state.request = await createSignRequest(
+            { TransactionType: 'Remit', Account: state.accounts.sender.address, Fee: FEE, ...fields },
+            { submit: true },
+        );
+    } catch (error) {
+        // The platform refuses a Remit with such an entry itself (code 712) from the backend version that
+        // has that check: the request cannot get to the app, so there is nothing for the app to refuse.
+        if (platformMayRefuse && /"code":\s*712\b/.test(String(error && error.message))) {
+            return 'skipped';
+        }
+        throw error;
+    }
+    return undefined;
 });
 
 Then('I open the Remit sign request', async () => {
@@ -341,6 +365,31 @@ Then('I close the Remit review and decline the request', { timeout: 90 * 1000 },
         }
     }
     throw new Error('the Remit review did not close');
+});
+
+// the error screen of the review says why it cannot show the request
+Given('the review error should say {string}', { timeout: 60 * 1000 }, async (message) => {
+    if (isAndroid()) {
+        const text = await androidReadTextByTestId('review-error-view');
+        assert(String(text).includes(message), `the error screen says "${text}", expected "${message}"`);
+        return;
+    }
+    await waitFor(element(by.text(message))).toExist().withTimeout(10000);
+});
+
+// the app told the platform that it did not sign: the request is resolved, and not signed
+Given('the Remit sign request is refused, not signed', { timeout: 60 * 1000 }, async () => {
+    const deadline = Date.now() + 30000;
+    let meta = {};
+    while (Date.now() < deadline) {
+        meta = await signRequestMeta(state.request.uuid);
+        if (meta.resolved) {
+            break;
+        }
+        await sleep(2000);
+    }
+    assert.strictEqual(meta.signed, false, `the sign request is signed (meta: ${JSON.stringify(meta)})`);
+    assert.strictEqual(meta.resolved, true, `the sign request is still open (meta: ${JSON.stringify(meta)})`);
 });
 
 /* The ledger ==================================================================== */

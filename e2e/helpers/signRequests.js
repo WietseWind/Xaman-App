@@ -102,6 +102,9 @@ const readSignedRequest = async (uuid, timeoutMs = 45000, definitions = undefine
     throw new Error(`the sign request was not signed (meta: ${JSON.stringify(last.meta || {})})`);
 };
 
+/** The state of a sign request at the platform: signed, cancelled, expired, resolved. */
+const signRequestMeta = async (uuid) => (await api('GET', `payload/${uuid}`)).meta || {};
+
 /* Accounts ==================================================================== */
 const newAccount = () => {
     const seed = generateFamilySeed();
@@ -202,6 +205,7 @@ module.exports = {
     apiCredentials,
     createSignRequest,
     readSignedRequest,
+    signRequestMeta,
     newAccount,
     accountSequence,
     submitAndWait,

@@ -88,3 +88,17 @@ Feature: Remit: the review shows what it carries, and the ledger gets what was r
         Given the Remit review showed no extra fields on the way
         Then I close the Remit review and decline the request
         Given I should have 'home-tab-view'
+
+    Scenario Outline: A Remit with <what>: the review refuses it, and nothing is signed
+        Then I create a Remit sign request with "<what>"
+        Then I open the Remit sign request
+        Given I should wait 60 sec to see 'review-error-view'
+        Given the review error should say "<the review says>"
+        Then I tap 'back-button'
+        Given I should have 'home-tab-view'
+        Given the Remit sign request is refused, not signed
+
+        Examples:
+            | what                                 | the review says                                                      |
+            | an amount entry without amount       | This transaction cannot be shown: Amounts[0] has no amount.          |
+            | an entry that is not an amount entry | This transaction cannot be shown: Amounts[0] is not an amount entry. |
