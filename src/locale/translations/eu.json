@@ -1385,6 +1385,7 @@
     "extraFields": "Eremu gehigarriak",
     "extraFieldsWarning": "Xamanek ezin ditu eremu hauek guztiz deskodetu. Sinatu soilik ulertzen badituzu eta eskaera hau espero bazenuen. Gelditu norbaitek sariak edo onurak agintzen badizkizu.",
     "remitPaysReserves": "Kontuz: %{amount} %{asset} gehiago bidaliko dira helmugako erreserbak estaltzeko:",
+    "remitPaysReservesUpTo": "Kontuz: gehienez %{amount} %{asset} gehiago bidaliko dira helmugako erreserbak estaltzeko:",
     "remitPaysActivation": "Kontuaren aktibazioa",
     "remitPaysTrustLines": "Konfiantza-lerroak: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

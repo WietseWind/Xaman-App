@@ -1385,6 +1385,7 @@
     "extraFields": "Lisaväljad",
     "extraFieldsWarning": "Xaman ei saa neid lisavälju täielikult dekodeerida. Allkirjasta vaid siis, kui mõistad neid ja ootasid seda päringut. Peatu, kui keegi lubab sulle tasu või hüvesid.",
     "remitPaysReserves": "Hoiatus: sihtkoha reservide katmiseks saadetakse lisaks %{amount} %{asset}:",
+    "remitPaysReservesUpTo": "Hoiatus: sihtkoha reservide katmiseks saadetakse lisaks kuni %{amount} %{asset}:",
     "remitPaysActivation": "Konto aktiveerimine",
     "remitPaysTrustLines": "Usaldusliinid: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

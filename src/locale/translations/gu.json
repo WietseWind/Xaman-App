@@ -1385,6 +1385,7 @@
     "extraFields": "વધારાનાં ફીલ્ડ",
     "extraFieldsWarning": "Xaman આ વધારાનાં ફીલ્ડ સંપૂર્ણ રીતે ડીકોડ કરી શકતું નથી. તે સમજતા હો અને આ વિનંતીની અપેક્ષા હોય તો જ સહી કરો. કોઈ ઇનામ કે લાભનું વચન આપે તો અટકો.",
     "remitPaysReserves": "સાવધાન: ગંતવ્ય પરના રિઝર્વ માટે વધારાના %{amount} %{asset} મોકલવામાં આવશે:",
+    "remitPaysReservesUpTo": "સાવધાન: ગંતવ્ય પરના રિઝર્વ માટે વધુમાં વધુ %{amount} %{asset} વધારાના મોકલવામાં આવશે:",
     "remitPaysActivation": "એકાઉન્ટ સક્રિયકરણ",
     "remitPaysTrustLines": "ટ્રસ્ટ લાઇન: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

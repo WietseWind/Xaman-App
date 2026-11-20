@@ -1385,6 +1385,7 @@
     "extraFields": "Chan siplemantè",
     "extraFieldsWarning": "Xaman pa ka dekode chan sa yo nèt. Siyen sèlman si ou konprann yo epi ou t ap atann demann sa a. Sispann si yon moun pwomèt ou rekonpans oswa avantaj.",
     "remitPaysReserves": "Atansyon: %{amount} %{asset} anplis ap voye pou kouvri rezèv yo nan destinasyon an:",
+    "remitPaysReservesUpTo": "Atansyon: jiska %{amount} %{asset} anplis ap voye pou kouvri rezèv yo nan destinasyon an:",
     "remitPaysActivation": "Aktivasyon kont",
     "remitPaysTrustLines": "Liy konfyans: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

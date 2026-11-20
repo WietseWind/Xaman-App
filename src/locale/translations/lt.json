@@ -1385,6 +1385,7 @@
     "extraFields": "Papildomi laukai",
     "extraFieldsWarning": "Xaman negali visiškai iškoduoti šių laukų. Pasirašykite tik jei juos suprantate ir tikėjotės šios užklausos. Sustokite, jei kas nors žada atlygį ar naudą.",
     "remitPaysReserves": "Dėmesio: papildomai bus išsiųsta %{amount} %{asset} gavėjo rezervams padengti:",
+    "remitPaysReservesUpTo": "Dėmesio: papildomai bus išsiųsta iki %{amount} %{asset} gavėjo rezervams padengti:",
     "remitPaysActivation": "Paskyros aktyvavimas",
     "remitPaysTrustLines": "Pasitikėjimo linijos: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

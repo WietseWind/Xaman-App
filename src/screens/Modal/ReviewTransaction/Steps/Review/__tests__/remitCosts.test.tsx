@@ -13,7 +13,7 @@ import { createNetworkDefinitions } from '@common/libs/ledger/utils/normalizeDef
 import liveXahau from '@common/libs/ledger/utils/__tests__/fixtures/definitions/live-xahau.json';
 import Localize from '@locale';
 
-import RemitCostsCaution from '../RemitCostsCaution';
+import RemitCostsCaution, { REMIT_COSTS_RETRY_MS } from '../RemitCostsCaution';
 import { assumedRemitCosts, remitCostAmounts, remitCosts, remitCostsAny } from '../remitCosts';
 
 jest.mock('@services/NetworkService', () => ({
@@ -57,6 +57,8 @@ const trustLines = (...currencies: string[]) =>
 
 beforeEach(() => {
     jest.clearAllMocks();
+    // a test that changes the reserves of the network does that for itself only
+    jest.restoreAllMocks();
     jest.mocked(NetworkService.getNetworkDefinitions).mockReturnValue(createNetworkDefinitions(liveXahau) as any);
     Localize.setLocale('en');
 });
@@ -64,24 +66,27 @@ beforeEach(() => {
 describe('what a Remit pays for at the destination', () => {
     it('a destination that does not exist: its activation, and a trust line for every issued amount', async () => {
         doesNotExist();
-        const costs = await remitCosts(remit({ Amounts: [native, eur, usd] }));
+        const { costs, known } = await remitCosts(remit({ Amounts: [native, eur, usd] }));
         expect(costs).toEqual({ activation: true, trustLines: 2, uriTokens: 0 });
+        expect(known).toBe(true);
         // an account that does not exist has no trust lines to ask for
         expect(ledgerEntry).not.toHaveBeenCalled();
     });
 
     it('a destination that exists, with only the native asset: nothing', async () => {
         exists();
-        const costs = await remitCosts(remit({ Amounts: [native] }));
+        const { costs, known } = await remitCosts(remit({ Amounts: [native] }));
         expect(costs).toEqual({ activation: false, trustLines: 0, uriTokens: 0 });
+        expect(known).toBe(true);
         expect(remitCostsAny(costs)).toBe(false);
     });
 
     it('a destination that exists: a trust line only for the issued amounts it has no trust line for', async () => {
         exists();
         trustLines('EUR');
-        const costs = await remitCosts(remit({ Amounts: [native, eur, usd] }));
+        const { costs, known } = await remitCosts(remit({ Amounts: [native, eur, usd] }));
         expect(costs).toEqual({ activation: false, trustLines: 1, uriTokens: 0 });
+        expect(known).toBe(true);
         expect(ledgerEntry).toHaveBeenCalledWith({
             ripple_state: { accounts: [Destination, Issuer], currency: 'USD' },
         });
@@ -89,39 +94,46 @@ describe('what a Remit pays for at the destination', () => {
 
     it('every URIToken that is transferred or minted, also when the destination exists', async () => {
         exists();
-        const costs = await remitCosts(
+        const { costs } = await remitCosts(
             remit({ URITokenIDs: [Token('A'), Token('B')], MintURIToken: { URI: '6170' } }),
         );
         expect(costs).toEqual({ activation: false, trustLines: 0, uriTokens: 3 });
     });
 
     it('the ledger does not say whether the destination exists: everything that can cost counts', async () => {
+        const assumed = { costs: { activation: true, trustLines: 1, uriTokens: 0 }, known: false };
         accountInfo.mockRejectedValue(new Error('no connection'));
-        expect(await remitCosts(remit({ Amounts: [native, eur] }))).toEqual({
-            activation: true,
-            trustLines: 1,
-            uriTokens: 0,
-        });
+        expect(await remitCosts(remit({ Amounts: [native, eur] }))).toEqual(assumed);
         accountInfo.mockResolvedValue({ error: 'slowDown' } as any);
-        expect(await remitCosts(remit({ Amounts: [native, eur] }))).toEqual({
-            activation: true,
-            trustLines: 1,
-            uriTokens: 0,
+        expect(await remitCosts(remit({ Amounts: [native, eur] }))).toEqual(assumed);
+        // a time-out of the request is a rejection like any other
+        accountInfo.mockRejectedValue(new Error('Request timeout'));
+        expect(await remitCosts(remit({ Amounts: [native, eur] }))).toEqual(assumed);
+        // a service that throws at once (no connection object yet) is no crash either
+        accountInfo.mockImplementation(() => {
+            throw new Error('connection instance is not initiated');
         });
+        expect(await remitCosts(remit({ Amounts: [native, eur] }))).toEqual(assumed);
     });
 
     it('the ledger does not say whether a trust line exists: it counts', async () => {
         exists();
+        const assumed = { costs: { activation: false, trustLines: 1, uriTokens: 0 }, known: false };
         ledgerEntry.mockRejectedValue(new Error('no connection'));
-        expect((await remitCosts(remit({ Amounts: [eur] }))).trustLines).toBe(1);
+        expect(await remitCosts(remit({ Amounts: [eur] }))).toEqual(assumed);
         ledgerEntry.mockResolvedValue({ error: 'slowDown' } as any);
-        expect((await remitCosts(remit({ Amounts: [eur] }))).trustLines).toBe(1);
+        expect(await remitCosts(remit({ Amounts: [eur] }))).toEqual(assumed);
+        ledgerEntry.mockImplementation(() => {
+            throw new Error('connection instance is not initiated');
+        });
+        expect(await remitCosts(remit({ Amounts: [eur] }))).toEqual(assumed);
     });
 
     it('an issued amount that goes back to its issuer counts: the ledger takes the reserve for it', async () => {
         accountInfo.mockResolvedValue({ account_data: { Account: Issuer } } as any);
-        const costs = await remitCosts(remit({ Destination: Issuer, Amounts: [eur] }));
+        const { costs, known } = await remitCosts(remit({ Destination: Issuer, Amounts: [eur] }));
         expect(costs).toEqual({ activation: false, trustLines: 1, uriTokens: 0 });
+        expect(known).toBe(true);
         expect(ledgerEntry).not.toHaveBeenCalled();
     });
 
@@ -155,7 +167,7 @@ describe('the reserve that is sent along, in the native asset', () => {
         });
         // whole numbers only: no decimals to line up
         expect(
-            remitCostAmounts({ activation: true, trustLines: 5, uriTokens: 0 }, reserve).lines.map((l) => l.amount),
+            remitCostAmounts({ activation: true, trustLines: 5, uriTokens: 0 }, reserve)?.lines.map((l) => l.amount),
         ).toEqual(['1', '1']);
         expect(
             remitCostAmounts({ activation: true, trustLines: 1, uriTokens: 0 }, { BaseReserve: 10, OwnerReserve: 0.25 }),
@@ -180,7 +192,14 @@ describe('the reserve that is sent along, in the native asset', () => {
     });
 
     it('no rounding surprises from binary fractions (3 x 0.2 is 0.6)', () => {
-        expect(remitCostAmounts({ activation: false, trustLines: 3, uriTokens: 0 }, reserve).total).toBe('0.6');
+        expect(remitCostAmounts({ activation: false, trustLines: 3, uriTokens: 0 }, reserve)?.total).toBe('0.6');
+    });
+
+    it('reserves that are not known give no amounts, not "NaN"', () => {
+        const costs = { activation: true, trustLines: 1, uriTokens: 0 };
+        expect(remitCostAmounts(costs, undefined)).toBeUndefined();
+        expect(remitCostAmounts(costs, { BaseReserve: undefined as any, OwnerReserve: 0.2 })).toBeUndefined();
+        expect(remitCostAmounts(costs, { BaseReserve: 1, OwnerReserve: NaN })).toBeUndefined();
     });
 });
 
@@ -197,6 +216,7 @@ describe('the caution above the slide button', () => {
             .map((node) => node.props.children)
             .filter((child) => typeof child === 'string');
     const header = (amount: string) => Localize.t('payload.remitPaysReserves', { amount, asset: 'XAH' });
+    const upTo = (amount: string) => Localize.t('payload.remitPaysReservesUpTo', { amount, asset: 'XAH' });
 
     afterEach(() => act(() => tree.unmount()));
 
@@ -231,7 +251,7 @@ describe('the caution above the slide button', () => {
         expect(tree.toJSON()).toBeNull();
     });
 
-    it('until the ledger answered, the caution is there with everything that can apply', async () => {
+    it('until the ledger answered, the caution is there with everything that can apply, as "up to"', async () => {
         let answer: (value: unknown) => void = () => undefined;
         accountInfo.mockReturnValue(
             new Promise((resolve) => {
@@ -239,7 +259,8 @@ describe('the caution above the slide button', () => {
             }) as any,
         );
         await render({ Amounts: [native] });
-        expect(lines()).toEqual([header('1'), '1 XAH', Localize.t('payload.remitPaysActivation')]);
+        expect(lines()).toEqual([upTo('1'), '1 XAH', Localize.t('payload.remitPaysActivation')]);
+        expect(tree.root.findAllByProps({ testID: 'remit-pays-total' })).toHaveLength(0);
         await act(async () => {
             answer({ account_data: { Account: Destination } });
         });
@@ -257,5 +278,86 @@ describe('the caution above the slide button', () => {
             ' 0.4 XAH',
             Localize.t('payload.remitPaysURITokens', { count: 2 }),
         ]);
+    });
+
+    describe('when the connection fails', () => {
+        beforeEach(() => jest.useFakeTimers());
+        afterEach(() => jest.useRealTimers());
+
+        const later = async (ms: number) => {
+            await act(async () => {
+                jest.advanceTimersByTime(ms);
+            });
+        };
+
+        it('no answer from the ledger: the caution stays, as "up to", and the ledger is asked again', async () => {
+            accountInfo.mockRejectedValue(new Error('no connection'));
+            await render({ Amounts: [native, eur] });
+            expect(lines()).toEqual([
+                upTo('1.2'),
+                '1.0 XAH',
+                Localize.t('payload.remitPaysActivation'),
+                '0.2 XAH',
+                Localize.t('payload.remitPaysTrustLines', { count: 1 }),
+            ]);
+            expect(accountInfo).toHaveBeenCalledTimes(1);
+
+            // still no connection: asked again, nothing changes on screen
+            await later(REMIT_COSTS_RETRY_MS);
+            expect(accountInfo).toHaveBeenCalledTimes(2);
+            expect(lines()[0]).toBe(upTo('1.2'));
+
+            // the connection is back: exact, and no more questions
+            exists();
+            trustLines();
+            await later(REMIT_COSTS_RETRY_MS);
+            expect(accountInfo).toHaveBeenCalledTimes(3);
+            expect(lines()).toEqual([header('0.2'), '0.2 XAH', Localize.t('payload.remitPaysTrustLines', { count: 1 })]);
+            await later(REMIT_COSTS_RETRY_MS * 3);
+            expect(accountInfo).toHaveBeenCalledTimes(3);
+        });
+
+        it('a request that never ends does not hold the screen: the caution is there at once', async () => {
+            accountInfo.mockReturnValue(new Promise(() => undefined) as any);
+            await render({ Amounts: [eur], URITokenIDs: [Token('A')] });
+            expect(lines()[0]).toBe(upTo('1.4'));
+            await later(60000);
+            expect(lines()[0]).toBe(upTo('1.4'));
+            // one question is open: no second one on top of it
+            expect(accountInfo).toHaveBeenCalledTimes(1);
+        });
+
+        it('only the trust line question fails: the rest is exact, the total is "up to"', async () => {
+            exists();
+            ledgerEntry.mockRejectedValue(new Error('Request timeout'));
+            await render({ Amounts: [native, eur] });
+            expect(lines()).toEqual([upTo('0.2'), '0.2 XAH', Localize.t('payload.remitPaysTrustLines', { count: 1 })]);
+            trustLines('EUR');
+            await later(REMIT_COSTS_RETRY_MS);
+            expect(tree.toJSON()).toBeNull();
+        });
+
+        it('closing the review stops the questions', async () => {
+            accountInfo.mockRejectedValue(new Error('no connection'));
+            await render({ Amounts: [native] });
+            act(() => tree.unmount());
+            await later(REMIT_COSTS_RETRY_MS * 4);
+            expect(accountInfo).toHaveBeenCalledTimes(1);
+            // for the afterEach of the outer block
+            await render({ Amounts: [native] });
+        });
+
+        it('the reserves of the network are not known: the parts without amounts, no crash and no "NaN"', async () => {
+            jest.spyOn(NetworkService, 'getNetworkReserve').mockImplementation(() => {
+                throw new TypeError("Cannot destructure property 'base' of undefined");
+            });
+            doesNotExist();
+            await render({ Amounts: [eur] });
+            expect(lines()).toEqual([
+                header('?'),
+                Localize.t('payload.remitPaysActivation'),
+                Localize.t('payload.remitPaysTrustLines', { count: 1 }),
+            ]);
+        });
     });
 });

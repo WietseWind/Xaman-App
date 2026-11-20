@@ -1385,6 +1385,7 @@
     "extraFields": "Ekstra velde",
     "extraFieldsWarning": "Xaman kan hierdie ekstra velde nie volledig dekodeer nie. Teken net as jy dit verstaan en hierdie versoek verwag het. Stop as iemand jou belonings of voordele belowe.",
     "remitPaysReserves": "Waarskuwing: %{amount} %{asset} ekstra sal gestuur word om die reserwes by die bestemming te dek:",
+    "remitPaysReservesUpTo": "Waarskuwing: tot %{amount} %{asset} ekstra sal gestuur word om die reserwes by die bestemming te dek:",
     "remitPaysActivation": "Rekeningaktivering",
     "remitPaysTrustLines": "Trustlines: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

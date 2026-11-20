@@ -1385,6 +1385,7 @@
     "extraFields": "حقول إضافية",
     "extraFieldsWarning": "لا يستطيع Xaman فك ترميز هذه الحقول الإضافية بالكامل. وقّع فقط إذا كنت تفهمها وتتوقع هذا الطلب. توقّف إذا وعدك أحد بمكافآت أو مزايا.",
     "remitPaysReserves": "تنبيه: سيُرسل %{amount} %{asset} إضافية لتغطية الاحتياطيات لدى الوجهة:",
+    "remitPaysReservesUpTo": "تنبيه: سيُرسل ما يصل إلى %{amount} %{asset} إضافية لتغطية الاحتياطيات لدى الوجهة:",
     "remitPaysActivation": "تفعيل الحساب",
     "remitPaysTrustLines": "خطوط الثقة: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

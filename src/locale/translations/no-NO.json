@@ -1385,6 +1385,7 @@
     "extraFields": "Ekstra felt",
     "extraFieldsWarning": "Xaman kan ikke dekode disse feltene fullt ut. Signer bare hvis du forstår dem og forventet denne forespørselen. Stopp hvis noen lover deg belønninger eller fordeler.",
     "remitPaysReserves": "Advarsel: %{amount} %{asset} ekstra sendes for å dekke reservene hos mottakeren:",
+    "remitPaysReservesUpTo": "Advarsel: opptil %{amount} %{asset} ekstra sendes for å dekke reservene hos mottakeren:",
     "remitPaysActivation": "Kontoaktivering",
     "remitPaysTrustLines": "Trust lines: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

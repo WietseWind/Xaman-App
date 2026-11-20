@@ -1385,6 +1385,7 @@
     "extraFields": "额外字段",
     "extraFieldsWarning": "Xaman 无法完整解码这些额外字段。仅在您理解这些字段并预期收到此请求时签名。若有人向您承诺奖励或利益，请停止操作。",
     "remitPaysReserves": "注意：将额外发送 %{amount} %{asset} 以支付目标方的储备：",
+    "remitPaysReservesUpTo": "注意：将额外发送最多 %{amount} %{asset} 以支付目标方的储备：",
     "remitPaysActivation": "账户激活",
     "remitPaysTrustLines": "信任线：%{count}",
     "remitPaysURITokens": "URITokens：%{count}",

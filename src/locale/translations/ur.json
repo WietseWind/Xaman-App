@@ -1385,6 +1385,7 @@
     "extraFields": "اضافی فیلڈز",
     "extraFieldsWarning": "Xaman ان اضافی فیلڈز کو پوری طرح ڈی کوڈ نہیں کر سکتا۔ صرف تب دستخط کریں جب انہیں سمجھتے ہوں اور اس درخواست کی توقع ہو۔ کوئی انعام یا فائدے کا وعدہ کرے تو رک جائیں۔",
     "remitPaysReserves": "خبردار: منزل پر ریزروز پورے کرنے کے لیے اضافی %{amount} %{asset} بھیجے جائیں گے:",
+    "remitPaysReservesUpTo": "خبردار: منزل پر ریزروز پورے کرنے کے لیے زیادہ سے زیادہ %{amount} %{asset} اضافی بھیجے جائیں گے:",
     "remitPaysActivation": "اکاؤنٹ ایکٹیویشن",
     "remitPaysTrustLines": "ٹرسٹ لائنز: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

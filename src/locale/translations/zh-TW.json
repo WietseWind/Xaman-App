@@ -1385,6 +1385,7 @@
     "extraFields": "額外欄位",
     "extraFieldsWarning": "Xaman 無法完整解碼這些額外欄位。僅在您理解這些欄位並預期收到此請求時簽署。若有人向您承諾獎勵或利益，請停止操作。",
     "remitPaysReserves": "注意：將額外發送 %{amount} %{asset} 以支付目的地的儲備：",
+    "remitPaysReservesUpTo": "注意：將額外發送最多 %{amount} %{asset} 以支付目的地的儲備：",
     "remitPaysActivation": "帳戶啟用",
     "remitPaysTrustLines": "信任線：%{count}",
     "remitPaysURITokens": "URITokens：%{count}",

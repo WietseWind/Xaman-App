@@ -1385,6 +1385,7 @@
     "extraFields": "Papildu lauki",
     "extraFieldsWarning": "Xaman nevar pilnībā atkodēt šos laukus. Parakstiet tikai tad, ja tos saprotat un gaidījāt šo pieprasījumu. Apstājieties, ja kāds sola atlīdzību vai labumus.",
     "remitPaysReserves": "Uzmanību: papildus tiks nosūtīti %{amount} %{asset}, lai segtu rezerves saņēmēja pusē:",
+    "remitPaysReservesUpTo": "Uzmanību: papildus tiks nosūtīti līdz %{amount} %{asset}, lai segtu rezerves saņēmēja pusē:",
     "remitPaysActivation": "Konta aktivizēšana",
     "remitPaysTrustLines": "Uzticības līnijas: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

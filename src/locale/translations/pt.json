@@ -1385,6 +1385,7 @@
     "extraFields": "Campos adicionais",
     "extraFieldsWarning": "O Xaman não consegue descodificar totalmente estes campos. Assina apenas se os compreenderes e esperavas este pedido. Para se alguém te prometer recompensas ou vantagens.",
     "remitPaysReserves": "Atenção: serão enviados %{amount} %{asset} adicionais para cobrir as reservas no destino:",
+    "remitPaysReservesUpTo": "Atenção: serão enviados até %{amount} %{asset} adicionais para cobrir as reservas no destino:",
     "remitPaysActivation": "Ativação de conta",
     "remitPaysTrustLines": "Linhas de confiança: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

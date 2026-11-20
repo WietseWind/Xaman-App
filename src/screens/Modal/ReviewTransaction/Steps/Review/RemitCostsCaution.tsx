@@ -8,7 +8,7 @@ import { Spacer } from '@components/General/Spacer';
 import Localize from '@locale';
 import { AppStyles } from '@theme';
 
-import { assumedRemitCosts, remitCostAmounts, remitCosts, remitCostsAny, RemitCosts } from './remitCosts';
+import { assumedRemitCosts, remitCostAmounts, remitCosts, remitCostsAny, RemitCostsAnswer } from './remitCosts';
 import styles from './styles';
 
 const LINE = {
@@ -23,15 +23,31 @@ const LINE = {
     },
 };
 
+// the ledger did not answer (no connection, a time-out): ask again after this long
+export const REMIT_COSTS_RETRY_MS = 5000;
+
+const networkReserve = () => {
+    try {
+        return NetworkService.getNetworkReserve();
+    } catch {
+        return undefined;
+    }
+};
+
 /**
  * Above the slide button of a Remit: what the Remit sends along to cover reserves at the
  * destination, besides what it sends. The total, and one line for each part that applies, with
  * the amounts under each other; a Remit that pays for nothing more shows nothing.
  *
- * Until the ledger answered, everything that can apply is listed.
+ * Until the ledger answered, everything that can apply is listed and the total is "up to". When
+ * the ledger does not answer, the question is asked again until it does: the caution is never
+ * missing, never waits, and gets exact as soon as the connection is back.
  */
 const RemitCostsCaution = ({ transaction }: { transaction: Remit }) => {
-    const [costs, setCosts] = useState<RemitCosts>(() => assumedRemitCosts(transaction));
+    const [answer, setAnswer] = useState<RemitCostsAnswer>(() => ({
+        costs: assumedRemitCosts(transaction),
+        known: false,
+    }));
 
     // the parts of the Remit that decide the costs
     const parts = JSON.stringify([
@@ -43,24 +59,44 @@ const RemitCostsCaution = ({ transaction }: { transaction: Remit }) => {
 
     useEffect(() => {
         let current = true;
-        setCosts(assumedRemitCosts(transaction));
-        remitCosts(transaction)
-            .then((known) => {
-                if (current) setCosts(known);
-            })
-            .catch(() => {
-                // the assumed costs stay
-            });
+        let timer: ReturnType<typeof setTimeout> | undefined;
+
+        const ask = () => {
+            remitCosts(transaction)
+                .catch((): RemitCostsAnswer => ({ costs: assumedRemitCosts(transaction), known: false }))
+                .then((next) => {
+                    if (!current) return;
+                    setAnswer(next);
+                    if (!next.known && transaction.Destination) {
+                        timer = setTimeout(ask, REMIT_COSTS_RETRY_MS);
+                    }
+                });
+        };
+
+        setAnswer({ costs: assumedRemitCosts(transaction), known: false });
+        ask();
+
         return () => {
             current = false;
+            if (timer) clearTimeout(timer);
         };
         // `parts` stands for the transaction: the same Remit object can change while it is reviewed
     }, [parts]);
 
+    const { costs, known } = answer;
     if (!remitCostsAny(costs)) return null;
 
     const asset = NetworkService.getNativeAsset();
-    const { total, lines } = remitCostAmounts(costs, NetworkService.getNetworkReserve());
+    const amounts = remitCostAmounts(costs, networkReserve());
+    const lines = amounts
+        ? amounts.lines
+        : (['activation', 'trustLines', 'uriTokens'] as const)
+              .map((kind) => ({
+                  kind,
+                  count: kind === 'activation' ? Number(costs.activation) : costs[kind],
+                  amount: '',
+              }))
+              .filter((line) => line.count > 0);
     // the amounts are in a monospace font: the same length puts the decimal points under each other
     const width = Math.max(...lines.map((line) => line.amount.length));
 
@@ -68,15 +104,25 @@ const RemitCostsCaution = ({ transaction }: { transaction: Remit }) => {
         <>
             <View testID="remit-pays-reserves-warning">
                 <InfoMessage type="warning">
-                    <Text testID="remit-pays-total" style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorOrange]}>
-                        {Localize.t('payload.remitPaysReserves', { amount: total, asset })}
+                    <Text
+                        testID={known ? 'remit-pays-total' : 'remit-pays-total-at-most'}
+                        style={[AppStyles.subtext, AppStyles.bold, AppStyles.colorOrange]}
+                    >
+                        {Localize.t(known ? 'payload.remitPaysReserves' : 'payload.remitPaysReservesUpTo', {
+                            amount: amounts ? amounts.total : '?',
+                            asset,
+                        })}
                     </Text>
                     <View style={styles.remitCostLines}>
                         {lines.map((line) => (
                             <View key={line.kind} style={styles.remitCostLine}>
-                                <Text style={[AppStyles.monoSubText, AppStyles.colorOrange, styles.remitCostAmount]}>
-                                    {`${line.amount.padStart(width, ' ')} ${asset}`}
-                                </Text>
+                                {!!amounts && (
+                                    <Text
+                                        style={[AppStyles.monoSubText, AppStyles.colorOrange, styles.remitCostAmount]}
+                                    >
+                                        {`${line.amount.padStart(width, ' ')} ${asset}`}
+                                    </Text>
+                                )}
                                 <Text
                                     testID={LINE[line.kind].id}
                                     style={[AppStyles.subtext, AppStyles.colorOrange, styles.remitCostLabel]}

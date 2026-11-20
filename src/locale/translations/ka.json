@@ -1385,6 +1385,7 @@
     "extraFields": "დამატებითი ველები",
     "extraFieldsWarning": "Xaman ამ ველებს სრულად ვერ შიფრავს. ხელი მოაწერეთ მხოლოდ თუ გესმით ისინი და ამ მოთხოვნას ელოდით. შეჩერდით, თუ ვინმე ჯილდოს ან სარგებელს გპირდებათ.",
     "remitPaysReserves": "ყურადღება: დამატებით გაიგზავნება %{amount} %{asset} დანიშნულების ადგილზე რეზერვების დასაფარად:",
+    "remitPaysReservesUpTo": "ყურადღება: დამატებით გაიგზავნება მაქსიმუმ %{amount} %{asset} დანიშნულების ადგილზე რეზერვების დასაფარად:",
     "remitPaysActivation": "ანგარიშის აქტივაცია",
     "remitPaysTrustLines": "ნდობის ხაზები: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

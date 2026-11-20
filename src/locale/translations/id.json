@@ -1385,6 +1385,7 @@
     "extraFields": "Kolom tambahan",
     "extraFieldsWarning": "Xaman tidak dapat sepenuhnya mendekode kolom ini. Tanda tangani hanya jika Anda memahaminya dan mengharapkan permintaan ini. Berhenti jika seseorang menjanjikan hadiah atau keuntungan.",
     "remitPaysReserves": "Perhatian: %{amount} %{asset} tambahan akan dikirim untuk menutup cadangan di tujuan:",
+    "remitPaysReservesUpTo": "Perhatian: hingga %{amount} %{asset} tambahan akan dikirim untuk menutup cadangan di tujuan:",
     "remitPaysActivation": "Aktivasi akun",
     "remitPaysTrustLines": "Trust line: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

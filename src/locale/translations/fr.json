@@ -1385,6 +1385,7 @@
     "extraFields": "Champs supplémentaires",
     "extraFieldsWarning": "Xaman ne peut pas décoder entièrement ces champs. Ne signez que si vous les comprenez et attendiez cette demande. Arrêtez si quelqu’un vous promet des récompenses ou des avantages.",
     "remitPaysReserves": "Attention : %{amount} %{asset} supplémentaires seront envoyés pour couvrir les réserves chez le destinataire :",
+    "remitPaysReservesUpTo": "Attention : jusqu'à %{amount} %{asset} supplémentaires seront envoyés pour couvrir les réserves chez le destinataire :",
     "remitPaysActivation": "Activation du compte",
     "remitPaysTrustLines": "Lignes de confiance : %{count}",
     "remitPaysURITokens": "URITokens : %{count}",

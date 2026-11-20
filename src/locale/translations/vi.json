@@ -1385,6 +1385,7 @@
     "extraFields": "Trường bổ sung",
     "extraFieldsWarning": "Xaman không thể giải mã đầy đủ các trường này. Chỉ ký nếu bạn hiểu chúng và đã dự kiến yêu cầu này. Dừng lại nếu ai đó hứa hẹn phần thưởng hoặc lợi ích.",
     "remitPaysReserves": "Lưu ý: %{amount} %{asset} sẽ được gửi thêm để trang trải các khoản dự trữ tại đích đến:",
+    "remitPaysReservesUpTo": "Lưu ý: tối đa %{amount} %{asset} sẽ được gửi thêm để trang trải các khoản dự trữ tại đích đến:",
     "remitPaysActivation": "Kích hoạt tài khoản",
     "remitPaysTrustLines": "Trust line: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

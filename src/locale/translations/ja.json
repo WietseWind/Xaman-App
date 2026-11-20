@@ -1385,6 +1385,7 @@
     "extraFields": "追加フィールド",
     "extraFieldsWarning": "Xaman はこれらの追加フィールドを完全には解読できません。内容を理解し、予期したリクエストである場合のみ署名してください。報酬や利益を約束された場合は中止してください。",
     "remitPaysReserves": "注意：送金先のリザーブをまかなうため、追加で %{amount} %{asset} が送られます：",
+    "remitPaysReservesUpTo": "注意：送金先のリザーブをまかなうため、追加で最大 %{amount} %{asset} が送られます：",
     "remitPaysActivation": "アカウント有効化",
     "remitPaysTrustLines": "トラストライン：%{count}",
     "remitPaysURITokens": "URITokens：%{count}",

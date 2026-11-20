@@ -308,7 +308,9 @@ Given('the Remit caution should list {string}', { timeout: 3 * 60 * 1000 }, asyn
     let shown = [];
     while (Date.now() < deadline) {
         shown = await read();
-        if (shown.join(',') === expected.join(',')) {
+        // "remit-pays-total" is the header after the ledger answered; before that the total is "up to"
+        const exact = !expected.length || (await has('remit-pays-total', 300));
+        if (exact && shown.join(',') === expected.join(',')) {
             if (!expected.length) {
                 assert.strictEqual(await has('remit-pays-reserves-warning', 300), false, 'no caution at all');
                 state.cautionDrops = 0n;

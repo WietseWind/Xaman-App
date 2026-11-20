@@ -1385,6 +1385,7 @@
     "extraFields": "Ek alanlar",
     "extraFieldsWarning": "Xaman bu alanları tam olarak çözümleyemez. Yalnızca bunları anlıyor ve bu isteği bekliyorsanız imzalayın. Birisi ödül veya kazanç vaat ediyorsa durun.",
     "remitPaysReserves": "Dikkat: hedefteki rezervleri karşılamak için fazladan %{amount} %{asset} gönderilecek:",
+    "remitPaysReservesUpTo": "Dikkat: hedefteki rezervleri karşılamak için fazladan en çok %{amount} %{asset} gönderilecek:",
     "remitPaysActivation": "Hesap aktivasyonu",
     "remitPaysTrustLines": "Güven hatları: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

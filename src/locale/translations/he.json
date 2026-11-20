@@ -1385,6 +1385,7 @@
     "extraFields": "שדות נוספים",
     "extraFieldsWarning": "Xaman לא יכול לפענח שדות אלה במלואם. יש לחתום רק אם הם מובנים לכם וציפיתם לבקשה הזו. עצרו אם מישהו מבטיח לכם תגמולים או הטבות.",
     "remitPaysReserves": "זהירות: %{amount} %{asset} נוספים יישלחו לכיסוי הרזרבות ביעד:",
+    "remitPaysReservesUpTo": "זהירות: עד %{amount} %{asset} נוספים יישלחו לכיסוי הרזרבות ביעד:",
     "remitPaysActivation": "הפעלת החשבון",
     "remitPaysTrustLines": "קווי אמון: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

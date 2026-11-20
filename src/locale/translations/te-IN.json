@@ -1385,6 +1385,7 @@
     "extraFields": "అదనపు ఫీల్డ్‌లు",
     "extraFieldsWarning": "Xaman ఈ ఫీల్డ్‌లను పూర్తిగా డీకోడ్ చేయలేదు. ఇవి అర్థమై, ఈ అభ్యర్థనను ఆశించినప్పుడే సంతకం చేయండి. ఎవరైనా బహుమతులు లేదా ప్రయోజనాలు వాగ్దానం చేస్తే ఆపండి.",
     "remitPaysReserves": "జాగ్రత్త: గమ్యస్థానంలోని రిజర్వ్‌ల కోసం అదనంగా %{amount} %{asset} పంపబడతాయి:",
+    "remitPaysReservesUpTo": "జాగ్రత్త: గమ్యస్థానంలోని రిజర్వ్‌ల కోసం గరిష్ఠంగా %{amount} %{asset} అదనంగా పంపబడతాయి:",
     "remitPaysActivation": "ఖాతా యాక్టివేషన్",
     "remitPaysTrustLines": "ట్రస్ట్ లైన్లు: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

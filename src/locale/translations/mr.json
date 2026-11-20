@@ -1385,6 +1385,7 @@
     "extraFields": "अतिरिक्त फील्ड",
     "extraFieldsWarning": "Xaman ही फील्ड पूर्णपणे डिकोड करू शकत नाही. ती समजत असतील व ही विनंती अपेक्षित असेल तरच स्वाक्षरी करा. कोणी बक्षीस किंवा फायद्याचे वचन दिल्यास थांबा.",
     "remitPaysReserves": "सावधान: गंतव्यस्थानी राखीव रकमेसाठी अतिरिक्त %{amount} %{asset} पाठवले जातील:",
+    "remitPaysReservesUpTo": "सावधान: गंतव्यस्थानी राखीव रकमेसाठी कमाल %{amount} %{asset} अतिरिक्त पाठवले जातील:",
     "remitPaysActivation": "खाते सक्रियकरण",
     "remitPaysTrustLines": "ट्रस्ट लाइन: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

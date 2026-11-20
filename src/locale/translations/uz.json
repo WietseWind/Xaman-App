@@ -1385,6 +1385,7 @@
     "extraFields": "Qo‘shimcha maydonlar",
     "extraFieldsWarning": "Xaman bu maydonlarni to‘liq dekodlay olmaydi. Faqat ularni tushunsangiz va bu so‘rovni kutgan bo‘lsangiz imzolang. Kimdir mukofot yoki foyda va’da qilsa, to‘xtang.",
     "remitPaysReserves": "Diqqat: qabul qiluvchidagi zaxiralarni qoplash uchun qo‘shimcha %{amount} %{asset} yuboriladi:",
+    "remitPaysReservesUpTo": "Diqqat: qabul qiluvchidagi zaxiralarni qoplash uchun qo‘shimcha ko‘pi bilan %{amount} %{asset} yuboriladi:",
     "remitPaysActivation": "Hisobni faollashtirish",
     "remitPaysTrustLines": "Ishonch liniyalari: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

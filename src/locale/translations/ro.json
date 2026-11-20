@@ -1385,6 +1385,7 @@
     "extraFields": "Câmpuri suplimentare",
     "extraFieldsWarning": "Xaman nu poate decoda complet aceste câmpuri. Semnați doar dacă le înțelegeți și vă așteptați la această cerere. Opriți-vă dacă cineva vă promite recompense sau beneficii.",
     "remitPaysReserves": "Atenție: se vor trimite suplimentar %{amount} %{asset} pentru a acoperi rezervele la destinație:",
+    "remitPaysReservesUpTo": "Atenție: se vor trimite suplimentar până la %{amount} %{asset} pentru a acoperi rezervele la destinație:",
     "remitPaysActivation": "Activarea contului",
     "remitPaysTrustLines": "Linii de încredere: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

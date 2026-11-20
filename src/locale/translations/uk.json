@@ -1385,6 +1385,7 @@
     "extraFields": "Додаткові поля",
     "extraFieldsWarning": "Xaman не може повністю розшифрувати ці поля. Підписуйте лише якщо розумієте їх і очікували цей запит. Зупиніться, якщо хтось обіцяє винагороди чи вигоди.",
     "remitPaysReserves": "Увага: додатково буде надіслано %{amount} %{asset} для покриття резервів в отримувача:",
+    "remitPaysReservesUpTo": "Увага: додатково буде надіслано до %{amount} %{asset} для покриття резервів в отримувача:",
     "remitPaysActivation": "Активація акаунта",
     "remitPaysTrustLines": "Лінії довіри: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

@@ -1385,6 +1385,7 @@
     "extraFields": "추가 필드",
     "extraFieldsWarning": "Xaman은 이 추가 필드를 완전히 해석할 수 없습니다. 내용을 이해하고 예상한 요청인 경우에만 서명하세요. 누군가 보상이나 혜택을 약속한다면 중단하세요.",
     "remitPaysReserves": "주의: 수신처의 리저브를 충당하기 위해 %{amount} %{asset}이(가) 추가로 전송됩니다:",
+    "remitPaysReservesUpTo": "주의: 수신처의 리저브를 충당하기 위해 최대 %{amount} %{asset}이(가) 추가로 전송됩니다:",
     "remitPaysActivation": "계정 활성화",
     "remitPaysTrustLines": "트러스트 라인: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

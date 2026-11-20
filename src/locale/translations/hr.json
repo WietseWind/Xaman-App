@@ -1385,6 +1385,7 @@
     "extraFields": "Dodatna polja",
     "extraFieldsWarning": "Xaman ne može potpuno dekodirati ova polja. Potpišite samo ako ih razumijete i očekivali ste ovaj zahtjev. Stanite ako vam netko obećava nagrade ili pogodnosti.",
     "remitPaysReserves": "Oprez: dodatnih %{amount} %{asset} bit će poslano za pokrivanje rezervi na odredištu:",
+    "remitPaysReservesUpTo": "Oprez: do %{amount} %{asset} dodatno bit će poslano za pokrivanje rezervi na odredištu:",
     "remitPaysActivation": "Aktivacija računa",
     "remitPaysTrustLines": "Linije povjerenja: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

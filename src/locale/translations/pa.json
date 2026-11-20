@@ -1385,6 +1385,7 @@
     "extraFields": "ਵਾਧੂ ਖੇਤਰ",
     "extraFieldsWarning": "Xaman ਇਹ ਖੇਤਰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਡੀਕੋਡ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਇਨ੍ਹਾਂ ਨੂੰ ਸਮਝਦੇ ਹੋ ਅਤੇ ਇਸ ਬੇਨਤੀ ਦੀ ਉਮੀਦ ਸੀ ਤਾਂ ਹੀ ਦਸਤਖਤ ਕਰੋ। ਕੋਈ ਇਨਾਮ ਜਾਂ ਲਾਭ ਦਾ ਵਾਅਦਾ ਕਰੇ ਤਾਂ ਰੁਕੋ।",
     "remitPaysReserves": "ਸਾਵਧਾਨ: ਮੰਜ਼ਿਲ 'ਤੇ ਰਿਜ਼ਰਵ ਲਈ ਵਾਧੂ %{amount} %{asset} ਭੇਜੇ ਜਾਣਗੇ:",
+    "remitPaysReservesUpTo": "ਸਾਵਧਾਨ: ਮੰਜ਼ਿਲ 'ਤੇ ਰਿਜ਼ਰਵ ਲਈ ਵੱਧ ਤੋਂ ਵੱਧ %{amount} %{asset} ਵਾਧੂ ਭੇਜੇ ਜਾਣਗੇ:",
     "remitPaysActivation": "ਖਾਤਾ ਐਕਟੀਵੇਸ਼ਨ",
     "remitPaysTrustLines": "ਟਰੱਸਟ ਲਾਈਨਾਂ: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

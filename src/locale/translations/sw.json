@@ -1385,6 +1385,7 @@
     "extraFields": "Sehemu za ziada",
     "extraFieldsWarning": "Xaman haiwezi kufasiri sehemu hizi kikamilifu. Tia sahihi tu ukizielewa na ulitarajia ombi hili. Simama mtu akikuahidi zawadi au manufaa.",
     "remitPaysReserves": "Tahadhari: %{amount} %{asset} za ziada zitatumwa kugharamia akiba kwa mpokeaji:",
+    "remitPaysReservesUpTo": "Tahadhari: hadi %{amount} %{asset} za ziada zitatumwa kugharamia akiba kwa mpokeaji:",
     "remitPaysActivation": "Kuwezesha akaunti",
     "remitPaysTrustLines": "Trust lines: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

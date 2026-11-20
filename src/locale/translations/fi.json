@@ -1385,6 +1385,7 @@
     "extraFields": "Lisäkentät",
     "extraFieldsWarning": "Xaman ei pysty purkamaan näitä lisäkenttiä täysin. Allekirjoita vain, jos ymmärrät ne ja odotit tätä pyyntöä. Lopeta, jos joku lupaa palkintoja tai etuja.",
     "remitPaysReserves": "Varoitus: %{amount} %{asset} lähetetään lisäksi vastaanottajan reservien kattamiseksi:",
+    "remitPaysReservesUpTo": "Varoitus: enintään %{amount} %{asset} lähetetään lisäksi vastaanottajan reservien kattamiseksi:",
     "remitPaysActivation": "Tilin aktivointi",
     "remitPaysTrustLines": "Luottolinjat: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",

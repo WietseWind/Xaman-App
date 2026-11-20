@@ -1385,6 +1385,7 @@
     "extraFields": "Další pole",
     "extraFieldsWarning": "Xaman tato pole neumí plně dekódovat. Podepište jen tehdy, pokud jim rozumíte a tento požadavek očekáváte. Pokud vám někdo slibuje odměny či výhody, nepokračujte.",
     "remitPaysReserves": "Upozornění: navíc bude odesláno %{amount} %{asset} na pokrytí rezerv u příjemce:",
+    "remitPaysReservesUpTo": "Upozornění: navíc bude odesláno až %{amount} %{asset} na pokrytí rezerv u příjemce:",
     "remitPaysActivation": "Aktivace účtu",
     "remitPaysTrustLines": "Linky důvěry: %{count}",
     "remitPaysURITokens": "URITokens: %{count}",
