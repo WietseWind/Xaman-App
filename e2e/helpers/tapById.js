@@ -7,6 +7,7 @@ const { element, by, waitFor, device } = require('detox');
 const { getCurrentTestPasscode } = require('./testCredentials');
 
 const { imeDumpsysBlind, imeEscapeDead } = require('./faultInjection');
+const { setKeyboardPackage, isKeyboardPackage } = require('./androidKeyboardPackage');
 
 const APP_ID = 'com.xrpllabs.xumm';
 const DUMP_NAME = 'xaman-detox-ui.xml';
@@ -933,7 +934,7 @@ const pickFooterNode = (xml, testId) => {
         return pickNodeForTestId(xml, testId);
     }
     const nodes = parseNodes(xml).filter(
-        (n) => !isSystemUiNode(n) && String(n.package || '').indexOf('inputmethod') === -1,
+        (n) => !isSystemUiNode(n) && !isKeyboardPackage(n.package),
     );
     const exact = nodes.find(
         (n) => resourceIdTail(n.resourceId) === testId || n.contentDesc === testId,
@@ -976,7 +977,23 @@ const pickFooterNode = (xml, testId) => {
 // the text step left it up, the tap helper did not close it either, and the Next tap that followed
 // landed on the keyboard (the lost tap of the full suite runs). And a keyboard on its way out is gone
 // from dumpsys before its window stops taking the touches.
+// The keyboard that is set on the device (not every keyboard has "inputmethod" in its package name).
+let keyboardPackageRead = false;
+const readKeyboardPackage = () => {
+    if (keyboardPackageRead) {
+        return;
+    }
+    keyboardPackageRead = true;
+    try {
+        const component = String(androidAdb(['shell', 'settings', 'get', 'secure', 'default_input_method'], 5000));
+        setKeyboardPackage(component.trim().split('/')[0]);
+    } catch (e) {
+        // the name rule still applies
+    }
+};
+
 const androidKeyboardUp = async () => {
+    readKeyboardPackage();
     if (androidImeShown()) {
         return true;
     }
@@ -1005,7 +1022,7 @@ const reportKeyboardFallback = (what) => {
 
 // The key of the on-screen keyboard that ends the entry (Done, Next, Go, ...), from a UI dump.
 const imeActionKeyFromXml = (xml) => {
-    const ime = parseNodes(xml).filter((node) => /inputmethod/i.test(node.package || ''));
+    const ime = parseNodes(xml).filter((node) => isKeyboardPackage(node.package));
     return (
         ime.find((node) => /key_pos_ime_action/.test(node.resourceId || '')) ||
         ime.find((node) => /^(done|enter|go|next|search|send)$/i.test((node.contentDesc || node.text || '').trim())) ||
@@ -1289,7 +1306,7 @@ const waitUntilAndroidText = async (snippet, timeoutMs) => {
         cachedXml = '';
         cachedAt = 0;
         seen = parseNodes(await androidDumpXml())
-            .filter((node) => !isSystemUiNode(node) && !/inputmethod/i.test(node.package || ''))
+            .filter((node) => !isSystemUiNode(node) && !isKeyboardPackage(node.package))
             .map((node) => normalizeText(node.text || node.contentDesc))
             .filter(Boolean);
         if (seen.some((text) => text.includes(want))) {
@@ -1858,7 +1875,7 @@ const androidDismissImeIfShown = async () => {
 // own window; the app uses adjustNothing, so rows under it keep on-screen bounds in the app's
 // hierarchy and a tap on them lands on a key.
 const imeTopFromXml = (xml) => {
-    const ime = parseNodes(xml).filter((node) => /inputmethod/i.test(node.package || ''));
+    const ime = parseNodes(xml).filter((node) => isKeyboardPackage(node.package));
     const keys = ime.filter((node) => /inputArea|input_area|keyboard_holder|key_pos_/.test(node.resourceId || ''));
     const pool = keys.length ? keys : ime.filter((node) => node.clickable);
     return pool.length ? Math.min(...pool.map((node) => node.bounds.y1)) : null;

@@ -64,6 +64,13 @@ const takeNamedScreenshot = (label) => {
                 maxBuffer: 16 * 1024 * 1024,
             });
             writeFileSync(file, png);
+        } else if (process.env.E2E_IOS_DEVICE) {
+            // a physical iPhone: the screen comes from WebDriverAgent (see e2e/iosDevice)
+            const answer = execFileSync('curl', ['-s', '-g', '-m', '8', `${process.env.E2E_WDA_URL}/screenshot`], {
+                timeout: 10000,
+                maxBuffer: 64 * 1024 * 1024,
+            });
+            writeFileSync(file, Buffer.from(JSON.parse(answer.toString()).value, 'base64'));
         } else {
             execFileSync('xcrun', ['simctl', 'io', deviceUdid, 'screenshot', file], {
                 timeout: 8000,
@@ -80,7 +87,7 @@ let recording = null;
 
 // iOS simulator only (the first 30 minutes of the run).
 const startRecordingVideo = () => {
-    if (process.platform !== 'darwin' || platform !== 'ios') {
+    if (process.platform !== 'darwin' || platform !== 'ios' || process.env.E2E_IOS_DEVICE) {
         return;
     }
     if (!existsSync(ARTIFACTS_DIR)) {

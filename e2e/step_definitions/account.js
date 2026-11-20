@@ -56,6 +56,21 @@ Then('I write down secret numbers', { timeout: 10 * 60 * 1000 }, async () => {
                     await waitUntilAndroidTestId(`${r + 1}.0`, 10000);
                 }
             }
+        } else if (process.env.E2E_IOS_DEVICE) {
+            // A physical iPhone gives what VoiceOver gets: one element for the row, with the six
+            // numbers as its value ("6 3 0 4 8 3").
+            const row = element(
+                by.iosPredicate(`label == "Secret numbers of row ${'ABCDEFGH'[r]}" AND value MATCHES ".*[0-9].*"`),
+            );
+            await waitFor(row).toExist().withTimeout(15000);
+            const digits = (await row.getAttributes()).value.replace(/\D/g, '').split('');
+            if (digits.length !== 6) {
+                throw new Error(`secret numbers of row ${'ABCDEFGH'[r]}: expected 6 numbers, got "${digits.join(' ')}"`);
+            }
+            this.numbers[r] = digits;
+            if (r < 7) {
+                await element(by.id('next-button')).tap();
+            }
         } else {
             for (let c = 0; c < 6; c++) {
                 const attributes = await element(by.id(`${r}.${c}`)).getAttributes();
@@ -1119,6 +1134,23 @@ Then('I enter my mnemonic', { timeout: 4 * 60 * 1000 }, async () => {
         await scroller.scrollTo('top');
     } catch (e) {
         // already at top
+    }
+
+    if (process.env.E2E_IOS_DEVICE) {
+        // A physical iPhone gives what VoiceOver gets: a row ("#1") is one element, the field in it
+        // has no entry of its own. Activating the row puts the cursor in its field; the return key
+        // of the keyboard goes on to the next word.
+        // eslint-disable-next-line global-require
+        const { typeOnKeyboard } = require('../iosDevice/detox');
+        await element(by.label('#1')).tap();
+        await new Promise((resolve) => { setTimeout(resolve, 1000); });
+        for (let i = 0; i < words.length; i++) {
+            await typeOnKeyboard(words[i]);
+            await typeOnKeyboard('\n');
+            await new Promise((resolve) => { setTimeout(resolve, 600); });
+        }
+        await dismissKeyboard();
+        return;
     }
 
     for (let i = 0; i < words.length; i++) {

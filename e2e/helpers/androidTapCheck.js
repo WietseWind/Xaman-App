@@ -21,6 +21,7 @@
 const { appendFileSync, mkdirSync } = require('fs');
 const path = require('path');
 const { dropTap } = require('./faultInjection');
+const { isKeyboardPackage } = require('./androidKeyboardPackage');
 
 const ARTIFACTS_DIR = process.env.E2E_ARTIFACTS_DIR
     ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
@@ -64,7 +65,7 @@ const isSystemBar = (attrs) => {
     return pkg.indexOf('systemui') !== -1 || /navigationbar|nav_bar/i.test(id);
 };
 
-const isKeyboard = (attrs) => /inputmethod/i.test(nodeAttr(attrs, 'package'));
+const isKeyboard = (attrs) => isKeyboardPackage(nodeAttr(attrs, 'package'));
 
 /**
  * What the screen shows, as one string: every node outside the system bars and the keyboard, without the
@@ -88,7 +89,17 @@ const screenSignature = (xml) => {
     return nodes.length ? nodes.join('\n') : null;
 };
 
-const isKeyboardInDump = (xml) => /<node\b[^>]*package="[^"]*inputmethod[^"]*"/i.test(xml || '');
+const isKeyboardInDump = (xml) => {
+    const packageRe = /<node\b[^>]*\bpackage="([^"]*)"/g;
+    let m = packageRe.exec(xml || '');
+    while (m) {
+        if (isKeyboardPackage(m[1])) {
+            return true;
+        }
+        m = packageRe.exec(xml || '');
+    }
+    return false;
+};
 
 /* Notes ==================================================================== */
 const recent = [];

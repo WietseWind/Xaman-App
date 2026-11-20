@@ -16,6 +16,7 @@ Feature: Setup App
         Then I tap 'next-button'
 
     Scenario: Finish setup
+        Then I answer the set-up questions of a real phone when they show
         Given I should wait 60 sec to see 'agreement-setup-screen'
         Then I wait 60 sec for button 'confirm-button' to be enabled
         Then I tap 'confirm-button'

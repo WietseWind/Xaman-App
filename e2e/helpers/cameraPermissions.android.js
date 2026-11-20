@@ -31,9 +31,13 @@ const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms); });
 
 const adb = (...args) => {
     const serial = process.env.ANDROID_SERIAL || device.id;
-    // These tests reset runtime permissions. Never select a USB phone implicitly.
-    assert(/^emulator-\d+$/.test(serial), 'Camera permission tests require an Android emulator');
-    assert.strictEqual(serial, device.id, 'Camera permission emulator must be the Detox device');
+    // These tests reset runtime permissions. Never select a USB phone implicitly: only the phone
+    // that the runner got by name (--usb) is accepted next to an emulator.
+    assert(
+        /^emulator-\d+$/.test(serial) || (!!process.env.E2E_USB_PHONE && serial === process.env.E2E_USB_PHONE),
+        'Camera permission tests require an Android emulator, or the USB phone named with --usb',
+    );
+    assert.strictEqual(serial, device.id, 'Camera permission device must be the Detox device');
     return execFileSync('adb', ['-s', serial, ...args], { encoding: 'utf8', timeout: 15000 });
 };
 
@@ -129,10 +133,54 @@ const restart = async passcode => {
     await clickByTestId('tab-Home');
 };
 
+const decided = () => {
+    const { flags } = cameraPermission();
+    return flags.includes('USER_SET') || flags.includes('USER_FIXED');
+};
+
+// Android 12 and older have no `pm clear-permission-flags`. There the earlier decision is taken
+// back the way a user does it: Settings > app > Permissions > Camera > "Ask every time". (`pm
+// reset-permissions` is not an option: it resets every app on the device.)
+const forgetDecisionInSettings = async () => {
+    // a new task: an earlier visit can have left Settings on another page
+    adb('shell', 'am', 'start', '--activity-clear-task', '-a', 'android.settings.APPLICATION_DETAILS_SETTINGS',
+        '-d', `package:${APP}`);
+    try {
+        // whichever page is up, take the next step from it: app info > Permissions > Camera > choice
+        await waitUntil(async () => {
+            if (!decided()) return true;
+            if (await clickAndroidLabel('Ask every time')) return !decided();
+            if (!(await clickAndroidLabel('Camera'))) await clickAndroidLabel('Permissions');
+            return false;
+        }, 'earlier Camera decision removed through Settings ("Ask every time")', 30000);
+    } finally {
+        adb('shell', 'input', 'keyevent', 'KEYCODE_HOME');
+        adb('shell', 'am', 'force-stop', 'com.android.settings');
+    }
+};
+
+const forgetDecision = async passcode => {
+    try {
+        adb('shell', 'pm', 'clear-permission-flags', '--user', 'current', APP, CAMERA, 'user-set', 'user-fixed');
+        return;
+    } catch (error) {
+        const said = `${error.stdout || ''}${error.stderr || ''}${error.message || ''}`;
+        if (!/Unknown command/i.test(said)) throw error;
+    }
+    if (!decided()) return;
+    // The screen is read through the Detox agent inside the app, so the app has to run (in the
+    // background) while Settings is in front; a plain `uiautomator dump` would cut Detox off.
+    await restart(passcode);
+    await forgetDecisionInSettings();
+    await device.terminateApp();
+    // "Ask every time" leaves the permission revoked; make sure of it
+    if (cameraPermission().granted) adb('shell', 'pm', 'revoke', '--user', 'current', APP, CAMERA);
+};
+
 const resetPermission = async (grant, passcode) => {
     await device.terminateApp();
     adb('shell', 'pm', 'revoke', '--user', 'current', APP, CAMERA);
-    adb('shell', 'pm', 'clear-permission-flags', '--user', 'current', APP, CAMERA, 'user-set', 'user-fixed');
+    await forgetDecision(passcode);
     if (grant) adb('shell', 'pm', 'grant', '--user', 'current', APP, CAMERA);
     const permission = cameraPermission();
     assert.strictEqual(permission.granted, grant, 'Fixture must set the requested native Camera state');
@@ -202,7 +250,18 @@ const chooseSystemPermission = async (allow, caseName, events) => {
     await waitUntil(() => cameraPermission().granted === allow, 'native CAMERA grant result');
 };
 
+// The system permission dialog and Settings are other apps: Xaman is in the background while they
+// are in front. Back in Xaman more than the auto-lock time after the last unlock, the app locks. A
+// slow phone gets there (an emulator does not); the cases that are not about the lock unlock again.
+let casePasscode = null;
+const passLock = async () => {
+    if (!casePasscode || !(await androidHasTestId('lock-overlay'))) return;
+    await enterAndroidPasscode(casePasscode);
+    await waitUntil(async () => !(await androidHasTestId('lock-overlay')), 'app unlock after the system dialog');
+};
+
 const permissionFallback = async () => {
+    await passLock();
     await waitUntilAndroidTestId('scan-permission-approve-button', 15000);
     await waitUntilAndroidTestId('scan-permission-close-button', 15000);
     assert(!cameraPermission().granted, 'Permission fallback must correspond to a native denial');
@@ -210,6 +269,7 @@ const permissionFallback = async () => {
 };
 
 const previewControls = async () => {
+    await passLock();
     await waitUntilAndroidTestId('scan-camera-preview', 15000);
     await waitUntilAndroidTestId('scan-close-button', 15000);
     await waitUntilAndroidTestId('scan-clipboard-button', 15000);
@@ -319,10 +379,11 @@ const grantInSettings = async () => {
     await waitUntil(() => clickAndroidLabel('Camera'), 'Settings Camera row');
     await waitUntil(() => clickAndroidLabel('Allow only while using the app'), 'Settings Camera grant choice');
     await waitUntil(() => cameraPermission().granted, 'Camera granted through Settings');
-    // Camera settings → permission list → app info → the still-open scanner.
-    for (let i = 0; i < 3; i += 1) {
+    // Camera settings → permission list → app info → the still-open scanner. Back until the scanner
+    // is in front again: the number of pages differs per Android version and vendor.
+    for (let i = 0; i < 6 && !(await androidHasTestId('scan-modal')); i += 1) {
         adb('shell', 'input', 'keyevent', 'KEYCODE_BACK');
-        await sleep(350);
+        await sleep(600);
     }
     await previewControls();
 };
@@ -334,6 +395,7 @@ const runCameraPermissionCase = async (caseName, options = {}) => {
     assert(/^\d{6}$/.test(passcode || ''), 'Current test passcode tracking must be initialized');
     const events = [];
     let passed = false;
+    casePasscode = passcode;
     try {
         await resetPermission(caseName === 'locked-camera-session', passcode);
         snapshot(caseName, 'fresh-permission-flags', events);
@@ -400,7 +462,8 @@ const runCameraPermissionCase = async (caseName, options = {}) => {
             caseName,
             passed,
             events,
-            scope: 'Actual emulator OS permission/UI; no SDK mocks, physical camera or optical QR decode claim',
+            device: /^emulator-\d+$/.test(device.id) ? 'emulator' : 'USB phone',
+            scope: 'Actual OS permission/UI of this device; no SDK mocks and no optical QR decode claim',
         }, null, 2));
     }
 };
