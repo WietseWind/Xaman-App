@@ -78,7 +78,8 @@ const createSignRequest = async (txjson, options = {}) => {
 };
 
 /** The sign request once it is signed: waits for the app to hand in the signature. */
-const readSignedRequest = async (uuid, timeoutMs = 45000) => {
+// `definitions`: for a transaction type that the bundled (XRPL) definitions do not have, such as a Remit
+const readSignedRequest = async (uuid, timeoutMs = 45000, definitions = undefined) => {
     const deadline = Date.now() + timeoutMs;
     let last = {};
     while (Date.now() < deadline) {
@@ -90,7 +91,7 @@ const readSignedRequest = async (uuid, timeoutMs = 45000) => {
                 dispatchedResult: last.response.dispatched_result,
                 // the signer account the app reported for a multi signature
                 multisignAccount: last.response.multisign_account,
-                json: AccountLib.binary.decode(last.response.hex),
+                json: AccountLib.binary.decode(last.response.hex, definitions),
             };
         }
         if (last.meta && (last.meta.cancelled || last.meta.expired)) {
