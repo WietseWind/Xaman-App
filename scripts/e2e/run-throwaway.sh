@@ -344,6 +344,12 @@ else
         "$ADB" -s "$SERIAL" shell 'ls -d /sdcard/Android/data' </dev/null >/dev/null 2>&1 && break
         sleep 2
     done
+    # adbd as root on the emulator: a test can then block the node of a network with iptables
+    # (e2e/helpers/androidNodeBlock.js). An image that has no root says no: those tests are skipped.
+    if [ -z "$USB_SERIAL" ]; then
+        "$ADB" -s "$SERIAL" root </dev/null >/dev/null 2>&1 || true
+        "$ADB" -s "$SERIAL" wait-for-device </dev/null >/dev/null 2>&1 || true
+    fi
     "$ADB" -s "$SERIAL" shell setprop debug.xaman.e2e.owner "$NAME" </dev/null || true
     export ANDROID_SERIAL="$SERIAL"
     # The phone named with --usb: the tests that are for emulators only accept this one phone too.
