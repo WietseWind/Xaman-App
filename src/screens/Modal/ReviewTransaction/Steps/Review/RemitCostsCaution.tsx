@@ -59,13 +59,22 @@ const RemitCostsCaution = ({ transaction }: { transaction: Remit }) => {
 
     useEffect(() => {
         let current = true;
+        let known = false;
+        // the number of the question that counts: an older one that answers late is not used
+        let asked = 0;
         let timer: ReturnType<typeof setTimeout> | undefined;
 
         const ask = () => {
+            asked += 1;
+            const question = asked;
+            if (timer) clearTimeout(timer);
+            timer = undefined;
+
             remitCosts(transaction)
                 .catch((): RemitCostsAnswer => ({ costs: assumedRemitCosts(transaction), known: false }))
                 .then((next) => {
-                    if (!current) return;
+                    if (!current || question !== asked) return;
+                    known = next.known;
                     setAnswer(next);
                     if (!next.known && transaction.Destination) {
                         timer = setTimeout(ask, REMIT_COSTS_RETRY_MS);
@@ -73,12 +82,20 @@ const RemitCostsCaution = ({ transaction }: { transaction: Remit }) => {
                 });
         };
 
+        // The connection to the node is back. A question that went out on the old connection waits for
+        // its time-out (40 seconds): ask on the new connection at once.
+        const onConnect = () => {
+            if (current && !known && transaction.Destination) ask();
+        };
+        NetworkService.on('connect', onConnect);
+
         setAnswer({ costs: assumedRemitCosts(transaction), known: false });
         ask();
 
         return () => {
             current = false;
             if (timer) clearTimeout(timer);
+            NetworkService.off('connect', onConnect);
         };
         // `parts` stands for the transaction: the same Remit object can change while it is reviewed
     }, [parts]);

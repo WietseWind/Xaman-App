@@ -24,6 +24,8 @@ jest.mock('@services/NetworkService', () => ({
         getNetwork: () => ({ id: 'remit-costs-test' }),
         getNativeAsset: () => 'XAH',
         getNetworkReserve: () => ({ BaseReserve: 1, OwnerReserve: 0.2 }),
+        on: jest.fn(),
+        off: jest.fn(),
     },
 }));
 jest.mock('@services/LedgerService', () => ({
@@ -335,6 +337,57 @@ describe('the caution above the slide button', () => {
             trustLines('EUR');
             await later(REMIT_COSTS_RETRY_MS);
             expect(tree.toJSON()).toBeNull();
+        });
+
+        it('the connection is back: asked at once on the new connection, the answer that hangs is not used', async () => {
+            // the first question never ends (it went out on the connection that died)
+            let late: (value: unknown) => void = () => undefined;
+            accountInfo.mockReturnValueOnce(
+                new Promise((resolve) => {
+                    late = resolve;
+                }) as any,
+            );
+            await render({ Amounts: [native, eur] });
+            expect(lines()[0]).toBe(upTo('1.2'));
+            const onConnect = jest.mocked(NetworkService.on).mock.calls.find(([event]) => event === 'connect')?.[1];
+            expect(onConnect).toBeDefined();
+
+            // the node is reachable again: the destination exists and has the trust line
+            exists();
+            trustLines('EUR');
+            await act(async () => {
+                (onConnect as () => void)();
+            });
+            expect(accountInfo).toHaveBeenCalledTimes(2);
+            expect(tree.toJSON()).toBeNull();
+
+            // the old question answers after all, with another answer: not used
+            await act(async () => {
+                late({ error: 'actNotFound' });
+            });
+            expect(tree.toJSON()).toBeNull();
+        });
+
+        it('the connection comes back while the answer is exact already: no new question', async () => {
+            exists();
+            trustLines();
+            await render({ Amounts: [native, eur] });
+            expect(lines()[0]).toBe(header('0.2'));
+            const onConnect = jest.mocked(NetworkService.on).mock.calls.find(([event]) => event === 'connect')?.[1];
+            await act(async () => {
+                (onConnect as () => void)();
+            });
+            expect(accountInfo).toHaveBeenCalledTimes(1);
+        });
+
+        it('closing the review stops listening for the connection', async () => {
+            exists();
+            await render({ Amounts: [native, eur] });
+            const onConnect = jest.mocked(NetworkService.on).mock.calls.find(([event]) => event === 'connect')?.[1];
+            act(() => tree.unmount());
+            expect(NetworkService.off).toHaveBeenCalledWith('connect', onConnect);
+            // for the afterEach of the outer block
+            await render({ Amounts: [native] });
         });
 
         it('closing the review stops the questions', async () => {
