@@ -120,12 +120,16 @@ async function has(id, timeout = 1000) {
 
 async function stableFrame(id) {
     const deadline = Date.now() + 10000;
+    // iOS 27: the glass highlight of the selected tab lies over its button, which is then "not visible"
+    // for Detox. The place of a tab button is what has to be stable here, not what covers it.
+    const mayBeCovered = id.startsWith('tab-');
     let previous;
     let stable = 0;
     do {
         const attributes = await view(id).getAttributes();
         const current = JSON.stringify(attributes.frame);
-        stable = current === previous && attributes.visible !== false && attributes.enabled !== false ? stable + 1 : 0;
+        const shown = mayBeCovered || attributes.visible !== false;
+        stable = current === previous && shown && attributes.enabled !== false ? stable + 1 : 0;
         if (stable >= 3) return;
         previous = current;
         await pause(100);

@@ -46,6 +46,23 @@ const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLau
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
 let androidAlertPending = false;
 
+// iOS 27: the glass lens of the tab that is selected lies over its button (tab bar > platter > lens,
+// content, ...), so a tap on the button itself is refused by Detox: another view is on top at that place.
+// A finger lands on the lens, and the tab bar takes the touch. So does this tap: on the lens.
+// Only for the tab that is selected: the lens is over that tab, a tap on it for another tab is the wrong tab.
+// (device.tap by screen position also works, but it starts a separate XCUITest runner for every tap: about
+// 100 seconds, and it failed once.)
+const tapSelectedTab = async (buttonId, refusal) => {
+    try {
+        await waitFor(element(by.id(buttonId).and(by.traits(['selected']))))
+            .toExist()
+            .withTimeout(1000);
+    } catch (e) {
+        throw refusal;
+    }
+    await element(by.type('_UILiquidLensView')).tap();
+};
+
 Then('I tap {string}', async (buttonId) => {
     // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
     // Android: home-tab-view stays in the dump on Settings. Only skip when
@@ -157,7 +174,15 @@ Then('I tap {string}', async (buttonId) => {
         await btn.tap();
     } catch (e) {
         if (String(buttonId).startsWith('tab-') || buttonId === 'confirm-button' || buttonId === 'back-button') {
-            await btn.tap({ x: 8, y: 8 });
+            try {
+                await btn.tap({ x: 8, y: 8 });
+            } catch (covered) {
+                if (!String(buttonId).startsWith('tab-')) {
+                    throw covered;
+                }
+                // The tab that is selected (iOS 27, see tapSelectedTab)
+                await tapSelectedTab(buttonId, covered);
+            }
             return;
         }
         await dismissKeyboard();
