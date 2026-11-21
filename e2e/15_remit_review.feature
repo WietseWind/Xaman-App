@@ -56,7 +56,7 @@ Feature: Remit: the review shows what it carries, and the ledger gets what was r
     Scenario Outline: A Remit with <what>: reviewed, signed, and on the ledger
         Then I create a Remit sign request with "<what>"
         Then I open the Remit sign request
-        Given I should wait 60 sec to see 'review-transaction-modal'
+        Given I should have 'review-transaction-modal'
         Given the Remit review should show '<first block>'
         Given the Remit review showed no extra fields on the way
         Given the Remit caution should list "<the Remit pays for>"
@@ -79,7 +79,7 @@ Feature: Remit: the review shows what it carries, and the ledger gets what was r
     Scenario: A Remit with a URIToken that does not exist: every block shows, and the request is declined
         Then I create a Remit sign request with "a URIToken that does not exist"
         Then I open the Remit sign request
-        Given I should wait 60 sec to see 'review-transaction-modal'
+        Given I should have 'review-transaction-modal'
         Given the Remit review should show 'remit-content-amount-0'
         Given the Remit review should show 'remit-content-amount-1'
         Given the Remit review should show 'remit-content-uritoken-0'

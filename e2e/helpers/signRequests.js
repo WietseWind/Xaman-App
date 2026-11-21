@@ -63,12 +63,14 @@ const api = async (method, endpoint, body) => {
 };
 
 /**
- * Create a sign request, for the network the suite is connected to.
+ * Create a sign request, for the network the suite is connected to (Xahau Testnet). With
+ * `options.force_network` of another network the transaction gets no NetworkID of Xahau Testnet.
  * @returns {{uuid: string, url: string}} the url opens the request in the app
  */
 const createSignRequest = async (txjson, options = {}) => {
+    const otherNetwork = options.force_network && options.force_network !== NETWORK_KEY;
     const created = await api('POST', 'payload', {
-        txjson: { NetworkID: NETWORK_ID, ...txjson },
+        txjson: otherNetwork ? { ...txjson } : { NetworkID: NETWORK_ID, ...txjson },
         options: { expire: 15, force_network: NETWORK_KEY, ...options },
     });
     if (!created.uuid || !created.next || !created.next.always) {
