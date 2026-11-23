@@ -71,7 +71,6 @@ allprojects {
 
         google()
         maven { url 'https://jitpack.io' }
-        maven { url "https://cdn.veriff.me/android/" } // veriff
     }
 }
 

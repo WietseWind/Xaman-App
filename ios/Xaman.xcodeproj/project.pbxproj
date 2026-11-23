@@ -892,7 +892,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "DEST=\"${DWARF_DSYM_FOLDER_PATH}\"\nif [ -z \"${DEST}\" ] || [ ! -d \"${DEST}\" ]; then\n  echo \"info: no dSYM dest, skip vendor dSYMs\"\n  exit 0\nfi\nHERMES=\"${SRCROOT}/vendor-dSYMs/hermes-extract/iphoneos/hermes.framework.dSYM\"\nif [ -d \"${HERMES}\" ]; then\n  echo \"info: copying Hermes dSYM into ${DEST}\"\n  rsync -a \"${HERMES}\" \"${DEST}/\"\nfi\nVERIFF=\"${SRCROOT}/vendor-dSYMs/veriff/Veriff.framework.dSYM\"\nif [ -d \"${VERIFF}\" ]; then\n  echo \"info: copying Veriff dSYM into ${DEST}\"\n  rsync -a \"${VERIFF}\" \"${DEST}/\"\nfi\n";
+			shellScript = "DEST=\"${DWARF_DSYM_FOLDER_PATH}\"\nif [ -z \"${DEST}\" ] || [ ! -d \"${DEST}\" ]; then\n  echo \"info: no dSYM dest, skip vendor dSYMs\"\n  exit 0\nfi\nHERMES=\"${SRCROOT}/vendor-dSYMs/hermes-extract/iphoneos/hermes.framework.dSYM\"\nif [ -d \"${HERMES}\" ]; then\n  echo \"info: copying Hermes dSYM into ${DEST}\"\n  rsync -a \"${HERMES}\" \"${DEST}/\"\nfi\n";
 		};
 		A3F03C47283A8EFCD65408F9 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

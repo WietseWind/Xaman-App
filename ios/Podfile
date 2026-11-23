@@ -107,15 +107,6 @@ target 'Xaman' do
       end
     end
 
-    veriff_dsym = File.join(__dir__, 'vendor-dSYMs', 'veriff', 'Veriff.framework.dSYM')
-    veriff_slice = File.join(sandbox.root, 'VeriffSDK', 'Veriff.xcframework', 'ios-arm64')
-    if File.directory?(veriff_dsym) && File.directory?(veriff_slice)
-      dest = File.join(veriff_slice, 'dSYMs')
-      FileUtils.mkdir_p(dest)
-      FileUtils.rm_rf(File.join(dest, 'Veriff.framework.dSYM'))
-      FileUtils.cp_r(veriff_dsym, dest)
-      Pod::UI.puts 'Copied Veriff iphoneos dSYM into Veriff.xcframework'.green
-    end
     %w[Public Private].each do |kind|
       Dir.children(File.join(sandbox.root, 'Headers', kind)).each do |pod_name|
         src_root = begin

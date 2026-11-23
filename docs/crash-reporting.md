@@ -102,7 +102,7 @@ others; pick one with `--map <path to .map.gz>`.
 ## Native symbols
 
 - **iOS:** the `[RNFB] Crashlytics Configuration` phase uploads the app dSYM. `Copy vendor dSYMs`
-  adds the Hermes and Veriff dSYMs from `ios/vendor-dSYMs/`, which exists only on the build machine.
+  adds the Hermes dSYM from `ios/vendor-dSYMs/`, which exists only on the build machine.
 - **Android:** release builds upload NDK symbols (`uploadCrashlyticsSymbolFileRelease`) unless built
   on CI or with `-PskipCrashlyticsSymbols`. Only libraries built from source are unstripped (e.g.
   VisionCamera). The React Native and Hermes AARs in `android/app/libs/` ship stripped, so their
