@@ -24,7 +24,6 @@ import {
 
 import { NetworkLabel } from '@components/Modules/NetworkLabel';
 
-import VeriffSdk from '@veriff/react-native-sdk';
 import { StringType } from 'xumm-string-decode';
 import { utils as AccountLibUtils } from 'xrpl-accountlib';
 import { OptionsModalPresentationStyle } from 'react-native-navigation';
@@ -81,13 +80,14 @@ import { PurchaseProductModalProps } from '@screens/Modal/PurchaseProduct';
 
 import LoggerService from '@services/LoggerService';
 
-import { AppColors, AppStyles } from '@theme';
+import { AppStyles } from '@theme';
 import styles from './styles';
 
 /* types ==================================================================== */
 import { IEvent, Props, State, XAppEvents, XAppMethods, XAppSpecialPermissions } from './types';
 import { resolveXAppColorScheme } from './colorScheme';
 import { PageWatch } from './pageWatch';
+import { KycBrowser, KYC_BROWSER_STATUS, KYC_NOT_OPENED_STATUS } from './kycBrowser';
 
 /* Component ==================================================================== */
 class XAppBrowserModal extends Component<Props, State> {
@@ -100,6 +100,7 @@ class XAppBrowserModal extends Component<Props, State> {
     private lastMessageReceived: number;
     // notices when the OS ended the process of the page (see ./pageWatch)
     private readonly pageWatch: PageWatch;
+    private readonly kycBrowser: KycBrowser;
 
     static options() {
         return {
@@ -150,6 +151,16 @@ class XAppBrowserModal extends Component<Props, State> {
             inject: (script) => this.webView?.current?.injectJavaScript(script),
             isPageInUse: this.isPageInUse,
         });
+
+        this.kycBrowser = new KycBrowser({
+            openURL: (url) => Linking.openURL(url),
+            onReturn: () => this.onKycResolve({ status: KYC_BROWSER_STATUS }),
+            onFail: () => {
+                Alert.alert(Localize.t('global.error'), Localize.t('global.cannotOpenLink'));
+                // the page waits for an answer (it shows a spinner): let it go on
+                this.onKycResolve({ status: KYC_NOT_OPENED_STATUS });
+            },
+        });
     }
 
     componentDidMount() {
@@ -177,6 +188,7 @@ class XAppBrowserModal extends Component<Props, State> {
 
         AuthenticationService.off('lockStateChange', this.onLockStateChange);
         AppService.off('appStateChange', this.onAppStateChange);
+        this.kycBrowser.reset();
         this.pageWatch.dispose();
 
         if (this.softLoadingTimeout) {
@@ -209,6 +221,7 @@ class XAppBrowserModal extends Component<Props, State> {
 
     onAppStateChange = (status: AppStateStatus) => {
         this.pageWatch.onAppState(status === AppStateStatus.Active);
+        this.kycBrowser.onAppState(status === AppStateStatus.Active);
     };
 
     /**
@@ -414,26 +427,13 @@ class XAppBrowserModal extends Component<Props, State> {
         );
     };
 
-    launchVeriffKyc = async (data: { sessionUrl: string }) => {
-        const sessionUrl = get(data, 'sessionUrl', undefined);
-
-        if (!sessionUrl) return;
-
-        try {
-            VeriffSdk.launchVeriff({
-                branding: {
-                    themeColor: AppColors.blue,
-                    buttonCornerRadius: 28,
-                },
-                sessionUrl,
-            })
-                .then(this.onKycResolve)
-                .catch(() => {
-                    // ignore
-                });
-        } catch {
-            // ignore
-        }
+    /**
+     * The kycVeriff command of an xApp page. The identity check runs in the browser of the phone, there is
+     * no Veriff SDK in the app (see kycBrowser.ts). Only a session link of Veriff is opened. The xApp always
+     * gets a kycVeriff answer: when Xaman is in front again, or at once when nothing was opened.
+     */
+    launchVeriffKyc = (data: { sessionUrl: string }) => {
+        this.kycBrowser.start(get(data, 'sessionUrl', undefined));
     };
 
     requestInAppPurchase = async ({
@@ -463,6 +463,8 @@ class XAppBrowserModal extends Component<Props, State> {
         if (this.softLoadingTimeout) {
             clearTimeout(this.softLoadingTimeout);
         }
+        // the page that asked for the identity check goes away: it gets no answer
+        this.kycBrowser.reset();
 
         this.setState(
             {

@@ -892,7 +892,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "DEST=\"${DWARF_DSYM_FOLDER_PATH}\"\nif [ -z \"${DEST}\" ] || [ ! -d \"${DEST}\" ]; then\n  echo \"info: no dSYM dest, skip vendor dSYMs\"\n  exit 0\nfi\nHERMES=\"${SRCROOT}/vendor-dSYMs/hermes-extract/iphoneos/hermes.framework.dSYM\"\nif [ -d \"${HERMES}\" ]; then\n  echo \"info: copying Hermes dSYM into ${DEST}\"\n  rsync -a \"${HERMES}\" \"${DEST}/\"\nfi\nVERIFF=\"${SRCROOT}/vendor-dSYMs/veriff/Veriff.framework.dSYM\"\nif [ -d \"${VERIFF}\" ]; then\n  echo \"info: copying Veriff dSYM into ${DEST}\"\n  rsync -a \"${VERIFF}\" \"${DEST}/\"\nfi\n";
+			shellScript = "DEST=\"${DWARF_DSYM_FOLDER_PATH}\"\nif [ -z \"${DEST}\" ] || [ ! -d \"${DEST}\" ]; then\n  echo \"info: no dSYM dest, skip vendor dSYMs\"\n  exit 0\nfi\nHERMES=\"${SRCROOT}/vendor-dSYMs/hermes-extract/iphoneos/hermes.framework.dSYM\"\nif [ -d \"${HERMES}\" ]; then\n  echo \"info: copying Hermes dSYM into ${DEST}\"\n  rsync -a \"${HERMES}\" \"${DEST}/\"\nfi\n";
 		};
 		A3F03C47283A8EFCD65408F9 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -923,12 +923,10 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Xaman-XamanTests/Pods-Xaman-XamanTests-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/VeriffSDK/Veriff.framework/Veriff",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Veriff.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1019,12 +1017,10 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Xaman/Pods-Xaman-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/VeriffSDK/Veriff.framework/Veriff",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Veriff.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1305,7 +1301,7 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 538;
+				CURRENT_PROJECT_VERSION = 542;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -1342,7 +1338,7 @@
 				CODE_SIGN_ENTITLEMENTS = Xaman/Xaman.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 538;
+				CURRENT_PROJECT_VERSION = 542;
 				DEVELOPMENT_TEAM = LK5BBJNJZ6;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				INFOPLIST_FILE = Xaman/Info.plist;

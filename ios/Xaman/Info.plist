@@ -91,7 +91,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Enabling Face ID allows you quick and secure access to your account.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Access to microphone is needed for KYC propose and video identification</string>
+	<string>Enabling microphone access allows an xApp that you opened to use your microphone when you approve it, for example for video identification.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Enabling access to your Photo Library allows you to store your account QR code for offline use.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

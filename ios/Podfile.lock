@@ -1170,9 +1170,6 @@ PODS:
     - React-debug
   - react-native-netinfo (11.3.2):
     - React-Core
-  - react-native-sdk (7.1.0):
-    - React
-    - VeriffSDK (= 7.4.0)
   - react-native-webview (13.17.0):
     - DoubleConversion
     - glog
@@ -1463,7 +1460,6 @@ PODS:
     - "sqlite3/common (= 3.45.3+1)"
   - "sqlite3/common (3.45.3+1)"
   - TangemSdk (3.4.0)
-  - VeriffSDK (7.4.0)
   - VisionCamera (4.6.4):
     - VisionCamera/Core (= 4.6.4)
     - VisionCamera/React (= 4.6.4)
@@ -1527,7 +1523,6 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
-  - "react-native-sdk (from `../node_modules/@veriff/react-native-sdk`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1585,7 +1580,6 @@ SPEC REPOS:
     - SocketRocket
     - sqlite3
     - TangemSdk
-    - VeriffSDK
 
 EXTERNAL SOURCES:
   boost:
@@ -1677,8 +1671,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
-  react-native-sdk:
-    :path: "../node_modules/@veriff/react-native-sdk"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-nativeconfig:
@@ -1809,7 +1801,6 @@ SPEC CHECKSUMS:
   React-logger: 29fa3e048f5f67fe396bc08af7606426d9bd7b5d
   React-Mapbuffer: bf56147c9775491e53122a94c423ac201417e326
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
-  react-native-sdk: f5e5134a8855b4b6d7e923c8332d236a5fd814b2
   react-native-webview: 6e3f06472b4bbb4650da76beccf0e9145bf0e1de
   React-nativeconfig: 9f223cd321823afdecf59ed00861ab2d69ee0fc1
   React-NativeModulesApple: ff7efaff7098639db5631236cfd91d60abff04c0
@@ -1844,10 +1835,9 @@ SPEC CHECKSUMS:
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   sqlite3: 02d1f07eaaa01f80a1c16b4b31dfcbb3345ee01a
   TangemSdk: d782fc8c55cb56ffdfcaf7081422e02b19f18334
-  VeriffSDK: 9c4e31693dfe772af8553209c4a6543bffc75d24
   VisionCamera: 168f46071274ce58c50adef4c82ae3367b2ba2a6
   Yoga: ae3c32c514802d30f687a04a6a35b348506d411f
 
-PODFILE CHECKSUM: 5272f0ac5cb2339d603a995866fc28049edf8819
+PODFILE CHECKSUM: 70462a1201290c5cb9ac1d8f88fc3eb56c1a70b3
 
 COCOAPODS: 1.15.2
