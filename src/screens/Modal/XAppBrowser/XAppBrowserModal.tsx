@@ -87,7 +87,7 @@ import styles from './styles';
 import { IEvent, Props, State, XAppEvents, XAppMethods, XAppSpecialPermissions } from './types';
 import { resolveXAppColorScheme } from './colorScheme';
 import { PageWatch } from './pageWatch';
-import { KycBrowser, KYC_BROWSER_STATUS } from './kycBrowser';
+import { KycBrowser, KYC_BROWSER_STATUS, KYC_NOT_OPENED_STATUS } from './kycBrowser';
 
 /* Component ==================================================================== */
 class XAppBrowserModal extends Component<Props, State> {
@@ -155,7 +155,11 @@ class XAppBrowserModal extends Component<Props, State> {
         this.kycBrowser = new KycBrowser({
             openURL: (url) => Linking.openURL(url),
             onReturn: () => this.onKycResolve({ status: KYC_BROWSER_STATUS }),
-            onFail: () => Alert.alert(Localize.t('global.error'), Localize.t('global.cannotOpenLink')),
+            onFail: () => {
+                Alert.alert(Localize.t('global.error'), Localize.t('global.cannotOpenLink'));
+                // the page waits for an answer (it shows a spinner): let it go on
+                this.onKycResolve({ status: KYC_NOT_OPENED_STATUS });
+            },
         });
     }
 
@@ -184,6 +188,7 @@ class XAppBrowserModal extends Component<Props, State> {
 
         AuthenticationService.off('lockStateChange', this.onLockStateChange);
         AppService.off('appStateChange', this.onAppStateChange);
+        this.kycBrowser.reset();
         this.pageWatch.dispose();
 
         if (this.softLoadingTimeout) {
@@ -424,8 +429,8 @@ class XAppBrowserModal extends Component<Props, State> {
 
     /**
      * The kycVeriff command of an xApp page. The identity check runs in the browser of the phone, there is
-     * no Veriff SDK in the app (see kycBrowser.ts). Only a session link of Veriff is opened. The xApp gets
-     * the kycVeriff answer when Xaman is in front again.
+     * no Veriff SDK in the app (see kycBrowser.ts). Only a session link of Veriff is opened. The xApp always
+     * gets a kycVeriff answer: when Xaman is in front again, or at once when nothing was opened.
      */
     launchVeriffKyc = (data: { sessionUrl: string }) => {
         this.kycBrowser.start(get(data, 'sessionUrl', undefined));

@@ -2,7 +2,7 @@
  * The identity check of Veriff runs in the browser of the phone (issue 541): which link may go there, and
  * when the xApp gets its answer.
  */
-import { KycBrowser, isVeriffSessionUrl, KYC_BROWSER_STATUS } from '../kycBrowser';
+import { KycBrowser, isVeriffSessionUrl, KYC_BROWSER_STATUS, KYC_NOT_OPENED_STATUS } from '../kycBrowser';
 
 const SESSION_URL = 'https://saas.veriff.com/v/eyJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiMSJ9.c2lnbmF0dXJl-_';
 
@@ -41,6 +41,12 @@ describe('isVeriffSessionUrl', () => {
             'https://saas.veriff.com',
             'https://saas.veriff.com/v/a b',
             'https://saas.veriff.com/v/a\nb',
+            'https://saas.veriff.com/v/a\u0000b',
+            'https://saas.veriff.com/v/a\u007fb',
+            "https://saas.veriff.com/v/a'b",
+            'https://saas.veriff.com/v/a<b',
+            'https://saas.veriff.com/v/a\\b',
+            'https://saas.veriff.com/v/\u00e9',
             'https://saas.veriff.com/v/"x',
             ' https://saas.veriff.com/v/abc',
             // eslint-disable-next-line no-script-url
@@ -67,14 +73,26 @@ describe('KycBrowser', () => {
         expect(actions.openURL).toHaveBeenCalledWith(SESSION_URL);
     });
 
-    it('opens nothing for another link', () => {
+    it('opens nothing for another link, and says so at once (the page waits for an answer)', () => {
         const { kyc, actions } = setup();
         expect(kyc.start('https://evil.example/v/abc')).toBe(false);
+        expect(actions.onFail).toHaveBeenCalledTimes(1);
         expect(kyc.start(undefined)).toBe(false);
+        expect(actions.onFail).toHaveBeenCalledTimes(2);
         expect(actions.openURL).not.toHaveBeenCalled();
-        // and gives no answer later
+        // and gives no second answer later
         kyc.onAppState(false);
         kyc.onAppState(true);
+        expect(actions.onReturn).not.toHaveBeenCalled();
+    });
+
+    it('a refused link after a good one ends the wait of the good one: one answer for the page', () => {
+        const { kyc, actions } = setup();
+        kyc.start(SESSION_URL);
+        kyc.start('https://evil.example/v/abc');
+        kyc.onAppState(false);
+        kyc.onAppState(true);
+        expect(actions.onFail).toHaveBeenCalledTimes(1);
         expect(actions.onReturn).not.toHaveBeenCalled();
     });
 
@@ -99,7 +117,7 @@ describe('KycBrowser', () => {
         expect(actions.onReturn).toHaveBeenCalledTimes(1);
     });
 
-    it('a second start gives one answer, for the last start', () => {
+    it('each start gets its own answer', () => {
         const { kyc, actions } = setup();
         kyc.start(SESSION_URL);
         kyc.onAppState(false);
@@ -132,7 +150,12 @@ describe('KycBrowser', () => {
 
     it('a late failure after Xaman left the foreground is no failure: the browser did open', async () => {
         let fail: (error: Error) => void = () => {};
-        const { kyc, actions } = setup(() => new Promise((_, reject) => { fail = reject; }));
+        const { kyc, actions } = setup(
+            () =>
+                new Promise((_, reject) => {
+                    fail = reject;
+                }),
+        );
         kyc.start(SESSION_URL);
         kyc.onAppState(false);
         fail(new Error('late'));
@@ -140,6 +163,45 @@ describe('KycBrowser', () => {
         expect(actions.onFail).not.toHaveBeenCalled();
         kyc.onAppState(true);
         expect(actions.onReturn).toHaveBeenCalledTimes(1);
+    });
+
+    it('a late failure of an older start does not end a newer start', async () => {
+        const fails: Array<(error: Error) => void> = [];
+        const { kyc, actions } = setup(
+            () =>
+                new Promise((_, reject) => {
+                    fails.push(reject);
+                }),
+        );
+        kyc.start(SESSION_URL);
+        kyc.start(SESSION_URL);
+        fails[0](new Error('late failure of the first start'));
+        await settle();
+        expect(actions.onFail).not.toHaveBeenCalled();
+        kyc.onAppState(false);
+        kyc.onAppState(true);
+        expect(actions.onReturn).toHaveBeenCalledTimes(1);
+
+        // the failure of the start that waits does count
+        kyc.start(SESSION_URL);
+        fails[2](new Error('no browser'));
+        await settle();
+        expect(actions.onFail).toHaveBeenCalledTimes(1);
+    });
+
+    it('a failure after reset is no failure for the page that is gone', async () => {
+        let fail: (error: Error) => void = () => {};
+        const { kyc, actions } = setup(
+            () =>
+                new Promise((_, reject) => {
+                    fail = reject;
+                }),
+        );
+        kyc.start(SESSION_URL);
+        kyc.reset();
+        fail(new Error('late'));
+        await settle();
+        expect(actions.onFail).not.toHaveBeenCalled();
     });
 
     it('reset (the xApp screen closes, another xApp starts): no answer for a page that is gone', () => {
@@ -151,8 +213,10 @@ describe('KycBrowser', () => {
         expect(actions.onReturn).not.toHaveBeenCalled();
     });
 
-    it('the status of the answer is not a status of the native SDK', () => {
+    it('the statuses of the answer: back from the browser = the page asks its backend; nothing opened = the page closes', () => {
+        // the page: a status with CANCELED closes the xApp, every other status loads the page again
         expect(KYC_BROWSER_STATUS).toBe('STATUS_BROWSER');
         expect(KYC_BROWSER_STATUS).not.toMatch(/CANCELED|DONE|ERROR/);
+        expect(KYC_NOT_OPENED_STATUS).toMatch(/CANCELED/);
     });
 });

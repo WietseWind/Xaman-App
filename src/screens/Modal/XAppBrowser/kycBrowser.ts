@@ -12,12 +12,18 @@
  */
 
 /* Constants ==================================================================== */
-// https and a host under veriff.com or veriff.me, nothing that can end the URL in a page or a command
-const VERIFF_SESSION_URL = /^https:\/\/([a-z0-9-]+\.)+veriff\.(com|me)\/[^\s"'<>\\]*$/;
+// https and a host under veriff.com or veriff.me; after the host only the characters of a URL (no space, no
+// control character, no quote): nothing that can end the link in a page or a command
+const VERIFF_SESSION_URL = /^https:\/\/([a-z0-9-]+\.)+veriff\.(com|me)\/[A-Za-z0-9._~%!$&()*+,;=:@/?#-]*$/;
 const VERIFF_SESSION_URL_MAX = 2048;
 
-// the status of the kycVeriff answer: not one of the native SDK (STATUS_DONE, STATUS_CANCELED, STATUS_ERROR)
+// The status of the kycVeriff answer when the user is back from the browser. Not one of the native SDK
+// (STATUS_DONE, STATUS_CANCELED, STATUS_ERROR): the app does not know how the check ended. The page takes
+// every status that is not CANCELED as "ask the backend".
 export const KYC_BROWSER_STATUS = 'STATUS_BROWSER';
+// The answer when nothing was opened (not a link of Veriff, or the phone has no browser for it). The page
+// closes the xApp on CANCELED. Not STATUS_ERROR: the page then loads again and starts again, without end.
+export const KYC_NOT_OPENED_STATUS = 'STATUS_CANCELED';
 
 /* Types ==================================================================== */
 export type KycBrowserActions = {
@@ -25,7 +31,7 @@ export type KycBrowserActions = {
     openURL: (url: string) => Promise<unknown>;
     // Xaman is in front again after the browser: tell the xApp
     onReturn: () => void;
-    // the phone could not open the link
+    // nothing was opened: not a session link of Veriff, or the phone could not open it
     onFail: () => void;
 };
 
@@ -40,17 +46,26 @@ export class KycBrowser {
     private pending = false;
     // Xaman left the foreground after that
     private left = false;
+    // counts the starts: a late failure of an older start must not end a newer one
+    private run = 0;
 
     constructor(actions: KycBrowserActions) {
         this.actions = actions;
     }
 
     /**
-     * Open the session link in the browser.
-     * @returns false when the link is not a session link of Veriff (nothing is opened)
+     * Open the session link in the browser. The caller always gets one answer: onReturn when Xaman is in
+     * front again, or onFail when nothing was opened.
+     * @returns false when the link is not a session link of Veriff (nothing is opened, onFail is called)
      */
     start = (sessionUrl: unknown): boolean => {
+        this.run += 1;
+        const run = this.run;
+
         if (!isVeriffSessionUrl(sessionUrl)) {
+            this.pending = false;
+            this.left = false;
+            this.actions.onFail();
             return false;
         }
 
@@ -64,8 +79,9 @@ export class KycBrowser {
             opened = Promise.reject(error);
         }
         opened.catch(() => {
-            // only when this start is still the one that waits
-            if (this.pending && !this.left) {
+            // only when this start is still the one that waits, and Xaman did not leave the foreground
+            // (it left: the browser did open)
+            if (run === this.run && this.pending && !this.left) {
                 this.pending = false;
                 this.actions.onFail();
             }
@@ -97,6 +113,7 @@ export class KycBrowser {
      * The xApp screen closes or another xApp starts: no answer for a page that is gone.
      */
     reset = () => {
+        this.run += 1;
         this.pending = false;
         this.left = false;
     };
