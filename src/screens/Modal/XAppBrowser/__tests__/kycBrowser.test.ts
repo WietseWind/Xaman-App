@@ -10,7 +10,10 @@ const setup = (openURL: (url: string) => Promise<unknown> = () => Promise.resolv
     const actions = { openURL: jest.fn(openURL), onReturn: jest.fn(), onFail: jest.fn() };
     return { actions, kyc: new KycBrowser(actions) };
 };
-const settle = () => new Promise((resolve) => setImmediate(resolve));
+const settle = () =>
+    new Promise<void>((resolve) => {
+        setImmediate(() => resolve());
+    });
 
 describe('isVeriffSessionUrl', () => {
     it('takes an https link of a host under veriff.com or veriff.me', () => {
@@ -40,6 +43,7 @@ describe('isVeriffSessionUrl', () => {
             'https://saas.veriff.com/v/a\nb',
             'https://saas.veriff.com/v/"x',
             ' https://saas.veriff.com/v/abc',
+            // eslint-disable-next-line no-script-url
             'javascript:alert(1)',
             'intent://saas.veriff.com/v/abc#Intent;scheme=https;end',
             'xumm://saas.veriff.com/v/abc',
