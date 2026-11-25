@@ -49,20 +49,43 @@ RCT_EXPORT_MODULE();
   return deviceId;
 }
 
+// The safe area of the window as it was the last time it had one on a side (iPhone Duo). Process wide: it outlives
+// a reload of the JavaScript side, where this module is made again.
+static BOOL sideSafeAreaKnown = NO;
+static UIEdgeInsets sideSafeArea;
+
 - (NSDictionary *) getLayoutInsets
 {
   UIWindow *window = [self keyWindow];
 
   UIEdgeInsets insets = window.safeAreaInsets;
+
+  // iPhone Duo: the camera corner is a safe area on the right of a window that has a root view controller, but a
+  // safe area at the top of a window that has none. A reload of the JavaScript side reads the insets in that second
+  // state (react-native-navigation took the root away), and the app would lay out for the full width. So the insets
+  // with a side safe area are kept, and they are the answer while the window has no root view controller.
+  // On every other phone no side safe area is ever seen, and nothing here changes what is reported.
+  if (insets.left > 0.0 || insets.right > 0.0) {
+    sideSafeArea = insets;
+    sideSafeAreaKnown = YES;
+  } else if (sideSafeAreaKnown && (window == nil || window.rootViewController == nil)) {
+    insets = sideSafeArea;
+  }
+
   // Non-notch phones still have a 20pt status bar. keyWindow is often nil
   // at constantsToExport time on iOS 13+, which would report top=0.
   if (insets.top < 1.0 && !UIApplication.sharedApplication.isStatusBarHidden) {
     insets.top = 20.0;
   }
 
+  // A safe area on a side of the screen while the app is in portrait: 0 on every phone, except one that has a part
+  // of the system on a side (iPhone Duo: the status area and the tab bar are on the right). The app then keeps its
+  // content out of that side (src/theme/sizes.ts, src/common/helpers/sideSafeArea.tsx).
   return @{
     @"top": @(insets.top),
-    @"bottom": @(insets.bottom)
+    @"bottom": @(insets.bottom),
+    @"left": @(MAX(0.0, insets.left)),
+    @"right": @(MAX(0.0, insets.right))
   };
 }
 

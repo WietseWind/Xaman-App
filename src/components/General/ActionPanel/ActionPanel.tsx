@@ -20,6 +20,8 @@ import Localize from '@locale';
 
 // style
 import { AppStyles, AppSizes } from '@theme';
+import { sideBleedEdges } from '@common/helpers/sideSafeArea';
+
 import styles from './styles';
 
 /* types ==================================================================== */
@@ -366,6 +368,7 @@ class ActionPanel extends Component<Props, State> {
                     <Animated.View
                         style={[
                             styles.shadowContent,
+                            sideBleedEdges,
                             {
                                 opacity: this.translateY.interpolate({
                                     inputRange: [0, AppSizes.screen.height],

@@ -2,12 +2,46 @@ import { Platform, PixelRatio, NativeModules, Dimensions } from 'react-native';
 
 const { DeviceUtilsModule, UniqueIdProviderModule } = NativeModules;
 
+// A side inset as a number: 0 for anything that is not a positive number (Android and older native code send none)
+const sideInset = (value: unknown): number => {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
+};
+
 /**
  * Get window layout insets
- * @returns {top: 0, bottom: 0}
+ *
+ * left / right: a safe area on a side of the screen in portrait. 0 on every phone, except one that has a part of
+ * the system on a side (iPhone Duo: the status area and the tab bar are on the right).
+ * @returns {top: 0, bottom: 0, left: 0, right: 0}
  */
-const GetLayoutInsets = (): { top: number; bottom: number } => {
-    return DeviceUtilsModule.layoutInsets;
+const GetLayoutInsets = (): { top: number; bottom: number; left: number; right: number } => {
+    const insets = DeviceUtilsModule.layoutInsets;
+    return { ...insets, left: sideInset(insets?.left), right: sideInset(insets?.right) };
+};
+
+/**
+ * The safe area on the two sides of the screen together. 0 on every phone but one with a system part on a side.
+ * @returns number
+ */
+const GetSideInsets = (): number => {
+    const { left, right } = GetLayoutInsets();
+    return left + right;
+};
+
+/**
+ * The width that content can use: the window without a safe area on its sides. The window width on every phone
+ * that has no such area. On a phone with one that is open (iPhone Duo unfolded) it is the width of the cover screen
+ * without the safe area: the app keeps that layout in a column (see theme/sizes.ts).
+ * @returns number
+ */
+const GetUsableWindowWidth = (): number => {
+    const sideInsets = GetSideInsets();
+    const windowWidth = Dimensions.get('window').width;
+    if (sideInsets <= 0) {
+        return windowWidth;
+    }
+    const screenWidth = Dimensions.get('screen').width;
+    return (screenWidth > 0 ? Math.min(windowWidth, screenWidth) : windowWidth) - sideInsets;
 };
 
 /**
@@ -121,7 +155,7 @@ const isCompactIos18At2x = (): boolean => {
     if (Platform.OS !== 'ios') {
         return false;
     }
-    const { width } = Dimensions.get('window');
+    const width = GetUsableWindowWidth();
     return tabOsMajor() >= 18 && (PixelRatio.get() || 2) < 3 && width <= SE_WIDTH;
 };
 
@@ -145,7 +179,9 @@ const tabBarItemRow = (): number => {
  * iOS 18+ @2x only.
  */
 const getTabIconDisplayPt = (factor?: number): number => {
-    const { width } = Dimensions.get('window');
+    // the width without a safe area on a side: there the tab bar stands on that side, and the icons take the size of
+    // a phone as wide as the rest of the screen
+    const width = GetUsableWindowWidth();
     const inset = GetLayoutInsets()?.bottom || 0;
     const itemRow = tabBarItemRow();
     const slot = width / TAB_COUNT;
@@ -195,7 +231,7 @@ const GetBottomTabIconDp = (factor?: number): number => {
         const displayPt = getTabIconDisplayPt(factor);
         return Math.round(Math.min(displayPt, isCenter ? 36 : 26));
     }
-    const { width } = Dimensions.get('window');
+    const width = GetUsableWindowWidth();
     const slot = width / TAB_COUNT;
     const f = factor || 1;
     const fromSlot = ANDROID_CENTER_DP * (slot / (SE_WIDTH / TAB_COUNT)) * (0.65 / f);
@@ -243,6 +279,8 @@ export {
     GetBottomTabScale,
     GetBottomTabIconDp,
     GetLayoutInsets,
+    GetSideInsets,
+    GetUsableWindowWidth,
     IsDeviceJailBroken,
     IsDeviceRooted,
     GetDeviceTimeZone,

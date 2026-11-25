@@ -6,10 +6,22 @@ import { Dimensions, Platform, PixelRatio } from 'react-native';
 
 import { GetLayoutInsets } from '@common/helpers/device';
 
-const { height: screenHeight } = Dimensions.get('screen');
-const { width, height } = Dimensions.get('window');
+const { height: screenHeight, width: screenWidth } = Dimensions.get('screen');
+const { width: windowWidth, height } = Dimensions.get('window');
 
-const { bottom: bottomInset, top: topInset } = GetLayoutInsets();
+const { bottom: bottomInset, top: topInset, left: leftInset, right: rightInset } = GetLayoutInsets();
+
+// A safe area on a side of the screen in portrait (iPhone Duo: the status area and the tab bar are on the right).
+// Content stays out of it: every screen is padded by it (common/helpers/sideSafeArea.tsx), and `width`, with all
+// that is made from it below, is the width that is left. The app then lays out as on a phone of that width.
+// On every other phone both insets are 0 and `width` is the window width, as it always was.
+//
+// Such a phone can also be open (iPhone Duo unfolded): the window is then about two times as wide as the cover
+// screen, which stays the `screen` of the device. The app keeps the layout of the cover screen there, in a column of
+// that width beside the safe area (sideSafeArea.tsx puts it there), so it is the same app, folded or not.
+const sideInsets = leftInset + rightInset;
+const layoutWindowWidth = sideInsets > 0 && screenWidth > 0 ? Math.min(windowWidth, screenWidth) : windowWidth;
+const width = layoutWindowWidth - sideInsets;
 
 // Guideline sizes are based on standard ~5" screen mobile device
 const guidelineBaseWidth = 350;
@@ -55,6 +67,8 @@ const Sizes = {
         height,
         width: width / altScreenDimensionsCorrectionFactor, // Fixes fold devices
         uncorrectedWidth: width,
+        // the whole window, with a safe area on a side
+        windowWidth,
 
         screenHeight,
 
@@ -76,6 +90,11 @@ const Sizes = {
 
     bottomInset,
     topInset,
+
+    // a safe area on a side of the screen in portrait: 0 on every phone but one with a system part on a side
+    leftInset,
+    rightInset,
+    sideInsets,
 
     safeAreaBottomInset,
     safeAreaTopInset,

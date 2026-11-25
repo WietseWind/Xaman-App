@@ -28,6 +28,7 @@ import { AccountModel, CoreModel } from '@store/models';
 
 import Keyboard from '@common/helpers/keyboard';
 import { Navigator } from '@common/helpers/navigator';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import { Prompt, VibrateHapticFeedback } from '@common/helpers/interface';
 
 import Vault from '@common/libs/vault';
@@ -255,6 +256,7 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <View ref={this.contentViewRef} style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
