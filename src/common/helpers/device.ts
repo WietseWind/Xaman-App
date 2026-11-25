@@ -1,4 +1,4 @@
-import { Platform, PixelRatio, NativeModules, Dimensions } from 'react-native';
+import { Platform, PixelRatio, NativeModules, Dimensions, I18nManager } from 'react-native';
 
 const { DeviceUtilsModule, UniqueIdProviderModule } = NativeModules;
 
@@ -7,16 +7,43 @@ const sideInset = (value: unknown): number => {
     return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 };
 
+// The width of the column that iOS keeps on a side of the screen for the vertical tab bar and, on the cover screen,
+// the camera and the status items (iPhone Duo, iOS 27.2).
+const VERTICAL_BAR_COLUMN = 84;
+
+/**
+ * The edge on which iOS puts a vertical tab bar: 1 leading, 2 trailing. 0 on every phone that has no such bar:
+ * all phones but the iPhone Duo.
+ * @returns 0 | 1 | 2
+ */
+const GetVerticalBarEdge = (): 0 | 1 | 2 => {
+    const edge = DeviceUtilsModule.verticalBarEdge;
+    return edge === 1 || edge === 2 ? edge : 0;
+};
+
 /**
  * Get window layout insets
  *
  * left / right: a safe area on a side of the screen in portrait. 0 on every phone, except one that has a part of
  * the system on a side (iPhone Duo: the status area and the tab bar are on the right).
+ * On such a phone the window itself has no side safe area when the app is in one half of the open screen: the tab
+ * bar is then a column in the safe area of the tabs only. The column is still kept free, on the edge of the bar.
  * @returns {top: 0, bottom: 0, left: 0, right: 0}
  */
 const GetLayoutInsets = (): { top: number; bottom: number; left: number; right: number } => {
     const insets = DeviceUtilsModule.layoutInsets;
-    return { ...insets, left: sideInset(insets?.left), right: sideInset(insets?.right) };
+    let left = sideInset(insets?.left);
+    let right = sideInset(insets?.right);
+    const edge = GetVerticalBarEdge();
+    if (edge !== 0 && left + right < VERTICAL_BAR_COLUMN) {
+        const leading = VERTICAL_BAR_COLUMN - left - right;
+        if ((edge === 1) !== I18nManager.isRTL) {
+            left += leading;
+        } else {
+            right += leading;
+        }
+    }
+    return { ...insets, left, right };
 };
 
 /**
@@ -280,6 +307,7 @@ export {
     GetBottomTabIconDp,
     GetLayoutInsets,
     GetSideInsets,
+    GetVerticalBarEdge,
     GetUsableWindowWidth,
     IsDeviceJailBroken,
     IsDeviceRooted,

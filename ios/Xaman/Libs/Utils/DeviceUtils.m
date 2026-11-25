@@ -8,6 +8,30 @@
 
 @import UIKit;
 
+#import <React/RCTView.h>
+#import <React/RCTViewManager.h>
+#import <React/RCTComponent.h>
+
+// The edge on which iOS puts a vertical bar (the tab bar) for these traits: 0 none, 1 leading, 2 trailing.
+// Only a phone that has such a bar gives another value than 0 (iPhone Duo, iOS 27.1 and later). Read by name, so
+// this builds with every SDK.
+static NSInteger XamanVerticalBarEdge(UITraitCollection *traits)
+{
+  SEL selector = NSSelectorFromString(@"verticalBarEdge");
+  if (traits == nil || ![traits respondsToSelector:selector]) {
+    return 0;
+  }
+  @try {
+    NSInteger edge = [[traits valueForKey:@"verticalBarEdge"] integerValue];
+    return (edge == 1 || edge == 2) ? edge : 0;
+  } @catch (NSException *exception) {
+    return 0;
+  }
+}
+
+// The last edge that was seen for this process: it outlives a reload of the JavaScript side.
+static NSInteger verticalBarEdgeSeen = 0;
+
 @implementation DeviceUtilsModule
 
 RCT_EXPORT_MODULE();
@@ -28,6 +52,7 @@ RCT_EXPORT_MODULE();
     @"brand": @"Apple",
     @"model": [self getModel],
     @"layoutInsets": [self getLayoutInsets],
+    @"verticalBarEdge": @([self getVerticalBarEdge]),
     @"tabBarMetrics": [self getTabBarMetrics],
   };
 }
@@ -53,6 +78,16 @@ RCT_EXPORT_MODULE();
 // a reload of the JavaScript side, where this module is made again.
 static BOOL sideSafeAreaKnown = NO;
 static UIEdgeInsets sideSafeArea;
+
+// 0 on every phone that has no vertical bar: all phones but the iPhone Duo.
+- (NSInteger) getVerticalBarEdge
+{
+  NSInteger edge = XamanVerticalBarEdge([self keyWindow].traitCollection);
+  if (edge != 0) {
+    verticalBarEdgeSeen = edge;
+  }
+  return verticalBarEdgeSeen;
+}
 
 - (NSDictionary *) getLayoutInsets
 {
@@ -319,6 +354,106 @@ RCT_EXPORT_METHOD(getLocalSetting:(RCTPromiseResolveBlock)resolve
     NSError *error = [[NSError alloc] initWithDomain:@"getLocalSetting Module" code:0 userInfo:info];
     reject(@"failed to execute",@"",error);
   }
+}
+
+@end
+
+#pragma mark - SideSafeAreaView
+
+// A view that tells the JavaScript side its own safe area on the left and right, its width, and the edge of the
+// vertical bar, each time one of them changes. Only made on a phone with a vertical bar (iPhone Duo): there these
+// change while the app runs (the phone is opened or closed, the app goes to one half of the screen), and they are
+// not the same for every view (in one half the tab bar is in the safe area of a tab, not in that of the window).
+// See src/common/helpers/sideSafeArea.tsx.
+@interface SideSafeAreaView : RCTView
+@property (nonatomic, copy) RCTDirectEventBlock onSideSafeAreaChange;
+@end
+
+@implementation SideSafeAreaView {
+  BOOL _reported;
+  CGFloat _left;
+  CGFloat _right;
+  CGFloat _width;
+  NSInteger _edge;
+}
+
+- (void)setOnSideSafeAreaChange:(RCTDirectEventBlock)onSideSafeAreaChange
+{
+  _onSideSafeAreaChange = [onSideSafeAreaChange copy];
+  _reported = NO;
+  [self report];
+}
+
+- (void)safeAreaInsetsDidChange
+{
+  [super safeAreaInsetsDidChange];
+  [self report];
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  [self report];
+}
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  [self report];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self report];
+}
+
+- (void)report
+{
+  if (_onSideSafeAreaChange == nil || self.window == nil) {
+    return;
+  }
+  UIEdgeInsets insets = self.safeAreaInsets;
+  CGFloat left = MAX(0.0, insets.left);
+  CGFloat right = MAX(0.0, insets.right);
+  CGFloat width = self.bounds.size.width;
+  NSInteger edge = XamanVerticalBarEdge(self.traitCollection);
+  if (edge == 0) {
+    edge = XamanVerticalBarEdge(self.window.traitCollection);
+  }
+  if (width <= 0.0) {
+    return;
+  }
+  if (_reported && ABS(left - _left) < 0.5 && ABS(right - _right) < 0.5 && ABS(width - _width) < 0.5 && edge == _edge) {
+    return;
+  }
+  _reported = YES;
+  _left = left;
+  _right = right;
+  _width = width;
+  _edge = edge;
+  _onSideSafeAreaChange(@{ @"left" : @(left), @"right" : @(right), @"width" : @(width), @"edge" : @(edge) });
+}
+
+@end
+
+@interface SideSafeAreaViewManager : RCTViewManager
+@end
+
+@implementation SideSafeAreaViewManager
+
+RCT_EXPORT_MODULE(SideSafeAreaView)
+
+RCT_EXPORT_VIEW_PROPERTY(onSideSafeAreaChange, RCTDirectEventBlock)
+
+- (UIView *)view
+{
+  return [SideSafeAreaView new];
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
 }
 
 @end

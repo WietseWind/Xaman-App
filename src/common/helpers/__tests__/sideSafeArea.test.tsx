@@ -4,10 +4,10 @@
  * Without such an area a screen is registered as it is: the same class, nothing around it.
  */
 import React, { Component } from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { Dimensions, Platform, Text, View } from 'react-native';
 import renderer from 'react-test-renderer';
 
-import { freeWidthFor, withSideInsets } from '../sideSafeArea';
+import { sideMarginsFor, withSideInsets } from '../sideSafeArea';
 
 class Screen extends Component<{ label: string }> {
     static screenName = 'app.Test';
@@ -82,26 +82,44 @@ describe('no safe area on a side: every phone but the iPhone Duo', () => {
     });
 });
 
+// the view that holds the screen in its column
+const columnOf = (tree: renderer.ReactTestRenderer) =>
+    tree.root.findAll((node) => node.type === View && node.props.style?.[1]?.marginRight !== undefined)[0];
+const marginsOf = (tree: renderer.ReactTestRenderer) => columnOf(tree).props.style[1];
+// the native view that tells the live values
+const nativeOf = (tree: renderer.ReactTestRenderer) =>
+    tree.root.findAll((node) => typeof node.props.onSideSafeAreaChange === 'function')[0];
+
 describe('a safe area on a side: iPhone Duo', () => {
-    const Wrapped = withSideInsets(Screen, { left: 0, right: 84 });
+    const originalOS = Platform.OS;
+
+    beforeEach(() => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'ios' });
+        jest.spyOn(Dimensions, 'get').mockReturnValue({ width: 466, height: 678, scale: 3, fontScale: 1 } as any);
+    });
+
+    afterEach(() => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOS });
+        jest.restoreAllMocks();
+    });
 
     it('keeps the screen out of it, and passes the props on', () => {
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 });
         const tree = renderer.create(<Wrapped label="hello" />);
-        const root = tree.root.findAllByType(View)[0];
-        expect(root.props.style).toEqual({ flex: 1, marginLeft: 0, marginRight: 84 });
-        expect(root.props.pointerEvents).toBe('box-none');
+        expect(marginsOf(tree)).toEqual({ marginLeft: 0, marginRight: 84 });
+        expect(columnOf(tree).props.pointerEvents).toBe('box-none');
+        expect(nativeOf(tree).props.pointerEvents).toBe('box-none');
         expect(tree.root.findByType(Screen).props).toEqual({ label: 'hello' });
         expect(tree.root.findByType(Text).props.children).toBe('hello');
     });
 
     it('takes both sides, and no negative side', () => {
         const Both = withSideInsets(Screen, { left: 40, right: -3 });
-        const root = renderer.create(<Both label="x" />).root.findAllByType(View)[0];
-        expect(root.props.style).toEqual({ flex: 1, marginLeft: 40, marginRight: 0 });
+        expect(marginsOf(renderer.create(<Both label="x" />))).toEqual({ marginLeft: 40, marginRight: 0 });
     });
 
     it('has the statics of the screen: the navigation library reads them', () => {
-        const W = Wrapped as any;
+        const W = withSideInsets(Screen, { left: 0, right: 84 }) as any;
         expect(W).not.toBe(Screen);
         expect(W.screenName).toBe('app.Test');
         expect(W.options()).toEqual({ topBar: { visible: false } });
@@ -117,6 +135,115 @@ describe('a safe area on a side: iPhone Duo', () => {
         expect(withSideSafeArea(Screen)).toBe(first);
         expect(first.displayName).toBe('SideSafeArea(Screen)');
         expect(first.screenName).toBe('app.Test');
+    });
+
+    it('without the native view (not iOS): the column from the start values, no native view', () => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 });
+        const tree = renderer.create(<Wrapped label="a" />);
+        expect(marginsOf(tree)).toEqual({ marginLeft: 0, marginRight: 84 });
+        expect(nativeOf(tree)).toBeUndefined();
+    });
+});
+
+describe('the place of the column, from what the native view tells', () => {
+    const START = { left: 0, right: 84 };
+    const at = (left: number, right: number, width: number, edge: number) => ({ left, right, width, edge });
+
+    it('closed: the safe area on the right, nothing free', () => {
+        expect(sideMarginsFor(at(0, 84, 466, 2), START, 382)).toEqual({ marginLeft: 0, marginRight: 84 });
+    });
+
+    it('open: the column beside the bar on the right, the free half on the left', () => {
+        expect(sideMarginsFor(at(0, 84, 951, 2), START, 382)).toEqual({ marginLeft: 485, marginRight: 84 });
+    });
+
+    it('in the left half: the bar is on the left, and so is its space', () => {
+        expect(sideMarginsFor(at(84, 0, 469, 1), START, 382)).toEqual({ marginLeft: 84, marginRight: 3 });
+    });
+
+    it('in the right half: the bar is on the right, and so is its space', () => {
+        expect(sideMarginsFor(at(0, 84, 469, 2), START, 382)).toEqual({ marginLeft: 3, marginRight: 84 });
+    });
+
+    it('an overlay or a modal in the left half has no safe area of its own: the column of the bar stays free', () => {
+        expect(sideMarginsFor(at(0, 0, 469, 1), START, 382)).toEqual({ marginLeft: 84, marginRight: 3 });
+        expect(sideMarginsFor(at(0, 0, 469, 2), START, 382)).toEqual({ marginLeft: 3, marginRight: 84 });
+    });
+
+    it('the edge is not known: the side with the larger safe area, else the side the app started with', () => {
+        expect(sideMarginsFor(at(84, 0, 469, 0), START, 382)).toEqual({ marginLeft: 84, marginRight: 3 });
+        expect(sideMarginsFor(at(0, 0, 469, 0), START, 382)).toEqual({ marginLeft: 3, marginRight: 84 });
+        const startedLeft = { left: 84, right: 0 };
+        expect(sideMarginsFor(at(0, 0, 469, 0), startedLeft, 382)).toEqual({ marginLeft: 84, marginRight: 3 });
+    });
+
+    it('right to left: the leading edge is the right', () => {
+        expect(sideMarginsFor(at(0, 0, 469, 1), START, 382, true)).toEqual({ marginLeft: 3, marginRight: 84 });
+        expect(sideMarginsFor(at(0, 0, 469, 2), START, 382, true)).toEqual({ marginLeft: 84, marginRight: 3 });
+    });
+
+    it('never a negative margin, and nothing free without a known column', () => {
+        expect(sideMarginsFor(at(0, 84, 400, 2), START, 382)).toEqual({ marginLeft: 0, marginRight: 84 });
+        expect(sideMarginsFor(at(0, 84, 951, 2), START)).toEqual({ marginLeft: 0, marginRight: 84 });
+        expect(sideMarginsFor(at(-5, NaN, 951, 2), START, 382)).toEqual({ marginLeft: 485, marginRight: 84 });
+        expect(sideMarginsFor(at(0, 100, 466, 2), START, 382)).toEqual({ marginLeft: 0, marginRight: 100 });
+    });
+});
+
+describe('the screen follows the phone while the app runs', () => {
+    const originalOS = Platform.OS;
+    let windowWidth = 466;
+
+    beforeEach(() => {
+        windowWidth = 466;
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'ios' });
+        jest.spyOn(Dimensions, 'get').mockImplementation(
+            () => ({ width: windowWidth, height: 678, scale: 3, fontScale: 1 }) as any,
+        );
+    });
+
+    afterEach(() => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOS });
+        jest.restoreAllMocks();
+    });
+
+    const tell = (tree: renderer.ReactTestRenderer, left: number, right: number, width: number, edge: number) =>
+        renderer.act(() => nativeOf(tree).props.onSideSafeAreaChange({ nativeEvent: { left, right, width, edge } }));
+
+    it('started open: the column is on the right before the native view tells', () => {
+        windowWidth = 951;
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 }, 382);
+        expect(marginsOf(renderer.create(<Wrapped label="a" />))).toEqual({ marginLeft: 485, marginRight: 84 });
+    });
+
+    it('closed, open, left half, right half, closed: the column moves, the screen is not made again', () => {
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 }, 382);
+        const tree = renderer.create(<Wrapped label="a" />);
+        const screen = tree.root.findByType(Screen).instance;
+        expect(marginsOf(tree)).toEqual({ marginLeft: 0, marginRight: 84 });
+
+        tell(tree, 0, 84, 951, 2);
+        expect(marginsOf(tree)).toEqual({ marginLeft: 485, marginRight: 84 });
+
+        tell(tree, 84, 0, 469, 1);
+        expect(marginsOf(tree)).toEqual({ marginLeft: 84, marginRight: 3 });
+
+        tell(tree, 0, 84, 469, 2);
+        expect(marginsOf(tree)).toEqual({ marginLeft: 3, marginRight: 84 });
+
+        tell(tree, 0, 84, 466, 2);
+        expect(marginsOf(tree)).toEqual({ marginLeft: 0, marginRight: 84 });
+
+        expect(tree.root.findByType(Screen).instance).toBe(screen);
+    });
+
+    it('takes no value from an event without a width', () => {
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 }, 382);
+        const tree = renderer.create(<Wrapped label="a" />);
+        renderer.act(() => nativeOf(tree).props.onSideSafeAreaChange({ nativeEvent: { left: 84, right: 0 } }));
+        renderer.act(() => nativeOf(tree).props.onSideSafeAreaChange({}));
+        expect(marginsOf(tree)).toEqual({ marginLeft: 0, marginRight: 84 });
     });
 });
 
@@ -140,18 +267,23 @@ describe('backdrops: the dim or blur of an overlay goes on under the side safe a
         expect(filled).toEqual(plain);
     });
 
-    it('iPhone Duo: the styles reach the edges of the window and keep the content in the column', () => {
+    it('iPhone Duo: the styles reach past both edges of the window and keep the content in the column', () => {
         const m = moduleWith(DUO);
-        // 2000 on the left: the side that is free when the phone is open
-        expect(m.sideBleedEdges).toEqual({ left: -2000, right: -84 });
+        // 2000 on each side: more than any window is wide (the column can be on either side)
+        expect(m.sideBleedEdges).toEqual({ left: -2000, right: -2000 });
         expect(m.sideBleedAbsolute).toEqual({
             left: -2000,
-            right: -84,
-            width: 2000 + 382 + 84,
+            right: -2000,
+            width: 2000 + 382 + 2000,
             paddingLeft: 2000,
-            paddingRight: 84,
+            paddingRight: 2000,
         });
-        expect(m.sideBleedMargin).toEqual({ marginLeft: -2000, marginRight: -84, paddingLeft: 2000, paddingRight: 84 });
+        expect(m.sideBleedMargin).toEqual({
+            marginLeft: -2000,
+            marginRight: -2000,
+            paddingLeft: 2000,
+            paddingRight: 2000,
+        });
     });
 
     it('iPhone Duo: the fill is a strip on each side of the element, in the style of the element', () => {
@@ -170,102 +302,9 @@ describe('backdrops: the dim or blur of an overlay goes on under the side safe a
             position: 'absolute',
             top: 0,
             bottom: 0,
-            right: -84,
-            width: 84,
+            right: -2000,
+            width: 2000,
             backgroundColor: 'black',
-        });
-    });
-
-    it('a larger safe area on the left: the free side is the right', () => {
-        const m = moduleWith({
-            sideInsets: 60,
-            leftInset: 40,
-            rightInset: 20,
-            screen: { windowWidth: 500, uncorrectedWidth: 440 },
-        });
-        expect(m.sideBleedEdges).toEqual({ left: -40, right: -2020 });
-    });
-});
-
-describe('iPhone Duo, open: the window is wider than the layout', () => {
-    const INSETS = { left: 0, right: 84 };
-
-    it('the free part is what is left beside the column and the safe area', () => {
-        expect(freeWidthFor(466, INSETS, 382)).toBe(0);
-        expect(freeWidthFor(951, INSETS, 382)).toBe(485);
-        // never negative, and nothing without a known column
-        expect(freeWidthFor(400, INSETS, 382)).toBe(0);
-        expect(freeWidthFor(951, INSETS)).toBe(0);
-        expect(freeWidthFor(951, INSETS, 0)).toBe(0);
-        expect(freeWidthFor(NaN, INSETS, 382)).toBe(0);
-    });
-
-    describe('the screen is a column beside the safe area, and follows the window', () => {
-        let listener: (() => void) | undefined;
-        let windowWidth = 466;
-
-        beforeEach(() => {
-            listener = undefined;
-            windowWidth = 466;
-            jest.spyOn(Dimensions, 'get').mockImplementation(
-                () => ({ width: windowWidth, height: 678, scale: 3, fontScale: 1 }) as any,
-            );
-            jest.spyOn(Dimensions, 'addEventListener').mockImplementation((_type: any, handler: any) => {
-                listener = handler;
-                return { remove: jest.fn() } as any;
-            });
-        });
-
-        afterEach(() => {
-            jest.restoreAllMocks();
-        });
-
-        const styleOf = (tree: renderer.ReactTestRenderer) => tree.root.findAllByType(View)[0].props.style;
-
-        it('closed: only the safe area', () => {
-            const Wrapped = withSideInsets(Screen, INSETS, 382);
-            const tree = renderer.create(<Wrapped label="a" />);
-            expect(styleOf(tree)).toEqual({ flex: 1, marginLeft: 0, marginRight: 84 });
-        });
-
-        it('started open: the column is on the right, beside the tab bar', () => {
-            windowWidth = 951;
-            const Wrapped = withSideInsets(Screen, INSETS, 382);
-            const tree = renderer.create(<Wrapped label="a" />);
-            expect(styleOf(tree)).toEqual({ flex: 1, marginLeft: 485, marginRight: 84 });
-        });
-
-        it('opened and closed while the app runs: the column moves, the screen is not made again', () => {
-            const Wrapped = withSideInsets(Screen, INSETS, 382);
-            const tree = renderer.create(<Wrapped label="a" />);
-            const screen = tree.root.findByType(Screen).instance;
-            expect(typeof listener).toBe('function');
-
-            windowWidth = 951;
-            renderer.act(() => listener!());
-            expect(styleOf(tree)).toEqual({ flex: 1, marginLeft: 485, marginRight: 84 });
-
-            windowWidth = 466;
-            renderer.act(() => listener!());
-            expect(styleOf(tree)).toEqual({ flex: 1, marginLeft: 0, marginRight: 84 });
-
-            expect(tree.root.findByType(Screen).instance).toBe(screen);
-        });
-
-        it('a safe area on the left: the free part goes to the right', () => {
-            windowWidth = 951;
-            const Wrapped = withSideInsets(Screen, { left: 84, right: 0 }, 382);
-            const tree = renderer.create(<Wrapped label="a" />);
-            expect(styleOf(tree)).toEqual({ flex: 1, marginLeft: 84, marginRight: 485 });
-        });
-
-        it('stops listening when the screen goes away', () => {
-            const remove = jest.fn();
-            (Dimensions.addEventListener as jest.Mock).mockReturnValue({ remove });
-            const Wrapped = withSideInsets(Screen, INSETS, 382);
-            const tree = renderer.create(<Wrapped label="a" />);
-            tree.unmount();
-            expect(remove).toHaveBeenCalledTimes(1);
         });
     });
 });

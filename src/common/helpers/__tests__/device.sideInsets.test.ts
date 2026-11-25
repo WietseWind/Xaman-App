@@ -10,6 +10,7 @@ import {
     GetLayoutInsets,
     GetSideInsets,
     GetUsableWindowWidth,
+    GetVerticalBarEdge,
 } from '../device';
 
 const originalOS = Platform.OS;
@@ -20,6 +21,7 @@ const apply = ({ width, ratio, os, platform = 'ios', insets }: Phone) => {
     Object.defineProperty(Platform, 'OS', { configurable: true, get: () => platform });
     NativeModules.DeviceUtilsModule.osVersion = os;
     NativeModules.DeviceUtilsModule.layoutInsets = insets;
+    delete NativeModules.DeviceUtilsModule.verticalBarEdge;
     NativeModules.DeviceUtilsModule.tabBarMetrics = { itemHeight: 49, height: 49 + (insets?.bottom || 0) };
     jest.spyOn(Dimensions, 'get').mockReturnValue({ width, height: 800, scale: ratio, fontScale: 1 } as any);
     jest.spyOn(PixelRatio, 'get').mockReturnValue(ratio);
@@ -122,5 +124,42 @@ describe('iPhone Duo, open: the window is 951 wide, the screen of the device sta
     it('without a side inset the screen size is not looked at: the window width, as always', () => {
         open({ top: 0, bottom: 34 });
         expect(GetUsableWindowWidth()).toBe(951);
+    });
+});
+
+describe('the vertical tab bar of the iPhone Duo', () => {
+    const setEdge = (edge: unknown) => {
+        NativeModules.DeviceUtilsModule.verticalBarEdge = edge;
+    };
+
+    afterEach(() => {
+        delete NativeModules.DeviceUtilsModule.verticalBarEdge;
+    });
+
+    it('a phone without one: no edge, whatever the native side sends', () => {
+        [undefined, null, 0, 3, -1, '2', NaN].forEach((edge) => {
+            apply({ width: 390, ratio: 3, os: '27.2', insets: { top: 47, bottom: 34 } });
+            setEdge(edge);
+            expect(GetVerticalBarEdge()).toBe(0);
+            expect(GetLayoutInsets()).toEqual({ top: 47, bottom: 34, left: 0, right: 0 });
+            expect(GetUsableWindowWidth()).toBe(390);
+        });
+    });
+
+    it('closed or open: the window has the safe area of the column itself, nothing is added', () => {
+        apply({ width: 466, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34, left: 0, right: 84 } });
+        setEdge(2);
+        expect(GetVerticalBarEdge()).toBe(2);
+        expect(GetLayoutInsets()).toEqual({ top: 0, bottom: 34, left: 0, right: 84 });
+    });
+
+    it('started in one half of the open screen: the column is kept on the edge of the bar', () => {
+        // the window has no side safe area there
+        apply({ width: 469, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34, left: 0, right: 0 } });
+        setEdge(1);
+        expect(GetLayoutInsets()).toEqual({ top: 0, bottom: 34, left: 84, right: 0 });
+        expect(GetSideInsets()).toBe(84);
+        setEdge(2);
+        expect(GetLayoutInsets()).toEqual({ top: 0, bottom: 34, left: 0, right: 84 });
     });
 });
