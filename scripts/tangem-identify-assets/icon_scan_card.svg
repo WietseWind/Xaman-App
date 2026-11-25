@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <title>Contactless card scan</title>
+  <path d="M9.000 8.000 Q13.000 12.000 9.000 16.000 M13.000 5.000 Q20.000 12.000 13.000 19.000 M17.000 2.000 Q27.000 12.000 17.000 22.000" fill="none" stroke="#000000" stroke-width="2.000" stroke-linecap="round" stroke-linejoin="round" opacity="1.000"/>
+  <path d="M6.100 12.000 C6.100 12.608 5.608 13.100 5.000 13.100 C4.392 13.100 3.900 12.608 3.900 12.000 C3.900 11.392 4.392 10.900 5.000 10.900 C5.608 10.900 6.100 11.392 6.100 12.000 Z" fill="#000000" opacity="1.000"/>
+</svg>

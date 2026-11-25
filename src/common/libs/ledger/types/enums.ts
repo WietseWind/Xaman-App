@@ -50,6 +50,7 @@ export enum TransactionTypes {
     AMMDeposit = 'AMMDeposit',
     AMMVote = 'AMMVote',
     AMMWithdraw = 'AMMWithdraw',
+    AMMClawback = 'AMMClawback',
     Remit = 'Remit',
     Clawback = 'Clawback',
     DIDDelete = 'DIDDelete',
@@ -68,6 +69,7 @@ export enum TransactionTypes {
     SetRemarks = 'SetRemarks',
     Batch = 'Batch',
     CronSet = 'CronSet',
+    LedgerStateFix = 'LedgerStateFix',
     VaultCreate = 'VaultCreate',
     VaultSet = 'VaultSet',
     VaultDelete = 'VaultDelete',
@@ -85,6 +87,15 @@ export enum TransactionTypes {
     LoanDelete = 'LoanDelete',
     LoanManage = 'LoanManage',
     LoanPay = 'LoanPay',
+}
+
+/**
+ * LedgerStateFix fix types
+ * @enum {number}
+ */
+export enum LedgerFixTypes {
+    NFTokenPageLink = 1,
+    BookExchangeRate = 2,
 }
 
 /**

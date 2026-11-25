@@ -18,6 +18,15 @@ export default class TouchableDebounce extends PureComponent<Props> {
     onPress = debounce(this.debouncedOnPress, 500, { leading: true, trailing: false });
 
     render() {
-        return <TouchableOpacity {...this.props} onPress={this.onPress} />;
+        const { accessibilityRole } = this.props;
+
+        // screen readers: something you press is a button, unless the caller says otherwise
+        return (
+            <TouchableOpacity
+                {...this.props}
+                accessibilityRole={accessibilityRole ?? 'button'}
+                onPress={this.onPress}
+            />
+        );
     }
 }

@@ -100,7 +100,12 @@ class CurrencyPicker extends Component<Props, State> {
                         <CurrencyItem account={account} item={selectedItem} />
                     </View>
                     {currencies.length > 1 && (
-                        <TouchableDebounce style={styles.collapseButton} onPress={this.showPicker}>
+                        <TouchableDebounce
+                            style={styles.collapseButton}
+                            onPress={this.showPicker}
+                            accessible={false}
+                            importantForAccessibility="no-hide-descendants"
+                        >
                             <Icon
                                 name={expanded ? 'IconChevronUp' : 'IconChevronDown'}
                                 size={20}

@@ -6,16 +6,17 @@
  */
 
     import React, { Component } from 'react';
-    import { View } from 'react-native';
-    
     import { CoreModel } from '@store/models';
     
     import { SecurePinInput } from '@components/General';
+    import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
     import { CoreRepository } from '@store/repositories';
     
     import { AppStyles } from '@theme';
-    
-    import SecretNumberRow from './SecretNumberRow';
+
+    import Localize from '@locale';
+
+    import SecretNumberRow, { ROW_LETTERS } from './SecretNumberRow';
     
     /* Types ==================================================================== */
     interface Props {
@@ -139,14 +140,14 @@
     
         render() {
             const { readonly } = this.props;
-            const { isBiometricAvailable, coreSettings } = this.state;
-    
+            const { isBiometricAvailable, coreSettings, currentRow } = this.state;
+
             if (readonly) {
-                return this.renderRows();
+                return <SensitiveAccessibilityView>{this.renderRows()}</SensitiveAccessibilityView>;
             }
-    
+
             return (
-                <View style={AppStyles.stretchSelf}>
+                <SensitiveAccessibilityView style={AppStyles.stretchSelf}>
                     <SecurePinInput
                         ref={this.securePinInputRef}
                         virtualKeyboard
@@ -154,8 +155,12 @@
                         supportBiometric={isBiometricAvailable}
                         enableHapticFeedback={coreSettings.hapticFeedback}
                         length={6}
+                        accessibilityLabel={Localize.t('account.secretNumbersOfRow', {
+                            row: ROW_LETTERS[currentRow],
+                        })}
+                        accessibilityHint=""
                     />
-                </View>
+                </SensitiveAccessibilityView>
             );
         }
     }

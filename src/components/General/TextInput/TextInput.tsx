@@ -25,6 +25,8 @@ import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
 import { noAutofillProps } from './noAutofill';
 
+import Localize from '@locale';
+
 /* Types ==================================================================== */
 interface Props extends TextInputProps {
     containerStyle?: ViewStyle;
@@ -192,6 +194,7 @@ class Input extends Component<Props, State> {
                 {showScanner && (
                     <TouchableDebounce
                         testID="input-scan-button"
+                        accessibilityLabel={Localize.t('global.scanAQRCode')}
                         activeOpacity={0.8}
                         style={styles.scanButton}
                         onPress={this.showScanner}

@@ -5,6 +5,7 @@ import { isEqual } from 'lodash';
 import { View, Text, TextStyle, ViewStyle, ImageStyle, StyleProp } from 'react-native';
 
 import { Images } from '@common/helpers/images';
+import { IconAccessibilityLabel } from '@common/helpers/accessibility';
 
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { LoadingIndicator } from '@components/General/LoadingIndicator';
@@ -35,6 +36,8 @@ interface Props extends PropsWithChildren {
     numberOfLines?: number;
     isLoading?: boolean;
     isDisabled?: boolean;
+    // screen readers: this button is the selected one of a group
+    isSelected?: boolean;
     loadingIndicatorStyle?: 'light' | 'dark' | 'default';
     onPress?: () => void;
     onLongPress?: () => void;
@@ -189,6 +192,11 @@ export default class Button extends Component<Props> {
             activeOpacity,
             testID,
             hitSlop,
+            label,
+            icon,
+            children,
+            isLoading,
+            isSelected,
         } = this.props;
 
         // Keep a native disabled host. A plain View reports enabled=true, so
@@ -196,7 +204,8 @@ export default class Button extends Component<Props> {
         // (ToS version not posted yet).
         const touchableProps = {
             testID,
-            accessibilityLabel,
+            // a button that only shows an icon is named after what the icon does
+            accessibilityLabel: accessibilityLabel ?? (!label && !children ? IconAccessibilityLabel(icon) : undefined),
             activeOpacity,
             hitSlop,
         };
@@ -204,6 +213,7 @@ export default class Button extends Component<Props> {
         return (
             <TouchableDebounce
                 accessibilityRole="button"
+                accessibilityState={{ disabled: !!isDisabled, busy: !!isLoading, selected: isSelected }}
                 delayPressIn={0}
                 style={[
                     styles.button,

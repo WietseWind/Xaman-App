@@ -8,6 +8,8 @@ import { VaultCreate } from '@common/libs/ledger/transactions';
 import { AmountText, InfoMessage } from '@components/General';
 import { CurrencyElement } from '@components/Modules';
 
+import { FormatDate } from '@common/utils/date';
+
 import Localize from '@locale';
 
 import { AppStyles } from '@theme';
@@ -118,6 +120,38 @@ class VaultCreateTemplate extends Component<Props, State> {
                         <Text style={styles.label}>{Localize.t('vault.mpTokenMetadata')}</Text>
                         <View style={styles.contentBox}>
                             <Text style={styles.value}>{transaction.MPTokenMetadata}</Text>
+                        </View>
+                    </>
+                )}
+                {!isUndefined(transaction.VaultKind) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('vault.vaultKind')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>
+                                {transaction.VaultKind === 0
+                                    ? Localize.t('vault.vaultKindOpenEnded')
+                                    : transaction.VaultKind === 1
+                                      ? Localize.t('vault.vaultKindClosedEnded')
+                                      : transaction.VaultKind}
+                            </Text>
+                        </View>
+                    </>
+                )}
+
+                {!isUndefined(transaction.SubscriptionDate) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('vault.subscriptionDate')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>{FormatDate(transaction.SubscriptionDate!)}</Text>
+                        </View>
+                    </>
+                )}
+
+                {!isUndefined(transaction.RedemptionDate) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('vault.redemptionDate')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>{FormatDate(transaction.RedemptionDate!)}</Text>
                         </View>
                     </>
                 )}

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# git pull / merge: when the new commits change package-lock.json, patches/ or ios/Podfile.lock, check that the
+# installed packages still match (scripts/check-native-deps.sh) and say what to run when they do not. patch-package
+# only runs on npm ci / npm install, so without this a checkout silently keeps building with its old patches.
+# Never blocks the merge. Installed by scripts/post-install.sh.
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ -x "$ROOT/scripts/check-native-deps.sh" ] || exit 0
+git diff --quiet ORIG_HEAD HEAD -- package-lock.json patches ios/Podfile.lock 2>/dev/null && exit 0
+"$ROOT/scripts/check-native-deps.sh" "$ROOT" || true
+exit 0

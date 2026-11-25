@@ -35,6 +35,9 @@ class ListItem extends PureComponent<Props, State> {
 
     private readonly animatedFade: Animated.Value;
     private readonly animatedPlaceholder: Animated.Value;
+    private mounted = false;
+    private animationTimers = new Set<ReturnType<typeof setTimeout>>();
+    private animations = new Set<Animated.CompositeAnimation>();
 
     constructor(props: Props) {
         super(props);
@@ -46,12 +49,13 @@ class ListItem extends PureComponent<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
         const { index, name } = this.props;
 
         // if image is null then we need to wait for the data to be loaded from backend
         // start the placeholder
         if (name === undefined) {
-            setTimeout(this.startPlaceholderAnimation, index * 400);
+            this.scheduleAnimation(this.startPlaceholderAnimation, index * 400);
         } else {
             this.animatedFade.setValue(1);
         }
@@ -62,23 +66,40 @@ class ListItem extends PureComponent<Props, State> {
 
         if (prevProps.name === undefined && name !== undefined) {
             // show the element with animation
-            setTimeout(this.startFadeInAnimation, index * 10);
+            this.scheduleAnimation(this.startFadeInAnimation, index * 10);
         }
 
         if (prevProps.name !== undefined && name === undefined) {
-            setTimeout(this.startPlaceholderAnimation, index * 400);
+            this.scheduleAnimation(this.startPlaceholderAnimation, index * 400);
         }
     }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        this.animationTimers.forEach((timer) => clearTimeout(timer));
+        this.animationTimers.clear();
+        this.animations.forEach((animation) => animation.stop());
+        this.animations.clear();
+    }
+
+    private scheduleAnimation = (callback: () => void, delay: number) => {
+        if (!this.mounted) return;
+        const timer = setTimeout(() => {
+            this.animationTimers.delete(timer);
+            if (this.mounted) callback();
+        }, delay);
+        this.animationTimers.add(timer);
+    };
 
     startPlaceholderAnimation = () => {
         const { name, totalTokens } = this.props;
 
         // if data provided stop the placeholder animation
-        if (name !== undefined) {
+        if (!this.mounted || name !== undefined) {
             return;
         }
 
-        Animated.sequence([
+        const animation = Animated.sequence([
             Animated.timing(this.animatedPlaceholder, {
                 toValue: 0.3,
                 duration: 1000,
@@ -89,17 +110,25 @@ class ListItem extends PureComponent<Props, State> {
                 duration: 1000,
                 useNativeDriver: true,
             }),
-        ]).start(() => {
-            setTimeout(this.startPlaceholderAnimation, totalTokens * 200);
+        ]);
+        this.animations.add(animation);
+        animation.start(() => {
+            this.animations.delete(animation);
+            if (this.mounted) {
+                this.scheduleAnimation(this.startPlaceholderAnimation, totalTokens * 200);
+            }
         });
     };
 
     startFadeInAnimation = () => {
-        Animated.timing(this.animatedFade, {
+        if (!this.mounted) return;
+        const animation = Animated.timing(this.animatedFade, {
             toValue: 1,
             duration: 600,
             useNativeDriver: true,
-        }).start();
+        });
+        this.animations.add(animation);
+        animation.start(() => this.animations.delete(animation));
     };
 
     onItemPress = () => {

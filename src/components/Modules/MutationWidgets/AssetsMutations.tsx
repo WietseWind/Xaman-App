@@ -154,7 +154,7 @@ class AssetsMutations extends PureComponent<Props, State> {
 
     render() {
         const { mutatedDec, mutatedInc, factor, assets } = this.state;
-        const { account, item } = this.props;
+        const { account, item, explainer } = this.props;
 
         // let hasBalanceChanges = true;
         // const mutations = item.BalanceChange(account.address);
@@ -179,6 +179,8 @@ class AssetsMutations extends PureComponent<Props, State> {
         const hasBothFactors = factorInc.length > 0 && factorDec.length > 0;
 
         const noMutation = hasNoMutations &&
+            // not while the outcome still has to be loaded (the inner transactions of a Batch)
+            explainer?.isBalanceEffectKnown?.() !== false &&
             account.address !== ((item as any)?.Account || (item as any)?.Subject || (item as any)?.Issuer) &&
             !item.Type.match(/Credential/) &&
             !item.Type.match(/Check/) &&

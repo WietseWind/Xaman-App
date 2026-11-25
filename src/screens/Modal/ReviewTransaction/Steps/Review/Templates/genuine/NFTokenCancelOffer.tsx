@@ -28,7 +28,7 @@ class NFTokenCancelOfferTemplate extends Component<Props, State> {
     }
 
     render() {
-        const { transaction, source } = this.props;
+        const { transaction, source, innerBatch, batchCreatedNFTokenOffers } = this.props;
 
         return (
             <>
@@ -50,6 +50,9 @@ class NFTokenCancelOfferTemplate extends Component<Props, State> {
                             source={source}
                             nfTokenOffer={tokenOffer}
                             transaction={transaction}
+                            createdInBatch={Boolean(
+                                innerBatch && batchCreatedNFTokenOffers?.has(tokenOffer.toUpperCase()),
+                            )}
                         />
                     </ExpandableView>
                 ))}

@@ -5,6 +5,7 @@ import { LedgerEntryTypes, TransactionTypes } from '@common/libs/ledger/types/en
 import { LedgerEntryFlags } from '@common/constants/flags';
 
 import NetworkService from '@services/NetworkService';
+import { NetworkDefinitions } from '@common/libs/ledger/utils/normalizeDefinitions';
 
 /**
  * Inner object types
@@ -44,11 +45,12 @@ class FlagParser {
         // set the flags from definitions
         const definitions = NetworkService.getNetworkDefinitions();
 
-        // if the transaction flags is not present in the definitions use default flags
+        // Use one selected schema. Missing metadata must not import flags from another ledger.
         const transactionFlags =
-            definitions?.transactionFlags ?? (binary.DEFAULT_DEFINITIONS as any).TRANSACTION_FLAGS ?? {};
-        const indicesFlags =
-            definitions?.transactionFlagsIndices ?? (binary.DEFAULT_DEFINITIONS as any).TRANSACTION_FLAGS_INDICES ?? {};
+            (definitions ? definitions.transactionFlags : (binary.DEFAULT_DEFINITIONS as any).TRANSACTION_FLAGS) ?? {};
+        const indicesFlags = (definitions ? definitions.transactionFlagsIndices
+            : (binary.DEFAULT_DEFINITIONS as any).TRANSACTION_FLAGS_INDICES) ?? {};
+        const ledgerFlags = (definitions as NetworkDefinitions)?.rawDefinitions?.LEDGER_ENTRY_FLAGS ?? LedgerEntryFlags;
         const objectFlags = {
             Remark: {
                 tfImmutable: 0x00000001, // Immutable
@@ -59,17 +61,17 @@ class FlagParser {
         };
 
         // transaction flags
-        if (type in TransactionTypes && Object.prototype.hasOwnProperty.call(transactionFlags, type)) {
+        if (Object.prototype.hasOwnProperty.call(transactionFlags, type)) {
             this._flags = transactionFlags[type];
         }
 
         // ledger entry flags
-        if (type in LedgerEntryTypes && Object.prototype.hasOwnProperty.call(LedgerEntryFlags, type)) {
-            this._flags = LedgerEntryFlags[type as keyof typeof LedgerEntryFlags];
+        if (type in LedgerEntryTypes && Object.prototype.hasOwnProperty.call(ledgerFlags, type)) {
+            this._flags = ledgerFlags[type];
         }
 
         // indices flag
-        if (type in TransactionTypes && Object.prototype.hasOwnProperty.call(indicesFlags, type)) {
+        if (Object.prototype.hasOwnProperty.call(indicesFlags, type)) {
             this._indicesFlags = indicesFlags[type];
         }
 

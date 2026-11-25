@@ -1,0 +1,27 @@
+{
+  "issue": 404,
+  "pullRequest": 455,
+  "finalAppSource": "cbd6242ce9fc31bdf93f26b7364c0eb22ac05498",
+  "fullTestsPassed": 2589,
+  "snapshotsPassed": 60,
+  "existingTestsSkipped": 7,
+  "fullSuiteExitCode": 0,
+  "localeBundles": 59,
+  "allExistingValuesIncludingMomentPreserved": true,
+  "nativeHost": "optimized iOS/Hermes",
+  "programmaticProductionCallbacks": true,
+  "syntheticCardsAndLedger": true,
+  "physicalNfc": false,
+  "fundedLedgerSubmission": false,
+  "nativeTouchE2E": false,
+  "screenshots": {
+    "02-menu-light.png": "19a358058c891883d93cbfa3cc181a884b278c04daf59942438f58f3d43d8314",
+    "03-remove-warning-light.png": "1f22943a678324e285faa60ef2c41ead2c55e78df51b832818c176142ff99b71",
+    "05-remove-pending-light.png": "798aef71032180077fa717e182ebb0158f3140eec1fecfa19c400d207242e65c",
+    "06-remove-done-light.png": "b6f55b0034333f2515d85870a89c5b3e889ee79aeffd6b2980a51b2d5e77a5d4",
+    "08-empty-warning-light.png": "6fc49b514baa66b485c5a58087889b21dc1936c5478fdfc8beb7da30db29d7f4",
+    "10-match-success-light.png": "57194e3a9306baf0878b4d76a60742cf419d6e4ca4057b346c403a4558856ba5",
+    "12-remove-warning-dark.png": "a971fcc646779f158045a645a99a0a5361f52de0199252a318123851f6a6bbb5",
+    "13-remove-pending-dark.png": "028b53be32698e908db5089b75be5aff6243c3dd6129683816afff530601d85e"
+  }
+}

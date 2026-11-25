@@ -1,4 +1,4 @@
-import { has } from 'lodash';
+import { has, isPlainObject } from 'lodash';
 import Realm from 'realm';
 
 import { CurrencyModel } from '@store/models';
@@ -38,6 +38,23 @@ class CurrencyRepository extends BaseRepository<CurrencyModel> {
             const existing = this.findOne({ [primaryKey]: object[primaryKey as keyof Partial<CurrencyModel>] });
 
             if (existing) {
+                if (isPlainObject(object)) {
+                    const { properties } = this.model.schema!;
+                    const descriptors = Object.getOwnPropertyDescriptors(object);
+                    // Accessors and inherited values keep Realm's normal write path.
+                    const unchanged = Object.keys(descriptors).every((key) => {
+                        const descriptor = descriptors[key];
+                        return has(properties, key) && 'value' in descriptor &&
+                            (descriptor.value === undefined || (existing as any)[key] === descriptor.value);
+                    }) && Object.keys(properties).every((key) => has(object, key) || !(key in object));
+                    if (unchanged) {
+                        // Keep async event ordering so metadata freshness checks still run.
+                        return Promise.resolve(existing).then((currency) => {
+                            this.emit('currencyUpsert', currency);
+                            return currency;
+                        });
+                    }
+                }
                 return this.create(object, true).then((updatedCurrency: CurrencyModel) => {
                     this.emit('currencyUpsert', updatedCurrency);
                     return updatedCurrency;

@@ -1,152 +1,132 @@
 import { isEqual } from 'lodash';
 import React, { Component } from 'react';
-import { InteractionManager, Text, View, ViewStyle } from 'react-native';
+import { InteractionManager, StyleProp, Text, View, ViewStyle } from 'react-native';
 
 import Preferences from '@common/libs/preferences';
-
 import { XAppOrigin } from '@common/libs/payload';
-
-import { Icon, TouchableDebounce } from '@components/General';
-
+import { Icon } from '@components/General/Icon';
+import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { AppItem, AppType, AppActions } from '@components/Modules/XAppStore/AppsList/AppItem';
-
-import { AppStyles } from '@theme';
+import Localize from '@locale';
 import styles from './styles';
 
-/* Types ==================================================================== */
 export type MessageType = {
     id: number;
     title: string;
-    content: string;
-    app: AppType;
+    content?: string;
+    app?: AppType;
 };
 
 interface Props {
     visible: boolean;
     message?: MessageType;
-    containerStyle?: ViewStyle | ViewStyle[];
+    containerStyle?: StyleProp<ViewStyle>;
 }
 
 interface State {
     message?: MessageType;
     showMessage: boolean;
 }
-/* Component ==================================================================== */
+
 class HeaderMessage extends Component<Props, State> {
+    private mounted = false;
+    private checkEpoch = 0;
+    private preferenceTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+
     constructor(props: Props) {
         super(props);
-
-        this.state = {
-            message: undefined,
-            showMessage: false,
-        };
-    }
-
-    shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
-        const { visible } = this.props;
-        const { message, showMessage } = this.state;
-
-        return (
-            !isEqual(nextState.message, message) ||
-            !isEqual(nextState.showMessage, showMessage) ||
-            !isEqual(nextProps.visible, visible)
-        );
+        this.state = { message: props.message, showMessage: false };
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(this.checkShouldShowMessage);
+        this.mounted = true;
+        this.scheduleMessageCheck();
     }
 
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
-        const { message } = this.state;
-        if (!isEqual(prevState.message, message)) {
-            InteractionManager.runAfterInteractions(this.checkShouldShowMessage);
-        }
+    componentDidUpdate(prevProps: Readonly<Props>) {
+        const { message } = this.props;
+        if (!isEqual(prevProps.message, message)) this.scheduleMessageCheck();
     }
 
-    static getDerivedStateFromProps(nextProps: Props) {
-        return {
-            message: nextProps.message,
-        };
+    componentWillUnmount() {
+        this.mounted = false;
+        this.checkEpoch += 1;
+        this.preferenceTask?.cancel();
     }
+
+    static getDerivedStateFromProps(nextProps: Props, previous: State) {
+        if (isEqual(nextProps.message, previous.message)) return null;
+        return { message: nextProps.message, showMessage: false };
+    }
+
+    scheduleMessageCheck = () => {
+        this.preferenceTask?.cancel();
+        const epoch = ++this.checkEpoch;
+        this.preferenceTask = InteractionManager.runAfterInteractions(() => {
+            if (this.mounted && epoch === this.checkEpoch) this.checkShouldShowMessage();
+        });
+    };
 
     checkShouldShowMessage = async () => {
+        if (!this.mounted) return;
         const { message } = this.props;
-        // check if we need to show the message
+        const epoch = ++this.checkEpoch;
         let showMessage = false;
-
-        if (message) {
-            await Preferences.get(Preferences.keys.XAPP_STORE_IGNORE_MESSAGE_ID)
-                .then((lastIgnoreMessageId) => {
-                    if (message?.id && (!lastIgnoreMessageId || Number(message?.id) > Number(lastIgnoreMessageId))) {
-                        showMessage = true;
-                    }
-                })
-                .catch(() => {
-                    // ignore
-                });
+        if (message?.id) {
+            try {
+                const ignored = await Preferences.get(Preferences.keys.XAPP_STORE_IGNORE_MESSAGE_ID);
+                showMessage = !ignored || message.id > Number(ignored);
+            } catch {
+                // Keep the existing behavior when the preference cannot be read.
+            }
         }
-
-        this.setState({
-            showMessage,
-        });
+        const { message: currentMessage } = this.props;
+        if (this.mounted && epoch === this.checkEpoch && isEqual(currentMessage, message)) {
+            this.setState({ showMessage });
+        }
     };
 
     onClosePress = () => {
         const { message } = this.state;
-
-        if (!message) {
-            return;
-        }
-
-        // hide the component
-        this.setState({
-            showMessage: false,
-        });
-
-        // persist the decision on the store
-        Preferences.set(Preferences.keys.XAPP_STORE_IGNORE_MESSAGE_ID, `${message.id}`);
+        if (!message) return;
+        this.checkEpoch += 1;
+        this.preferenceTask?.cancel();
+        this.setState({ showMessage: false });
+        Preferences.set(Preferences.keys.XAPP_STORE_IGNORE_MESSAGE_ID, String(message.id)).catch(() => undefined);
     };
 
     renderContent = () => {
         const { message } = this.props;
-
-        const { content, app } = message!;
-
-        // in v3.0 we introduced the xapp button, so by order app || content
-
-        if (app) {
-            return <AppItem item={app} action={AppActions.LUNCH_APP} origin={XAppOrigin.XAPP_STORE_MESSAGE} />;
+        if (message?.app) {
+            return <AppItem item={message.app} variant="featured" action={AppActions.LUNCH_APP}
+                origin={XAppOrigin.XAPP_STORE_MESSAGE} />;
         }
-
-        return <Text style={AppStyles.subtext}>{content}</Text>;
+        return (
+            <View style={styles.textMessage}>
+                <Text style={styles.messageText}>{message?.content}</Text>
+            </View>
+        );
     };
 
     render() {
         const { containerStyle, visible } = this.props;
         const { showMessage, message } = this.state;
-
-        if (!showMessage || !message || !visible) {
-            return null;
-        }
-
-        const { title } = message;
-
+        if (!showMessage || !message || !visible) return null;
         return (
-            <View style={[styles.container, containerStyle]}>
-                <View style={AppStyles.row}>
-                    <View style={AppStyles.flex1}>
-                        <Text style={styles.titleText}>{title}</Text>
-                    </View>
+            <View testID="xapp-store-highlight" style={[styles.container, containerStyle]}>
+                <View style={styles.headingRow}>
+                    <Text style={styles.titleText}>{message.title}</Text>
                     <TouchableDebounce
-                        hitSlop={{ left: 20, right: 20, top: 20, bottom: 20 }}
+                        testID="xapp-store-dismiss-highlight"
                         onPress={this.onClosePress}
                         style={styles.closeButton}
+                        accessibilityRole="button"
+                        accessibilityLabel={Localize.t('global.close')}
                     >
-                        <Icon name="IconX" style={styles.closeButtonIcon} size={20} />
+                        <Icon name="IconX" style={styles.closeButtonIcon} size={17} />
                     </TouchableDebounce>
                 </View>
-                <View style={styles.contentContainer}>{this.renderContent()}</View>
+                {this.renderContent()}
             </View>
         );
     }

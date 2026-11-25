@@ -82,6 +82,7 @@ exports[`[SearchBar] renders correctly 1`] = `
       autoCapitalize="none"
       autoComplete="off"
       autoCorrect={false}
+      importantForAutofill="noExcludeDescendants"
       keyboardType="visible-password"
       onBlur={[Function]}
       onChangeText={[Function]}
@@ -106,6 +107,7 @@ exports[`[SearchBar] renders correctly 1`] = `
           undefined,
         ]
       }
+      textContentType="none"
       underlineColorAndroid="transparent"
       value=""
     />
@@ -195,6 +197,7 @@ exports[`[SearchBar] should clear text 1`] = `
       autoCapitalize="none"
       autoComplete="off"
       autoCorrect={false}
+      importantForAutofill="noExcludeDescendants"
       keyboardType="visible-password"
       onBlur={[Function]}
       onChangeText={[Function]}
@@ -219,6 +222,7 @@ exports[`[SearchBar] should clear text 1`] = `
           undefined,
         ]
       }
+      textContentType="none"
       underlineColorAndroid="transparent"
       value=""
     />
@@ -308,6 +312,7 @@ exports[`[SearchBar] should show clear button on text enter 1`] = `
       autoCapitalize="none"
       autoComplete="off"
       autoCorrect={false}
+      importantForAutofill="noExcludeDescendants"
       keyboardType="visible-password"
       onBlur={[Function]}
       onChangeText={[Function]}
@@ -332,6 +337,7 @@ exports[`[SearchBar] should show clear button on text enter 1`] = `
           undefined,
         ]
       }
+      textContentType="none"
       underlineColorAndroid="transparent"
       value="searched text"
     />

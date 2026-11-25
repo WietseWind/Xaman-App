@@ -94,20 +94,12 @@ public class VaultManagerModule extends ReactContextBaseJavaModule {
 
     /*
         Create a new encrypted vault with given name/data and encrypt with provided key
-        NOTE: existing vault cannot be overwritten
+        NOTE: an existing vault with the same name is overwritten, on purpose: a device restored
+        from a backup can hold a leftover vault that can no longer be opened, and rejecting the
+        new vault would block the user. (iOS rejects an existing vault.)
     */
     public synchronized boolean createVault(final String vaultName, final String data, final String key)
             throws Exception {
-
-        // check if the vault already exist, we don't want to overwrite the existing vault
-        // get the item from storage
-        boolean exist = keychain.itemExist(vaultName);
-
-        // vault already exist, just reject
-        // ^^ update: just overwrite?...
-        if (exist) {
-            // throw new Exception("VAULT_ALREADY_EXIST");
-        }
 
         // try to encrypt the data with provided key
         Map<String, Object> cipherResult = Cipher.encrypt(data, key);

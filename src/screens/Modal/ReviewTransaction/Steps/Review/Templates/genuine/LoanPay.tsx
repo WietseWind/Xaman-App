@@ -3,7 +3,8 @@ import { get, isUndefined } from 'lodash';
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, Alert, InteractionManager } from 'react-native';
 
-import { LedgerService, NetworkService, StyleService } from '@services';
+import { LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { LoanPay } from '@common/libs/ledger/transactions';
 import { Loan, LoanBroker, Vault } from '@common/libs/ledger/objects';

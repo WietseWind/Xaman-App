@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Detox e2e release builds only (src/e2eRelease). Cleartext only to the Detox server on the host
+     (adb reverse to localhost, or 10.0.2.2 from an emulator); everything else keeps the defaults. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

@@ -1,6 +1,8 @@
 package libs.security.authentication.Biometric;
 
+import android.app.Activity;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
 
 import androidx.biometric.BiometricPrompt;
 import androidx.biometric.BiometricManager;
@@ -8,6 +10,7 @@ import androidx.biometric.BiometricPrompt.PromptInfo;
 import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -15,11 +18,12 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.bridge.UiThreadUtil;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @ReactModule(name = BiometricModule.NAME)
-public class BiometricModule extends ReactContextBaseJavaModule {
+public class BiometricModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     // constants
     public static final String TYPE_BIOMETRICS = "Biometrics";
     // errors
@@ -32,13 +36,18 @@ public class BiometricModule extends ReactContextBaseJavaModule {
     public static final String ERROR_BIOMETRIC_HAS_BEEN_CHANGED = "BIOMETRIC_HAS_BEEN_CHANGED";
     public static final String ERROR_UNABLE_REFRESH_AUTHENTICATION_KEY = "UNABLE_REFRESH_AUTHENTICATION_KEY";
 
-    private static BiometricPrompt biometricPrompt;
+    private AuthenticationRequest activeRequest;
+    private volatile boolean invalidated;
+    private volatile boolean hostPaused;
+    private final AtomicInteger hostGeneration = new AtomicInteger();
+    private final Executor callbackExecutor = UiThreadUtil::runOnUiThread;
     private final ReactApplicationContext mReactContext;
 
     public BiometricModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
         mReactContext = reactContext;
+        mReactContext.addLifecycleEventListener(this);
     }
 
     static final String NAME = "BiometricModule";
@@ -57,60 +66,125 @@ public class BiometricModule extends ReactContextBaseJavaModule {
         }
     }
 
-    public class AuthCallback extends BiometricPrompt.AuthenticationCallback {
-        private Promise promise;
+    private class AuthenticationRequest {
+        final Promise promise;
+        final AtomicBoolean completed = new AtomicBoolean();
+        BiometricPrompt prompt;
 
-        public AuthCallback(final Promise promise) {
-            super();
+        AuthenticationRequest(Promise promise) {
             this.promise = promise;
         }
 
-        @Override
-        public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-            super.onAuthenticationError(errorCode, errString);
-            promise.reject(getBiometricError(errorCode), TYPE_BIOMETRICS);
+        void resolve() {
+            if (completed.compareAndSet(false, true)) {
+                if (activeRequest == this) activeRequest = null;
+                promise.resolve(TYPE_BIOMETRICS);
+            }
         }
 
-        @Override
-        public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-            super.onAuthenticationSucceeded(result);
-            promise.resolve(TYPE_BIOMETRICS);
-        }
-
-        @Override
-        public void onAuthenticationFailed() {
-            super.onAuthenticationFailed();
+        void reject(String code) {
+            if (completed.compareAndSet(false, true)) {
+                if (activeRequest == this) activeRequest = null;
+                promise.reject(code, TYPE_BIOMETRICS);
+            }
         }
     }
 
     private void biometricAuthenticate(final String reason, final Promise promise) {
-        UiThreadUtil.runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        FragmentActivity fragmentActivity = (FragmentActivity) mReactContext.getCurrentActivity();
+        final int generation = hostGeneration.get();
+        try {
+            UiThreadUtil.runOnUiThread(() -> {
+                final AuthenticationRequest request = new AuthenticationRequest(promise);
+                if (invalidated || hostPaused || generation != hostGeneration.get() || activeRequest != null) {
+                    request.reject(ERROR_NOT_AVAILABLE);
+                    return;
+                }
 
-                        if (fragmentActivity == null) return;
-
-                        AuthCallback authCallback = new AuthCallback(promise);
-
-                        Executor executor = Executors.newSingleThreadExecutor();
-                        biometricPrompt = new BiometricPrompt(
-                                fragmentActivity,
-                                executor,
-                                authCallback
-                        );
-
-                        PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                                .setConfirmationRequired(false)
-                                .setNegativeButtonText("Cancel")
-                                .setTitle(reason)
-                                .build();
-
-                        biometricPrompt.authenticate(promptInfo);
+                try {
+                    Activity activity = mReactContext.getCurrentActivity();
+                    if (!(activity instanceof FragmentActivity)) {
+                        request.reject(ERROR_NOT_AVAILABLE);
+                        return;
                     }
-                });
+                    FragmentActivity fragmentActivity = (FragmentActivity) activity;
+                    if (fragmentActivity.isFinishing() || fragmentActivity.isDestroyed()
+                            || !fragmentActivity.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)
+                            || fragmentActivity.getSupportFragmentManager().isStateSaved()) {
+                        request.reject(ERROR_NOT_AVAILABLE);
+                        return;
+                    }
 
+                    activeRequest = request;
+                    request.prompt = new BiometricPrompt(fragmentActivity, callbackExecutor,
+                            new BiometricPrompt.AuthenticationCallback() {
+                                @Override
+                                public void onAuthenticationError(int code, @NonNull CharSequence message) {
+                                    request.reject(getBiometricError(code));
+                                }
+
+                                @Override
+                                public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                                    request.resolve();
+                                }
+                            });
+
+                    PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+                            .setConfirmationRequired(false)
+                            .setNegativeButtonText("Cancel")
+                            .setTitle(reason)
+                            .build();
+                    request.prompt.authenticate(promptInfo);
+                } catch (RuntimeException error) {
+                    request.reject(ERROR_BIOMETRIC);
+                }
+            });
+        } catch (RuntimeException error) {
+            promise.reject(ERROR_BIOMETRIC, TYPE_BIOMETRICS);
+        }
+    }
+
+    private void cancelActiveAuthentication() {
+        UiThreadUtil.runOnUiThread(() -> {
+            AuthenticationRequest request = activeRequest;
+            if (request == null) return;
+            // Settle first: cancellation can synchronously or asynchronously call back.
+            request.reject(ERROR_NOT_AVAILABLE);
+            if (request.prompt != null) {
+                try {
+                    request.prompt.cancelAuthentication();
+                } catch (RuntimeException ignored) {
+                    // The caller is already settled even if a detached prompt cannot cancel.
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onHostResume() {
+        hostPaused = false;
+    }
+
+    @Override
+    public void onHostPause() {
+        hostPaused = true;
+        hostGeneration.incrementAndGet();
+        cancelActiveAuthentication();
+    }
+
+    @Override
+    public void onHostDestroy() {
+        hostPaused = true;
+        hostGeneration.incrementAndGet();
+        cancelActiveAuthentication();
+    }
+
+    @Override
+    public void invalidate() {
+        invalidated = true;
+        mReactContext.removeLifecycleEventListener(this);
+        cancelActiveAuthentication();
+        super.invalidate();
     }
 
     public static String getBiometricError(int errorCode) {

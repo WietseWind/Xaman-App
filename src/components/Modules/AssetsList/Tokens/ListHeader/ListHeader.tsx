@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 
-import { Button, PillButton } from '@components/General';
+import { Button } from '@components/General';
 
 import Localize from '@locale';
 
@@ -12,6 +12,7 @@ import { Navigator } from '@common/helpers/navigator';
 import { AppScreens } from '@common/constants';
 import { AssetListFilterProps } from '@screens/Overlay/AssetListFilter';
 import { FiltersType } from '../ListFilter';
+import CategoryTabs from '../../CategoryTabs';
 
 /* Types ==================================================================== */
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
     onTokenAddPress: () => void;
     onReorderSavePress: () => void;
     onTitlePress: (selectedCategory?: ASSETS_CATEGORY) => void;
-    hideTopElements: (toggle: boolean) => void;
+    hideTopElements: (toggle: boolean, onComplete?: () => void) => void;
     filters?: FiltersType;
     visible: boolean;
     onFilterChange: (filters: FiltersType | undefined) => void;
@@ -33,6 +34,7 @@ interface Props {
 
 /* Component ==================================================================== */
 class ListHeader extends PureComponent<Props> {
+    private settingsOpening = false;
     onAddPress = () => {
         const { onTokenAddPress } = this.props;
 
@@ -58,6 +60,8 @@ class ListHeader extends PureComponent<Props> {
     };
 
     tokenListSettingsPress = () => {
+        if (this.settingsOpening) return;
+        this.settingsOpening = true;
         const {
             filters,
             visible,
@@ -68,21 +72,26 @@ class ListHeader extends PureComponent<Props> {
             hideTopElements,
         } = this.props;
 
-        hideTopElements(true);
-
-        Navigator.showOverlay<AssetListFilterProps>(AppScreens.Overlay.AssetListFilter, {
-            //
-            filters,
-            visible,
-            onFilterChange,
-            onReorderPress,
-            onTokenAddPress,
-            onReorderSavePress,
-            hideTopElements,
-            onAddTokenPress: () => { 
+        hideTopElements(true, () => {
+            Navigator.showOverlay<AssetListFilterProps>(AppScreens.Overlay.AssetListFilter, {
+                //
+                filters,
+                visible,
+                onFilterChange,
+                onReorderPress,
+                onTokenAddPress,
+                onReorderSavePress,
+                hideTopElements,
+                onAddTokenPress: onTokenAddPress,
+            }).then(shown => {
+                if (!shown) {
+                    this.settingsOpening = false;
+                    hideTopElements(false);
+                }
+            }).catch(() => {
+                this.settingsOpening = false;
                 hideTopElements(false);
-                this.onAddPress();
-            },
+            });
         });
     };
 
@@ -128,7 +137,8 @@ class ListHeader extends PureComponent<Props> {
                         label={Localize.t('home.addAsset')}
                         onPress={this.onAddPress}
                         icon="IconPlus"
-                        iconSize={19}
+                        iconSize={16}
+                        textStyle={styles.addTokenText}
                         style={[
                             AppStyles.alignSelfStretch,
                             styles.listHeaderButton,
@@ -143,6 +153,7 @@ class ListHeader extends PureComponent<Props> {
                         roundedMini
                         numberOfLines={1}
                         testID="token-list-settings-button"
+                        hitSlop={{ top: 8, bottom: 8 }}
                         onPress={this.tokenListSettingsPress}
                         iconSize={23}
                         icon="IconMoreHorizontal"
@@ -178,29 +189,10 @@ class ListHeader extends PureComponent<Props> {
             <View style={[
                 styles.container,
             ]}>
-                <PillButton
-                    style={[
-                    ]}
-                    active='TOKENS'
-                    items={[
-                        {
-                            id: 'TOKENS',
-                            label: Localize.t('global.assets'),
-                            onActivate: () => {
-                                this.onTitlePress(ASSETS_CATEGORY.Tokens);
-                            },
-                        },
-                        {
-                            id: 'NFT',
-                            label: Localize.t('global.nfts'),
-                            onActivate: () => {
-                                this.onTitlePress(ASSETS_CATEGORY.NFTs);
-                            },
-                        },
-                    ]}
-                />
+                <CategoryTabs active={ASSETS_CATEGORY.Tokens} onPress={this.onTitlePress} />
                 <View style={[
                     AppStyles.alignSelfStretch,
+                    styles.actionsContainer,
                 ]}>
                     {this.renderButtons()}
                 </View>

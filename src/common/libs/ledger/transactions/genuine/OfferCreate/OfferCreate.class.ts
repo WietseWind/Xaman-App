@@ -27,6 +27,8 @@ class OfferCreate extends BaseGenuineTransaction {
         Expiration: { type: UInt32, codec: RippleTime },
         OfferID: { type: Hash256 },
         DomainID: { type: Hash256 },
+        // Offer to cancel when this offer is placed (the review shows it, signing kept only known fields)
+        OfferSequence: { type: UInt32 },
     };
 
     declare TakerPays: FieldReturnType<typeof Amount>;
@@ -34,6 +36,7 @@ class OfferCreate extends BaseGenuineTransaction {
     declare Expiration: FieldReturnType<typeof UInt32, typeof RippleTime>;
     declare OfferID: FieldReturnType<typeof Hash256>;
     declare DomainID: FieldReturnType<typeof Hash256>;
+    declare OfferSequence: FieldReturnType<typeof UInt32>;
 
     private _offerStatus?: OfferStatus;
 
@@ -52,18 +55,6 @@ class OfferCreate extends BaseGenuineTransaction {
         rate = this.TakerGets!.currency !== NetworkService.getNativeAsset() ? rate : 1 / rate;
 
         return new AmountParser(rate, false).toNumber();
-    }
-
-    get OfferSequence(): number | undefined {
-        if (typeof this._tx?.OfferSequence === 'number') {
-            return this._tx?.OfferSequence;
-        }
-        // No, this should never be the same as Sequence, that's Account based, this is Offer based
-        // if (typeof this._tx.Sequence === 'number') {
-        //     return this._tx.Sequence;
-        // }
-
-        return undefined;
     }
 
     GetOfferStatus(owner?: string): OfferStatus {

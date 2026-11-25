@@ -4,8 +4,10 @@ Feature: Send destination lookup
     # ever calling handle-lookup.
 
     Scenario: Open send recipient
+        Then I leave account import if open
         Then I tap 'tab-Home'
         Given I should have 'home-tab-view'
+        Then I select a spendable account if Send is hidden
         Then I tap 'send-button'
         Given I should have 'send-details-view'
         Then I enter '1' in 'amount-input'
@@ -14,7 +16,7 @@ Feature: Send destination lookup
 
     Scenario: Partial r-address does not spin forever
         Then I enter 'rwietsevLFg8XSmG3bEZzFein1g8RB' in 'recipient-search-input'
-        Given I should have 'recipient-no-search-result'
+        Then I should see the recipient search settle
 
     Scenario: Address with surrounding spaces resolves
         Then I tap 'clear-search-button'

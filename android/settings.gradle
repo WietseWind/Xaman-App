@@ -2,3 +2,7 @@ rootProject.name = 'Xaman'
 include ':app'
 /**/apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 includeBuild('../node_modules/@react-native/gradle-plugin')
+
+// Expo modules autolinking (expo-updates for over-the-air JS updates)
+apply from: file("../node_modules/expo/scripts/autolinking.gradle")
+useExpoModules()

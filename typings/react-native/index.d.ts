@@ -36,6 +36,7 @@ export interface LocalNotificationModuleInterface extends NativeModule {
  * Bunch of methods for managing the application
  */
 export interface AppUtilsModuleInterface extends NativeModule {
+    getImageSample?: (uri: string) => Promise<number[]>;
     /**
      * The version of the app.
      */
@@ -50,6 +51,11 @@ export interface AppUtilsModuleInterface extends NativeModule {
      * Indicates whether the application is running in debug mode.
      */
     isDebug: boolean;
+
+    /**
+     * True on an iOS TestFlight install (sandbox App Store receipt). Android is false.
+     */
+    isTestFlight?: boolean;
 
     /**
      * Checks if blocking screenshots enabled
@@ -319,6 +325,18 @@ interface VaultManagerModuleInterface extends NativeModule {
     getStorageEncryptionKey(): Promise<string>;
 
     /**
+     * iOS: every stored storage encryption key, the one getStorageEncryptionKey returns first.
+     * More than one only when the keychain holds a second item in another access group.
+     */
+    getStorageEncryptionKeyCandidates?: () => Promise<string[]>;
+
+    /**
+     * iOS: rename what an earlier install left in the shared keychain group next to the storage key
+     * and device id in use. True when one of each is left.
+     */
+    setAsideStaleSharedItems?: () => Promise<boolean>;
+
+    /**
      * Probe Keystore wrap health without the passphrase.
      */
     inspectVaultHealth?: () => Promise<{
@@ -328,6 +346,16 @@ interface VaultManagerModuleInterface extends NativeModule {
         uniqueIdKeychainReadable: boolean;
         realmKeyReadable: boolean;
         vaultsPresent: number;
+    }>;
+
+    /**
+     * iOS: the access groups the keychain items are in, with the item count per group.
+     */
+    getKeychainGroupInfo?: () => Promise<{
+        sharedGroup: string;
+        groups: { [group: string]: number };
+        moved: number;
+        lastError: number;
     }>;
 
     /**

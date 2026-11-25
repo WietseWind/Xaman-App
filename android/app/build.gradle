@@ -7,8 +7,8 @@ apply plugin: "com.google.firebase.crashlytics"
 
 import com.android.build.OutputFile
 
-def canonicalVersionName = "5.3.0"
-def canonicalVersionCode = 194
+def canonicalVersionName = "5.4.0"
+def canonicalVersionCode = 542
 
 // NOTE: DO NOT change postFixSize value, this is for handling legacy method for handling the versioning in android
 def postFixSize = 30_000
@@ -60,6 +60,10 @@ react {
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
+
+    /* Bundle with Expo CLI (export:embed): same asset hashing as over-the-air updates */
+    cliFile = file("../../node_modules/@expo/cli/build/bin/cli")
+    bundleCommand = "export:embed"
 }
 
 /**
@@ -169,15 +173,32 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             testProguardFiles 'proguard-test.pro'
+            // Detox e2e on a release build (-DtestBuildType=release) runs its test APK inside the app
+            // process and uses classes the app's R8 would otherwise strip. Store builds never set
+            // testBuildType, so their rules (and APK/AAB) stay exactly as they are.
+            if (System.getProperty('testBuildType') == 'release') {
+                proguardFiles "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro",
+                    'proguard-e2e.pro'
+            }
             manifestPlaceholders = [excludeSystemAlertWindowPermission: "true"]
             /* Add the firebaseCrashlytics extension (by default,
             * it's disabled to improve build speeds) and set
             * nativeSymbolUploadEnabled to true along with a pointer to native libs. */
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
-                unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/out/lib'
+                // AGP 8 path; only libs built from source here are unstripped (e.g. VisionCamera),
+                // the React Native / Hermes AARs in libs/ ship stripped
+                unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib'
             }
         }
+    }
+
+    // Detox e2e on a release build only: the release app must reach the Detox server on
+    // ws://localhost, which release builds block as cleartext (src/e2eRelease allows it for
+    // localhost and 10.0.2.2 only). Store builds never set testBuildType and never get this.
+    if (System.getProperty('testBuildType') == 'release') {
+        sourceSets.release.manifest.srcFile 'src/e2eRelease/AndroidManifest.xml'
+        sourceSets.release.res.srcDirs += 'src/e2eRelease/res'
     }
 
     // building in CI, change the singing config for release to debug
@@ -334,9 +355,13 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.11.0'
     
     // Your existing app-specific dependencies
-    implementation 'com.google.firebase:firebase-messaging:+'
+    // Pinned: '+' takes whatever is newest on the day of the build (26.0.2 came out 2026-11-13).
+    // 26.0.1 is what store builds up to 481 shipped. Bump on purpose, with a test run.
+    implementation 'com.google.firebase:firebase-messaging:26.0.1'
     implementation 'com.google.firebase:firebase-common-ktx'
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    // over-the-air updates: tag crashes with the running bundle before JS starts (ApplicationLoader)
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     implementation "androidx.biometric:biometric:1.1.0"
     implementation 'com.github.kenglxn.QRGen:android:2.6.0'
@@ -355,19 +380,14 @@ dependencies {
     // androidTest does not inherit the RN Firebase BOM, so unversioned ktx deps fail to resolve.
     androidTestImplementation platform('com.google.firebase:firebase-bom:33.1.2')
     androidTestImplementation 'com.wix:detox:+'
-    // Keep JUnit on the instrumentation APK. Do not bump past 4.12
-    // (resolutionStrategy in this repo is strict).
+    // Do not bump past 4.12 (resolutionStrategy in this repo is strict). The app itself also
+    // carries junit 4.12 (com.madgag.spongycastle:prov depends on it), so the release test APK
+    // leaves JUnit out and uses the app's copy: proguard-e2e.pro keeps it there.
     androidTestImplementation 'junit:junit:4.12'
 }
 
-// Release minifyEnabled=true also minifies the instrumentation APK and
-// strips JUnit (NoClassDefFoundError: RunListener). Disable every
-// minify*AndroidTest* task, not only the exact R8 name.
-tasks.configureEach { task ->
-    if (task.name.toLowerCase().contains('androidtest') && task.name.toLowerCase().contains('minify')) {
-        task.enabled = false
-    }
-}
+// Do not disable the minify*AndroidTest* tasks: with minifyEnabled they also dex the test APK,
+// and without them the release test APK has no code ("code is missing" on install).
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
@@ -375,4 +395,46 @@ apply from: file("../../node_modules/@react-native-community/cli-platform-androi
 configurations.all {
     exclude group: 'com.facebook.react', module: 'react-android'
     exclude group: 'com.facebook.react', module: 'hermes-android'
+
+    // expo-updates (code signing checks) asks for BouncyCastle jdk15to18 1.70; the app already ships
+    // jdk18on 1.76 (same classes). Keep one copy: duplicate classes fail the build.
+    resolutionStrategy.dependencySubstitution {
+        substitute module('org.bouncycastle:bcutil-jdk15to18') using module('org.bouncycastle:bcutil-jdk18on:1.76')
+        substitute module('org.bouncycastle:bcprov-jdk15to18') using module('org.bouncycastle:bcprov-jdk18on:1.76')
+    }
+}
+
+// expo-updates writes the embedded update manifest (id + commit time = build time) in
+// create<Variant>UpdatesResources. Gradle thinks it is up to date when the JS changed, so an
+// incremental build kept an old id and commit time next to a newer bundle. Always regenerate.
+tasks.matching { it.name.startsWith('create') && it.name.endsWith('UpdatesResources') }.configureEach {
+    outputs.upToDateWhen { false }
+}
+
+/* Crashlytics ==================================================================== */
+// Archive the release JS source map of every build outside the repo, to symbolicate Crashlytics JS stacks
+// (scripts/archive-sourcemap.sh, docs/crash-reporting.md). Fails the build when the map can't be archived.
+tasks.matching { it.name == 'createBundleReleaseJsAndAssets' }.configureEach { bundleTask ->
+    bundleTask.doLast {
+        def map = file("$buildDir/generated/sourcemaps/react/release/index.android.bundle.map")
+        exec {
+            commandLine '/bin/bash', "$rootDir/../scripts/archive-sourcemap.sh",
+                'android', canonicalVersionName, "${canonicalVersionCode}", map.absolutePath
+        }
+    }
+}
+
+// Upload NDK symbols after local release builds (skip with -PskipCrashlyticsSymbols, never on CI)
+afterEvaluate {
+    if (!System.getenv("CI") && !project.hasProperty('skipCrashlyticsSymbols')) {
+        ['assembleRelease', 'bundleRelease'].each { name ->
+            tasks.findByName(name)?.finalizedBy('uploadCrashlyticsSymbolFileRelease')
+        }
+    }
+}
+
+// The NDK symbol file reads the merged native libraries (unstrippedNativeLibsDir above). Declare that, or
+// Gradle's task validation fails the release build whenever the symbol task runs (seen on build 462).
+tasks.matching { it.name == 'generateCrashlyticsSymbolFileRelease' }.configureEach {
+    dependsOn 'mergeReleaseNativeLibs'
 }

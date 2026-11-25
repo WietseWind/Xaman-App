@@ -114,17 +114,14 @@ class AmountText extends Component<Props, State> {
             return null;
         }
 
-        // case passed value to Number
-        if (typeof value === 'string') {
-            value = Number(value);
-        }
-
         // normalize currency code
         let normalizedCurrency;
         if (typeof currency === 'string' && currency) {
             // normalize currency code
             normalizedCurrency = NormalizeCurrencyCode(currency);
         }
+
+        if (typeof value === 'string' && value.trim() === '') value = 0;
 
         if (value === 0) {
             return {
@@ -144,6 +141,12 @@ class AmountText extends Component<Props, State> {
                 currency: normalizedCurrency,
                 localSettings: newLocalSettings,
             };
+        }
+
+        // Immutable ledger amounts must reach the decimal formatter as strings.
+        // Retain the existing compact-number behavior for the interactive display.
+        if (typeof value === 'string') {
+            value = Number(value);
         }
 
         const PRECISION = 8;
@@ -245,6 +248,29 @@ class AmountText extends Component<Props, State> {
         }
     };
 
+    // Screen readers: the whole amount with its currency in one go, never the rounded or truncated
+    // version on screen. Hidden amounts stay hidden.
+    getAccessibilityLabel = (): string | undefined => {
+        const { discreet, prefix } = this.props;
+        const { originalValue, value, currency } = this.state;
+
+        if (discreet) {
+            return Localize.t('accessibility.amountHidden');
+        }
+
+        let amount = value;
+        if (originalValue !== undefined && originalValue !== null && `${originalValue}` !== '') {
+            const full = new BigNumber(originalValue);
+            if (full.isFinite()) {
+                amount = full.isGreaterThanOrEqualTo(1) || full.isLessThanOrEqualTo(-1)
+                    ? Localize.formatNumber(originalValue)
+                    : full.toFixed();
+            }
+        }
+
+        return [typeof prefix === 'string' ? `${prefix}${amount}` : amount, currency].filter(Boolean).join(' ');
+    };
+
     renderImmutableContent = () => {
         const { style, prefix, numberOfLines } = this.props;
         const { value, currency } = this.state;
@@ -285,11 +311,16 @@ class AmountText extends Component<Props, State> {
             ]}>
                 {typeof prefix === 'function' && prefix()}
                 {typeof prefix === 'object' && prefix}
-                <Text testID={testID} numberOfLines={numberOfLines || 1} style={[
-                    style,
-                    discreet && discreetStyle,
-                    value === '0' && hideZero && styles.hideZero,
-                ]}>
+                <Text
+                    testID={testID}
+                    numberOfLines={numberOfLines || 1}
+                    accessibilityLabel={this.getAccessibilityLabel()}
+                    style={[
+                        style,
+                        discreet && discreetStyle,
+                        value === '0' && hideZero && styles.hideZero,
+                    ]}
+                >
                     {typeof prefix === 'string' && prefix}
                     {`${showValue}`}
                 </Text>
@@ -319,7 +350,13 @@ class AmountText extends Component<Props, State> {
         }
 
         return (
-            <Text numberOfLines={numberOfLines || 1} style={[style, currencyStyle]}>
+            <Text
+                numberOfLines={numberOfLines || 1}
+                style={[style, currencyStyle]}
+                // the amount itself says the currency to screen readers
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+            >
                 {
                     !isLp && <>
                         {' '}
@@ -337,6 +374,7 @@ class AmountText extends Component<Props, State> {
             <Animated.Text
                 numberOfLines={1}
                 style={[style, styles.placeholder, { opacity: this.placeHolderAnimation }]}
+                accessibilityLabel={Localize.t('global.loading')}
             >
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </Animated.Text>

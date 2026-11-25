@@ -1,13 +1,10 @@
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 
-import { PillButton } from '@components/General';
-
-import Localize from '@locale';
-
 // import { AppStyles } from '@theme';
 import styles from './styles';
 import { ASSETS_CATEGORY } from '@screens/Overlay/SwitchAssetCategory/types';
+import CategoryTabs from '../../CategoryTabs';
 
 /* Types ==================================================================== */
 interface Props {
@@ -43,27 +40,7 @@ class ListHeader extends PureComponent<Props> {
             <View style={[
                 styles.container,
             ]}>
-                <PillButton
-                    style={[
-                    ]}
-                    active='NFT'
-                    items={[
-                        {
-                            id: 'TOKENS',
-                            label: Localize.t('global.assets'),
-                            onActivate: () => {
-                                this.onTitlePress(ASSETS_CATEGORY.Tokens);
-                            },
-                        },
-                        {
-                            id: 'NFT',
-                            label: Localize.t('global.nfts'),
-                            onActivate: () => {
-                                this.onTitlePress(ASSETS_CATEGORY.NFTs);
-                            },
-                        },
-                    ]}
-                />
+                <CategoryTabs active={ASSETS_CATEGORY.NFTs} onPress={this.onTitlePress} />
                 {/* <View style={[
                     AppStyles.alignSelfStretch,
                 ]}>{this.renderButtons()}</View> */}

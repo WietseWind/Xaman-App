@@ -2,14 +2,14 @@
  * Network service
  */
 
-import { find, isArray, isPlainObject, isString } from 'lodash';
+import { find, isPlainObject } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import EventEmitter from 'events';
 import Realm from 'realm';
 
-import { Platform } from 'react-native';
+import { InteractionManager, Platform } from 'react-native';
 
-import { binary, DefinitionsData, XrplDefinitions } from 'xrpl-accountlib';
+import { binary, XrplDefinitions } from 'xrpl-accountlib';
 
 import { XrplClient } from 'xrpl-client';
 
@@ -24,6 +24,7 @@ import { NetworkType } from '@store/types';
 
 import { Navigator } from '@common/helpers/navigator';
 import { GetAppVersionCode } from '@common/helpers/app';
+import CrashReporter from '@common/libs/crash';
 
 import { NormalizeFeeDataSet, PrepareTxForHookFee } from '@common/utils/fee';
 
@@ -48,6 +49,9 @@ import {
 } from '@common/libs/ledger/types/methods';
 
 import { Amendments } from '@common/libs/ledger/types/ledger';
+import {
+    createNetworkDefinitions, DEFINITION_CACHE_VERSION, NetworkDefinitions,
+} from '@common/libs/ledger/utils/normalizeDefinitions';
 
 /* Types  ==================================================================== */
 export enum NetworkStateStatus {
@@ -68,6 +72,22 @@ declare interface NetworkService {
     off<U extends keyof NetworkServiceEvent>(event: U, listener: NetworkServiceEvent[U]): this;
     emit<U extends keyof NetworkServiceEvent>(event: U, ...args: Parameters<NetworkServiceEvent[U]>): boolean;
 }
+type DefinitionSnapshot = {
+    source: unknown;
+    nativeAsset: string;
+    definitions: NetworkDefinitions;
+    version?: number;
+    checkedAt?: number;
+    endpoint?: string;
+};
+
+const DEFINITIONS_TTL_MS = 60 * 60 * 1000;
+const DEFINITIONS_RETRY_MS = 60 * 1000;
+
+// What the client (xrpl-client) reports when it stops for good after its last connection attempt.
+// The test networkClientContract.test.ts holds this against the real client.
+export const CLIENT_GAVE_UP = /max\. connection attempts exceeded/i;
+
 /* Service  ==================================================================== */
 class NetworkService extends EventEmitter {
     public network?: NetworkModel;
@@ -77,7 +97,39 @@ class NetworkService extends EventEmitter {
     private networkReserve?: { base: number; owner: number };
     private lastNetworkErrorId?: Realm.BSON.ObjectId;
     private connectedEndpoint?: string;
+    private definitionsCache = new Map<string, DefinitionSnapshot>();
+    private definitionsPreparation = new Map<string, Promise<DefinitionSnapshot | undefined>>();
+    private definitionsRequests = new Map<string, {
+        connection?: XrplClient;
+        endpoint: string;
+        promise: Promise<void>;
+    }>();
+    private definitionsRefreshTimer?: ReturnType<typeof setTimeout>;
+    // The connection never gives up. The client (xrpl-client) can end in a state that it does not leave by
+    // itself, and that `reinstate` does not end either:
+    //   - it stops for good after its last connection attempt when the network has one node (`onError`)
+    //   - its socket is open but silent: no answer, no ledger, and no close (a network that lost its way)
+    //   - its socket opened and the node never answered
+    // The app then makes a new client, again and again, with a pause that doubles each time. A watch looks
+    // at the connection every few seconds while the app is in use and the phone has a network.
+    // One retry timer and one watch timer at most; a client that is replaced is destroyed and loses its
+    // listeners.
+    private connectionGaveUp = false;
+    private retryTimer?: ReturnType<typeof setTimeout>;
+    private retryCount = 0;
+    private watchTimer?: ReturnType<typeof setInterval>;
+    // when the client in use started to connect (a new client, or a reconnect of it)
+    private connectStartedAt = 0;
 
+    // the pause before a new client: 2, 4, 8, 16 seconds, then 30 seconds every time
+    private static _RETRY_FIRST_SECONDS = 2;
+    private static _RETRY_MAX_SECONDS = 30;
+    // how often the watch looks, and how long a connection may be silent or not there before a new client
+    private static _WATCH_SECONDS = 10;
+    private static _SILENT_SECONDS = 30;
+    private static _NOT_CONNECTED_SECONDS = 30;
+    // a client that only just started to connect is left alone by `reconnect`
+    private static _JUST_STARTED_SECONDS = 15;
     private static _ORIGIN = `/xaman/${GetAppVersionCode()}/${Platform.OS}`;
     private static _TIMEOUT_SECONDS = 40;
 
@@ -121,6 +173,8 @@ class NetworkService extends EventEmitter {
             try {
                 // set the current network
                 this.network = coreSettings.network;
+                this.prepareNetworkDefinitions(this.network);
+                CrashReporter.setKeys({ network: this.network?.key, network_id: this.network?.networkId });
 
                 // set current network reserve
                 this.networkReserve = {
@@ -184,6 +238,9 @@ class NetworkService extends EventEmitter {
      * reinstate service
      */
     reinstate = () => {
+        this.stopWatch();
+        this.clearRetry();
+        this.connectionGaveUp = false;
         this.destroyConnection();
         this.removeAppStateListeners();
     };
@@ -215,7 +272,7 @@ class NetworkService extends EventEmitter {
     };
 
     hasSwap = () => {
-        return (ProfileRepository.getProfile()?.swapNetworks.split(',') || []).indexOf(this.network?.key || '') > -1;
+        return (ProfileRepository.getProfile()?.swapNetworks?.split(',') || []).indexOf(this.network?.key || '') > -1;
     };
 
     /**
@@ -228,6 +285,11 @@ class NetworkService extends EventEmitter {
         if (newState === AppStateStatus.Active && prevState === AppStateStatus.Inactive) {
             this.logger.debug('onAppStateChange - Reconnect');
             this.reconnect();
+        } else if (newState === AppStateStatus.Active) {
+            // back after a short time: the connection was not closed, but it can be dead (a retry that
+            // came due in the background was not done). Look at once, not at the next turn of the watch.
+            this.retryCount = 0;
+            this.watchConnection();
         }
 
         // disconnect socket when app is come to idle state
@@ -241,6 +303,10 @@ class NetworkService extends EventEmitter {
      */
     setConnectionStatus = (status: NetworkStateStatus) => {
         this.status = status;
+        if (status !== NetworkStateStatus.Connected) {
+            clearTimeout(this.definitionsRefreshTimer);
+            this.definitionsRefreshTimer = undefined;
+        }
 
         // send event
         this.emit('stateChange', status);
@@ -316,44 +382,55 @@ class NetworkService extends EventEmitter {
     /**
      * Get current network definitions
      */
-    getRawNetworkDefinitions = () => {
-        if (this.network && this.getNetwork().definitions) {
-            return this.getNetwork().definitions;
-        }
+    getRawNetworkDefinitions = () => this.getDefinitionSnapshot(this.network).definitions.rawDefinitions;
 
-        if (
-            typeof binary.DEFAULT_DEFINITIONS?.TRANSACTION_TYPES === 'object' &&
-            binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES
-        ) {
-            Object.assign(binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES, {
-                SignIn: 999,
-            });
-        }
-        return binary.DEFAULT_DEFINITIONS;
+    private getDefinitionSnapshot = (network?: NetworkModel): DefinitionSnapshot => {
+        const key = network?.id?.toString() || 'bundled';
+        const nativeAsset = network?.nativeAsset?.asset || 'XRP';
+        const source = network?.definitionsString || network?.definitions || binary.DEFAULT_DEFINITIONS;
+        const cached = this.definitionsCache.get(key);
+        if (cached?.source === source && cached.nativeAsset === nativeAsset) return cached;
+        const definitions = createNetworkDefinitions(
+            typeof source === 'string' ? JSON.parse(source) : source, nativeAsset,
+        );
+        const raw = definitions.rawDefinitions;
+        const snapshot = { source, nativeAsset, definitions, version: raw.__xamanDefinitionVersion,
+            checkedAt: raw.__xamanDefinitionsCheckedAt, endpoint: raw.__xamanDefinitionsEndpoint };
+        this.definitionsCache.set(key, snapshot);
+        return snapshot;
     };
 
-    /**
-     * Get current network definitions
-     */
-    getNetworkDefinitions = (): XrplDefinitions => {
-        if (this.network && this.getNetwork().definitions) {
-            const defs = <DefinitionsData>this.getNetwork().definitions;
-            if (typeof defs?.TRANSACTION_TYPES === 'object' && defs.TRANSACTION_TYPES) {
-                defs.TRANSACTION_TYPES.SignIn = 999;
-            }
-            return new XrplDefinitions(defs);
-        }
+    /** Keep parsed schemas for every visited network, including when switching back. */
+    getNetworkDefinitions = (): XrplDefinitions => this.getDefinitionSnapshot(this.network).definitions;
 
-        if (
-            typeof binary.DEFAULT_DEFINITIONS?.TRANSACTION_TYPES === 'object' &&
-            binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES
-        ) {
-            Object.assign(binary.DEFAULT_DEFINITIONS.TRANSACTION_TYPES, {
-                SignIn: 999,
+    /** Preparation is deferred past interactions; it does not run on a separate JS worker. */
+    private prepareNetworkDefinitions = (network?: NetworkModel): Promise<DefinitionSnapshot | undefined> => {
+        const key = network?.id?.toString() || 'bundled';
+        const pending = this.definitionsPreparation.get(key);
+        if (pending) return pending;
+        const promise = new Promise<DefinitionSnapshot | undefined>((resolve) => {
+            InteractionManager.runAfterInteractions(() => {
+                try {
+                    resolve(this.getDefinitionSnapshot(network));
+                } catch (error) {
+                    this.logger.warn('Unable to prepare cached network definitions', error);
+                    resolve(undefined);
+                }
             });
-        }
+        }).finally(() => this.definitionsPreparation.delete(key));
+        this.definitionsPreparation.set(key, promise);
+        return promise;
+    };
 
-        return new XrplDefinitions(binary.DEFAULT_DEFINITIONS);
+    private scheduleDefinitionsRefresh = (delay: number) => {
+        clearTimeout(this.definitionsRefreshTimer);
+        if (this.status !== NetworkStateStatus.Connected || !this.connection) return;
+        const network = this.network?.id.toString();
+        const { connection } = this;
+        this.definitionsRefreshTimer = setTimeout(() => {
+            if (this.network?.id.toString() === network && this.connection === connection &&
+                this.status === NetworkStateStatus.Connected) this.updateNetworkDefinitions();
+        }, Math.max(1, delay));
     };
 
     /**
@@ -474,6 +551,7 @@ class NetworkService extends EventEmitter {
             try {
                 // nothing has been changed
                 if (network.id.equals(this.getNetwork().id) && network.defaultNode === this.getNetwork().defaultNode) {
+                    resolve();
                     return;
                 }
 
@@ -484,6 +562,7 @@ class NetworkService extends EventEmitter {
                 // change network
                 this.connectedEndpoint = undefined;
                 this.network = network;
+                this.prepareNetworkDefinitions(network);
 
                 // update cached reserve
                 this.networkReserve = {
@@ -494,11 +573,17 @@ class NetworkService extends EventEmitter {
                 // set the default network on the store
                 CoreRepository.setDefaultNetwork(network);
 
+                CrashReporter.breadcrumb(`network switch ${network.key}`);
+                CrashReporter.setKeys({ network: network.key, network_id: network.networkId });
+
                 // emit the event
                 this.emit('networkChange', network);
 
                 // destroy prev connection
                 this.destroyConnection();
+
+                // another network: its first problem starts with the short pause
+                this.retryCount = 0;
 
                 // reconnect
                 this.connect();
@@ -525,7 +610,12 @@ class NetworkService extends EventEmitter {
         try {
             // destroy the connection if exist
             if (this.connection) {
-                this.connection.destroy();
+                const previous = this.connection;
+                previous.destroy();
+                // Nothing of the app stays on a client that is gone. It can still report an error (a socket
+                // that closes late), and an "error" that nobody listens to is thrown: one empty listener.
+                previous.removeAllListeners();
+                previous.on('error', () => undefined);
             }
 
             this.connectedEndpoint = undefined;
@@ -571,12 +661,50 @@ class NetworkService extends EventEmitter {
     reconnect = () => {
         try {
             this.logger.debug('Reconnecting network service...');
+            // asked from outside (the network is back, the user is back, a lookup): the short pause again
+            this.retryCount = 0;
+            // a client that gave up can not be reinstated: a new one
+            if (this.connectionGaveUp) {
+                this.renewConnection();
+                return;
+            }
+            // A new client that only just started to connect is left alone: a close and a reinstate now
+            // give it two sockets at once, and it then gives up sooner or reports the node twice.
+            if (
+                this.status === NetworkStateStatus.Connecting &&
+                Date.now() - this.connectStartedAt < NetworkService._JUST_STARTED_SECONDS * 1000
+            ) {
+                this.logger.debug('Connecting already, not reconnecting');
+                return;
+            }
+            this.connectStartedAt = Date.now();
             // close current connection
             this.closeConnection();
             // reinstate
             this.reinstateConnection();
         } catch (error) {
             this.logger.error('Unable to reconnect', error);
+        }
+    };
+
+    /**
+     * Account lookups that decide a curve need a live socket. A quiet
+     * connection hangs until the 40s call timeout and the answer is lost.
+     */
+    prepareForAccountLookup = async (): Promise<void> => {
+        try {
+            const state = this.connection?.getState?.();
+            const quietFor = state?.secLastContact;
+            const stale = !state?.online || (typeof quietFor === 'number' && quietFor > 8);
+            if (!stale) {
+                return;
+            }
+            this.reconnect();
+            await new Promise((resolve) => {
+                setTimeout(resolve, 1500);
+            });
+        } catch (error) {
+            this.logger.error('Unable to prepare the connection for an account lookup', error);
         }
     };
 
@@ -596,6 +724,12 @@ class NetworkService extends EventEmitter {
         // check if connection is initiated
         if (!this.connection) {
             throw new Error('connection instance is not initiated in NetworkService class.');
+        }
+
+        // A client that gave up answers nothing: say so at once. A request that waits in it only ends at its
+        // time-out, and is lost when the client is replaced.
+        if (this.connectionGaveUp) {
+            throw new Error('Not connected to the node.');
         }
 
         // TODO: reconnect stale connection
@@ -633,93 +767,61 @@ class NetworkService extends EventEmitter {
     /**
      * Updates the network definitions and persists them to the `NetworkRepository`.
      */
-    updateNetworkDefinitions = async () => {
-        try {
-            const request: ServerDefinitionsRequest = {
-                command: 'server_definitions',
-            };
-
-            let definitionsHash = '';
-
-            // include definitions hash if exist in the request
-            if (this.getNetwork().definitions) {
-                definitionsHash = this.getNetwork().definitions?.hash as string;
-                Object.assign(request, { hash: definitionsHash });
-            }
-
-            const definitionsResp = await this.send<ServerDefinitionsRequest, ServerDefinitionsResponse>(request);
-
-            // validate the response
-            if (
-                typeof definitionsResp !== 'object' ||
-                'error' in definitionsResp ||
-                !('hash' in definitionsResp) ||
-                !definitionsResp.hash
-            ) {
-                this.logger.warn('server_definitions got invalid response:', definitionsResp);
-                return;
-            }
-
-            // nothing has been changed
-            if (definitionsResp.hash === definitionsHash) {
-                return;
-            }
-
-            // validate the response
-            const requiredValidation = {
-                TYPES: isPlainObject,
-                TRANSACTION_RESULTS: isPlainObject,
-                TRANSACTION_TYPES: isPlainObject,
-                LEDGER_ENTRY_TYPES: isPlainObject,
-                FIELDS: isArray,
-                hash: isString,
-            } as { [key: string]: (value?: any) => boolean };
-
-            const optionalValidation = {
-                TRANSACTION_FLAGS: isPlainObject,
-                TRANSACTION_FLAGS_INDICES: isPlainObject,
-            } as { [key: string]: (value?: any) => boolean };
-
-            const definitions = {};
-
-            for (const key in requiredValidation) {
-                if (Object.prototype.hasOwnProperty.call(requiredValidation, key)) {
-                    // validate
-                    if (!requiredValidation[key](definitionsResp[key])) {
-                        this.logger.error(
-                            `server_definitions invalid format for key ${key}, got ${typeof definitionsResp[key]}`,
-                        );
-                        // do not continue and return
-                        return;
-                    }
-                    // set the key
-                    Object.assign(definitions, { [key]: definitionsResp[key] });
+    updateNetworkDefinitions = (force = false): Promise<void> => {
+        const network = this.getNetwork();
+        const key = network.id.toString();
+        const endpoint = this.getConnectedEndpoint();
+        const { connection } = this;
+        const pending = this.definitionsRequests.get(key);
+        if (pending?.connection === connection && pending?.endpoint === endpoint) return pending.promise;
+        const isCurrent = () => this.network?.id.toString() === key && this.connection === connection &&
+            this.getConnectedEndpoint() === endpoint;
+        const promise = (async () => {
+            try {
+                const cached = await this.prepareNetworkDefinitions(network);
+                if (!isCurrent()) return;
+                const now = Date.now();
+                const validCache = cached?.version === DEFINITION_CACHE_VERSION;
+                const currentCache = validCache && cached.endpoint === endpoint;
+                const age = now - (cached?.checkedAt ?? NaN);
+                if (!force && currentCache && age >= 0 && age < DEFINITIONS_TTL_MS) {
+                    this.scheduleDefinitionsRefresh(DEFINITIONS_TTL_MS - age);
+                    return;
                 }
+                // A valid previous schema can use a hash check even when its freshness/endpoint record is missing.
+                const hash = validCache ? cached.definitions.rawDefinitions.hash : undefined;
+                const request: ServerDefinitionsRequest = { command: 'server_definitions' };
+                if (hash) request.hash = hash;
+                const response = await this.send<ServerDefinitionsRequest, ServerDefinitionsResponse>(request);
+                if (!isCurrent()) return;
+                const envelope = response as ServerDefinitionsResponse;
+                const reply = isPlainObject(envelope?.result) ? envelope.result : response;
+                if (!isPlainObject(reply) || response?.error || reply.error || reply.status === 'error' ||
+                    typeof reply.hash !== 'string' || !reply.hash) throw new Error('Invalid server definitions reply');
+                const unchanged = hash && reply.hash === hash && !reply.FIELDS;
+                // Network I/O is async. Defer the remaining schema work past screen interactions as well.
+                await new Promise<void>((resolve) => { InteractionManager.runAfterInteractions(resolve); });
+                if (!isCurrent()) return;
+                const definitions = unchanged && cached ? cached.definitions
+                    : createNetworkDefinitions(reply, network.nativeAsset?.asset);
+                const checkedAt = Date.now();
+                const data = { ...definitions.rawDefinitions, __xamanDefinitionVersion: DEFINITION_CACHE_VERSION,
+                    __xamanDefinitionsCheckedAt: checkedAt, __xamanDefinitionsEndpoint: endpoint };
+                const source = JSON.stringify(data);
+                // Persist the complete schema and freshness record together. Expiry never deletes usable data.
+                NetworkRepository.update({ id: network.id, definitionsString: source });
+                this.definitionsCache.set(key, { source, nativeAsset: network.nativeAsset?.asset || 'XRP',
+                    definitions, version: DEFINITION_CACHE_VERSION, checkedAt, endpoint });
+                this.scheduleDefinitionsRefresh(DEFINITIONS_TTL_MS);
+            } catch (error) {
+                this.logger.warn('Unable to refresh network definitions; keeping cached schema', error);
+                if (isCurrent()) this.scheduleDefinitionsRefresh(DEFINITIONS_RETRY_MS);
             }
-
-            for (const key in optionalValidation) {
-                if (Object.prototype.hasOwnProperty.call(optionalValidation, key)) {
-                    // validate optional
-                    if (!optionalValidation[key](definitionsResp[key])) {
-                        this.logger.warn(
-                            `server_definitions invalid format for optional key ${key}, got ${typeof definitionsResp[key]}`,
-                        );
-                        continue;
-                    }
-
-                    Object.assign(definitions, { [key]: definitionsResp[key] });
-                }
-            }
-
-            this.logger.debug(`Updating network [${this.getNetwork().networkId}] definitions ${definitionsResp.hash} `);
-
-            NetworkRepository.update({
-                id: this.getNetwork().id,
-                definitionsString: JSON.stringify(definitions),
-            });
-        } catch (error) {
-            this.logger.error('updateNetworkDefinitions: ', error);
-        }
+        })().finally(() => {
+            if (this.definitionsRequests.get(key)?.promise === promise) this.definitionsRequests.delete(key);
+        });
+        this.definitionsRequests.set(key, { connection, endpoint, promise });
+        return promise;
     };
 
     /**
@@ -813,12 +915,138 @@ class NetworkService extends EventEmitter {
     };
 
     /**
+     * A new client for the current network, in the place of one that gave up.
+     */
+    renewConnection = () => {
+        try {
+            this.logger.debug('Connecting again with a new client');
+            this.destroyConnection();
+            this.connect();
+        } catch (error) {
+            this.logger.error('Unable to renew the connection', error);
+        }
+    };
+
+    /**
+     * Why the client in use has to be replaced, or undefined when it is fine or still has time.
+     */
+    private connectionProblem = (): string | undefined => {
+        if (!this.connection) {
+            return undefined;
+        }
+        if (this.connectionGaveUp) {
+            return 'the client gave up';
+        }
+
+        let online: boolean | undefined;
+        let silentFor: number | undefined;
+        try {
+            const state = this.connection.getState();
+            online = state?.online;
+            silentFor = typeof state?.secLastContact === 'number' ? state.secLastContact : undefined;
+        } catch {
+            // no state: decided on the time below
+        }
+
+        if (this.status === NetworkStateStatus.Connected) {
+            if (online === false) {
+                return 'connected, but the socket is not open';
+            }
+            if (typeof silentFor === 'number' && silentFor > NetworkService._SILENT_SECONDS) {
+                return `connected, but nothing from the node for ${Math.round(silentFor)} seconds`;
+            }
+            return undefined;
+        }
+
+        const waiting = (Date.now() - this.connectStartedAt) / 1000;
+        if (waiting > NetworkService._NOT_CONNECTED_SECONDS) {
+            return `not connected ${Math.round(waiting)} seconds after the last try`;
+        }
+        return undefined;
+    };
+
+    private inUseWithNetwork = (): boolean =>
+        AppService.currentAppState === AppStateStatus.Active && AppService.netStatus === NetStateStatus.Connected;
+
+    /**
+     * The watch: a connection with a problem gets a new client after the pause of the moment. Nothing is done
+     * while the app is not in use or the phone has no network; the next look after that takes it up again.
+     */
+    watchConnection = () => {
+        if (this.retryTimer || !this.inUseWithNetwork()) {
+            return;
+        }
+        if (this.connectionProblem()) {
+            this.scheduleRetry();
+        }
+    };
+
+    private startWatch = () => {
+        if (!this.watchTimer) {
+            this.watchTimer = setInterval(this.watchConnection, NetworkService._WATCH_SECONDS * 1000);
+        }
+    };
+
+    private stopWatch = () => {
+        clearInterval(this.watchTimer);
+        this.watchTimer = undefined;
+    };
+
+    /**
+     * A new client after a pause that doubles each time (exponential backoff), for as long as it takes.
+     * When the pause is over and the app is not in use, or the phone has no network, nothing is done: the
+     * watch, or the return of the network or the user (`reconnect`), takes it up again.
+     */
+    private scheduleRetry = () => {
+        if (this.retryTimer) {
+            return;
+        }
+
+        // exponential backoff with a ceiling (the exponent has a ceiling too: no huge number after days)
+        const seconds = Math.min(
+            NetworkService._RETRY_FIRST_SECONDS * 2 ** Math.min(this.retryCount, 10),
+            NetworkService._RETRY_MAX_SECONDS,
+        );
+        this.retryCount += 1;
+
+        this.retryTimer = setTimeout(() => {
+            this.retryTimer = undefined;
+
+            if (!this.inUseWithNetwork()) {
+                return;
+            }
+            const problem = this.connectionProblem();
+            if (!problem) {
+                return;
+            }
+
+            this.logger.warn(`New connection to the node: ${problem}`);
+            this.renewConnection();
+        }, seconds * 1000);
+    };
+
+    private clearRetry = () => {
+        clearTimeout(this.retryTimer);
+        this.retryTimer = undefined;
+    };
+
+    /**
      * Logs socket errors
      * @param error
      */
     onError = (error?: any) => {
         // set connection status
         this.setConnectionStatus(NetworkStateStatus.Disconnected);
+
+        // The last attempt of the client failed and it closed itself (a network with one node; with more
+        // nodes it goes on to the next node by itself). Nothing starts it again, so the app does.
+        if (CLIENT_GAVE_UP.test(String(error?.message ?? ''))) {
+            this.connectionGaveUp = true;
+            this.scheduleRetry();
+        } else {
+            // the client goes on by itself (the next attempt, the next node): it gets its time again
+            this.connectStartedAt = Date.now();
+        }
 
         // show error if necessary
         if (!this.lastNetworkErrorId || !this.network?.id.equals(this.lastNetworkErrorId)) {
@@ -827,6 +1055,7 @@ class NetworkService extends EventEmitter {
         }
 
         this.logger.error('Socket Error: ', error || 'Tried all nodes!');
+        CrashReporter.breadcrumb('network error');
     };
 
     /**
@@ -851,8 +1080,14 @@ class NetworkService extends EventEmitter {
         // change network status
         this.setConnectionStatus(NetworkStateStatus.Connected);
 
+        // connected: the next problem starts with a short pause again
+        this.connectionGaveUp = false;
+        this.retryCount = 0;
+        this.clearRetry();
+
         // log the connection
         this.logger.debug(`Connected to node ${connectedNode} [${publicKey}]`);
+        CrashReporter.breadcrumb('network connected');
 
         // run post connect functions
         [this.updateNetworkReserve, this.updateNetworkDefinitions, this.updateNetworkFeatures].forEach((fn) => fn());
@@ -868,8 +1103,12 @@ class NetworkService extends EventEmitter {
         // change socket status
         this.setConnectionStatus(NetworkStateStatus.Disconnected);
 
+        // the client connects again by itself: it gets its time before the watch replaces it
+        this.connectStartedAt = Date.now();
+
         // log that socked is closed
         this.logger.warn('Socket closed');
+        CrashReporter.breadcrumb('network closed');
     };
 
     /**
@@ -899,22 +1138,36 @@ class NetworkService extends EventEmitter {
             })
             .map(this.normalizeEndpoint);
 
-        this.connection = new XrplClient(endpoints, {
+        // a new client: it has not given up yet (the number of retries stays, for the length of the pause)
+        this.connectionGaveUp = false;
+        this.clearRetry();
+        this.connectStartedAt = Date.now();
+        this.startWatch();
+
+        const client = new XrplClient(endpoints, {
             maxConnectionAttempts: 3,
             assumeOfflineAfterSeconds: 10,
             connectAttemptTimeoutSeconds: 4,
         });
+        this.connection = client;
 
         this.logger.debug('Connection created');
         // setInterval(() => {
         //     this.logger.debug('Connection status', this.connection?.getState().server.publicKey);
         // }, 2000);
 
-        this.connection.on('online', this.onConnect);
-        this.connection.on('offline', this.onClose);
-        this.connection.on('error', this.onError);
-        this.connection.on('round', this.onError);
-        this.connection.on('nodeswitch', this.onNodeSwitch);
+        // only the client in use speaks: a client that was replaced can still report that it closed
+        const whenCurrent = <A extends unknown[]>(handler: (...args: A) => void) => (...args: A) => {
+            if (this.connection === client) {
+                handler(...args);
+            }
+        };
+
+        client.on('online', whenCurrent(this.onConnect));
+        client.on('offline', whenCurrent(this.onClose));
+        client.on('error', whenCurrent(this.onError));
+        client.on('round', whenCurrent(this.onError));
+        client.on('nodeswitch', whenCurrent(this.onNodeSwitch));
     };
 }
 

@@ -52,7 +52,7 @@ export interface Props {
     onReorderPress: () => void;
     onTokenAddPress: () => void;
     onReorderSavePress: () => void;
-    hideTopElements: (toggle: boolean) => void;
+    hideTopElements: (toggle: boolean, onComplete?: () => void) => void;
     onAddTokenPress: () => void;
 }
 
@@ -72,6 +72,9 @@ class AssetListFilterOverlay extends Component<Props, State> {
     private actionPanelRef: React.RefObject<ActionPanel>;
 
     private setListenerTimeout?: ReturnType<typeof setTimeout>;
+    private closing = false;
+    private closeSettled = false;
+    private afterClose?: () => void;
 
     static options() {
         return {
@@ -101,14 +104,12 @@ class AssetListFilterOverlay extends Component<Props, State> {
     }
 
     componentDidMount() {
-        const { hideTopElements } = this.props;
 
         // check if account is signable
         // const isSignable = AccountRepository.isSignable(account);
         // this.setState({
         //     isSignable,
         // });
-        hideTopElements(true);
 
         this.setListenerTimeout = setTimeout(() => {
             Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
@@ -118,17 +119,30 @@ class AssetListFilterOverlay extends Component<Props, State> {
 
     componentWillUnmount() {
         const { hideTopElements } = this.props;
-        hideTopElements(false);
+        hideTopElements(false, this.closeSettled ? this.afterClose : undefined);
+        this.afterClose = undefined;
         if (this.setListenerTimeout) clearTimeout(this.setListenerTimeout);
 
         Keyboard.removeListener('keyboardWillShow', this.onKeyboardShow);
         Keyboard.removeListener('keyboardWillHide', this.onKeyboardHide);
     }
 
-    onClosePress = () => {
+    onClosePress = (afterClose?: () => void) => {
+        if (this.closing) return;
+        this.closing = true;
+        this.afterClose = afterClose;
         this.actionPanelRef?.current?.slideDown();
         Keyboard.removeListener('keyboardWillShow', this.onKeyboardShow);
         Keyboard.removeListener('keyboardWillHide', this.onKeyboardHide);
+    };
+
+    onSlideDown = () => {
+        this.closeSettled = true;
+        return Navigator.dismissOverlay(AppScreens.Overlay.AssetListFilter);
+    };
+
+    onCloseRequest = () => {
+        this.closing = true;
     };
 
     onKeyboardShow = () => {
@@ -160,22 +174,22 @@ class AssetListFilterOverlay extends Component<Props, State> {
                 /** TODO: height based on keyboard size */
                 height={400 + AppSizes.safeAreaBottomInset + actionPanelExtraHeight}
                 ref={this.actionPanelRef}
-                onSlideDown={Navigator.dismissOverlay}
+                onSlideDown={this.onSlideDown}
+                onCloseRequest={this.onCloseRequest}
+                lockAfterCloseRequest
             >
                 <View style={[AppStyles.column, AppStyles.centerAligned]}>
                     <ListFilter
                         filters={filters}
                         visible
                         onAddTokenPress={() => {
-                            this.onClosePress();
-                            onAddTokenPress();
+                            this.onClosePress(onAddTokenPress);
                         }}
                         onFilterChange={(...args) => {
                             onFilterChange(...args);
                         }}
                         onReorderPress={() => {
-                            this.onClosePress();
-                            onReorderPress();
+                            this.onClosePress(onReorderPress);
                         }}
                     />
                 </View>

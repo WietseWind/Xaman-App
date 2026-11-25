@@ -12,6 +12,7 @@ import { WebLinks } from '@common/constants/endpoints';
 import { TouchableDebounce, Avatar, Badge, Icon, LoadingIndicator } from '@components/General';
 
 import Localize from '@locale';
+import { AddressAccessibilityProps } from '@common/helpers/accessibility';
 
 import { Props as ParticipantMenuOverlayProps } from '@screens/Overlay/ParticipantMenu/types';
 import { type cachedTokenDetailsState } from '@components/Modules/EventsList/EventListItems/Transaction';
@@ -44,6 +45,7 @@ interface Props {
     textStyle?: TextStyle | TextStyle[];
     onPress?: (account: AccountElementType) => void;
     onInfoUpdate?: (info: AccountNameResolveType) => void;
+    avatarBackgroundColor?: string;
     tokenDetails?: cachedTokenDetailsState;
 }
 
@@ -191,7 +193,15 @@ class AccountElement extends Component<Props, State> {
             return tokenDetails.icon;
         }
 
-        return <Avatar source={{ uri: `${WebLinks.AvatarURL}/${address}_180_50.png` }} badge={badge} />;
+        const { avatarBackgroundColor } = this.props;
+
+        return (
+            <Avatar
+                source={{ uri: `${WebLinks.AvatarURL}/${address}_180_50.png` }}
+                badge={badge}
+                backgroundColor={avatarBackgroundColor}
+            />
+        );
     };
 
     renderSource = () => {
@@ -243,7 +253,13 @@ class AccountElement extends Component<Props, State> {
     renderAddress = () => {
         const { address, textStyle } = this.props;
 
-        return <Text style={[styles.addressText, textStyle]}>{address}</Text>;
+        // the address accessibility (with its spell-out action) sits on a View: an iOS Text can't take the action
+        return (
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            <View {...AddressAccessibilityProps(address)}>
+                <Text style={[styles.addressText, textStyle]}>{address}</Text>
+            </View>
+        );
     };
 
     renderDestinationTag = () => {
@@ -268,6 +284,7 @@ class AccountElement extends Component<Props, State> {
         return (
             <TouchableDebounce
                 onPress={this.onMenuPress}
+                accessibilityLabel={Localize.t('accessibility.moreOptions')}
                 activeOpacity={0.7}
                 style={[AppStyles.flex1, AppStyles.rightAligned, AppStyles.centerContent]}
             >

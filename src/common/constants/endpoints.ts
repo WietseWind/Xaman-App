@@ -44,6 +44,7 @@ export enum Endpoints {
     PrivateAccountInfo = '/v1/app/private-account-info',
     MultiAccountNativeInfo = '/v1/app/multi-account-info',
     AccountWorth = '/v1/app/account-worth/{account}/{network}/{currency}?hash={hash}&origin={origin}',
+    OtaUpdates = '/v1/app/ota/updates',
 }
 
 export enum WebLinks {

@@ -6,6 +6,8 @@
  */
 
 import Realm from 'realm';
+import { EXTERNAL_ASSET_LIMIT, supportsExternalAssets } from '@common/helpers/externalAssets';
+import { accountDetailsId } from '@common/helpers/accountNetwork';
 import { Card } from 'tangem-sdk-react-native';
 
 import { StringIdentifier } from '@common/utils/string';
@@ -67,6 +69,10 @@ class Account extends Realm.Object<Account> {
         return this.getDetails()?.balance ?? 0;
     }
 
+    get sequence(): number {
+        return this.getDetails()?.sequence ?? 0;
+    }
+
     get ownerCount(): number {
         return this.getDetails()?.ownerCount ?? 0;
     }
@@ -92,7 +98,13 @@ class Account extends Realm.Object<Account> {
     }
 
     get lines() {
-        return this.getDetails()?.lines ?? undefined;
+        const details = this.getDetails();
+        if (!details) return undefined;
+        // Older versions may have cached Mainnet external positions under a
+        // test network. Exclude them immediately, including while offline.
+        return supportsExternalAssets(details.network?.key)
+            ? details.lines
+            : details.lines.filtered('limit != $0', EXTERNAL_ASSET_LIMIT);
     }
 
     get reward() {
@@ -129,7 +141,14 @@ class Account extends Realm.Object<Account> {
      */
     private getDetails(): AccountDetails | undefined {
         const network = CoreRepository.getSelectedNetwork();
-        return this.details?.find((details) => network?.id.equals(details.network?.id));
+        if (!network) return undefined;
+        const matchesNetwork = (details: AccountDetails) => network?.id.equals(details.network?.id);
+        // A migrated wallet can retain an older details key alongside the row
+        // refreshed by AccountService. Prefer the current row on this network.
+        return this.details?.find((details) => details.id === accountDetailsId(this.address, network) &&
+            matchesNetwork(details)) ?? this.details?.find((details) =>
+            details.id === `${this.address}.${network.networkId}` && matchesNetwork(details)) ??
+            this.details?.find(matchesNetwork);
     }
 }
 

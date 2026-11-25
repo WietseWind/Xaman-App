@@ -214,7 +214,16 @@ const GetSignOptions = (card: Card, hashToSign: string): MultipleHashesOptionsSi
     return options;
 };
 
+/**
+ * A read-only account can only be upgraded to the Tangem card that already
+ * holds that same r-address.
+ */
+const TangemCardMatchesAccount = (cardAddress?: string, accountAddress?: string): boolean => {
+    return !!cardAddress && !!accountAddress && cardAddress === accountAddress;
+};
+
 export {
+    TangemCardMatchesAccount,
     GetPreferCurve,
     GetWalletPublicKey,
     GetCardSecurityOptions,

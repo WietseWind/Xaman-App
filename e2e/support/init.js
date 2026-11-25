@@ -11,6 +11,8 @@ const detox = require('detox/internals');
 const { device, element, by, waitFor } = require('detox');
 const { Before, BeforeAll, AfterAll, After, BeforeStep, AfterStep } = require('@cucumber/cucumber');
 const adapter = require('./adapter');
+const { getCurrentTestPasscode } = require('../helpers/testCredentials');
+const { androidSerial } = require('../helpers/androidSerial');
 
 const {
     setDeviceUdid,
@@ -20,22 +22,49 @@ const {
     startRecordingVideo,
     stopRecordingVideo,
 } = require('../helpers/artifacts');
-const { startDeviceLogStream } = require('../helpers/simulator');
-const { checkNetwork, ensureLocalSimulator } = require('./preflight');
+const { startDeviceLogStream, stopDeviceLogStream } = require('../helpers/simulator');
+const {
+    checkNetwork,
+    prepareIosSimulator,
+    preflightAndroid,
+    adoptDetoxAndroidDevice,
+    ensureAndroidOnline,
+} = require('./preflight');
 const {
     tapByTestIdIfPresent,
     unlockAndroidPasscodeIfPresent,
-    waitUntilAndroidRnReady,
-    disableAndroidStylusHandwriting,
     restoreAndroidAnimationScale,
-    clearAndroidBlockingDialogs,
     adbTapChangelogClose,
+    androidHasTestId,
+    hideAndroidKeyboard,
+    androidDumpXml,
 } = require('../helpers/tapById');
+const { saveFailureEvidence } = require('../helpers/failureEvidence');
+const { failScenarioIfAsked } = require('../helpers/faultInjection');
+const { settleAfterLaunch } = require('../helpers/appLaunch');
 
-BeforeAll(async () => {
+const log = (msg) => {
+    // eslint-disable-next-line no-console
+    console.error(`[e2e ${new Date().toISOString()}] ${msg}`);
+};
+
+const short = (error) =>
+    String((error && error.message) || error)
+        .split('\n')[0]
+        .slice(0, 200);
+
+const isAndroid = () => device.getPlatform() === 'android';
+
+// Set when the app could not be restarted twice in a row or the device went away: every later
+// scenario then fails at once with this reason instead of hanging on a dead device.
+let deviceBroken = null;
+let failedRestarts = 0;
+
+BeforeAll({ timeout: 15 * 60 * 1000 }, async () => {
     // fail fast with a clear message when the suite cannot possibly pass
     await checkNetwork();
-    ensureLocalSimulator();
+    prepareIosSimulator();
+    preflightAndroid();
 
     const reuse = String(process.env?.DETOX_REUSE || 'no').toLowerCase() === 'yes';
     const newInstance =
@@ -47,15 +76,18 @@ BeforeAll(async () => {
         },
     });
 
+    if (isAndroid()) {
+        adoptDetoxAndroidDevice(device.id);
+    }
+
     // target the detox-managed simulator, not whatever happens to be "booted"
     setDeviceUdid(device.id);
     setScreenshotPlatform(device.getPlatform());
 
-    // start device log
-    startDeviceLogStream(device.id);
-
-    // start recording video
-    startRecordingVideo();
+    if (!isAndroid()) {
+        startDeviceLogStream(device.id);
+        startRecordingVideo();
+    }
 
     await device.launchApp({
         newInstance,
@@ -63,48 +95,30 @@ BeforeAll(async () => {
         disableTouchIndicators: false,
         // Must be set at launch. Android RN Animated (Toast) trips
         // AnimatedModuleIdlingResource during "ready".
-        launchArgs:
-            process.env.DETOX_CONFIGURATION && String(process.env.DETOX_CONFIGURATION).startsWith('android.')
-                ? { detoxEnableSynchronization: 0 }
-                : undefined,
+        launchArgs: isAndroid() ? { detoxEnableSynchronization: 0 } : undefined,
     });
 
-    if (device.getPlatform() === 'android') {
-        await device.disableSynchronization();
-        disableAndroidStylusHandwriting();
-        await waitUntilAndroidRnReady();
-        await clearAndroidBlockingDialogs();
-        await unlockAndroidPasscodeIfPresent();
-    } else {
-        // iPhone SE: Firebase/main-queue idling hides onboarding-screen for 90s.
-        await device.disableSynchronization();
-    }
-
-    await device.setURLBlacklist([
-        '.*xumm.app.*',
-        '.*xaman.app.*',
-        // Fresh sim: Firebase checkin holds Detox iOS sync and misses agreement-setup-screen.
-        '.*device-provisioning.googleapis.com.*',
-        '.*firebaseinstallations.googleapis.com.*',
-        '.*firebase.googleapis.com.*',
-        '.*firebaselogging.googleapis.com.*',
-        '.*app-measurement.com.*',
-    ]);
+    await settleAfterLaunch();
 });
 
 // On fresh Android installs the app auto-opens the "What's new" release-notes
 // modal shortly after launch; its full-screen backdrop swallows taps on the
 // screen underneath. Close it before every scenario if it is up (by testID).
 async function dismissChangelogOverlay() {
+    // An open xApp has a Close button of its own in its header. On Android the changelog button is also
+    // found by its label ("Close"), so this closed the xApp at the start of every scenario.
+    if (isAndroid() && (await androidHasTestId('xapp-browser-modal'))) {
+        return;
+    }
     // Dump + UiDevice only. Espresso waitFor on this overlay waits for MAIN_LOOPER idle.
     await tapByTestIdIfPresent('close-change-log-button', 1500);
-    if (device.getPlatform() === 'android') {
+    if (isAndroid()) {
         await adbTapChangelogClose();
     }
 }
 
 async function dismissIosLockIfPresent() {
-    if (device.getPlatform() !== 'ios') {
+    if (isAndroid()) {
         return;
     }
     try {
@@ -114,7 +128,7 @@ async function dismissIosLockIfPresent() {
     } catch (e) {
         return;
     }
-    const pin = String(process.env.E2E_PASSCODE || '167349');
+    const pin = getCurrentTestPasscode();
     for (let i = 0; i < pin.length; i += 1) {
         await element(by.id(`${pin[i]}-key`)).tap();
     }
@@ -123,38 +137,125 @@ async function dismissIosLockIfPresent() {
         .withTimeout(10000);
 }
 
-Before(async (context) => {
+// A failed scenario can leave the app anywhere: an undismissed alert, half an import flow, or a
+// Detox call that never answered (iOS: "app has not responded: waitForBackground"). Restart the
+// app so the next scenario starts from Home, unlocked, instead of failing in the same place.
+const restartAppAfterFailure = async (scenario) => {
+    log(`scenario failed: "${scenario}"; restarting the app for the next scenario`);
+    const started = Date.now();
+    try {
+        await device.terminateApp();
+    } catch (e) {
+        log(`terminateApp failed (${short(e)}); launching a new instance anyway`);
+    }
+    try {
+        await device.launchApp({
+            newInstance: true,
+            launchArgs: isAndroid() ? { detoxEnableSynchronization: 0 } : undefined,
+        });
+        await settleAfterLaunch();
+        await dismissIosLockIfPresent();
+        failedRestarts = 0;
+        log(`app restarted in ${Math.round((Date.now() - started) / 1000)} s`);
+    } catch (e) {
+        failedRestarts += 1;
+        log(`app restart failed (${failedRestarts} in a row): ${short(e)}`);
+        if (failedRestarts >= 2) {
+            deviceBroken = `the app could not be restarted twice in a row (${short(e)})`;
+        }
+    }
+};
+
+Before({ timeout: 3 * 60 * 1000 }, async (context) => {
+    if (deviceBroken) {
+        throw new Error(`e2e: not run: ${deviceBroken}`);
+    }
+    if (isAndroid()) {
+        try {
+            ensureAndroidOnline(androidSerial(), 60000);
+        } catch (e) {
+            deviceBroken = short(e);
+            throw e;
+        }
+        // A keyboard left up by the previous scenario covers the tab bar.
+        try {
+            await hideAndroidKeyboard();
+        } catch (e) {
+            log(`before the scenario: ${short(e)}`);
+        }
+    }
     await unlockAndroidPasscodeIfPresent();
     await dismissIosLockIfPresent();
     await dismissChangelogOverlay();
     await adapter.beforeEach(context);
+    // proof runs only (helpers/faultInjection.js)
+    failScenarioIfAsked(context.pickle.name);
 });
+
+// A step that runs much longer than usual is usually stuck: keep a screenshot of where it
+// stopped, before the step timeout fails it.
+const STALL_AFTER_MS = 60 * 1000;
+let stallTimer = null;
 
 BeforeStep(async (context) => {
     nextStepIndex();
     takeNamedScreenshot(`before-${context.pickleStep.text}`);
+    const { text } = context.pickleStep;
+    stallTimer = setTimeout(() => {
+        log(`step still running after ${STALL_AFTER_MS / 1000} s: ${text}`);
+        takeNamedScreenshot(`STALLED-${text}`);
+    }, STALL_AFTER_MS);
 });
 
 AfterStep(async (context) => {
+    clearTimeout(stallTimer);
     const status = context.result && context.result.status ? context.result.status : 'UNKNOWN';
     takeNamedScreenshot(`after-${status}-${context.pickleStep.text}`);
 });
 
-After(async (context) => {
-    if (context.result && context.result.status === 'FAILED') {
+After({ timeout: 6 * 60 * 1000 }, async (context) => {
+    clearTimeout(stallTimer);
+    const failed = context.result && context.result.status === 'FAILED';
+    // not run at all (the device or the set-up is gone): there is nothing new to keep
+    const notRun = failed && /e2e: not run/.test(String(context.result.message || ''));
+    if (failed && !notRun) {
         takeNamedScreenshot(`FAIL-${context.pickle.name}`);
+        const kept = await saveFailureEvidence(
+            {
+                name: context.pickle.name,
+                uri: context.pickle.uri,
+                message: context.result.message,
+                willBeRetried: context.willBeRetried,
+            },
+            isAndroid() && !deviceBroken ? { dump: androidDumpXml } : undefined,
+        );
+        log(
+            `scenario failed${context.willBeRetried ? ' (it is tried once more)' : ''}: ` +
+                `"${context.pickle.name}"; evidence in ${kept || 'no folder (it could not be written)'}`,
+        );
     }
     await adapter.afterEach(context);
+    // Without the set-up (feature 01) nothing after it can pass: do not let every later scenario run
+    // into its timeouts. The runner then runs the story again on a clean app.
+    if (failed && !context.willBeRetried && !deviceBroken && /(^|\/)01_setup\.feature$/.test(context.pickle.uri)) {
+        deviceBroken = `the set-up failed ("${context.pickle.name}")`;
+        log(`${deviceBroken}: the scenarios after it are not run`);
+    }
+    if (failed && !deviceBroken && adapter.continueOnFail()) {
+        await restartAppAfterFailure(context.pickle.name);
+    }
 });
 
-AfterAll(async () => {
-    if (device.getPlatform() === 'android') {
+AfterAll({ timeout: 2 * 60 * 1000 }, async () => {
+    if (isAndroid()) {
         restoreAndroidAnimationScale();
     }
 
     // clean up
-    await detox.cleanup();
-
-    // stop recording
-    stopRecordingVideo();
+    try {
+        await detox.cleanup();
+    } finally {
+        stopRecordingVideo();
+        stopDeviceLogStream();
+    }
 });

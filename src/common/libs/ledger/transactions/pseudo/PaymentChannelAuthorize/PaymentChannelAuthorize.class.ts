@@ -23,6 +23,12 @@ class PaymentChannelAuthorize extends BasePseudoTransaction {
     constructor(tx?: TransactionJson) {
         super(tx);
     }
+
+    unsignableFields(): string[] {
+        // Claim signatures bind exactly Channel and Amount; extra ledger fields
+        // cannot be covered by that protocol's fixed signing format.
+        return [...new Set([...super.unsignableFields(), ...this.ExtraFields.map((field) => field.name)])];
+    }
 }
 
 /* Export ==================================================================== */

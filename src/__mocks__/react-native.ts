@@ -63,10 +63,28 @@ ReactNative.NativeModules.DeviceUtilsModule = {
     hideLaunchSplash: jest.fn(),
 };
 
+// over-the-air update safety net (XamanOta): nothing blocked or reverted
+ReactNative.NativeModules.OtaRecoveryModule = {
+    markHealthy: jest.fn(),
+    scheduleRevert: jest.fn(() => Promise.resolve(true)),
+    getState: jest.fn(() =>
+        Promise.resolve({
+            blockedUpdateIds: [],
+            blockedOtaIds: [],
+            revertedUpdateId: null,
+            revertPending: false,
+            unhealthyLaunches: 0,
+            watchdogLimit: 3,
+            automatedTest: false,
+        }),
+    ),
+};
+
 ReactNative.NativeModules.AppUtilsModule = {
     appVersion: '0.0.1',
     buildNumber: '1',
     isDebug: false,
+    isTestFlight: false,
     isFlagSecure: jest.fn(() => Promise.resolve(false)),
     setFlagSecure: jest.fn((value) => {}),
     restartBundle: jest.fn(() => {}),
@@ -95,6 +113,14 @@ ReactNative.NativeModules.VaultManagerModule = {
         ),
     ),
     isStorageEncryptionKeyExist: jest.fn(() => Promise.resolve(true)),
+    getKeychainGroupInfo: jest.fn(() =>
+        Promise.resolve({
+            sharedGroup: 'group.app.xaman',
+            groups: { 'group.app.xaman': 3 },
+            moved: 0,
+            lastError: 0,
+        }),
+    ),
     inspectVaultHealth: jest.fn(() =>
         Promise.resolve({
             lastKnownPresent: true,
@@ -107,7 +133,7 @@ ReactNative.NativeModules.VaultManagerModule = {
     ),
     createVault: jest.fn((vaultName: string, entry: string, key: string) => Promise.resolve(true)),
     openVault: jest.fn((vaultName: string, key: string) => Promise.resolve('clearText')),
-    vaultExist: jest.fn((vaultName: string) => Promise.resolve(true)),
+    vaultExist: jest.fn((vaultName: string) => Promise.resolve(vaultName !== 'xaman-passcode-change-v1')),
     purgeVault: jest.fn((vaultName: string) => Promise.resolve(true)),
     reKeyVault: jest.fn((vaultName: string, oldKey: string, newKey: string) => Promise.resolve(true)),
     reKeyBatchVaults: jest.fn((vaultNames: string[], oldKey: string, newKey: string) => Promise.resolve(true)),

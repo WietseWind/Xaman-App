@@ -17,7 +17,8 @@ public class CommonPackage implements ReactPackage {
                 new AppUpdateModule(reactContext),
                 new InAppPurchaseModule(reactContext),
                 new SharedPreferencesModule(reactContext),
-                new ClipboardModule(reactContext)
+                new ClipboardModule(reactContext),
+                new OtaRecoveryModule(reactContext)
         );
     }
 

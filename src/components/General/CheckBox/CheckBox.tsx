@@ -38,6 +38,8 @@ class CheckBox extends PureComponent<Props> {
         return (
             <TouchableDebounce
                 testID={testID}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked }}
                 activeOpacity={0.8}
                 onPress={this.onPress}
                 style={[

@@ -120,6 +120,7 @@ Xaman is a **mobile application** with limited screen space.
 - Keep terminology consistent across all sections
 - If you translate "wallet" as X in one place, use X everywhere
 - Create a mental (or written) glossary as you translate
+- **Xaman Tangem card(s)**: always the full product name, with "Xaman Tangem" in Latin script. Never write "Tangem card" alone, and never transliterate it: Xaman only supports its own Xaman-branded Tangem cards with Xaman firmware. Follow your language's compound rules, e.g. German "Xaman-Tangem-Karte", Finnish "Xaman Tangem -kortti", Dutch "Xaman Tangem-kaart"
 
 ### 7. Context Awareness
 

@@ -2,8 +2,8 @@
  * Logger Service
  */
 import { ErrorMessages } from '@common/constants';
+import CrashReporter, { scrubParams } from '@common/libs/crash';
 
-import crashlytics from '@react-native-firebase/crashlytics';
 import analytics from '@react-native-firebase/analytics';
 
 /* Types  ==================================================================== */
@@ -48,30 +48,29 @@ class LoggerService {
     }
 
     /**
-     * log error in firebase crashlytics
+     * report an error to firebase crashlytics (scrubbed, see docs/crash-reporting.md)
+     * @param message constant text naming where it happened
      */
     logError = (message: string, exception: Error) => {
-        if (message) {
-            crashlytics().log(message);
-        }
-        if (exception) {
-            crashlytics().recordError(exception);
-        }
+        CrashReporter.recordError(exception, message);
     };
 
     /**
      * log an event in firebase analytics
+     * NOTE: crashlytics shows recent analytics events in reports, so params are scrubbed
      */
     logEvent = (event: LogEvents, params?: Record<string, any>) => {
-        analytics().logEvent(event, params);
+        analytics().logEvent(event, scrubParams(params));
     };
 
     /**
-     * log error in session logs
+     * log error in session logs and report it to crashlytics as a non-fatal
+     * @param message constant text naming where it happened
      */
     recordError = (message: string, exception: unknown) => {
         const data = this.normalizeError(exception);
         this.addLogMessage('error', message, data);
+        CrashReporter.recordError(exception, message);
     };
 
     /**
@@ -126,6 +125,11 @@ class LoggerService {
                 if (this.isDEV) {
                     // eslint-disable-next-line
                     console[level](`[${namespace}] ${message}`, data);
+                }
+
+                // errors leave a breadcrumb for the next crash report: the message only, never the data
+                if (level === 'error') {
+                    CrashReporter.breadcrumb(`error [${namespace}] ${message}`);
                 }
 
                 this.addLogMessage(level, message, data);

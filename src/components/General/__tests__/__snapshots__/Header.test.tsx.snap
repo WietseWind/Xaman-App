@@ -22,6 +22,8 @@ exports[`[Header] renders correctly with all components 1`] = `
   }
 >
   <View
+    accessibilityLabel="Left"
+    accessibilityRole="none"
     accessibilityState={
       {
         "busy": undefined,
@@ -88,6 +90,8 @@ exports[`[Header] renders correctly with all components 1`] = `
     </Text>
   </View>
   <View
+    accessibilityLabel="Center"
+    accessibilityRole="header"
     accessibilityState={
       {
         "busy": undefined,
@@ -154,6 +158,8 @@ exports[`[Header] renders correctly with all components 1`] = `
     </Text>
   </View>
   <View
+    accessibilityLabel="Right"
+    accessibilityRole="none"
     accessibilityState={
       {
         "busy": undefined,
@@ -339,6 +345,8 @@ exports[`[Header] renders correctly with centerComponent 1`] = `
     }
   />
   <View
+    accessibilityLabel="Center"
+    accessibilityRole="header"
     accessibilityState={
       {
         "busy": undefined,
@@ -604,6 +612,8 @@ exports[`[Header] renders correctly with leftComponent 1`] = `
   }
 >
   <View
+    accessibilityLabel="Left"
+    accessibilityRole="none"
     accessibilityState={
       {
         "busy": undefined,
@@ -766,6 +776,8 @@ exports[`[Header] renders correctly with rightComponent 1`] = `
     }
   />
   <View
+    accessibilityLabel="Right"
+    accessibilityRole="none"
     accessibilityState={
       {
         "busy": undefined,

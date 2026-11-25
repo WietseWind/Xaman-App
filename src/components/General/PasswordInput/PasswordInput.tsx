@@ -321,13 +321,20 @@ export default class PasswordInput extends Component<Props, State> {
                     secureTextEntry={hidePassword}
                     autoCapitalize="none"
                     multiline={false}
+                    // eslint-disable-next-line react/jsx-props-no-spreading
                     {...noAutofillProps}
                     style={[styles.input, inputStyle]}
                     onChangeText={(text) => this.onChangeText(text)}
                     placeholder={placeholder}
                     selectTextOnFocus={selectTextOnFocus}
                 />
-                <TouchableDebounce disabled={!editable} onPress={this.toggleSwitch}>
+                <TouchableDebounce
+                    disabled={!editable}
+                    onPress={this.toggleSwitch}
+                    accessibilityLabel={Localize.t(
+                        hidePassword ? 'accessibility.showPassword' : 'accessibility.hidePassword',
+                    )}
+                >
                     <Icon
                         size={22}
                         name={hidePassword ? 'IconEye' : 'IconEyeOff'}

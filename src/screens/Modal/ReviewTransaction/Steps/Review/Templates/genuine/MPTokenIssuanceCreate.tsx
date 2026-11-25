@@ -72,6 +72,23 @@ class MPTokenIssuanceCreateTemplate extends Component<Props, State> {
                         </View>
                     </>
                 )}
+                {!isUndefined(transaction.DomainID) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.domainID')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>{transaction.DomainID}</Text>
+                        </View>
+                    </>
+                )}
+
+                {!isUndefined(transaction.ImmutableFlags) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.immutableFlags')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>{transaction.ImmutableFlags}</Text>
+                        </View>
+                    </>
+                )}
             </>
         );
     }

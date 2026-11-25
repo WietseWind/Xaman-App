@@ -35,6 +35,7 @@ describe('[AmountInput]', () => {
 
         const textInput = instance.findByType(TextInput);
 
+        textInput.props.onFocus();
         textInput.props.onChangeText('100');
 
         expect(onChangeMock).toHaveBeenCalledWith('100');

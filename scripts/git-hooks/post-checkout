@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# git checkout / switch to another commit: the same check as post-merge when the switch changes package-lock.json,
+# patches/ or ios/Podfile.lock. Never blocks the checkout. Installed by scripts/post-install.sh.
+[ "${3:-0}" = 1 ] || exit 0 # a file checkout, not a branch or commit switch
+[ "$1" != "$2" ] || exit 0
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ -x "$ROOT/scripts/check-native-deps.sh" ] || exit 0
+[ -d "$ROOT/node_modules" ] || exit 0 # a fresh clone: npm ci comes next anyway
+git diff --quiet "$1" "$2" -- package-lock.json patches ios/Podfile.lock 2>/dev/null && exit 0
+"$ROOT/scripts/check-native-deps.sh" "$ROOT" || true
+exit 0

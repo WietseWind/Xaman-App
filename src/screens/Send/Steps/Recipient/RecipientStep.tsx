@@ -16,6 +16,7 @@ import { ContactModel, AccountModel } from '@store/models';
 import { AppScreens } from '@common/constants';
 
 import { Toast } from '@common/helpers/interface';
+import { accountListLabel, sortAccountsByLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
@@ -118,6 +119,13 @@ class RecipientStep extends Component<Props, State> {
     doAccountLookUp = async (result: XrplDestination) => {
         const { setDestination } = this.context;
 
+        // This lookup takes over from a text search that is still waiting or under way. Without
+        // this, the search for the text before the last key of a typed address ran half a second
+        // later, found nothing and replaced the account that was found here.
+        clearTimeout(this.lookupTimeout);
+        this.sequence += 1;
+        const { sequence } = this;
+
         this.setState({
             searchText: result.to,
             isSearching: true,
@@ -187,6 +195,11 @@ class RecipientStep extends Component<Props, State> {
                     }),
                 ]),
             ]);
+
+            // the text changed while the answers were on their way: they are for an earlier text
+            if (sequence !== this.sequence) {
+                return;
+            }
 
             this.setState({
                 dataSource: this.getSearchResultSource([
@@ -272,12 +285,14 @@ class RecipientStep extends Component<Props, State> {
 
             // search for accounts
             accounts.forEach((item) => {
+                const name = accountListLabel(item);
+
                 if (
-                    item.label?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
+                    name.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1 ||
                     item.address?.toLowerCase().indexOf(searchText?.toLowerCase()) !== -1
                 ) {
                     searchResult.push({
-                        name: item.label,
+                        name,
                         address: item.address,
                         source: 'accounts',
                     });
@@ -352,6 +367,10 @@ class RecipientStep extends Component<Props, State> {
     onSearch = (searchText: string) => {
         const { setDestination } = this.context;
 
+        // Every change of the text makes the searches that started before it stale: what they
+        // find is for another text than the one in the field (see the sequence checks).
+        this.sequence += 1;
+
         this.setState({
             searchText,
         });
@@ -367,6 +386,8 @@ class RecipientStep extends Component<Props, State> {
             }
         } else {
             clearTimeout(this.lookupTimeout);
+            // a search that is under way does not report back any more (it is stale)
+            this.setState({ isSearching: false });
             // get default source
             this.setDefaultDataSource();
             // clear the destination if set
@@ -393,16 +414,16 @@ class RecipientStep extends Component<Props, State> {
 
         const dataSource = [];
 
-        const myAccountList = remove(Array.from(accounts), (n) => {
+        const myAccountList = sortAccountsByLabel(remove(Array.from(accounts), (n) => {
             // remove source account from list
             return n.address !== source?.address;
-        });
+        }));
 
         if (myAccountList && myAccountList?.length !== 0) {
             dataSource.push({
                 title: Localize.t('account.myAccounts'),
                 data: flatMap(myAccountList, (a) => {
-                    return { name: a.label, address: a.address };
+                    return { name: accountListLabel(a), address: a.address };
                 }),
             });
         }
@@ -869,8 +890,9 @@ class RecipientStep extends Component<Props, State> {
             // console.log('___5')
             // if account is set to black hole then reject sending
             // IMMEDIATE REJECT
+            // (not for an account that is whitelisted and controlled by its Hook)
             if (
-                destinationInfo.blackHole &&
+                Advisory.shouldWarnBlackHole(destinationInfo) &&
                 passedChecks.indexOf(PassableChecks.ALLOW_BLACKHOLE_DEVMODE) === -1
             ) {
                 setTimeout(() => {
@@ -1325,6 +1347,7 @@ class RecipientStep extends Component<Props, State> {
                 <Footer style={AppStyles.row} safeArea>
                     <View style={[AppStyles.flex1, AppStyles.paddingRightSml]}>
                         <Button
+                            testID="back-button"
                             light
                             icon="IconChevronLeft"
                             label={Localize.t('global.back')}

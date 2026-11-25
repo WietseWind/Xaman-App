@@ -1,0 +1,14 @@
+{
+  "decodedNativeFrames": 86,
+  "headerUpIntermediateFrames": 14,
+  "headerRestoreIntermediateFrames": 14,
+  "headerTravelPt": 181,
+  "configuredHeaderDurationMs": 250,
+  "headerThenSheetOnOpen": true,
+  "sheetThenHeaderOnClose": true,
+  "nativeOpeningPhaseGapMs": 82.53058338165283,
+  "nativeClosingPhaseGapMs": 17.956957817077637,
+  "frameOpeningSeparationMs": 161.66666666666663,
+  "frameClosingSeparationMs": 96.66666666666669,
+  "actualEllipsisTapAndBackdropDismissal": true
+}

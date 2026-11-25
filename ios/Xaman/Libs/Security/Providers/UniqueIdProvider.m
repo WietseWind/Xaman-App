@@ -2,8 +2,18 @@
 // https://gist.github.com/miguelcma/e8f291e54b025815ca46
 
 #import "UniqueIdProvider.h"
+#import "../Vault/Storage/Keychain.h"
 
 @import UIKit;
+
+// Raised when the keychain item of the device id was replaced: every instance (the bridge module
+// and the shared one) then reads the id again, and the move to the shared group runs again.
+static NSInteger keychainGeneration = 0;
+static BOOL movedToSharedGroup = NO;
+
+@interface UniqueIdProviderModule ()
+@property (nonatomic, assign) NSInteger seenKeychainGeneration;
+@end
 
 @implementation UniqueIdProviderModule
 
@@ -30,6 +40,30 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceUniqueId) {
 
 + (NSString *)getDeviceUniqueId {
   return [[UniqueIdProviderModule sharedInstance] getUniqueId];
+}
+
+/*
+ The keychain can hold two device ids: one in the shared access group, left by an earlier install,
+ and one outside it, stored by a build without the app group that could not see the first. The app
+ calls this once it has proven that the items outside the shared group are the set in use.
+ The id in the app's preferences was written by the install that made the current datastore: the
+ twin is only set aside when the id outside the shared group is that one.
+ */
++ (BOOL)setAsideStaleSharedDeviceId {
+  NSString *known = [[NSUserDefaults standardUserDefaults] objectForKey:UNIQUE_UUID_KEY];
+
+  BOOL settled = [Keychain setAsideSharedItem:(__bridge id)kSecClassGenericPassword
+                                     matching:@{ (__bridge id)kSecAttrAccount: UNIQUE_UUID_KEY,
+                                                 (__bridge id)kSecAttrService: UNIQUE_UUID_KEY }
+                                     renaming:(__bridge id)kSecAttrAccount
+                             ifOutsideValueIs:([known isKindOfClass:[NSString class]] ? known : nil)];
+
+  @synchronized ([UniqueIdProviderModule class]) {
+    keychainGeneration += 1;
+    movedToSharedGroup = NO;
+  }
+
+  return settled;
 }
 
 + (UniqueIdProviderModule *)sharedInstance {
@@ -60,6 +94,20 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceUniqueId) {
  At last, the UID is persisted if needed to.
  */
 - (NSString *)getUniqueId {
+  @synchronized ([UniqueIdProviderModule class]) {
+    if (self.seenKeychainGeneration != keychainGeneration) {
+      self.seenKeychainGeneration = keychainGeneration;
+      _unique_uuid = nil;
+    }
+  }
+
+  // the device id is part of the vault key: keep it in the same access group as the vaults
+  if (!movedToSharedGroup) {
+    movedToSharedGroup = [Keychain moveItemsToSharedGroup:(__bridge id)kSecClassGenericPassword
+                                                matching:@{ (__bridge id)kSecAttrAccount: UNIQUE_UUID_KEY,
+                                                            (__bridge id)kSecAttrService: UNIQUE_UUID_KEY }];
+  }
+
   if (!_unique_uuid) _unique_uuid = [self valueForKeychainKey:UNIQUE_UUID_KEY service:UNIQUE_UUID_KEY];
   if (!_unique_uuid) _unique_uuid = [self valueForUserDefaultsKey:UNIQUE_UUID_KEY];
   if (!_unique_uuid) _unique_uuid = [self appleIFV];
@@ -101,11 +149,11 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceUniqueId) {
 - (OSStatus)setValue:(NSString *)value forKeychainKey:(NSString *)key inService:(NSString *)service {
   NSMutableDictionary *keychainItem = [[self class] keychainItemForKey:key service:service];
   keychainItem[(__bridge id)kSecValueData] = [value dataUsingEncoding:NSUTF8StringEncoding];
-  OSStatus status = SecItemAdd((__bridge CFDictionaryRef)keychainItem, NULL);
+  OSStatus status = [Keychain addItem:keychainItem];
   
   if (status == errSecDuplicateItem) {
     [self deleteValue:key inService:service];
-    status =  SecItemAdd((__bridge CFDictionaryRef)keychainItem, NULL);
+    status = [Keychain addItem:keychainItem];
   }
   return  status;
 }

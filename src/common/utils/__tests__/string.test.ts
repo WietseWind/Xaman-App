@@ -67,6 +67,61 @@ describe('Utils.String', () => {
             expect(StringTypeCheck.isValidUUID('8036A695-3B59-4592-AE3B-E465919192CC')).toBe(true);
         });
 
+        it('should block system schemes as payload return URL', () => {
+            const allowed: string[] = [
+                'https://example.com/return?id=1',
+                'http://example.com',
+                'xumm://xumm.app/detect/xapp:xaman.swap',
+                'myapp://signed/8036a695-3b59-4592-ae3b-e465919192cc',
+                'com.example.wallet:/callback',
+                'tg://resolve?domain=example',
+                'telegram://example',
+                'datatool://open',
+            ];
+
+            const blocked: string[] = [
+                'tel:+31612345678',
+                'TEL:+31612345678',
+                'telprompt:0900123456',
+                'sms:+31612345678?body=hi',
+                'smsto:+31612345678',
+                'mailto:someone@example.com',
+                'facetime://someone@example.com',
+                'facetime-audio:someone@example.com',
+                'app-settings:',
+                'prefs:root=General',
+                'App-Prefs:root=WIFI',
+                'itms-services://?action=download-manifest&url=https://example.com/app.plist',
+                'intent://scan/#Intent;scheme=zxing;package=com.example;end',
+                'android-app://com.example/https/example.com',
+                'content://com.example.provider/file',
+                'file:///etc/hosts',
+                // eslint-disable-next-line no-script-url
+                'javascript:alert(1)',
+                ' javascript:alert(1)',
+                'java\tscript:alert(1)',
+                '\njavascript:alert(1)',
+                'data:text/html,<script>alert(1)</script>',
+                'blob:https://example.com/8036a695',
+                'about:blank',
+                'www.example.com',
+                '//example.com',
+                '',
+            ];
+
+            expect(StringTypeCheck.isBlockedReturnURL(undefined as any)).toBe(true);
+            expect(StringTypeCheck.isBlockedReturnURL(null as any)).toBe(true);
+            expect(StringTypeCheck.isBlockedReturnURL({ url: 'https://example.com' } as any)).toBe(true);
+
+            for (let i = 0; i < allowed.length; i++) {
+                expect([allowed[i], StringTypeCheck.isBlockedReturnURL(allowed[i])]).toEqual([allowed[i], false]);
+            }
+
+            for (let i = 0; i < blocked.length; i++) {
+                expect([blocked[i], StringTypeCheck.isBlockedReturnURL(blocked[i])]).toEqual([blocked[i], true]);
+            }
+        });
+
         it('should check if string is valid URL', () => {
             const validUrls: string[] = [
                 'https://example.com',

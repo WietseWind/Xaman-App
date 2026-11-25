@@ -1,6 +1,7 @@
-const { execSync, execFileSync, spawn, exec } = require('child_process');
+const { execSync, execFileSync, spawn } = require('child_process');
 const { existsSync, mkdirSync, unlinkSync, writeFileSync } = require('fs');
 const path = require('path');
+const { androidSerial } = require('./androidSerial');
 
 const ARTIFACTS_DIR = process.env.E2E_ARTIFACTS_DIR
     ? path.resolve(process.env.E2E_ARTIFACTS_DIR)
@@ -17,7 +18,6 @@ let screenshotIndex = 0;
 let stepIndex = 0;
 let deviceUdid = 'booted';
 let platform = 'ios';
-const androidSerial = process.env.ANDROID_SERIAL || 'emulator-5554';
 
 const setDeviceUdid = (udid) => {
     deviceUdid = udid;
@@ -59,11 +59,18 @@ const takeNamedScreenshot = (label) => {
     );
     try {
         if (platform === 'android') {
-            const png = execFileSync('adb', ['-s', androidSerial, 'exec-out', 'screencap', '-p'], {
+            const png = execFileSync('adb', ['-s', androidSerial(), 'exec-out', 'screencap', '-p'], {
                 timeout: 8000,
                 maxBuffer: 16 * 1024 * 1024,
             });
             writeFileSync(file, png);
+        } else if (process.env.E2E_IOS_DEVICE) {
+            // a physical iPhone: the screen comes from WebDriverAgent (see e2e/iosDevice)
+            const answer = execFileSync('curl', ['-s', '-g', '-m', '8', `${process.env.E2E_WDA_URL}/screenshot`], {
+                timeout: 10000,
+                maxBuffer: 64 * 1024 * 1024,
+            });
+            writeFileSync(file, Buffer.from(JSON.parse(answer.toString()).value, 'base64'));
         } else {
             execFileSync('xcrun', ['simctl', 'io', deviceUdid, 'screenshot', file], {
                 timeout: 8000,
@@ -76,12 +83,15 @@ const takeNamedScreenshot = (label) => {
     return file;
 };
 
+let recording = null;
+
+// iOS simulator only (the first 30 minutes of the run).
 const startRecordingVideo = () => {
-    if (process.platform !== 'darwin') {
+    if (process.platform !== 'darwin' || platform !== 'ios' || process.env.E2E_IOS_DEVICE) {
         return;
     }
     if (!existsSync(ARTIFACTS_DIR)) {
-        mkdirSync(ARTIFACTS_DIR);
+        mkdirSync(ARTIFACTS_DIR, { recursive: true });
     }
     const recordingFileName = `${ARTIFACTS_DIR}/recording.mov`;
 
@@ -90,23 +100,29 @@ const startRecordingVideo = () => {
     }
 
     try {
-        spawn('xcrun', ['simctl', 'io', deviceUdid, 'recordVideo', `${recordingFileName}`], {
+        recording = spawn('xcrun', ['simctl', 'io', deviceUdid, 'recordVideo', `${recordingFileName}`], {
             timeout: 30 * 60 * 1000,
-            maxBuffer: 1024 * 20 * 100,
+            stdio: 'ignore',
         });
     } catch (error) {
         console.error('error');
     }
 };
 
+// SIGINT lets simctl finish the file. Only this run's recorder: `killall simctl` also stopped
+// other runs' recordings and log streams on the same machine.
 const stopRecordingVideo = () => {
-    exec('killall -SIGINT simctl', {
-        timeout: 15 * 1000,
-        maxBuffer: 1024 * 20 * 100,
-    });
+    if (recording) {
+        recording.kill('SIGINT');
+        recording = null;
+    }
 };
 
 module.exports = {
+    artifactsDir: () => ARTIFACTS_DIR,
+    stepShotDir: () => STEP_SHOT_DIR,
+    currentStepIndex: () => stepIndex,
+    sanitize,
     setDeviceUdid,
     setScreenshotPlatform,
     nextStepIndex,

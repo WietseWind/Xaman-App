@@ -38,6 +38,7 @@ class ButtonItem extends PureComponent<Props> {
                 light
                 roundedMini
                 contrast={isActive}
+                isSelected={!!isActive}
                 label={item.label}
                 icon={item.icon}
                 iconPosition="right"

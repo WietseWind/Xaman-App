@@ -24,5 +24,5 @@ export interface State {
 
 export type WidgetKey = keyof typeof MutationWidgets;
 export type WidgetComponents = {
-    [key in WidgetKey]: React.ComponentClass<MutationWidgetProps>;
+    [key in WidgetKey]: React.ComponentType<MutationWidgetProps>;
 };

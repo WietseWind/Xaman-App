@@ -25,7 +25,8 @@ interface Props {
     network?: NetworkModel;
     addTokenPress?: () => void;
     hapticFeedback: boolean;
-    hideTopElements: (toggle: boolean) => void;
+    hideTopElements: (toggle: boolean, onComplete?: () => void) => void;
+    headerHidden?: boolean;
 }
 
 interface State {
@@ -93,6 +94,7 @@ class AssetsList extends Component<Props, State> {
             network,
             addTokenPress,
             hideTopElements,
+            headerHidden,
         } = this.props;
         const { category } = this.state;
 
@@ -117,6 +119,7 @@ class AssetsList extends Component<Props, State> {
                 discreetMode={discreetMode}
                 spendable={spendable}
                 hideTopElements={hideTopElements}
+                headerHidden={headerHidden}
                 onChangeCategoryPress={this.onChangeCategoryPress}
                 addTokenPress={addTokenPress}
                 style={style}

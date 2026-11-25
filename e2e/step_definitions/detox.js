@@ -1,10 +1,12 @@
 const { execFileSync } = require('child_process');
 const { Given, Then } = require('@cucumber/cucumber');
+const { androidSerial } = require('../helpers/androidSerial');
 const { waitFor, expect, element, by, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
-const { tapAndroidAlertButton, waitForAndroidAlertText } = require('../helpers/androidAlert');
+const { tapAndroidAlertButton, waitForAndroidAlertText, appWindowCount } = require('../helpers/androidAlert');
 const {
     clickByTestId,
+    clickAndroidLabel,
     waitUntilAndroidTestId,
     waitUntilAndroidEnabled,
     waitUntilAndroidRnReady,
@@ -12,16 +14,56 @@ const {
     androidHasTestId,
     androidSwipeTestId,
     androidTypeText,
-    androidBlurIme,
+    androidClearFocusedField,
+    androidDismissImeIfShown,
+    waitUntilAndroidText,
+    resetAndroidDumpState,
+    hideAndroidKeyboard,
+    unlockAndroidPasscodeWhenItShows,
+    androidDumpXml,
+    isAndroidDumpBroken,
+    closeAndroidKeyboardOver,
 } = require('../helpers/tapById');
+const { tapNoted, waitAfterTap } = require('../helpers/androidTapCheck');
+const { currentStepIndex } = require('../helpers/artifacts');
+const { keepKeyboardUp } = require('../helpers/faultInjection');
+
+// Android: after text entry, how long to look for a keyboard that comes back (see hideAndroidKeyboard)
+const LATE_KEYBOARD_MS = 1000;
+// Android: the screen as the tap check reads it (helpers/androidTapCheck.js)
+const androidScreen = {
+    dump: androidDumpXml,
+    broken: isAndroidDumpBroken,
+    has: androidHasTestId,
+    closeKeyboardOver: closeAndroidKeyboardOver,
+};
+// Android: the wait of a step; right after a tap that changed nothing, a Next, Back or tab tap is sent again
+const waitForAndroidTestId = (testId, timeoutMs) =>
+    waitAfterTap(testId, () => waitUntilAndroidTestId(testId, timeoutMs), androidScreen, currentStepIndex());
+const { focusAndroidTextField, typeAndroidTextVerified } = require('../helpers/androidTextEntry');
+const { settleAfterLaunch, sendIosAppToBackground } = require('../helpers/appLaunch');
 
 // Android OK is Toast on passphrase/passcode. Native Alert OK still exists on linking.
 let androidAlertPending = false;
 
-Then('I tap {string}', async (buttonId) => {
-    if (device.getPlatform() === 'android' && buttonId === '24-words-button') {
-        buttonId = '12-words-button';
+// iOS 27: the glass lens of the tab that is selected lies over its button (tab bar > platter > lens,
+// content, ...), so a tap on the button itself is refused by Detox: another view is on top at that place.
+// A finger lands on the lens, and the tab bar takes the touch. So does this tap: on the lens.
+// Only for the tab that is selected: the lens is over that tab, a tap on it for another tab is the wrong tab.
+// (device.tap by screen position also works, but it starts a separate XCUITest runner for every tap: about
+// 100 seconds, and it failed once.)
+const tapSelectedTab = async (buttonId, refusal) => {
+    try {
+        await waitFor(element(by.id(buttonId).and(by.traits(['selected']))))
+            .toExist()
+            .withTimeout(1000);
+    } catch (e) {
+        throw refusal;
     }
+    await element(by.type('_UILiquidLensView')).tap();
+};
+
+Then('I tap {string}', async (buttonId) => {
     // iOS: Finish already lands on Home; tapping tab-Home clips the selected tab.
     // Android: home-tab-view stays in the dump on Settings. Only skip when
     // Home content is actually showing.
@@ -56,10 +98,28 @@ Then('I tap {string}', async (buttonId) => {
             if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
                 return;
             }
-            await clickByTestId(buttonId);
+            // Family-seed Next sits under the keyboard. The first tap hits the
+            // IME Next key and the seed screen stays put.
+            if (
+                buttonId === 'next-button' &&
+                ((await androidHasTestId('account-import-enter-family-seed-view')) ||
+                    (await androidHasTestId('account-import-enter-mnemonic-view')))
+            ) {
+                await androidDismissImeIfShown();
+            }
+            // the tap; the screen from right before it is kept for the wait step that follows
+            await tapNoted(buttonId, () => clickByTestId(buttonId), androidScreen, currentStepIndex());
         } catch (e) {
-            if (buttonId === 'add-and-sign-button' && (await androidHasTestId('review-transaction-modal'))) {
-                return;
+            // The add-token handoff cover can take the button away while the review screen is
+            // still opening (it failed with the review screen up a moment later).
+            if (buttonId === 'add-and-sign-button') {
+                const reviewBy = Date.now() + 8000;
+                while (Date.now() < reviewBy) {
+                    if (await androidHasTestId('review-transaction-modal')) {
+                        return;
+                    }
+                    await new Promise((resolve) => { setTimeout(resolve, 500); });
+                }
             }
             throw e;
         }
@@ -80,7 +140,11 @@ Then('I tap {string}', async (buttonId) => {
                     return;
                 }
                 if (await androidHasTestId('add-and-sign-button')) {
-                    await clickByTestId('add-and-sign-button');
+                    try {
+                        await clickByTestId('add-and-sign-button');
+                    } catch (e) {
+                        // the cover took the button; the review screen check decides
+                    }
                 }
                 await new Promise((resolve) => { setTimeout(resolve, 800); });
             }
@@ -110,7 +174,15 @@ Then('I tap {string}', async (buttonId) => {
         await btn.tap();
     } catch (e) {
         if (String(buttonId).startsWith('tab-') || buttonId === 'confirm-button' || buttonId === 'back-button') {
-            await btn.tap({ x: 8, y: 8 });
+            try {
+                await btn.tap({ x: 8, y: 8 });
+            } catch (covered) {
+                if (!String(buttonId).startsWith('tab-')) {
+                    throw covered;
+                }
+                // The tab that is selected (iOS 27, see tapSelectedTab)
+                await tapSelectedTab(buttonId, covered);
+            }
             return;
         }
         await dismissKeyboard();
@@ -166,18 +238,74 @@ Then('I wait {int} sec for button {string} to be enabled', async (timeoutSec, bu
 
 Then('I enter {string} in {string}', async (value, textInputId) => {
     if (device.getPlatform() === 'android') {
-        await waitUntilAndroidTestId(textInputId, 10000);
-        await clickByTestId(textInputId);
-        try {
-            androidTypeText(value);
-        } catch (e) {
-            // timeout: field may already have the value
+        // adb input text drops the start of a spaced address or a URL during
+        // a long suite (` rJ9u` never arrives, lookup shows no result).
+        // replaceText writes the React value directly.
+        if (/[ :/]/.test(String(value))) {
+            try {
+                await waitUntilAndroidTestId(textInputId, 10000);
+                await element(by.id(textInputId)).replaceText(String(value));
+                try {
+                    await element(by.id(textInputId)).tapReturnKey();
+                } catch (e) {
+                    await hideAndroidKeyboard();
+                }
+                return;
+            } catch (e) {
+                // fall through to keystrokes
+            }
         }
-        androidBlurIme();
+        await waitUntilAndroidTestId(textInputId, 10000);
+        await focusAndroidTextField(textInputId);
+        // Let a preceding Clear search setState land before keystrokes append.
+        await new Promise((resolve) => { setTimeout(resolve, 300); });
+        const current = String((await androidReadTextByTestId(textInputId)) || '');
+        const needle = String(value).trim();
+        const placeholder = /enter a name|please enter|search|amount|label|password|passphrase/i.test(current);
+        // what the field reads right before typing; a dump is cached for 400 ms, so wait longer than that
+        let before = current;
+        if (!(needle && current.indexOf(needle) !== -1) && current.trim() && !placeholder) {
+            androidClearFocusedField(Math.min(80, current.length + 6));
+            await new Promise((resolve) => { setTimeout(resolve, 500); });
+            before = String((await androidReadTextByTestId(textInputId)) || '');
+        }
+        const typeValue = () => {
+            try {
+                androidTypeText(value);
+            } catch (e) {
+                // timeout: field may already have the value
+            }
+        };
+        if (!(needle && current.indexOf(needle) !== -1)) {
+            // Keystrokes that never reach the field (no focus yet, or a keyboard that lost its link
+            // to the field) left an empty account label and a dead Next tap. The helper reads the
+            // field back and takes another route while it still reads as before; it fails here if
+            // nothing ever arrives, not at a later step.
+            await typeAndroidTextVerified(textInputId, value, before);
+        }
+        // input text can drop the start of a long destination. One more try.
+        if (needle.length >= 24) {
+            const typed = String((await androidReadTextByTestId(textInputId)) || '');
+            if (typed.indexOf(needle) === -1) {
+                const junk = typed.trim();
+                if (junk && !/enter a name|please enter|search|amount|label|password|passphrase/i.test(junk)) {
+                    androidClearFocusedField(Math.min(80, junk.length + 8));
+                    await new Promise((resolve) => { setTimeout(resolve, 600); });
+                    await clickByTestId(textInputId);
+                }
+                typeValue();
+            }
+        }
+        // Wait until the keyboard is gone: a Next tap while it was still closing was lost. After the
+        // keystrokes the keyboard can be away for a moment and come back, so look for it a little longer.
+        if (!keepKeyboardUp()) {
+            await hideAndroidKeyboard(LATE_KEYBOARD_MS);
+        }
         return;
     }
     const input = element(by.id(textInputId));
-    await waitFor(input).toBeVisible().withTimeout(5000);
+    // 10 s as every other wait for a screen: a field can take longer than 5 s to show on a loaded machine
+    await waitFor(input).toBeVisible().withTimeout(10000);
     await input.replaceText(value);
     try {
         await input.tapReturnKey();
@@ -203,7 +331,7 @@ Given('I should have {string}', async (elementId) => {
             ? 90000
             : 10000;
     if (device.getPlatform() === 'android') {
-        await waitUntilAndroidTestId(elementId, timeout);
+        await waitForAndroidTestId(elementId, timeout);
         return;
     }
     await waitFor(element(by.id(elementId)))
@@ -235,7 +363,13 @@ Given('I should see {string}', async (elementId) => {
         return;
     }
     if (device.getPlatform() === 'android') {
-        const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view' ? 30000 : 10000;
+        // Changing the passcode re-encrypts every secret. With a full suite of
+        // accounts that screen stays up longer than the usual 10s.
+        const timeout = elementId === 'home-tab-view' || elementId === 'home-tab-empty-view'
+            ? 30000
+            : elementId === 'security-settings-screen'
+                ? 90000
+                : 10000;
         if (elementId === 'accept-button') {
             for (let i = 0; i < 5; i += 1) {
                 try {
@@ -246,7 +380,17 @@ Given('I should see {string}', async (elementId) => {
                 }
             }
         }
-        await waitUntilAndroidTestId(elementId, timeout);
+        await waitForAndroidTestId(elementId, timeout);
+        return;
+    }
+    // A fast submit finishes Verifying before Detox is idle enough to see it.
+    // The success screen is the same outcome Android already accepts.
+    if (elementId === 'submitting-view') {
+        try {
+            await waitFor(element(by.id('submitting-view'))).toBeVisible().withTimeout(4000);
+        } catch (e) {
+            await waitFor(element(by.id('success-result-view'))).toBeVisible().withTimeout(15000);
+        }
         return;
     }
     if (elementId === 'accept-button') {
@@ -299,7 +443,7 @@ Given('I should see {string} in {string}', async (value, elementId) => {
     }
     await waitFor(element(by.id(elementId)))
         .toHaveText(value)
-        .withTimeout(5000);
+        .withTimeout(10000);
 });
 
 Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
@@ -308,7 +452,7 @@ Given('I should wait {int} sec to see {string}', async (timeout, elementId) => {
             elementId === 'home-tab-empty-view' || elementId === 'home-tab-view'
                 ? Math.max(timeout * 1000, 60000)
                 : timeout * 1000;
-        await waitUntilAndroidTestId(elementId, ms);
+        await waitForAndroidTestId(elementId, ms);
         return;
     }
     await waitFor(element(by.id(elementId)))
@@ -354,10 +498,12 @@ Then('I slide right {string}', async (elementId) => {
     if (device.getPlatform() === 'android') {
         await androidSwipeTestId(elementId, 'right');
         if (elementId === 'accept-button') {
-            const slideDone = async () =>
-                (await androidHasTestId('1-key')) ||
-                (await androidHasTestId('passphrase-input')) ||
-                (await androidHasTestId('sign-button'));
+            const slideDone = async () => {
+                const hasKey = await androidHasTestId('1-key');
+                const hasPassphrase = await androidHasTestId('passphrase-input');
+                const hasSign = await androidHasTestId('sign-button');
+                return hasKey || hasPassphrase || hasSign;
+            };
             for (let i = 0; i < 8; i += 1) {
                 if (await slideDone()) {
                     return;
@@ -376,10 +522,26 @@ Then('I slide right {string}', async (elementId) => {
 Then('I tap alert button with label {string}', async (label) => {
     if (device.getPlatform() === 'android') {
         // Passphrase/passcode success is Toast. Do not tap a ghost OK on those screens.
-        if (label === 'OK' && !androidAlertPending) {
+        // A real Error dialog (already-imported secret) is a second window and
+        // must be tapped even when no earlier step set the pending flag.
+        if (label === 'OK' && !androidAlertPending && appWindowCount(device.id) < 2) {
             return;
         }
         androidAlertPending = false;
+        // The curve prompt has three buttons. The coordinate sweep closes the
+        // dialog on the scrim or Cancel and never selects the curve.
+        if (label.indexOf('secp256k1') === 0 || label.indexOf('ed25519') === 0) {
+            if (await clickAndroidLabel(label)) {
+                return;
+            }
+        }
+        // OK on the already-imported dialog sits at the card's lower right.
+        // Hit that node. The coordinate sweep is only the fallback.
+        if (label === 'OK' || label === 'Cancel') {
+            if (await clickAndroidLabel(label)) {
+                return;
+            }
+        }
         await device.disableSynchronization();
         const ui = device.getUiDevice();
         await tapAndroidAlertButton(label, device.id, (x, y) => ui.click(x, y));
@@ -401,7 +563,10 @@ Given('I should see alert with content {string}', async (title) => {
     if (device.getPlatform() === 'android') {
         androidAlertPending = true;
         await device.disableSynchronization();
+        // The window count says a dialog is up; the text check says it is the right one (it
+        // used to pass on "[missing … translation]").
         await waitForAndroidAlertText(title, device.id);
+        await waitUntilAndroidText(title, 10000);
         return;
     }
     await waitFor(element(by.label(title)))
@@ -410,6 +575,10 @@ Given('I should see alert with content {string}', async (title) => {
 });
 
 Then('I send the app to the background', async () => {
+    if (device.getPlatform() === 'ios') {
+        await sendIosAppToBackground();
+        return;
+    }
     await device.sendToHome();
 });
 
@@ -419,7 +588,7 @@ Then('I close the app', async () => {
 
 // launchApp waitUntilReady uses Espresso.onIdle (240s MAIN_LOOPER / Home Choreographer).
 const androidStartActivity = (url) => {
-    const serial = process.env.ANDROID_SERIAL || device.id || 'emulator-5554';
+    const serial = androidSerial();
     const args = url
         ? [
               '-s',
@@ -447,6 +616,7 @@ Then('I launch the app', async () => {
             newInstance: true,
             launchArgs: { detoxEnableSynchronization: 0 },
         });
+        resetAndroidDumpState();
         await device.disableSynchronization();
         await waitUntilAndroidRnReady();
         return;
@@ -470,21 +640,22 @@ Then('I launch the app with url {string}', async (url) => {
         androidStartActivity(url);
         return;
     }
-    // newInstance:true crashes Hermes on SE. Detox openURL from Springboard
-    // often does not foreground Xaman — simctl openurl delivers the UL.
-    await device.sendToHome();
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
-    try {
-        execFileSync('xcrun', ['simctl', 'openurl', device.id, url], { timeout: 15000 });
-    } catch (e) {
-        await device.openURL({ url });
-    }
+    // A cold start with the link, handed over the way iOS hands a universal link to the app
+    // (NSUserActivityTypeBrowsingWeb, continueUserActivity). Not simctl openurl: right after an
+    // install iOS has not verified the associated domains and opens https links in Safari. Not
+    // launchApp(url) on the running app: Detox sends the link to it first, and a backgrounded app
+    // never answers (the step hung).
+    await device.launchApp({
+        newInstance: true,
+        userActivity: { activityType: 'NSUserActivityTypeBrowsingWeb', webpageURL: url },
+    });
+    await settleAfterLaunch();
 });
 
 Then('I open the url {string}', async (url) => {
     if (device.getPlatform() === 'android') {
         // Detox VIEW is activity-anonymous. After ToS loads xaman.app, Chrome can take the intent.
-        const serial = process.env.ANDROID_SERIAL || 'emulator-5554';
+        const serial = androidSerial();
         execFileSync(
             'adb',
             [
@@ -502,6 +673,9 @@ Then('I open the url {string}', async (url) => {
             ],
             { timeout: 10000 },
         );
+        // The intent brings the app to the front again. More than the auto lock time after the last
+        // unlock, that locks the app a moment later: what the link opened is then behind the lock screen.
+        await unlockAndroidPasscodeWhenItShows();
         return;
     }
     await device.openURL({ url });

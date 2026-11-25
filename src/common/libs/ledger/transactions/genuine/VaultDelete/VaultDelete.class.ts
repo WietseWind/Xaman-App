@@ -1,6 +1,6 @@
 import BaseGenuineTransaction from '@common/libs/ledger/transactions/genuine/base';
 
-import { Hash256 } from '@common/libs/ledger/parser/fields';
+import { Blob, Hash256 } from '@common/libs/ledger/parser/fields';
 
 /* Types ==================================================================== */
 import { TransactionJson, TransactionMetadata } from '@common/libs/ledger/types/transaction';
@@ -14,9 +14,11 @@ class VaultDelete extends BaseGenuineTransaction {
 
     public static Fields: { [key: string]: FieldConfig } = {
         VaultID: { required: true, type: Hash256 },
+        MemoData: { type: Blob },
     };
 
     declare VaultID: FieldReturnType<typeof Hash256>;
+    declare MemoData: FieldReturnType<typeof Blob>;
 
     constructor(tx?: TransactionJson, meta?: TransactionMetadata) {
         super(tx, meta);

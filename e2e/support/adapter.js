@@ -6,8 +6,16 @@ class DetoxCucumberAdapter {
         this.testFailed = false;
     }
 
+    // After a failure the app is restarted (support/init.js) and the run goes on, so one failure
+    // does not turn every later scenario into "Force stop". DETOX_CONTINUE_ON_FAIL=no stops at
+    // the first failure instead.
+    // eslint-disable-next-line class-methods-use-this
+    continueOnFail() {
+        return String(process.env.DETOX_CONTINUE_ON_FAIL || 'yes').toLowerCase() !== 'no';
+    }
+
     async beforeEach(context) {
-        if (this.testFailed && String(process.env.DETOX_CONTINUE_ON_FAIL || '').toLowerCase() !== 'yes') {
+        if (this.testFailed && !this.continueOnFail()) {
             throw new Error('Force stop');
         }
 

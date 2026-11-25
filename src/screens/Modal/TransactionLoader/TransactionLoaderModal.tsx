@@ -5,6 +5,7 @@
 
 import React, { Component } from 'react';
 import { ImageBackground, InteractionManager, Text, View } from 'react-native';
+import { Navigation, EventSubscription } from 'react-native-navigation';
 
 import NetworkService from '@services/NetworkService';
 import LedgerService from '@services/LedgerService';
@@ -15,8 +16,6 @@ import { AppScreens } from '@common/constants';
 import { TransactionFactory } from '@common/libs/ledger/factory';
 import { MixingTypes, MutationsMixinType } from '@common/libs/ledger/mixin/types';
 import { Transactions } from '@common/libs/ledger/transactions/types';
-
-import { Navigator } from '@common/helpers/navigator';
 
 import { CoreRepository } from '@store/repositories';
 import { AccountModel, NetworkModel } from '@store/models';
@@ -33,9 +32,11 @@ import { AppStyles } from '@theme';
 import styles from './styles';
 import { ErrorResponse } from '@common/libs/ledger/types/methods';
 import { ComponentTypes } from '@services/NavigationService';
+import { transactionLoaderView } from './loaderView';
 
 /* types ==================================================================== */
 export interface Props {
+    componentId?: string;
     hash: string;
     account: AccountModel;
     network: NetworkModel;
@@ -50,22 +51,43 @@ export interface State {
     account?: AccountModel;
 }
 
+const CANCELLED_LOAD = Symbol('cancelled-transaction-load');
+
 /* Component ==================================================================== */
 class TransactionLoaderModal extends Component<Props, State> {
     static screenName = AppScreens.Modal.TransactionLoader;
 
     private mounted = false;
+    private closing = false;
+    private nativeDismissStarted = false;
+    private initialLoadStarted = false;
+    private appeared = false;
+    private presentationReady: Promise<void>;
+    private resolvePresentation?: () => void;
+    private loadPhase?: 'switch' | 'request';
+    private pendingNetworkNotice?: { attempt: number; phase: 'switch' | 'request' };
+    private navigationListener?: EventSubscription;
+    private initialLoadTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+    private loadAttempt = 0;
+    private requestTimeout?: ReturnType<typeof setTimeout>;
+    private cancelLoad?: () => void;
 
     static options() {
         return {
             topBar: {
                 visible: false,
             },
+            animations: {
+                showModal: {
+                    enter: { waitForRender: true },
+                },
+            },
         };
     }
 
     constructor(props: Props) {
         super(props);
+        this.presentationReady = new Promise((resolve) => { this.resolvePresentation = resolve; });
 
         this.state = {
             isLoading: true,
@@ -77,71 +99,130 @@ class TransactionLoaderModal extends Component<Props, State> {
     }
 
     componentDidMount() {
-        // track mount status
         this.mounted = true;
+        this.navigationListener = Navigation.events().bindComponent(this);
+        NetworkService.on('networkChange', this.onNetworkChange);
+        // Network I/O can overlap presentation; applying its result must wait for native appearance.
+        this.initialLoadTask = InteractionManager.runAfterInteractions(() => {
+            this.initialLoadTask = undefined;
+            if (!this.mounted || this.closing || this.initialLoadStarted) return;
+            this.initialLoadStarted = true;
+            this.loadTransaction();
+        });
+    }
 
-        InteractionManager.runAfterInteractions(this.loadTransaction);
+    componentDidAppear() {
+        if (!this.mounted || this.appeared) return;
+        this.appeared = true;
+        this.resolvePresentation?.();
+        this.resolvePresentation = undefined;
+        if (this.closing) this.dismissNative();
     }
 
     componentWillUnmount() {
-        // keep track of mounted status
         this.mounted = false;
+        this.initialLoadTask?.cancel();
+        this.initialLoadTask = undefined;
+        this.navigationListener?.remove();
+        NetworkService.off('networkChange', this.onNetworkChange);
+        this.invalidateLoad();
+        this.resolvePresentation?.();
+        this.resolvePresentation = undefined;
     }
 
+    private invalidateLoad = () => {
+        this.loadAttempt++;
+        this.loadPhase = undefined;
+        this.pendingNetworkNotice = undefined;
+        const cancel = this.cancelLoad;
+        this.cancelLoad = undefined;
+        cancel?.();
+        clearTimeout(this.requestTimeout);
+        this.requestTimeout = undefined;
+        return this.loadAttempt;
+    };
+
+    private waitForPresentation = async (cancelled: Promise<typeof CANCELLED_LOAD>) => {
+        if (!this.appeared) await Promise.race([this.presentationReady, cancelled]);
+    };
+
+    private canApplyLoad = (attempt: number) => {
+        return this.mounted && !this.closing && this.appeared && attempt === this.loadAttempt;
+    };
+
+    private applyNetworkNotice = () => {
+        const notice = this.pendingNetworkNotice;
+        if (!this.mounted || this.closing || !this.appeared || notice?.attempt !== this.loadAttempt) return;
+        this.pendingNetworkNotice = undefined;
+        const { network } = this.props;
+        const requiresSwitchNetwork = notice.phase === 'switch' || Boolean(network &&
+            network.key !== NetworkService.getConnectionDetails().networkKey);
+        this.setState({ isLoading: false, requiresSwitchNetwork, error: !requiresSwitchNetwork });
+    };
+
+    private onNetworkChange = () => {
+        const phase = this.loadPhase || this.pendingNetworkNotice?.phase;
+        const attempt = this.invalidateLoad();
+        // An idle switch prompt is resumed by its button, not by a network event.
+        if (!this.mounted || this.closing || !phase) return;
+        this.pendingNetworkNotice = { attempt, phase };
+        if (this.appeared) this.applyNetworkNotice();
+        else this.presentationReady.then(this.applyNetworkNotice);
+    };
+
     loadTransaction = async () => {
+        if (!this.mounted || this.closing || !this.initialLoadStarted) return;
         const { hash, account, network } = this.props;
-        const { isLoading } = this.state;
-
-        // no transaction hash has been provided ?
         if (!hash) return;
-
-        // check if we are connected to the network that this push is coming from
-        const { networkKey } = NetworkService.getConnectionDetails();
-
-        if (network && network.key !== networkKey) {
-            // set return
-            this.setState({
-                isLoading: false,
-                requiresSwitchNetwork: true,
-            });
-            return;
-        }
-
-        if (!isLoading) {
-            this.setState({
-                isLoading: true,
-                error: false,
-            });
-        }
-
-        // Give the modal time to open
-        await new Promise((resolve) => {
-            setTimeout(resolve, 500);
+        const attempt = this.invalidateLoad();
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        const clearRequestTimeout = () => {
+            clearTimeout(timeout);
+            if (this.requestTimeout === timeout) this.requestTimeout = undefined;
+        };
+        const cancelled = new Promise<typeof CANCELLED_LOAD>((resolve) => {
+            this.cancelLoad = () => resolve(CANCELLED_LOAD);
         });
-
-        // load the transaction from ledger
         try {
+            const { networkKey } = NetworkService.getConnectionDetails();
+            if (network && network.key !== networkKey) {
+                this.loadPhase = 'switch';
+                await this.waitForPresentation(cancelled);
+                if (this.canApplyLoad(attempt)) {
+                    this.setState({ isLoading: false, requiresSwitchNetwork: true, error: false });
+                }
+                return;
+            }
+
+            this.loadPhase = 'request';
+            if (this.appeared) {
+                this.setState({ isLoading: true, error: false, requiresSwitchNetwork: false });
+            }
+            // The client queues during reconnect. Do not delay this read-only request for presentation.
             const resp = await Promise.race([
-                new Promise((resolve) => {
-                    setTimeout(() => {
+                cancelled,
+                new Promise<ErrorResponse>((resolve) => {
+                    timeout = setTimeout(() => {
                         resolve({
                             error: 'timeout',
                             error_message: Localize.t('global.timeoutFetchingTx'),
                         } as ErrorResponse);
                     }, 10_000);
-                }) as Promise<ErrorResponse>,
+                    this.requestTimeout = timeout;
+                }),
                 LedgerService.getTransaction(hash),
-            ]);
+            ]).finally(clearRequestTimeout);
 
-            if (!this.mounted) {
-                return;
-            }
+            if (resp === CANCELLED_LOAD) return;
+            await this.waitForPresentation(cancelled);
+            if (!this.canApplyLoad(attempt)) return;
 
             if ('error' in resp) {
                 this.setState({
                     error: true,
                     isLoading: false,
                     errorMessage: String(resp?.error_message || resp?.error || ''),
+                    requiresSwitchNetwork: false,
                 });
                 return;
             }
@@ -170,32 +251,26 @@ class TransactionLoaderModal extends Component<Props, State> {
                 });
             }
 
-            // Moved to rendering in page
-            // close this modal and open the transaction details screen
-            // await Navigator.dismissModal();
-
+            // Keep the details in this modal; no second navigation transition is needed.
             this.setState({
                 transactionInstance,
                 account,
             });
-
-            // redirect to details screen with a little-bit delay
-            // setTimeout(() => {
-            //     Navigator.showModal<TransactionDetailsViewProps>(AppScreens.Transaction.Details, {
-            //         item: transactionInstance,
-            //         account,
-            //     }, {
-            //        modalPresentationStyle: OptionsModalPresentationStyle.pageSheet,
-            //     });
-            // }, 500);
         } catch (error) {
-            if (!this.mounted) {
-                return;
-            }
+            clearRequestTimeout();
+            await this.waitForPresentation(cancelled);
+            if (!this.canApplyLoad(attempt)) return;
             this.setState({
                 isLoading: false,
                 error: true,
+                requiresSwitchNetwork: false,
             });
+        } finally {
+            clearRequestTimeout();
+            if (attempt === this.loadAttempt) {
+                this.cancelLoad = undefined;
+                this.loadPhase = undefined;
+            }
         }
     };
 
@@ -216,7 +291,21 @@ class TransactionLoaderModal extends Component<Props, State> {
     };
 
     dismiss = () => {
-        Navigator.dismissModal();
+        if (this.closing) return undefined;
+        this.closing = true;
+        this.initialLoadTask?.cancel();
+        this.initialLoadTask = undefined;
+        this.invalidateLoad();
+        return this.appeared ? this.dismissNative() : undefined;
+    };
+
+    private dismissNative = () => {
+        // iOS can report a dismissal before presentation starts, then present the modal anyway.
+        if (!this.mounted || !this.appeared || this.nativeDismissStarted) return undefined;
+        this.nativeDismissStarted = true;
+        const { componentId } = this.props;
+        // The global currentModal may still refer to this modal's parent.
+        return Navigation.dismissModal(componentId || TransactionLoaderModal.screenName);
     };
 
     renderNetworkSwitch = () => {
@@ -323,17 +412,16 @@ class TransactionLoaderModal extends Component<Props, State> {
             error,
         } = this.state;
 
-        if (isLoading) {
-            return this.renderLoading();
+        switch (transactionLoaderView({ isLoading, requiresSwitchNetwork, error })) {
+            case 'loading':
+                return this.renderLoading();
+            case 'switch':
+                return this.renderNetworkSwitch();
+            case 'error':
+                return this.renderError();
+            default:
+                return null;
         }
-        if (requiresSwitchNetwork) {
-            return this.renderNetworkSwitch();
-        }
-        if (error) {
-            return this.renderError();
-        }
-
-        return null;
     };
 
     render() {

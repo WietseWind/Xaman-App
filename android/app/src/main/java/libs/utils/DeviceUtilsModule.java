@@ -50,7 +50,15 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void isRooted(Promise promise) {
         try {
-            boolean isRooted = checkRootMethod1() || checkRootMethod2() || checkRootMethod3();
+            // The result only drives a warning (src/app.tsx). Emulator images ship with su and
+            // test-keys, so emulators (development, CI, e2e) never count as rooted.
+            if (isEmulator()) {
+                promise.resolve(false);
+                return;
+            }
+            // A su binary is the signal. test-keys alone is also found on unrooted vendor and
+            // custom ROMs, where a warning at every start would be wrong.
+            boolean isRooted = checkRootMethod2() || checkRootMethod3();
             promise.resolve(isRooted);
         } catch (Exception e) {
             promise.reject(e);
@@ -112,7 +120,7 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         final Map<String, Object> constants = new HashMap<>();
         final Map<String, Object> layoutInsets = new HashMap<>();
 
-        layoutInsets.put("top", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaTop())));
+        layoutInsets.put("top", statusBarTopDp());
         layoutInsets.put("bottom", Math.round(PixelUtil.toDIPFromPixel(SafeAreaInsets.getSafeAreaBottom())));
 
         final Map<String, Object> tabBarMetrics = new HashMap<>();
@@ -129,11 +137,39 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         return constants;
     }
 
+    /**
+     * Prefer the inset seeded by LaunchActivity. If React Native asked for
+     * constants first, fall back to the system status bar height.
+     */
+    private int statusBarTopDp() {
+        int px = SafeAreaInsets.getSafeAreaTop();
+        if (px <= 0) {
+            int id = getReactApplicationContext().getResources().getIdentifier(
+                    "status_bar_height", "dimen", "android");
+            if (id > 0) {
+                px = getReactApplicationContext().getResources().getDimensionPixelSize(id);
+            }
+        }
+        return Math.round(PixelUtil.toDIPFromPixel(px));
+    }
 
     // private methods
-    private static boolean checkRootMethod1() {
-        String buildTags = android.os.Build.TAGS;
-        return buildTags != null && buildTags.contains("test-keys");
+    private static boolean isEmulator() {
+        String fingerprint = String.valueOf(Build.FINGERPRINT);
+        String hardware = String.valueOf(Build.HARDWARE);
+        String model = String.valueOf(Build.MODEL);
+        String product = String.valueOf(Build.PRODUCT);
+        return fingerprint.startsWith("generic")
+                || fingerprint.contains("/sdk_gphone")
+                || fingerprint.contains("emulator")
+                || hardware.equals("goldfish")
+                || hardware.equals("ranchu")
+                || model.contains("Emulator")
+                || model.contains("Android SDK built for")
+                || model.startsWith("sdk_gphone")
+                || product.startsWith("sdk")
+                || product.contains("emulator")
+                || product.contains("simulator");
     }
 
     private static boolean checkRootMethod2() {

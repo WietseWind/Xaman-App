@@ -1,4 +1,5 @@
 import BaseLedgerObject from '@common/libs/ledger/objects/base';
+import NetworkService from '@services/NetworkService';
 
 import { AccountID, Hash256, STArray, UInt32, UInt64 } from '@common/libs/ledger/parser/fields';
 
@@ -11,6 +12,10 @@ import { FieldReturnType } from '@common/libs/ledger/parser/fields/types';
 class Delegate extends BaseLedgerObject<DelegateLedgerEntry> {
     public static Type = LedgerEntryTypes.Delegate as const;
     public readonly Type = Delegate.Type;
+    public readonly PermissionTransactionTypes: Record<string, number>;
+    public readonly PermissionNativeAsset: string;
+    private readonly networkContext: ReturnType<typeof NetworkService.getConnectionDetails>;
+    private readonly networkIdentity?: string;
 
     public static Fields = {
         Account: { type: AccountID },
@@ -18,6 +23,7 @@ class Delegate extends BaseLedgerObject<DelegateLedgerEntry> {
         Permissions: { type: STArray },
 
         OwnerNode: { type: UInt64 },
+        DestinationNode: { type: UInt64 },
         PreviousTxnID: { type: Hash256 },
         PreviousTxnLgrSeq: { type: UInt32 },
     };
@@ -27,17 +33,31 @@ class Delegate extends BaseLedgerObject<DelegateLedgerEntry> {
     declare Permissions: FieldReturnType<typeof STArray>;
 
     declare OwnerNode: FieldReturnType<typeof UInt64>;
+    declare DestinationNode?: FieldReturnType<typeof UInt64>;
     declare PreviousTxnID: FieldReturnType<typeof Hash256>;
     declare PreviousTxnLgrSeq: FieldReturnType<typeof UInt32>;
 
     constructor(object: DelegateLedgerEntry) {
         super(object);
 
+        this.PermissionTransactionTypes = { ...NetworkService.getRawNetworkDefinitions()?.TRANSACTION_TYPES };
+        this.PermissionNativeAsset = NetworkService.getRawNetworkDefinitions()?.native_currency_code ||
+            NetworkService.getNativeAsset();
+        this.networkContext = NetworkService.getConnectionDetails();
+        this.networkIdentity = NetworkService.getNetwork()?.id?.toString();
+
         this.LedgerEntryType = LedgerEntryTypes.Delegate;
     }
 
     get Date(): undefined {
         return undefined;
+    }
+
+    isOnCurrentNetwork(): boolean {
+        const current = NetworkService.getConnectionDetails();
+        return current.networkKey === this.networkContext.networkKey &&
+            current.networkId === this.networkContext.networkId && current.type === this.networkContext.type &&
+            NetworkService.getNetwork()?.id?.toString() === this.networkIdentity;
     }
 }
 

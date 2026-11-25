@@ -1,6 +1,77 @@
 PODS:
   - boost (1.83.0)
   - DoubleConversion (1.1.6)
+  - EASClient (0.12.0):
+    - ExpoModulesCore
+  - EXConstants (16.0.2):
+    - ExpoModulesCore
+  - EXJSONUtils (0.13.1)
+  - EXManifests (0.14.3):
+    - ExpoModulesCore
+  - Expo (51.0.39):
+    - ExpoModulesCore
+  - ExpoAsset (10.0.10):
+    - ExpoModulesCore
+  - ExpoFileSystem (17.0.1):
+    - ExpoModulesCore
+  - ExpoFont (12.0.10):
+    - ExpoModulesCore
+  - ExpoKeepAwake (13.0.2):
+    - ExpoModulesCore
+  - ExpoModulesCore (1.12.26):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsinspector
+    - React-NativeModulesApple
+    - React-RCTAppDelegate
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - EXStructuredHeaders (3.8.0)
+  - EXUpdates (0.25.28):
+    - DoubleConversion
+    - EASClient
+    - EXManifests
+    - ExpoModulesCore
+    - EXStructuredHeaders
+    - EXUpdatesInterface
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - ReachabilitySwift
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - "sqlite3 (~> 3.45.3+1)"
+    - Yoga
+  - EXUpdatesInterface (0.16.2):
+    - ExpoModulesCore
   - FBLazyVector (0.74.2)
   - Firebase (10.29.0):
     - Firebase/Core (= 10.29.0)
@@ -190,6 +261,7 @@ PODS:
     - FBLazyVector (= 0.74.2)
     - RCTRequired (= 0.74.2)
     - React-Core (= 0.74.2)
+  - ReachabilitySwift (5.2.4)
   - React (0.74.2):
     - React-Core (= 0.74.2)
     - React-Core/DevSupport (= 0.74.2)
@@ -1098,9 +1170,6 @@ PODS:
     - React-debug
   - react-native-netinfo (11.3.2):
     - React-Core
-  - react-native-sdk (7.1.0):
-    - React
-    - VeriffSDK (= 7.4.0)
   - react-native-webview (13.17.0):
     - DoubleConversion
     - glog
@@ -1387,8 +1456,10 @@ PODS:
     - React
     - TangemSdk (= 3.4.0)
   - SocketRocket (0.7.0)
+  - "sqlite3 (3.45.3+1)":
+    - "sqlite3/common (= 3.45.3+1)"
+  - "sqlite3/common (3.45.3+1)"
   - TangemSdk (3.4.0)
-  - VeriffSDK (7.4.0)
   - VisionCamera (4.6.4):
     - VisionCamera/Core (= 4.6.4)
     - VisionCamera/React (= 4.6.4)
@@ -1400,6 +1471,19 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - EASClient (from `../node_modules/expo-eas-client/ios`)
+  - EXConstants (from `../node_modules/expo-constants/ios`)
+  - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
+  - EXManifests (from `../node_modules/expo-manifests/ios`)
+  - Expo (from `../node_modules/expo`)
+  - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
+  - ExpoFont (from `../node_modules/expo-font/ios`)
+  - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - EXStructuredHeaders (from `../node_modules/expo-structured-headers/ios`)
+  - EXUpdates (from `../node_modules/expo-updates/ios`)
+  - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - Firebase
   - FirebaseCore
@@ -1439,7 +1523,6 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
-  - "react-native-sdk (from `../node_modules/@veriff/react-native-sdk`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1493,15 +1576,42 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - PromisesSwift
+    - ReachabilitySwift
     - SocketRocket
+    - sqlite3
     - TangemSdk
-    - VeriffSDK
 
 EXTERNAL SOURCES:
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  EASClient:
+    :path: "../node_modules/expo-eas-client/ios"
+  EXConstants:
+    :path: "../node_modules/expo-constants/ios"
+  EXJSONUtils:
+    :path: "../node_modules/expo-json-utils/ios"
+  EXManifests:
+    :path: "../node_modules/expo-manifests/ios"
+  Expo:
+    :path: "../node_modules/expo"
+  ExpoAsset:
+    :path: "../node_modules/expo-asset/ios"
+  ExpoFileSystem:
+    :path: "../node_modules/expo-file-system/ios"
+  ExpoFont:
+    :path: "../node_modules/expo-font/ios"
+  ExpoKeepAwake:
+    :path: "../node_modules/expo-keep-awake/ios"
+  ExpoModulesCore:
+    :path: "../node_modules/expo-modules-core"
+  EXStructuredHeaders:
+    :path: "../node_modules/expo-structured-headers/ios"
+  EXUpdates:
+    :path: "../node_modules/expo-updates/ios"
+  EXUpdatesInterface:
+    :path: "../node_modules/expo-updates-interface/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   fmt:
@@ -1561,8 +1671,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
-  react-native-sdk:
-    :path: "../node_modules/@veriff/react-native-sdk"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-nativeconfig:
@@ -1633,6 +1741,19 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
+  EASClient: 1509a9a6b48b932ec61667644634daf2562983b8
+  EXConstants: 409690fbfd5afea964e5e9d6c4eb2c2b59222c59
+  EXJSONUtils: 30c17fd9cc364d722c0946a550dfbf1be92ef6a4
+  EXManifests: c1fab4c3237675e7b0299ea8df0bcb14baca4f42
+  Expo: 8c995afb875c15bf8439af0b20bcb9ed8f90d0bd
+  ExpoAsset: 323700f291684f110fb55f0d4022a3362ea9f875
+  ExpoFileSystem: 80bfe850b1f9922c16905822ecbf97acd711dc51
+  ExpoFont: 00756e6c796d8f7ee8d211e29c8b619e75cbf238
+  ExpoKeepAwake: 3b8815d9dd1d419ee474df004021c69fdd316d08
+  ExpoModulesCore: 831ece8311a489418746925820bbffdda587d6f4
+  EXStructuredHeaders: cb8d1f698e144f4c5547b4c4963e1552f5d2b457
+  EXUpdates: 52c797a4b71b25315353041c29571cd65ecc7141
+  EXUpdatesInterface: 996527fd7d1a5d271eb523258d603f8f92038f24
   FBLazyVector: 4bc164e5b5e6cfc288d2b5ff28643ea15fa1a589
   Firebase: cec914dab6fd7b1bd8ab56ea07ce4e03dd251c2d
   FirebaseAnalytics: 23717de130b779aa506e757edb9713d24b6ffeda
@@ -1658,6 +1779,7 @@ SPEC CHECKSUMS:
   RCTDeprecation: b03c35057846b685b3ccadc9bfe43e349989cdb2
   RCTRequired: 194626909cfa8d39ca6663138c417bc6c431648c
   RCTTypeSafety: 552aff5b8e8341660594db00e53ac889682bc120
+  ReachabilitySwift: 32793e867593cfc1177f5d16491e3a197d2fccda
   React: a57fe42044fe6ed3e828f8867ce070a6c5872754
   React-callinvoker: 6bedefb354a8848b534752417954caa3a5cf34f9
   React-Codegen: 0952549a095f8f8cb2fb5def1733b6b232769b1c
@@ -1679,7 +1801,6 @@ SPEC CHECKSUMS:
   React-logger: 29fa3e048f5f67fe396bc08af7606426d9bd7b5d
   React-Mapbuffer: bf56147c9775491e53122a94c423ac201417e326
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
-  react-native-sdk: f5e5134a8855b4b6d7e923c8332d236a5fd814b2
   react-native-webview: 6e3f06472b4bbb4650da76beccf0e9145bf0e1de
   React-nativeconfig: 9f223cd321823afdecf59ed00861ab2d69ee0fc1
   React-NativeModulesApple: ff7efaff7098639db5631236cfd91d60abff04c0
@@ -1712,11 +1833,11 @@ SPEC CHECKSUMS:
   RNFBMessaging: 91592ea949854c66697757af648a2c07bcb583b9
   RNTangemSdk: b4a4c91c617daca427a69cc7f784425c6789acd7
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
+  sqlite3: 02d1f07eaaa01f80a1c16b4b31dfcbb3345ee01a
   TangemSdk: d782fc8c55cb56ffdfcaf7081422e02b19f18334
-  VeriffSDK: 9c4e31693dfe772af8553209c4a6543bffc75d24
   VisionCamera: 168f46071274ce58c50adef4c82ae3367b2ba2a6
   Yoga: ae3c32c514802d30f687a04a6a35b348506d411f
 
-PODFILE CHECKSUM: 7ead426bae31f4997f73b6dc0cd70b6c324c76f9
+PODFILE CHECKSUM: 70462a1201290c5cb9ac1d8f88fc3eb56c1a70b3
 
 COCOAPODS: 1.15.2

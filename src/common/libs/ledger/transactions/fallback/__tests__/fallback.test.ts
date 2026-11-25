@@ -27,7 +27,7 @@ describe('Fallback tx', () => {
 
         describe('generateDescription()', () => {
             it('should return the expected description', () => {
-                const expectedDescription = `This is an ${tx.TransactionType} transaction`;
+                const expectedDescription = `Transaction type: ${tx.TransactionType}`;
                 expect(info.generateDescription()).toEqual(expectedDescription);
             });
         });

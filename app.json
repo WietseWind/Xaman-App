@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Xaman",
+    "slug": "xaman",
+    "jsEngine": "hermes",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.xrpllabs.xumm"
+    },
+    "android": {
+      "package": "com.xrpllabs.xumm"
+    }
+  }
+}

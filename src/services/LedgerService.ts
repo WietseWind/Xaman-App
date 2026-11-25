@@ -4,6 +4,7 @@
  */
 import EventEmitter from 'events';
 import BigNumber from 'bignumber.js';
+import { MPT_MAX_AMOUNT, mptRawToDisplay } from '@common/utils/mptAmount';
 import { has, map, isEmpty, assign, startsWith } from 'lodash';
 
 import { NetworkConfig } from '@common/constants';
@@ -18,6 +19,8 @@ import { RippleStateToTrustLine } from '@common/libs/ledger/parser/entry';
 import { LedgerEntryFlags } from '@common/constants/flags';
 
 import NetworkService from '@services/NetworkService';
+import { recoverSubmitAfterSendError, submitNetworkFromConnection } from '@services/submitRecovery';
+import { submittedBlobHash } from '@services/submittedBlobHash';
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 import {
     AccountInfoRequest,
@@ -141,6 +144,44 @@ class LedgerService extends EventEmitter {
             ledger_index: 'validated',
             signer_lists: false,
         });
+    };
+
+    /**
+     * The accounts in the signer list of an account (the accounts that can multi sign for it).
+     * @returns the addresses; an empty list when the account has no signer list; undefined when it is
+     * not known (no answer, an error, the account is not on this ledger)
+     */
+    getAccountSignerList = async (account: string): Promise<string[] | undefined> => {
+        try {
+            const resp: any = await NetworkService.send<AccountInfoRequest, AccountInfoResponse>({
+                command: 'account_info',
+                account,
+                ledger_index: 'validated',
+                signer_lists: true,
+            });
+
+            if (!resp || 'error' in resp || !resp.account_data) {
+                return undefined;
+            }
+
+            // inside account_data (API v1), or next to it (API v2)
+            const signerLists = resp.account_data.signer_lists ?? resp.signer_lists;
+            if (!Array.isArray(signerLists)) {
+                return undefined;
+            }
+
+            const signers: string[] = [];
+            signerLists.forEach((signerList: any) => {
+                (Array.isArray(signerList?.SignerEntries) ? signerList.SignerEntries : []).forEach((entry: any) => {
+                    if (typeof entry?.SignerEntry?.Account === 'string') {
+                        signers.push(entry.SignerEntry.Account);
+                    }
+                });
+            });
+            return signers;
+        } catch {
+            return undefined;
+        }
     };
 
     simulateTransaction = (tx: TransactionJson) => {
@@ -409,6 +450,7 @@ class LedgerService extends EventEmitter {
             command: 'account_objects',
             account,
             type: 'mptoken',
+            marker,
         }).then(async (resp) => {
             if ('error' in resp) {
                 this.logger.error('Unable to get mpt details state', resp.error);
@@ -420,8 +462,8 @@ class LedgerService extends EventEmitter {
                 marker: string;
             };
 
-            const accountLinesFormatted: AccountLinesTrustline[] = await Promise.all(
-                account_objects.map(async (mpt) => {
+            const fetchedLines = await Promise.all(
+                account_objects.map(async (mpt): Promise<AccountLinesTrustline | undefined> => {
                     const mpTokenIssuance: MPTokenIssuance = (
                         (await NetworkService.send({
                             command: 'ledger_entry',
@@ -429,13 +471,14 @@ class LedgerService extends EventEmitter {
                         })) as any
                     )?.node;
 
-                    let amount = Number(mpt?.MPTAmount || 0);
-                    let maxAmount = Number(mpTokenIssuance?.MaximumAmount || 0);
-
-                    if (mpTokenIssuance?.AssetScale && Number(mpTokenIssuance?.AssetScale) > 1) {
-                        amount /= 10 ** (mpTokenIssuance?.AssetScale || 1);
-                        maxAmount /= 10 ** (mpTokenIssuance?.AssetScale || 1);
+                    if (!mpTokenIssuance) {
+                        this.logger.warn('Unable to load MPT issuance details', mpt.MPTokenIssuanceID);
+                        return undefined;
                     }
+                    const amount = mptRawToDisplay(mpt.MPTAmount ?? '0', mpTokenIssuance.AssetScale);
+                    const maxAmount = mptRawToDisplay(
+                        mpTokenIssuance.MaximumAmount ?? MPT_MAX_AMOUNT, mpTokenIssuance.AssetScale,
+                    );
 
                     return {
                         account: DecodeMPTokenIssuanceToIssuer(mpt.MPTokenIssuanceID),
@@ -453,6 +496,10 @@ class LedgerService extends EventEmitter {
                         peer_authorized: true,
                     };
                 }),
+            );
+
+            const accountLinesFormatted = fetchedLines.filter(
+                (line): line is AccountLinesTrustline => line !== undefined,
             );
 
             if (_marker && _marker !== marker) {
@@ -753,15 +800,19 @@ class LedgerService extends EventEmitter {
                 success: true,
                 engineResult: engine_result,
                 message: engine_result_message,
+                hash: submittedBlobHash(txHash, submitResponse.tx_json?.hash),
             });
         } catch (error: any) {
-            // something wrong happened
-            return {
-                success: false,
-                engineResult: 'telFAILED',
-                message: error?.message,
-                network: undefined,
-            };
+            // The socket can die after the node has already accepted the blob.
+            // Look the hash up on the connection we have now instead of
+            // reporting telFAILED with no node.
+            const details = NetworkService.getConnectionDetails();
+            return recoverSubmitAfterSendError({
+                hash: txHash,
+                error,
+                network: submitNetworkFromConnection(details),
+                lookup: (id) => this.getTransaction(id),
+            });
         }
     };
 

@@ -1,4 +1,5 @@
 import Localize from '@locale';
+import { mptRawToDisplay } from '@common/utils/mptAmount';
 
 import { AccountModel } from '@store/models';
 
@@ -71,12 +72,7 @@ class MPTokenInfo extends ExplainerAbstract<MPToken> {
     getMonetaryDetails() {
         const factor = [];
         if (this.item.MPTAmount) {
-            let value = this.item?.MPTAmount || 0;
-            if (this.issuance) {
-                if (this.issuance.AssetScale && this.issuance.AssetScale > 1) {
-                    value /= 10 ** this.issuance.AssetScale;
-                }
-            }
+            const value = mptRawToDisplay(this.item.MPTAmount, this.issuance?.AssetScale);
             factor.push({
                 currency: ' ',
                 value: String(value),

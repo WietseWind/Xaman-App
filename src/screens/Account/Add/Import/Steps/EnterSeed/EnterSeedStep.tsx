@@ -26,16 +26,18 @@ import {
     // Switch,
     Icon,
 } from '@components/General';
+import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
 
 import { ConvertCodecAlphabet } from '@common/utils/codec';
 import {
     FamilySeedAlgorithm,
     deriveFamilySeedAccount,
     deriveFamilySeedAddresses,
+    deriveFamilySeedCandidates,
     isFamilySeedCurvePickerEligible,
     pickFamilySeedCurve,
 } from '@common/utils/familySeedImport';
-import { curveChoiceButtonLabel, curvePickerItemTitle } from '@common/utils/mnemonicImport';
+import { curveChoiceButtonLabel, curvePickerItemTitle, getMnemonicAlgorithm } from '@common/utils/mnemonicImport';
 
 import LedgerService from '@services/LedgerService';
 import NetworkService from '@services/NetworkService';
@@ -156,16 +158,52 @@ class EnterSeedStep extends Component<Props, State> {
         });
     };
 
+    // the secret as typed: the field reports it before the state has it
+    currentSecret = (): string | undefined => {
+        const { secret } = this.state;
+
+        return this.pendingSecret !== undefined ? this.pendingSecret : secret;
+    };
+
+    // the curve of an account the app already knows for this seed, when there is one
+    knownCurve = (secret?: string): FamilySeedAlgorithm | undefined => {
+        const { pickKnownAccount } = this.context;
+
+        try {
+            const known = pickKnownAccount(deriveFamilySeedCandidates(this.resolveFamilySeed(secret as string)));
+            return known ? getMnemonicAlgorithm(known) : undefined;
+        } catch {
+            return undefined;
+        }
+    };
+
     runCurveAutodetect = async (token: number, secret?: string): Promise<FamilySeedAlgorithm> => {
         if (!isFamilySeedCurvePickerEligible(secret) || this.userSelectedCurve || token !== this.curveDetectToken) {
             return this.getSecretType();
         }
 
+        // the app already knows which account this seed belongs to: show that curve, ask nothing
+        const known = this.knownCurve(secret);
+        if (known) {
+            this.setState({ secretType: known });
+            return known;
+        }
+
         try {
-            const picked = await pickFamilySeedCurve({
+            await NetworkService.prepareForAccountLookup();
+            let picked = await pickFamilySeedCurve({
                 secret: this.resolveFamilySeed(secret as string),
                 getAccountInfo: (address) => LedgerService.getAccountInfo(address),
             });
+            // A dropped reply makes one side "unknown", which hides a real
+            // ed-funded / secp-absent account. Ask the node once more.
+            if (picked.status === 'inconclusive') {
+                await NetworkService.prepareForAccountLookup();
+                picked = await pickFamilySeedCurve({
+                    secret: this.resolveFamilySeed(secret as string),
+                    getAccountInfo: (address) => LedgerService.getAccountInfo(address),
+                });
+            }
 
             if (token !== this.curveDetectToken || this.userSelectedCurve) {
                 return this.getSecretType();
@@ -213,6 +251,11 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     applySecret = (secret?: string) => {
+        // Blur and the IME re-send the same secret. Restarting the lookup
+        // drops a result that already knows ed25519 is funded and secp is not.
+        if (secret === this.pendingSecret) {
+            return;
+        }
         this.userSelectedCurve = false;
         this.curveDetectToken += 1;
         this.pendingSecret = secret;
@@ -232,7 +275,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     ensureCurveAutodetect = async (): Promise<FamilySeedAlgorithm> => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
 
         if (this.curveDetectTimer) {
             clearTimeout(this.curveDetectTimer);
@@ -279,7 +322,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     driveFamilySeed = async () => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
 
         try {
             if (!secret) {
@@ -289,6 +332,15 @@ class EnterSeedStep extends Component<Props, State> {
             this.setState({ isLoading: true });
 
             const xrplSecret = this.resolveFamilySeed(secret);
+
+            // an account the app already knows (the one being upgraded, or a read-only one) tells
+            // which curve is meant: no ledger lookup, no prompt
+            const { pickKnownAccount } = this.context;
+            const known = pickKnownAccount(deriveFamilySeedCandidates(xrplSecret), this.userSelectedCurve);
+            if (known) {
+                await this.goNext(known);
+                return;
+            }
 
             if (!this.userSelectedCurve) {
                 await this.ensureCurveAutodetect();
@@ -340,7 +392,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     derivePrivateKey = () => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
         try {
             if (!secret) {
                 throw new Error('Private key is required!');
@@ -385,7 +437,7 @@ class EnterSeedStep extends Component<Props, State> {
     };
 
     onNextPress = () => {
-        const secret = this.pendingSecret !== undefined ? this.pendingSecret : this.state.secret;
+        const secret = this.currentSecret();
 
         try {
             // normal family seed
@@ -459,28 +511,30 @@ class EnterSeedStep extends Component<Props, State> {
 
                     <Spacer size={50} />
 
-                    <TextInput
-                        testID="seed-input"
-                        placeholder={
-                            alternativeSeedAlphabet
-                                ? Localize.t('account.enterSecret')
-                                : Localize.t('account.pleaseEnterYourFamilySeed')
-                        }
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        secureTextEntry={!showSecret}
-                        keyboardType={keyboardType}
-                        inputStyle={
-                            String(secret || '') === '' ? styles.inputTextEmpty : styles.inputText
-                        }
-                        onChangeText={this.onTextChange}
-                        style={styles.textInput}
-                        value={secret}
-                        showScanner
-                        scannerType={StringType.XrplSecret}
-                        onScannerRead={this.onQRCodeRead}
-                        numberOfLines={1}
-                    />
+                    <SensitiveAccessibilityView>
+                        <TextInput
+                            testID="seed-input"
+                            placeholder={
+                                alternativeSeedAlphabet
+                                    ? Localize.t('account.enterSecret')
+                                    : Localize.t('account.pleaseEnterYourFamilySeed')
+                            }
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            secureTextEntry={!showSecret}
+                            keyboardType={keyboardType}
+                            inputStyle={
+                                String(secret || '') === '' ? styles.inputTextEmpty : styles.inputText
+                            }
+                            onChangeText={this.onTextChange}
+                            style={styles.textInput}
+                            value={secret}
+                            showScanner
+                            scannerType={StringType.XrplSecret}
+                            onScannerRead={this.onQRCodeRead}
+                            numberOfLines={1}
+                        />
+                    </SensitiveAccessibilityView>
                     <Spacer size={20} />
                     <Button
                         roundedMini

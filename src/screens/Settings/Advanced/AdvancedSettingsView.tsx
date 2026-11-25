@@ -8,6 +8,8 @@ import { View, Text, ScrollView, Alert, Platform, Linking } from 'react-native';
 import PushNotificationsService from '@services/PushNotificationsService';
 import NetworkService from '@services/NetworkService';
 import BackendService from '@services/BackendService';
+import UpdateService, { RunningUpdate, UpdateChannel } from '@services/UpdateService';
+import LoggerService from '@services/LoggerService';
 
 import { CoreRepository, NetworkRepository, ProfileRepository } from '@store/repositories';
 import { CoreModel, ProfileModel } from '@store/models';
@@ -16,9 +18,10 @@ import { NetworkType } from '@store/types';
 import { AppScreens, NetworkConfig } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 
-import { SetFlagSecure, GetAppVersionCode, GetAppReadableVersion } from '@common/helpers/app';
+import { SetFlagSecure, GetAppVersionCode, ExitApp } from '@common/helpers/app';
+import { KeychainGroupInfo, getKeychainGroupInfo } from '@common/libs/vaultInfo';
 
-import { TouchableDebounce, Header, Icon, Switch, MultiPressDetector } from '@components/General';
+import { Header, Switch, MultiPressDetector } from '@components/General';
 
 import Localize from '@locale';
 
@@ -27,10 +30,24 @@ import { NetworkSettingViewProps } from '@screens/Settings/Advanced/Network';
 import { DeveloperSettingViewProps } from '@screens/Settings/Advanced/DeveloperSettings';
 import { AuthenticateOverlayProps } from '@screens/Overlay/Authenticate';
 import { ChangeLogOverlayProps } from '@screens/Overlay/ChangeLog';
+import { RuntimeUpdatesViewProps } from '@screens/Settings/Advanced/RuntimeUpdates';
+import {
+    OtaInstall,
+    OtaInstallStatus,
+    fetchOtaUpdates,
+    getOtaInstall,
+    promptOtaRestart,
+    restartIntoUpdate,
+    subscribeOtaInstall,
+} from '@screens/Settings/Advanced/RuntimeUpdates/otaInstall';
 
 // style
-import { AppStyles } from '@theme';
+import { SettingsRow, SettingsSection } from '../SettingsSection';
+import sectionStyles from '../sectionStyles';
 import styles from './styles';
+
+// session log (Settings > Advanced > Session log)
+const logger = LoggerService.createLogger('Settings');
 
 /* types ==================================================================== */
 export interface Props {}
@@ -38,11 +55,23 @@ export interface Props {}
 export interface State {
     coreSettings: CoreModel;
     profile?: ProfileModel;
+    // over-the-air updates (developer mode)
+    otaBusy: boolean;
+    otaChecking: boolean;
+    otaReady: boolean;
+    /** an update downloading or downloaded from OTA Updates (otaInstall.ts) */
+    otaInstall?: OtaInstall;
+    // iOS, developer mode: the access groups the keychain items are in
+    keychainGroupInfo?: KeychainGroupInfo;
 }
 
 /* Component ==================================================================== */
 class AdvancedSettingsView extends Component<Props, State> {
     static screenName = AppScreens.Settings.Advanced;
+
+    private unsubscribeOtaInstall?: () => void;
+    private mounted = false;
+    private keychainGroupInfoRequested = false;
 
     static options() {
         return {
@@ -56,21 +85,52 @@ class AdvancedSettingsView extends Component<Props, State> {
         this.state = {
             coreSettings: CoreRepository.getSettings(),
             profile: ProfileRepository.getProfile(),
+            otaBusy: false,
+            otaChecking: false,
+            otaReady: false,
+            otaInstall: getOtaInstall(),
+            keychainGroupInfo: undefined,
         };
     }
 
     componentDidMount() {
+        this.mounted = true;
         CoreRepository.on('updateSettings', this.updateUI);
+        this.unsubscribeOtaInstall = subscribeOtaInstall((otaInstall) => this.setState({ otaInstall }));
+        this.loadKeychainGroupInfo();
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         CoreRepository.off('updateSettings', this.updateUI);
+        if (this.unsubscribeOtaInstall) {
+            this.unsubscribeOtaInstall();
+        }
     }
 
-    updateUI = (coreSettings: CoreModel) => {
-        this.setState({
-            coreSettings,
+    // iOS, developer mode: where the keychain items are (also goes to the session log)
+    loadKeychainGroupInfo = () => {
+        const { coreSettings } = this.state;
+
+        if (Platform.OS !== 'ios' || !coreSettings.developerMode || this.keychainGroupInfoRequested) {
+            return;
+        }
+        this.keychainGroupInfoRequested = true;
+
+        getKeychainGroupInfo().then((keychainGroupInfo) => {
+            if (this.mounted) {
+                this.setState({ keychainGroupInfo });
+            }
         });
+    };
+
+    updateUI = (coreSettings: CoreModel) => {
+        this.setState(
+            {
+                coreSettings,
+            },
+            this.loadKeychainGroupInfo,
+        );
     };
 
     showChangeLog = () => {
@@ -144,6 +204,7 @@ class AdvancedSettingsView extends Component<Props, State> {
                 // persist the settings
                 CoreRepository.saveSettings({ developerMode: true });
                 BackendService.action('developermode', 'on');
+                logger.debug('Developer mode turned on (OTA updates: test updates can be installed by hand)');
 
                 if (Platform.OS === 'android') {
                     SetFlagSecure(false);
@@ -166,9 +227,26 @@ class AdvancedSettingsView extends Component<Props, State> {
         // persist the settings
         CoreRepository.saveSettings({ developerMode: false });
         BackendService.action('developermode', 'off');
+        logger.debug('Developer mode turned off');
 
         if (Platform.OS === 'android') {
             SetFlagSecure(true);
+        }
+
+        // a test update runs: back to the public version (or the store version). Offline, this is
+        // retried after the next start.
+        if (UpdateService.getRunningUpdate().channel === UpdateChannel.Developer) {
+            UpdateService.exitDeveloperChannel()
+                .then((changed) => {
+                    if (changed) {
+                        this.setState({ otaReady: true });
+                        promptOtaRestart();
+                    }
+                })
+                .catch((error) => {
+                    // retried by UpdateService after the next start
+                    logger.warn('OTA updates: leaving the test update failed; retried after the next start', error);
+                });
         }
     };
 
@@ -254,6 +332,199 @@ class AdvancedSettingsView extends Component<Props, State> {
         Navigator.push<NetworkSettingViewProps>(AppScreens.Settings.Network.List, {});
     };
 
+    /* Over The Air Updates (developer mode) ==================================================================== */
+
+    showOtaError = (error: any) => {
+        Alert.alert(Localize.t('global.error'), error?.message ? String(error.message) : String(error));
+    };
+
+    /** loads the list first, so the screen opens with it (no refresh animation on opening) */
+    showRuntimeUpdates = async () => {
+        const { otaChecking } = this.state;
+
+        if (otaChecking) {
+            return;
+        }
+
+        this.setState({ otaChecking: true });
+        try {
+            const updates = await fetchOtaUpdates();
+            Navigator.push<RuntimeUpdatesViewProps>(AppScreens.Settings.RuntimeUpdates, { updates });
+        } catch (error: any) {
+            logger.warn('OTA updates: the update list could not be loaded', error);
+            this.showOtaError(error);
+        } finally {
+            this.setState({ otaChecking: false });
+        }
+    };
+
+    leaveTestUpdate = async () => {
+        const { otaBusy } = this.state;
+
+        if (otaBusy) {
+            return;
+        }
+
+        this.setState({ otaBusy: true });
+        try {
+            logger.debug('OTA updates: "Back to the public version" chosen');
+            const changed = await UpdateService.exitDeveloperChannel();
+            if (!changed) {
+                Alert.alert(Localize.t('settings.otaTitle'), Localize.t('settings.otaNothingToInstall'));
+                return;
+            }
+            this.setState({ otaReady: true });
+            promptOtaRestart();
+        } catch (error: any) {
+            logger.warn('OTA updates: leaving the test update failed', error);
+            this.showOtaError(error);
+        } finally {
+            this.setState({ otaBusy: false });
+        }
+    };
+
+    revertToStoreVersion = () => {
+        const { otaId } = UpdateService.getRunningUpdate();
+
+        Alert.alert(Localize.t('settings.otaRevertToStore'), Localize.t('settings.otaRevertWarning', { otaId }), [
+            { text: Localize.t('global.cancel'), style: 'cancel' },
+            { text: Localize.t('global.continue'), style: 'destructive', onPress: this.runRevert },
+        ]);
+    };
+
+    runRevert = async () => {
+        try {
+            // takes effect on the next launch, before the update can run again
+            await UpdateService.revertToStoreVersion();
+            Alert.alert(Localize.t('settings.otaRevertToStore'), Localize.t('settings.otaReopen'), [
+                { text: Localize.t('global.notNow'), style: 'cancel' },
+                { text: Localize.t('settings.otaCloseApp'), onPress: ExitApp },
+            ]);
+        } catch (error: any) {
+            logger.warn('OTA updates: scheduling the revert to the store version failed', error);
+            this.showOtaError(error);
+        }
+    };
+
+    otaRunningLabel = (running: RunningUpdate): string => {
+        if (running.otaId === 0) {
+            return Localize.t('settings.otaStoreVersion');
+        }
+        if (running.channel === UpdateChannel.Developer) {
+            return Localize.t('settings.otaTestUpdateNumber', { otaId: running.otaId });
+        }
+        return Localize.t('settings.otaUpdateNumber', { otaId: running.otaId });
+    };
+
+    otaCheckValue = (): string | undefined => {
+        const { otaChecking, otaInstall } = this.state;
+
+        if (otaChecking) {
+            return Localize.t('global.loading');
+        }
+        if (otaInstall?.status === OtaInstallStatus.Downloading) {
+            return Localize.t('settings.otaDownloading');
+        }
+        return undefined;
+    };
+
+    renderVaultInfo = () => {
+        const { keychainGroupInfo } = this.state;
+
+        const groups = keychainGroupInfo?.groups ?? {};
+        // the shared group first, then any group that still holds items
+        const names = Object.keys(groups).sort((a, b) => {
+            if (a === keychainGroupInfo?.sharedGroup) return -1;
+            if (b === keychainGroupInfo?.sharedGroup) return 1;
+            return a.localeCompare(b);
+        });
+
+        return (
+            <SettingsSection title={Localize.t('settings.vaultInfo')}>
+                <SettingsRow
+                    testID="vault-keychain-group"
+                    label={Localize.t('settings.keychainGroup')}
+                    value={names.length > 0 ? names.map((name) => `${name} (${groups[name]})`).join('\n') : '—'}
+                    valueStyle={styles.identifier}
+                    selectableValue
+                />
+            </SettingsSection>
+        );
+    };
+
+    renderHotUpdates = () => {
+        const { otaReady, otaInstall } = this.state;
+
+        if (!UpdateService.isEnabled()) {
+            return (
+                <SettingsSection title={Localize.t('settings.otaTitle')}>
+                    <SettingsRow
+                        label={Localize.t('settings.otaRunning')}
+                        value={Localize.t('settings.otaNotAvailable')}
+                    />
+                </SettingsSection>
+            );
+        }
+
+        const running = UpdateService.getRunningUpdate();
+        const rows = [
+            <SettingsRow
+                key="running"
+                testID="ota-running"
+                label={Localize.t('settings.otaRunning')}
+                value={this.otaRunningLabel(running)}
+            />,
+            <SettingsRow
+                key="runtime"
+                label={Localize.t('settings.otaStoreBuild')}
+                value={running.runtimeVersion ?? '—'}
+                selectableValue
+            />,
+        ];
+
+        if (running.isEmergencyLaunch) {
+            rows.push(<SettingsRow key="emergency" label={Localize.t('settings.otaFailedToStart')} />);
+        }
+
+        rows.push(
+            <SettingsRow
+                key="check"
+                testID="ota-check"
+                label={Localize.t('settings.otaCheckForUpdates')}
+                value={this.otaCheckValue()}
+                onPress={this.showRuntimeUpdates}
+            />,
+        );
+
+        if (otaReady || otaInstall?.status === OtaInstallStatus.Ready) {
+            rows.push(
+                <SettingsRow key="restart" label={Localize.t('settings.otaRestartNow')} onPress={restartIntoUpdate} />,
+            );
+        }
+
+        if (running.channel === UpdateChannel.Developer) {
+            rows.push(
+                <SettingsRow
+                    key="public"
+                    label={Localize.t('settings.otaBackToPublic')}
+                    onPress={this.leaveTestUpdate}
+                />,
+            );
+        }
+
+        if (running.otaId > 0) {
+            rows.push(
+                <SettingsRow
+                    key="revert"
+                    label={Localize.t('settings.otaRevertToStore')}
+                    onPress={this.revertToStoreVersion}
+                />,
+            );
+        }
+
+        return <SettingsSection title={Localize.t('settings.otaTitle')}>{rows}</SettingsSection>;
+    };
+
     showDeveloperSettings = () => {
         const { coreSettings } = this.state;
 
@@ -264,161 +535,64 @@ class AdvancedSettingsView extends Component<Props, State> {
 
     render() {
         const { coreSettings, profile } = this.state;
-
         return (
             <View testID="advanced-settings-screen" style={styles.container}>
                 <Header
-                    leftComponent={{
-                        testID: 'back-button',
-                        icon: 'IconChevronLeft',
-                        onPress: Navigator.pop,
-                    }}
+                    leftComponent={{ testID: 'back-button', icon: 'IconChevronLeft', onPress: Navigator.pop }}
                     centerComponent={{ text: Localize.t('global.advanced') }}
                 />
-
-                <ScrollView>
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                        AppStyles.marginTopNone,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.networks')}</Text>
-                        </View>
-                    </View>
-
-                    <TouchableDebounce
-                        testID="network-settings-button"
-                        style={styles.row}
-                        onPress={this.showNetworkSettings}
-                    >
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.networkSettings')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
-
-                    {/* push notification section */}
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('settings.pushNotifications')}</Text>
-                        </View>
-                    </View>
-
-                    <TouchableDebounce style={styles.row} onPress={this.reRegisterPushToken}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.reRegisterForPushNotifications')}
-                            </Text>
-                        </View>
-                    </TouchableDebounce>
-
-                    {/* release information section */}
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('settings.releaseInformation')}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.version')}
-                            </Text>
-                        </View>
-
-                        <MultiPressDetector pressThreshold={3} onMultiPress={this.showDeveloperSettings}>
-                            <Text selectable style={styles.value}>
-                                {GetAppReadableVersion()}
-                            </Text>
-                        </MultiPressDetector>
-                    </View>
-                    <TouchableDebounce style={styles.row} onPress={this.showChangeLog}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.viewChangeLog')}
-                            </Text>
-                        </View>
-
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
-
-                    {/* debug section */}
-                    <View style={[
-                        styles.row,
-                        styles.header,
-                    ]}>
-                        <View style={AppStyles.flex1}>
-                            <Text style={[
-                                AppStyles.pbold,
-                                AppStyles.colorPrimary,
-                            ]}>{Localize.t('global.debug')}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex1}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('global.deviceUUID')}
-                            </Text>
-                        </View>
-
-                        <View style={AppStyles.flex2}>
-                            <Text selectable numberOfLines={1} adjustsFontSizeToFit style={styles.value}>
-                                {profile?.deviceUUID ? profile.deviceUUID.toUpperCase() : '—'}
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.developerMode')}
-                            </Text>
-                        </View>
-                        <View style={[AppStyles.rightAligned, AppStyles.flex1]}>
+                <ScrollView contentContainerStyle={sectionStyles.content}>
+                    <SettingsSection title={Localize.t('global.networks')}>
+                        <SettingsRow
+                            testID="network-settings-button"
+                            label={Localize.t('settings.networkSettings')}
+                            onPress={this.showNetworkSettings}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('settings.pushNotifications')}>
+                        <SettingsRow
+                            label={Localize.t('settings.reRegisterForPushNotifications')}
+                            onPress={this.reRegisterPushToken}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('settings.releaseInformation')}>
+                        <SettingsRow label={Localize.t('global.version')}>
+                            <MultiPressDetector pressThreshold={3} onMultiPress={this.showDeveloperSettings}>
+                                <Text selectable style={styles.value}>
+                                    {UpdateService.getAppFullVersion()}
+                                </Text>
+                            </MultiPressDetector>
+                        </SettingsRow>
+                        <SettingsRow
+                            label={Localize.t('settings.viewChangeLog')}
+                            onPress={this.showChangeLog}
+                        />
+                    </SettingsSection>
+                    <SettingsSection title={Localize.t('global.debug')}>
+                        <SettingsRow
+                            label={Localize.t('global.deviceUUID')}
+                            value={profile?.deviceUUID ? profile.deviceUUID.toUpperCase() : '—'}
+                            valueStyle={styles.identifier}
+                            selectableValue
+                        />
+                        <SettingsRow label={Localize.t('settings.developerMode')}>
                             <Switch
                                 testID="developer-mode-switch"
                                 checked={coreSettings.developerMode}
                                 onChange={this.onDeveloperModeChangeRequest}
                             />
-                        </View>
-                    </View>
-                    <TouchableDebounce style={styles.row} onPress={this.showSessionLogs}>
-                        <View style={AppStyles.flex3}>
-                            <Text numberOfLines={1} style={styles.label}>
-                                {Localize.t('settings.sessionLog')}
-                            </Text>
-                        </View>
-
-                        <View style={[AppStyles.centerAligned, AppStyles.row]}>
-                            <Icon size={25} style={styles.rowIcon} name="IconChevronRight" />
-                        </View>
-                    </TouchableDebounce>
+                        </SettingsRow>
+                        <SettingsRow
+                            label={Localize.t('settings.sessionLog')}
+                            onPress={this.showSessionLogs}
+                        />
+                    </SettingsSection>
+                    {coreSettings.developerMode && this.renderHotUpdates()}
+                    {coreSettings.developerMode && Platform.OS === 'ios' && this.renderVaultInfo()}
                 </ScrollView>
             </View>
         );
     }
 }
 
-/* Export Component ==================================================================== */
 export default AdvancedSettingsView;

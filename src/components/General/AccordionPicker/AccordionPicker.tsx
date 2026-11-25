@@ -6,6 +6,8 @@ import { View, Text, ViewStyle, Modal, FlatList, LayoutChangeEvent } from 'react
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { Icon } from '@components/General/Icon';
 
+import Localize from '@locale';
+
 import { AppStyles } from '@theme';
 import styles from './styles';
 
@@ -167,6 +169,7 @@ class AccordionPicker extends Component<Props, State> {
         return (
             <TouchableDebounce
                 activeOpacity={0.8}
+                accessibilityState={{ selected: index === selectedIndex }}
                 style={[
                     index === selectedIndex ? styles.pickerDropDownItemActive : styles.pickerDropDownItem,
                     AppStyles.centerContent,
@@ -205,7 +208,14 @@ class AccordionPicker extends Component<Props, State> {
                 <View style={[AppStyles.row]}>
                     <View style={AppStyles.flex1}>{renderItem(selectedItem, true)}</View>
                     {items.length > 1 && (
-                        <TouchableDebounce style={[styles.collapseButton]} onPress={this.toggle}>
+                        <TouchableDebounce
+                            style={[styles.collapseButton]}
+                            onPress={this.toggle}
+                            accessibilityLabel={Localize.t(
+                                expanded ? 'accessibility.hideOptions' : 'accessibility.showOptions',
+                            )}
+                            accessibilityState={{ expanded }}
+                        >
                             <Icon
                                 name={expanded ? 'IconChevronUp' : 'IconChevronDown'}
                                 size={20}

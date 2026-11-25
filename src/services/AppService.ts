@@ -14,6 +14,7 @@ import { WebLinks } from '@common/constants/endpoints';
 
 import { InAppPurchase } from '@common/libs/iap';
 import Preferences from '@common/libs/preferences';
+import CrashReporter from '@common/libs/crash';
 
 import { GetAppVersionCode } from '@common/helpers/app';
 import { Navigator } from '@common/helpers/navigator';
@@ -262,6 +263,9 @@ class AppService extends EventEmitter {
             } else {
                 this.stopInactivityListener();
             }
+
+            CrashReporter.breadcrumb(`app ${appState}`);
+            CrashReporter.setKeys({ app_state: appState });
 
             // emit the appStateChange event
             this.emit('appStateChange', this.currentAppState, this.prevAppState);

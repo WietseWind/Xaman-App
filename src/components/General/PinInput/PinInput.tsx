@@ -1,5 +1,7 @@
 /* eslint-disable no-trailing-spaces */
 
+import { noAutofillProps } from '../TextInput/noAutofill';
+
 import React, { Component } from 'react';
 import {
     TextInput,
@@ -264,6 +266,8 @@ class PinInput extends Component<Props, State> {
         return (
             <View style={styles.container}>
                 <TextInput
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...noAutofillProps}
                     ref={this.textInputRef}
                     testID="pin-input"
                     keyboardType="number-pad"

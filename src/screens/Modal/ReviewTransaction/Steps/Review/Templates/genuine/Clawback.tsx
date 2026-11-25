@@ -15,6 +15,7 @@ import { AppStyles } from '@theme/index';
 import { ComponentTypes } from '@services/NavigationService';
 import LedgerService from '@services/LedgerService';
 import { MPTokenIssuance } from '@common/libs/ledger/objects';
+import { settleLedgerFetches } from '@screens/Modal/ReviewTransaction/settleLedgerFetches';
 /* types ==================================================================== */
 export interface Props extends Omit<TemplateProps, 'transaction'> {
     transaction: Clawback;
@@ -46,12 +47,19 @@ class ClawbackTemplate extends Component<Props, State> {
         const { transaction } = this.props;
 
         if (this.isMPTAmount()) {
-            const [issuance] = await Promise.all([
+            const fetched = await settleLedgerFetches([
                 LedgerService.getLedgerEntry({
                     command: 'ledger_entry',
                     mpt_issuance: transaction?.Amount?.mpt_issuance_id,
                 }),
             ]);
+
+            if (!fetched.ok) {
+                // leave issuance details unset; review can still continue
+                return;
+            }
+
+            const [issuance] = fetched.values;
 
             if ((issuance as any)?.node) {
                 this.setState({

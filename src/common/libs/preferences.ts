@@ -15,6 +15,8 @@ enum Keys {
     UPDATE_IGNORE_VERSION_CODE = 'UPDATE_IGNORE_VERSION_CODE',
     XAPP_STORE_IGNORE_MESSAGE_ID = 'XAPP_STORE_IGNORE_MESSAGE_ID',
     EXPERIMENTAL_SIMPLICITY_UI = 'EXPERIMENTAL_SIMPLICITY_UI',
+    // vault entries holding degen-mode secret numbers, so startup can always clean them up
+    DEGEN_VAULTS = 'DEGEN_VAULTS',
 }
 
 /* Lib ==================================================================== */

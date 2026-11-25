@@ -20,8 +20,10 @@ import { SignedObjectType } from '@common/libs/ledger/types';
 import { InstanceTypes } from '@common/libs/ledger/types/enums';
 
 import Vault from '@common/libs/vault';
+import CrashReporter from '@common/libs/crash';
 
 import { GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
+import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 
 import Keyboard from '@common/helpers/keyboard';
 import { Navigator } from '@common/helpers/navigator';
@@ -45,7 +47,9 @@ import { SelectSigner } from './SelectSinger';
 
 /* types ==================================================================== */
 import { AuthMethods, Props, SignOptions, State, Steps } from './types';
-import { computeBinaryTransactionHash, createBatchInnerTxnBlob, hashBatchInnerTxn } from 'xrpl-accountlib/dist/utils';
+import { computeBinaryTransactionHash } from 'xrpl-accountlib/dist/utils';
+import { batchJsonForSigning } from '@common/libs/ledger/utils/batchSigners';
+import { completeRawMultiSign, prepareRawMultiSign } from '@common/libs/ledger/utils/rawMultiSign';
 
 /* Component ==================================================================== */
 class VaultOverlay extends Component<Props, State> {
@@ -277,6 +281,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     sign = (method: AuthMethods, options: SignOptions) => {
+        CrashReporter.breadcrumb(`sign start ${method}`);
         // console.log('Vault overlay SIGN')
         switch (method) {
             case AuthMethods.BIOMETRIC:
@@ -299,7 +304,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     private signWithPrivateKey = async (method: AuthMethods, options: SignOptions) => {
-        const { preferredSigner, signerDelegate } = this.state;
+        const { preferredSigner } = this.state;
         const { account, transaction, multiSign } = this.props;
         const { encryptionKey } = options;
         
@@ -328,17 +333,17 @@ class VaultOverlay extends Component<Props, State> {
             let signerInstance = AccountLib.derive.privatekey(privateKey);
             // check if multi sign then add sign as
             if (multiSign) {
-                // if we are signing with signerDelegate
-                if (preferredSigner.publicKey === signerDelegate?.publicKey) {
-                    signerInstance = signerInstance.signAs(account.address);
-                } else {
-                    // else sign as signer
-                    signerInstance = signerInstance.signAs(preferredSigner.address);
-                }
+                // Sign as the selected account, also when its regular key (signerDelegate) signs.
+                // Except when the selected account is the transaction Account: it can not multi sign for
+                // itself (the ledger refuses it), so its regular key account then signs as itself.
+                signerInstance = signerInstance.signAs(
+                    account.address === transaction.Account ? preferredSigner.address : account.address,
+                );
             }
 
             // get current network definitions
-            const definitions = NetworkService.getNetworkDefinitions();
+            transaction.assertSigningContext();
+            const definitions = transaction.SigningDefinitions;
 
             // IGNORE if multi signing or pseudo transaction
             if (!multiSign && transaction.InstanceType !== InstanceTypes.PseudoTransaction) {
@@ -346,49 +351,40 @@ class VaultOverlay extends Component<Props, State> {
                 transaction.populateFields();
             }
 
+            // Batch: an inner account (not the Batch Account) adds its BatchSigner signature,
+            // the Batch Account signs the Batch itself
+            const isBatchCoSign = !multiSign && transaction.isBatchCoSigner(account.address);
+
             LoggerService.logEvent(LogEvents.SigningRoutingInformation, {
                 transactionType: transaction.Type,
                 preferredSigner: preferredSigner.address,
                 flow: 'INTERNAL',
-                inNeedOfMultipleSigners: transaction.isBatchInNeedOfMultipleSigners() &&
-                    transaction.innerBatchSigners().length > 1 ? 'true' : 'false',
+                inNeedOfMultipleSigners: isBatchCoSign ? 'true' : 'false',
             });
 
-            // If batch, check if at the final stage and signign with the same account as
-            // an inner batch signer is already present: in that case: suppress, no duplicate
-            // signing
-            if (transaction.JsonForSigning.TransactionType === 'Batch') {
-                if (!transaction.isBatchInNeedOfMultipleSigners()) {
-                    // ^^ inner signers already fulfilled or not required
-                    if (transaction?.JsonForSigning?.BatchSigners && transaction.innerBatchSigners().length > 0) {
-                        const overlappingInnerSigner = transaction.JsonForSigning.BatchSigners
-                            ?.find(b => b.BatchSigner.Account === transaction.Account);
-                        
-                        if (overlappingInnerSigner) {
-                            // console.log('Batch signer already present, no need to sign again')
-                            transaction.JsonForSigning.BatchSigners.splice(
-                                transaction.JsonForSigning.BatchSigners.indexOf(overlappingInnerSigner),
-                                1,
-                            );
-                        }
-                    }
-                }
-            }
+            // The BatchSigner is the inner account, also when signing with its regular key
+            const txJson = batchJsonForSigning(
+                transaction.JsonForSigning,
+                transaction.Account,
+                isBatchCoSign
+                    ? AccountLib.signInnerBatch(
+                        transaction.JsonForSigning,
+                        preferredSigner.address !== account.address
+                            ? AccountLib.derive.privatekey(privateKey).signAs(account.address)
+                            : signerInstance,
+                        definitions,
+                    )
+                    : undefined,
+            );
 
+            transaction.assertSigningFields();
             let signedObject = AccountLib.sign(
-                {
-                    ...transaction.JsonForSigning,
-                    ...(transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1 ? {
-                        BatchSigners: [
-                            AccountLib.signInnerBatch(transaction.JsonForSigning, signerInstance, definitions),
-                        ],
-                    } : {}),
-                },
+                txJson,
                 signerInstance,
                 definitions,
             ) as SignedObjectType;
 
-            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
+            if (isBatchCoSign) {
                 if (signedObject?.txJson && (signedObject?.txJson as any)?.BatchSigners) {
                     delete (signedObject?.txJson as any).SigningPubKey;
                     delete (signedObject?.txJson as any).TxnSignature;
@@ -437,7 +433,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     private signWithTangemCard = async (options: SignOptions) => {
-        const { transaction, multiSign } = this.props;
+        const { account, transaction, multiSign } = this.props;
         const { tangemCard } = options;
 
         try {
@@ -455,71 +451,64 @@ class VaultOverlay extends Component<Props, State> {
             const publicKey = GetWalletDerivedPublicKey(tangemCard);
 
             // get current network definitions
-            const definitions = NetworkService.getNetworkDefinitions();
+            transaction.assertSigningContext();
+            const definitions = transaction.SigningDefinitions;
+
+            // Batch: an inner account (not the Batch Account) adds its BatchSigner signature,
+            // the Batch Account signs the Batch itself
+            const isBatchCoSign = !multiSign && transaction.isBatchCoSigner(account.address);
 
             LoggerService.logEvent(LogEvents.SigningRoutingInformation, {
                 transactionType: transaction.Type,
                 card: tangemCard.cardId,
                 flow: 'TANGEM',
-                inNeedOfMultipleSigners: transaction.isBatchInNeedOfMultipleSigners() &&
-                    transaction.innerBatchSigners().length > 1 ? 'true' : 'false',
+                inNeedOfMultipleSigners: isBatchCoSign ? 'true' : 'false',
             });
 
-            // If batch, check if at the final stage and signign with the same account as
-            // an inner batch signer is already present: in that case: suppress, no duplicate
-            // signing
-            if (transaction.JsonForSigning.TransactionType === 'Batch') {
-                if (!transaction.isBatchInNeedOfMultipleSigners()) {
-                    // ^^ inner signers already fulfilled or not required
-                    if (transaction?.JsonForSigning?.BatchSigners && transaction.innerBatchSigners().length > 0) {
-                        const overlappingInnerSigner = transaction.JsonForSigning.BatchSigners
-                            ?.find(b => b.BatchSigner.Account === transaction.Account);
-                        
-                        if (overlappingInnerSigner) {
-                            // console.log('Batch signer already present, no need to sign again')
-                            transaction.JsonForSigning.BatchSigners.splice(
-                                transaction.JsonForSigning.BatchSigners.indexOf(overlappingInnerSigner),
-                                1,
-                            );
-                        }
-                    }
-                }
-            }
-
-            let batchSigners = {};
-            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
-                batchSigners = {
-                    BatchSigners: [{
-                        BatchSigner: {
-                            Account: String(AccountLib.utils.deriveAddress(publicKey)),
-                            SigningPubKey: publicKey,
-                            TxnSignature: '',
-                        },
-                    } ],
-                };
-            }
+            // The BatchSigner is the inner account, also when signing with its regular key
+            const txJson = batchJsonForSigning(
+                transaction.JsonForSigning,
+                transaction.Account,
+                isBatchCoSign
+                    ? { BatchSigner: { Account: account.address, SigningPubKey: publicKey, TxnSignature: '' } }
+                    : undefined,
+            );
 
             // prepare the transaction for signing
+            transaction.assertSigningFields();
             const preparedTx = AccountLib.rawSigning.prepare(
-                {
-                    ...transaction.JsonForSigning,
-                    ...(batchSigners),
-                },
+                txJson,
                 publicKey,
                 multiSign,
                 definitions,
             );
 
+            // Multi sign: sign as the selected account, also when the card is its regular key (the same rule
+            // as with a private key). Except when the selected account is the transaction Account: it can not
+            // multi sign for itself, so the account of the card then signs as itself.
+            const preparedMultiSign = multiSign
+                ? prepareRawMultiSign(
+                    txJson,
+                    publicKey,
+                    account.address === transaction.Account
+                        ? AccountLib.rawSigning.accountAddress(publicKey)
+                        : account.address,
+                    definitions,
+                )
+                : undefined;
+
+            if (preparedMultiSign) {
+                preparedTx.hashToSign = preparedMultiSign.hashToSign;
+            }
+
             let preparedFeeTx: ReturnType<typeof AccountLib.rawSigning.prepare>;
 
-            if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
-                const BatchInnerHashes = (transaction.JsonForSigning as any)?.RawTransactions.map(
-                    (t: Object) => hashBatchInnerTxn((t as any)?.RawTransaction, definitions),
-                );
-
-                const batchSignerPayload = createBatchInnerTxnBlob(
-                    Number((transaction.JsonForSigning as any)?.Flags),
-                    BatchInnerHashes,
+            if (isBatchCoSign) {
+                // BatchV1_1: binds the Batch Account + Sequence and the BatchSigner Account
+                const batchSignerPayload = AccountLib.utils.batchSignerSigningData(
+                    transaction.JsonForSigning as any,
+                    account.address,
+                    definitions,
                 );
 
                 const hashToSign =
@@ -534,7 +523,7 @@ class VaultOverlay extends Component<Props, State> {
             const tangemSignOptions = GetSignOptions(tangemCard, preparedTx.hashToSign);
 
             // start tangem session
-            await RNTangemSdk.startSession({ attestationMode: 'offline' }).catch((e) => {
+            await startTangemOfflineSession().catch((e) => {
                 LoggerService.recordError('Unexpected error in startSession TangemSDK', e);
             });
 
@@ -567,7 +556,7 @@ class VaultOverlay extends Component<Props, State> {
                 }
             }
 
-            await RNTangemSdk.sign(tangemSignOptions as unknown as OptionsSign)
+            await TangemCard.sign(tangemSignOptions as unknown as OptionsSign)
                 .then((resp) => {
                     const { signatures } = resp;
 
@@ -578,17 +567,8 @@ class VaultOverlay extends Component<Props, State> {
                     let signedObject: SignedObjectType;
                     let signedFeeObject: SignedObjectType;
 
-                    if (multiSign) {
-                        signedObject = AccountLib.rawSigning.completeMultiSigned(
-                            transaction.JsonForSigning,
-                            [
-                                {
-                                    pubKey: publicKey,
-                                    signature: sig,
-                                },
-                            ],
-                            definitions,
-                        );
+                    if (preparedMultiSign) {
+                        signedObject = completeRawMultiSign(preparedMultiSign, sig, definitions);
                     } else {
                         signedObject = AccountLib.rawSigning.complete(preparedTx, sig, definitions);
                         // console.log('a')
@@ -616,7 +596,7 @@ class VaultOverlay extends Component<Props, State> {
                     // include sign method
                     signedObject = { ...signedObject, signerPubKey: publicKey, signMethod: AuthMethods.TANGEM };
                     
-                    if (transaction.isBatchInNeedOfMultipleSigners() && transaction.innerBatchSigners().length > 1) {
+                    if (isBatchCoSign) {
                         if ((signedObject?.txJson as any)?.BatchSigners?.[0]?.BatchSigner?.TxnSignature === '') {
                                 ; (signedObject?.txJson as any).BatchSigners[0].BatchSigner.TxnSignature =
                                     (signedObject as any).txnSignature;
@@ -653,6 +633,7 @@ class VaultOverlay extends Component<Props, State> {
     };
 
     onSign = (signedObject: SignedObjectType, signedServiceFeeObject?: SignedObjectType) => {
+        CrashReporter.breadcrumb('sign done');
         const { onSign } = this.props;
 
         // console.log('Vault overlay ONSIGN')

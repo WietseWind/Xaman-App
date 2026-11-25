@@ -28,6 +28,8 @@ import { TextContrast } from '@common/utils/color';
 const DEFAULT_ANIMATION_DURATION = 400;
 const RESET_AFTER_SUCCESS_DEFAULT_DELAY = 1000;
 const SWIPE_SUCCESS_THRESHOLD = 80;
+// screen reader button: ignore a second activation within this time (a swipe can't fire twice either)
+const ACCESSIBLE_PRESS_GUARD_MS = 1000;
 
 /* Types ==================================================================== */
 interface Props {
@@ -64,6 +66,8 @@ class SwipeButton extends Component<Props, State> {
     private maxWidth: number;
     private panResponder: any;
     private resetDelayTimeout: any;
+    private screenReaderListener?: ReturnType<typeof AccessibilityInfo.addEventListener>;
+    private lastAccessiblePress: number;
 
     constructor(props: Props) {
         super(props);
@@ -76,6 +80,7 @@ class SwipeButton extends Component<Props, State> {
 
         this.defaultContainerWidth = AppSizes.scale(45);
         this.maxWidth = 0;
+        this.lastAccessiblePress = 0;
         this.animatedWidth = new Animated.Value(this.defaultContainerWidth);
         // this.animatedWidth = this.defaultContainerWidth;
 
@@ -95,17 +100,17 @@ class SwipeButton extends Component<Props, State> {
     }
 
     componentDidMount() {
-        AccessibilityInfo.addEventListener('change', this.onScreenReaderChange);
+        this.screenReaderListener = AccessibilityInfo.addEventListener(
+            'screenReaderChanged',
+            this.onScreenReaderChange,
+        );
 
-        AccessibilityInfo.isScreenReaderEnabled().then((enabled) => {
-            this.setState({
-                screenReaderEnabled: enabled,
-            });
-        });
+        AccessibilityInfo.isScreenReaderEnabled().then(this.onScreenReaderChange);
     }
 
     componentWillUnmount() {
         if (this.resetDelayTimeout) clearTimeout(this.resetDelayTimeout);
+        this.screenReaderListener?.remove();
     }
 
     static getDerivedStateFromProps(nextProps: Props) {
@@ -248,9 +253,28 @@ class SwipeButton extends Component<Props, State> {
         this.changePosition(this.defaultContainerWidth);
     };
 
+    // The screen reader replacement for the swipe: it must hold back exactly like the swipe does.
+    // A disabled swipe is how screens wait for checks (e.g. the scam check before Accept).
+    onAccessiblePress = () => {
+        const { isDisabled, isLoading, onSwipeSuccess } = this.props;
+
+        if (isDisabled || isLoading) {
+            return;
+        }
+
+        const now = Date.now();
+        if (now - this.lastAccessiblePress < ACCESSIBLE_PRESS_GUARD_MS) {
+            return;
+        }
+        this.lastAccessiblePress = now;
+
+        if (typeof onSwipeSuccess === 'function') {
+            onSwipeSuccess();
+        }
+    };
+
     render() {
-        const { label, accessibilityLabel, isDisabled, isLoading, secondary, testID, style, color, onSwipeSuccess } =
-            this.props;
+        const { label, accessibilityLabel, isDisabled, isLoading, secondary, testID, style, color } = this.props;
         const { screenReaderEnabled, labelColor, iconColor } = this.state;
 
         if (isLoading) {
@@ -262,6 +286,10 @@ class SwipeButton extends Component<Props, State> {
                         style,
                         color ? { backgroundColor: color, borderColor: color } : {},
                     ]}
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel={accessibilityLabel || label}
+                    accessibilityState={{ disabled: true, busy: true }}
                 >
                     <LoadingIndicator style={styles.spinner} color="light" />
                 </View>
@@ -271,18 +299,31 @@ class SwipeButton extends Component<Props, State> {
         if (screenReaderEnabled) {
             return (
                 <TouchableOpacity
+                    testID={testID}
                     accessible
                     accessibilityRole="button"
-                    onPress={onSwipeSuccess}
+                    accessibilityLabel={accessibilityLabel || label}
+                    accessibilityState={{ disabled: !!isDisabled }}
+                    disabled={!!isDisabled}
+                    onPress={this.onAccessiblePress}
                     style={[
                         styles.container,
                         secondary && styles.containerSecondary,
                         style,
                         color ? { backgroundColor: color, borderColor: color } : {},
+                        isDisabled ? styles.containerDisabled : {},
                     ]}
                 >
-                    {/* eslint-disable-next-line react-native/no-inline-styles */}
-                    <Text style={[styles.label, { paddingLeft: 0 }]}>{accessibilityLabel}</Text>
+                    <Text
+                        style={[
+                            styles.label,
+                            // eslint-disable-next-line react-native/no-inline-styles
+                            { paddingLeft: 0 },
+                            labelColor ? { color: labelColor } : {},
+                        ]}
+                    >
+                        {accessibilityLabel || label}
+                    </Text>
                 </TouchableOpacity>
             );
         }

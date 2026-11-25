@@ -3,7 +3,16 @@
  */
 
 import React, { Component } from 'react';
-import { Image, InteractionManager, Keyboard, Platform, SafeAreaView, Text, View } from 'react-native';
+import {
+    AccessibilityInfo,
+    Image,
+    InteractionManager,
+    Keyboard,
+    Platform,
+    SafeAreaView,
+    Text,
+    View,
+} from 'react-native';
 
 import { CoreRepository } from '@store/repositories';
 
@@ -138,9 +147,13 @@ class LockOverlay extends Component<Props, State> {
                 }
 
                 // set the error message
+                const error = e.toString().replace('Error: ', '');
                 this.setState({
-                    error: e.toString().replace('Error: ', ''),
+                    error,
                 });
+
+                // screen readers: the red text under the logo is silent otherwise
+                AccessibilityInfo.announceForAccessibility(error);
             });
     };
 
@@ -175,7 +188,12 @@ class LockOverlay extends Component<Props, State> {
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >
-                <SafeAreaView testID="lock-overlay" style={styles.container}>
+                <SafeAreaView
+                    testID="lock-overlay"
+                    style={styles.container}
+                    // VoiceOver can't move to the app behind the lock screen
+                    accessibilityViewIsModal
+                >
                     <View style={[AppStyles.centerAligned, AppStyles.paddingSml]}>
                         <Image style={styles.logo} source={StyleService.getImage('XamanLogo')} />
                     </View>

@@ -16,6 +16,18 @@ const { VaultManagerModule, UniqueIdProviderModule } = NativeModules;
 /* Logger ==================================================================== */
 const logger = LoggerService.createLogger('Vault');
 
+/* Types ==================================================================== */
+type OpenVaultResult = { clearText?: string; fallbackUsed?: boolean; storedDifferedFromLive?: boolean };
+
+/* Helpers ==================================================================== */
+const storageEncryptionKeyFromHex = (key: any): Buffer | undefined => {
+    if (typeof key !== 'string' || key.length !== 128) {
+        return undefined;
+    }
+    const keyBytes = HexEncoding.toBinary(key);
+    return keyBytes && keyBytes.length === 64 ? keyBytes : undefined;
+};
+
 /* Lib ==================================================================== */
 const Vault = {
     /**
@@ -45,7 +57,7 @@ const Vault = {
     open: async (name: string, key: string): Promise<string | undefined> => {
         return new Promise((resolve, reject) => {
             VaultManagerModule.openVault(name, key)
-                .then((result: string | { clearText?: string; fallbackUsed?: boolean; storedDifferedFromLive?: boolean }) => {
+                .then((result: string | OpenVaultResult) => {
                     const clearText = typeof result === 'string' ? result : result?.clearText;
                     const fallbackUsed =
                         typeof result === 'object'
@@ -71,12 +83,14 @@ const Vault = {
                     const message = error?.message ? String(error.message) : String(error);
                     if (code === 'DEVICE_ID_CHANGED') {
                         logger.error(
-                            'WARNING: PASSPHRASE INVALID BECAUSE IT WAS ORIGINALLY CONFIGURED ON ANOTHER PHONE. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            'WARNING: PASSPHRASE INVALID BECAUSE IT WAS ORIGINALLY CONFIGURED ON ANOTHER PHONE. ' +
+                                'PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
                             { code, message, vault: name, deviceIdChanged: true },
                         );
                     } else if (code === 'VAULT_CORRUPT' || code === 'UNIQUE_ID_MISSING') {
                         logger.error(
-                            'WARNING: VAULT DATA IS CORRUPT OR DEVICE ID IS MISSING. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            'WARNING: VAULT DATA IS CORRUPT OR DEVICE ID IS MISSING. ' +
+                                'PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
                             { code, message, vault: name },
                         );
                     } else {
@@ -143,7 +157,8 @@ const Vault = {
                     const message = error?.message ? String(error.message) : String(error);
                     if (code === 'KEYSTORE_UNRECOVERABLE' || code === 'KEYSTORE_DECRYPT') {
                         logger.error(
-                            'WARNING: REALM KEYSTORE WRAP IS UNREADABLE. STORAGE CANNOT OPEN. PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
+                            'WARNING: REALM KEYSTORE WRAP IS UNREADABLE. STORAGE CANNOT OPEN. ' +
+                                'PLEASE REMOVE YOUR ACCOUNT AND IMPORT IT FROM SECRET AGAIN.',
                             { code, message },
                         );
                     } else {
@@ -152,6 +167,55 @@ const Vault = {
                     reject(error);
                 });
         });
+    },
+
+    /**
+     * Every storage encryption key in the keychain, the one getStorageEncryptionKey returns first (iOS).
+     *
+     * There is more than one only when a version without the shared keychain group (5.3.0 and older)
+     * was installed after a version with it: that version can't see the shared group, deleting the app
+     * keeps its keychain items, so it stored a key of its own next to the earlier one.
+     * Never creates a key, never rejects: without an answer the list is empty.
+     */
+    getStorageEncryptionKeyCandidates: async (): Promise<Buffer[]> => {
+        const nativeCandidates = VaultManagerModule?.getStorageEncryptionKeyCandidates;
+        if (typeof nativeCandidates !== 'function') {
+            return [];
+        }
+
+        try {
+            const keys = await nativeCandidates.call(VaultManagerModule);
+            if (!Array.isArray(keys)) {
+                return [];
+            }
+            return keys.map(storageEncryptionKeyFromHex).filter((key): key is Buffer => !!key);
+        } catch (error: any) {
+            const code = typeof error?.code === 'string' ? error.code : '-1';
+            logger.error('getStorageEncryptionKeyCandidates', { code });
+            return [];
+        }
+    },
+
+    /**
+     * iOS: the caller has proven that a storage key other than the first one opens the datastore.
+     * The keychain then holds what an earlier install left in the shared group next to the items in use
+     * (storage key and device id): give those leftovers another name, so the items in use are the only
+     * ones with their name. Nothing is deleted.
+     * Resolves true when the keychain is left with one storage key and one device id; never rejects.
+     */
+    setAsideStaleKeychainItems: async (): Promise<boolean> => {
+        const nativeSetAside = VaultManagerModule?.setAsideStaleSharedItems;
+        if (typeof nativeSetAside !== 'function') {
+            return false;
+        }
+
+        try {
+            return (await nativeSetAside.call(VaultManagerModule)) === true;
+        } catch (error: any) {
+            const code = typeof error?.code === 'string' ? error.code : '-1';
+            logger.error('setAsideStaleKeychainItems', { code });
+            return false;
+        }
     },
 
     /**
@@ -235,7 +299,8 @@ const Vault = {
                 !report?.lastKnownPresent
             ) {
                 logger.error(
-                    'WARNING: DEVICE-UNIQUE-ID KEYCHAIN UNREADABLE AND NO LAST STORED DEVICE ID. ACCOUNT VAULTS MAY NOT DECRYPT AFTER ANDROID_ID CHANGE.',
+                    'WARNING: DEVICE-UNIQUE-ID KEYCHAIN UNREADABLE AND NO LAST STORED DEVICE ID. ' +
+                        'ACCOUNT VAULTS MAY NOT DECRYPT AFTER ANDROID_ID CHANGE.',
                     report,
                 );
             } else if (report?.uniqueIdKeychainReadable === false && report?.lastKnownPresent) {
@@ -250,7 +315,8 @@ const Vault = {
                 report?.lastKnownPresent === false
             ) {
                 logger.warn(
-                    'WARNING: NO STORED DEVICE ID. CANNOT DETECT ANDROID_ID CHANGE. SIGNING MAY FAIL AFTER DEVICE CHANGE.',
+                    'WARNING: NO STORED DEVICE ID. CANNOT DETECT ANDROID_ID CHANGE. ' +
+                        'SIGNING MAY FAIL AFTER DEVICE CHANGE.',
                     report,
                 );
             }

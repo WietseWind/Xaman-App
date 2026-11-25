@@ -277,6 +277,7 @@ class Meta {
     private parseMptQuantity = (
         node: NodeWithDiffType,
         valueCalculator: (node: NodeWithDiffType) => BigNumber | null,
+        getIssuanceNode: () => NodeWithDiffType | undefined,
     ) => {
         const value = valueCalculator(node);
 
@@ -297,7 +298,7 @@ class Meta {
         const decodedIssuer =
             fields?.MPTokenIssuanceID && DecodeMPTokenIssuanceToIssuer(String(fields.MPTokenIssuanceID));
 
-        let tokenIssuance: any = this.nodes.filter((n) => n.LedgerEntryType === LedgerEntryTypes.MPTokenIssuance)?.[0];
+        let tokenIssuance: any = getIssuanceNode();
 
         if (this.meta?._attachments) {
             if (this.meta._attachments?.MPTokenIssuance) {
@@ -409,15 +410,25 @@ class Meta {
      * Parse the balance changes from the meta
      */
     parseBalanceChanges = (): { [key: string]: BalanceChangeType[] } => {
+        // Reuse one lazy search for this parse only. Public nodes/attachments can change before the next parse.
+        let issuanceNode: NodeWithDiffType | undefined;
+        let searchedIssuance = false;
+        const getIssuanceNode = () => {
+            if (!searchedIssuance) {
+                issuanceNode = this.nodes.find((node) => node.LedgerEntryType === LedgerEntryTypes.MPTokenIssuance);
+                searchedIssuance = true;
+            }
+            return issuanceNode;
+        };
         const values = this.nodes.map((node) => {
             if (node.LedgerEntryType === LedgerEntryTypes.AccountRoot) {
                 return [this.parseNativeQuantity(node, this.computeBalanceChange)];
             }
             if (node.LedgerEntryType === LedgerEntryTypes.MPToken) {
-                return this.parseMptQuantity(node, this.computeBalanceChange);
+                return this.parseMptQuantity(node, this.computeBalanceChange, getIssuanceNode);
             }
             if (node.LedgerEntryType === LedgerEntryTypes.MPTokenIssuance) {
-                return this.parseMptQuantity(node, this.computeBalanceChange);
+                return this.parseMptQuantity(node, this.computeBalanceChange, getIssuanceNode);
             }
             if (node.LedgerEntryType === LedgerEntryTypes.RippleState) {
                 return this.parseTrustlineQuantity(node, this.computeBalanceChange);

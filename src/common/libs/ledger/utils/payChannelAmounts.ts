@@ -68,7 +68,7 @@ export const remainingPayChannelAmount = (
 };
 
 export const payChannelAmountsFromMeta = (
-    meta?: TransactionMetadata,
+    meta?: Partial<TransactionMetadata>,
     channelId?: string,
 ): { amount?: AmountType; balance?: AmountType; previousBalance?: AmountType } => {
     const nodes = meta?.AffectedNodes || [];

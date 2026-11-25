@@ -3,7 +3,14 @@ export interface Props {
     type: 'success' | 'info' | 'warning' | 'error';
     text: string | React.ReactNode;
     title?: string;
-    buttons: { text: string; testID?: string; onPress?: () => void; type?: 'continue' | 'dismiss'; light?: boolean }[];
+    buttons: {
+        text: string;
+        testID?: string;
+        onPress?: () => void;
+        type?: 'continue' | 'dismiss';
+        light?: boolean;
+        destructive?: boolean;
+    }[];
     onDismissed?: () => void;
 }
 

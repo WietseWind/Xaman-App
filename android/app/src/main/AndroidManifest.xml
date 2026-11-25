@@ -4,12 +4,12 @@
 
     <!-- Access to internet  -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- QR code scanning && Veriff KYC  -->
+    <!-- QR code scanning, and a page of an xApp that asks for the camera (the user is asked each time) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Veriff KYC -->
+    <!-- A page of an xApp that asks for the microphone (the user is asked each time) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Firebase messaging + analytics -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -23,12 +23,23 @@
     <!-- Network state -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Wi-Fi is only read as part of the network state. Without this line the permission above counts as
+         "needs Wi-Fi hardware" and Google Play hides the app from devices without it. -->
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <!-- The app is shown in portrait, but does not need a screen that is portrait by nature. Without this line the
+         portrait lock of the activities counts as a hardware requirement and Google Play hides the app from
+         devices such as desktops, some tablets and Android XR. -->
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
 
-    <!-- Tangem SDK && Veriff KYC-->
+    <!-- Tangem SDK -->
     <uses-permission android:name="android.permission.NFC" />
     <!-- in-app purchase -->
     <uses-permission android:name="com.android.vending.BILLING" />
-    <!-- in-app google play update && Veriff KYC -->
+    <!-- The Tangem SDK library asks for it too. The app itself has no foreground service. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- Google App measurement -->
     <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE" />
@@ -166,6 +177,32 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/push_notification"
             tools:replace="android:resource" />
+
+        <!-- Over-the-air JS updates (expo-updates). Checked by scripts/ota/check-config.js (pre-commit). -->
+        <meta-data
+            android:name="expo.modules.updates.ENABLED"
+            android:value="true" />
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATE_URL"
+            android:value="https://xaman.app/api/v1/app/ota/manifest" />
+        <!-- {version}.{build} of this native build; updates only install on this exact runtime -->
+        <meta-data
+            android:name="expo.modules.updates.EXPO_RUNTIME_VERSION"
+            android:value="@string/expo_runtime_version" />
+        <!-- the native side never checks by itself; the app checks from JS after launch -->
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH"
+            android:value="NEVER" />
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS"
+            android:value="0" />
+        <!-- only updates signed with the OTA signing key run; public certificate: certs/ota-certificate.pem -->
+        <meta-data
+            android:name="expo.modules.updates.CODE_SIGNING_CERTIFICATE"
+            android:value="@string/expo_updates_code_signing_certificate" />
+        <meta-data
+            android:name="expo.modules.updates.CODE_SIGNING_METADATA"
+            android:value="{&quot;keyid&quot;:&quot;main&quot;,&quot;alg&quot;:&quot;rsa-v1_5-sha256&quot;}" />
 
         <receiver
             android:name="libs.notification.NotificationMessageReceiver"

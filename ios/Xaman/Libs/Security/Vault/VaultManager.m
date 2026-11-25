@@ -12,6 +12,7 @@
 #import <React/RCTUtils.h>
 
 #import "Storage/Keychain.h"
+#import "UniqueIdProvider.h"
 #import "Cipher/Cipher.h"
 
 #import "Xaman-Swift.h"
@@ -125,23 +126,26 @@ NSString *getRecoveryVaultName(NSString *vaultName)
   // an indicator that vault is recovered
   BOOL isVaultRecovered = NO;
   NSString *recoveryVaultName = getRecoveryVaultName(vaultName);
-  
+  // the name the item was found under
+  NSString *itemName = vaultName;
+
   // try to get vault with provided  name
   NSDictionary *item = [Keychain getItem:vaultName error:&error];
-  
+
   // unable to get item from keychain for some reason
   if(error != nil) @throw error;
-  
+
   // if no item found and recoverable, check if recovery vault available
   if(!item && recoverable){
     // try to fetch recovery vault
     item = [Keychain getItem:recoveryVaultName error:&error];
-    
+
     if(error != nil) @throw error;
-    
+
     // we were able to fetch from recovery vault
     if(item != nil){
       isVaultRecovered = YES;
+      itemName = recoveryVaultName;
     }
   }
   
@@ -154,7 +158,29 @@ NSString *getRecoveryVaultName(NSString *vaultName)
   
   // try to decrypt the data
   NSString *clearText = [Cipher decrypt:item[@"data"] key:key derivedKeysString:item[@"account"] error:&error];
-  
+
+  // The keychain can hold a second item with this name in another access group (see Keychain getItems).
+  // The one that decrypts with this key is the vault; the error of the first attempt stays if none does.
+  if(error != nil){
+    NSError *itemsError;
+    NSArray<NSDictionary *> *items = [Keychain getItems:itemName error:&itemsError];
+
+    for (NSDictionary *other in items) {
+      if ([other[@"data"] isEqualToString:item[@"data"]] && [other[@"account"] isEqualToString:item[@"account"]]) {
+        continue;
+      }
+
+      NSError *otherError;
+      NSString *otherClearText = [Cipher decrypt:other[@"data"] key:key derivedKeysString:other[@"account"] error:&otherError];
+
+      if (otherError == nil && [otherClearText isKindOfClass:[NSString class]] && otherClearText.length > 0) {
+        clearText = otherClearText;
+        error = nil;
+        break;
+      }
+    }
+  }
+
   // some error while decryption the cipher
   if(error != nil) @throw error;
   
@@ -392,6 +418,50 @@ NSString *getRecoveryVaultName(NSString *vaultName)
   return encryptionKey;
 }
 
+/*
+ Every stored storage encryption key, the one getStorageEncryptionKey returns first.
+ More than one only when the keychain holds a second item in another access group (see Keychain
+ getItems); the caller keeps the one that opens the datastore. Never creates a key.
+ */
++ (NSArray<NSString *> *) getStorageEncryptionKeyCandidates
+{
+  NSError *error;
+  NSArray<NSDictionary *> *items = [Keychain getItems:STORAGE_ENCRYPTION_KEY error:&error];
+
+  if(error != nil) @throw error;
+
+  NSMutableArray<NSString *> *keys = [NSMutableArray array];
+
+  for (NSDictionary *item in items) {
+    NSString *key = item[@"data"];
+
+    if ([key isKindOfClass:[NSString class]] && ![keys containsObject:key]) {
+      [keys addObject:key];
+    }
+  }
+
+  return keys;
+}
+
+/*
+ The storage key outside the shared access group is proven to open the datastore: the items outside
+ that group are the set in use (see Keychain getItems). Set aside their twins in the shared group,
+ the device id first and the storage key last: the storage key twin is what brings the app here,
+ so a run that stops halfway is repeated at the next start. Nothing is deleted.
+ Returns YES when the keychain is left with one device id and one storage key.
+ */
++ (BOOL) setAsideStaleSharedItems
+{
+  if (![UniqueIdProviderModule setAsideStaleSharedDeviceId]) {
+    return NO;
+  }
+
+  return [Keychain setAsideSharedItem:(__bridge id)kSecClassInternetPassword
+                             matching:@{ (__bridge id)kSecAttrServer: STORAGE_ENCRYPTION_KEY }
+                             renaming:(__bridge id)kSecAttrServer
+                     ifOutsideValueIs:nil];
+}
+
 #pragma mark - JS interface
 
 RCT_EXPORT_METHOD(createVault:(NSString *)vaultName
@@ -526,6 +596,40 @@ RCT_EXPORT_METHOD(isStorageEncryptionKeyExist:(RCTPromiseResolveBlock)resolve
   @try {
     BOOL result = [VaultManagerModule isStorageEncryptionKeyExist];
     resolve(@(result));
+  }
+  @catch (NSError *error) {
+    rejectWithError(reject, error);
+  }
+}
+
+// access groups the keychain items are in, with item counts: no item names, no data
+RCT_EXPORT_METHOD(getKeychainGroupInfo:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  @try {
+    resolve([Keychain sharedGroupInfo]);
+  }
+  @catch (NSError *error) {
+    rejectWithError(reject, error);
+  }
+}
+
+RCT_EXPORT_METHOD(getStorageEncryptionKeyCandidates:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  @try {
+    resolve([VaultManagerModule getStorageEncryptionKeyCandidates]);
+  }
+  @catch (NSError *error) {
+    rejectWithError(reject, error);
+  }
+}
+
+RCT_EXPORT_METHOD(setAsideStaleSharedItems:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  @try {
+    resolve(@([VaultManagerModule setAsideStaleSharedItems]));
   }
   @catch (NSError *error) {
     rejectWithError(reject, error);

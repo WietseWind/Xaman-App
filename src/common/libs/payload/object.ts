@@ -6,11 +6,14 @@ import { Endpoints } from '@common/constants/endpoints';
 import { binary } from 'xrpl-accountlib';
 
 import ApiService, { ApiError } from '@services/ApiService';
+import NetworkService from '@services/NetworkService';
 import LoggerService from '@services/LoggerService';
 
 import { TransactionFactory } from '@common/libs/ledger/factory';
 
 import Localize from '@locale';
+
+import { StringTypeCheck } from '@common/utils/string';
 
 import { TransactionJson } from '@common/libs/ledger/types/transaction';
 import { PseudoTransactionTypes, TransactionTypes } from '@common/libs/ledger/types/enums';
@@ -44,6 +47,8 @@ export class Payload {
     payload!: PayloadReferenceType;
     origin!: PayloadOrigin;
     generated!: boolean;
+    /** Display-only permissions for a revoke opened from a Delegate object. Not signed. */
+    revokedPermissions?: unknown[];
     risk!: { __warn_user: boolean } & { [key: string]: number | boolean };
 
     /**
@@ -356,7 +361,10 @@ export class Payload {
                         )
                             .map((pseudoSigner) => {
                                 // console.log('pseudoSigner', pseudoSigner);
-                                const batchSigners = binary.decode(pseudoSigner as unknown as string)?.BatchSigners;
+                                const batchSigners = binary.decode(
+                                    pseudoSigner as unknown as string,
+                                    NetworkService.getNetworkDefinitions(),
+                                )?.BatchSigners;
                                 return batchSigners;
                             })
                             .filter((batchSigners) => !!batchSigners)
@@ -364,8 +372,8 @@ export class Payload {
                     }
                 }
             } catch (e: any) {
-                logger.error(`Could not merge batch signers, revert to fallback transaction: ${e?.message}`);
-                delete request_json.BatchSigners;
+                logger.error(`Could not decode batch signers: ${e?.message}`);
+                throw new Error(`Could not decode BatchSigners: ${e?.message}`);
             }
         }
 
@@ -393,6 +401,10 @@ export class Payload {
             throw new Error('Parsed transaction have invalid transaction type!');
         }
 
+        if (this.revokedPermissions && craftedTransaction.Type === TransactionTypes.DelegateSet) {
+            (craftedTransaction as { revokedPermissions?: unknown[] }).revokedPermissions = this.revokedPermissions;
+        }
+
         return craftedTransaction;
     }
 
@@ -407,7 +419,12 @@ export class Payload {
      * get payload return url
      */
     getReturnURL = () => {
-        return this.meta.return_url_app;
+        const returnURL = this.meta.return_url_app;
+        // never hand a system scheme (tel:, sms:, intent:, settings, ...) to the OS
+        if (returnURL && StringTypeCheck.isBlockedReturnURL(returnURL)) {
+            return undefined;
+        }
+        return returnURL;
     };
 
     /**

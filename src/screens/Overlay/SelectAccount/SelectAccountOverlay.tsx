@@ -2,12 +2,12 @@
  * Select Account Overlay
  */
 
-import { sortBy } from 'lodash';
 import React, { Component } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 
 import { AccountModel } from '@store/models';
 
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { AppScreens } from '@common/constants';
@@ -120,6 +120,7 @@ class SelectAccountOverlay extends Component<Props, State> {
         return (
             <TouchableDebounce
                 key={account.address}
+                testID={`select-account-${account.address}`}
                 onPress={() => {
                     this.onSelect(account);
                 }}
@@ -138,7 +139,7 @@ class SelectAccountOverlay extends Component<Props, State> {
                     <View style={[AppStyles.row, AppStyles.flex3, AppStyles.centerAligned]}>
                         <View style={AppStyles.flex3}>
                             <Text style={[styles.accountLabel, isSelected && styles.accountLabelSelected]}>
-                                {account.label}
+                                {accountListLabel(account)}
                             </Text>
                             <Text style={[styles.accountAddress, isSelected && styles.accountAddressSelected]}>
                                 {account.address}
@@ -169,7 +170,9 @@ class SelectAccountOverlay extends Component<Props, State> {
             );
         }
 
-        return sortBy(accounts, ['order'], [false]).map((account) => {
+        // in the order given: the user's own order from the Accounts list (only destination pickers
+        // sort A-Z)
+        return accounts.map((account) => {
             return this.renderRow(account);
         });
     };
@@ -200,7 +203,11 @@ class SelectAccountOverlay extends Component<Props, State> {
                         />
                     </View>
                 </View>
-                <ScrollView style={AppStyles.flex1} contentContainerStyle={{ paddingBottom }}>
+                <ScrollView
+                    testID="select-account-list"
+                    style={AppStyles.flex1}
+                    contentContainerStyle={{ paddingBottom }}
+                >
                     {this.renderContent()}
                 </ScrollView>
             </ActionPanel>

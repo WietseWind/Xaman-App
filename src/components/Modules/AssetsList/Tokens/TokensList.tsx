@@ -1,17 +1,19 @@
 import { toLower, map, filter, sortBy, isEqual, has, findIndex } from 'lodash';
 import React, { Component } from 'react';
-import { InteractionManager, View, ViewStyle } from 'react-native';
+import { InteractionManager, Platform, View, ViewStyle } from 'react-native';
 
 import { AppScreens } from '@common/constants';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
 
+import { glassTabScrollPadding } from '@common/helpers/glassTabBar';
 import { Navigator } from '@common/helpers/navigator';
 
 import { CoreRepository, CurrencyRepository, TrustLineRepository } from '@store/repositories';
 import { AccountModel, NetworkModel, TrustLineModel } from '@store/models';
 
 import { SortableFlatList } from '@components/General';
+import { ReorderableList } from '@components/General/ReorderableList';
 
 import { AddTokenOverlayProps } from '@screens/Overlay/AddToken';
 import { ExplainBalanceOverlayProps } from '@screens/Overlay/ExplainBalance';
@@ -46,7 +48,8 @@ interface Props {
     onChangeCategoryPress: (selectedCategory?: ASSETS_CATEGORY) => void;
     network?: NetworkModel;
     addTokenPress?: () => void;
-    hideTopElements: (toggle: boolean) => void;
+    hideTopElements: (toggle: boolean, onComplete?: () => void) => void;
+    headerHidden?: boolean;
 }
 
 interface State {
@@ -57,7 +60,6 @@ interface State {
     dataSource: TrustLineModel[];
     filters?: FiltersType;
     reorderEnabled: boolean;
-    showHeader: boolean;
     accWorthEnabled: boolean;
     assetPricesInList: boolean;
     tokenPrices: {
@@ -104,7 +106,6 @@ class TokensList extends Component<Props, State> {
             reorderEnabled: false,
             // eslint-disable-next-line react/no-unused-state
             lineWorthLoading: true,
-            showHeader: true,
             accWorthEnabled: settings.accountWorthActive && accWorthContext,
             assetPricesInList: settings.showPerAssetWorth && accWorthContext,
             tokenPrices: {
@@ -174,13 +175,12 @@ class TokensList extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-        const { discreetMode, spendable, experimentalUI, network } = this.props;
+        const { discreetMode, spendable, experimentalUI, network, headerHidden } = this.props;
         const {
             dataSource,
             accountStateVersion,
             reorderEnabled,
             filters,
-            showHeader,
             accWorthEnabled,
             assetPricesInList,
             tokenPrices,
@@ -192,7 +192,7 @@ class TokensList extends Component<Props, State> {
                     !isEqual(nextState.tokenPrices, tokenPrices) ||
                     !isEqual(nextState.accWorthEnabled, accWorthEnabled) ||
                     !isEqual(nextState.assetPricesInList, assetPricesInList) ||
-                    !isEqual(nextState.showHeader, showHeader) ||
+                    nextProps.headerHidden !== headerHidden ||
                     !isEqual(nextProps.spendable, spendable) ||
                     !isEqual(nextProps.network, network) ||
                     !isEqual(nextProps.discreetMode, discreetMode) ||
@@ -351,9 +351,9 @@ class TokensList extends Component<Props, State> {
                             onClose: () => {
                                 AccountService.updateAccountInfo(account.address);
                             },
-                            containerStyle: {
-                                marginTop: 0,
-                            },
+                            // iOS page sheet is already below the status bar. Android full-screen
+                            // xApps draw behind it, so keep the header's status-bar margin.
+                            containerStyle: Platform.OS === 'android' ? undefined : { marginTop: 0 },
                             noSwitching: true,
                             altHeader: {
                                 left: {
@@ -587,16 +587,9 @@ class TokensList extends Component<Props, State> {
         return `token-${item.id}`;
     };
 
-    hideTopElements = (state: boolean) => {
+    hideTopElements = (state: boolean, onComplete?: () => void) => {
         const { hideTopElements } = this.props;
-
-        this.setState({
-            showHeader: !state,
-        }, () => {
-            if (hideTopElements) {
-                hideTopElements(state);
-            }
-        });
+        hideTopElements(state, onComplete);
     };
 
     updateTokenPrices = (prices: typeof this.state.tokenPrices) => {
@@ -622,18 +615,18 @@ class TokensList extends Component<Props, State> {
             discreetMode,
             experimentalUI,
             network,
+            headerHidden,
         } = this.props;
         const {
             dataSource,
             reorderEnabled,
             filters,
-            showHeader,
             accWorthEnabled,
         } = this.state;
 
         return (
             <View key={`tokenlist-${!!accWorthEnabled}`} testID="token-list-container" style={style}>
-                {showHeader && (
+                {!headerHidden && (
                     <ListHeader
                         reorderEnabled={reorderEnabled}
                         showTokenAddButton={spendable}
@@ -667,37 +660,55 @@ class TokensList extends Component<Props, State> {
                         onPress={this.onNativeItemPress}
                     />
                 )}
-                <SortableFlatList
-                    key={`tokenlistflat-${accWorthEnabled ? 1 : 0}`}
-                    ref={this.dragSortableRef}
-                    itemHeight={TokenItem.Height}
-                    separatorHeight={0}
-                    topFade
-                    updateTokenPrices={this.updateTokenPrices}
-                    lineWorthLoading={this.updateLineWorthLoading}
-                    accWorthEnabled={accWorthEnabled}
-                    firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
-                    dataSource={[
-                        ...(reorderEnabled ? [] : [{
-                            id: 'native',
-                            currency: {
-                                issuer: '',
-                            },
-                            getFormattedCurrency: () => NetworkService.getNativeAsset(),
-                            isLiquidityPoolToken: () => false,
-                            isMPToken: () => false,
-                            getFormattedIssuer: () => '',
-                            getLpAssetPair: () => [],
-                        }]),
-                        ...dataSource,
-                    ]}
-                    renderItem={this.renderItem}
-                    renderEmptyList={this.renderEmptyList}
-                    onItemPress={this.onTokenItemPress}
-                    keyExtractor={this.keyExtractor}
-                    onDataChange={this.onTokenReorder}
-                    sortable={reorderEnabled}
-                />
+                {reorderEnabled ? (
+                    <ReorderableList
+                        key={`token-reorder-${account.address}-${network?.key ?? ''}`}
+                        testID="token-reorder-scroll"
+                        data={Array.from(dataSource).filter(token => token?.isValid())}
+                        sortable
+                        keyExtractor={this.keyExtractor}
+                        renderItem={(item, index) => this.renderItem({ item, index })}
+                        onPress={this.onTokenItemPress}
+                        onReorder={this.onTokenReorder}
+                        contentContainerStyle={{
+                            paddingBottom: glassTabScrollPadding + AppSizes.safeAreaBottomInset + 16,
+                        }}
+                        emptyComponent={this.renderEmptyList()}
+                    />
+                ) : (
+                    <SortableFlatList
+                        key={`tokenlistflat-${accWorthEnabled ? 1 : 0}`}
+                        ref={this.dragSortableRef}
+                        itemHeight={TokenItem.Height}
+                        separatorHeight={0}
+                        topFade
+                        updateTokenPrices={this.updateTokenPrices}
+                        lineWorthLoading={this.updateLineWorthLoading}
+                        accWorthEnabled={accWorthEnabled}
+                        firstItemExtraHeight={reorderEnabled ? 0 : AppSizes.scale(12) + (accWorthEnabled ? 65 : 0)}
+                        endInset={glassTabScrollPadding}
+                        dataSource={[
+                            ...(reorderEnabled ? [] : [{
+                                id: 'native',
+                                currency: {
+                                    issuer: '',
+                                },
+                                getFormattedCurrency: () => NetworkService.getNativeAsset(),
+                                isLiquidityPoolToken: () => false,
+                                isMPToken: () => false,
+                                getFormattedIssuer: () => '',
+                                getLpAssetPair: () => [],
+                            }]),
+                            ...dataSource,
+                        ]}
+                        renderItem={this.renderItem}
+                        renderEmptyList={this.renderEmptyList}
+                        onItemPress={this.onTokenItemPress}
+                        keyExtractor={this.keyExtractor}
+                        onDataChange={this.onTokenReorder}
+                        sortable={false}
+                    />
+                )}
             </View>
         );
     }

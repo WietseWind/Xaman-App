@@ -3,6 +3,7 @@
 exports[`[Avatar] should apply styles correctly 1`] = `
 <View>
   <View
+    accessibilityIgnoresInvertColors={true}
     collapsable={false}
     style={
       {
@@ -49,6 +50,7 @@ exports[`[Avatar] should apply styles correctly 1`] = `
 exports[`[Avatar] should render correctly 1`] = `
 <View>
   <View
+    accessibilityIgnoresInvertColors={true}
     collapsable={false}
     style={
       {
@@ -90,6 +92,7 @@ exports[`[Avatar] should render correctly 1`] = `
 exports[`[Avatar] should render correctly with a badge 1`] = `
 <View>
   <View
+    accessibilityIgnoresInvertColors={true}
     collapsable={false}
     style={
       {

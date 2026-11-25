@@ -1,4 +1,27 @@
 declare namespace XamanBackend {
+    interface OtaUpdate {
+        otaId: number;
+        status: 'dev' | 'ga';
+        rollout: number;
+        held: boolean;
+        message: string;
+        gitCommit: string;
+        published: string;
+        manifest: {
+            uuid: string;
+            kind: 'dev' | 'ga';
+            createdAt: string;
+        };
+        installToken: string;
+    }
+
+    interface OtaUpdatesResponse {
+        runtime: string;
+        platform: 'ios' | 'android';
+        pointer: { kind: 'ga' | 'rollback'; otaId: number | null; uuid: string; createdAt: string } | null;
+        updates: OtaUpdate[];
+    }
+
     interface CuratedIOUsDetails {
         [key: string]: {
             id: number;
@@ -174,6 +197,8 @@ declare namespace XamanBackend {
         account: string;
         danger: string;
         force_dtag: boolean;
+        // true when the account is whitelisted by us (absent on older backends)
+        force_whitelist?: boolean;
         confirmations: any;
     }
     interface AppCategory {

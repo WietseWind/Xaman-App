@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
+import isUndefined from 'lodash/isUndefined';
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 
@@ -60,6 +61,14 @@ class EscrowCreateTemplate extends Component<Props, State> {
                         <Text style={styles.label}>{Localize.t('global.invoiceID')}</Text>
                         <View style={styles.contentBox}>
                             <Text style={styles.valueSubtext}>{transaction.InvoiceID}</Text>
+                        </View>
+                    </>
+                )}
+                {!isUndefined(transaction.DestinationTag) && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.destinationTag')}</Text>
+                        <View style={styles.contentBox}>
+                            <Text style={styles.value}>{transaction.DestinationTag}</Text>
                         </View>
                     </>
                 )}

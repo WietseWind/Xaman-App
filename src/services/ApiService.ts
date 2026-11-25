@@ -22,6 +22,7 @@ import { GetDeviceUniqueId } from '@common/helpers/device';
 
 import LoggerService, { LoggerInstance } from '@services/LoggerService';
 import NetworkService from '@services/NetworkService';
+import { reportUnexpectedBackendResponse } from '@services/backendResponseReport';
 
 /* Types  ==================================================================== */
 type Methods = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -431,12 +432,29 @@ class ApiService {
                 .then((res) => {
                     resolve(res);
                 })
-                .catch(async (error: ApiError) => {
+                .catch(async (error: ApiError & { unexpectedHttpStatus?: boolean; status?: number; body?: string }) => {
                     // log the api error
                     this.logger.error(`fetch ${thisUrl}`, error);
 
                     // API got back to us, clear the timeout
                     clearTimeout(apiTimedOut);
+
+                    // fetch() rejected because the HTTP status cannot construct a Response.
+                    // Keep the caller's existing failure path. Diagnostics are developer-only.
+                    if (error?.unexpectedHttpStatus) {
+                        try {
+                            reportUnexpectedBackendResponse({
+                                method: req.method,
+                                url: thisUrl,
+                                status: typeof error.status === 'number' ? error.status : 0,
+                                body: typeof error.body === 'string' ? error.body : '',
+                            });
+                        } catch {
+                            // Diagnostics must not replace the caller's failure path.
+                        }
+                        reject(new ApiError('Unexpected response from the backend', error.status));
+                        return;
+                    }
 
                     // if rejection was caused by token expiration then try to refresh the token and try again
                     // if not refreshing the token, start refreshing

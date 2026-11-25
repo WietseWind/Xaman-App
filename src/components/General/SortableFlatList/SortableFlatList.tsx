@@ -44,6 +44,7 @@ interface Props {
     dataSource: Array<any>;
     sortable?: boolean;
     firstItemExtraHeight?: number;
+    endInset?: number;
     renderItem: ListRenderItem<any> | null | undefined;
     renderEmptyList?: React.ComponentType<any> | React.ReactElement | null | undefined;
     onItemPress?: (item: any, index: number) => void;
@@ -82,7 +83,10 @@ export default class SortableFlatList extends Component<Props, State> {
     private activeItem: CellComponent | undefined;
     private listRef: React.RefObject<FlatList>;
 
-    private scaleRecoveryTimeout: ReturnType<typeof setTimeout> | undefined;
+    private mounted = false;
+    private mountTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+    private scaleRecoveryTimeouts = new Set<ReturnType<typeof setTimeout>>();
+    private autoScrollFrames = new Set<number>();
     private autoScrollInterval: ReturnType<typeof setTimeout> | undefined;
     private accountWorthInterval: ReturnType<typeof setTimeout> | undefined;
     
@@ -104,6 +108,7 @@ export default class SortableFlatList extends Component<Props, State> {
     static defaultProps: Partial<Props> = {
         separatorHeight: 0,
         sortable: true,
+        endInset: 0,
     };
 
     constructor(props: Props) {
@@ -112,7 +117,8 @@ export default class SortableFlatList extends Component<Props, State> {
         this.state = {
             containerHeight: (props.itemHeight + props.separatorHeight!) *
                 (props.dataSource.length + 1) +
-                (props.firstItemExtraHeight || 0) - 10,
+                (props.firstItemExtraHeight || 0) +
+                (props.endInset || 0) - 10,
             isItemActive: false,
             accWorthIdentifier: '',
             accWorthTitle: '',
@@ -270,11 +276,15 @@ export default class SortableFlatList extends Component<Props, State> {
     };
 
     componentDidMount() {
+        this.mounted = true;
         clearInterval(this.autoScrollInterval);
         clearInterval(this.accountWorthInterval);
-        clearTimeout(this.scaleRecoveryTimeout);
+        this.scaleRecoveryTimeouts.forEach((timer) => clearTimeout(timer));
+        this.scaleRecoveryTimeouts.clear();
 
-        InteractionManager.runAfterInteractions(() => { 
+        this.mountTask = InteractionManager.runAfterInteractions(() => {
+            this.mountTask = undefined;
+            if (!this.mounted) return;
             const settings = CoreRepository.getSettings();
 
             this.setState({
@@ -302,6 +312,14 @@ export default class SortableFlatList extends Component<Props, State> {
     };
 
     componentWillUnmount() {
+        this.mounted = false;
+        this.mountTask?.cancel();
+        this.mountTask = undefined;
+        this.stopAutoScroll();
+        this.scaleRecoveryTimeouts.forEach((timer) => clearTimeout(timer));
+        this.scaleRecoveryTimeouts.clear();
+        this.autoScrollFrames.forEach((frame) => cancelAnimationFrame(frame));
+        this.autoScrollFrames.clear();
         clearInterval(this.accountWorthInterval);
         CoreRepository.off('updateSettings', this.updateSettingsHandler);
         AccountRepository.off('accountUpdate', this.updateSettingsHandler);
@@ -314,7 +332,8 @@ export default class SortableFlatList extends Component<Props, State> {
         // if dataSource size or item height or separator size changed then apply new container height
         let newContainerHeight = (nextProps.itemHeight + nextProps.separatorHeight!) *
             (nextProps.dataSource.length + 1) +
-            (nextProps.firstItemExtraHeight || 0) - 10;
+            (nextProps.firstItemExtraHeight || 0) +
+            (nextProps.endInset || 0) - 10;
         
         if (nextProps.sortable) {
             newContainerHeight -= -40;
@@ -452,6 +471,7 @@ export default class SortableFlatList extends Component<Props, State> {
     };
 
     startAutoScroll = () => {
+        if (!this.mounted) return;
         const { itemHeight, separatorHeight } = this.props;
         const { containerHeight } = this.state;
 
@@ -462,6 +482,10 @@ export default class SortableFlatList extends Component<Props, State> {
         clearInterval(this.autoScrollInterval);
 
         this.autoScrollInterval = setInterval(() => {
+            if (!this.mounted) {
+                this.stopAutoScroll();
+                return;
+            }
             // state of auto scrolling changed
             if (this.currentAutoScrollState === AutoScrollState.DISABLED) {
                 // stop the auto scrolling
@@ -495,7 +519,9 @@ export default class SortableFlatList extends Component<Props, State> {
                 // scroll to the new position
                 this.listRef.current?.scrollToOffset({ offset: newScrollOffset, animated: false });
 
-                requestAnimationFrame(() => {
+                const frame = requestAnimationFrame(() => {
+                    this.autoScrollFrames.delete(frame);
+                    if (!this.mounted) return;
                     if (this.activeItem) {
                         if (this.currentAutoScrollState === AutoScrollState.MOVING_UP) {
                             this.currentAutoScrollDy -= SCROLL_MAX_CHANGE;
@@ -509,6 +535,7 @@ export default class SortableFlatList extends Component<Props, State> {
                         this.onItemMove(this.currentAutoScrollDy);
                     }
                 });
+                this.autoScrollFrames.add(frame);
             }
         }, 10);
     };
@@ -654,12 +681,15 @@ export default class SortableFlatList extends Component<Props, State> {
             return;
         }
 
-        this.scaleRecoveryTimeout = setTimeout(() => {
-            if (this.isMovePanResponder && !this.isActiveItemMoved) {
+        if (!this.mounted) return;
+        const timer = setTimeout(() => {
+            this.scaleRecoveryTimeouts.delete(timer);
+            if (this.mounted && this.isMovePanResponder && !this.isActiveItemMoved) {
                 // callback
                 this.onItemRelease();
             }
         }, 220);
+        this.scaleRecoveryTimeouts.add(timer);
     };
 
     onItemPress = (index: number) => {

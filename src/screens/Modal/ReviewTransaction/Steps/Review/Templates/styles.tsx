@@ -131,6 +131,9 @@ const styles = StyleService.create({
     signersContainer: {
         marginBottom: AppSizes.paddingSml,
     },
+    extraFieldsWarning: {
+        marginBottom: AppSizes.paddingSml,
+    },
     label: {
         fontFamily: AppFonts.subtext.family,
         fontSize: AppFonts.subtext.size,
@@ -148,6 +151,19 @@ const styles = StyleService.create({
         width: '100%',
         borderTopWidth: 1,
         borderTopColor: '$grey',
+    },
+    // Remit: the native amount on one line with its icon and name
+    remitNativeAmount: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    remitNativeCurrency: {
+        flexShrink: 1,
+        marginBottom: 0,
+        marginRight: AppSizes.paddingExtraSml,
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
     },
     amount: {
         fontFamily: AppFonts.base.familyMonoBold,

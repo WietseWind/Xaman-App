@@ -8,6 +8,10 @@ import { ImportSteps, SecretTypes, State } from './types';
 
 interface ContextProps extends State {
     setImportedAccount: (importedAccount: XRPL_Account, callback?: any) => void;
+    pickKnownAccount: (
+        candidates: Array<XRPL_Account | undefined>,
+        curvePickedByHand?: boolean,
+    ) => XRPL_Account | undefined;
     setLabel: (label: string, callback?: any) => void;
     setPassphrase: (passphrase: string, callback?: any) => void;
     setEncryptionLevel: (encryptionLevel: EncryptionLevels, callback?: any) => void;
@@ -16,6 +20,7 @@ interface ContextProps extends State {
     setAdditionalInfo: (info: Object, callback?: any) => void;
     setTangemSignature: (signature: string, callback?: any) => void;
     setSecretType: (type: SecretTypes, callback?: any) => void;
+    beginTangemUpgrade: () => Promise<void>;
     goNext: (step?: ImportSteps) => void;
     goBack: () => void;
 }

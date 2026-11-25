@@ -19,6 +19,8 @@ import AccountList from './Account/List';
 import AccountEdit from './Account/Edit';
 import AccountChangePassphrase from './Account/Edit/ChangePassphrase';
 import AccountChangeTangemSecurity from './Account/Edit/ChangeTangemSecurity';
+import AccountBackupTangemCard from './Account/Edit/BackupTangemCard';
+import AccountIdentifyTangemCard from './Account/Edit/IdentifyTangemCard';
 import AccountCipherMigrationView from './Account/Migration/CipherMigration';
 
 // Modals
@@ -93,6 +95,7 @@ import ChangePasscode from './Settings/Security/ChangePasscode';
 
 // session log
 import SessionLog from './Settings/Advanced/Logs';
+import RuntimeUpdates from './Settings/Advanced/RuntimeUpdates';
 import DeveloperSettings from './Settings/Advanced/DeveloperSettings';
 
 // global screens
@@ -114,6 +117,8 @@ export {
     AccountEdit,
     AccountChangePassphrase,
     AccountChangeTangemSecurity,
+    AccountIdentifyTangemCard,
+    AccountBackupTangemCard,
     AccountImport,
     AccountGenerate,
     AccountCipherMigrationView,
@@ -171,6 +176,7 @@ export {
     EditThirdPartyApp,
     NetworkList,
     SessionLog,
+    RuntimeUpdates,
     DeveloperSettings,
     Picker,
     Placeholder,

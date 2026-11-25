@@ -1,3 +1,5 @@
+export { SensitiveAccessibilityView } from './SensitiveAccessibilityView';
+
 export * from './Avatar';
 export * from './Badge';
 export * from './Spacer';
@@ -50,3 +52,4 @@ export * from './JsonTree';
 export * from './CountDown';
 
 export * from './ServiceFeeSpendable';
+export * from './ScreenReaderAnnouncement';

@@ -188,6 +188,7 @@ class AlertOverlay extends Component<Props, State> {
                                         this.dismiss(b.onPress);
                                     }}
                                     light={b.light}
+                                    textStyle={b.destructive ? styles.destructiveButtonText : undefined}
                                     label={b.text}
                                 />
                             </View>

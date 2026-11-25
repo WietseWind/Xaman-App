@@ -13,6 +13,7 @@ export interface Props {
     title?: string;
     icon?: string;
     account?: AccountModel;
+    network?: NetworkModel;
     origin?: XAppOrigin;
     originData?: any;
     noSwitching?: boolean;
@@ -69,6 +70,10 @@ export interface State {
     isRequiredNetworkSwitch: boolean;
     coreSettings: CoreModel;
     appVersionCode: string;
+    // light or dark for the page (prefers-color-scheme), follows Xaman's theme live
+    colorScheme: 'light' | 'dark';
+    // a new number gives a new WebView: after the OS ended the process of the page
+    webViewKey: number;
 }
 
 export enum XAppMethods {
@@ -88,6 +93,12 @@ export enum XAppMethods {
     RequestInAppPurchase = 'requestInAppPurchase',
 }
 
+// Events Xaman sends to the xApp only. Kept out of XAppMethods, which also lists the commands an
+// xApp may send, so an xApp can never send these as a command.
+export enum XAppEvents {
+    ColorSchemeChange = 'colorSchemeChange',
+}
+
 export enum XAppSpecialPermissions {
     UrlLaunchNoConfirmation = 'URL_LAUNCH_NO_CONFIRMATION',
     NetworkSwitchEventNoReload = 'NETWORK_SWITCH_EVENT_NO_RELOAD',
@@ -103,4 +114,6 @@ export interface IEvent {
     result?: any;
     network?: string;
     successPurchase?: boolean;
+    colorScheme?: 'light' | 'dark';
+    style?: string;
 }

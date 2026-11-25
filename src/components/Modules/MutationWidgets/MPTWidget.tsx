@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { View, Text } from 'react-native';
 
 import Localize from '@locale';
+import { mptAssetScale, mptRawToDisplay } from '@common/utils/mptAmount';
 
 import styles from './styles';
 
@@ -80,13 +81,13 @@ class MPTWidget extends PureComponent<Props, State> {
             //
         }
 
-        const assetScale = mpTokenIssuance?.AssetScale && mpTokenIssuance?.AssetScale > 1
-            ? mpTokenIssuance?.AssetScale
-            : 1;
-        
-        const scale = (amnt: number) => {
-            return amnt / (assetScale > 1 ? 10 ** (assetScale || 1) : 1);
-        };
+        let assetScale: number;
+        try {
+            assetScale = mptAssetScale(mpTokenIssuance?.AssetScale);
+        } catch {
+            return undefined;
+        }
+        const scale = (value: string | number) => mptRawToDisplay(value, assetScale);
 
         return (
             <View style={isPaymentScreen ? styles.detailContainerPS : styles.detailContainer}>
@@ -103,7 +104,7 @@ class MPTWidget extends PureComponent<Props, State> {
                     </>
                 )}
 
-                {mpTokenIssuance?.TransferFee && mpTokenIssuance.TransferFee > 0 && (
+                {!!mpTokenIssuance?.TransferFee && mpTokenIssuance.TransferFee > 0 && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Transfer Fee</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>
@@ -112,29 +113,29 @@ class MPTWidget extends PureComponent<Props, State> {
                     </>
                 )}
 
-                {assetScale > 1 && (
+                {assetScale > 0 && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Asset Scale</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>
-                            {assetScale} {assetScale > 1 && `(/ ${10 ** assetScale})`}
+                            {assetScale} {assetScale > 0 && `(/ 1${'0'.repeat(assetScale)})`}
                         </Text>
                     </>
                 )}
 
-                {mpTokenIssuance?.MaximumAmount && mpTokenIssuance.MaximumAmount > 1 && (
+                {mpTokenIssuance?.MaximumAmount && mpTokenIssuance.MaximumAmount > 0 && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Maximum Amount</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>
-                            {scale(mpTokenIssuance.MaximumAmount)} {assetScale > 1 && `(${mpTokenIssuance.MaximumAmount})`}
+                            {scale(mpTokenIssuance.MaximumAmount)} {assetScale > 0 && `(${mpTokenIssuance.MaximumAmount})`}
                         </Text>
                     </>
                 )}
 
-                {mpTokenIssuance?.OutstandingAmount && mpTokenIssuance.OutstandingAmount > 1 && (
+                {mpTokenIssuance?.OutstandingAmount && mpTokenIssuance.OutstandingAmount > 0 && (
                     <>
                         <Text style={labelStyle || styles.detailsLabelSubText}>Outstanding Amount</Text>
                         <Text selectable style={contentStyle || [styles.hashText, styles.marginBottom]}>
-                            {scale(mpTokenIssuance.OutstandingAmount)} {assetScale > 1 && `(${mpTokenIssuance.OutstandingAmount})`}
+                            {scale(mpTokenIssuance.OutstandingAmount)} {assetScale > 0 && `(${mpTokenIssuance.OutstandingAmount})`}
                         </Text>
                     </>
                 )}

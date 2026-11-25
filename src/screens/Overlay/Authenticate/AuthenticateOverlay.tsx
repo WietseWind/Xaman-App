@@ -308,7 +308,12 @@ class AuthenticateOverlay extends Component<Props, State> {
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >
-                <SafeAreaView testID="lock-overlay" style={styles.safeAreaContainer}>
+                <SafeAreaView
+                    testID="lock-overlay"
+                    style={styles.safeAreaContainer}
+                    // VoiceOver stays on the passcode
+                    accessibilityViewIsModal
+                >
                     <Animated.View style={[{ transform, opacity: this.animatedOpacity }]}>
                         <View style={[
                             AppStyles.flex1,

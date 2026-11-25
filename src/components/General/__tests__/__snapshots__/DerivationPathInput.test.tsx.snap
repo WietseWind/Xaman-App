@@ -33,12 +33,16 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
     m/44'/144'/
   </Text>
   <TextInput
+    autoComplete="off"
+    autoCorrect={false}
+    importantForAutofill="noExcludeDescendants"
     keyboardType="number-pad"
     onChangeText={[Function]}
     onSubmitEditing={[Function]}
     placeholder="0"
     placeholderTextColor="rgba(96,104,133,0.06)"
     returnKeyType="next"
+    spellCheck={false}
     style={
       {
         "backgroundColor": "#F3F6FA",
@@ -53,6 +57,7 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
         "textAlignVertical": "center",
       }
     }
+    textContentType="none"
     value=""
   />
   <Text
@@ -69,6 +74,9 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
     '/
   </Text>
   <TextInput
+    autoComplete="off"
+    autoCorrect={false}
+    importantForAutofill="noExcludeDescendants"
     keyboardType="number-pad"
     onChangeText={[Function]}
     onKeyPress={[Function]}
@@ -76,6 +84,7 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
     placeholder="0"
     placeholderTextColor="rgba(96,104,133,0.06)"
     returnKeyType="next"
+    spellCheck={false}
     style={
       {
         "backgroundColor": "#F3F6FA",
@@ -90,6 +99,7 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
         "textAlignVertical": "center",
       }
     }
+    textContentType="none"
     value=""
   />
   <Text
@@ -106,12 +116,16 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
     /
   </Text>
   <TextInput
+    autoComplete="off"
+    autoCorrect={false}
+    importantForAutofill="noExcludeDescendants"
     keyboardType="number-pad"
     onChangeText={[Function]}
     onKeyPress={[Function]}
     placeholder="0"
     placeholderTextColor="rgba(96,104,133,0.06)"
     returnKeyType="done"
+    spellCheck={false}
     style={
       {
         "backgroundColor": "#F3F6FA",
@@ -126,6 +140,7 @@ exports[`[DerivationPathInput] should match snapshot 1`] = `
         "textAlignVertical": "center",
       }
     }
+    textContentType="none"
     value=""
   />
 </View>

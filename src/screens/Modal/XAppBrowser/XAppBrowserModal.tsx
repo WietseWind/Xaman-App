@@ -4,14 +4,18 @@
 
 import { assign, get, has, isEmpty, toUpper } from 'lodash';
 import moment from 'moment-timezone';
+import { explainRetiredTangemBackup, isRetiredTangemBackup } from '@common/helpers/retiredTangemBackup';
 import React, { Component } from 'react';
 import {
     Alert,
+    Appearance,
     BackHandler,
+    ColorSchemeName,
     Image,
     InteractionManager,
     Linking,
     NativeEventSubscription,
+    Platform,
     Share,
     Share as RNShare,
     Text,
@@ -20,7 +24,6 @@ import {
 
 import { NetworkLabel } from '@components/Modules/NetworkLabel';
 
-import VeriffSdk from '@veriff/react-native-sdk';
 import { StringType } from 'xumm-string-decode';
 import { utils as AccountLibUtils } from 'xrpl-accountlib';
 import { OptionsModalPresentationStyle } from 'react-native-navigation';
@@ -38,6 +41,7 @@ import { Destination } from '@common/libs/ledger/parser/types';
 import { StringTypeCheck } from '@common/utils/string';
 
 import AuthenticationService, { LockStatus } from '@services/AuthenticationService';
+import AppService, { AppStateStatus } from '@services/AppService';
 import { AccountAdvisoryResolveType } from '@services/ResolverService';
 import NetworkService from '@services/NetworkService';
 
@@ -76,20 +80,27 @@ import { PurchaseProductModalProps } from '@screens/Modal/PurchaseProduct';
 
 import LoggerService from '@services/LoggerService';
 
-import { AppColors, AppStyles } from '@theme';
+import { AppStyles } from '@theme';
 import styles from './styles';
 
 /* types ==================================================================== */
-import { IEvent, Props, State, XAppMethods, XAppSpecialPermissions } from './types';
+import { IEvent, Props, State, XAppEvents, XAppMethods, XAppSpecialPermissions } from './types';
+import { resolveXAppColorScheme } from './colorScheme';
+import { PageWatch } from './pageWatch';
+import { KycBrowser, KYC_BROWSER_STATUS, KYC_NOT_OPENED_STATUS } from './kycBrowser';
 
 /* Component ==================================================================== */
 class XAppBrowserModal extends Component<Props, State> {
     static screenName = AppScreens.Modal.XAppBrowser;
 
     private backHandler?: NativeEventSubscription;
+    private appearanceListener?: NativeEventSubscription;
     private softLoadingTimeout?: ReturnType<typeof setTimeout>;
     private readonly webView: React.RefObject<WebViewHandle>;
     private lastMessageReceived: number;
+    // notices when the OS ended the process of the page (see ./pageWatch)
+    private readonly pageWatch: PageWatch;
+    private readonly kycBrowser: KycBrowser;
 
     static options() {
         return {
@@ -115,7 +126,7 @@ class XAppBrowserModal extends Component<Props, State> {
                 __ott: undefined,
             },
             account: props.account ?? CoreRepository.getDefaultAccount(),
-            network: coreSettings.network,
+            network: props.network ?? coreSettings.network,
             error: undefined,
             isLaunchingApp: true,
             isLoadingApp: false,
@@ -124,12 +135,32 @@ class XAppBrowserModal extends Component<Props, State> {
             isRequiredNetworkSwitch: false,
             appVersionCode: GetAppVersionCode(),
             coreSettings,
+            // the theme Xaman shows now, like the xAppStyle launch parameter
+            colorScheme: StyleService.getCurrentTheme() === 'light' ? 'light' : 'dark',
+            webViewKey: 0,
         };
 
         this.webView = React.createRef();
 
         // last message received from webview, preventing spamming
         this.lastMessageReceived = 0;
+
+        this.pageWatch = new PageWatch({
+            restart: this.restartPage,
+            giveUp: this.onPageKeepsStopping,
+            inject: (script) => this.webView?.current?.injectJavaScript(script),
+            isPageInUse: this.isPageInUse,
+        });
+
+        this.kycBrowser = new KycBrowser({
+            openURL: (url) => Linking.openURL(url),
+            onReturn: () => this.onKycResolve({ status: KYC_BROWSER_STATUS }),
+            onFail: () => {
+                Alert.alert(Localize.t('global.error'), Localize.t('global.cannotOpenLink'));
+                // the page waits for an answer (it shows a spinner): let it go on
+                this.onKycResolve({ status: KYC_NOT_OPENED_STATUS });
+            },
+        });
     }
 
     componentDidMount() {
@@ -141,6 +172,12 @@ class XAppBrowserModal extends Component<Props, State> {
 
         // listen for authentication lock state changes
         AuthenticationService.on('lockStateChange', this.onLockStateChange);
+
+        // the page can be gone when Xaman comes back to the foreground
+        AppService.on('appStateChange', this.onAppStateChange);
+
+        // follow the OS appearance when Xaman auto switches its theme
+        this.appearanceListener = Appearance.addChangeListener(this.onAppearanceChange);
     }
 
     componentWillUnmount() {
@@ -150,7 +187,104 @@ class XAppBrowserModal extends Component<Props, State> {
         }
 
         AuthenticationService.off('lockStateChange', this.onLockStateChange);
+        AppService.off('appStateChange', this.onAppStateChange);
+        this.kycBrowser.reset();
+        this.pageWatch.dispose();
+
+        if (this.softLoadingTimeout) {
+            clearTimeout(this.softLoadingTimeout);
+        }
+
+        if (this.appearanceListener) {
+            this.appearanceListener.remove();
+        }
     }
+
+    // With "auto switch" the page follows the OS appearance at once, also while Xaman itself waits
+    // for this modal to close before it switches its own theme. The xApp sees the change in
+    // prefers-color-scheme and as a colorSchemeChange event.
+    onAppearanceChange = ({ colorScheme: osColorScheme }: { colorScheme: ColorSchemeName }) => {
+        const coreSettings = CoreRepository.getSettings();
+        if (!coreSettings?.themeAutoSwitch) {
+            return;
+        }
+
+        const { colorScheme: current } = this.state;
+        const { colorScheme, style } = resolveXAppColorScheme(coreSettings.theme, true, osColorScheme);
+        if (colorScheme === current) {
+            return;
+        }
+
+        this.setState({ colorScheme });
+        this.sendEvent({ method: XAppEvents.ColorSchemeChange, colorScheme, style: toUpper(style) });
+    };
+
+    onAppStateChange = (status: AppStateStatus) => {
+        this.pageWatch.onAppState(status === AppStateStatus.Active);
+        this.kycBrowser.onAppState(status === AppStateStatus.Active);
+    };
+
+    /**
+     * iOS ended the web content process of the page, or Android ended the renderer of the WebView. The
+     * view is blank and does nothing from here on: start the xApp again.
+     */
+    onPageProcessGone = () => {
+        this.pageWatch.onProcessGone(AppService.currentAppState === AppStateStatus.Active);
+    };
+
+    /**
+     * The page is loaded and shown: only then it can be asked for a sign of life.
+     */
+    isPageInUse = (): boolean => {
+        const { ott, isLaunchingApp, isLoadingApp, isAppReady, isRequiredNetworkSwitch, error } = this.state;
+        return !!ott && isAppReady && !isLaunchingApp && !isLoadingApp && !isRequiredNetworkSwitch && !error;
+    };
+
+    /**
+     * Start the xApp again after its page went away: a new WebView (on Android the old one can not load
+     * anything any more) and a new launch, which gets a new token. What the xApp had on screen is lost,
+     * as it was already.
+     */
+    restartPage = () => {
+        if (this.softLoadingTimeout) {
+            clearTimeout(this.softLoadingTimeout);
+        }
+
+        this.setState(
+            (state) => ({
+                webViewKey: state.webViewKey + 1,
+                ott: undefined,
+                error: undefined,
+                isLaunchingApp: true,
+                isLoadingApp: false,
+                isAppReady: false,
+                isAppReadyTimeout: false,
+            }),
+            () => {
+                this.launchApp();
+            },
+        );
+    };
+
+    /**
+     * The page went away again right after it was started again: do not keep restarting, show the
+     * "unable to load" screen with Try again.
+     */
+    onPageKeepsStopping = () => {
+        if (this.softLoadingTimeout) {
+            clearTimeout(this.softLoadingTimeout);
+        }
+
+        this.setState((state) => ({
+            webViewKey: state.webViewKey + 1,
+            ott: undefined,
+            isLaunchingApp: false,
+            isLoadingApp: false,
+            isAppReady: false,
+            isAppReadyTimeout: false,
+            error: new Error(Localize.t('global.unexpectedErrorOccurred')),
+        }));
+    };
 
     onLockStateChange = (lockState: LockStatus) => {
         if (lockState === LockStatus.LOCKED) {
@@ -293,26 +427,13 @@ class XAppBrowserModal extends Component<Props, State> {
         );
     };
 
-    launchVeriffKyc = async (data: { sessionUrl: string }) => {
-        const sessionUrl = get(data, 'sessionUrl', undefined);
-
-        if (!sessionUrl) return;
-
-        try {
-            VeriffSdk.launchVeriff({
-                branding: {
-                    themeColor: AppColors.blue,
-                    buttonCornerRadius: 28,
-                },
-                sessionUrl,
-            })
-                .then(this.onKycResolve)
-                .catch(() => {
-                    // ignore
-                });
-        } catch {
-            // ignore
-        }
+    /**
+     * The kycVeriff command of an xApp page. The identity check runs in the browser of the phone, there is
+     * no Veriff SDK in the app (see kycBrowser.ts). Only a session link of Veriff is opened. The xApp always
+     * gets a kycVeriff answer: when Xaman is in front again, or at once when nothing was opened.
+     */
+    launchVeriffKyc = (data: { sessionUrl: string }) => {
+        this.kycBrowser.start(get(data, 'sessionUrl', undefined));
     };
 
     requestInAppPurchase = async ({
@@ -342,6 +463,8 @@ class XAppBrowserModal extends Component<Props, State> {
         if (this.softLoadingTimeout) {
             clearTimeout(this.softLoadingTimeout);
         }
+        // the page that asked for the identity check goes away: it gets no answer
+        this.kycBrowser.reset();
 
         this.setState(
             {
@@ -384,7 +507,7 @@ class XAppBrowserModal extends Component<Props, State> {
                     text: Localize.t('global.continue'),
                     onPress: () => {
                         const result = LoggerService.getLogs();
-                        this.sendEvent({ method: XAppMethods.GetLogs, result });                
+                        this.sendEvent({ method: XAppMethods.GetLogs, result });
                     },
                     light: false,
                 },
@@ -439,11 +562,7 @@ class XAppBrowserModal extends Component<Props, State> {
         });
     };
 
-    openTxDetails = async (data: {
-        tx: string;
-        account: string;
-        network?: string;
-    }) => {
+    openTxDetails = async (data: { tx: string; account: string; network?: string }) => {
         const { network: stateNetwork } = this.state;
 
         const paramNetwork = NetworkRepository.findOne({ key: String(data?.network).toUpperCase() });
@@ -582,6 +701,11 @@ class XAppBrowserModal extends Component<Props, State> {
     };
 
     onMessage = (event: any) => {
+        // the answer of the page to Xaman's own sign of life check is not a message of the xApp
+        if (this.pageWatch.onMessage(event?.nativeEvent?.data)) {
+            return;
+        }
+
         // should be at least 1500 ms delay between each message
         if (this.lastMessageReceived) {
             if (moment().diff(moment.unix(this.lastMessageReceived), 'millisecond') < 1500) {
@@ -624,7 +748,7 @@ class XAppBrowserModal extends Component<Props, State> {
         return StyleService.getCurrentTheme();
         // const {coreSettings} = this.state;
 
-        // const style: Themes = 
+        // const style: Themes =
         //     !coreSettings.themeAutoSwitch                     // If not auto switching
         //         ? coreSettings.theme                          //   then return as is (from settings)
         //         : StyleService.getCurrentTheme() === 'light'  //   else, if the current theme is light
@@ -643,6 +767,11 @@ class XAppBrowserModal extends Component<Props, State> {
         // double check
         if (!app) {
             throw new Error('launchApp, app is required!');
+        }
+
+        if (isRetiredTangemBackup(app.identifier)) {
+            await explainRetiredTangemBackup();
+            return;
         }
 
         try {
@@ -833,9 +962,9 @@ class XAppBrowserModal extends Component<Props, State> {
 
         return {
             uri,
-            headers: {
-                'X-OTT': ott,
-            },
+            // Android's scoped native transport adds X-OTT only on owned hosts.
+            // Keeping it in source headers would restore it during Chromium fallback.
+            ...(Platform.OS === 'android' ? {} : { headers: { 'X-OTT': ott } }),
         };
     };
 
@@ -847,8 +976,11 @@ class XAppBrowserModal extends Component<Props, State> {
     getUserAgent = (): string => {
         const { appVersionCode, ott } = this.state;
 
-        // NOTE: we included the ott in the header for the server side xApps to be able to access the ott easier
-        // Security risk is really low as the ott details can only be fetched by application and only once
+        // Server-side xApps read the one-time token from the User-Agent. It stays on
+        // xaman.app, xumm.app, xrpl-labs.com, and on the xApp domain plus its
+        // subdomains. Android adds it to scoped bodyless requests and exposes it
+        // to the SDK at document start; Chromium's default UA stays token-free,
+        // including requests with bodies, WebSockets and interception fallbacks.
         return `xumm/xapp:${appVersionCode} (ott:${ott})`;
     };
 
@@ -1171,10 +1303,16 @@ class XAppBrowserModal extends Component<Props, State> {
     };
 
     renderApp = () => {
+        const { colorScheme, webViewKey } = this.state;
+
         return (
             <WebView
-                testID="xapp-webview"
+                key={`xapp-webview-${webViewKey}`}
+                // the number shows that the page was started again (for the e2e suite)
+                testID={webViewKey === 0 ? 'xapp-webview' : `xapp-webview-${webViewKey}`}
                 ref={this.webView}
+                onContentProcessDidTerminate={this.onPageProcessGone}
+                onRenderProcessGone={this.onPageProcessGone}
                 containerStyle={styles.webViewContainer}
                 style={styles.webView}
                 startInLoadingState
@@ -1183,6 +1321,7 @@ class XAppBrowserModal extends Component<Props, State> {
                 source={this.getSource()}
                 onMessage={this.onMessage}
                 userAgent={this.getUserAgent()}
+                colorScheme={colorScheme}
             />
         );
     };
@@ -1241,26 +1380,28 @@ class XAppBrowserModal extends Component<Props, State> {
                     }}
                     centerComponent={{
                         text: altHeader?.center?.text,
-                        extraComponent: altHeader?.center?.showNetworkLabel
-                            ? <NetworkLabel type="both" />
-                            : altHeader?.center?.subtitle && (
+                        extraComponent: altHeader?.center?.showNetworkLabel ? (
+                            <NetworkLabel type="both" />
+                        ) : (
+                            altHeader?.center?.subtitle && (
                                 <Text style={AppStyles.smalltext}>{String(altHeader?.center?.subtitle)}</Text>
-                            ),
+                            )
+                        ),
                     }}
                     rightComponent={
                         Object.values(AppConfig.xappIdentifiers).indexOf(String(app?.identifier || '')) > -1 ||
-                            altHeader?.right?.element ||
-                            (altHeader?.center?.subtitle && altHeader?.right?.icon)
-                                ? { 
-                                    icon: altHeader?.right?.icon,
-                                    element: altHeader?.right?.element,
-                                    iconSize: altHeader?.right?.iconSize,
-                                    onPress: () => {
-                                        const fn = this?.[(altHeader?.right?.onPress || '_') as keyof this];
-                                        if (typeof fn === 'function') fn(altHeader?.right?.onPressOptions);
-                                    },
-                                }
-                                : undefined
+                        altHeader?.right?.element ||
+                        (altHeader?.center?.subtitle && altHeader?.right?.icon)
+                            ? {
+                                  icon: altHeader?.right?.icon,
+                                  element: altHeader?.right?.element,
+                                  iconSize: altHeader?.right?.iconSize,
+                                  onPress: () => {
+                                      const fn = this?.[(altHeader?.right?.onPress || '_') as keyof this];
+                                      if (typeof fn === 'function') fn(altHeader?.right?.onPressOptions);
+                                  },
+                              }
+                            : undefined
                     }
                 />
             );

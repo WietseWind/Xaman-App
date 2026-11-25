@@ -8,6 +8,10 @@ const styles = StyleService.create({
         paddingVertical: AppSizes.paddingSml,
         flexGrow: 0,
     },
+    // A real footer, not content padding. scrollToEnd ignores trailing padding and jumps the last tab left.
+    trailing: {
+        width: AppSizes.paddingSml,
+    },
     button: {
         borderRadius: AppSizes.scale(75) / 5,
         marginRight: AppSizes.paddingExtraSml,

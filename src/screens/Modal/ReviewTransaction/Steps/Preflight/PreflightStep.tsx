@@ -6,11 +6,12 @@ import { filter, find, first, isEmpty } from 'lodash';
 import React, { Component } from 'react';
 import { Image, InteractionManager, Text, View } from 'react-native';
 
-import { NetworkService } from '@services';
+import NetworkService from '@services/NetworkService';
+import LedgerService from '@services/LedgerService';
 
 import { AccountRepository, CoreRepository, NetworkRepository } from '@store/repositories';
 import { NetworkType } from '@store/types';
-import { AccountModel } from '@store/models';
+import { AccountModel, NetworkModel } from '@store/models';
 
 import { AppScreens } from '@common/constants';
 
@@ -30,18 +31,30 @@ import styles from './styles';
 
 import { StepsContext } from '../../Context';
 import { TransactionTypes } from '@common/libs/ledger/types/enums';
+import { Payload } from '@common/libs/payload';
 /* types ==================================================================== */
 enum RequiredActionsType {
     SWITCH_NETWORK = 'SWITCH_NETWORK',
     FORCED_SIGNER = 'FORCED_SIGNER',
     ADD_ACCOUNT = 'ADD_ACCOUNTS',
+    MULTI_SIGN_SIGNER = 'MULTI_SIGN_SIGNER',
 }
+
+// how long the review waits for the signer list of the transaction Account (multi sign)
+const SIGNER_LIST_TIMEOUT = 5000;
 
 export interface Props {}
 
 export interface State {
     requiredAction?: RequiredActionsType;
     requiredActionData: any;
+    networkSwitchStatus: 'idle' | 'confirming' | 'switching';
+}
+
+interface NetworkSwitchRequest {
+    network: NetworkModel;
+    payload: Payload;
+    started: boolean;
 }
 
 /* Error ==================================================================== */
@@ -66,6 +79,11 @@ class PreflightError extends Error {
 class PreflightStep extends Component<Props, State> {
     static contextType = StepsContext;
     declare context: React.ContextType<typeof StepsContext>;
+    private mounted = false;
+    private closing = false;
+    private mountTask?: ReturnType<typeof InteractionManager.runAfterInteractions>;
+    private preflightAttempt = 0;
+    private networkSwitchRequest?: NetworkSwitchRequest;
 
     constructor(props: Props) {
         super(props);
@@ -73,26 +91,47 @@ class PreflightStep extends Component<Props, State> {
         this.state = {
             requiredAction: undefined,
             requiredActionData: undefined,
+            networkSwitchStatus: 'idle',
         };
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(this.runPreFlight);
+        this.mounted = true;
+        this.closing = false;
+        this.mountTask = InteractionManager.runAfterInteractions(this.runPreFlight);
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        this.closing = true;
+        this.preflightAttempt++;
+        this.networkSwitchRequest = undefined;
+        this.mountTask?.cancel();
     }
 
     /*
     Run all preflight checks and tasks
      */
     runPreFlight = () => {
+        const attempt = ++this.preflightAttempt;
+        const { payload } = this.context;
+        const isActive = () => {
+            const { payload: currentPayload } = this.context;
+            return this.mounted && !this.closing && attempt === this.preflightAttempt && currentPayload === payload;
+        };
         // necessary jobs in order
-        const jobs = [this.checkForcedNetwork, this.setTransaction, this.loadSingingAccount];
+        const jobs = [
+            this.checkForcedNetwork,
+            () => this.setTransaction(isActive),
+            () => this.loadSingingAccount(isActive),
+        ];
 
         // run them in waterfall
-        jobs.reduce((accumulator: any, callback) => {
-            return accumulator.then(callback);
+        return jobs.reduce((accumulator: Promise<void>, callback) => {
+            return accumulator.then(() => (isActive() ? callback() : undefined));
         }, Promise.resolve())
-            .then(this.onPreflightPass)
-            .catch(this.onPreflightReject);
+            .then(() => { if (isActive()) this.onPreflightPass(); })
+            .catch((error) => { if (isActive()) this.onPreflightReject(error); });
     };
 
     /*
@@ -128,18 +167,24 @@ class PreflightStep extends Component<Props, State> {
     /*
     Set the transaction and check if we can sign this transaction in the selected network
      */
-    setTransaction = (): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            const { payload, setTransaction } = this.context;
-
-            try {
-                setTransaction(payload.getTransaction());
-
-                resolve();
-            } catch (error: any) {
-                reject(error);
-            }
-        });
+    setTransaction = async (isActive = () => true): Promise<void> => {
+        const { payload, setTransaction } = this.context;
+        // Network switches reconnect asynchronously. Learn the network's current
+        // fields before taking the immutable review/signing definitions snapshot.
+        await NetworkService.updateNetworkDefinitions();
+        if (!isActive()) return;
+        // A newly introduced type can arrive before the normal cache expires. Check once before pinning it.
+        if (!payload.isPseudoTransaction() &&
+            !NetworkService.getNetworkDefinitions().transactionNames.includes(payload.getTransactionType())) {
+            await NetworkService.updateNetworkDefinitions(true);
+        }
+        if (!isActive()) return;
+        await this.checkForcedNetwork();
+        if (!isActive()) return;
+        const transaction = payload.getTransaction();
+        // Capture now, so fee estimation, review and both signers use one schema.
+        transaction.assertSigningContext();
+        setTransaction(transaction);
     };
 
     /*
@@ -147,7 +192,7 @@ class PreflightStep extends Component<Props, State> {
      */
     checkForcedNetwork = (): Promise<void> => {
         return new Promise<void>((resolve, reject) => {
-            const { payload, setError } = this.context;
+            const { payload } = this.context;
 
             try {
                 // check if any forced network applied
@@ -175,7 +220,7 @@ class PreflightStep extends Component<Props, State> {
                 // everything seems fine
                 resolve();
             } catch (error: any) {
-                setError(error);
+                reject(error);
             }
         });
     };
@@ -183,8 +228,21 @@ class PreflightStep extends Component<Props, State> {
     /*
     Load the accounts which this payload can be signed with
      */
-    loadSingingAccount = (): Promise<void> => {
-        return new Promise((resolve, reject): void => {
+    /*
+    Multi sign: the accounts in the signer list of the transaction Account, undefined when not known in time
+     */
+    getSignerList = (account: string): Promise<string[] | undefined> => {
+        return Promise.race([
+            LedgerService.getAccountSignerList(account).catch(() => undefined),
+            new Promise<undefined>((resolve) => {
+                setTimeout(() => resolve(undefined), SIGNER_LIST_TIMEOUT);
+            }),
+        ]);
+    };
+
+    loadSingingAccount = (isActive: () => boolean = () => true): Promise<void> => {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject): Promise<void> => {
             const { transaction, payload, setAccounts, setSource } = this.context;
 
             try {
@@ -220,6 +278,46 @@ class PreflightStep extends Component<Props, State> {
                     }
                 }
 
+                // Multi sign: the signature is made by an account in the signer list of the transaction Account.
+                // That Account can never sign for itself, with its master key or with its regular key: the
+                // ledger refuses it ("Invalid multisigner").
+                const multiSign = payload.isMultiSign();
+                const multiSignAccount = multiSign ? transaction?.Account : undefined;
+                let signerList: string[] | undefined;
+
+                if (multiSignAccount) {
+                    // who can sign: ask the ledger. Not known in time: go on with the accounts there are.
+                    signerList = await this.getSignerList(multiSignAccount);
+                    if (!isActive()) {
+                        resolve();
+                        return;
+                    }
+
+                    availableAccounts = filter(availableAccounts, (account) => account.address !== multiSignAccount);
+
+                    // The requester did not say who signs: offer the accounts that are in the signer list, and
+                    // only those (also when hidden or not activated). With forced signers the requester decides.
+                    const hasForcedSigners = Array.isArray(forcedSigners) && forcedSigners.length > 0;
+                    if (!hasForcedSigners && signerList) {
+                        availableAccounts = filter(availableAccounts, (account) =>
+                            signerList!.includes(account.address));
+                    }
+
+                    // nobody in the app can sign this request: say who can
+                    if (isEmpty(availableAccounts)) {
+                        reject(
+                            new PreflightError(RequiredActionsType.MULTI_SIGN_SIGNER, {
+                                account: multiSignAccount,
+                                signers: filter(
+                                    hasForcedSigners ? forcedSigners : signerList ?? [],
+                                    (address) => address !== multiSignAccount,
+                                ),
+                            }),
+                        );
+                        return;
+                    }
+                }
+
                 // if any account set from payload, set as preferred account
                 if (transaction && transaction.Account) {
                     preferredAccount = find(availableAccounts, { address: transaction.Account });
@@ -228,7 +326,9 @@ class PreflightStep extends Component<Props, State> {
                 if (
                     transaction &&
                     transaction.TransactionType === TransactionTypes.Batch &&
-                    transaction.innerBatchSigners().length === 1
+                    transaction.innerBatchSigners().length === 1 &&
+                    (!transaction.Account || transaction.isBatchInNeedOfMultipleSigners())
+                    // ^^ else the Batch Account signs (e.g. it submits for an inner account that already signed)
                 ) {
                     // Batch in need of one signer, set as preferred account
                     preferredAccount = find(availableAccounts, { address: transaction.innerBatchSigners()[0] });
@@ -266,9 +366,18 @@ class PreflightStep extends Component<Props, State> {
                     return;
                 }
 
+                // Multi sign with forced signers: start with one that is in the signer list (when known)
+                if (multiSignAccount && signerList && !signerList.includes(source.address)) {
+                    const members = filter(availableAccounts, (account) => signerList!.includes(account.address));
+                    const defaultAccount = CoreRepository.getDefaultAccount();
+                    source = find(members, { address: defaultAccount?.address }) || first(members) || source;
+                }
+
                 // case & logic for below: 
                 //    https://github.com/WietseWind/Xaman-App/issues/67
-                if (Array.isArray(forcedSigners) && forcedSigners.length > 0) {
+                // Not for multi sign: there the forced signer (a signer list member) signs as itself, also
+                // when it is the regular key of the transaction Account.
+                if (!multiSign && Array.isArray(forcedSigners) && forcedSigners.length > 0) {
                     if (transaction?.Account) {
                         const fullAccessAccounts = AccountRepository.getFullAccessAccounts();
                         if (!forcedSigners.includes(transaction.Account)) {
@@ -301,37 +410,75 @@ class PreflightStep extends Component<Props, State> {
         });
     };
 
-    switchNetwork = async () => {
-        const { requiredActionData } = this.state;
+    switchNetwork = async (request: NetworkSwitchRequest) => {
+        if (!this.mounted || this.closing || this.networkSwitchRequest !== request || request.started) return;
+        const { payload } = this.context;
+        const { requiredAction, requiredActionData } = this.state;
+        if (payload !== request.payload || requiredAction !== RequiredActionsType.SWITCH_NETWORK ||
+            requiredActionData?.network !== request.network) {
+            this.finishNetworkSwitch(request);
+            return;
+        }
+        request.started = true;
+        this.setState({ networkSwitchStatus: 'switching' });
+        try {
+            await NetworkService.switchNetwork(request.network);
+            const { payload: currentPayload } = this.context;
+            if (this.mounted && this.networkSwitchRequest === request && currentPayload === request.payload) {
+                // Keep the button busy through reconnect/definitions and the new preflight checks.
+                await this.runPreFlight();
+            }
+        } catch (error: any) {
+            const { payload: currentPayload } = this.context;
+            if (this.mounted && this.networkSwitchRequest === request && currentPayload === request.payload) {
+                Prompt(Localize.t('global.error'), error?.message);
+            }
+        } finally {
+            this.finishNetworkSwitch(request);
+        }
+    };
 
-        // switch to the desired network
-        await NetworkService.switchNetwork(requiredActionData.network);
-
-        // re-run the preFlight
-        this.runPreFlight();
+    private finishNetworkSwitch = (request: NetworkSwitchRequest) => {
+        if (this.networkSwitchRequest !== request) return;
+        this.networkSwitchRequest = undefined;
+        if (this.mounted) this.setState({ networkSwitchStatus: 'idle' });
     };
 
     onSwitchNetworkPress = () => {
-        const { requiredActionData } = this.state;
-
-        // get currently connected network
-        const connectedNetwork = NetworkService.getNetwork();
+        if (!this.mounted || this.closing || this.networkSwitchRequest) return;
+        const { requiredAction, requiredActionData } = this.state;
+        const { payload, setError } = this.context;
+        if (requiredAction !== RequiredActionsType.SWITCH_NETWORK || !requiredActionData?.network) return;
+        const request = { network: requiredActionData.network, payload, started: false };
+        this.networkSwitchRequest = request;
+        this.setState({ networkSwitchStatus: 'confirming' });
+        const cancel = () => {
+            // Android can deliver onDismiss after a confirmation button press.
+            if (!request.started) this.finishNetworkSwitch(request);
+        };
 
         // ask user if they want to switch the network
-        Prompt(
-            Localize.t('global.switchNetwork'),
-            Localize.t('settings.nodeChangeWarning', {
-                from: `"${connectedNetwork.name}"`,
-                to: `"${requiredActionData.network.name}`,
-            }),
-            [
-                { text: Localize.t('global.cancel') },
-                {
-                    text: Localize.t('global.switch'),
-                    onPress: this.switchNetwork,
-                },
-            ],
-        );
+        try {
+            const connectedNetwork = NetworkService.getNetwork();
+            Prompt(
+                Localize.t('global.switchNetwork'),
+                Localize.t('settings.nodeChangeWarning', {
+                    from: `"${connectedNetwork.name}"`,
+                    to: `"${requiredActionData.network.name}"`,
+                }),
+                [
+                    { text: Localize.t('global.cancel'), onPress: cancel },
+                    {
+                        text: Localize.t('global.switch'),
+                        onPress: () => this.switchNetwork(request),
+                    },
+                ],
+                { type: 'default', cancelable: true, onDismiss: cancel },
+            );
+        } catch (error) {
+            this.finishNetworkSwitch(request);
+            setError(error as Error);
+        }
     };
 
     onAddAccountPress = async () => {
@@ -340,6 +487,16 @@ class PreflightStep extends Component<Props, State> {
 
         // push to the screen
         Navigator.push<AccountAddViewProps>(AppScreens.Account.Add, {});
+    };
+
+    onClose = () => {
+        if (this.closing) return;
+        this.closing = true;
+        this.preflightAttempt++;
+        this.networkSwitchRequest = undefined;
+        this.mountTask?.cancel();
+        const { onClose } = this.context;
+        onClose();
     };
 
     renderForcedSigners = () => {
@@ -357,6 +514,38 @@ class PreflightStep extends Component<Props, State> {
                     label={Localize.t('payload.forcedSignersAccountsDoesNotExist', {
                         accounts: requiredActionData.forcedSigners.join('\n'),
                     })}
+                    containerStyle={styles.actionContainer}
+                    actionButtonLabel={Localize.t('account.addAccount')}
+                    actionButtonIcon="IconPlus"
+                    actionButtonIconSize={17}
+                    onActionButtonPress={this.onAddAccountPress}
+                />
+            </View>
+        );
+    };
+
+    renderMultiSignSigners = () => {
+        const { requiredActionData } = this.state;
+        const signers: string[] = requiredActionData?.signers ?? [];
+
+        return (
+            <View testID="preflight-multi-sign-signers" style={styles.contentContainer}>
+                <Icon name="IconInfo" style={styles.infoIcon} size={80} />
+                <Spacer size={18} />
+                <Text style={AppStyles.h5}>{Localize.t('global.noAccountConfigured')}</Text>
+                <Spacer size={18} />
+                <InfoMessage
+                    type="neutral"
+                    labelStyle={styles.actionDescription}
+                    label={
+                        signers.length > 0
+                            ? Localize.t('payload.forcedSignersAccountsDoesNotExist', {
+                                accounts: signers.join('\n'),
+                            })
+                            : Localize.t('payload.multiSignNoSignerAccountPresent', {
+                                account: requiredActionData?.account,
+                            })
+                    }
                     containerStyle={styles.actionContainer}
                     actionButtonLabel={Localize.t('account.addAccount')}
                     actionButtonIcon="IconPlus"
@@ -389,7 +578,7 @@ class PreflightStep extends Component<Props, State> {
     };
 
     renderSwitchNetworkAction = () => {
-        const { requiredActionData } = this.state;
+        const { requiredActionData, networkSwitchStatus } = this.state;
         const { coreSettings } = this.context;
 
         // if forced_network type is not "Mainnet" then we should only offer switching if developer mode is on
@@ -414,10 +603,14 @@ class PreflightStep extends Component<Props, State> {
                 <Spacer size={30} />
                 {ShouldShowSwitchButton && (
                     <Button
+                        testID="preflight-switch-network"
                         secondary
                         roundedMini
                         label={Localize.t('global.switchNetwork')}
                         onPress={this.onSwitchNetworkPress}
+                        isDisabled={networkSwitchStatus !== 'idle'}
+                        isLoading={networkSwitchStatus === 'switching'}
+                        loadingIndicatorStyle="default"
                     />
                 )}
             </View>
@@ -425,7 +618,7 @@ class PreflightStep extends Component<Props, State> {
     };
 
     render() {
-        const { onClose, transaction } = this.context;
+        const { transaction } = this.context;
         const { requiredAction } = this.state;
 
         // no action is required
@@ -445,13 +638,16 @@ class PreflightStep extends Component<Props, State> {
             case RequiredActionsType.FORCED_SIGNER:
                 ActionRenderer = this.renderForcedSigners;
                 break;
+            case RequiredActionsType.MULTI_SIGN_SIGNER:
+                ActionRenderer = this.renderMultiSignSigners;
+                break;
             default:
                 return null;
         }
 
         return (
             <View testID="preflight-error-view" style={styles.container}>
-                <ReviewHeader onClose={onClose} transaction={transaction} />
+                <ReviewHeader onClose={this.onClose} transaction={transaction} />
                 {ActionRenderer()}
             </View>
         );

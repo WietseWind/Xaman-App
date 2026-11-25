@@ -3,6 +3,7 @@ import { isEqual, findIndex } from 'lodash';
 import React, { Component } from 'react';
 import { View, Text, ViewStyle } from 'react-native';
 
+import { accountListLabel } from '@common/helpers/accountListLabel';
 import { Navigator } from '@common/helpers/navigator';
 
 import { AppScreens } from '@common/constants';
@@ -107,11 +108,16 @@ class AccountPicker extends Component<Props, State> {
         }
 
         return (
-            <TouchableDebounce activeOpacity={0.9} onPress={this.showPicker} style={styles.pickerContainer}>
+            <TouchableDebounce
+                testID="account-picker"
+                activeOpacity={0.9}
+                onPress={this.showPicker}
+                style={styles.pickerContainer}
+            >
                 <View style={AppStyles.row}>
-                    <View style={AppStyles.flex1}>
+                    <View testID={`account-picker-selected-${selectedItem.address}`} style={AppStyles.flex1}>
                         <Text numberOfLines={1} style={styles.accountItemTitle}>
-                            {selectedItem.label}
+                            {accountListLabel(selectedItem)}
                         </Text>
                         <Text style={styles.accountItemSub} adjustsFontSizeToFit numberOfLines={1}>
                             {selectedItem.address}

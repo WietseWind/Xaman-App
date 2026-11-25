@@ -4,6 +4,8 @@ import { Animated, View, Text, ViewStyle, LayoutChangeEvent, TextStyle } from 'r
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { Icon } from '@components/General/Icon';
 
+import Localize from '@locale';
+
 import styles from './styles';
 
 /* Types ==================================================================== */
@@ -94,7 +96,12 @@ class ExpandableView extends Component<Props, State> {
                 >
                     {children}
                 </Animated.View>
-                <TouchableDebounce style={styles.footerContainer} onPress={this.toggleExpand}>
+                <TouchableDebounce
+                    style={styles.footerContainer}
+                    onPress={this.toggleExpand}
+                    accessibilityLabel={Localize.t(expanded ? 'global.readLess' : 'global.readMore')}
+                    accessibilityState={{ expanded }}
+                >
                     <Icon name={expanded ? 'IconChevronUp' : 'IconChevronDown'} size={20} style={styles.expandIcon} />
                 </TouchableDebounce>
             </View>

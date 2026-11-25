@@ -1,7 +1,9 @@
 import Realm from 'realm';
-import { flatMap, has, filter, find } from 'lodash';
+import { flatMap, has, filter, find, sortBy } from 'lodash';
 
 import Vault from '@common/libs/vault';
+import { degenVaultName } from '@common/utils/degenSecret';
+import { accountDetailsId } from '@common/helpers/accountNetwork';
 
 import { AccountModel, AccountDetailsModel, TrustLineModel } from '@store/models';
 import { AccessLevels, EncryptionLevels, AccountTypes } from '@store/types';
@@ -87,7 +89,11 @@ class AccountRepository extends BaseRepository<AccountModel> {
     /**
      * update account details
      */
-    updateDetails = (address: string, details: Partial<AccountDetailsModel>): Promise<AccountModel> => {
+    updateDetails = (
+        address: string,
+        details: Partial<AccountDetailsModel>,
+        shouldApply?: () => boolean,
+    ): Promise<AccountModel> => {
         // the primary key should be in the object
         if (!address) {
             throw new Error('Update require primary key to be set');
@@ -106,9 +112,41 @@ class AccountRepository extends BaseRepository<AccountModel> {
                         throw new Error(`Account with address ${address} not found!`);
                     }
 
-                    const detailsObject = this.realm.create(
+                    // safeWrite can defer until another Realm transaction ends.
+                    // Recheck the request at the actual write boundary.
+                    if (shouldApply && !shouldApply()) {
+                        resolve(account);
+                        return;
+                    }
+
+                    const detailsId = details.network ? accountDetailsId(address, details.network) : details.id!;
+                    const sameNetwork = (item: AccountDetailsModel) => details.network?.id &&
+                        item.network?.id?.toString() === details.network.id.toString();
+                    const previous = account.details?.find((item) => item.id === detailsId) ??
+                        account.details?.find((item) => item.id === details.id && sameNetwork(item)) ??
+                        account.details?.find((item) => item.id === `${address}.${details.network?.networkId}` &&
+                            sameNetwork(item)) ?? account.details?.find(sameNetwork);
+                    const preferences = new Map<string, TrustLineModel>();
+                    if (details.lines !== undefined) {
+                        previous?.lines?.forEach((line) => preferences.set(line.currency.id, line));
+                    }
+                    const lines = details.lines === undefined ? undefined : Array.from(details.lines).map((line) => {
+                        const id = `${detailsId}.${line.currency.id}`;
+                        const saved = this.realm.objectForPrimaryKey(TrustLineModel, id) ??
+                            preferences.get(line.currency.id);
+                        return {
+                            ...line,
+                            id,
+                            // Keep local preferences when splitting legacy shared rows.
+                            // Provider ordering is an initial default, not a refresh override.
+                            order: saved?.order ?? line.order ?? 0,
+                            favorite: line.favorite ?? saved?.favorite ?? false,
+                        };
+                    });
+
+                    const detailsObject = this.realm.create<AccountDetailsModel>(
                         AccountDetailsModel.schema.name,
-                        details,
+                        { ...details, id: detailsId, lines },
                         Realm.UpdateMode.All,
                     );
 
@@ -124,7 +162,7 @@ class AccountRepository extends BaseRepository<AccountModel> {
                         account.details?.push(detailsObject);
                     }
 
-                    this.emit('accountUpdate', account, details);
+                    this.emit('accountUpdate', account, { ...details, id: detailsId });
                     resolve(account);
                 });
             } catch (error) {
@@ -161,34 +199,22 @@ class AccountRepository extends BaseRepository<AccountModel> {
     };
 
     /**
-     * get list of available accounts for signing
+     * get list of available accounts for signing, in the user's order of the Accounts list
      */
     getSignableAccounts = (): AccountModel[] => {
-        const accounts = this.findAll();
+        const accounts = sortBy(Array.from(this.findAll()), (account) => account.order ?? 0);
 
         const availableAccounts = [] as Array<AccountModel>;
 
         accounts.forEach((account: AccountModel) => {
-            if (account.accessLevel === AccessLevels.Full) {
-                // check if master key is disable and regular key not imported
-                if (account.regularKey) {
-                    // eslint-disable-next-line max-len
-                    const regularKeyImported = !this.query({
-                        address: account.regularKey,
-                        accessLevel: AccessLevels.Full,
-                    }).isEmpty();
-
-                    if ((account.flags?.disableMasterKey && regularKeyImported) || !account.flags?.disableMasterKey) {
-                        availableAccounts.push(account);
-                    }
-                } else {
-                    availableAccounts.push(account);
-                }
-            } else if (
-                // Readonly but the regular Key imported as full access
-                account.regularKey &&
-                !this.query({ address: account.regularKey, accessLevel: AccessLevels.Full }).isEmpty()
-            ) {
+            const masterAvailable = account.accessLevel === AccessLevels.Full && !account.flags?.disableMasterKey;
+            // A regular key can authorize this account even if the regular-key
+            // account's own master key is disabled. Do not recursively filter it.
+            const regularKeyImported = !!account.regularKey && !this.query({
+                address: account.regularKey,
+                accessLevel: AccessLevels.Full,
+            }).isEmpty();
+            if (masterAvailable || regularKeyImported) {
                 availableAccounts.push(account);
             }
         });
@@ -274,6 +300,19 @@ class AccountRepository extends BaseRepository<AccountModel> {
         // remove private key if account has full access
         if (account.accessLevel === AccessLevels.Full) {
             await Vault.purge(account.publicKey);
+        }
+
+        // remove the secret numbers of a degen account that was not backed up. The entry is registered
+        // (degenSecrets), so if this fails, startup removes it once the account is gone.
+        if (account.publicKey) {
+            const degenVault = degenVaultName(account.publicKey);
+            try {
+                if (await Vault.exist(degenVault)) {
+                    await Vault.purge(degenVault);
+                }
+            } catch {
+                // retried at startup
+            }
         }
 
         // remove account trust lines

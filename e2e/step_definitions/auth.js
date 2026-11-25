@@ -2,14 +2,22 @@ const { execFileSync } = require('child_process');
 const { Then } = require('@cucumber/cucumber');
 const { expect, element, by, waitFor, device } = require('detox');
 const { dismissKeyboard } = require('../helpers/keyboard');
-const { clickByTestId, waitUntilAndroidTestId, enterAndroidPasscode, androidTypeText } = require('../helpers/tapById');
+const { androidSerial } = require('../helpers/androidSerial');
+const {
+    clickByTestId,
+    waitUntilAndroidTestId,
+    enterAndroidPasscode,
+    androidTypeText,
+    hideAndroidKeyboard,
+} = require('../helpers/tapById');
 
-let passcode = process.env.E2E_PASSCODE || '167349';
+const { getCurrentTestPasscode, setCurrentTestPasscode } = require('../helpers/testCredentials');
 
 const passphrase = '&uHCnPv4T=#~;Ca';
 const newPassphrase = '4b<8xu8HbP)%hzpgh';
 
 Then('I enter my passcode', async () => {
+    const passcode = getCurrentTestPasscode();
     if (device.getPlatform() === 'android') {
         await waitUntilAndroidTestId('1-key', 10000);
         await new Promise((resolve) => { setTimeout(resolve, 800); });
@@ -24,6 +32,7 @@ Then('I enter my passcode', async () => {
 });
 
 Then('I type my passcode', async () => {
+    const passcode = getCurrentTestPasscode();
     if (device.getPlatform() === 'android') {
         try {
             await waitUntilAndroidTestId('1-key', 10000);
@@ -68,7 +77,8 @@ Then('I type my passcode', async () => {
 });
 
 Then('I type my new passcode', async () => {
-    passcode = '958347';
+    const passcode = '958347';
+    setCurrentTestPasscode(passcode);
     if (device.getPlatform() === 'android') {
         await enterAndroidPasscode(passcode);
         return;
@@ -84,7 +94,7 @@ Then('I type my new passcode', async () => {
 const typeIntoField = async (inputId, value) => {
     const field = element(by.id(inputId));
     if (device.getPlatform() === 'android') {
-        const serial = process.env.ANDROID_SERIAL || device.id;
+        const serial = androidSerial();
         await waitUntilAndroidTestId(inputId, 15000);
         await clickByTestId(inputId);
         try {
@@ -97,11 +107,10 @@ const typeIntoField = async (inputId, value) => {
             // empty field
         }
         androidTypeText(value);
-        try {
-            execFileSync('adb', ['-s', serial, 'shell', 'input', 'keyevent', '111'], { timeout: 8000 });
-        } catch (e) {
-            // IME already down
-        }
+        // Wait until the keyboard is gone: a tap on Next or Sign while it was still animating out
+        // was lost.
+        // (1000 ms: also a keyboard that comes back after the keystrokes)
+        await hideAndroidKeyboard(1000);
         return;
     }
     await waitFor(field).toBeVisible().withTimeout(5000);

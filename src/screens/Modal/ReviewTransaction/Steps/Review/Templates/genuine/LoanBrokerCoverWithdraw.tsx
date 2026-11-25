@@ -9,7 +9,8 @@ import { Navigator } from '@common/helpers/navigator';
 
 import { Destination } from '@common/libs/ledger/parser/types';
 
-import { LedgerService, NetworkService, StyleService } from '@services';
+import { LedgerService, NetworkService } from '@services';
+import StyleService from '@services/StyleService';
 
 import { LoanBrokerCoverWithdraw } from '@common/libs/ledger/transactions';
 import { LoanBroker, Vault } from '@common/libs/ledger/objects';
@@ -326,6 +327,19 @@ class LoanBrokerCoverWithdrawTemplate extends Component<Props, State> {
                     >
                         <AccountElement address={destination.address} containerStyle={AppStyles.flex1} />
                     </View>
+                )}
+
+                {transaction?.CredentialIDs && (
+                    <>
+                        <Text style={styles.label}>{Localize.t('global.credentialIDs')}</Text>
+                        <View style={styles.contentBox}>
+                            {transaction.CredentialIDs.map((id, index) => (
+                                <Text key={`credential-${index}`} style={styles.value}>
+                                    {id}
+                                </Text>
+                            ))}
+                        </View>
+                    </>
                 )}
             </>
         );
