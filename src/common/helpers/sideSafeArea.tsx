@@ -51,8 +51,29 @@ type NativeProps = ViewProps & {
 };
 
 /* Constants ==================================================================== */
-// what React and JavaScript give a class themselves: not copied to the wrapper
-const OWN_STATICS = ['length', 'name', 'prototype', 'caller', 'callee', 'arguments', 'arity', 'displayName'];
+// What JavaScript gives a class itself, and what React reads from a component class: not copied to the wrapper.
+// The React ones stay with the screen, where they still work (default props, an error boundary: a wrapper that
+// took `getDerivedStateFromError` over would catch the errors of the screen itself).
+const OWN_STATICS = [
+    'length',
+    'name',
+    'prototype',
+    'caller',
+    'callee',
+    'arguments',
+    'arity',
+    'displayName',
+    'childContextTypes',
+    'contextType',
+    'contextTypes',
+    'defaultProps',
+    'getDefaultProps',
+    'getDerivedStateFromError',
+    'getDerivedStateFromProps',
+    'mixins',
+    'propTypes',
+    'type',
+];
 
 // How far a backdrop goes on past the column on each side. More than any window is wide: what is outside the window
 // is not drawn.
@@ -110,13 +131,15 @@ export const sideMarginsFor = (
     };
 };
 
-// the native view, asked for once (React Native takes a view name one time only)
-let nativeView: HostComponent<NativeProps> | undefined;
+// The native view, asked for once: React Native takes a view name one time only. Kept on the global object, so a
+// Fast Refresh of this file (development) does not ask again.
+const NATIVE_VIEW_KEY = '__xamanSideSafeAreaView';
 const getNativeView = (): HostComponent<NativeProps> => {
-    if (!nativeView) {
-        nativeView = requireNativeComponent<NativeProps>('SideSafeAreaView');
+    const store = globalThis as unknown as Record<string, HostComponent<NativeProps> | undefined>;
+    if (!store[NATIVE_VIEW_KEY]) {
+        store[NATIVE_VIEW_KEY] = requireNativeComponent<NativeProps>('SideSafeAreaView');
     }
-    return nativeView;
+    return store[NATIVE_VIEW_KEY] as HostComponent<NativeProps>;
 };
 
 /**

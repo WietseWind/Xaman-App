@@ -20,6 +20,12 @@ class Screen extends Component<{ label: string }> {
         return Screen.screenName;
     }
 
+    static defaultProps = { label: 'default label' };
+
+    static getDerivedStateFromError() {
+        return null;
+    }
+
     render() {
         const { label } = this.props;
         return <Text>{label}</Text>;
@@ -126,6 +132,14 @@ describe('a safe area on a side: iPhone Duo', () => {
         expect(W.live).toBe('app.Test');
         expect(W.displayName).toBe('SideSafeArea(Screen)');
         expect(W.prototype).not.toBe(Screen.prototype);
+    });
+
+    it('leaves what React reads from the class with the screen: no error boundary, default props still work', () => {
+        const W = withSideInsets(Screen, { left: 0, right: 84 }) as any;
+        expect(W.getDerivedStateFromError).toBeUndefined();
+        expect(W.defaultProps).toBeUndefined();
+        const tree = renderer.create(<W />);
+        expect(tree.root.findByType(Text).props.children).toBe('default label');
     });
 
     it('the app makes one wrapper for a screen, however often it is asked for', () => {
