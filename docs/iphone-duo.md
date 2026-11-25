@@ -4,7 +4,7 @@ How the app lays out on the iPhone Duo, why, and how to test it. Issue #544, pul
 
 ## The device
 
-The iPhone Duo is a fold phone (iOS 27.1 and later). The app meets four states, and the phone goes from one to
+The iPhone Duo is a fold phone (iOS 27.1 and later). The app meets five states, and the phone goes from one to
 another while the app runs:
 
 | State | App window | Where iOS puts the status items and the tab bar |
@@ -13,6 +13,7 @@ another while the app runs:
 | Open (inner screen), full screen | 951 × 669 pt | The same column on the right |
 | Open, split view, app in the left half | 469 × 669 pt | The tab bar is a column on the **left**; the window has no camera column |
 | Open, split view, app in the right half | 469 × 669 pt | A column on the right |
+| Open, turned a quarter | 669 × 951 pt | No column: the status items are at the top (82 pt), the tab bar is a normal one at the bottom |
 
 The tab bar is the native iOS tab bar (react-native-navigation). On this phone iOS draws it as a vertical bar.
 
@@ -22,7 +23,9 @@ Facts that the code depends on (measured on the iOS 27.2 simulator):
   view the window has no side safe area; the tab bar is then in the safe area of the tab's own view (`left = 84`).
 - `Dimensions.get('screen')` stays the cover screen (466 × 678), also when the phone is open.
 - `UITraitCollection.verticalBarEdge` is 1 (leading) or 2 (trailing) on this phone and 0 on every phone that has no
-  vertical bar.
+  vertical bar. It is also 0 on this phone when it is open and turned a quarter.
+- Open, the window is far wider than the device screen (951 or 669 against 466). On every other phone the window is
+  never wider than the screen.
 - A window that has no root view controller (during a reload of the JavaScript side) reports the camera corner as a
   safe area at the top (`top = 82, right = 0`).
 - iOS resizes the scene itself. An app cannot ask for one half of the screen: `UIRequiresFullScreen` is ignored and
@@ -30,8 +33,8 @@ Facts that the code depends on (measured on the iOS 27.2 simulator):
 
 ## What the app does
 
-The app keeps **one layout** in every state: a column of 382 pt (the cover screen without the 84 pt column), beside
-the tab bar. That is about the width of an iPhone SE, so every size is one that the app already has.
+The app keeps **one layout** in every state: the cover screen without the 84 pt column, 382 pt wide and 678 pt
+high. That is about the size of an iPhone SE, so every size is one that the app already has.
 
 | State | Result |
 |---|---|
@@ -39,9 +42,10 @@ the tab bar. That is about the width of an iPhone SE, so every size is one that 
 | Open, full screen | The column is on the right half, beside the tab bar. The left half shows the background |
 | Split view, left half | Tab bar on the left, column beside it |
 | Split view, right half | Column on the left of the tab bar |
+| Open, turned a quarter | A box of 382 × 678 pt in the middle of the window, above the tab bar |
 
 A backdrop is the exception: the dim or blur of an overlay covers the whole window (also the tab bar and the free
-half), and the box or panel of the overlay stays in the column.
+part), and the box or panel of the overlay stays in the column.
 
 The boot splash covers the whole window: the launch screen background is the blue of the splash image.
 
@@ -49,10 +53,10 @@ The boot splash covers the whole window: the launch screen background is the blu
 
 | File | Part |
 |---|---|
-| `ios/Xaman/Libs/Utils/DeviceUtils.m` | Constants `layoutInsets.left/right` and `verticalBarEdge`. `SideSafeAreaView`: a native view that sends its own side safe area, its width and the bar edge each time they change |
-| `src/common/helpers/device.ts` | `GetLayoutInsets` (side insets; the 84 pt column is kept on the edge of the bar when the window has none), `GetVerticalBarEdge`, `GetUsableWindowWidth` (tab icon sizes) |
-| `src/theme/sizes.ts` | `AppSizes` takes the width of the column: `min(window, screen) − side insets` |
-| `src/common/helpers/sideSafeArea.tsx` | `withSideSafeArea` wraps every registered screen and puts it in the column (`sideMarginsFor`). `SideSafeAreaFill` and `sideBleedEdges / sideBleedAbsolute / sideBleedMargin` make a backdrop reach the edges of the window |
+| `ios/Xaman/Libs/Utils/DeviceUtils.m` | Constants `layoutInsets.left/right` and `verticalBarEdge`. `SideSafeAreaView`: a native view that sends its own side safe area, its width and height and the bar edge each time they change |
+| `src/common/helpers/device.ts` | `IsFoldPhone` (the bar edge, or a window far wider than the device screen), `GetLayoutInsets` (side insets; the 84 pt column is counted in every state), `GetVerticalBarEdge`, `GetUsableWindowWidth` (tab icon sizes) |
+| `src/theme/sizes.ts` | `AppSizes` takes the size of the layout: width `min(window, screen) − side insets`, height `min(window, screen)` |
+| `src/common/helpers/sideSafeArea.tsx` | `withSideSafeArea` wraps every registered screen and puts it in the column (`sideMarginsFor`, `columnStyleFor`). `SideSafeAreaFill` and `sideBleedEdges / sideBleedAbsolute / sideBleedMargin` make a backdrop reach the edges of the window |
 | `src/app.tsx` | Every screen is registered through `withSideSafeArea` |
 | `src/common/helpers/glassTabBar.ts` | With the bar on a side, the end of a tab screen only keeps the bottom safe area |
 | `ios/LaunchScreen.storyboard` | Background colour = the blue of the splash image |
@@ -70,7 +74,8 @@ On every other phone these render nothing and are `undefined`.
 
 ## Other phones: nothing changes
 
-Everything is gated on a side safe area greater than 0, which the native side only reports on the iPhone Duo:
+Everything is gated on a side safe area greater than 0. The native side only reports one on the iPhone Duo, and
+`IsFoldPhone` only counts the column on iOS when there is a vertical bar or the window is far wider than the screen:
 
 - `AppSizes` is the same to the last number. `src/theme/__tests__/sizes.sideSafeArea.test.ts` holds a copy of the
   5.4.0 formulas and compares every number and every scale function for 11 phones (iPhone SE to Pro Max, Android
@@ -100,11 +105,15 @@ Open, Open.
 1. Closed: home, the four other tabs, a settings screen, add account, the lock screen, an alert, the account
    switcher. Nothing is under the column on the right; the pin pad is inside the screen.
 2. Press **Open** while the app runs: the same column goes to the right half. Press **Closed**: back. The app keeps
-   its screen and does not restart.
+   its screen and does not restart. Open, turn the device a quarter (Controls → Rotate Right): the app is a box in
+   the middle of the window; Rotate Left: back.
 3. Open, then go to the home screen of iOS → App Library → hold the Xaman icon → **Open in Split View**: Xaman is in
    the left half, with the tab bar on the left. Open another app this way and choose Xaman in the right half: the
    tab bar is on the right.
-4. Stop the app and start it in each state (closed, open): the layout is the same as when it gets there on the fly.
+4. Stop the app and start it in each state (closed, open, turned): the layout is the same as when it gets there on
+   the fly.
+5. A fresh install: onboarding and the set-up screens in each state. Then the lock screen, the action sheet of the
+   centre tab button and the account switcher in each state.
 
 **Simulator fault, not an app fault:** at "Zoom to Fit" and other scaled zoom levels the Device Hub window does not
 pass mouse clicks in the lowest 84 pt of the cover screen (the Settings tab, low buttons). Use **View → Physical
@@ -120,6 +129,8 @@ screens on an iPhone SE and a Pro Max simulator.
 - Not checked on a real iPhone Duo; all of this is from the simulator of iOS 27.2.
 - A cold start and a reload of the JavaScript side while the app is in a split view were not tested. The values
   from the native view put the column right after the first frame.
-- The height in `AppSizes` is the one of the state the app started in (678 closed, 669 open).
+- The height in `AppSizes` is the one of the state the app started in (678 closed or turned, 669 open).
+- Open and turned a quarter, the app is a box of the cover layout and does not use the rest of the window. A split
+  view in that position (windows narrower than the layout) was not tested.
 - The faint background pattern of some screens (add account, scan, empty states) stops at the column.
 - The width of the column (84 pt) is a constant in `device.ts`. The live safe area is used when the view has one.

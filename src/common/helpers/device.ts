@@ -10,6 +10,12 @@ const sideInset = (value: unknown): number => {
 // The width of the column that iOS keeps on a side of the screen for the vertical tab bar and, on the cover screen,
 // the camera and the status items (iPhone Duo, iOS 27.2).
 const VERTICAL_BAR_COLUMN = 84;
+// The top inset the app takes on that phone: the plain status bar. Turned a quarter, the open phone has a status
+// area of 82 pt at the top of the window, but the app is not laid out under it there (sideSafeArea.tsx).
+const FOLD_PHONE_TOP = 20;
+// The open inner screen against the cover screen: 951 or 669 wide against 466. On every other phone the window is
+// never wider than the screen.
+const FOLD_PHONE_WIDER = 1.2;
 
 /**
  * The edge on which iOS puts a vertical tab bar: 1 leading, 2 trailing. 0 on every phone that has no such bar:
@@ -22,28 +28,53 @@ const GetVerticalBarEdge = (): 0 | 1 | 2 => {
 };
 
 /**
+ * A phone whose app window changes while the app runs, with a vertical tab bar in most of its states: the iPhone Duo.
+ * Known by the edge of that bar, or by a window that is wider than the screen of the device (the open inner screen
+ * is larger than the cover screen, which stays the `screen`; so the phone is also known when the app starts on the
+ * open phone turned a quarter, where there is no vertical bar). False on every other phone.
+ * @returns boolean
+ */
+const IsFoldPhone = (): boolean => {
+    if (Platform.OS !== 'ios') {
+        return false;
+    }
+    if (GetVerticalBarEdge() !== 0) {
+        return true;
+    }
+    const windowWidth = Dimensions.get('window').width;
+    const screenWidth = Dimensions.get('screen').width;
+    return screenWidth > 0 && windowWidth > screenWidth * FOLD_PHONE_WIDER;
+};
+
+/**
  * Get window layout insets
  *
  * left / right: a safe area on a side of the screen in portrait. 0 on every phone, except one that has a part of
  * the system on a side (iPhone Duo: the status area and the tab bar are on the right).
- * On such a phone the window itself has no side safe area when the app is in one half of the open screen: the tab
- * bar is then a column in the safe area of the tabs only. The column is still kept free, on the edge of the bar.
+ * On such a phone the window itself has no side safe area in some states (the app in one half of the open screen:
+ * the tab bar is then a column in the safe area of the tabs only; the open phone turned a quarter: no column at
+ * all). The app keeps one layout in all states, so the column is counted in all of them, on the edge of the bar.
+ * The top is then the plain status bar height: the app is laid out in a box that stays clear of the status area.
  * @returns {top: 0, bottom: 0, left: 0, right: 0}
  */
 const GetLayoutInsets = (): { top: number; bottom: number; left: number; right: number } => {
     const insets = DeviceUtilsModule.layoutInsets;
     let left = sideInset(insets?.left);
     let right = sideInset(insets?.right);
-    const edge = GetVerticalBarEdge();
-    if (edge !== 0 && left + right < VERTICAL_BAR_COLUMN) {
-        const leading = VERTICAL_BAR_COLUMN - left - right;
-        if ((edge === 1) !== I18nManager.isRTL) {
-            left += leading;
+    if (left + right <= 0 && !IsFoldPhone()) {
+        // every phone but the iPhone Duo: as the native side sends it
+        return { ...insets, left, right };
+    }
+    if (left + right < VERTICAL_BAR_COLUMN && IsFoldPhone()) {
+        const column = VERTICAL_BAR_COLUMN - left - right;
+        if ((GetVerticalBarEdge() === 1) !== I18nManager.isRTL) {
+            left += column;
         } else {
-            right += leading;
+            right += column;
         }
     }
-    return { ...insets, left, right };
+    const top = IsFoldPhone() && insets?.top > FOLD_PHONE_TOP ? FOLD_PHONE_TOP : insets?.top;
+    return { ...insets, top, left, right };
 };
 
 /**
@@ -308,6 +339,7 @@ export {
     GetLayoutInsets,
     GetSideInsets,
     GetVerticalBarEdge,
+    IsFoldPhone,
     GetUsableWindowWidth,
     IsDeviceJailBroken,
     IsDeviceRooted,

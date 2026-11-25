@@ -11,6 +11,7 @@ import {
     GetSideInsets,
     GetUsableWindowWidth,
     GetVerticalBarEdge,
+    IsFoldPhone,
 } from '../device';
 
 const originalOS = Platform.OS;
@@ -85,7 +86,11 @@ describe('tab icon sizes', () => {
         PHONES.forEach((phone) => {
             apply(phone);
             const plain = tabSizes();
-            [{ left: 0, right: 0 }, { left: -4, right: Number.NaN }, { left: null, right: '12' }].forEach((side) => {
+            [
+                { left: 0, right: 0 },
+                { left: -4, right: Number.NaN },
+                { left: null, right: '12' },
+            ].forEach((side) => {
                 apply({ ...phone, insets: { ...phone.insets, ...side } });
                 expect(tabSizes()).toEqual(plain);
             });
@@ -121,9 +126,14 @@ describe('iPhone Duo, open: the window is 951 wide, the screen of the device sta
         expect(openSizes).toEqual(tabSizes());
     });
 
-    it('without a side inset the screen size is not looked at: the window width, as always', () => {
-        open({ top: 0, bottom: 34 });
-        expect(GetUsableWindowWidth()).toBe(951);
+    it('no side inset and a window about as wide as the screen: the window width, as always', () => {
+        apply({ width: 469, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34 } });
+        (Dimensions.get as jest.Mock).mockImplementation((dim: string) =>
+            dim === 'screen'
+                ? { width: 466, height: 678, scale: 3, fontScale: 1 }
+                : { width: 469, height: 669, scale: 3, fontScale: 1 },
+        );
+        expect(GetUsableWindowWidth()).toBe(469);
     });
 });
 
@@ -161,5 +171,67 @@ describe('the vertical tab bar of the iPhone Duo', () => {
         expect(GetSideInsets()).toBe(84);
         setEdge(2);
         expect(GetLayoutInsets()).toEqual({ top: 0, bottom: 34, left: 0, right: 84 });
+    });
+});
+
+describe('the iPhone Duo is known in every state, and no other phone is taken for one', () => {
+    const state = (
+        window: [number, number],
+        screen: [number, number],
+        insets: any,
+        edge?: number,
+        platform = 'ios',
+    ) => {
+        apply({ width: window[0], ratio: 3, os: '27.2', platform, insets });
+        (Dimensions.get as jest.Mock).mockImplementation((dim: string) => {
+            const [width, height] = dim === 'screen' ? screen : window;
+            return { width, height, scale: 3, fontScale: 1 };
+        });
+        if (edge !== undefined) NativeModules.DeviceUtilsModule.verticalBarEdge = edge;
+    };
+
+    afterEach(() => {
+        delete NativeModules.DeviceUtilsModule.verticalBarEdge;
+    });
+
+    it('regular iPhones: the window is the screen', () => {
+        [
+            [375, 667],
+            [390, 844],
+            [402, 874],
+            [440, 956],
+        ].forEach(([width, height]) => {
+            state([width, height], [width, height], { top: 47, bottom: 34 });
+            expect(IsFoldPhone()).toBe(false);
+            expect(GetLayoutInsets()).toEqual({ top: 47, bottom: 34, left: 0, right: 0 });
+        });
+    });
+
+    it('Android is never taken for one, whatever the sizes are', () => {
+        state([768, 884], [400, 884], { top: 30, bottom: 16 }, 2, 'android');
+        expect(IsFoldPhone()).toBe(false);
+        expect(GetLayoutInsets()).toEqual({ top: 30, bottom: 16, left: 0, right: 0 });
+    });
+
+    it('closed, open, in one half: the vertical bar tells', () => {
+        state([466, 678], [466, 678], { top: 0, bottom: 34, left: 0, right: 84 }, 2);
+        expect(IsFoldPhone()).toBe(true);
+        state([951, 669], [466, 678], { top: 0, bottom: 34, left: 0, right: 84 }, 2);
+        expect(IsFoldPhone()).toBe(true);
+        state([469, 669], [466, 678], { top: 0, bottom: 34, left: 0, right: 0 }, 1);
+        expect(IsFoldPhone()).toBe(true);
+    });
+
+    it('open and turned a quarter: no bar, but the window is far wider than the screen of the device', () => {
+        state([669, 951], [466, 678], { top: 82, bottom: 34, left: 0, right: 0 }, 0);
+        expect(IsFoldPhone()).toBe(true);
+        // the column is counted (on the right), and the top is the plain status bar
+        expect(GetLayoutInsets()).toEqual({ top: 20, bottom: 34, left: 0, right: 84 });
+        expect(GetUsableWindowWidth()).toBe(382);
+    });
+
+    it('a window a little wider than the screen is not enough', () => {
+        state([469, 669], [466, 678], { top: 0, bottom: 34, left: 0, right: 0 }, 0);
+        expect(IsFoldPhone()).toBe(false);
     });
 });

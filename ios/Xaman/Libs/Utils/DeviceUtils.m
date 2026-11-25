@@ -360,8 +360,8 @@ RCT_EXPORT_METHOD(getLocalSetting:(RCTPromiseResolveBlock)resolve
 
 #pragma mark - SideSafeAreaView
 
-// A view that tells the JavaScript side its own safe area on the left and right, its width, and the edge of the
-// vertical bar, each time one of them changes. Only made on a phone with a vertical bar (iPhone Duo): there these
+// A view that tells the JavaScript side its own safe area on the left and right, its width and height, and the edge
+// of the vertical bar, each time one of them changes. Only made on a phone with a vertical bar (iPhone Duo): there these
 // change while the app runs (the phone is opened or closed, the app goes to one half of the screen), and they are
 // not the same for every view (in one half the tab bar is in the safe area of a tab, not in that of the window).
 // See src/common/helpers/sideSafeArea.tsx.
@@ -374,6 +374,7 @@ RCT_EXPORT_METHOD(getLocalSetting:(RCTPromiseResolveBlock)resolve
   CGFloat _left;
   CGFloat _right;
   CGFloat _width;
+  CGFloat _height;
   NSInteger _edge;
 }
 
@@ -417,6 +418,7 @@ RCT_EXPORT_METHOD(getLocalSetting:(RCTPromiseResolveBlock)resolve
   CGFloat left = MAX(0.0, insets.left);
   CGFloat right = MAX(0.0, insets.right);
   CGFloat width = self.bounds.size.width;
+  CGFloat height = self.bounds.size.height;
   NSInteger edge = XamanVerticalBarEdge(self.traitCollection);
   if (edge == 0) {
     edge = XamanVerticalBarEdge(self.window.traitCollection);
@@ -424,15 +426,18 @@ RCT_EXPORT_METHOD(getLocalSetting:(RCTPromiseResolveBlock)resolve
   if (width <= 0.0) {
     return;
   }
-  if (_reported && ABS(left - _left) < 0.5 && ABS(right - _right) < 0.5 && ABS(width - _width) < 0.5 && edge == _edge) {
+  if (_reported && ABS(left - _left) < 0.5 && ABS(right - _right) < 0.5 && ABS(width - _width) < 0.5 &&
+      ABS(height - _height) < 0.5 && edge == _edge) {
     return;
   }
   _reported = YES;
   _left = left;
   _right = right;
   _width = width;
+  _height = height;
   _edge = edge;
-  _onSideSafeAreaChange(@{ @"left" : @(left), @"right" : @(right), @"width" : @(width), @"edge" : @(edge) });
+  _onSideSafeAreaChange(
+      @{ @"left" : @(left), @"right" : @(right), @"width" : @(width), @"height" : @(height), @"edge" : @(edge) });
 }
 
 @end

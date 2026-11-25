@@ -158,19 +158,31 @@ describe('a phone without a safe area on a side: the sizes of before, to the las
 });
 
 describe('a phone without a safe area on a side: the size of the screen changes nothing', () => {
+    // A screen that is larger than the window (Android multi window), unknown, or a little smaller. A window that is
+    // far wider than the screen of the device is the mark of the open iPhone Duo; no other phone has that (and it
+    // is not looked at on Android at all).
     [
         { width: 2000, height: 3000 },
-        { width: 200, height: 300 },
         { width: 0, height: 0 },
+        { width: 359, height: 600 },
     ].forEach((screen) => {
         it(`a screen of ${screen.width} x ${screen.height}`, () => {
-            PHONES.forEach((phone) => {
+            PHONES.filter((phone) => phone.os === 'android' || phone.width <= screen.width * 1.2).forEach((phone) => {
                 const now = sizesFor({ ...phone, screen });
                 const expected: any = numbersOf(sizesBefore(phone));
                 // the one number that is the height of the screen, as it always was
                 expected['screen.screenHeight'] = screen.height;
                 expect(withoutNew(numbersOf(now))).toEqual(expected);
             });
+        });
+    });
+
+    it('Android: a screen far smaller than the window changes nothing either', () => {
+        PHONES.filter((phone) => phone.os === 'android').forEach((phone) => {
+            const now = sizesFor({ ...phone, screen: { width: 200, height: 300 } });
+            const expected: any = numbersOf(sizesBefore(phone));
+            expected['screen.screenHeight'] = 300;
+            expect(withoutNew(numbersOf(now))).toEqual(expected);
         });
     });
 });
@@ -248,5 +260,41 @@ describe('iPhone Duo, open: a window of 951 x 669, the screen of the device stay
     it('is not taken for a square fold screen (no half sizes)', () => {
         const open = sizesFor(OPEN);
         expect(open.screen.width).toBe(open.screen.uncorrectedWidth);
+    });
+});
+
+describe('iPhone Duo, open and turned a quarter: a window of 669 x 951, no vertical bar, no side safe area', () => {
+    const TURNED: Phone = {
+        name: 'iPhone Duo, open, turned',
+        os: 'ios',
+        width: 669,
+        height: 951,
+        screen: { width: 466, height: 678 },
+        insets: { top: 82, bottom: 34, left: 0, right: 0 },
+    };
+
+    it('started in this state: still the layout of the cover screen (the window is far wider than the screen)', () => {
+        const turned = sizesFor(TURNED);
+        expect(turned.sideInsets).toBe(84);
+        expect(turned.screen.width).toBe(382);
+        expect(turned.screen.height).toBe(678);
+        expect(turned.screen.windowWidth).toBe(669);
+        // the plain status bar: the app is a box clear of the status area of 82 there
+        expect(turned.statusBarHeight).toBe(20);
+        expect(turned.scale(100)).toBeCloseTo((382 / 350) * 100, 6);
+    });
+
+    it('has the sizes of the closed phone', () => {
+        const turned = sizesFor(TURNED);
+        const closed = sizesFor({
+            ...TURNED,
+            width: 466,
+            height: 678,
+            insets: { top: 0, bottom: 34, left: 0, right: 84 },
+        });
+        ['scale', 'moderateScale', 'widthPercentageToDP', 'verticalScale', 'heightPercentageToDP'].forEach((fn) => {
+            expect(SAMPLES.map((n) => turned[fn](n))).toEqual(SAMPLES.map((n) => closed[fn](n)));
+        });
+        expect(turned.screen.height).toBe(closed.screen.height);
     });
 });

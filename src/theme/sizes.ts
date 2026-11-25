@@ -7,7 +7,7 @@ import { Dimensions, Platform, PixelRatio } from 'react-native';
 import { GetLayoutInsets } from '@common/helpers/device';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('screen');
-const { width: windowWidth, height } = Dimensions.get('window');
+const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
 const { bottom: bottomInset, top: topInset, left: leftInset, right: rightInset } = GetLayoutInsets();
 
@@ -22,6 +22,10 @@ const { bottom: bottomInset, top: topInset, left: leftInset, right: rightInset }
 const sideInsets = leftInset + rightInset;
 const layoutWindowWidth = sideInsets > 0 && screenWidth > 0 ? Math.min(windowWidth, screenWidth) : windowWidth;
 const width = layoutWindowWidth - sideInsets;
+// The height of that layout: the window, but not more than the screen of the device. On the open phone turned a
+// quarter the window is much higher than the cover screen; the app stays a box of the cover layout there.
+// The window height on every other phone, as it always was.
+const height = sideInsets > 0 && screenHeight > 0 ? Math.min(windowHeight, screenHeight) : windowHeight;
 
 // Guideline sizes are based on standard ~5" screen mobile device
 const guidelineBaseWidth = 350;

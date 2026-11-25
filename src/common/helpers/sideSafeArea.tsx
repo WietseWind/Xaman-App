@@ -11,6 +11,8 @@
  *   cover screen: the screen stays a column of that width beside the bar, the other half shows the background.
  * - open, the app in one half of the screen (split view): the window is as wide as the cover screen again, and the
  *   tab bar can be on the other edge. It is then in the safe area of a tab only, not in that of the window.
+ * - open and turned a quarter: the window is higher and wider than the cover screen, there is no column, and the tab
+ *   bar is a normal one at the end of the screen. The app stays a box of the cover layout in the middle of the window.
  * So the place of the column comes from a native view that tells its own safe area, its width and the edge of the
  * bar each time they change (SideSafeAreaView in DeviceUtils.m). The screen is not made again when they do.
  *
@@ -42,9 +44,14 @@ import { GetVerticalBarEdge } from './device';
 /* Types ==================================================================== */
 export type SideInsets = { left: number; right: number };
 
-// What the native view tells: its safe area on the sides, its width, and the edge of the vertical bar
-// (0 unknown, 1 leading, 2 trailing).
-export type SideSafeAreaState = { left: number; right: number; width: number; edge: number };
+// What the native view tells: its safe area on the sides, its width and height, and the edge of the vertical bar
+// (0 none, 1 leading, 2 trailing).
+export type SideSafeAreaState = { left: number; right: number; width: number; height?: number; edge: number };
+
+// The size the screen is laid out for (AppSizes).
+export type LayoutSize = { width?: number; height?: number };
+
+type ColumnStyle = { marginLeft: number; marginRight: number; flex?: number; height?: number; marginTop?: number };
 
 type NativeProps = ViewProps & {
     onSideSafeAreaChange?: (event: { nativeEvent: SideSafeAreaState }) => void;
@@ -79,6 +86,13 @@ const OWN_STATICS = [
 // is not drawn.
 const FREE_SIDE_REACH = 2000;
 
+// A window that is this much higher than the layout is the open phone turned a quarter (951 against 678). The cover
+// screen and the open phone differ by 9.
+const HIGHER_WINDOW = 40;
+
+// The column is put in the middle only when the window has this much more room than the column and the bar need.
+const CENTRE_MARGIN = 20;
+
 const FLEX: ViewStyle = { flex: 1 };
 
 /* Helpers ==================================================================== */
@@ -93,6 +107,7 @@ const positive = (value: unknown): number => {
  * it); when the view itself has less (an overlay or a modal while the app is in one half of the screen), the
  * column of the bar is still kept free, on the edge of the bar. columnWidth: the width the screen is laid out for;
  * what the view has more than that is free, on the side away from the bar.
+ * No bar on a side and no side safe area (the open phone turned a quarter): the column is in the middle.
  */
 export const sideMarginsFor = (
     now: SideSafeAreaState,
@@ -102,7 +117,18 @@ export const sideMarginsFor = (
 ): { marginLeft: number; marginRight: number } => {
     let left = positive(now.left);
     let right = positive(now.right);
+    const column = positive(columnWidth);
     const reserve = positive(insets.left) + positive(insets.right);
+
+    // No bar on a side, no side safe area, and clearly more room than the column and the column of the bar take:
+    // the open phone turned a quarter. (Without that last check the cover screen would be taken for it in the
+    // moment before the native view tells the edge.)
+    if (now.edge !== 1 && now.edge !== 2 && left + right <= 0 && column > 0) {
+        const free = positive(now.width) - column;
+        if (free > reserve + CENTRE_MARGIN) {
+            return { marginLeft: free / 2, marginRight: free / 2 };
+        }
+    }
 
     // the side of the bar: told by iOS, else the side with the larger safe area
     let barOnLeft: boolean;
@@ -122,13 +148,32 @@ export const sideMarginsFor = (
         }
     }
 
-    const column = positive(columnWidth);
     const free = column > 0 ? positive(positive(now.width) - left - right - column) : 0;
 
     return {
         marginLeft: left + (barOnLeft ? 0 : free),
         marginRight: right + (barOnLeft ? free : 0),
     };
+};
+
+/**
+ * The style of the box the screen is in: the column (sideMarginsFor), over the whole height of the window. When
+ * the window is much higher than the layout (the open phone turned a quarter), the box has the height of the layout
+ * and is in the middle of the window: the sizes of the app are made for that height.
+ */
+export const columnStyleFor = (
+    now: SideSafeAreaState,
+    insets: SideInsets,
+    layout: LayoutSize = {},
+    rtl = false,
+): ColumnStyle => {
+    const margins = sideMarginsFor(now, insets, layout.width, rtl);
+    const layoutHeight = positive(layout.height);
+    const over = positive(now.height) - layoutHeight;
+    if (layoutHeight > 0 && over > HIGHER_WINDOW) {
+        return { ...margins, height: layoutHeight, marginTop: over / 2 };
+    }
+    return { ...margins, flex: 1 };
 };
 
 // The native view, asked for once: React Native takes a view name one time only. Kept on the global object, so a
@@ -146,13 +191,16 @@ const getNativeView = (): HostComponent<NativeProps> => {
  * The screen, kept out of the side insets. Without side insets: the screen itself.
  * The wrapper has the statics of the screen (react-native-navigation reads `options` and the screen name there).
  *
- * columnWidth: the width the screen is laid out for (see sideMarginsFor).
+ * layout: the size the screen is laid out for (see sideMarginsFor and columnStyleFor); a number is the width.
+ * startEdge: the edge of the vertical bar when the app started (0: none at that moment).
  */
 export const withSideInsets = <P extends object>(
     Screen: ComponentType<P>,
     insets: SideInsets,
-    columnWidth?: number,
+    layoutSize?: LayoutSize | number,
+    startEdge: number = GetVerticalBarEdge(),
 ): ComponentType<P> => {
+    const layout: LayoutSize = typeof layoutSize === 'number' ? { width: layoutSize } : layoutSize || {};
     const start: SideInsets = { left: positive(insets.left), right: positive(insets.right) };
     if (start.left + start.right <= 0) {
         return Screen;
@@ -166,24 +214,27 @@ export const withSideInsets = <P extends object>(
 
         constructor(props: P) {
             super(props);
-            // until the native view tells: what the app started with
-            this.state = {
-                left: start.left,
-                right: start.right,
-                width: Dimensions.get('window').width,
-                edge: GetVerticalBarEdge(),
-            };
+            // until the native view tells: what the app started with. No bar on a side at that moment (the open
+            // phone turned a quarter): no side safe area either.
+            const edge = startEdge === 1 || startEdge === 2 ? startEdge : 0;
+            const { width, height } = Dimensions.get('window');
+            const known = edge !== 0 || !live;
+            this.state = { left: known ? start.left : 0, right: known ? start.right : 0, width, height, edge };
         }
 
         onSideSafeAreaChange = (event: { nativeEvent: SideSafeAreaState }) => {
-            const { left, right, width, edge } = event?.nativeEvent || ({} as SideSafeAreaState);
+            const { left, right, width, height, edge } = event?.nativeEvent || ({} as SideSafeAreaState);
             if (!(width > 0)) {
                 return;
             }
             this.setState((state) =>
-                state.left === left && state.right === right && state.width === width && state.edge === edge
+                state.left === left &&
+                state.right === right &&
+                state.width === width &&
+                state.height === height &&
+                state.edge === edge
                     ? null
-                    : { left: positive(left), right: positive(right), width, edge },
+                    : { left: positive(left), right: positive(right), width, height, edge },
             );
         };
 
@@ -191,9 +242,9 @@ export const withSideInsets = <P extends object>(
             // margin, not padding: the box of the column itself is then the usable part of the screen, so a child
             // with an absolute position (an overlay that fills its parent) stays out of the side area too.
             // box-none: the strips take no touch of their own (an overlay lets touches through where it shows nothing)
-            const margins = sideMarginsFor(this.state, start, columnWidth, I18nManager.isRTL);
+            const box = columnStyleFor(this.state, start, layout, I18nManager.isRTL);
             const column = (
-                <View style={[FLEX, margins]} pointerEvents="box-none">
+                <View style={box} pointerEvents="box-none">
                     {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                     <Screen {...this.props} />
                 </View>
@@ -244,7 +295,7 @@ export const withSideSafeArea = <P extends object>(Screen: ComponentType<P>): Co
     const made = withSideInsets(
         Screen,
         { left: AppSizes.leftInset, right: AppSizes.rightInset },
-        AppSizes.screen.uncorrectedWidth,
+        { width: AppSizes.screen.uncorrectedWidth, height: AppSizes.screen.height },
     );
     wrapped.set(Screen, made);
     return made;
@@ -266,18 +317,29 @@ const bleed = <T extends ViewStyle>(make: (left: number, right: number) => T): T
  * For an element that fills its parent with an absolute position and has no content of its own (a dim layer):
  * it goes on to the edges of the window. Undefined without a side safe area.
  */
-export const sideBleedEdges = bleed((left, right) => ({ left: -left, right: -right }));
+export const sideBleedEdges = bleed((left, right) => ({
+    left: -left,
+    right: -right,
+    top: -FREE_SIDE_REACH,
+    bottom: -FREE_SIDE_REACH,
+}));
 
 /**
  * For an element that fills the screen with an absolute position and has content (a blur with a dialog in it):
- * it goes on to the edges of the window, its content stays in the column. Undefined without a side safe area.
+ * it goes on to the edges of the window, its content stays in the box of the screen. Undefined without a side
+ * safe area.
  */
 export const sideBleedAbsolute = bleed((left, right) => ({
     left: -left,
     right: -right,
+    top: -FREE_SIDE_REACH,
+    bottom: -FREE_SIDE_REACH,
     width: left + AppSizes.screen.uncorrectedWidth + right,
+    height: FREE_SIDE_REACH + AppSizes.screen.height + FREE_SIDE_REACH,
     paddingLeft: left,
     paddingRight: right,
+    paddingTop: FREE_SIDE_REACH,
+    paddingBottom: FREE_SIDE_REACH,
 }));
 
 /**
@@ -286,14 +348,16 @@ export const sideBleedAbsolute = bleed((left, right) => ({
 export const sideBleedMargin = bleed((left, right) => ({
     marginLeft: -left,
     marginRight: -right,
+    marginTop: -FREE_SIDE_REACH,
+    marginBottom: -FREE_SIDE_REACH,
     paddingLeft: left,
     paddingRight: right,
+    paddingTop: FREE_SIDE_REACH,
+    paddingBottom: FREE_SIDE_REACH,
 }));
 
-const fill: ViewStyle = { position: 'absolute', top: 0, bottom: 0 };
-
 /**
- * The window beside an element, filled in the style of that element (its animated dim colour). Put it in the
+ * The window around an element, filled in the style of that element (its animated dim colour). Put it in the
  * element that draws the backdrop. It takes the touches there, as the backdrop does: the tab bar under it is
  * covered. Renders nothing without a side safe area.
  */
@@ -302,10 +366,19 @@ export const SideSafeAreaFill = ({ style }: { style?: Animated.WithAnimatedValue
     if (!sides) {
         return null;
     }
+    const R = FREE_SIDE_REACH;
+    const strips: ViewStyle[] = [
+        { position: 'absolute', top: -R, bottom: -R, left: -sides.left, width: sides.left },
+        { position: 'absolute', top: -R, bottom: -R, right: -sides.right, width: sides.right },
+        { position: 'absolute', left: 0, right: 0, top: -R, height: R },
+        { position: 'absolute', left: 0, right: 0, bottom: -R, height: R },
+    ];
     return (
         <>
-            <Animated.View style={[fill, { left: -sides.left, width: sides.left }, style]} />
-            <Animated.View style={[fill, { right: -sides.right, width: sides.right }, style]} />
+            {strips.map((strip, index) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <Animated.View key={index} style={[strip, style]} />
+            ))}
         </>
     );
 };
