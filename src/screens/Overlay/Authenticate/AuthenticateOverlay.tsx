@@ -39,6 +39,8 @@ import Localize from '@locale';
 
 // style
 import { AppStyles, AppSizes } from '@theme';
+import { sideBleedAbsolute } from '@common/helpers/sideSafeArea';
+
 import styles from './styles';
 
 /* types ==================================================================== */
@@ -304,7 +306,7 @@ class AuthenticateOverlay extends Component<Props, State> {
 
         return (
             <BlurView
-                style={styles.blurView}
+                style={sideBleedAbsolute ? [styles.blurView, sideBleedAbsolute] : styles.blurView}
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >

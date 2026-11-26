@@ -15,6 +15,7 @@ import { ErrorMessages } from '@common/constants';
 // helpers
 import { Prompt } from '@common/helpers/interface';
 import { Navigator } from '@common/helpers/navigator';
+import { withSideSafeArea } from '@common/helpers/sideSafeArea';
 import {
     GetDeviceTimeZone,
     GetDeviceLocaleSettings,
@@ -372,7 +373,12 @@ class Application {
                     const Screen = screens[key];
                     // Screen.load defers require() until RNN first shows the screen
                     // (used by Scan so vision-camera is not evaluated at startup).
-                    const provider = typeof Screen.load === 'function' ? Screen.load : () => Screen;
+                    // Every screen stays out of a safe area on a side of the screen (iPhone Duo). On a phone
+                    // without one, withSideSafeArea gives the screen itself.
+                    const provider =
+                        typeof Screen.load === 'function'
+                            ? () => withSideSafeArea(Screen.load())
+                            : () => withSideSafeArea(Screen);
                     Navigation.registerComponent(Screen.screenName, provider);
                     return true;
                 });

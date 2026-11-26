@@ -25,10 +25,23 @@ export const glassTabScrollPadding = glassTabScrollPaddingFor(Platform.OS, Platf
  */
 const GLASS_TAB_BAR_REACH = 84;
 
-/** What the tab bar covers on a platform: the reach of the glass bar where it floats, else zero. */
-export const glassTabBarHeightFor = (os: string, version: string | number, tabbarHeight: number): number => {
+/**
+ * What the tab bar covers at the end of a screen on a platform: the reach of the glass bar where it floats, else zero.
+ *
+ * side: the safe area on the sides of the screen and at its end. With a safe area on a side the tab bar stands on
+ * that side (iPhone Duo), not at the end: the end of the screen then only has its own safe area (the home indicator).
+ */
+export const glassTabBarHeightFor = (
+    os: string,
+    version: string | number,
+    tabbarHeight: number,
+    side?: { sideInsets: number; bottomInset: number },
+): number => {
     if (glassTabScrollPaddingFor(os, version) === 0) {
         return 0;
+    }
+    if (side && side.sideInsets > 0) {
+        return Math.max(0, Number(side.bottomInset) || 0);
     }
     return Math.max(GLASS_TAB_BAR_REACH, Number(tabbarHeight) || 0);
 };
@@ -39,7 +52,10 @@ export const glassTabBarHeightFor = (os: string, version: string | number, tabba
  * out in the space above the bar, as it was when the bar had its own. Lists need none of it: iOS
  * insets them by itself. Zero on Android and below iOS 26.
  */
-export const glassTabBarHeight = glassTabBarHeightFor(Platform.OS, Platform.Version, AppSizes.tabbarHeight);
+export const glassTabBarHeight = glassTabBarHeightFor(Platform.OS, Platform.Version, AppSizes.tabbarHeight, {
+    sideInsets: AppSizes.sideInsets,
+    bottomInset: AppSizes.safeAreaBottomInset,
+});
 
 /** Style for the container of such a state; undefined where the bar covers nothing. */
 export const glassTabBarClearance = glassTabBarHeight > 0 ? { paddingBottom: glassTabBarHeight } : undefined;

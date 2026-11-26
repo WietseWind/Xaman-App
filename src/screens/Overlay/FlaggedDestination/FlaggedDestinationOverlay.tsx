@@ -9,6 +9,7 @@ import { View, Animated, Text, KeyboardEvent, Platform, BackHandler, NativeEvent
 import { AppScreens } from '@common/constants';
 
 import { Navigator } from '@common/helpers/navigator';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import Keyboard from '@common/helpers/keyboard';
 
 import BackendService from '@services/BackendService';
@@ -215,6 +216,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <Animated.View
                     style={[styles.visibleContent, { opacity: this.animatedOpacity, marginBottom: this.bottomOffset }]}
                 >

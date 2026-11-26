@@ -6,6 +6,7 @@ import React, { Component } from 'react';
 import { Animated, Text, View } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import { AppScreens } from '@common/constants';
 
 // components
@@ -86,6 +87,7 @@ class SwitchAssetCategoryOverlay extends Component<Props, State> {
 
         return (
             <Animated.View style={[styles.container, { backgroundColor: interpolateColor }]}>
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <Animated.View style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.centerAligned]}>

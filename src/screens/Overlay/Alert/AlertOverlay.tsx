@@ -6,6 +6,7 @@ import React, { Component } from 'react';
 import { View, Animated, Text, StyleSheet, BackHandler, NativeEventSubscription } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import { AppScreens } from '@common/constants';
 
 // components
@@ -224,6 +225,7 @@ class AlertOverlay extends Component<Props, State> {
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <Animated.View style={[styles.visibleContent, { transform, opacity: this.animatedOpacity }]}>
                     {this.renderIcon()}
                     {this.renderTitle()}

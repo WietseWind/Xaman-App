@@ -44,6 +44,8 @@ import { XAppBrowserModalProps } from '@screens/Modal/XAppBrowser';
 import { ReviewTransactionModalProps } from '@screens/Modal/ReviewTransaction';
 
 import { AppStyles } from '@theme';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
+
 import styles from './styles';
 
 /* types ==================================================================== */
@@ -872,6 +874,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                         },
                     ]}
                 >
+                    <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                     <Animated.View style={[
                         styles.visibleContent,
                     ]}>
