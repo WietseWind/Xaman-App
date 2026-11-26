@@ -202,6 +202,8 @@ const CENTER_OF_ITEM_ROW = 0.514;
 // only (center more than sides); 8 cannot run iOS 18.
 const SE_IOS18_CENTER_PT = 0.8;
 const SE_IOS18_SIDE_PT = 0.86;
+// The centre button on the vertical tab bar of the iPhone Duo: about 37 pt of the 48 pt bar (it was 46).
+const FOLD_PHONE_CENTER_PT = 0.8;
 
 const tabOsMajor = (): number => {
     const raw = GetDeviceOSVersion();
@@ -252,6 +254,11 @@ const getTabIconDisplayPt = (factor?: number): number => {
     if (isCompactIos18At2x()) {
         const isCenter = (factor || 1) < 0.8;
         pt *= isCenter ? SE_IOS18_CENTER_PT : SE_IOS18_SIDE_PT;
+    }
+    // The vertical tab bar of the iPhone Duo is 48 pt wide, less than the bar of other phones is high: the centre
+    // button gets the same share of space around it as it has there.
+    if ((factor || 1) < 0.8 && IsFoldPhone()) {
+        pt *= FOLD_PHONE_CENTER_PT;
     }
     return pt;
 };

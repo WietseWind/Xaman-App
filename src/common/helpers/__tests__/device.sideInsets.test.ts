@@ -101,7 +101,9 @@ describe('tab icon sizes', () => {
         apply({ width: 466, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34, left: 0, right: 84 } });
         const duo = tabSizes();
         apply({ width: 382, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34 } });
-        expect(duo).toEqual(tabSizes());
+        // the side icons (index 1, 2, 4): the same as on that phone
+        const narrow = tabSizes();
+        expect([duo[1], duo[2], duo[4]]).toEqual([narrow[1], narrow[2], narrow[4]]);
         apply({ width: 466, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34 } });
         // a larger scale is a smaller icon
         expect(duo[0]).toBeGreaterThan(tabSizes()[0]);
@@ -120,10 +122,13 @@ describe('iPhone Duo, open: the window is 951 wide, the screen of the device sta
 
     it('the usable width and the tab icons are those of the closed phone', () => {
         open({ top: 0, bottom: 34, left: 0, right: 84 });
+        NativeModules.DeviceUtilsModule.verticalBarEdge = 2;
         expect(GetUsableWindowWidth()).toBe(382);
         const openSizes = tabSizes();
         apply({ width: 466, ratio: 3, os: '27.2', insets: { top: 0, bottom: 34, left: 0, right: 84 } });
+        NativeModules.DeviceUtilsModule.verticalBarEdge = 2;
         expect(openSizes).toEqual(tabSizes());
+        delete NativeModules.DeviceUtilsModule.verticalBarEdge;
     });
 
     it('no side inset and a window about as wide as the screen: the window width, as always', () => {
@@ -228,6 +233,17 @@ describe('the iPhone Duo is known in every state, and no other phone is taken fo
         // the column is counted (on the right), and the top is the plain status bar
         expect(GetLayoutInsets()).toEqual({ top: 20, bottom: 34, left: 0, right: 84 });
         expect(GetUsableWindowWidth()).toBe(382);
+    });
+
+    it('the centre tab button is smaller on the vertical bar; the other icons are not', () => {
+        // a phone as wide as the column of the Duo, with the same insets: the sizes without the vertical bar
+        state([382, 678], [382, 678], { top: 0, bottom: 34 });
+        const plainCentre = GetBottomTabScale(0.65);
+        const plainSide = GetBottomTabScale(0.9);
+        state([466, 678], [466, 678], { top: 0, bottom: 34, left: 0, right: 84 }, 2);
+        // a larger scale is a smaller icon: 0.8 of the size
+        expect(GetBottomTabScale(0.65)).toBeCloseTo(plainCentre / 0.8, 6);
+        expect(GetBottomTabScale(0.9)).toBeCloseTo(plainSide, 6);
     });
 
     it('a window a little wider than the screen is not enough', () => {

@@ -17,6 +17,7 @@ export * from './Footer';
 
 export * from './QRCode';
 export * from './TextAvatar';
+export * from './IphoneDuoLeftView';
 export * from './Icon';
 export * from './Header';
 export * from './SecurePinInput';

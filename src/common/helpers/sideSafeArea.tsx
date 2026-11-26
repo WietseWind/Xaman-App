@@ -39,7 +39,11 @@ import {
 
 import { AppSizes } from '@theme';
 
+// the one file, not the index of the components: those use this helper
+import IphoneDuoLeftView from '@components/General/IphoneDuoLeftView/IphoneDuoLeftView';
+
 import { GetVerticalBarEdge } from './device';
+import { FoldPhone, FoldPhoneState, foldPhoneStateFor } from './foldPhone';
 
 /* Types ==================================================================== */
 export type SideInsets = { left: number; right: number };
@@ -103,6 +107,8 @@ const HIGHER_WINDOW = 40;
 const CENTRE_MARGIN = 20;
 
 const FLEX: ViewStyle = { flex: 1 };
+
+const FREE_HALF: ViewStyle = { position: 'absolute' };
 
 /* Helpers ==================================================================== */
 const positive = (value: unknown): number => {
@@ -223,6 +229,23 @@ export const withSideInsets = <P extends object>(
 
         private surround: SideSafeAreaSurround = NO_SURROUND;
 
+        private fold: FoldPhoneState | undefined;
+
+        componentDidMount() {
+            this.tellFoldPhone();
+        }
+
+        componentDidUpdate() {
+            this.tellFoldPhone();
+        }
+
+        // the state of the phone, for code that follows it (common/helpers/foldPhone.ts)
+        tellFoldPhone = () => {
+            if (this.fold) {
+                FoldPhone.update(this.fold);
+            }
+        };
+
         constructor(props: P) {
             super(props);
             // until the native view tells: what the app started with. No bar on a side at that moment (the open
@@ -250,7 +273,7 @@ export const withSideInsets = <P extends object>(
         };
 
         render() {
-            const { height } = this.state;
+            const { width, height } = this.state;
             // margin, not padding: the box of the column itself is then the usable part of the screen, so a child
             // with an absolute position (an overlay that fills its parent) stays out of the side area too.
             // box-none: the strips take no touch of their own (an overlay lets touches through where it shows nothing)
@@ -271,6 +294,32 @@ export const withSideInsets = <P extends object>(
             if (!live) {
                 return column;
             }
+
+            // where the app is in the window, and what is free beside it
+            const windowHeight = positive(height);
+            const boxTop = positive(box.marginTop);
+            const boxHeight = typeof box.height === 'number' ? box.height : windowHeight;
+            const appWidth = positive(positive(width) - box.marginLeft - box.marginRight);
+            this.fold = foldPhoneStateFor(
+                { width: positive(width), height: windowHeight },
+                { left: box.marginLeft, top: boxTop, width: appWidth, height: boxHeight },
+                Dimensions.get('screen').width,
+            );
+            // The free half of the open phone: its own component, beside each screen. An overlay has none: its
+            // backdrop is over the whole window.
+            const { free } = this.fold;
+            const isOverlay = (this.props as { componentType?: string }).componentType === 'OVERLAY';
+            const freeHalf =
+                free && free.width > 0 && !isOverlay ? (
+                    <View style={[FREE_HALF, free]} pointerEvents="box-none">
+                        <IphoneDuoLeftView
+                            width={free.width}
+                            height={free.height}
+                            screen={(Screen as { screenName?: string }).screenName}
+                        />
+                    </View>
+                ) : null;
+
             const NativeSideSafeArea = getNativeView();
             return (
                 <NativeSideSafeArea
@@ -278,6 +327,7 @@ export const withSideInsets = <P extends object>(
                     pointerEvents="box-none"
                     onSideSafeAreaChange={this.onSideSafeAreaChange}
                 >
+                    {freeHalf}
                     {column}
                 </NativeSideSafeArea>
             );

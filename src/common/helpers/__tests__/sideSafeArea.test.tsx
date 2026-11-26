@@ -1,4 +1,4 @@
-/* eslint-disable react-native/no-inline-styles, react-native/no-color-literals */
+/* eslint-disable react-native/no-inline-styles, react-native/no-color-literals, max-classes-per-file */
 /**
  * Screens and a safe area on a side of the screen (issue 544, iPhone Duo).
  * Without such an area a screen is registered as it is: the same class, nothing around it.
@@ -7,6 +7,9 @@ import React, { Component } from 'react';
 import { Dimensions, Platform, Text, View } from 'react-native';
 import renderer from 'react-test-renderer';
 
+import IphoneDuoLeftView from '@components/General/IphoneDuoLeftView/IphoneDuoLeftView';
+
+import { FoldPhone } from '../foldPhone';
 import { columnStyleFor, sideMarginsFor, SideSafeAreaContext, withSideInsets } from '../sideSafeArea';
 
 class Screen extends Component<{ label: string }> {
@@ -378,6 +381,81 @@ describe('the screen follows the phone while the app runs', () => {
         );
         renderer.create(<Probe />);
         expect(below).toBe(0);
+    });
+
+    it('open, full screen: the free half has its own component, with its size and the screen beside it', () => {
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 }, LAYOUT, 2);
+        const tree = renderer.create(<Wrapped label="a" />);
+        // closed: no free half
+        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+
+        tell(tree, 0, 84, 951, 2, 669);
+        const left = tree.root.findByType(IphoneDuoLeftView);
+        expect(left.props).toEqual({ width: 485, height: 669, screen: 'app.Test' });
+        expect(left.parent?.props.style).toEqual([
+            { position: 'absolute' },
+            { left: 0, top: 0, width: 485, height: 669 },
+        ]);
+        expect(left.parent?.props.pointerEvents).toBe('box-none');
+
+        // in one half of the screen, turned a quarter, closed: none
+        tell(tree, 84, 0, 469, 1, 669);
+        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        tell(tree, 0, 0, 669, 0, 951);
+        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        tell(tree, 0, 84, 466, 2, 678);
+        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+    });
+
+    it('an overlay has no free half: its backdrop is over the whole window', () => {
+        const Wrapped = withSideInsets(Screen as any, { left: 0, right: 84 }, LAYOUT, 2) as any;
+        const tree = renderer.create(<Wrapped label="a" componentType="OVERLAY" />);
+        tell(tree, 0, 84, 951, 2, 669);
+        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+    });
+
+    it('tells the state of the phone to the code that follows it', () => {
+        jest.spyOn(Dimensions, 'get').mockImplementation(
+            (dim: string) =>
+                (dim === 'screen'
+                    ? { width: 466, height: 678, scale: 3, fontScale: 1 }
+                    : { width: windowWidth, height: windowHeight, scale: 3, fontScale: 1 }) as any,
+        );
+        const seen: string[] = [];
+        const listener = FoldPhone.addListener((state) => seen.push(state.mode));
+        const Wrapped = withSideInsets(Screen, { left: 0, right: 84 }, LAYOUT, 2);
+        const tree = renderer.create(<Wrapped label="a" />);
+        expect(FoldPhone.getState().mode).toBe('cover');
+        expect(FoldPhone.hasFreeArea()).toBe(false);
+
+        tell(tree, 0, 84, 951, 2, 669);
+        expect(FoldPhone.getState()).toEqual({
+            mode: 'open',
+            window: { width: 951, height: 669 },
+            app: { left: 485, top: 0, width: 382, height: 669 },
+            free: { left: 0, top: 0, width: 485, height: 669 },
+        });
+        expect(FoldPhone.hasFreeArea()).toBe(true);
+
+        tell(tree, 84, 0, 469, 1, 669);
+        expect(FoldPhone.getState().mode).toBe('split');
+        expect(FoldPhone.getState().free).toBeUndefined();
+
+        tell(tree, 0, 0, 669, 0, 951);
+        expect(FoldPhone.getState()).toEqual({
+            mode: 'turned',
+            window: { width: 669, height: 951 },
+            app: { left: 143.5, top: 136.5, width: 382, height: 678 },
+        });
+
+        tell(tree, 0, 84, 466, 2, 678);
+        expect(FoldPhone.getState().mode).toBe('cover');
+        expect(seen).toEqual(['cover', 'open', 'split', 'turned', 'cover']);
+
+        // no call after remove, and no call when nothing changed
+        listener.remove();
+        tell(tree, 0, 84, 951, 2, 669);
+        expect(seen).toHaveLength(5);
     });
 
     it('takes no value from an event without a width', () => {
