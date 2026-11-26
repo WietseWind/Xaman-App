@@ -53,8 +53,56 @@ RCT_EXPORT_MODULE();
     @"model": [self getModel],
     @"layoutInsets": [self getLayoutInsets],
     @"verticalBarEdge": @([self getVerticalBarEdge]),
+    @"isPadDevice": @([DeviceUtilsModule isPadDevice]),
+    @"padLayout": [self getPadLayout],
     @"tabBarMetrics": [self getTabBarMetrics],
   };
+}
+
+// The app on an iPad (issue 553). The app is an iPhone app; an iPad runs it in a window of the system.
+// - iPadOS 27: the window is a real window. The user can make it larger and smaller, and the app gets the real
+//   screen of the iPad. The app then keeps one phone layout, in a box (src/common/helpers/sideSafeArea.tsx), and
+//   asks the system to keep the window at that size (SceneDelegate.m).
+// - older iPadOS: the app gets the screen of a phone, and the system scales that. Nothing is different from a
+//   phone there, so no layout size is told.
++ (BOOL)isPadDevice
+{
+  static BOOL isPad = NO;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    // The model, not the interface idiom: the idiom of an iPhone app is "phone" on an iPad too.
+    // Not a Mac that runs the iOS app: it also tells "iPad" as its model, and it was not looked at for this.
+    isPad = [[UIDevice currentDevice].model hasPrefix:@"iPad"] && !NSProcessInfo.processInfo.isiOSAppOnMac;
+  });
+  return isPad;
+}
+
+// A screen with a short side of less than this is the screen of a phone (the largest iPhone is 440 pt wide, the
+// smallest iPad 744 pt).
+static const CGFloat XamanPadShortSideMin = 600.0;
+
++ (CGSize)padLayoutSize
+{
+  if (![DeviceUtilsModule isPadDevice]) {
+    return CGSizeZero;
+  }
+  CGSize screen = UIScreen.mainScreen.bounds.size;
+  CGFloat shortSide = MIN(screen.width, screen.height);
+  if (shortSide < XamanPadShortSideMin) {
+    return CGSizeZero;
+  }
+  // The height has to fit on the screen in landscape too, so it is not more than the short side of the screen.
+  // The sizes are those of iPhones: 430 x 932 (Pro Max), 390 x 844, and 375 wide for a lower screen.
+  CGFloat height = MIN(932.0, floor(shortSide));
+  CGFloat width = height >= 932.0 ? 430.0 : (height >= 844.0 ? 390.0 : 375.0);
+  return CGSizeMake(width, height);
+}
+
+// {width: 0, height: 0} when the app has no layout size of its own (every iPhone).
+- (NSDictionary *) getPadLayout
+{
+  CGSize size = [DeviceUtilsModule padLayoutSize];
+  return @{ @"width": @(size.width), @"height": @(size.height) };
 }
 
 - (NSString *) getOSVersion {
