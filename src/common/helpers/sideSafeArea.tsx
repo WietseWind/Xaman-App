@@ -23,7 +23,7 @@
  * Every other phone has no safe area on a side. There this does nothing at all: the screen is registered as it is,
  * `SideSafeAreaFill` renders nothing and the `sideBleed` styles are undefined.
  */
-import React, { Component, ComponentType } from 'react';
+import React, { Component, ComponentType, createContext } from 'react';
 import {
     Animated,
     Dimensions,
@@ -52,6 +52,15 @@ export type SideSafeAreaState = { left: number; right: number; width: number; he
 export type LayoutSize = { width?: number; height?: number };
 
 type ColumnStyle = { marginLeft: number; marginRight: number; flex?: number; height?: number; marginTop?: number };
+
+// What a screen can know about the window around its box. below: the height of the window under the box; more than
+// 0 only when the box does not reach the end of the window (the open phone turned a quarter). A panel that comes up
+// from the end of the screen moves down by it, so it starts at the end of the window, as on every phone.
+export type SideSafeAreaSurround = { below: number };
+
+const NO_SURROUND: SideSafeAreaSurround = { below: 0 };
+
+export const SideSafeAreaContext = createContext<SideSafeAreaSurround>(NO_SURROUND);
 
 type NativeProps = ViewProps & {
     onSideSafeAreaChange?: (event: { nativeEvent: SideSafeAreaState }) => void;
@@ -212,6 +221,8 @@ export const withSideInsets = <P extends object>(
     class SideSafeArea extends Component<P, SideSafeAreaState> {
         static displayName = `SideSafeArea(${Screen.displayName || Screen.name || 'Screen'})`;
 
+        private surround: SideSafeAreaSurround = NO_SURROUND;
+
         constructor(props: P) {
             super(props);
             // until the native view tells: what the app started with. No bar on a side at that moment (the open
@@ -239,14 +250,22 @@ export const withSideInsets = <P extends object>(
         };
 
         render() {
+            const { height } = this.state;
             // margin, not padding: the box of the column itself is then the usable part of the screen, so a child
             // with an absolute position (an overlay that fills its parent) stays out of the side area too.
             // box-none: the strips take no touch of their own (an overlay lets touches through where it shows nothing)
             const box = columnStyleFor(this.state, start, layout, I18nManager.isRTL);
+            const below =
+                typeof box.height === 'number' ? positive(positive(height) - box.height - positive(box.marginTop)) : 0;
+            if (this.surround.below !== below) {
+                this.surround = below > 0 ? { below } : NO_SURROUND;
+            }
             const column = (
                 <View style={box} pointerEvents="box-none">
-                    {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                    <Screen {...this.props} />
+                    <SideSafeAreaContext.Provider value={this.surround}>
+                        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                        <Screen {...this.props} />
+                    </SideSafeAreaContext.Provider>
                 </View>
             );
             if (!live) {

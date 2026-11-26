@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import { Dimensions, Platform, Text, View } from 'react-native';
 import renderer from 'react-test-renderer';
 
-import { columnStyleFor, sideMarginsFor, withSideInsets } from '../sideSafeArea';
+import { columnStyleFor, sideMarginsFor, SideSafeAreaContext, withSideInsets } from '../sideSafeArea';
 
 class Screen extends Component<{ label: string }> {
     static screenName = 'app.Test';
@@ -340,6 +340,44 @@ describe('the screen follows the phone while the app runs', () => {
             height: 678,
             marginTop: 136.5,
         });
+    });
+
+    it('tells a panel how much window is below the box: only when the phone is turned a quarter', () => {
+        const seen: number[] = [];
+        class Sheet extends Component {
+            static contextType = SideSafeAreaContext;
+
+            render() {
+                seen.push((this.context as { below: number }).below);
+                return null;
+            }
+        }
+        const Wrapped = withSideInsets(Sheet, { left: 0, right: 84 }, LAYOUT, 2);
+        const tree = renderer.create(<Wrapped />);
+        expect(seen[seen.length - 1]).toBe(0);
+
+        tell(tree, 0, 0, 669, 0, 951);
+        expect(seen[seen.length - 1]).toBe(136.5);
+
+        tell(tree, 0, 84, 951, 2, 669);
+        expect(seen[seen.length - 1]).toBe(0);
+
+        tell(tree, 84, 0, 469, 1, 669);
+        expect(seen[seen.length - 1]).toBe(0);
+    });
+
+    it('without the wrapper (every other phone) a panel reads 0', () => {
+        let below = -1;
+        const Probe = () => (
+            <SideSafeAreaContext.Consumer>
+                {(value) => {
+                    below = value.below;
+                    return null;
+                }}
+            </SideSafeAreaContext.Consumer>
+        );
+        renderer.create(<Probe />);
+        expect(below).toBe(0);
     });
 
     it('takes no value from an event without a width', () => {

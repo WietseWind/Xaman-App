@@ -20,7 +20,7 @@ import Localize from '@locale';
 
 // style
 import { AppStyles, AppSizes } from '@theme';
-import { sideBleedEdges } from '@common/helpers/sideSafeArea';
+import { sideBleedEdges, SideSafeAreaContext } from '@common/helpers/sideSafeArea';
 
 import styles from './styles';
 
@@ -55,6 +55,11 @@ const FLICK_VELOCITY = 0.8;
 
 /* Component ==================================================================== */
 class ActionPanel extends Component<Props, State> {
+    // the window around the box of the screen: only more than the default on the open iPhone Duo turned a quarter
+    static contextType = SideSafeAreaContext;
+
+    declare context: React.ContextType<typeof SideSafeAreaContext>;
+
     private translateY: Animated.Value;
     private panResponder: PanResponderInstance;
     private currentY: number;
@@ -347,6 +352,7 @@ class ActionPanel extends Component<Props, State> {
     };
 
     render() {
+        const { below } = this.context || { below: 0 };
         const { children, testID, contentStyle } = this.props;
         const { panelHeight } = this.state;
 
@@ -383,6 +389,8 @@ class ActionPanel extends Component<Props, State> {
                 <Animated.View
                     style={[
                         styles.panel,
+                        // the box of the screen does not reach the end of the window: the panel starts at that end
+                        below > 0 ? { top: below } : undefined,
                         {
                             transform: [{ translateY: this.translateY }],
                         },
