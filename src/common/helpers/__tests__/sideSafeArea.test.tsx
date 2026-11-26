@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import { Dimensions, Platform, Text, View } from 'react-native';
 import renderer from 'react-test-renderer';
 
-import IphoneDuoLeftView from '@components/General/IphoneDuoLeftView/IphoneDuoLeftView';
+import FoldPhoneExtraPanel from '@components/General/FoldPhoneExtraPanel/FoldPhoneExtraPanel';
 
 import { FoldPhone } from '../foldPhone';
 import { columnStyleFor, sideMarginsFor, SideSafeAreaContext, withSideInsets } from '../sideSafeArea';
@@ -387,11 +387,11 @@ describe('the screen follows the phone while the app runs', () => {
         const Wrapped = withSideInsets(Screen, { left: 0, right: 84 }, LAYOUT, 2);
         const tree = renderer.create(<Wrapped label="a" />);
         // closed: no free half
-        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        expect(tree.root.findAllByType(FoldPhoneExtraPanel)).toHaveLength(0);
 
         tell(tree, 0, 84, 951, 2, 669);
-        const left = tree.root.findByType(IphoneDuoLeftView);
-        expect(left.props).toEqual({ width: 485, height: 669, screen: 'app.Test' });
+        const left = tree.root.findByType(FoldPhoneExtraPanel);
+        expect(left.props).toEqual({ width: 485, height: 669, side: 'left', screen: 'app.Test' });
         expect(left.parent?.props.style).toEqual([
             { position: 'absolute' },
             { left: 0, top: 0, width: 485, height: 669 },
@@ -400,18 +400,18 @@ describe('the screen follows the phone while the app runs', () => {
 
         // in one half of the screen, turned a quarter, closed: none
         tell(tree, 84, 0, 469, 1, 669);
-        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        expect(tree.root.findAllByType(FoldPhoneExtraPanel)).toHaveLength(0);
         tell(tree, 0, 0, 669, 0, 951);
-        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        expect(tree.root.findAllByType(FoldPhoneExtraPanel)).toHaveLength(0);
         tell(tree, 0, 84, 466, 2, 678);
-        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        expect(tree.root.findAllByType(FoldPhoneExtraPanel)).toHaveLength(0);
     });
 
     it('an overlay has no free half: its backdrop is over the whole window', () => {
         const Wrapped = withSideInsets(Screen as any, { left: 0, right: 84 }, LAYOUT, 2) as any;
         const tree = renderer.create(<Wrapped label="a" componentType="OVERLAY" />);
         tell(tree, 0, 84, 951, 2, 669);
-        expect(tree.root.findAllByType(IphoneDuoLeftView)).toHaveLength(0);
+        expect(tree.root.findAllByType(FoldPhoneExtraPanel)).toHaveLength(0);
     });
 
     it('tells the state of the phone to the code that follows it', () => {

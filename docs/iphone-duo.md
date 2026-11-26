@@ -51,11 +51,13 @@ The boot splash covers the whole window: the launch screen background is the blu
 
 ## The free half of the open screen, and the state for JavaScript
 
-Open with the app on the whole inner screen, the left half of the window is free. It has its own component:
-`src/components/General/IphoneDuoLeftView/IphoneDuoLeftView.tsx`. The screen wrapper renders it in that half, beside
-each screen of the app (not beside an overlay: its backdrop covers the whole window), with the props `width`,
-`height` (the free part, in points) and `screen` (the name of the screen it is beside). **It renders nothing for
-now**: the half shows the background of the app.
+Open with the app on the whole inner screen, the left half of the window is free. It has its own component, the
+extra panel: `src/components/General/FoldPhoneExtraPanel/FoldPhoneExtraPanel.tsx`. The screen wrapper renders it in
+the free part, beside each screen of the app (not beside an overlay: its backdrop covers the whole window), with the
+props `width`, `height` (the free part, in points), `side` (`left` on the iPhone Duo) and `screen` (the name of the
+screen it is beside). **It renders nothing for now**: the free part shows the background of the app. The names are
+general on purpose (`FoldPhone`, `FoldPhoneExtraPanel`): another fold phone can use them when its native side tells
+the same values.
 
 The state of the phone is in `src/common/helpers/foldPhone.ts`:
 
@@ -73,7 +75,7 @@ turned a quarter) or `none` (every phone that is no fold phone; no listener is e
 place of the screens of the app in the window; `free` is the free part and is only there in the mode `open`.
 
 All of this is JavaScript and the native side already sends what it needs. To show something in the free half
-later, change `IphoneDuoLeftView` (and use `FoldPhone` where code has to follow the state): that can go out with an
+later, change `FoldPhoneExtraPanel` (and use `FoldPhone` where code has to follow the state): that can go out with an
 over-the-air update, without a new native build.
 
 ## Where the code is
@@ -85,7 +87,7 @@ over-the-air update, without a new native build.
 | `src/theme/sizes.ts` | `AppSizes` takes the size of the layout: width `min(window, screen) − side insets`, height `min(window, screen)` |
 | `src/common/helpers/sideSafeArea.tsx` | `withSideSafeArea` wraps every registered screen and puts it in the column (`sideMarginsFor`, `columnStyleFor`). `SideSafeAreaFill` and `sideBleedEdges / sideBleedAbsolute / sideBleedMargin` make a backdrop reach the edges of the window |
 | `src/common/helpers/foldPhone.ts` | `FoldPhone`: the state of the phone (mode, window, place of the app, free part) and its change event |
-| `src/components/General/IphoneDuoLeftView/` | The free half of the open screen: empty for now |
+| `src/components/General/FoldPhoneExtraPanel/` | The extra panel: the free part of the open screen, empty for now |
 | `src/app.tsx` | Every screen is registered through `withSideSafeArea` |
 | `src/common/helpers/glassTabBar.ts` | With the bar on a side, the end of a tab screen only keeps the bottom safe area |
 | `ios/LaunchScreen.storyboard` | Background colour = the blue of the splash image |

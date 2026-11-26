@@ -1,5 +1,6 @@
 /**
- * The state of a fold phone (iPhone Duo), for JavaScript code that wants to know it or follow it.
+ * The state of a fold phone, for JavaScript code that wants to know it or follow it. Today the iPhone Duo is the
+ * only phone that tells one; nothing here is special to it.
  *
  *     import { FoldPhone } from '@common/helpers/foldPhone';
  *
@@ -12,7 +13,7 @@
  * is ever called.
  *
  * This is all JavaScript: what the app shows in the free half of the open screen
- * (components/General/IphoneDuoLeftView) can change with an over-the-air update, without a new native build.
+ * (components/General/FoldPhoneExtraPanel) can change with an over-the-air update, without a new native build.
  */
 
 /* Types ==================================================================== */

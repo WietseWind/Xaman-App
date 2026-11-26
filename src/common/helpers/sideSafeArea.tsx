@@ -40,7 +40,7 @@ import {
 import { AppSizes } from '@theme';
 
 // the one file, not the index of the components: those use this helper
-import IphoneDuoLeftView from '@components/General/IphoneDuoLeftView/IphoneDuoLeftView';
+import FoldPhoneExtraPanel from '@components/General/FoldPhoneExtraPanel/FoldPhoneExtraPanel';
 
 import { GetVerticalBarEdge } from './device';
 import { FoldPhone, FoldPhoneState, foldPhoneStateFor } from './foldPhone';
@@ -305,16 +305,17 @@ export const withSideInsets = <P extends object>(
                 { left: box.marginLeft, top: boxTop, width: appWidth, height: boxHeight },
                 Dimensions.get('screen').width,
             );
-            // The free half of the open phone: its own component, beside each screen. An overlay has none: its
-            // backdrop is over the whole window.
+            // The free part of the open phone: its own component (the extra panel), beside each screen. An overlay
+            // has none: its backdrop is over the whole window.
             const { free } = this.fold;
             const isOverlay = (this.props as { componentType?: string }).componentType === 'OVERLAY';
             const freeHalf =
                 free && free.width > 0 && !isOverlay ? (
                     <View style={[FREE_HALF, free]} pointerEvents="box-none">
-                        <IphoneDuoLeftView
+                        <FoldPhoneExtraPanel
                             width={free.width}
                             height={free.height}
+                            side={free.left <= 0 ? 'left' : 'right'}
                             screen={(Screen as { screenName?: string }).screenName}
                         />
                     </View>
