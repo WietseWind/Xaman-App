@@ -2122,7 +2122,9 @@
     "removeDoneBody": "原卡仍可正常使用。您的账户不再有备份卡。",
     "identifyBody": "请扫描与此账户关联的备份卡，确认是否为正确的卡片。",
     "notYourBackup": "这不是您的备份卡。",
-    "yourBackup": "这是您的备份卡。"
+    "yourBackup": "这是您的备份卡。",
+    "backupFor": "是以下卡片的备用卡",
+    "hasBackup": "拥有备用卡"
   },
   "accessibility": {
     "moreOptions": "更多选项",

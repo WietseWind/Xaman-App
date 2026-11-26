@@ -2110,7 +2110,9 @@
     "removeDoneBody": "Algne kaart töötab endiselt. Sinu kontol ei ole enam varukaarti.",
     "identifyBody": "Skanni selle kontoga seotud varukaarti, et kontrollida, kas see on õige kaart.",
     "notYourBackup": "See ei ole sinu varukaart.",
-    "yourBackup": "See on sinu varukaart."
+    "yourBackup": "See on sinu varukaart.",
+    "backupFor": "On varukaart kaardile",
+    "hasBackup": "Tal on varukaart"
   },
   "accessibility": {
     "moreOptions": "Rohkem valikuid",

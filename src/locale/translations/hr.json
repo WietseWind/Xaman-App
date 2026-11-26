@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Izvorna kartica i dalje radi. Vaš račun više nema pričuvnu karticu.",
     "identifyBody": "Skenirajte pričuvnu karticu povezanu s ovim računom kako biste provjerili je li prava.",
     "notYourBackup": "Ovo nije vaša pričuvna kartica.",
-    "yourBackup": "Ovo je vaša pričuvna kartica."
+    "yourBackup": "Ovo je vaša pričuvna kartica.",
+    "backupFor": "Pričuvna je kartica za",
+    "hasBackup": "Ima pričuvnu karticu"
   },
   "accessibility": {
     "moreOptions": "Više opcija",

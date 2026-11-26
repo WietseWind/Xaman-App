@@ -2127,7 +2127,9 @@
     "removeDoneBody": "Jatorrizko txartelak lanean jarraitzen du. Zure kontuak ez du babeskopia-txartelik.",
     "identifyBody": "Eskaneatu kontu honi lotutako babeskopia-txartela zuzena dela egiaztatzeko.",
     "notYourBackup": "Hau ez da zure babeskopia-txartela.",
-    "yourBackup": "Hau zure babeskopia-txartela da."
+    "yourBackup": "Hau zure babeskopia-txartela da.",
+    "backupFor": "Honen babes-txartela da",
+    "hasBackup": "Babes-txartela du"
   },
   "accessibility": {
     "moreOptions": "Aukera gehiago",

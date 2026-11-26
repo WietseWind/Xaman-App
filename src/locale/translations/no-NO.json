@@ -2123,7 +2123,9 @@
     "removeDoneBody": "Det opprinnelige kortet fungerer fortsatt. Kontoen din har ikke lenger et reservekort.",
     "identifyBody": "Skann reservekortet som er knyttet til denne kontoen, for å kontrollere at det er riktig kort.",
     "notYourBackup": "Dette er ikke reservekortet ditt.",
-    "yourBackup": "Dette er reservekortet ditt."
+    "yourBackup": "Dette er reservekortet ditt.",
+    "backupFor": "Er reservekort for",
+    "hasBackup": "Har reservekort"
   },
   "accessibility": {
     "moreOptions": "Flere alternativer",

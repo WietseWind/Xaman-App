@@ -243,6 +243,58 @@ it('offers native back-up setup alongside existing Tangem security controls', ()
     expect(row('account.cardEnforcedSecurity')).toBeDefined();
 });
 
+describe('a card that is the back-up card of another card (issue 550)', () => {
+    const backup = { address: 'rBackup', label: 'Backup card', type: AccountTypes.Tangem };
+    const original = account({
+        address: 'rOriginal',
+        label: 'Primary card',
+        type: AccountTypes.Tangem,
+        regularKey: 'rBackup',
+    });
+    const labels = () => tree.root.findAllByType(Text).map((node) => node.props.children);
+    const backupOfRow = () => tree.root.findAll((node) => node.props.testID === 'tangem-backup-of-details');
+
+    it('says which card it backs up, and names its own back-up row for what it is', () => {
+        jest.mocked(AccountRepository.getAccounts).mockReturnValue(listSource([original, account(backup)]) as any);
+        renderEdit({ ...backup, additionalInfo: { cardId: 'SYNTHETIC' } });
+        expect(backupOfRow().length).toBeGreaterThan(0);
+        expect(labels()).toContain(Localize.t('tangemBackup.backupFor'));
+        expect(labels()).toContain('💳 Primary card');
+        expect(labels()).toContain('rOriginal');
+        // its own back-up card: still there, with the set-up button, under a title that cannot be read as "this card"
+        expect(labels()).toContain(Localize.t('tangemBackup.hasBackup'));
+        expect(labels()).not.toContain(Localize.t('tangemBackup.title'));
+        expect(labels()).toContain(Localize.t('tangemBackup.notSet'));
+        const button = tree.root
+            .findAllByType(Button)
+            .find((node) => node.props.testID === 'tangem-backup-button')!;
+        expect(button.props.label).toBe(Localize.t('tangemBackup.setUp'));
+    });
+
+    it('the original card itself, and a card that backs up nothing, show the row as before', () => {
+        jest.mocked(AccountRepository.getAccounts).mockReturnValue(listSource([original, account(backup)]) as any);
+        renderEdit({ address: 'rOriginal', type: AccountTypes.Tangem, additionalInfo: { cardId: 'SYNTHETIC' } });
+        expect(backupOfRow()).toHaveLength(0);
+        expect(labels()).toContain(Localize.t('tangemBackup.title'));
+        expect(labels()).not.toContain(Localize.t('tangemBackup.hasBackup'));
+        expect(labels()).not.toContain(Localize.t('tangemBackup.backupFor'));
+    });
+
+    it('an original card that is no longer valid in the database is not named', () => {
+        const gone = { ...original, isValid: () => false };
+        jest.mocked(AccountRepository.getAccounts).mockReturnValue(listSource([gone]) as any);
+        renderEdit({ ...backup, additionalInfo: { cardId: 'SYNTHETIC' } });
+        expect(backupOfRow()).toHaveLength(0);
+        expect(labels()).toContain(Localize.t('tangemBackup.title'));
+    });
+
+    it('a regular account never has the row', () => {
+        jest.mocked(AccountRepository.getAccounts).mockReturnValue(listSource([original]) as any);
+        renderEdit({ address: 'rBackup', type: AccountTypes.Regular });
+        expect(backupOfRow()).toHaveLength(0);
+    });
+});
+
 it.each([true, false])('shows the on-chain back-up address with a local name only when known=%s', (known) => {
     jest.mocked(AccountRepository.findOne).mockReturnValue(
         known ? account({ label: 'My spare card', type: AccountTypes.Tangem }) : undefined,

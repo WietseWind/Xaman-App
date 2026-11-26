@@ -2114,7 +2114,9 @@
     "removeDoneBody": "Deine ursprüngliche Karte funktioniert weiterhin. Dein Konto hat keine Backup-Karte mehr.",
     "identifyBody": "Scanne die mit diesem Konto verknüpfte Backup-Karte, um zu prüfen, ob es die richtige Karte ist.",
     "notYourBackup": "Dies ist nicht deine Backup-Karte.",
-    "yourBackup": "Dies ist deine Backup-Karte."
+    "yourBackup": "Dies ist deine Backup-Karte.",
+    "backupFor": "Ist Ersatzkarte für",
+    "hasBackup": "Hat Ersatzkarte"
   },
   "accessibility": {
     "moreOptions": "Weitere Optionen",

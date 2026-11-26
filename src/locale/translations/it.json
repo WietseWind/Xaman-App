@@ -2116,7 +2116,9 @@
     "removeDoneBody": "La carta originale funziona ancora. Il tuo account non ha più una carta di backup.",
     "identifyBody": "Scansiona la carta di backup collegata a questo account per verificare che sia quella giusta.",
     "notYourBackup": "Questa non è la tua carta di backup.",
-    "yourBackup": "Questa è la tua carta di backup."
+    "yourBackup": "Questa è la tua carta di backup.",
+    "backupFor": "È carta di riserva di",
+    "hasBackup": "Ha una carta di riserva"
   },
   "accessibility": {
     "moreOptions": "Altre opzioni",

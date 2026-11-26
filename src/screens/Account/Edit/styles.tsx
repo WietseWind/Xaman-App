@@ -55,6 +55,9 @@ export default StyleService.create({
         borderRadius: 8, maxWidth: '100%' },
     backupButtonText: { fontSize: 12, lineHeight: 16, paddingHorizontal: 0 },
     backupValue: { alignSelf: 'stretch' },
+    // the card this card is the back-up card of: right over the row of its own back-up card
+    backupOfRow: { paddingBottom: 12 },
+    backupOfNext: { marginTop: 10 },
     backupNote: { fontFamily: AppFonts.base.family, fontSize: AppFonts.small.size,
         color: '$textSecondary', marginTop: 6 },
     inlineLoader: { marginRight: 10 },

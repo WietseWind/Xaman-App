@@ -2110,7 +2110,9 @@
     "removeDoneBody": "Sākotnējā karte joprojām darbojas. Jūsu kontam vairs nav rezerves kartes.",
     "identifyBody": "Noskenējiet šim kontam piesaistīto rezerves karti, lai pārbaudītu, vai tā ir pareizā karte.",
     "notYourBackup": "Šī nav jūsu rezerves karte.",
-    "yourBackup": "Šī ir jūsu rezerves karte."
+    "yourBackup": "Šī ir jūsu rezerves karte.",
+    "backupFor": "Ir rezerves karte šai kartei",
+    "hasBackup": "Tai ir rezerves karte"
   },
   "accessibility": {
     "moreOptions": "Vairāk opciju",

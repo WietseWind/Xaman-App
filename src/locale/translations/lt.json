@@ -2142,7 +2142,9 @@
     "removeDoneBody": "Pradinė kortelė vis dar veikia. Jūsų paskyra nebeturi atsarginės kortelės.",
     "identifyBody": "Nuskaitykite su šia paskyra susietą atsarginę kortelę, kad patikrintumėte, ar ji tinkama.",
     "notYourBackup": "Tai ne jūsų atsarginė kortelė.",
-    "yourBackup": "Tai jūsų atsarginė kortelė."
+    "yourBackup": "Tai jūsų atsarginė kortelė.",
+    "backupFor": "Yra atsarginė kortelė šiai kortelei",
+    "hasBackup": "Turi atsarginę kortelę"
   },
   "accessibility": {
     "moreOptions": "Daugiau parinkčių",

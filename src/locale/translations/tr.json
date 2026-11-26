@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Asıl kartınız hâlâ çalışıyor. Hesabınızın artık bir yedek kartı yok.",
     "identifyBody": "Doğru kart olduğunu kontrol etmek için bu hesaba bağlı yedek kartı tarayın.",
     "notYourBackup": "Bu sizin yedek kartınız değil.",
-    "yourBackup": "Bu sizin yedek kartınız."
+    "yourBackup": "Bu sizin yedek kartınız.",
+    "backupFor": "Şu kartın yedek kartı",
+    "hasBackup": "Yedek kartı var"
   },
   "accessibility": {
     "moreOptions": "Diğer seçenekler",

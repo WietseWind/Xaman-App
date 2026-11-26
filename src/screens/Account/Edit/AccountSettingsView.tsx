@@ -38,6 +38,7 @@ import styles from './styles';
 import sectionStyles from '@screens/Settings/sectionStyles';
 import { SettingsRow, SettingsSection } from '@screens/Settings/SettingsSection';
 import { accountListLabel } from '@common/helpers/accountListLabel';
+import { accountsBackedUpBy } from '@common/helpers/tangemBackupOf';
 import BackendService from '@services/BackendService';
 
 /* types ==================================================================== */
@@ -72,12 +73,31 @@ const CardDetails = ({ cardId, onIdentify }: { cardId: string; onIdentify: () =>
     );
 };
 
-const BackupCardDetails = ({ account, onSetup }: { account: AccountModel; onSetup: () => void }) => {
+// The cards in the app that this card is the back-up card of (issue 550). Without this, the set-up row below is all
+// a back-up card shows, as if it were no part of a back-up yet.
+const BackupOfDetails = ({ originals }: { originals: AccountModel[] }) => {
+    if (originals.length === 0) return null;
+    return <View testID="tangem-backup-of-details" style={[styles.cardRow, styles.backupOfRow]}>
+        <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.backupFor')}</Text>
+        {originals.map((original, index) => (
+            <View key={original.address} style={[styles.backupValue, index > 0 && styles.backupOfNext]}>
+                {!!original.label && <Text style={styles.backupName}>{accountListLabel(original)}</Text>}
+                <Text selectable textBreakStrategy="simple" style={styles.address}>{original.address}</Text>
+            </View>
+        ))}
+    </View>;
+};
+
+const BackupCardDetails = ({ account, onSetup, isBackup }: {
+    account: AccountModel; onSetup: () => void; isBackup: boolean;
+}) => {
     const key = account.regularKey;
     const known = key ? AccountRepository.findOne({ address: key }) : undefined;
     return <View testID="tangem-backup-details" style={styles.cardRow}>
         <View style={styles.backupControls}>
-            <Text style={[styles.cardIdLabel, styles.backupHeadingLabel]}>{Localize.t('tangemBackup.title')}</Text>
+            <Text style={[styles.cardIdLabel, styles.backupHeadingLabel]}>
+                {Localize.t(isBackup ? 'tangemBackup.hasBackup' : 'tangemBackup.title')}
+            </Text>
             <Button testID="tangem-backup-button"
                 label={Localize.t(key ? 'global.update' : 'tangemBackup.setUp')}
                 onPress={onSetup} roundedMini nonBlock allowFontScaling
@@ -522,6 +542,12 @@ class AccountSettingsView extends Component<Props, State> {
     render() {
         const { account, fetchingPushState, pushAvailable, pushEnabled, accountCanSign } = this.state;
         if (!account?.isValid()) return null;
+        // The cards in the app that have this card as their back-up card. The regular key of an account is not a
+        // field of the database (it comes from the details of the account on the network that is in use), so every
+        // account is asked for it.
+        const backupOf = account.type === AccountTypes.Tangem
+            ? accountsBackedUpBy(account, AccountRepository.getAccounts()).filter((other) => other.isValid())
+            : [];
         const cardSecurity = {
             [TangemSecurity.Passcode]: Localize.t('global.passcode'),
             [TangemSecurity.AccessCode]: Localize.t('global.accessCode'),
@@ -605,7 +631,14 @@ class AccountSettingsView extends Component<Props, State> {
                             />
                         )}
                         {account.type === AccountTypes.Tangem && (
-                            <BackupCardDetails account={account} onSetup={this.showTangemBackup} />
+                            <BackupOfDetails originals={backupOf} />
+                        )}
+                        {account.type === AccountTypes.Tangem && (
+                            <BackupCardDetails
+                                account={account}
+                                onSetup={this.showTangemBackup}
+                                isBackup={backupOf.length > 0}
+                            />
                         )}
                     </SettingsSection>
                     <SettingsSection title={Localize.t('global.settings')}>

@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Gumagana pa rin ang orihinal mong card. Wala nang backup card ang iyong account.",
     "identifyBody": "I-scan ang backup card na naka-link sa account na ito para masuri kung ito ang tamang card.",
     "notYourBackup": "Hindi ito ang iyong backup card.",
-    "yourBackup": "Ito ang iyong backup card."
+    "yourBackup": "Ito ang iyong backup card.",
+    "backupFor": "Back-up na card para sa",
+    "hasBackup": "May back-up na card"
   },
   "accessibility": {
     "moreOptions": "Higit pang opsyon",

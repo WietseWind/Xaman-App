@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Az eredeti kártya továbbra is működik. A fiókodnak már nincs tartalékkártyája.",
     "identifyBody": "Olvasd be a fiókhoz kapcsolt tartalékkártyát, hogy ellenőrizd, ez a megfelelő kártya.",
     "notYourBackup": "Ez nem a tartalékkártyád.",
-    "yourBackup": "Ez a tartalékkártyád."
+    "yourBackup": "Ez a tartalékkártyád.",
+    "backupFor": "Ennek a tartalék kártyája",
+    "hasBackup": "Van tartalék kártyája"
   },
   "accessibility": {
     "moreOptions": "További lehetőségek",
