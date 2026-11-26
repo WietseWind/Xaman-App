@@ -77,7 +77,7 @@ const CardDetails = ({ cardId, onIdentify }: { cardId: string; onIdentify: () =>
 // a back-up card shows, as if it were no part of a back-up yet.
 const BackupOfDetails = ({ originals }: { originals: AccountModel[] }) => {
     if (originals.length === 0) return null;
-    return <View testID="tangem-backup-of-details" style={[styles.cardRow, styles.backupOfRow]}>
+    return <View testID="tangem-backup-of-details" style={styles.cardRow}>
         <Text style={styles.cardIdLabel}>{Localize.t('tangemBackup.backupFor')}</Text>
         {originals.map((original, index) => (
             <View key={original.address} style={[styles.backupValue, index > 0 && styles.backupOfNext]}>
