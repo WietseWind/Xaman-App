@@ -162,3 +162,26 @@ machine that does nothing else: a busy machine makes the tap tool time out. `com
 
 Result for the iPhone Duo change (pull request 549, with pull request 551): 9 screens on each of the two simulators,
 0 differing pixels against the 5.4.0 build.
+Result for the iPad change (issue 553): the same, 0 differing pixels against the 5.4.0 build.
+
+## The app on an iPad: a walk with a picture of each step
+
+The app is an iPhone app that an iPad runs in a window (`docs/ipad.md`). For a change that touches the layout, the
+orientation or the window: the same walk with two builds, on a simulator that is erased first.
+
+```bash
+xcrun simctl create walk-ipad "iPad (A16)" com.apple.CoreSimulator.SimRuntime.iOS-27-2
+xcrun simctl create walk-ipad-pro "iPad Pro 13-inch (M5)" com.apple.CoreSimulator.SimRuntime.iOS-27-2
+for sim in walk-ipad walk-ipad-pro; do
+    # old, and then the new build installed over it (an update keeps the window of the app)
+    scripts/e2e/ipad-walk.py $sim old <old checkout>/ios/build/Build/Products/Release-iphonesimulator/Xaman.app \
+        <new checkout>/ios/build/Build/Products/Release-iphonesimulator/Xaman.app
+    scripts/e2e/ipad-walk.py $sim new <new checkout>/ios/build/Build/Products/Release-iphonesimulator/Xaman.app
+done
+```
+
+The walk: fresh install, set-up, the lock screen, the window as small and as large as the system lets it be (with a
+start of the app in the small one), landscape while the app runs, a start in landscape, and the lock screen while
+the iPad turns. It needs WebDriverAgent as above. Look at the pictures: there is no pixel comparison here, because
+the old build is wrong on an iPad on purpose. One walk takes about 10 minutes (the lock screen only comes after the
+lock time of 1 minute, four times).

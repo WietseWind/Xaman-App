@@ -1,5 +1,7 @@
 import { Platform, PixelRatio, NativeModules, Dimensions, I18nManager } from 'react-native';
 
+import { GetPadLayout, IsPadDevice } from './padLayout';
+
 const { DeviceUtilsModule, UniqueIdProviderModule } = NativeModules;
 
 // A side inset as a number: 0 for anything that is not a positive number (Android and older native code send none)
@@ -16,6 +18,11 @@ const FOLD_PHONE_TOP = 20;
 // The open inner screen against the cover screen: 951 or 669 wide against 466. On every other phone the window is
 // never wider than the screen.
 const FOLD_PHONE_WIDER = 1.2;
+
+// iPad: the insets of the one phone layout the app has there (see GetPadLayout in padLayout.ts). The top is at
+// least the plain status bar; the bottom is that of an iPhone with a home indicator, when the iPad has one.
+const PAD_TOP_MIN = 20;
+const PAD_BOTTOM = 34;
 
 /**
  * The edge on which iOS puts a vertical tab bar: 1 leading, 2 trailing. 0 on every phone that has no such bar:
@@ -35,7 +42,7 @@ const GetVerticalBarEdge = (): 0 | 1 | 2 => {
  * @returns boolean
  */
 const IsFoldPhone = (): boolean => {
-    if (Platform.OS !== 'ios') {
+    if (Platform.OS !== 'ios' || IsPadDevice()) {
         return false;
     }
     if (GetVerticalBarEdge() !== 0) {
@@ -61,6 +68,17 @@ const GetLayoutInsets = (): { top: number; bottom: number; left: number; right: 
     const insets = DeviceUtilsModule.layoutInsets;
     let left = sideInset(insets?.left);
     let right = sideInset(insets?.right);
+    if (GetPadLayout()) {
+        // iPad: the window has other insets in portrait and in landscape (in landscape the top inset is on the
+        // sides). The one layout of the app takes the same insets in both: those of the phone it is laid out as.
+        return {
+            ...insets,
+            top: Math.max(sideInset(insets?.top), left, right, PAD_TOP_MIN),
+            bottom: sideInset(insets?.bottom) > 0 ? PAD_BOTTOM : 0,
+            left: 0,
+            right: 0,
+        };
+    }
     if (left + right <= 0 && !IsFoldPhone()) {
         // every phone but the iPhone Duo: as the native side sends it
         return { ...insets, left, right };
@@ -93,6 +111,10 @@ const GetSideInsets = (): number => {
  * @returns number
  */
 const GetUsableWindowWidth = (): number => {
+    const pad = GetPadLayout();
+    if (pad) {
+        return pad.width;
+    }
     const sideInsets = GetSideInsets();
     const windowWidth = Dimensions.get('window').width;
     if (sideInsets <= 0) {

@@ -16,10 +16,12 @@ type Phone = {
     insets: Insets;
     // the screen of the device, when it is not the size of the window
     screen?: { width: number; height: number };
+    // iPad: what the native side tells about it
+    pad?: { isPadDevice?: unknown; padLayout?: unknown };
 };
 
 /** AppSizes as the app makes it at start, for one phone */
-const sizesFor = ({ os, width, height, insets, screen }: Phone): any => {
+const sizesFor = ({ os, width, height, insets, screen, pad }: Phone): any => {
     let sizes: any;
     // a fresh copy of the module and of react-native: AppSizes is made once, when the module loads
     jest.isolateModules(() => {
@@ -28,6 +30,9 @@ const sizesFor = ({ os, width, height, insets, screen }: Phone): any => {
         Object.defineProperty(RN.Platform, 'OS', { configurable: true, get: () => os });
         RN.Platform.select = (spec: any) => (os in spec ? spec[os] : spec.default);
         RN.NativeModules.DeviceUtilsModule.layoutInsets = insets;
+        if (pad) {
+            Object.assign(RN.NativeModules.DeviceUtilsModule, pad);
+        }
         RN.Dimensions.get = (dim: string) =>
             dim === 'screen' && screen
                 ? { ...screen, scale: 3, fontScale: 1 }
@@ -111,7 +116,15 @@ const numbersOf = (sizes: any) => {
 };
 
 // the fields that this change adds: they are not in the sizes of before
-const NEW_FIELDS = ['leftInset', 'rightInset', 'sideInsets', 'screen.windowWidth'];
+const NEW_FIELDS = [
+    'leftInset',
+    'rightInset',
+    'sideInsets',
+    'screen.windowWidth',
+    'padLayout',
+    'padLayout.width',
+    'padLayout.height',
+];
 const withoutNew = (numbers: Record<string, unknown>) => {
     const copy = { ...numbers };
     NEW_FIELDS.forEach((field) => delete copy[field]);
@@ -296,5 +309,65 @@ describe('iPhone Duo, open and turned a quarter: a window of 669 x 951, no verti
             expect(SAMPLES.map((n) => turned[fn](n))).toEqual(SAMPLES.map((n) => closed[fn](n)));
         });
         expect(turned.screen.height).toBe(closed.screen.height);
+    });
+});
+
+describe('iPad (issue 553): one phone layout, whatever the window is', () => {
+    // iPad Pro 13: the screen is 1032 x 1376; the window the system gives is 516 wide and as high as the screen
+    const PRO: Phone = {
+        name: 'iPad Pro 13',
+        os: 'ios',
+        width: 516,
+        height: 1376,
+        insets: { top: 47, bottom: 34, left: 0, right: 0 },
+        screen: { width: 1032, height: 1376 },
+        pad: { isPadDevice: true, padLayout: { width: 430, height: 932 } },
+    };
+    const PRO_MAX: Phone = { name: 'phone', os: 'ios', width: 430, height: 932, insets: { top: 47, bottom: 34 } };
+
+    it('has the sizes of a phone of the layout size, to the last number', () => {
+        const pad = sizesFor(PRO);
+        const expected: any = numbersOf(sizesBefore(PRO_MAX));
+        expected['screen.screenHeight'] = 1376;
+        expect(withoutNew(numbersOf(pad))).toEqual(expected);
+        expect(pad.padLayout).toEqual({ width: 430, height: 932 });
+        expect([pad.leftInset, pad.rightInset, pad.sideInsets]).toEqual([0, 0, 0]);
+    });
+
+    it('has the same sizes in every window: in landscape, resized, small', () => {
+        const portrait = numbersOf(sizesFor(PRO));
+        [
+            { width: 516, height: 1032, insets: { top: 20, bottom: 20, left: 47, right: 47 } },
+            { width: 430, height: 1183, insets: PRO.insets },
+            { width: 430, height: 932, insets: PRO.insets },
+            { width: 375, height: 486, insets: PRO.insets },
+        ].forEach((state) => {
+            const now: any = numbersOf(sizesFor({ ...PRO, ...state }));
+            // the one number that is the width of the window itself
+            now['screen.windowWidth'] = portrait['screen.windowWidth'];
+            expect(now).toEqual(portrait);
+        });
+    });
+
+    it('an iPad whose system gives the app the screen of a phone: the sizes of that phone', () => {
+        const old: Phone = {
+            name: 'iPad, older iPadOS',
+            os: 'ios',
+            width: 390,
+            height: 844,
+            insets: { top: 20, bottom: 25, left: 0, right: 0 },
+            pad: { isPadDevice: true, padLayout: { width: 0, height: 0 } },
+        };
+        const now = sizesFor(old);
+        expect(withoutNew(numbersOf(now))).toEqual(numbersOf(sizesBefore(old)));
+        expect(now.padLayout).toBeUndefined();
+    });
+
+    it('a phone: no layout size, also when the native side sends a size of 0', () => {
+        PHONES.forEach((phone) => {
+            const now = sizesFor({ ...phone, pad: { isPadDevice: false, padLayout: { width: 0, height: 0 } } });
+            expect(withoutNew(numbersOf(now))).toEqual(numbersOf(sizesBefore(phone)));
+            expect(now.padLayout).toBeUndefined();
+        });
     });
 });

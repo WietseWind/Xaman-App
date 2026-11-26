@@ -5,6 +5,7 @@
 import { Dimensions, Platform, PixelRatio } from 'react-native';
 
 import { GetLayoutInsets } from '@common/helpers/device';
+import { GetPadLayout } from '@common/helpers/padLayout';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('screen');
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
@@ -20,12 +21,28 @@ const { bottom: bottomInset, top: topInset, left: leftInset, right: rightInset }
 // screen, which stays the `screen` of the device. The app keeps the layout of the cover screen there, in a column of
 // that width beside the safe area (sideSafeArea.tsx puts it there), so it is the same app, folded or not.
 const sideInsets = leftInset + rightInset;
-const layoutWindowWidth = sideInsets > 0 && screenWidth > 0 ? Math.min(windowWidth, screenWidth) : windowWidth;
+
+// iPad (iPadOS 27): the app is in a window that the user can resize and that changes when the iPad turns. The app
+// keeps one layout there, that of a phone of this size, in a box in that window (sideSafeArea.tsx).
+// Undefined on every phone: the sizes come from the window, as they always did.
+const padLayout = GetPadLayout();
+
+let layoutWindowWidth = windowWidth;
+if (padLayout) {
+    layoutWindowWidth = padLayout.width;
+} else if (sideInsets > 0 && screenWidth > 0) {
+    layoutWindowWidth = Math.min(windowWidth, screenWidth);
+}
 const width = layoutWindowWidth - sideInsets;
 // The height of that layout: the window, but not more than the screen of the device. On the open phone turned a
 // quarter the window is much higher than the cover screen; the app stays a box of the cover layout there.
 // The window height on every other phone, as it always was.
-const height = sideInsets > 0 && screenHeight > 0 ? Math.min(windowHeight, screenHeight) : windowHeight;
+let height = windowHeight;
+if (padLayout) {
+    height = padLayout.height;
+} else if (sideInsets > 0 && screenHeight > 0) {
+    height = Math.min(windowHeight, screenHeight);
+}
 
 // Guideline sizes are based on standard ~5" screen mobile device
 const guidelineBaseWidth = 350;
@@ -99,6 +116,9 @@ const Sizes = {
     leftInset,
     rightInset,
     sideInsets,
+
+    // iPad: the size of the one layout of the app, a box in the window. Undefined on every phone.
+    padLayout,
 
     safeAreaBottomInset,
     safeAreaTopInset,

@@ -20,8 +20,13 @@
  * area and over the free part, as it covers the tab bar at the end of the screen on other phones. `SideSafeAreaFill`
  * and the `sideBleed` styles do that for an element; its content stays in the column.
  *
- * Every other phone has no safe area on a side. There this does nothing at all: the screen is registered as it is,
- * `SideSafeAreaFill` renders nothing and the `sideBleed` styles are undefined.
+ * An iPad (iPadOS 27) is the other device with a window that changes: the app is an iPhone app in a window of the
+ * system there, which the user can resize and which has another shape when the iPad turns. The app keeps one phone
+ * layout (AppSizes.padLayout) in a box in the middle of that window, made smaller when the window is smaller than
+ * the box (padBoxFor). The backdrops go on to the edges of the window in the same way.
+ *
+ * Every other phone has no safe area on a side and no layout box. There this does nothing at all: the screen is
+ * registered as it is, `SideSafeAreaFill` renders nothing and the `sideBleed` styles are undefined.
  */
 import React, { Component, ComponentType, createContext } from 'react';
 import {
@@ -54,6 +59,9 @@ export type SideSafeAreaState = { left: number; right: number; width: number; he
 
 // The size the screen is laid out for (AppSizes).
 export type LayoutSize = { width?: number; height?: number };
+
+// iPad: the place of the layout box in the window. scale is less than 1 when the window is smaller than the box.
+export type PadBox = { left: number; top: number; width: number; height: number; scale: number; below: number };
 
 type ColumnStyle = { marginLeft: number; marginRight: number; flex?: number; height?: number; marginTop?: number };
 
@@ -191,6 +199,22 @@ export const columnStyleFor = (
     return { ...margins, flex: 1 };
 };
 
+/**
+ * iPad: where the box of the one phone layout is in the window. The box is in the middle. A window that is smaller
+ * than the box shows the whole box, made smaller (the box keeps its own size for the layout, so nothing in the app
+ * changes size or place in it). below: the height of the window under the box (0 when the box is made smaller).
+ */
+export const padBoxFor = (window: { width: number; height?: number }, layout: LayoutSize): PadBox => {
+    const width = positive(layout.width);
+    const height = positive(layout.height);
+    const windowWidth = positive(window.width) || width;
+    const windowHeight = positive(window.height) || height;
+    const scale = width > 0 && height > 0 ? Math.min(1, windowWidth / width, windowHeight / height) : 1;
+    const left = (windowWidth - width) / 2;
+    const top = (windowHeight - height) / 2;
+    return { left, top, width, height, scale, below: scale < 1 ? 0 : positive(top) };
+};
+
 // The native view, asked for once: React Native takes a view name one time only. Kept on the global object, so a
 // Fast Refresh of this file (development) does not ask again.
 const NATIVE_VIEW_KEY = '__xamanSideSafeAreaView';
@@ -208,16 +232,20 @@ const getNativeView = (): HostComponent<NativeProps> => {
  *
  * layout: the size the screen is laid out for (see sideMarginsFor and columnStyleFor); a number is the width.
  * startEdge: the edge of the vertical bar when the app started (0: none at that moment).
+ * padLayout: iPad only, the size of the one phone layout; the screen is then a box of that size in the window.
  */
 export const withSideInsets = <P extends object>(
     Screen: ComponentType<P>,
     insets: SideInsets,
     layoutSize?: LayoutSize | number,
     startEdge: number = GetVerticalBarEdge(),
+    padLayout: LayoutSize | undefined = undefined,
 ): ComponentType<P> => {
     const layout: LayoutSize = typeof layoutSize === 'number' ? { width: layoutSize } : layoutSize || {};
     const start: SideInsets = { left: positive(insets.left), right: positive(insets.right) };
-    if (start.left + start.right <= 0) {
+    // iPad: the box of the one phone layout (see padBoxFor)
+    const pad = padLayout && positive(padLayout.width) > 0 && positive(padLayout.height) > 0 ? padLayout : undefined;
+    if (start.left + start.right <= 0 && !pad) {
         return Screen;
     }
 
@@ -272,7 +300,44 @@ export const withSideInsets = <P extends object>(
             );
         };
 
+        // iPad: the screen in the box of the phone layout, in the middle of the window
+        renderPadBox(padSize: LayoutSize) {
+            const { width, height } = this.state;
+            const box = padBoxFor({ width, height }, padSize);
+            if (this.surround.below !== box.below) {
+                this.surround = box.below > 0 ? { below: box.below } : NO_SURROUND;
+            }
+            const style: ViewStyle = {
+                position: 'absolute',
+                left: box.left,
+                top: box.top,
+                width: box.width,
+                height: box.height,
+            };
+            if (box.scale < 1) {
+                style.transform = [{ scale: box.scale }];
+            }
+            const NativeSideSafeArea = getNativeView();
+            return (
+                <NativeSideSafeArea
+                    style={FLEX}
+                    pointerEvents="box-none"
+                    onSideSafeAreaChange={this.onSideSafeAreaChange}
+                >
+                    <View style={style} pointerEvents="box-none">
+                        <SideSafeAreaContext.Provider value={this.surround}>
+                            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                            <Screen {...this.props} />
+                        </SideSafeAreaContext.Provider>
+                    </View>
+                </NativeSideSafeArea>
+            );
+        }
+
         render() {
+            if (pad && live) {
+                return this.renderPadBox(pad);
+            }
             const { width, height } = this.state;
             // margin, not padding: the box of the column itself is then the usable part of the screen, so a child
             // with an absolute position (an overlay that fills its parent) stays out of the side area too.
@@ -355,7 +420,7 @@ const wrapped = new WeakMap<object, ComponentType<any>>();
  * The screen as the app registers it: out of the side safe area of this phone.
  */
 export const withSideSafeArea = <P extends object>(Screen: ComponentType<P>): ComponentType<P> => {
-    if (AppSizes.sideInsets <= 0) {
+    if (AppSizes.sideInsets <= 0 && !AppSizes.padLayout) {
         return Screen;
     }
     const known = wrapped.get(Screen);
@@ -366,6 +431,8 @@ export const withSideSafeArea = <P extends object>(Screen: ComponentType<P>): Co
         Screen,
         { left: AppSizes.leftInset, right: AppSizes.rightInset },
         { width: AppSizes.screen.uncorrectedWidth, height: AppSizes.screen.height },
+        undefined,
+        AppSizes.padLayout,
     );
     wrapped.set(Screen, made);
     return made;
@@ -375,7 +442,9 @@ export const withSideSafeArea = <P extends object>(Screen: ComponentType<P>): Co
 // How far a backdrop goes on past the column on each side: farther than any window. The column can be on either side
 // (the bar changes its edge when the app is in one half of the screen), so both sides get the same.
 const reach = (): SideInsets | undefined => {
-    return AppSizes.sideInsets > 0 ? { left: FREE_SIDE_REACH, right: FREE_SIDE_REACH } : undefined;
+    return AppSizes.sideInsets > 0 || AppSizes.padLayout
+        ? { left: FREE_SIDE_REACH, right: FREE_SIDE_REACH }
+        : undefined;
 };
 
 const bleed = <T extends ViewStyle>(make: (left: number, right: number) => T): T | undefined => {
