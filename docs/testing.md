@@ -132,3 +132,33 @@ import './.cosmos/cosmos.app';
 
 - Comment out all other lines and Start your application again
 
+## Screens on regular iPhones, old against new
+
+For a change that touches sizes, spacing or the layout of every screen (as the iPhone Duo work did): proof that
+nothing moved on the phones that were right before. The same set-up flow runs with two builds on a freshly erased
+simulator; each screen is saved and then compared pixel by pixel.
+
+```bash
+# once: two simulators for this (they are erased at each run), and WebDriverAgent for the simulator
+xcrun simctl create cmp-se "iPhone SE (3rd generation)" com.apple.CoreSimulator.SimRuntime.iOS-27-2
+xcrun simctl create cmp-max "iPhone 17 Pro Max" com.apple.CoreSimulator.SimRuntime.iOS-27-2
+(cd "$E2E_WORK/wda" && xcodebuild build-for-testing -project package/WebDriverAgent.xcodeproj \
+    -scheme WebDriverAgentRunner -destination "generic/platform=iOS Simulator" -derivedDataPath dd-sim \
+    CODE_SIGNING_ALLOWED=NO)
+
+# two Release simulator builds: one of the commit before the change, one of the change
+#   xcodebuild -workspace ios/Xaman.xcworkspace -scheme Xaman -configuration Release -sdk iphonesimulator \
+#       -derivedDataPath ios/build
+for sim in cmp-se cmp-max; do
+    scripts/e2e/compare-screens.py $sim old <old checkout>/ios/build/Build/Products/Release-iphonesimulator/Xaman.app
+    scripts/e2e/compare-screens.py $sim new <new checkout>/ios/build/Build/Products/Release-iphonesimulator/Xaman.app
+    scripts/e2e/compare-screens-diff.py $sim   # exit code 1 and diff-*.png when a screen differs
+done
+```
+
+The flow: onboarding, the passcode screens (with the pin pad), the terms, the home screen with the tab bar, and
+settings. The clock of the status bar is fixed, so two runs of the same build give the same pictures. Run it on a
+machine that does nothing else: a busy machine makes the tap tool time out. `compare-screens-diff.py` needs Pillow.
+
+Result for the iPhone Duo change (pull request 549, with pull request 551): 9 screens on each of the two simulators,
+0 differing pixels against the 5.4.0 build.

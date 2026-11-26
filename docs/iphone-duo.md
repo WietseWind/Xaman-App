@@ -152,8 +152,9 @@ Size**. Touches from the system itself (XCUITest, WebDriverAgent) reach the app 
 
 ### Regular phones
 
-The whole e2e suite on a regular iPhone simulator and on Android (see `docs/testing.md`), and a look at the same
-screens on an iPhone SE and a Pro Max simulator.
+The whole e2e suite on a regular iPhone simulator and on Android, and the pixel comparison of the same screens with
+the build before the change on an iPhone SE and a Pro Max simulator (`scripts/e2e/compare-screens.py`; both are in
+`docs/testing.md`).
 
 ## Known limits
 
