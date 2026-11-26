@@ -2023,7 +2023,9 @@
     "removeDoneBody": "La targeta original continua funcionant. El teu compte ja no té cap targeta de reserva.",
     "identifyBody": "Escaneja la targeta de reserva vinculada a aquest compte per comprovar que és la correcta.",
     "notYourBackup": "Aquesta no és la teva targeta de reserva.",
-    "yourBackup": "Aquesta és la teva targeta de reserva."
+    "yourBackup": "Aquesta és la teva targeta de reserva.",
+    "backupFor": "És targeta de reserva de",
+    "hasBackup": "Té targeta de reserva"
   },
   "accessibility": {
     "moreOptions": "Més opcions",

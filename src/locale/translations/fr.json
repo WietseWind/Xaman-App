@@ -2121,7 +2121,9 @@
     "removeDoneBody": "Votre carte d’origine fonctionne toujours. Votre compte n’a plus de carte de secours.",
     "identifyBody": "Scannez la carte de secours liée à ce compte pour vérifier qu’il s’agit de la bonne carte.",
     "notYourBackup": "Ce n’est pas votre carte de secours.",
-    "yourBackup": "C’est votre carte de secours."
+    "yourBackup": "C’est votre carte de secours.",
+    "backupFor": "Est la carte de secours de",
+    "hasBackup": "A une carte de secours"
   },
   "accessibility": {
     "moreOptions": "Plus d'options",

@@ -2121,7 +2121,9 @@
     "removeDoneBody": "Seu cartão original continua funcionando. Sua conta não tem mais um cartão de backup.",
     "identifyBody": "Escaneie o cartão de backup vinculado a esta conta para verificar se é o cartão correto.",
     "notYourBackup": "Este não é seu cartão de backup.",
-    "yourBackup": "Este é seu cartão de backup."
+    "yourBackup": "Este é seu cartão de backup.",
+    "backupFor": "É cartão de reserva de",
+    "hasBackup": "Tem cartão de reserva"
   },
   "accessibility": {
     "moreOptions": "Mais opções",

@@ -2122,7 +2122,9 @@
     "removeDoneBody": "Kadi yako ya awali bado inafanya kazi. Akaunti yako haina kadi ya akiba tena.",
     "identifyBody": "Changanua kadi ya akiba iliyounganishwa na akaunti hii ili uhakikishe kuwa ndiyo kadi sahihi.",
     "notYourBackup": "Hii si kadi yako ya akiba.",
-    "yourBackup": "Hii ndiyo kadi yako ya akiba."
+    "yourBackup": "Hii ndiyo kadi yako ya akiba.",
+    "backupFor": "Ni kadi ya akiba ya",
+    "hasBackup": "Ina kadi ya akiba"
   },
   "accessibility": {
     "moreOptions": "Chaguo zaidi",

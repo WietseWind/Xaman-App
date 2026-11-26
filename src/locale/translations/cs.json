@@ -2108,7 +2108,9 @@
     "removeDoneBody": "Původní karta stále funguje. Váš účet již nemá záložní kartu.",
     "identifyBody": "Naskenujte záložní kartu propojenou s tímto účtem a ověřte, zda je správná.",
     "notYourBackup": "Toto není vaše záložní karta.",
-    "yourBackup": "Toto je vaše záložní karta."
+    "yourBackup": "Toto je vaše záložní karta.",
+    "backupFor": "Je záložní kartou pro",
+    "hasBackup": "Má záložní kartu"
   },
   "accessibility": {
     "moreOptions": "Další možnosti",

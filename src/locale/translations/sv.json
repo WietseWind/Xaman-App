@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Ditt ursprungliga kort fungerar fortfarande. Ditt konto har inte längre ett reservkort.",
     "identifyBody": "Skanna reservkortet som är kopplat till det här kontot för att kontrollera att det är rätt kort.",
     "notYourBackup": "Det här är inte ditt reservkort.",
-    "yourBackup": "Det här är ditt reservkort."
+    "yourBackup": "Det här är ditt reservkort.",
+    "backupFor": "Är reservkort för",
+    "hasBackup": "Har reservkort"
   },
   "accessibility": {
     "moreOptions": "Fler alternativ",

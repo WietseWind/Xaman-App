@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Your original card still works. Your account no longer has a back-up card.",
     "identifyBody": "Scan the back-up card linked to this account to check that it is the right card.",
     "notYourBackup": "This is not your back-up card.",
-    "yourBackup": "This is your back-up card."
+    "yourBackup": "This is your back-up card.",
+    "backupFor": "Is back-up card for",
+    "hasBackup": "Has back-up card"
   },
   "accessibility": {
     "moreOptions": "More options",

@@ -2103,7 +2103,9 @@
     "removeDoneBody": "Tu tarjeta original sigue funcionando. Tu cuenta ya no tiene una tarjeta de respaldo.",
     "identifyBody": "Escanea la tarjeta de respaldo vinculada a esta cuenta para comprobar que es la correcta.",
     "notYourBackup": "Esta no es tu tarjeta de respaldo.",
-    "yourBackup": "Esta es tu tarjeta de respaldo."
+    "yourBackup": "Esta es tu tarjeta de respaldo.",
+    "backupFor": "Es tarjeta de respaldo de",
+    "hasBackup": "Tiene tarjeta de respaldo"
   },
   "accessibility": {
     "moreOptions": "Más opciones",

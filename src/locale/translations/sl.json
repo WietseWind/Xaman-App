@@ -2023,7 +2023,9 @@
     "removeDoneBody": "Prvotna kartica še vedno deluje. Vaš račun nima več rezervne kartice.",
     "identifyBody": "Skenirajte rezervno kartico, povezano s tem računom, da preverite, ali je prava.",
     "notYourBackup": "To ni vaša rezervna kartica.",
-    "yourBackup": "To je vaša rezervna kartica."
+    "yourBackup": "To je vaša rezervna kartica.",
+    "backupFor": "Je rezervna kartica za",
+    "hasBackup": "Ima rezervno kartico"
   },
   "accessibility": {
     "moreOptions": "Več možnosti",

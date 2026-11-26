@@ -2120,7 +2120,9 @@
     "removeDoneBody": "Jou oorspronklike kaart werk steeds. Jou rekening het nie meer ’n rugsteunkaart nie.",
     "identifyBody": "Skandeer die rugsteunkaart wat aan hierdie rekening gekoppel is om te kyk of dit die regte kaart is.",
     "notYourBackup": "Dit is nie jou rugsteunkaart nie.",
-    "yourBackup": "Dit is jou rugsteunkaart."
+    "yourBackup": "Dit is jou rugsteunkaart.",
+    "backupFor": "Is rugsteunkaart vir",
+    "hasBackup": "Het rugsteunkaart"
   },
   "accessibility": {
     "moreOptions": "Meer opsies",

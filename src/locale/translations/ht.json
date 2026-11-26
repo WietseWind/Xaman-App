@@ -2138,7 +2138,9 @@
     "removeDoneBody": "Kat orijinal ou a toujou mache. Kont ou a pa gen kat sekou ankò.",
     "identifyBody": "Eskane kat sekou ki lye ak kont sa a pou verifye si se bon kat la.",
     "notYourBackup": "Sa a se pa kat sekou ou a.",
-    "yourBackup": "Sa a se kat sekou ou a."
+    "yourBackup": "Sa a se kat sekou ou a.",
+    "backupFor": "Se kat sekou pou",
+    "hasBackup": "Li gen kat sekou"
   },
   "accessibility": {
     "moreOptions": "Plis opsyon",

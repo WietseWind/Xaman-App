@@ -2023,7 +2023,9 @@
     "removeDoneBody": "A tarxeta orixinal segue funcionando. A túa conta xa non ten unha tarxeta de respaldo.",
     "identifyBody": "Escanea a tarxeta de respaldo vinculada a esta conta para comprobar que é a correcta.",
     "notYourBackup": "Esta non é a túa tarxeta de respaldo.",
-    "yourBackup": "Esta é a túa tarxeta de respaldo."
+    "yourBackup": "Esta é a túa tarxeta de respaldo.",
+    "backupFor": "É tarxeta de reserva de",
+    "hasBackup": "Ten tarxeta de reserva"
   },
   "accessibility": {
     "moreOptions": "Máis opcións",

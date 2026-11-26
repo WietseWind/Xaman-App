@@ -2115,7 +2115,9 @@
     "removeDoneBody": "Cardul original funcționează în continuare. Contul tău nu mai are un card de rezervă.",
     "identifyBody": "Scanează cardul de rezervă asociat acestui cont pentru a verifica dacă este cel corect.",
     "notYourBackup": "Acesta nu este cardul tău de rezervă.",
-    "yourBackup": "Acesta este cardul tău de rezervă."
+    "yourBackup": "Acesta este cardul tău de rezervă.",
+    "backupFor": "Este card de rezervă pentru",
+    "hasBackup": "Are card de rezervă"
   },
   "accessibility": {
     "moreOptions": "Mai multe opțiuni",

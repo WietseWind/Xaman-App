@@ -2023,7 +2023,9 @@
     "removeDoneBody": "O cartão original continua a funcionar. A sua conta já não tem um cartão de cópia de segurança.",
     "identifyBody": "Leia o cartão de cópia de segurança associado a esta conta para verificar se é o cartão correto.",
     "notYourBackup": "Este não é o seu cartão de cópia de segurança.",
-    "yourBackup": "Este é o seu cartão de cópia de segurança."
+    "yourBackup": "Este é o seu cartão de cópia de segurança.",
+    "backupFor": "É cartão de reserva de",
+    "hasBackup": "Tem cartão de reserva"
   },
   "accessibility": {
     "moreOptions": "Mais opções",

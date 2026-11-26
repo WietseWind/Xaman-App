@@ -2126,7 +2126,9 @@
     "removeDoneBody": "Thẻ gốc vẫn hoạt động. Tài khoản của bạn không còn thẻ dự phòng.",
     "identifyBody": "Quét thẻ dự phòng được liên kết với tài khoản này để kiểm tra xem đó có phải thẻ đúng không.",
     "notYourBackup": "Đây không phải thẻ dự phòng của bạn.",
-    "yourBackup": "Đây là thẻ dự phòng của bạn."
+    "yourBackup": "Đây là thẻ dự phòng của bạn.",
+    "backupFor": "Là thẻ dự phòng của",
+    "hasBackup": "Có thẻ dự phòng"
   },
   "accessibility": {
     "moreOptions": "Tùy chọn khác",

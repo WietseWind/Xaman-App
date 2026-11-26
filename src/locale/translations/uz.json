@@ -2121,7 +2121,9 @@
     "removeDoneBody": "Asl kartangiz hali ham ishlaydi. Hisobingizda endi zaxira karta yo‘q.",
     "identifyBody": "To‘g‘ri karta ekanini tekshirish uchun bu hisobga bog‘langan zaxira kartani skanerlang.",
     "notYourBackup": "Bu sizning zaxira kartangiz emas.",
-    "yourBackup": "Bu sizning zaxira kartangiz."
+    "yourBackup": "Bu sizning zaxira kartangiz.",
+    "backupFor": "Quyidagi kartaning zaxira kartasi",
+    "hasBackup": "Zaxira kartasi bor"
   },
   "accessibility": {
     "moreOptions": "Ko'proq sozlamalar",
