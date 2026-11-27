@@ -132,9 +132,9 @@ const getDefaultOptions = (): Options => {
         layout: {
             backgroundColor: StyleService.value('$background'),
             componentBackgroundColor: StyleService.value('$background'),
-            // Resizable iPad windows and positively identified Android folds turn
-            // with the device. Ordinary phones retain their portrait policy.
-            orientation: GetPadLayout() || getAndroidFoldLayout() ? ['all'] : ['portrait'],
+            // Only resizable iPad windows turn with the device. Android folds
+            // request portrait too; the OS still controls a shared split window.
+            orientation: GetPadLayout() ? ['all'] : ['portrait'],
             adjustResize: false,
         },
         topBar: {
@@ -497,8 +497,12 @@ const Navigator = {
                                 // iPad with a window of its own: an overlay turns as the screens do. It has to say so
                                 // itself: an overlay that is shown before the default options are set (the
                                 // lock screen at the start) never gets them.
-                                ...(GetPadLayout() || getAndroidFoldLayout()
+                                ...(GetPadLayout()
                                     ? { orientation: ['all' as const] } : {}),
+                                // An early Android fold Lock can precede default
+                                // options too. It must keep the same portrait request.
+                                ...(getAndroidFoldLayout()
+                                    ? { orientation: ['portrait' as const] } : {}),
                             },
                             // Disable automatic splash screen dismissal
                             animations: {

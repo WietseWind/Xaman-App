@@ -221,10 +221,17 @@
             </intent-filter>
         </receiver>
 
-        <!-- Keep manifest portrait policy on ordinary devices; hinge-capable devices unlock it in LaunchActivity. -->
+        <!-- Retain the portrait compatibility request on Android 16. Split mode can still override it. -->
         <property
             android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
             android:value="true" />
+        <!-- Keep each Activity's own orientation request where the OS permits it. -->
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE"
+            android:value="false" />
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_DISPLAY_ORIENTATION_OVERRIDE"
+            android:value="false" />
 
     </application>
 </manifest>

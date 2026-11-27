@@ -95,11 +95,16 @@ describe('Android orientation compatibility', () => {
         expect(defaultOrientation()).toEqual(['portrait']);
     });
 
-    it('keeps both screens and early lock overlays rotatable on a native Android fold', () => {
+    it('keeps fold screens and early overlays in portrait', () => {
         Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
         NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
         NativeModules.DeviceUtilsModule.androidFoldLayout = { width: 337, height: 841 };
-        expect(defaultOrientation()).toEqual(['all']);
-        expect(overlayLayout(AppScreens.Overlay.Lock)).toEqual({ ...PORTRAIT_ONLY, orientation: ['all'] });
+        // The startup Lock has no defaults yet. Password and Vault overlays
+        // must preserve that policy after the default screen options are set.
+        expect(overlayLayout(AppScreens.Overlay.Lock)).toEqual({ ...PORTRAIT_ONLY, orientation: ['portrait'] });
+        expect(defaultOrientation()).toEqual(['portrait']);
+        [AppScreens.Overlay.PassphraseAuthentication, AppScreens.Overlay.Vault].forEach((overlay) => {
+            expect(overlayLayout(overlay)).toEqual({ ...PORTRAIT_ONLY, orientation: ['portrait'] });
+        });
     });
 });

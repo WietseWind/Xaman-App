@@ -73,7 +73,7 @@ public class LaunchActivity extends NavigationActivity {
 
         currentLaunch = new WeakReference<>(this);
         if (AndroidWindowLayout.isFoldCapable(this)) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
 
         // initialise required modules
