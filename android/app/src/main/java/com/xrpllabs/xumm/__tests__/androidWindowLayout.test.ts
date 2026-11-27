@@ -9,7 +9,8 @@ describe('Android fold model and native tab column', () => {
         expect(result.actual_production_methods_compiled).toBe(true);
         expect(result.actual_production_state_compiled).toBe(true);
         expect(result.actual_production_blur_class_and_setter_compiled).toBe(true);
-        expect(result.cases).toBe(107);
+        expect(result.actual_pinned_rnn_background_setter_compiled).toBe(true);
+        expect(result.cases).toBe(118);
         expect(result.assertions).toEqual(
             expect.arrayContaining([
                 'cover-cold-inner-same-model',
@@ -42,6 +43,13 @@ describe('Android fold model and native tab column', () => {
                 'tab-row-no-layout-loop',
                 'tab-row-restores-original-params-scales',
                 'tab-row-new-root-keeps-own-layout',
+                'tab-theme-opaque-stale-child-follows-dark-parent',
+                'tab-theme-syncs-ah-default-through-actual-rnn-setter',
+                'tab-theme-repeat-has-no-refresh-or-layout',
+                'tab-theme-transparent-ah-default-untouched',
+                'tab-theme-translucent-parent-untouched',
+                'tab-theme-null-default-startup-untouched',
+                'tab-theme-own-only-mismatch-does-not-refresh-items',
             ]),
         );
         expect(result.passed).toBe(result.cases);

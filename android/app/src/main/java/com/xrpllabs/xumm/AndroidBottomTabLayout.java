@@ -1,5 +1,8 @@
 package com.xrpllabs.xumm;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.Gravity;
 import android.widget.LinearLayout;
@@ -22,9 +25,32 @@ final class AndroidBottomTabLayout {
     private float originalPivotY;
     private boolean originalPivotExplicit;
 
+    private void syncOpaqueBackground(BottomTabsContainer container, BottomTabs tabs) {
+        Drawable parentBackground = container.getBackground();
+        Drawable ownBackground = tabs.getBackground();
+        if (!(parentBackground instanceof ColorDrawable) || !(ownBackground instanceof ColorDrawable)) {
+            return;
+        }
+        int parentColor = ((ColorDrawable) parentBackground).getColor();
+        int ownColor = ((ColorDrawable) ownBackground).getColor();
+        if (Color.alpha(parentColor) != 0xFF || Color.alpha(ownColor) != 0xFF) {
+            return;
+        }
+        // RNN's configuration callback colors AH itself, while later theme
+        // merges color only the container. Retire that stale opaque layer.
+        // The normal transparent/default AH path stays untouched.
+        if (ownColor != parentColor || tabs.getDefaultBackgroundColor() != parentColor) {
+            tabs.setBackgroundColor(parentColor);
+        }
+    }
+
     void apply(BottomTabsContainer container, int visibleWidth) {
         BottomTabs tabs = container.getBottomTabs();
-        if (visibleWidth <= 0 || tabs == null || tabs.getHeight() <= 0
+        if (tabs == null) {
+            return;
+        }
+        syncOpaqueBackground(container, tabs);
+        if (visibleWidth <= 0 || tabs.getHeight() <= 0
                 || !(tabs.getLayoutParams() instanceof LinearLayout.LayoutParams)) {
             return;
         }

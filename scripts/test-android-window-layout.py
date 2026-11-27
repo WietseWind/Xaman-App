@@ -23,6 +23,7 @@ NATIVE = ROOT / 'android/app/src/main/java/com/xrpllabs/xumm'
 launch = (NATIVE / 'LaunchActivity.java').read_text()
 bridge = (ROOT / 'android/app/src/main/java/libs/utils/DeviceUtilsModule.java').read_text()
 blur_manager = (ROOT / 'android/app/src/main/java/libs/ui/BlurViewModule.java').read_text()
+rnn_tabs = (ROOT / 'node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/bottomtabs/BottomTabs.java').read_text()
 
 
 def method(text, name):
@@ -112,8 +113,20 @@ stubs = {
 
 
 stubs.update({
+    'android/graphics/Color.java': '''package android.graphics; public class Color {
+      public static final int TRANSPARENT=0,WHITE=0xffffffff,BLACK=0xff000000;
+      public static int alpha(int color){return color>>>24;}
+    }''',
+    'android/graphics/drawable/Drawable.java': '''package android.graphics.drawable; public class Drawable {}''',
+    'android/graphics/drawable/ColorDrawable.java': '''package android.graphics.drawable;
+      public class ColorDrawable extends Drawable {private final int color;
+        public ColorDrawable(int value){color=value;} public int getColor(){return color;}}
+    ''',
     'android/view/View.java': '''package android.view; public class View {
-      public int left,top,right,bottom,layoutCalls,layoutRequests,paramUpdates,pivotResets;
+      public int left,top,right,bottom,layoutCalls,layoutRequests,paramUpdates,pivotResets,backgroundChanges;
+      public android.graphics.drawable.Drawable background;
+      public android.graphics.drawable.Drawable getBackground(){return background;}
+      public void setBackgroundColor(int color){background=new android.graphics.drawable.ColorDrawable(color);backgroundChanges++;}
       public float scaleX=1,scaleY=1,pivotX,pivotY; public boolean pivotExplicit;
       public android.view.ViewGroup.LayoutParams params;
       public android.content.res.Resources resources=new android.content.res.Resources();
@@ -170,23 +183,32 @@ stubs.update({
     'com/aurelhubert/ahbottomnavigation/AHBottomNavigation.java': '''package com.aurelhubert.ahbottomnavigation;
       public class AHBottomNavigation extends android.view.ViewGroup {
         public enum TitleState {ALWAYS_SHOW,AUTO}
-        public int count=5; public TitleState titleState=TitleState.ALWAYS_SHOW;
+        public int count=5,defaultBackgroundColor=0,refreshes; public TitleState titleState=TitleState.ALWAYS_SHOW;
+        public int getDefaultBackgroundColor(){return defaultBackgroundColor;}
+        public void setDefaultBackgroundColor(int color){defaultBackgroundColor=color;refreshes++;}
         public int getItemsCount(){return count;} public TitleState getTitleState(){return titleState;}
       }''',
     'com/aurelhubert/ahbottomnavigation/R.java': '''package com.aurelhubert.ahbottomnavigation;
       public class R {public static class dimen {public static final int bottom_navigation_small_inactive_min_width=1,bottom_navigation_min_width=2;}}
     ''',
     'com/reactnativenavigation/views/bottomtabs/BottomTabs.java': '''package com.reactnativenavigation.views.bottomtabs;
-      public class BottomTabs extends com.aurelhubert.ahbottomnavigation.AHBottomNavigation {}''',
+      public class BottomTabs extends com.aurelhubert.ahbottomnavigation.AHBottomNavigation {
+        /* ACTUAL PINNED RNN BACKGROUND SETTER */
+      }''',
     'com/reactnativenavigation/views/bottomtabs/BottomTabsContainer.java': '''package com.reactnativenavigation.views.bottomtabs;
       public class BottomTabsContainer extends android.view.ViewGroup {
         public final BottomTabs tabs=new BottomTabs();public BottomTabs getBottomTabs(){return tabs;}
       }''',
 })
 
+
+key = 'com/reactnativenavigation/views/bottomtabs/BottomTabs.java'
+stubs[key] = stubs[key].replace('/* ACTUAL PINNED RNN BACKGROUND SETTER */', method(rnn_tabs, 'setBackgroundColor'))
+
 tab_probe = r'''
 package com.xrpllabs.xumm;
 import android.os.Build; import android.widget.LinearLayout;
+import android.graphics.drawable.ColorDrawable; import android.graphics.drawable.Drawable;
 import com.reactnativenavigation.views.bottomtabs.BottomTabs;
 import com.reactnativenavigation.views.bottomtabs.BottomTabsContainer;
 public class BottomTabLayoutProbe {
@@ -197,7 +219,7 @@ public class BottomTabLayoutProbe {
   public static void main(String[] args){
     AndroidBottomTabLayout fit=new AndroidBottomTabLayout();BottomTabsContainer normal=row(1080);BottomTabs n=normal.tabs;
     fit.apply(normal,1080);
-    check("tab-row-normal-phone-is-noop",n.paramUpdates==0&&!n.pivotExplicit&&n.scaleX==1&&n.scaleY==1);
+    check("tab-row-normal-phone-is-noop",n.paramUpdates==0&&!n.pivotExplicit&&n.scaleX==1&&n.scaleY==1&&n.backgroundChanges==0);
     BottomTabsContainer small=row(353);BottomTabs t=small.tabs;LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)t.params;
     fit.apply(small,353);
     check("tab-row-all-five-use-ah-minimum-width",p.width==840&&t.getItemsCount()==5);
@@ -224,6 +246,37 @@ public class BottomTabLayoutProbe {
     check("tab-row-old-api-restores-without-new-pivot-api",legacy.tabs.scaleX==1&&legacy.tabs.scaleY==1&&legacy.tabs.pivotResets==0);
     BottomTabsContainer unready=row(0);unready.tabs.layout(0,0,0,0);fit.apply(unready,353);
     check("tab-row-unmeasured-native-height-defers",unready.tabs.paramUpdates==0);
+    int dark=0xff171924,white=0xffffffff;
+    BottomTabsContainer theme=row(1080);theme.background=new ColorDrawable(dark);
+    theme.tabs.background=new ColorDrawable(white);theme.tabs.defaultBackgroundColor=white;
+    fit.apply(theme,1080);
+    check("tab-theme-opaque-stale-child-follows-dark-parent",((ColorDrawable)theme.tabs.background).getColor()==dark);
+    check("tab-theme-syncs-ah-default-through-actual-rnn-setter",theme.tabs.defaultBackgroundColor==dark&&theme.tabs.backgroundChanges==1&&theme.tabs.refreshes==1);
+    fit.apply(theme,1080);fit.apply(theme,1080);
+    check("tab-theme-repeat-has-no-refresh-or-layout",theme.tabs.backgroundChanges==1&&theme.tabs.refreshes==1&&theme.tabs.paramUpdates==0);
+    theme.background=new ColorDrawable(white);fit.apply(theme,1080);
+    check("tab-theme-also-restores-light-color-once",theme.tabs.defaultBackgroundColor==white&&theme.tabs.backgroundChanges==2&&theme.tabs.refreshes==2);
+    BottomTabsContainer transparent=row(1080);transparent.background=new ColorDrawable(dark);
+    transparent.tabs.background=new ColorDrawable(0);fit.apply(transparent,1080);
+    check("tab-theme-transparent-ah-default-untouched",transparent.tabs.backgroundChanges==0&&transparent.tabs.defaultBackgroundColor==0);
+    BottomTabsContainer translucent=row(1080);translucent.background=new ColorDrawable(0x7f171924);
+    translucent.tabs.background=new ColorDrawable(white);translucent.tabs.defaultBackgroundColor=white;fit.apply(translucent,1080);
+    check("tab-theme-translucent-parent-untouched",translucent.tabs.backgroundChanges==0&&translucent.tabs.defaultBackgroundColor==white);
+    BottomTabsContainer startup=row(1080);startup.background=new ColorDrawable(dark);fit.apply(startup,1080);
+    check("tab-theme-null-default-startup-untouched",startup.tabs.background==null&&startup.tabs.backgroundChanges==0&&startup.tabs.paramUpdates==0);
+    BottomTabsContainer drawable=row(1080);drawable.background=new Drawable();drawable.tabs.background=new ColorDrawable(white);fit.apply(drawable,1080);
+    check("tab-theme-noncolor-parent-untouched",drawable.tabs.backgroundChanges==0);
+    BottomTabsContainer defaultOnly=row(1080);defaultOnly.background=new ColorDrawable(dark);
+    defaultOnly.tabs.background=new ColorDrawable(dark);defaultOnly.tabs.defaultBackgroundColor=white;fit.apply(defaultOnly,1080);fit.apply(defaultOnly,1080);
+    check("tab-theme-default-only-mismatch-syncs-once",defaultOnly.tabs.defaultBackgroundColor==dark&&defaultOnly.tabs.backgroundChanges==1&&defaultOnly.tabs.refreshes==1);
+    BottomTabsContainer ownOnly=row(1080);ownOnly.background=new ColorDrawable(dark);
+    ownOnly.tabs.background=new ColorDrawable(white);ownOnly.tabs.defaultBackgroundColor=dark;fit.apply(ownOnly,1080);fit.apply(ownOnly,1080);
+    check("tab-theme-own-only-mismatch-does-not-refresh-items",((ColorDrawable)ownOnly.tabs.background).getColor()==dark&&ownOnly.tabs.backgroundChanges==1&&ownOnly.tabs.refreshes==0);
+
+    BottomTabsContainer early=row(0);early.tabs.layout(0,0,0,0);early.background=new ColorDrawable(dark);
+    early.tabs.background=new ColorDrawable(white);early.tabs.defaultBackgroundColor=white;fit.apply(early,0);
+    check("tab-theme-reconciles-before-size-return",early.tabs.defaultBackgroundColor==dark&&early.tabs.backgroundChanges==1&&early.tabs.paramUpdates==0);
+
   }
 }
 '''
@@ -497,6 +550,7 @@ with tempfile.TemporaryDirectory(prefix='xaman-android-window-') as directory:
     print(json.dumps({'cases': len(results), 'passed': len(results) - len(failed), 'failures': failed,
                       'actual_production_methods_compiled': True, 'actual_production_state_compiled': True,
                       'actual_production_blur_class_and_setter_compiled': True,
+                      'actual_pinned_rnn_background_setter_compiled': True,
                       'assertions': [line[:-5] for line in results if line.endswith(':true')],
                       'native_source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                                                for p in [*production, NATIVE / 'LaunchActivity.java',
