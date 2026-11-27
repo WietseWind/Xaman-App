@@ -33,6 +33,11 @@ cd "$ROOT" || exit 2
 
 problems=()
 
+# Native SDK recovery files live outside node_modules and must survive npm ci/cleanup.
+if ! tangem_check=$(node scripts/check-tangem-sdk.js --require-installed 2>&1); then
+    problems+=("$tangem_check")
+fi
+
 if [ ! -d node_modules ]; then
     problems+=("there is no node_modules")
 else

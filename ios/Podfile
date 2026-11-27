@@ -1,3 +1,6 @@
+# Verify the committed native SDK before CocoaPods can use its local source.
+Pod::Executable.execute_command('node', [File.join(__dir__, '../scripts/check-tangem-sdk.js'), '--require-installed'])
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
@@ -27,6 +30,8 @@ if linkage != nil
 end
 
 target 'Xaman' do
+  pod 'TangemSdk', :path => '../vendor/tangem/ios/TangemSdk'
+
   use_expo_modules!
   config = use_native_modules!
 

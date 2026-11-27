@@ -1,0 +1,20 @@
+name: Tangem SDK recovery
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'release/**']
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # No npm install and no vendor CDN: a clean Git checkout contains the SDK.
+      - run: node scripts/check-tangem-sdk.js
+      - run: node --test scripts/tests/tangem-recovery.test.cjs
+      - run: npm ci --no-audit --no-fund
+      - run: node scripts/check-tangem-sdk.js --require-installed
