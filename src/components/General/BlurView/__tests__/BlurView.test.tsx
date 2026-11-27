@@ -35,7 +35,7 @@ describe('bounded Android window blur', () => {
     it.each([
         ['cover', { left: 0, width: 337, height: 817, columnWidth: 337, scale: 1 }],
         ['inner', { left: 337, width: 674, height: 809, columnWidth: 337, scale: 1 }],
-    ])('keeps PIN controls outside the native FrameLayout and bounds the %s blur bitmap', (name, surround) => {
+    ])('excludes PIN controls from the %s blur capture and preserves their React layout', (name, surround) => {
         const tree = renderer.create(
             <AndroidWindowSurroundContext.Provider value={surround}>
                 <BlurView style={bleed} contentStyle={content} blurType="light" blurAmount={20}>
@@ -44,18 +44,23 @@ describe('bounded Android window blur', () => {
             </AndroidWindowSurroundContext.Provider>,
         );
         const blur = tree.root.findByType('NativeBlur' as any);
-        expect(blur.children).toHaveLength(0);
+        expect(blur.props.preserveReactChildLayout).toBe(true);
+        expect(blur.findByType(PinControls)).toBeDefined();
         expect(blur.props.style).toEqual({
             position: 'absolute', left: surround.left === 0 ? 0 : -surround.left, top: 0,
             width: surround.width, height: surround.height,
         });
         expect(blur.props.blurAmount).toBe(20);
-        const parent = tree.root.findByType('ReactView' as any);
+        const parent = tree.root.findAllByType('ReactView' as any)[0];
         expect(parent.findByType(PinControls)).toBeDefined();
         expect(StyleSheet.flatten(parent.props.style)).toEqual({
             ...content, width: surround.columnWidth, height: surround.height,
         });
         expect(parent.props.style).not.toContain(bleed);
+        expect(blur.findByType('ReactView' as any).props.style).toEqual({
+            position: 'absolute', width: surround.columnWidth, height: surround.height,
+            left: surround.left, top: 0,
+        });
         tree.unmount();
     });
 
@@ -74,8 +79,13 @@ describe('bounded Android window blur', () => {
         expect(style.left).toBeCloseTo(-128.3);
         expect(style.top).toBeCloseTo(76);
         expect(style.transform).toEqual([{ scale: 1.25 }]);
-        expect(blur.children).toHaveLength(0);
-        const parent = tree.root.findByType('ReactView' as any);
+        expect(blur.props.preserveReactChildLayout).toBe(true);
+        const child = blur.findByType('ReactView' as any);
+        expect(child.props.style.left).toBeCloseTo(110.3);
+        expect(child.props.style.top).toBe(-76);
+        expect(child.props.style.transform).toEqual([{ scale: 0.8 }]);
+        expect(blur.findByType(PinControls)).toBeDefined();
+        const parent = tree.root.findAllByType('ReactView' as any)[0];
         expect(StyleSheet.flatten(parent.props.style)).toEqual({ width: 337, height: 760 });
         expect(parent.findByType(PinControls)).toBeDefined();
         tree.unmount();

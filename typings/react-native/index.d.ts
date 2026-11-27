@@ -220,6 +220,8 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
     supportsAndroidWindowLayout?: boolean;
     // Only present after positive fold hardware detection. These are layout dp, not system insets.
     androidFoldLayout?: { width: number; height: number };
+    // Ordinary Android cold/reloaded in multi-window: full portrait size, without fold identity.
+    androidWindowLayout?: { width: number; height: number };
     setAndroidWindowColumnWidth?: (widthDp: number) => void;
 
     /**

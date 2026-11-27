@@ -30,6 +30,16 @@ public final class AndroidWindowLayoutMath {
         return positiveFinite(width) && positiveFinite(height) ? new PhoneBox(width, height) : null;
     }
 
+    /** The full portrait model of an ordinary device, without fold halving. */
+    public static PhoneBox windowBox(int physicalWidthPx, int physicalHeightPx, double density) {
+        if (physicalWidthPx <= 0 || physicalHeightPx <= 0 || !positiveFinite(density)) {
+            return null;
+        }
+        double width = Math.min(physicalWidthPx, physicalHeightPx) / density;
+        double height = Math.max(physicalWidthPx, physicalHeightPx) / density;
+        return positiveFinite(width) && positiveFinite(height) ? new PhoneBox(width, height) : null;
+    }
+
     public static boolean validColumnWidth(double widthDp) {
         return positiveFinite(widthDp) && widthDp <= MAX_COLUMN_WIDTH_DP;
     }

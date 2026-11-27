@@ -153,6 +153,13 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
             foldLayout.put("height", phoneBox.heightDp);
             constants.put("androidFoldLayout", foldLayout);
         }
+        AndroidWindowLayoutMath.PhoneBox windowBox = AndroidWindowLayout.windowBox(reactContext);
+        if (windowBox != null) {
+            Map<String, Object> windowLayout = new HashMap<>();
+            windowLayout.put("width", windowBox.widthDp);
+            windowLayout.put("height", windowBox.heightDp);
+            constants.put("androidWindowLayout", windowLayout);
+        }
 
         return constants;
     }

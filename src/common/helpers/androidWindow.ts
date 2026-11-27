@@ -30,6 +30,16 @@ export const getAndroidFoldLayout = (): AndroidLayoutSize | undefined => {
     return { width: layout.width, height: layout.height };
 };
 
+/** A stable ordinary split model is a size hint, never fold identity or rotation. */
+export const getAndroidLayoutSize = (): AndroidLayoutSize | undefined => {
+    const fold = getAndroidFoldLayout();
+    if (fold) return fold;
+    if (!supportsAndroidWindowLayout()) return undefined;
+    const layout = NativeModules.DeviceUtilsModule?.androidWindowLayout;
+    if (!positive(layout?.width) || !positive(layout?.height)) return undefined;
+    return { width: layout.width, height: layout.height };
+};
+
 /**
  * Fit the existing phone layout into a live Android window. The view fills the
  * available height; it does not create a gap above the native bottom tab bar.

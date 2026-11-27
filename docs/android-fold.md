@@ -10,6 +10,13 @@ The new native build permits window resizing. A positive public hinge-sensor fea
 or later, enables the fold layout and rotation. A model name or a screen aspect ratio does not identify a fold.
 Devices without that capability keep their portrait policy and existing size formulas.
 
+This is not universal Galaxy Fold identification. Early Samsung Galaxy Fold, Z Fold2 and Z Flip devices can use
+proprietary hinge interfaces instead of the standard sensor, as documented in
+[Chromium's device gate](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/base/android/java/src/org/chromium/base/DeviceInfo.java).
+An OS upgrade alone does not prove that the standard feature exists. These devices retain the compatibility path;
+the emulator results do not establish support for them. On the target Galaxy hardware, check the public feature
+and sensor and repeat cold-inner start before treating this issue as fully verified for that model.
+
 Android's public display APIs do not reliably expose an inactive cover display. The first active display mode
 therefore supplies a stable phone model for the app process: its natural width in dp, halved when at least
 600 dp wide, and its longer physical dimension in dp. This is a layout policy, not a claim to measure an unseen
@@ -21,15 +28,27 @@ it fits down when the window is smaller. The native bottom-tab container follows
 keeps its existing height and navigation insets. The free area uses the existing empty `FoldPhoneExtraPanel`.
 Modal and overlay backdrops cover the whole app window; their content stays in the phone column.
 
-Android blur backdrops are bounded to that window. Their native blur view is a sibling of the React controls,
-since Android's `FrameLayout` otherwise replaces the child positions assigned by Yoga. The blur cancels the
-column scale so its native bitmap samples the visible window at its actual size. The large iOS backdrop bleed
-does not become an Android bitmap. Ordinary full-size phone and iOS blur trees retain the existing path.
+Android blur backdrops are bounded to that window. An adaptive native layout flag preserves Yoga's positions
+instead of letting Android's `FrameLayout` replace them. Controls remain descendants of the blur view, so the
+native blur capture excludes them instead of drawing a blurred copy behind the controls. The blur cancels the
+column scale so its bitmap samples the visible window at its actual size; its React content keeps the column
+scale. The large iOS backdrop bleed does not become an Android bitmap. Ordinary full-size phone and iOS blur trees
+retain the existing path; the native Android layout flag defaults to the original behaviour.
 
 New Android builds also wrap ordinary phone screens so a later split-screen entry can resize without replacing
-the screen. At full size those transparent views retain the existing sizes. Pixel rounding uses the native pixel
+the screen. At full size those transparent views retain the existing sizes. A cold start or JavaScript reload in
+ordinary split mode receives a full portrait-display size hint, so returning to full size does not retain the
+small startup window. This hint does not identify a fold or enable rotation. Pixel rounding uses the native pixel
 grid, including float values received through `onLayout`. Old Android native builds and all iOS builds keep their
 existing registration path. This feature needs a new Android binary; JavaScript alone cannot enable it.
+
+The native tab width follows the current global window. A detached stack screen cannot publish its stale local
+view width. If the visible column is narrower than the native menu's minimum item widths, the menu fits uniformly
+inside it; all five native click targets remain present. Its container height and system navigation inset remain
+under the existing native layout policy.
+
+`FoldPhone` modes describe layout geometry, not a raw hinge posture. A rotated Android window with a right-aligned
+full-height column can still be `open`; the Duo's `turned` state describes its vertically centred box.
 
 ## Source and checks
 

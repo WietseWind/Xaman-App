@@ -1,7 +1,7 @@
 import { Platform, PixelRatio, NativeModules, Dimensions, I18nManager } from 'react-native';
 
 import { GetPadLayout, IsPadDevice } from './padLayout';
-import { getAndroidFoldLayout } from './androidWindow';
+import { getAndroidLayoutSize } from './androidWindow';
 
 const { DeviceUtilsModule, UniqueIdProviderModule } = NativeModules;
 
@@ -112,8 +112,8 @@ const GetSideInsets = (): number => {
  * @returns number
  */
 const GetUsableWindowWidth = (): number => {
-    const androidFold = getAndroidFoldLayout();
-    if (androidFold) return androidFold.width;
+    const androidLayout = getAndroidLayoutSize();
+    if (androidLayout) return androidLayout.width;
     const pad = GetPadLayout();
     if (pad) {
         return pad.width;

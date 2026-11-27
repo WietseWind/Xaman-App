@@ -94,6 +94,7 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
 
         render() {
             const { view, window } = this.state;
+            const windowFrame = androidWindowFrame(window, window, layout, PixelRatio.get());
             const frame = view ? androidWindowFrame(view, window, layout, PixelRatio.get()) : undefined;
             const style: ViewStyle = frame ? {
                 position: 'absolute',
@@ -106,7 +107,7 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
             const hasFreeArea = !!frame && frame.left > 1;
             // Overlays can mount before their first onLayout. Give their blur a
             // bounded initial window too, rather than a 2000dp bleed bitmap.
-            const backdropFrame = frame || androidWindowFrame(window, window, layout, PixelRatio.get());
+            const backdropFrame = frame || windowFrame;
             const surround = backdropFrame && (fold || hasFreeArea) ? {
                 left: backdropFrame.left / backdropFrame.scale,
                 width: (backdropFrame.left + backdropFrame.width) / backdropFrame.scale,
@@ -114,10 +115,13 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
                 columnWidth: layout.width,
                 scale: backdropFrame.scale,
             } : undefined;
-            this.columnWidth = frame?.width;
-            this.foldState = fold && frame && view ? foldPhoneStateFor(
-                { width: frame.left + frame.width, height: frame.height },
-                { left: frame.left, top: 0, width: frame.width, height: frame.height },
+            // Detached stack screens retain their last native view size. A
+            // global tab bar must follow the current window, never that stale
+            // local frame from an invisible screen's Dimensions listener.
+            this.columnWidth = windowFrame?.width;
+            this.foldState = fold && windowFrame ? foldPhoneStateFor(
+                { width: windowFrame.left + windowFrame.width, height: windowFrame.height },
+                { left: windowFrame.left, top: 0, width: windowFrame.width, height: windowFrame.height },
                 fold.width,
             ) : undefined;
             const isOverlay = (this.props as { componentType?: string }).componentType === 'OVERLAY';

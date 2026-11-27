@@ -8,7 +8,8 @@ describe('Android fold model and native tab column', () => {
 
         expect(result.actual_production_methods_compiled).toBe(true);
         expect(result.actual_production_state_compiled).toBe(true);
-        expect(result.cases).toBe(60);
+        expect(result.actual_production_blur_class_and_setter_compiled).toBe(true);
+        expect(result.cases).toBe(107);
         expect(result.assertions).toEqual(
             expect.arrayContaining([
                 'cover-cold-inner-same-model',
@@ -22,6 +23,25 @@ describe('Android fold model and native tab column', () => {
                 'restore-native-layout',
                 'new-root-restores-own-gravity-margin',
                 'bridge-queues-on-ui-thread',
+                'ordinary-full-model-never-halves',
+                'ordinary-multiwindow-full-model',
+                'ordinary-multiwindow-keeps-nonfold-identity',
+                'ordinary-fullscreen-has-no-window-hint',
+                'ordinary-recreated-activity-refreshes-before-cache-guard',
+                'ordinary-return-fullscreen-omits-hint',
+                'fold-never-exports-ordinary-model',
+                'blur-default-delegates-existing-framelayout',
+                'blur-adaptive-preserves-yoga-child-frame',
+                'blur-adaptive-does-not-relayout-children',
+                'blur-size-notification-remains-inherited',
+                'blur-false-restores-native-child-layout',
+                'tab-row-normal-phone-is-noop',
+                'tab-row-all-five-use-ah-minimum-width',
+                'tab-row-five-transformed-targets-inside',
+                'tab-row-native-height-unchanged',
+                'tab-row-no-layout-loop',
+                'tab-row-restores-original-params-scales',
+                'tab-row-new-root-keeps-own-layout',
             ]),
         );
         expect(result.passed).toBe(result.cases);

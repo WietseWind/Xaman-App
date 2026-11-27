@@ -51,6 +51,7 @@ public class LaunchActivity extends NavigationActivity {
     private boolean tabsColumnConstrained;
     private int originalTabsLeftMargin;
     private int originalTabsGravity;
+    private final AndroidBottomTabLayout bottomTabLayout = new AndroidBottomTabLayout();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -113,6 +114,7 @@ public class LaunchActivity extends NavigationActivity {
         LaunchActivity activity = currentLaunch != null ? currentLaunch.get() : null;
         if (activity != null && !activity.isFinishing()) {
             activity.applyAndroidWindowColumn();
+            activity.applyAndroidBottomTabRow();
         }
     }
 
@@ -283,6 +285,7 @@ public class LaunchActivity extends NavigationActivity {
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }
         applyAndroidWindowColumn();
+        applyAndroidBottomTabRow();
     }
 
     private void applyAndroidWindowColumn() {
@@ -332,6 +335,20 @@ public class LaunchActivity extends NavigationActivity {
             params.leftMargin = leftMargin;
             params.gravity = gravity;
             tabs.setLayoutParams(params);
+        }
+    }
+
+    private void applyAndroidBottomTabRow() {
+        View tabs = findNativeBottomTabsContainer();
+        if (!(tabs instanceof BottomTabsContainer) || !(tabs.getParent() instanceof View)) {
+            return;
+        }
+        int parentWidth = ((View) tabs.getParent()).getWidth();
+        int width = AndroidWindowLayoutMath.columnWidthPx(
+                desiredWindowColumnWidthDp, getResources().getDisplayMetrics().density, parentWidth);
+        if (width != AndroidWindowLayoutMath.NOT_READY) {
+            bottomTabLayout.apply((BottomTabsContainer) tabs,
+                    width == AndroidWindowLayoutMath.FULL_WIDTH ? parentWidth : width);
         }
     }
 

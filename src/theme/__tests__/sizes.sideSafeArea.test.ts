@@ -18,7 +18,7 @@ type Phone = {
     screen?: { width: number; height: number };
     // iPad: what the native side tells about it
     pad?: { isPadDevice?: unknown; padLayout?: unknown };
-    android?: { supportsAndroidWindowLayout?: unknown; androidFoldLayout?: unknown };
+    android?: { supportsAndroidWindowLayout?: unknown; androidFoldLayout?: unknown; androidWindowLayout?: unknown };
 };
 
 /** AppSizes as the app makes it at start, for one phone */
@@ -33,6 +33,7 @@ const sizesFor = ({ os, width, height, insets, screen, pad, android }: Phone): a
         RN.NativeModules.DeviceUtilsModule.layoutInsets = insets;
         RN.NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = android?.supportsAndroidWindowLayout;
         RN.NativeModules.DeviceUtilsModule.androidFoldLayout = android?.androidFoldLayout;
+        RN.NativeModules.DeviceUtilsModule.androidWindowLayout = android?.androidWindowLayout;
         if (pad) {
             Object.assign(RN.NativeModules.DeviceUtilsModule, pad);
         }
@@ -411,5 +412,27 @@ describe('Android fold native layout', () => {
         const phone = PHONES[2];
         const now = sizesFor({ ...phone, android });
         expect(withoutNew(numbersOf(now))).toEqual(numbersOf(sizesBefore(phone)));
+    });
+});
+
+
+describe('ordinary Android cold multi-window layout', () => {
+    const model = { width: 1080 / 2.625, height: 2400 / 2.625 };
+    const full: Phone = {
+        name: 'ordinary full-size phone', os: 'android', ...model,
+        screen: model, insets: { top: 24, bottom: 24 },
+        android: { supportsAndroidWindowLayout: true },
+    };
+
+    it('keeps the full phone sizes on a cold split or JS reload, then can fill fullscreen', () => {
+        const ordinary = sizesFor(full);
+        const split = sizesFor({
+            ...full, width: 200, height: 600,
+            android: { supportsAndroidWindowLayout: true, androidWindowLayout: model },
+        });
+        const actual = numbersOf(split);
+        actual['screen.windowWidth'] = ordinary.screen.windowWidth;
+        expect(actual).toEqual(numbersOf(ordinary));
+        expect(split.sideInsets).toBe(0);
     });
 });

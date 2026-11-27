@@ -4,6 +4,7 @@ import { Dimensions, NativeModules, Platform } from 'react-native';
 
 import {
     androidWindowFrame,
+    getAndroidLayoutSize,
     getAndroidFoldLayout,
     supportsAndroidWindowLayout,
 } from '../androidWindow';
@@ -33,6 +34,7 @@ beforeEach(() => {
     jest.clearAllMocks();
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
     delete device.androidFoldLayout;
+    delete device.androidWindowLayout;
     delete device.supportsAndroidWindowLayout;
     device.setAndroidWindowColumnWidth = jest.fn();
     (Dimensions.get as jest.Mock).mockReturnValue(COVER);
@@ -61,6 +63,28 @@ describe('Android window native gate', () => {
         'rejects invalid native layout dimensions: %s', (width) => {
             device.supportsAndroidWindowLayout = true;
             device.androidFoldLayout = { width, height: COVER.height } as any;
+            expect(getAndroidFoldLayout()).toBeUndefined();
+        },
+    );
+});
+
+describe('ordinary Android multi-window size hint', () => {
+    it('uses the full size without enabling fold identity', () => {
+        device.supportsAndroidWindowLayout = true;
+        device.androidWindowLayout = { width: 411.42857142857144, height: 914.2857142857143 };
+        expect(getAndroidLayoutSize()).toEqual(device.androidWindowLayout);
+        expect(getAndroidFoldLayout()).toBeUndefined();
+        device.androidFoldLayout = COVER;
+        expect(getAndroidLayoutSize()).toEqual(COVER);
+        delete device.supportsAndroidWindowLayout;
+        expect(getAndroidLayoutSize()).toBeUndefined();
+    });
+
+    it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY, '411', null])(
+        'rejects an invalid ordinary size hint: %s', (width) => {
+            device.supportsAndroidWindowLayout = true;
+            device.androidWindowLayout = { width, height: 914 } as any;
+            expect(getAndroidLayoutSize()).toBeUndefined();
             expect(getAndroidFoldLayout()).toBeUndefined();
         },
     );
@@ -121,6 +145,26 @@ describe('Android visible window rectangle', () => {
 });
 
 describe('mounted Android screen on fold and resize', () => {
+    it('does not let a detached screen with a stale local frame narrow the global native tabs', () => {
+        device.supportsAndroidWindowLayout = true;
+        device.androidFoldLayout = COVER;
+        const Wrapped = withAndroidWindowLayout(() => React.createElement('RetainedStackScreen'));
+        let tree: renderer.ReactTestRenderer;
+        act(() => { tree = renderer.create(<Wrapped />); });
+        // RNN can retain this screen's React tree after removing its native view.
+        act(() => tree!.root.findByProps({ testID: 'android-window-layout' }).props.onLayout({
+            nativeEvent: { layout: { width: 200, height: 600 } },
+        }));
+        expect(device.setAndroidWindowColumnWidth).toHaveBeenLastCalledWith(COVER.width);
+        expect((device.setAndroidWindowColumnWidth as jest.Mock).mock.calls.some(([width]) => width === 200))
+            .toBe(false);
+        act(() => windowChanged({ window: INNER }));
+        expect(device.setAndroidWindowColumnWidth).toHaveBeenLastCalledWith(COVER.width);
+        expect(FoldPhone.getState().window.width).toBe(INNER.width);
+        expect(FoldPhone.getState().mode).toBe('open');
+        act(() => tree!.unmount());
+    });
+
     it('retains screen input/state, updates native tabs once and removes its listener', () => {
         device.supportsAndroidWindowLayout = true;
         device.androidFoldLayout = COVER;
