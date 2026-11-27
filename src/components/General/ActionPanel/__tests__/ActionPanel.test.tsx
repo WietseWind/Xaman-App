@@ -46,6 +46,22 @@ describe('ActionPanel', () => {
         });
     };
 
+    it('reports actual animated displacement while a different snap target is pending', () => {
+        let tree: renderer.ReactTestRenderer;
+        act(() => { tree = renderer.create(<ActionPanel height={300} offset={150} />); });
+        const panel = tree!.root.instance;
+        const restingY = panel.state.snapPoints[1].y;
+        act(() => { panel.translateY.setValue(restingY - 35); });
+        expect(panel.offsetFromRest).toBe(35);
+        act(() => { panel.snapTo(2); });
+        flushOpenDelay();
+        // The mocked native spring has a target but has not emitted another position.
+        expect(panel.offsetFromRest).toBe(35);
+        act(() => { panel.translateY.setValue(restingY + 20); });
+        expect(panel.offsetFromRest).toBe(-20);
+        act(() => { tree!.unmount(); });
+    });
+
     it.each([['release', 0], ['terminate', 0], ['release', 1], ['terminate', 1]])(
         'reports a header %s after its actual target %s is selected', (ending, target) => {
             let handlers: any;

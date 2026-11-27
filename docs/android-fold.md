@@ -47,6 +47,18 @@ view width. If the visible column is narrower than the native menu's minimum ite
 inside it; all five native click targets remain present. Its container height and system navigation inset remain
 under the existing native layout policy.
 
+Adaptive Android forms use a new, read-only keyboard geometry query. It reads the current window and IME
+insets, with the showing popup's visible frame as a fallback. It does not change the existing keyboard height
+events or their cached maximum. Native input origins are physical coordinates; input heights and scroll offsets
+are logical values. The adaptive path converts the overlap with the column scale once. It rechecks focus,
+layout and scale changes, and rejects late work after hide or unmount. Standard Android keyboard events cover
+cases where the old popup emitter misses a change. The ordinary full-screen and iOS scroll formula stays intact;
+an unavailable native method keeps the existing custom-event fallback.
+
+The native tab background also follows live theme changes after resize. It updates an opaque child background
+only when its opaque parent differs, and refreshes native items only when their default color differs. Repeated
+layout calls, transparent backgrounds and startup defaults do not trigger another item refresh.
+
 `FoldPhone` modes describe layout geometry, not a raw hinge posture. A rotated Android window with a right-aligned
 full-height column can still be `open`; the Duo's `turned` state describes its vertically centred box.
 
@@ -60,6 +72,10 @@ full-height column can still be `open`; the Duo's `turned` state describes its v
 | `DeviceUtilsModule.java` | Capability/model constants and validated UI-thread width update |
 | `androidWindow.ts` | Pixel-aligned fit and native capability checks |
 | `androidWindowLayout.tsx` | Live window updates, stable screen instance and free panel |
+| `KeyboardWindowGeometry.java`, `KeyboardModule.java` | Current keyboard coordinates without changing the old event protocol |
+| `KeyboardAwareScrollView.tsx` | Focused-field visibility in a scaled Android column |
+| `adaptiveOverlayKeyboard.ts` | Current keyboard coordinates, total overlay displacement and stale-request guards |
+| `ActionPanel.tsx` | Read-only current displacement for a resize during its existing spring |
 | `sideSafeArea.tsx` | Android dispatch and full-window backdrops |
 | `sizes.ts`, `device.ts` | One fold width shared by screen sizes and tab icons |
 
@@ -80,6 +96,9 @@ layout engine. Real emulator screenshots, native bounds and actual taps are requ
 | Camera permission, pause/resume and Close | Permission path returns to a usable scanner/Home |
 | Regular Android phone | Compare the same screens and controls before and after |
 | Large text, three-button navigation and keyboard | Controls remain reachable; system insets occur once |
+| Add Contact: full size → split, and form first opened in split | Bottom tag remains above the real keyboard; Name → tag works with the same open keyboard; Cancel saves nothing |
+| Destination-tag sheet in split | Focused input is above the real keyboard; Cancel returns to the underlying screen |
+| Light → Dark → Light after unfold | Native tabs and labels remain readable without a restart |
 
 The test emulator uses Android's stock Pixel Fold display/state mechanism, with separate cover and inner displays.
 One task-only profile has a narrow cover (884 × 2208 px) and an inner display (1768 × 2208 px). Its vendor hinge

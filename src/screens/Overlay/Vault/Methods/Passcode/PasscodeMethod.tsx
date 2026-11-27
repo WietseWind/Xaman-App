@@ -3,7 +3,9 @@
  */
 
 import React, { Component } from 'react';
-import { Alert, View, Text, Animated, LayoutAnimation, KeyboardEvent, InteractionManager } from 'react-native';
+import {
+    Alert, View, Text, Animated, LayoutAnimation, KeyboardEvent, InteractionManager,
+} from 'react-native';
 
 import { SecurePinInput, Button } from '@components/General';
 
@@ -13,6 +15,8 @@ import { AuthenticationService } from '@services';
 
 import { Prompt } from '@common/helpers/interface';
 import Keyboard from '@common/helpers/keyboard';
+import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
+import { AndroidWindowSurroundContext, AndroidWindowSurround } from '@common/helpers/androidWindowContext';
 
 import { BiometricErrors } from '@common/libs/biometric';
 
@@ -29,6 +33,10 @@ import { AuthMethods } from '../../types';
 /* types ==================================================================== */
 export interface Props {}
 
+interface InternalProps extends Props {
+    androidWindowSurround?: AndroidWindowSurround;
+}
+
 export interface State {
     isBiometricAvailable: boolean;
     fullBiometricsView: boolean;
@@ -37,17 +45,36 @@ export interface State {
     offsetBottom: number;
 }
 /* Component ==================================================================== */
-class PasscodeMethod extends Component<Props, State> {
+class PasscodeMethod extends Component<InternalProps, State> {
     static contextType = MethodsContext;
     declare context: React.ContextType<typeof MethodsContext>;
 
+    private containerViewRef = React.createRef<View>();
     private contentViewRef: React.RefObject<View>;
     private animatedColor: Animated.Value;
     private securePinInputRef: React.RefObject<SecurePinInput>;
 
     private mounted = false;
+    private adaptiveOffset = 0;
+    private adaptiveKeyboard = new AdaptiveOverlayKeyboard({
+        getContext: () => {
+            const { androidWindowSurround } = this.props;
+            return androidWindowSurround;
+        },
+        getInput: () => this.contentViewRef.current,
+        getRestingBottom: (height, scale) => this.measureRestingBottom(height, scale),
+        // Store actual displacement: legacy centered margin moves only half.
+        getOffset: () => this.adaptiveOffset,
+        setOffset: (offset, isCurrent) => {
+            if (!this.mounted || !isCurrent()) return;
+            this.adaptiveOffset = offset;
+            LayoutAnimation.easeInEaseOut();
+            // Centered marginBottom shifts by half; keep its original units.
+            this.setState({ offsetBottom: offset * 2 });
+        },
+    });
 
-    constructor(props: Props, context: React.ContextType<typeof MethodsContext>) {
+    constructor(props: InternalProps, context: React.ContextType<typeof MethodsContext>) {
         super(props);
 
         const { coreSettings } = context;
@@ -65,9 +92,25 @@ class PasscodeMethod extends Component<Props, State> {
         this.contentViewRef = React.createRef();
     }
 
+    private measureRestingBottom = (cardHeight: number, scale: number): Promise<number | undefined> => (
+        new Promise((resolve) => {
+            const container = this.containerViewRef.current;
+            if (!container) { resolve(undefined); return; }
+            container.measureInWindow((x, y, width, height) => {
+                if (!this.mounted || ![y, height].every(Number.isFinite) || height <= 0) {
+                    resolve(undefined);
+                    return;
+                }
+                // The parent stays centered and unshifted during LayoutAnimation.
+                resolve(y + (height + cardHeight) * scale / 2);
+            });
+        })
+    );
+
     componentDidMount() {
         // track component mounted status
         this.mounted = true;
+        this.adaptiveKeyboard.mount();
 
         // add listeners
         Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
@@ -86,9 +129,14 @@ class PasscodeMethod extends Component<Props, State> {
         });
     }
 
+    componentDidUpdate() {
+        this.adaptiveKeyboard.contextChanged();
+    }
+
     componentWillUnmount() {
         // track component mounted status
         this.mounted = false;
+        this.adaptiveKeyboard.unmount();
 
         // remove listeners
         Keyboard.removeListener('keyboardWillShow', this.onKeyboardShow);
@@ -96,12 +144,19 @@ class PasscodeMethod extends Component<Props, State> {
     }
 
     onKeyboardShow = (e: KeyboardEvent) => {
+        if (this.adaptiveKeyboard.show((isCurrent) => this.onLegacyKeyboardShow(e, isCurrent))) return;
+        this.onLegacyKeyboardShow(e);
+    };
+
+    private onLegacyKeyboardShow = (e: KeyboardEvent, isCurrent?: () => boolean) => {
         if (this.contentViewRef.current && this.mounted) {
             this.contentViewRef.current.measure((x, y, width, height) => {
+                if (isCurrent && !isCurrent()) return;
                 const bottomView = (AppSizes.screen.height - height) / 2;
                 const KeyboardHeight = e.endCoordinates.height + 100;
 
                 if (bottomView < KeyboardHeight) {
+                    this.adaptiveOffset = (KeyboardHeight - bottomView) / 2;
                     LayoutAnimation.easeInEaseOut();
                     this.setState({ offsetBottom: KeyboardHeight - bottomView });
                 }
@@ -110,7 +165,13 @@ class PasscodeMethod extends Component<Props, State> {
     };
 
     onKeyboardHide = () => {
+        if (this.adaptiveKeyboard.hide()) return;
+        this.onLegacyKeyboardHide();
+    };
+
+    private onLegacyKeyboardHide = () => {
         if (this.mounted) {
+            this.adaptiveOffset = 0;
             LayoutAnimation.easeInEaseOut();
             this.setState({ offsetBottom: 0 });
         }
@@ -206,8 +267,14 @@ class PasscodeMethod extends Component<Props, State> {
             });
     };
 
+    private dismiss = () => {
+        this.adaptiveKeyboard.cancel();
+        const { dismiss } = this.context;
+        dismiss();
+    };
+
     render() {
-        const { dismiss, isSigning } = this.context;
+        const { isSigning } = this.context;
         const { offsetBottom, hapticFeedback, isBiometricAvailable, fullBiometricsView } = this.state;
         // biometricMethod,
 
@@ -220,10 +287,12 @@ class PasscodeMethod extends Component<Props, State> {
 
         return needsToShowPinPad && (
             <Animated.View
+                ref={this.containerViewRef}
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
-                <View ref={this.contentViewRef} style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
+                <View ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
+                    style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
                             <Text numberOfLines={1} style={[AppStyles.p, AppStyles.bold]}>
@@ -236,7 +305,7 @@ class PasscodeMethod extends Component<Props, State> {
                                 numberOfLines={1}
                                 label={Localize.t('global.cancel')}
                                 roundedSmall
-                                onPress={dismiss}
+                                onPress={this.dismiss}
                             />
                         </View>
                     </View>
@@ -286,4 +355,14 @@ class PasscodeMethod extends Component<Props, State> {
 }
 
 /* Export Component ==================================================================== */
-export default PasscodeMethod;
+const PasscodeMethodWithAndroidWindow = React.forwardRef<PasscodeMethod, Props>((props, ref) => (
+    <AndroidWindowSurroundContext.Consumer>
+        {(androidWindowSurround) => (
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            <PasscodeMethod {...props} ref={ref} androidWindowSurround={androidWindowSurround} />
+        )}
+    </AndroidWindowSurroundContext.Consumer>
+));
+PasscodeMethodWithAndroidWindow.displayName = 'PasscodeMethod';
+
+export default PasscodeMethodWithAndroidWindow;

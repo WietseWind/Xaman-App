@@ -177,6 +177,12 @@ class ActionPanel extends Component<Props, State> {
         return this.isDragging;
     }
 
+    public get offsetFromRest(): number {
+        const { snapPoints } = this.state;
+        const restingPoint = snapPoints[1];
+        return restingPoint ? restingPoint.y - this.currentY : 0;
+    }
+
     public slideUp = () => {
         // A tap can close the sheet before the deferred open runs.
         if (this.dismissed || this.closeRequested) {

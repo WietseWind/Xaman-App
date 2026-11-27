@@ -27,6 +27,8 @@ import { CoreRepository } from '@store/repositories';
 import { AccountModel, CoreModel } from '@store/models';
 
 import Keyboard from '@common/helpers/keyboard';
+import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 import { Navigator } from '@common/helpers/navigator';
 import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import { Prompt, VibrateHapticFeedback } from '@common/helpers/interface';
@@ -57,6 +59,9 @@ export interface State {
 /* Component ==================================================================== */
 class PassphraseAuthenticationOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.PassphraseAuthentication;
+    static contextType = AndroidWindowSurroundContext;
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
+    private containerViewRef = React.createRef<View>();
     private contentViewRef: React.RefObject<View>;
     private passwordInputRef: React.RefObject<PasswordInput>;
 
@@ -64,6 +69,21 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
     private backHandler: NativeEventSubscription | undefined;
 
     private mounted = false;
+    private adaptiveOffset = 0;
+    private adaptiveKeyboard = new AdaptiveOverlayKeyboard({
+        getContext: () => this.context,
+        getInput: () => this.contentViewRef.current,
+        getRestingBottom: (height, scale) => this.measureRestingBottom(height, scale),
+        // Store actual displacement: legacy centered margin moves only half.
+        getOffset: () => this.adaptiveOffset,
+        setOffset: (offset, isCurrent) => {
+            if (!this.mounted || !isCurrent()) return;
+            this.adaptiveOffset = offset;
+            LayoutAnimation.easeInEaseOut();
+            // Centered marginBottom shifts by half; keep its original units.
+            this.setState({ offsetBottom: offset * 2 });
+        },
+    });
 
     static options() {
         return {
@@ -88,9 +108,25 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
         this.animatedColor = new Animated.Value(0);
     }
 
+    private measureRestingBottom = (cardHeight: number, scale: number): Promise<number | undefined> => (
+        new Promise((resolve) => {
+            const container = this.containerViewRef.current;
+            if (!container) { resolve(undefined); return; }
+            container.measureInWindow((x, y, width, height) => {
+                if (!this.mounted || ![y, height].every(Number.isFinite) || height <= 0) {
+                    resolve(undefined);
+                    return;
+                }
+                // The parent stays centered and unshifted during LayoutAnimation.
+                resolve(y + (height + cardHeight) * scale / 2);
+            });
+        })
+    );
+
     componentDidMount() {
         // track component mount status
         this.mounted = true;
+        this.adaptiveKeyboard.mount();
 
         // listen on keyboard events
         Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
@@ -109,9 +145,14 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
         InteractionManager.runAfterInteractions(this.startAuthentication);
     }
 
+    componentDidUpdate() {
+        this.adaptiveKeyboard.contextChanged();
+    }
+
     componentWillUnmount() {
         // track component mount status
         this.mounted = false;
+        this.adaptiveKeyboard.unmount();
 
         // remove all listeners
         if (this.backHandler) {
@@ -162,12 +203,19 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
     };
 
     onKeyboardShow = (e: KeyboardEvent) => {
+        if (this.adaptiveKeyboard.show((isCurrent) => this.onLegacyKeyboardShow(e, isCurrent))) return;
+        this.onLegacyKeyboardShow(e);
+    };
+
+    private onLegacyKeyboardShow = (e: KeyboardEvent, isCurrent?: () => boolean) => {
         if (this.contentViewRef.current && this.mounted) {
             this.contentViewRef.current.measure((x, y, width, height) => {
+                if (isCurrent && !isCurrent()) return;
                 const bottomView = (AppSizes.screen.height - height) / 2;
                 const KeyboardHeight = e.endCoordinates.height + 100;
 
                 if (bottomView < KeyboardHeight) {
+                    this.adaptiveOffset = (KeyboardHeight - bottomView) / 2;
                     LayoutAnimation.easeInEaseOut();
                     this.setState({ offsetBottom: KeyboardHeight - bottomView });
                 }
@@ -176,13 +224,20 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
     };
 
     onKeyboardHide = () => {
+        if (this.adaptiveKeyboard.hide()) return;
+        this.onLegacyKeyboardHide();
+    };
+
+    private onLegacyKeyboardHide = () => {
         if (this.mounted) {
+            this.adaptiveOffset = 0;
             LayoutAnimation.easeInEaseOut();
             this.setState({ offsetBottom: 0 });
         }
     };
 
     close = () => {
+        this.adaptiveKeyboard.cancel();
         Keyboard.dismiss();
         Navigator.dismissOverlay();
     };
@@ -253,11 +308,13 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
 
         return (
             <Animated.View
+                ref={this.containerViewRef}
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <View ref={this.contentViewRef} style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
+                <View ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
+                    style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
                             <Text numberOfLines={1} style={[AppStyles.p, AppStyles.bold]}>
