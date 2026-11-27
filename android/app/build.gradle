@@ -365,6 +365,8 @@ dependencies {
 
     implementation "androidx.biometric:biometric:1.1.0"
     implementation 'com.github.kenglxn.QRGen:android:2.6.0'
+    // The app's native column uses public AH APIs; RNN keeps this same version implementation-only.
+    implementation 'com.github.wix-playground:ahbottomnavigation:3.3.0'
     implementation 'com.github.Dimezis:BlurView:version-2.0.6'
     implementation 'com.android.billingclient:billing:8.0.0'
     implementation 'com.google.android.gms:play-services-wallet:19.4.0'
