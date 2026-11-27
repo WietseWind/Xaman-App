@@ -11,6 +11,7 @@ import {
     NativeModules,
     Keyboard as RNKeyboard,
     findNodeHandle,
+    PixelRatio,
 } from 'react-native';
 
 import Keyboard from '@common/helpers/keyboard';
@@ -186,9 +187,11 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     private onNativeKeyboardShow = () => {
+        // Remember visibility while fullscreen too, so a later split can
+        // remeasure without depending on a second native Show event.
+        this.keyboardVisible = true;
         const scale = this.adaptiveScale();
         if (scale === undefined || typeof NativeModules.KeyboardModule?.getWindowGeometry !== 'function') return;
-        this.keyboardVisible = true;
         // Standard events never enter the legacy popup-height protocol. Only
         // the existing custom emitter is allowed to use that fallback.
         this.scrollToAdaptiveFocusedInput(scale);
@@ -197,6 +200,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private onNativeKeyboardHide = () => {
         if (this.adaptiveKeyboardSession || (this.adaptiveScale() !== undefined &&
             typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function')) this.hideAdaptiveKeyboard();
+        else this.keyboardVisible = false;
     };
 
     private onAdaptiveFocus = (event: any) => {
@@ -264,12 +268,16 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const isCurrent = () => isActive() && scrollId === this.adaptiveScroll && this.adaptiveKey === key;
         if (this.scrollToTimeout) clearTimeout(this.scrollToTimeout);
         let scrollY: number;
+        let scrollHeight: number;
         let inputY: number;
         let inputHeight: number;
         try {
-            ({ y: scrollY } = await this.measureElement(scrollView));
+            ({ y: scrollY, height: scrollHeight } = await this.measureElement(scrollView));
             if (!isCurrent()) return true;
-            if (!Number.isFinite(scrollY)) { this.adaptiveKey = undefined; return true; }
+            if (!Number.isFinite(scrollY) || !Number.isFinite(scrollHeight) || scrollHeight <= 0) {
+                this.adaptiveKey = undefined;
+                return true;
+            }
             ({ y: inputY, height: inputHeight } = await this.measureElement(input));
         } catch {
             if (this.adaptiveKey === key) this.adaptiveKey = undefined;
@@ -282,15 +290,20 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         }
         const { extraOffset, calculateExtraOffset } = this.props;
         const { offset } = this.state;
-        let bottom = inputY + inputHeight * scale;
-        if (typeof calculateExtraOffset === 'function') {
-            bottom += calculateExtraOffset(input, inputHeight) * scale;
-        }
+        const inputExtra = typeof calculateExtraOffset === 'function' ? calculateExtraOffset(input, inputHeight) : 0;
+        const bottom = inputY + (inputHeight + inputExtra) * scale;
         const gap = bottom - top;
         if (gap <= 0) return true;
         // Native origins are physical, while input height and scroll offsets
         // are logical. Convert the overlap once; keep caller offsets logical.
-        const padding = (gap + 2 * inputHeight * scale + scrollY) / scale + extraOffset;
+        const focusedPadding = (gap + 2 * inputHeight * scale + scrollY) / scale + extraOffset;
+        // A short form first absorbs padding into unused viewport space. Reserve
+        // the occluded viewport so Android can honor the requested scroll range.
+        const occluded = Math.max(0, scrollHeight - (top - scrollY) / scale);
+        const pixelClearance = 1 / (PixelRatio.get() * scale);
+        const rangePadding = Math.ceil(occluded + DEFAULT_EXTRA_OFFSET + pixelClearance +
+            Math.max(0, inputExtra) + Math.max(0, extraOffset));
+        const padding = Math.max(focusedPadding, rangePadding);
         Animated.timing(offset, {
             toValue: padding, useNativeDriver: false, duration: 200,
         }).start(() => {
