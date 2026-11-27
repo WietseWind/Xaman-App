@@ -120,6 +120,7 @@ stubs = {
     'libs/ui/KeyboardModule.java': '''package libs.ui;
       import android.app.Activity; import com.facebook.react.bridge.*;
       public class KeyboardModule {public Activity activity;public KeyboardProvider keyboardProvider;
+        public boolean geometryObservationWanted;private void bindWindowGeometryObserver(){}
         public Activity getCurrentActivity(){return activity;}
         /* ACTUAL_BRIDGE_METHOD */
       }'''.replace('/* ACTUAL_BRIDGE_METHOD */', bridge_method),

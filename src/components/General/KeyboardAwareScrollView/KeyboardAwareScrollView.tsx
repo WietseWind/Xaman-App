@@ -15,6 +15,7 @@ import {
 
 import Keyboard from '@common/helpers/keyboard';
 import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+import { watchAndroidKeyboardGeometry } from '@common/helpers/androidKeyboardGeometry';
 
 import styles from './styles';
 /* Types ==================================================================== */
@@ -51,6 +52,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private adaptiveLayout = 0;
     private adaptiveKey?: { input: any; top: number; scale: number; layout: number };
     private nativeKeyboardSubscriptions: Array<{ remove: () => void }> = [];
+    private releaseGeometryWatch?: () => void;
     private keyboardHeight: number;
     private windowHeight: number;
     private scrollPosition: any;
@@ -100,6 +102,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const scale = this.adaptiveScale();
         const changed = this.previousAdaptiveScale !== scale;
         if (changed) {
+            if (scale === undefined) this.stopGeometryWatch();
             this.adaptiveLife += 1;
             this.adaptiveQuery += 1;
             this.adaptiveScroll += 1;
@@ -117,6 +120,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
 
     componentWillUnmount() {
         this.mounted = false;
+        this.stopGeometryWatch();
         this.adaptiveLife += 1;
         this.adaptiveQuery += 1;
         this.adaptiveScroll += 1;
@@ -147,7 +151,20 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         return typeof scale === 'number' && Number.isFinite(scale) && scale > 0 ? scale : undefined;
     };
 
+    private stopGeometryWatch = () => {
+        this.releaseGeometryWatch?.();
+        this.releaseGeometryWatch = undefined;
+    };
+
+    private onWindowGeometryChange = () => {
+        const scale = this.adaptiveScale();
+        if (this.mounted && this.keyboardVisible && scale !== undefined) {
+            this.scrollToAdaptiveFocusedInput(scale);
+        }
+    };
+
     private hideAdaptiveKeyboard = () => {
+        this.stopGeometryWatch();
         const wasVisible = this.keyboardVisible || this.adaptiveKey !== undefined;
         this.keyboardVisible = false;
         this.adaptiveLife += 1;
@@ -203,6 +220,12 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const input = TextInput.State.currentlyFocusedInput();
         const scrollView = this.scrollViewRef.current;
         if (!input || !scrollView?.getScrollResponder()) return true;
+        if (this.keyboardVisible && !this.releaseGeometryWatch) {
+            this.releaseGeometryWatch = () => undefined;
+            const release = watchAndroidKeyboardGeometry(this.onWindowGeometryChange);
+            if (this.releaseGeometryWatch) this.releaseGeometryWatch = release;
+            else release();
+        }
         // Keep ownership through context loss and both hide emitters. A later
         // ordinary custom Show starts the original legacy notification session.
         this.adaptiveKeyboardSession = true;
@@ -246,12 +269,17 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         try {
             ({ y: scrollY } = await this.measureElement(scrollView));
             if (!isCurrent()) return true;
+            if (!Number.isFinite(scrollY)) { this.adaptiveKey = undefined; return true; }
             ({ y: inputY, height: inputHeight } = await this.measureElement(input));
         } catch {
             if (this.adaptiveKey === key) this.adaptiveKey = undefined;
             return true;
         }
         if (!isCurrent()) return true;
+        if (!Number.isFinite(inputY) || !Number.isFinite(inputHeight) || inputHeight <= 0) {
+            this.adaptiveKey = undefined;
+            return true;
+        }
         const { extraOffset, calculateExtraOffset } = this.props;
         const { offset } = this.state;
         let bottom = inputY + inputHeight * scale;
