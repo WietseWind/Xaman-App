@@ -115,6 +115,11 @@
 -keep class com.samsung.android.sdk.** { *; }
 -dontwarn com.samsung.android.sdk.**
 
+# JNI FindClass from the React Native sync hook. Keep the name for release builds.
+-keep class com.xrpllabs.xumm.SyncNativeTrace {
+    public static void note(java.lang.String);
+}
+
 #proguard for org.spongycastle
 -keep class org.spongycastle.crypto.* {*;}
 -keep class org.spongycastle.crypto.agreement.** {*;}

@@ -121,3 +121,94 @@ index 1111111..2222222 100644
  } // namespace facebook::react
 +
 +#endif // facebook_react_RuntimeScheduler_h
+diff --git a/node_modules/react-native/ReactAndroid/src/main/jni/react/jni/JavaModuleWrapper.cpp b/node_modules/react-native/ReactAndroid/src/main/jni/react/jni/JavaModuleWrapper.cpp
+index 1111111..2222222 100644
+--- a/node_modules/react-native/ReactAndroid/src/main/jni/react/jni/JavaModuleWrapper.cpp
++++ b/node_modules/react-native/ReactAndroid/src/main/jni/react/jni/JavaModuleWrapper.cpp
+@@ -7,6 +7,8 @@
+ 
+ #include "JavaModuleWrapper.h"
+ 
++#include <mutex>
++
+ #include <glog/logging.h>
+ 
+ #include <cxxreact/CxxModule.h>
+@@ -26,6 +28,69 @@
+ 
+ using facebook::xplat::module::CxxModule;
+ 
++namespace {
++
++// One shared native address serves every synchronous method. Record the
++// module and method before the call so a native abort can name it.
++void noteSyncNativeCall(const std::string& name) noexcept {
++  static std::once_flag once;
++  static jclass traceClass = nullptr;
++  static jmethodID noteMethod = nullptr;
++  static bool ready = false;
++
++  if (name.empty()) {
++    return;
++  }
++
++  JNIEnv* env = facebook::jni::Environment::current();
++  if (env == nullptr) {
++    return;
++  }
++
++  std::call_once(once, [env] {
++    jclass local = env->FindClass("com/xrpllabs/xumm/SyncNativeTrace");
++    if (local == nullptr || env->ExceptionCheck()) {
++      if (env->ExceptionCheck()) {
++        env->ExceptionClear();
++      }
++      return;
++    }
++    traceClass = static_cast<jclass>(env->NewGlobalRef(local));
++    env->DeleteLocalRef(local);
++    if (traceClass == nullptr) {
++      return;
++    }
++    noteMethod = env->GetStaticMethodID(
++        traceClass, "note", "(Ljava/lang/String;)V");
++    if (noteMethod == nullptr || env->ExceptionCheck()) {
++      if (env->ExceptionCheck()) {
++        env->ExceptionClear();
++      }
++      return;
++    }
++    ready = true;
++  });
++
++  if (!ready) {
++    return;
++  }
++
++  jstring jname = env->NewStringUTF(name.c_str());
++  if (jname == nullptr) {
++    if (env->ExceptionCheck()) {
++      env->ExceptionClear();
++    }
++    return;
++  }
++  env->CallStaticVoidMethod(traceClass, noteMethod, jname);
++  env->DeleteLocalRef(jname);
++  if (env->ExceptionCheck()) {
++    env->ExceptionClear();
++  }
++}
++
++} // namespace
++
+ namespace facebook::react {
+ 
+ std::string JMethodDescriptor::getSignature() const {
+@@ -148,6 +213,7 @@
+   auto& method = syncMethods_[reactMethodId];
+   CHECK(method.has_value() && method->isSyncHook())
+       << "Trying to invoke a asynchronous method as synchronous hook";
++  noteSyncNativeCall(getName() + "." + method->getMethodName());
+   return method->invoke(instance_, wrapper_->getModule(), params);
+ }
+ 
