@@ -17,6 +17,7 @@ import {
 import Keyboard from '@common/helpers/keyboard';
 import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 import { watchAndroidKeyboardGeometry } from '@common/helpers/androidKeyboardGeometry';
+import { supportsAndroidWindowLayout } from '@common/helpers/androidWindow';
 
 import styles from './styles';
 /* Types ==================================================================== */
@@ -349,7 +350,13 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const { y: scrollViewY } = await this.measureElement(this.scrollViewRef.current);
         const { y: inputY, height: inputHeight } = await this.measureElement(currentlyFocusedField);
 
-        const keyboardPosition = Math.abs(this.keyboardHeight - this.windowHeight);
+        let { windowHeight } = this;
+        // Resizable Android windows can return fullscreen without remounting the form.
+        if (supportsAndroidWindowLayout()) {
+            const { height: liveHeight } = Dimensions.get('window');
+            if (Number.isFinite(liveHeight) && liveHeight > 0) windowHeight = liveHeight;
+        }
+        const keyboardPosition = Math.abs(this.keyboardHeight - windowHeight);
         let textInputBottomPosition = inputY + inputHeight;
 
         if (typeof calculateExtraOffset === 'function') {

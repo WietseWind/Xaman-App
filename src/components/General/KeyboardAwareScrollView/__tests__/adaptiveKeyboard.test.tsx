@@ -17,7 +17,10 @@ jest.mock('react-native', () => ({
     findNodeHandle: (input: any) => input?.nativeTag ?? null,
     Dimensions: { get: () => ({ width: 400, height: mockWindowHeight }) },
     PixelRatio: { get: () => mockDensity },
-    NativeModules: { KeyboardModule: { getWindowGeometry: () => mockGeometry() } },
+    NativeModules: {
+        KeyboardModule: { getWindowGeometry: () => mockGeometry() },
+        DeviceUtilsModule: { supportsAndroidWindowLayout: false },
+    },
     Keyboard: {
         addListener: (name: string, listener: () => void) => {
             mockNativeHandlers[name] = listener;
@@ -96,6 +99,7 @@ beforeEach(() => {
     });
     mockGeometry = jest.fn().mockResolvedValue({ keyboardTop: 211, visible: true });
     NativeModules.KeyboardModule.getWindowGeometry = () => mockGeometry();
+    NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = false;
 });
 afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
@@ -330,6 +334,69 @@ describe('adaptive Android keyboard coordinates', () => {
         await view.scrollToFocusedTextInput();
         jest.runOnlyPendingTimers();
         expect(mockGeometry).not.toHaveBeenCalled();
+        expect(mockAnimations).toEqual([{ toValue: 284, useNativeDriver: false, duration: 200 }]);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 221, animated: true });
+    });
+
+    it('does not move an already visible Tag after a split-created form returns fullscreen', async () => {
+        // Native v6: the constructor retained411.429dp after the window became914.286dp.
+        // Tag1039..1197px already fitted above the real IME at1517px before refocus.
+        // The measured post-scroll145.142852783 + actual scroll198.857147217 restores344dp.
+        const { view, scrollTo } = fixture({ initialHeight: 411.428571429, height: 914.285714286,
+            context: false, inputY: 344, inputHeight: 60.190475464,
+            scrollY: 82.666664124, scrollPosition: 0, extraOffset: 0 });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        view.onKeyboardShow({ endCoordinates: { height: 336.380952381 } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(view.windowHeight).toBe(411.428571429);
+        expect(mockGeometry).not.toHaveBeenCalled();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('reads the live height after pending native measurements finish', async () => {
+        const { view, scrollTo, finishMeasure } = fixture({ initialHeight: 411, height: 411,
+            context: false, inputY: 370, inputHeight: 60, defer: true });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        view.keyboardHeight = 336;
+        const pending = view.scrollToFocusedTextInput();
+        mockWindowHeight = 914;
+        finishMeasure();
+        await pending;
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('keeps the same fullscreen native Android formula and timer without a resize', async () => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 914, context: false, inputY: 750 });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        view.keyboardHeight = 300;
+        await view.scrollToFocusedTextInput();
+        expect(mockAnimations).toEqual([{ toValue: 284, useNativeDriver: false, duration: 200 }]);
+        jest.advanceTimersByTime(9);
+        expect(scrollTo).not.toHaveBeenCalled();
+        jest.advanceTimersByTime(1);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 221, animated: true });
+    });
+
+    it.each([0, -1, NaN, Infinity])('retains the captured height when live height is invalid: %s', async (height) => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height, context: false, inputY: 750 });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        view.keyboardHeight = 300;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toEqual([{ toValue: 284, useNativeDriver: false, duration: 200 }]);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 221, animated: true });
+    });
+
+    it('retains the captured iOS height even if a native module exposes the Android support flag', async () => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 411, inputY: 750, context: false, os: 'ios' });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        view.keyboardHeight = 300;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
         expect(mockAnimations).toEqual([{ toValue: 284, useNativeDriver: false, duration: 200 }]);
         expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 221, animated: true });
     });
