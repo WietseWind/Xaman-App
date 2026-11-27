@@ -113,8 +113,7 @@ describe('adaptive Android keyboard coordinates', () => {
         const { view, scrollTo } = fixture();
         mockGeometry.mockResolvedValue({ keyboardTop: 383, visible: true });
         await view.scrollToFocusedTextInput();
-        expect(mockAnimations).toEqual([]);
-        expect(view.state.offset.value).toBe(0);
+        expect(scrollTo).not.toHaveBeenCalled();
         mockGeometry.mockResolvedValue({ keyboardTop: 121, visible: true });
         mockGeometryChanged();
         await flushMicrotasks();
@@ -203,6 +202,56 @@ describe('adaptive Android keyboard coordinates', () => {
         expect(actualScroll).toBeGreaterThan(33.905);
     });
 
+    it('reserves manual range for lower fields while the focused Name is already above the IME', async () => {
+        // Fresh Name-first native failure: content353.905 < viewport633.905,
+        // padding0 and maxScroll0 left Address/Tag unreachable by a real swipe.
+        const scale = 0.45;
+        const viewport = 633.904785156;
+        const naturalContent = 353.904754639;
+        const top = 121.9047619;
+        mockGeometry.mockResolvedValue({ keyboardTop: top, visible: true });
+        const { view, scrollTo } = fixture({ scale, inputY: 55.238095238, inputHeight: 59.809524536,
+            scrollY: 32.380950928, scrollHeight: viewport, scrollPosition: 0, extraOffset: 0 });
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).not.toHaveBeenCalled();
+        expect(view.scrollPosition.y).toBe(0);
+        const padding = mockAnimations[mockAnimations.length - 1]?.toValue ?? 0;
+        const maximumScroll = Math.max(0, (Math.floor((naturalContent + padding) * mockDensity) -
+            Math.ceil(viewport * mockDensity)) / mockDensity);
+        const tagBottom = (539 - 74) / mockDensity;
+        const manualScroll = (tagBottom - top) / scale + 20;
+        expect(maximumScroll).toBeGreaterThanOrEqual(manualScroll);
+        expect(Math.ceil((tagBottom - manualScroll * scale) * mockDensity))
+            .toBeLessThanOrEqual(Math.floor(top * mockDensity));
+    });
+
+    it('does not shrink an existing manual range on visible focus and clears it on Hide', async () => {
+        let clearance = 1000;
+        const { view, scrollTo } = fixture({ calculateExtraOffset: () => clearance });
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        const previousPadding = mockAnimations[0].toValue;
+        // The user has manually scrolled the last input near the viewport top.
+        view.scrollPosition = { x: 0, y: 950 };
+        scrollTo.mockClear();
+        clearance = 0;
+        mockFocusedInput = { nativeTag: 2, measureInWindow: (callback: any) => callback(0, 25, 100, 40) };
+        view.render().props.onFocus({ nativeEvent: { target: 2 } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toHaveLength(1);
+        expect(view.state.offset.value).toBe(previousPadding);
+        expect(1000 + previousPadding - 800).toBeGreaterThanOrEqual(view.scrollPosition.y);
+        expect(scrollTo).not.toHaveBeenCalled();
+        mockNativeHandlers.keyboardDidHide();
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations[mockAnimations.length - 1].toValue).toBe(447);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
     it('reserves caller clearance even when the last input is below a much taller viewport', async () => {
         const scale = 1;
         const viewport = 1000;
@@ -267,11 +316,11 @@ describe('adaptive Android keyboard coordinates', () => {
         expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 213, animated: true });
     });
 
-    it('does not scroll when the scaled bottom is already above the native top', async () => {
+    it('reserves padding without scrolling when the scaled bottom is already above the native top', async () => {
         const { view, scrollTo } = fixture({ inputY: 190 });
         await view.scrollToFocusedTextInput();
         jest.runOnlyPendingTimers();
-        expect(mockAnimations).toEqual([]);
+        expect(mockAnimations).toEqual([{ toValue: 447, useNativeDriver: false, duration: 200 }]);
         expect(scrollTo).not.toHaveBeenCalled();
     });
 
@@ -369,7 +418,7 @@ describe('adaptive Android keyboard coordinates', () => {
         mockNativeHandlers.keyboardDidHide();
         view.onKeyboardHide();
         jest.runOnlyPendingTimers();
-        expect(mockAnimations.map((animation) => animation.duration)).toEqual([300]);
+        expect(mockAnimations.map((animation) => animation.duration)).toEqual([200, 300]);
         expect(onHide).toHaveBeenCalledTimes(1);
         expect(scrollTo).not.toHaveBeenCalled();
     });
@@ -626,7 +675,8 @@ describe('adaptive Android keyboard coordinates', () => {
     it('remeasures a newly focused descendant while the same keyboard is already open', async () => {
         const { view, scrollTo } = fixture({ inputY: 190 });
         await view.scrollToFocusedTextInput();
-        expect(mockAnimations).toEqual([]);
+        expect(mockAnimations).toHaveLength(1);
+        expect(scrollTo).not.toHaveBeenCalled();
         mockFocusedInput = { nativeTag: 2, measureInWindow: (callback: any) => callback(0, 250, 100, 40) };
         view.render().props.onFocus({ nativeEvent: { target: 2 } });
         await flushMicrotasks();

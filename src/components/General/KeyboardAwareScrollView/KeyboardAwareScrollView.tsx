@@ -51,6 +51,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private adaptiveQuery = 0;
     private adaptiveScroll = 0;
     private adaptiveLayout = 0;
+    private adaptivePaddingTarget = 0;
     private adaptiveKey?: { input: any; top: number; scale: number; layout: number };
     private nativeKeyboardSubscriptions: Array<{ remove: () => void }> = [];
     private releaseGeometryWatch?: () => void;
@@ -121,6 +122,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
 
     componentWillUnmount() {
         this.mounted = false;
+        this.adaptivePaddingTarget = 0;
         this.stopGeometryWatch();
         this.adaptiveLife += 1;
         this.adaptiveQuery += 1;
@@ -165,6 +167,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     private hideAdaptiveKeyboard = () => {
+        this.adaptivePaddingTarget = 0;
         this.stopGeometryWatch();
         const wasVisible = this.keyboardVisible || this.adaptiveKey !== undefined;
         this.keyboardVisible = false;
@@ -200,7 +203,10 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private onNativeKeyboardHide = () => {
         if (this.adaptiveKeyboardSession || (this.adaptiveScale() !== undefined &&
             typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function')) this.hideAdaptiveKeyboard();
-        else this.keyboardVisible = false;
+        else {
+            this.keyboardVisible = false;
+            this.adaptivePaddingTarget = 0;
+        }
     };
 
     private onAdaptiveFocus = (event: any) => {
@@ -293,7 +299,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const inputExtra = typeof calculateExtraOffset === 'function' ? calculateExtraOffset(input, inputHeight) : 0;
         const bottom = inputY + (inputHeight + inputExtra) * scale;
         const gap = bottom - top;
-        if (gap <= 0) return true;
+        const hasOverlap = gap > 0;
         // Native origins are physical, while input height and scroll offsets
         // are logical. Convert the overlap once; keep caller offsets logical.
         const focusedPadding = (gap + 2 * inputHeight * scale + scrollY) / scale + extraOffset;
@@ -303,11 +309,16 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const pixelClearance = 1 / (PixelRatio.get() * scale);
         const rangePadding = Math.ceil(occluded + DEFAULT_EXTRA_OFFSET + pixelClearance +
             Math.max(0, inputExtra) + Math.max(0, extraOffset));
-        const padding = Math.max(focusedPadding, rangePadding);
+        const padding = hasOverlap ? Math.max(focusedPadding, rangePadding)
+            : Math.max(this.adaptivePaddingTarget, rangePadding);
+        // Visible focus still needs manual range, but must not shrink a range
+        // the user already used or restart a pending padding animation.
+        if (!hasOverlap && padding === this.adaptivePaddingTarget) return true;
+        this.adaptivePaddingTarget = padding;
         Animated.timing(offset, {
             toValue: padding, useNativeDriver: false, duration: 200,
         }).start(() => {
-            if (!isCurrent()) return;
+            if (!hasOverlap || !isCurrent()) return;
             this.scrollToTimeout = setTimeout(() => {
                 if (!isCurrent()) return;
                 this.scrollViewRef.current?.scrollTo({
@@ -418,6 +429,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             return;
         }
         this.keyboardVisible = false;
+        this.adaptivePaddingTarget = 0;
         this.keyboardShowNotified = false;
         const { onKeyboardHide, enabled } = this.props;
         const { offset } = this.state;
