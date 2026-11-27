@@ -1,10 +1,11 @@
 import { Keyboard as NativeKeyboard, NativeModules, Platform, View } from 'react-native';
 
 import { AndroidWindowSurround } from './androidWindowContext';
+import { watchAndroidKeyboardGeometry } from './androidKeyboardGeometry';
 
 type Options = {
     getContext: () => AndroidWindowSurround | undefined;
-    getInput: () => View | null;
+    getInput: () => Pick<View, 'measureInWindow'> | null;
     getOffset: () => number;
     getAppliedOffset?: () => number;
     getRestingBottom?: (inputHeight: number, scale: number) => Promise<number | undefined>;
@@ -26,6 +27,9 @@ export class AdaptiveOverlayKeyboard {
     private contextKey = '';
     private anchorBottom: number | undefined;
     private subscriptions: { remove: () => void }[] = [];
+    private geometryLease?: () => void;
+    private observingGeometry = false;
+    private geometryGeneration = 0;
 
     private options: Options;
 
@@ -41,6 +45,28 @@ export class AdaptiveOverlayKeyboard {
 
     private key = (context?: AndroidWindowSurround) => (context
         ? [context.left, context.width, context.height, context.columnWidth, context.scale].join(':') : '');
+
+    private watchGeometry = () => {
+        if (this.observingGeometry || !this.mounted || this.closed || !this.showIntent || !this.getContext()) return;
+        this.observingGeometry = true;
+        const generation = ++this.geometryGeneration;
+        const release = watchAndroidKeyboardGeometry(() => {
+            if (this.observingGeometry && generation === this.geometryGeneration &&
+                this.mounted && !this.closed && this.showIntent && this.getContext()) {
+                this.show(undefined, true);
+            }
+        });
+        if (this.observingGeometry && generation === this.geometryGeneration) this.geometryLease = release;
+        else release();
+    };
+
+    private stopGeometry = () => {
+        this.observingGeometry = false;
+        this.geometryGeneration += 1;
+        const release = this.geometryLease;
+        this.geometryLease = undefined;
+        release?.();
+    };
 
     mount = () => {
         this.mounted = true;
@@ -61,6 +87,7 @@ export class AdaptiveOverlayKeyboard {
     };
 
     cancel = () => {
+        this.stopGeometry();
         this.closed = true;
         this.session = false;
         this.showIntent = false;
@@ -72,6 +99,7 @@ export class AdaptiveOverlayKeyboard {
 
     contextChanged = () => {
         const context = this.getContext();
+        if (!context) this.stopGeometry();
         const key = this.key(context);
         if (key === this.contextKey) return;
         this.contextKey = key;
@@ -94,6 +122,7 @@ export class AdaptiveOverlayKeyboard {
     show = (legacyFallback?: (isCurrent: () => boolean) => void, requireVisible = false): boolean => {
         const context = this.getContext();
         if (!context) {
+            this.stopGeometry();
             // A new ordinary custom Show starts the original legacy ownership.
             if (legacyFallback) {
                 if (this.ownsHide) this.options.onHide?.();
@@ -108,6 +137,7 @@ export class AdaptiveOverlayKeyboard {
         }
         if (!this.mounted || this.closed) return true;
         this.showIntent = true;
+        this.watchGeometry();
 
         if (this.key(context) !== this.contextKey) {
             this.contextKey = this.key(context);
@@ -182,6 +212,7 @@ export class AdaptiveOverlayKeyboard {
     };
 
     hide = (): boolean => {
+        this.stopGeometry();
         const hadIntent = this.showIntent;
         this.showIntent = false;
         this.revision += 1;

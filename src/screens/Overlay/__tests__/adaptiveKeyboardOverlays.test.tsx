@@ -47,6 +47,9 @@ jest.mock('xumm-string-decode', () => ({ StringType: { XrplDestinationTag: 'tag'
 jest.mock('@common/helpers/navigator', () => ({ Navigator: { dismissOverlay: () => mockDismiss() } }));
 jest.mock('@common/helpers/images', () => ({ Images: {} }));
 jest.mock('@common/helpers/sideSafeArea', () => ({ SideSafeAreaFill: 'SideSafeAreaFill' }));
+jest.mock('../../../common/helpers/androidKeyboardGeometry', () => ({
+    watchAndroidKeyboardGeometry: () => () => undefined,
+}));
 jest.mock('@common/helpers/keyboard', () => ({
     __esModule: true, default: { addListener: (...args: any[]) => mockCustomAdd(...args),
         removeListener: (...args: any[]) => mockCustomRemove(...args), dismiss: jest.fn() },

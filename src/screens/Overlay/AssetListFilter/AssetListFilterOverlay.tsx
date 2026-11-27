@@ -11,9 +11,16 @@ import {
     // ScrollView,
     // Text,
     View,
+    TextInput as NativeTextInput,
+    Platform,
+    findNodeHandle,
+    NativeSyntheticEvent,
+    TargetedEvent,
 } from 'react-native';
 
 import Keyboard from '@common/helpers/keyboard';
+import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import { Navigator } from '@common/helpers/navigator';
 // import { Toast } from '@common/helpers/interface';
@@ -63,11 +70,14 @@ export interface State {
     // networkReserve: { BaseReserve: number; OwnerReserve: number };
     // isSignable: boolean;
     actionPanelExtraHeight: number;
+    keyboardOffset: number;
 }
 
 /* Component ==================================================================== */
 class AssetListFilterOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.AssetListFilter;
+    static contextType = AndroidWindowSurroundContext;
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
 
     private actionPanelRef: React.RefObject<ActionPanel>;
 
@@ -75,6 +85,27 @@ class AssetListFilterOverlay extends Component<Props, State> {
     private closing = false;
     private closeSettled = false;
     private afterClose?: () => void;
+    private adaptiveOffset = 0;
+    private ownedSearchInput: ReturnType<typeof NativeTextInput.State.currentlyFocusedInput> | null = null;
+    private adaptiveKeyboard = new AdaptiveOverlayKeyboard({
+        getContext: () => this.getOwnedSearchInput() ? this.context : undefined,
+        getInput: () => this.getOwnedSearchInput(),
+        getOffset: () => this.adaptiveOffset,
+        getAppliedOffset: () => this.actionPanelRef.current?.offsetFromRest ?? 0,
+        setOffset: (offset, isCurrent) => {
+            this.adaptiveOffset = offset;
+            if (offset === 0) {
+                this.setState({ keyboardOffset: 0 });
+                if (!this.closing) this.actionPanelRef.current?.snapTo(1);
+                return;
+            }
+            this.setState({ keyboardOffset: offset }, () => {
+                setTimeout(() => {
+                    if (isCurrent() && !this.closing) this.actionPanelRef.current?.snapTo(offset > 0 ? 2 : 1);
+                }, 10);
+            });
+        },
+    });
 
     static options() {
         return {
@@ -93,6 +124,7 @@ class AssetListFilterOverlay extends Component<Props, State> {
 
         this.state = {
             actionPanelExtraHeight: 0,
+            keyboardOffset: 0,
         //     // isLoading: true,
         //     // accountObjects: [],
         //     // nfTokenPageCount: 0,
@@ -104,6 +136,7 @@ class AssetListFilterOverlay extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.adaptiveKeyboard.mount();
 
         // check if account is signable
         // const isSignable = AccountRepository.isSignable(account);
@@ -117,7 +150,12 @@ class AssetListFilterOverlay extends Component<Props, State> {
         }, 500);
     }
 
+    componentDidUpdate() {
+        this.adaptiveKeyboard.contextChanged();
+    }
+
     componentWillUnmount() {
+        this.adaptiveKeyboard.unmount();
         const { hideTopElements } = this.props;
         hideTopElements(false, this.closeSettled ? this.afterClose : undefined);
         this.afterClose = undefined;
@@ -129,6 +167,7 @@ class AssetListFilterOverlay extends Component<Props, State> {
 
     onClosePress = (afterClose?: () => void) => {
         if (this.closing) return;
+        this.adaptiveKeyboard.cancel();
         this.closing = true;
         this.afterClose = afterClose;
         this.actionPanelRef?.current?.slideDown();
@@ -137,16 +176,45 @@ class AssetListFilterOverlay extends Component<Props, State> {
     };
 
     onSlideDown = () => {
+        this.adaptiveKeyboard.cancel();
         this.closeSettled = true;
         return Navigator.dismissOverlay(AppScreens.Overlay.AssetListFilter);
     };
 
     onCloseRequest = () => {
+        this.adaptiveKeyboard.cancel();
         this.closing = true;
     };
 
+    private getOwnedSearchInput = () => {
+        if (!this.ownedSearchInput) return null;
+        return NativeTextInput.State.currentlyFocusedInput() === this.ownedSearchInput ? this.ownedSearchInput : null;
+    };
+
+    private onSearchFocus = (event: NativeSyntheticEvent<TargetedEvent>) => {
+        const input = NativeTextInput.State.currentlyFocusedInput();
+        if (!input || event.nativeEvent.target !== findNodeHandle(input)) return;
+        this.ownedSearchInput = input;
+        this.adaptiveKeyboard.focus();
+    };
+
+    private onSearchBlur = (event: NativeSyntheticEvent<TargetedEvent>) => {
+        const input = this.ownedSearchInput;
+        if (!input || event.nativeEvent.target !== findNodeHandle(input) ||
+            NativeTextInput.State.currentlyFocusedInput() === input) return;
+        this.ownedSearchInput = null;
+        this.adaptiveKeyboard.hide();
+    };
+
     onKeyboardShow = () => {
+        if (Platform.OS === 'android' && this.context && !this.getOwnedSearchInput()) return;
+        if (this.adaptiveKeyboard.show((isCurrent) => this.onLegacyKeyboardShow(isCurrent))) return;
+        this.onLegacyKeyboardShow();
+    };
+
+    private onLegacyKeyboardShow = (isCurrent?: () => boolean) => {
         setTimeout(() => {
+            if (isCurrent && !isCurrent()) return;
             if (this.actionPanelRef?.current) {
                 this.actionPanelRef?.current.snapTo(2);
             }
@@ -154,6 +222,7 @@ class AssetListFilterOverlay extends Component<Props, State> {
     };
 
     onKeyboardHide = () => {
+        if (this.adaptiveKeyboard.hide()) return;
         if (this.actionPanelRef?.current) {
             this.actionPanelRef?.current.snapTo(1);
         }
@@ -166,19 +235,25 @@ class AssetListFilterOverlay extends Component<Props, State> {
             onReorderPress,
             onAddTokenPress,
         } = this.props;
-        const { actionPanelExtraHeight } = this.state;
+        const { actionPanelExtraHeight, keyboardOffset } = this.state;
+        const adaptive = Platform.OS === 'android' && this.context !== undefined;
         // const { isLoading, isSignable } = this.state;
 
         return (
             <ActionPanel
-                /** TODO: height based on keyboard size */
                 height={400 + AppSizes.safeAreaBottomInset + actionPanelExtraHeight}
+                offset={adaptive ? keyboardOffset : undefined}
                 ref={this.actionPanelRef}
                 onSlideDown={this.onSlideDown}
                 onCloseRequest={this.onCloseRequest}
                 lockAfterCloseRequest
             >
-                <View style={[AppStyles.column, AppStyles.centerAligned]}>
+                <View style={[AppStyles.column, AppStyles.centerAligned]}
+                    {...{
+                        onFocus: adaptive ? this.onSearchFocus : undefined,
+                        onBlur: adaptive ? this.onSearchBlur : undefined,
+                        collapsable: adaptive ? false : undefined,
+                    }}>
                     <ListFilter
                         filters={filters}
                         visible

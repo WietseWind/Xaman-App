@@ -4,6 +4,15 @@ import { AdaptiveOverlayKeyboard } from '../adaptiveOverlayKeyboard';
 let mockQuery: jest.Mock;
 const mockHandlers: Record<string, () => void> = {};
 const mockRemove = jest.fn();
+const mockGeometryRelease = jest.fn();
+const mockGeometrySignals: (() => void)[] = [];
+const mockWatchGeometry = jest.fn((listener: () => void) => {
+    mockGeometrySignals.push(listener);
+    return mockGeometryRelease;
+});
+jest.mock('../androidKeyboardGeometry', () => ({
+    watchAndroidKeyboardGeometry: (listener: () => void) => mockWatchGeometry(listener),
+}));
 jest.mock('react-native', () => ({
     Platform: { OS: 'android' },
     NativeModules: { KeyboardModule: { getWindowGeometry: () => mockQuery() } },
@@ -54,6 +63,7 @@ const fixture = ({ scale = 0.5, baseBottom = 320, offset = 0, context = true,
 
 beforeEach(() => {
     jest.clearAllMocks();
+    mockGeometrySignals.length = 0;
     Object.keys(mockHandlers).forEach((key) => delete mockHandlers[key]);
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
     mockQuery = jest.fn().mockResolvedValue({ keyboardTop: 250, visible: true });
@@ -221,6 +231,91 @@ describe('adaptive overlay keyboard', () => {
         expect(f.offset()).toBe(0);
     });
 
+    it('rechecks the settled IME geometry after RN Show exposed the initial zero inset', async () => {
+        mockQuery.mockResolvedValue({ keyboardTop: 383, visible: true });
+        const f = fixture({ baseBottom: 200 });
+        mockHandlers.keyboardDidShow();
+        await flush();
+        expect(f.offset()).toBe(0);
+        expect(mockWatchGeometry).toHaveBeenCalledTimes(1);
+        mockQuery.mockResolvedValue({ keyboardTop: 121, visible: true });
+        mockGeometrySignals[0]();
+        await flush();
+        expect(f.offset()).toBe(158);
+        expect(mockWatchGeometry).toHaveBeenCalledTimes(1);
+    });
+
+    it('observes focus intent lazily without acquiring an observer for an idle overlay', async () => {
+        const f = fixture();
+        expect(mockWatchGeometry).not.toHaveBeenCalled();
+        f.controller.focus();
+        f.controller.show();
+        await flush();
+        expect(mockWatchGeometry).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not acquire twice if registration supplies an immediate initial change signal', async () => {
+        mockWatchGeometry.mockImplementationOnce((listener) => {
+            listener();
+            return mockGeometryRelease;
+        });
+        const f = fixture();
+        f.controller.show();
+        await flush();
+        expect(mockWatchGeometry).toHaveBeenCalledTimes(1);
+        expect(f.offset()).toBe(140);
+        f.controller.hide();
+        expect(mockGeometryRelease).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['hide', 'cancel', 'unmount', 'context'])(
+        'releases geometry observation on %s and ignores a detached late signal', async (action) => {
+            const f = fixture();
+            f.controller.show();
+            await flush();
+            const lateSignal = mockGeometrySignals[0];
+            if (action === 'hide') f.controller.hide();
+            if (action === 'cancel') f.controller.cancel();
+            if (action === 'unmount') f.controller.unmount();
+            if (action === 'context') { f.context(undefined); f.controller.contextChanged(); }
+            const count = mockQuery.mock.calls.length;
+            lateSignal();
+            await flush();
+            expect(mockQuery).toHaveBeenCalledTimes(count);
+            expect(mockGeometryRelease).toHaveBeenCalledTimes(1);
+        },
+    );
+
+    it('reacquires observation after adaptive context returns with live Show intent', async () => {
+        const f = fixture();
+        f.controller.show();
+        await flush();
+        f.context(undefined);
+        f.controller.contextChanged();
+        f.context({ left: 0, width: 200, height: 400, columnWidth: 400, scale: 0.5 });
+        f.controller.contextChanged();
+        await flush();
+        expect(mockGeometryRelease).toHaveBeenCalledTimes(1);
+        expect(mockWatchGeometry).toHaveBeenCalledTimes(2);
+        const count = mockQuery.mock.calls.length;
+        mockGeometrySignals[0]();
+        await flush();
+        expect(mockQuery).toHaveBeenCalledTimes(count);
+    });
+
+    it('uses a native hidden geometry signal as the existing owned Hide', async () => {
+        const f = fixture();
+        f.controller.show();
+        await flush();
+        mockQuery.mockResolvedValue({ keyboardTop: 383, visible: false });
+        mockGeometrySignals[0]();
+        await flush();
+        expect(f.offset()).toBe(0);
+        expect(mockGeometryRelease).toHaveBeenCalledTimes(1);
+        expect(f.controller.hide()).toBe(true);
+        expect(f.setOffset).toHaveBeenCalledTimes(2);
+    });
+
     it('keeps a duplicate Hide reset valid but invalidates it as soon as a new Show starts', async () => {
         const f = fixture();
         f.controller.show();
@@ -371,6 +466,7 @@ describe('adaptive overlay keyboard', () => {
         expect(f.controller.hide()).toBe(false);
         await flush();
         expect(mockQuery).not.toHaveBeenCalled();
+        expect(mockWatchGeometry).not.toHaveBeenCalled();
         expect(f.setOffset).not.toHaveBeenCalled();
     });
 
