@@ -88,6 +88,26 @@ const start = async (runtime: Runtime) => {
     return Object.fromEntries(children.map(({ stack }: any) => [stack.id, stack.options.bottomTab]));
 };
 
+it('keeps five tabs when startDefault runs twice before setRoot', async () => {
+    const runtime = makeRuntime('android', '36');
+    runtime.StyleService.setTheme('light');
+    runtime.Navigator.startDefault();
+    runtime.Navigator.startDefault();
+    expect(runtime.interactions).toHaveLength(2);
+    await runtime.interactions.shift()!();
+    await runtime.interactions.shift()!();
+    expect(runtime.Navigation.setRoot).toHaveBeenCalledTimes(1);
+    const [{ root }] = jest.mocked(runtime.Navigation.setRoot).mock.calls[0];
+    const { children } = (root as any).bottomTabs;
+    expect(children.map(({ stack }: any) => stack.id)).toEqual([
+        'bottomTab-Home',
+        'bottomTab-Events',
+        'bottomTab-Actions',
+        'bottomTab-XApps',
+        'bottomTab-Settings',
+    ]);
+});
+
 const refresh = (runtime: Runtime) => {
     jest.mocked(runtime.Navigation.mergeOptions).mockClear();
     runtime.Navigator.reRender();

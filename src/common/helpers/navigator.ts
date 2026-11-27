@@ -312,8 +312,8 @@ const Navigator = {
         });
 
         Object.keys(AppScreens.TabBar).forEach((tab) => {
-            if (bottomTabsChildren.length > Object.keys(AppScreens.TabBar).length) {
-                // Fixes Android timing error "Too many tabs"
+            // A second cold-boot startDefault must not append. Length 5 is already the Android limit.
+            if (bottomTabsChildren.length >= Object.keys(AppScreens.TabBar).length) {
                 return;
             }
             bottomTabsChildren.push({
