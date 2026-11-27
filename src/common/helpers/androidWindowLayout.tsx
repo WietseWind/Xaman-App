@@ -108,7 +108,7 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
             // Overlays can mount before their first onLayout. Give their blur a
             // bounded initial window too, rather than a 2000dp bleed bitmap.
             const backdropFrame = frame || windowFrame;
-            const surround = backdropFrame && (fold || hasFreeArea) ? {
+            const surround = backdropFrame && (fold || hasFreeArea || backdropFrame.scale !== 1) ? {
                 left: backdropFrame.left / backdropFrame.scale,
                 width: (backdropFrame.left + backdropFrame.width) / backdropFrame.scale,
                 height: backdropFrame.logicalHeight,

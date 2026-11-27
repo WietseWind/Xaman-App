@@ -233,3 +233,26 @@ describe('mounted Android screen on fold and resize', () => {
         act(() => tree!.unmount());
     });
 });
+
+describe('scaled ordinary Android surround', () => {
+    it('provides scale metadata when the column fills a narrow ordinary window', () => {
+        device.supportsAndroidWindowLayout = true;
+        const window = { width: 200, height: COVER.height };
+        (Dimensions.get as jest.Mock).mockReturnValue(window);
+        const Content = () => (
+            <AndroidWindowSurroundContext.Consumer>
+                {(value) => React.createElement('ScaledInput', { surround: value })}
+            </AndroidWindowSurroundContext.Consumer>
+        );
+        const Wrapped = withAndroidWindowLayout(Content);
+        let tree: renderer.ReactTestRenderer;
+        act(() => { tree = renderer.create(<Wrapped />); });
+        const { surround } = tree!.root.findByType('ScaledInput' as any).props;
+        expect(surround.left).toBe(0);
+        expect(surround.scale).toBeCloseTo(200 / COVER.width);
+        expect(surround.columnWidth).toBe(COVER.width);
+        expect(surround.width * surround.scale).toBe(200);
+        expect(getAndroidFoldLayout()).toBeUndefined();
+        act(() => tree!.unmount());
+    });
+});

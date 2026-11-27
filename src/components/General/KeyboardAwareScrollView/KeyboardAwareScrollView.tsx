@@ -8,9 +8,13 @@ import {
     Platform,
     LayoutChangeEvent,
     TextInput,
+    NativeModules,
+    Keyboard as RNKeyboard,
+    findNodeHandle,
 } from 'react-native';
 
 import Keyboard from '@common/helpers/keyboard';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import styles from './styles';
 /* Types ==================================================================== */
@@ -32,6 +36,21 @@ interface State {
 const DEFAULT_EXTRA_OFFSET = 20;
 /* Component ==================================================================== */
 class KeyboardAwareScrollView extends PureComponent<Props, State> {
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
+
+    private mounted = false;
+    private keyboardVisible = false;
+    private keyboardShowNotified = false;
+    private adaptiveKeyboardSession = false;
+    private previousAdaptiveScale?: number;
+    private adaptiveLife = 0;
+    private adaptiveQuery = 0;
+    private adaptiveScroll = 0;
+    private adaptiveLayout = 0;
+    private adaptiveKey?: { input: any; top: number; scale: number; layout: number };
+    private nativeKeyboardSubscriptions: Array<{ remove: () => void }> = [];
     private keyboardHeight: number;
     private windowHeight: number;
     private scrollPosition: any;
@@ -65,11 +84,44 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     }
 
     componentDidMount() {
+        this.mounted = true;
+        this.previousAdaptiveScale = this.adaptiveScale();
+        if (Platform.OS === 'android' && typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function') {
+            this.nativeKeyboardSubscriptions = [
+                RNKeyboard.addListener('keyboardDidShow', this.onNativeKeyboardShow),
+                RNKeyboard.addListener('keyboardDidHide', this.onNativeKeyboardHide),
+            ];
+        }
         Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
         Keyboard.addListener('keyboardWillHide', this.onKeyboardHide);
     }
 
+    componentDidUpdate() {
+        const scale = this.adaptiveScale();
+        const changed = this.previousAdaptiveScale !== scale;
+        if (changed) {
+            this.adaptiveLife += 1;
+            this.adaptiveQuery += 1;
+            this.adaptiveScroll += 1;
+            this.adaptiveKey = undefined;
+            if (this.scrollToTimeout) clearTimeout(this.scrollToTimeout);
+            // Preserve the last parent notification until a real hide. Losing
+            // the adaptive context alone does not mean the keyboard closed.
+        }
+        this.previousAdaptiveScale = scale;
+        const { enabled } = this.props;
+        if (changed && scale !== undefined && this.keyboardVisible && enabled) {
+            this.scrollToAdaptiveFocusedInput(scale);
+        }
+    }
+
     componentWillUnmount() {
+        this.mounted = false;
+        this.adaptiveLife += 1;
+        this.adaptiveQuery += 1;
+        this.adaptiveScroll += 1;
+        this.adaptiveKey = undefined;
+        this.nativeKeyboardSubscriptions.forEach((subscription) => subscription.remove());
         // clear timeout
         if (this.scrollToTimeout) clearTimeout(this.scrollToTimeout);
 
@@ -89,7 +141,149 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         });
     };
 
+    private adaptiveScale = (): number | undefined => {
+        const { context } = this;
+        const scale = Platform.OS === 'android' ? context?.scale : undefined;
+        return typeof scale === 'number' && Number.isFinite(scale) && scale > 0 ? scale : undefined;
+    };
+
+    private hideAdaptiveKeyboard = () => {
+        const wasVisible = this.keyboardVisible || this.adaptiveKey !== undefined;
+        this.keyboardVisible = false;
+        this.adaptiveLife += 1;
+        this.adaptiveQuery += 1;
+        this.adaptiveScroll += 1;
+        this.adaptiveKey = undefined;
+        if (this.scrollToTimeout) clearTimeout(this.scrollToTimeout);
+        const { enabled, onKeyboardHide } = this.props;
+        if (this.keyboardShowNotified) {
+            this.keyboardShowNotified = false;
+            onKeyboardHide?.();
+        }
+        const { offset } = this.state;
+        if (wasVisible && enabled) {
+            Animated.timing(offset, {
+                toValue: 0, duration: 300, useNativeDriver: false,
+            }).start();
+        }
+    };
+
+    private onNativeKeyboardShow = () => {
+        const scale = this.adaptiveScale();
+        if (scale === undefined || typeof NativeModules.KeyboardModule?.getWindowGeometry !== 'function') return;
+        this.keyboardVisible = true;
+        // Standard events never enter the legacy popup-height protocol. Only
+        // the existing custom emitter is allowed to use that fallback.
+        this.scrollToAdaptiveFocusedInput(scale);
+    };
+
+    private onNativeKeyboardHide = () => {
+        if (this.adaptiveKeyboardSession || (this.adaptiveScale() !== undefined &&
+            typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function')) this.hideAdaptiveKeyboard();
+    };
+
+    private onAdaptiveFocus = (event: any) => {
+        const scale = this.adaptiveScale();
+        const { enabled } = this.props;
+        if (!enabled || scale === undefined ||
+            typeof NativeModules.KeyboardModule?.getWindowGeometry !== 'function') return;
+        const input = TextInput.State.currentlyFocusedInput();
+        const target = event.nativeEvent?.target ?? event.target;
+        // A bubbling focus must belong to this focused native input. A focus
+        // on the scroll container must not move a different or hidden form.
+        if (!input || target == null || target !== findNodeHandle(input)) return;
+        this.keyboardVisible = true;
+        this.scrollToAdaptiveFocusedInput(scale);
+    };
+
+    /** True when the adaptive path handled or canceled this request; false keeps legacy behavior. */
+    private scrollToAdaptiveFocusedInput = async (scale: number): Promise<boolean> => {
+        const query = NativeModules.KeyboardModule?.getWindowGeometry;
+        if (typeof query !== 'function') return false;
+        const input = TextInput.State.currentlyFocusedInput();
+        const scrollView = this.scrollViewRef.current;
+        if (!input || !scrollView?.getScrollResponder()) return true;
+        // Keep ownership through context loss and both hide emitters. A later
+        // ordinary custom Show starts the original legacy notification session.
+        this.adaptiveKeyboardSession = true;
+        const life = this.adaptiveLife;
+        const queryId = ++this.adaptiveQuery;
+        const isActive = () => this.mounted && this.keyboardVisible && life === this.adaptiveLife &&
+            input === TextInput.State.currentlyFocusedInput() && scale === this.adaptiveScale();
+        let geometry;
+        try {
+            geometry = await query();
+        } catch {
+            return !isActive() || queryId !== this.adaptiveQuery;
+        }
+        if (!isActive() || queryId !== this.adaptiveQuery) return true;
+        if (geometry?.visible === false) {
+            this.hideAdaptiveKeyboard();
+            return true;
+        }
+        const top = geometry?.keyboardTop;
+        if (typeof top !== 'number' || !Number.isFinite(top) || top <= 0) return false;
+        const { enabled, onKeyboardShow } = this.props;
+        if (!this.keyboardShowNotified) {
+            this.keyboardShowNotified = true;
+            onKeyboardShow?.();
+        }
+        if (!enabled) return true;
+        const previous = this.adaptiveKey;
+        if (previous?.input === input && previous.top === top && previous.scale === scale &&
+            previous.layout === this.adaptiveLayout) return true;
+
+        // Reserve the verified geometry before measuring. A duplicate standard
+        // or custom event must not cancel the first request's pending animation.
+        const key = { input, top, scale, layout: this.adaptiveLayout };
+        this.adaptiveKey = key;
+        const scrollId = ++this.adaptiveScroll;
+        const isCurrent = () => isActive() && scrollId === this.adaptiveScroll && this.adaptiveKey === key;
+        if (this.scrollToTimeout) clearTimeout(this.scrollToTimeout);
+        let scrollY: number;
+        let inputY: number;
+        let inputHeight: number;
+        try {
+            ({ y: scrollY } = await this.measureElement(scrollView));
+            if (!isCurrent()) return true;
+            ({ y: inputY, height: inputHeight } = await this.measureElement(input));
+        } catch {
+            if (this.adaptiveKey === key) this.adaptiveKey = undefined;
+            return true;
+        }
+        if (!isCurrent()) return true;
+        const { extraOffset, calculateExtraOffset } = this.props;
+        const { offset } = this.state;
+        let bottom = inputY + inputHeight * scale;
+        if (typeof calculateExtraOffset === 'function') {
+            bottom += calculateExtraOffset(input, inputHeight) * scale;
+        }
+        const gap = bottom - top;
+        if (gap <= 0) return true;
+        // Native origins are physical, while input height and scroll offsets
+        // are logical. Convert the overlap once; keep caller offsets logical.
+        const padding = (gap + 2 * inputHeight * scale + scrollY) / scale + extraOffset;
+        Animated.timing(offset, {
+            toValue: padding, useNativeDriver: false, duration: 200,
+        }).start(() => {
+            if (!isCurrent()) return;
+            this.scrollToTimeout = setTimeout(() => {
+                if (!isCurrent()) return;
+                this.scrollViewRef.current?.scrollTo({
+                    x: 0, y: this.scrollPosition.y + gap / scale + DEFAULT_EXTRA_OFFSET, animated: true,
+                });
+            }, 10);
+        });
+        return true;
+    };
+
     scrollToFocusedTextInput = async () => {
+        const adaptiveScale = this.adaptiveScale();
+        if (adaptiveScale !== undefined && await this.scrollToAdaptiveFocusedInput(adaptiveScale)) return;
+        await this.scrollToLegacyFocusedInput();
+    };
+
+    private scrollToLegacyFocusedInput = async () => {
         const { extraOffset, calculateExtraOffset } = this.props;
         const { offset } = this.state;
 
@@ -142,7 +336,15 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const { height } = event.endCoordinates;
 
         this.keyboardHeight = height;
+        this.keyboardVisible = true;
 
+        const scale = this.adaptiveScale();
+        if (scale !== undefined && typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function') {
+            this.onAdaptiveKeyboardShow(scale);
+            return;
+        }
+        this.adaptiveKeyboardSession = false;
+        this.keyboardShowNotified = true;
         if (typeof onKeyboardShow === 'function') {
             onKeyboardShow();
         }
@@ -152,7 +354,30 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         }
     };
 
+    private onAdaptiveKeyboardShow = async (scale: number) => {
+        const life = this.adaptiveLife;
+        const pending = this.scrollToAdaptiveFocusedInput(scale);
+        const queryId = this.adaptiveQuery;
+        if (await pending || !this.mounted || !this.keyboardVisible || life !== this.adaptiveLife ||
+            queryId !== this.adaptiveQuery || scale !== this.adaptiveScale()) return;
+        // The custom emitter retains its original callback and height formula
+        // when the additive native query cannot supply a current geometry.
+        const { enabled, onKeyboardShow } = this.props;
+        if (!this.keyboardShowNotified) {
+            this.keyboardShowNotified = true;
+            onKeyboardShow?.();
+        }
+        if (enabled) this.scrollToLegacyFocusedInput();
+    };
+
     onKeyboardHide = () => {
+        if (this.adaptiveKeyboardSession || (this.adaptiveScale() !== undefined &&
+            typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function')) {
+            this.hideAdaptiveKeyboard();
+            return;
+        }
+        this.keyboardVisible = false;
+        this.keyboardShowNotified = false;
         const { onKeyboardHide, enabled } = this.props;
         const { offset } = this.state;
 
@@ -170,9 +395,16 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     handleLayout = (event: LayoutChangeEvent) => {
-        const { onLayout } = this.props;
+        const { onLayout, enabled } = this.props;
 
+        const changed = this.viewHeight !== event.nativeEvent.layout.height;
         this.viewHeight = event.nativeEvent.layout.height;
+        if (changed && this.keyboardVisible && enabled && this.adaptiveScale() !== undefined) {
+            this.adaptiveLayout += 1;
+            this.adaptiveScroll += 1;
+            this.adaptiveKey = undefined;
+            this.scrollToFocusedTextInput();
+        }
 
         if (typeof onLayout === 'function') {
             onLayout(event);
@@ -198,6 +430,10 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const { offset } = this.state;
 
         const extraProps = {};
+        if (this.adaptiveScale() !== undefined &&
+            typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function') {
+            Object.assign(extraProps, { onFocus: this.onAdaptiveFocus });
+        }
         if (typeof scrollEnabled !== 'undefined') {
             Object.assign(
                 extraProps,

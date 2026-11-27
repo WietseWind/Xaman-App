@@ -47,6 +47,15 @@ public class KeyboardProvider extends PopupWindow implements OnGlobalLayoutListe
         return this;
     }
 
+    Rect getVisibleWindowFrame() {
+        if (!isShowing() || !rootView.isAttachedToWindow()) {
+            return null;
+        }
+        Rect frame = new Rect();
+        rootView.getWindowVisibleDisplayFrame(frame);
+        return frame.height() > 0 ? frame : null;
+    }
+
     public void setHeightListener(HeightListener listener) {
         this.listener = listener;
     }

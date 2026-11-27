@@ -5,6 +5,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -56,6 +57,23 @@ public class KeyboardModule extends ReactContextBaseJavaModule {
         }
     }
 
+
+    @ReactMethod
+    public void getWindowGeometry(Promise promise) {
+        UiThreadUtil.runOnUiThread(() -> {
+            KeyboardWindowGeometry.Result geometry = KeyboardWindowGeometry.read(getCurrentActivity(), keyboardProvider);
+            if (geometry == null) {
+                promise.resolve(null);
+                return;
+            }
+            WritableMap result = Arguments.createMap();
+            result.putDouble("keyboardTop", geometry.keyboardTop);
+            if (geometry.visible != null) {
+                result.putBoolean("visible", geometry.visible);
+            }
+            promise.resolve(result);
+        });
+    }
 
     @ReactMethod
     public void startKeyboardListener() {

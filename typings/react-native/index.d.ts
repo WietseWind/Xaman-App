@@ -468,6 +468,8 @@ interface VaultManagerModuleInterface extends NativeModule {
  * @interface
  */
 interface KeyboardModuleInterface extends NativeModule {
+    /** Current keyboard top in measureInWindow dp; absent/unready native builds return null. */
+    getWindowGeometry?: () => Promise<{ keyboardTop: number; visible?: boolean } | null>;
     /**
      * Starts the keyboard visibility listener.
      *

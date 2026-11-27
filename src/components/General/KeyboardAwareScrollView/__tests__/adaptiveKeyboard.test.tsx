@@ -1,0 +1,529 @@
+import { NativeModules } from 'react-native';
+import KeyboardAwareScrollView from '../KeyboardAwareScrollView';
+
+let mockWindowHeight = 411;
+let mockFocusedInput: any;
+let mockGeometry: jest.Mock;
+const mockAnimations: any[] = [];
+const mockNativeHandlers: Record<string, () => void> = {};
+const mockRemoved = jest.fn();
+
+jest.mock('react-native', () => ({
+    ScrollView: 'ScrollView',
+    findNodeHandle: (input: any) => input?.nativeTag ?? null,
+    Dimensions: { get: () => ({ width: 400, height: mockWindowHeight }) },
+    NativeModules: { KeyboardModule: { getWindowGeometry: () => mockGeometry() } },
+    Keyboard: {
+        addListener: (name: string, listener: () => void) => {
+            mockNativeHandlers[name] = listener;
+            return { remove: () => { mockRemoved(name); delete mockNativeHandlers[name]; } };
+        },
+    },
+    Animated: {
+        Value: class { value: number; constructor(value: number) { this.value = value; } },
+        View: 'AnimatedView',
+        timing: (value: any, options: any) => ({
+            start: (callback?: () => void) => {
+                value.value = options.toValue;
+                mockAnimations.push(options);
+                callback?.();
+            },
+        }),
+    },
+    Platform: { OS: 'android', select: (values: any) => values.android },
+    TextInput: { State: { currentlyFocusedInput: () => mockFocusedInput } },
+}));
+jest.mock('@common/helpers/keyboard', () => ({
+    __esModule: true,
+    default: { addListener: jest.fn(), removeListener: jest.fn() },
+}));
+jest.mock('../styles', () => ({ __esModule: true, default: { contentContainer: { flex: 1 } } }));
+
+// RN Android returns a physical origin and an untransformed height. Geometry
+// and measurements below are isolated native API fixtures, not device proof.
+const fixture = ({ initialHeight = 411, height = initialHeight, scale = 0.5, inputY = 250,
+    context = true, os = 'android', calculateExtraOffset, defer = false, onKeyboardShow, onKeyboardHide,
+    enabled = true }: any = {}) => {
+    // eslint-disable-next-line global-require
+    const { Platform } = require('react-native');
+    Platform.OS = os;
+    mockWindowHeight = initialHeight;
+    const view: any = new KeyboardAwareScrollView({
+        children: null, enabled, extraOffset: 8, calculateExtraOffset, onKeyboardShow, onKeyboardHide,
+    });
+    view.context = context ? { left: 0, width: 400, height: 800, columnWidth: 337, scale } : undefined;
+    let pendingMeasure: any;
+    const inputMeasure = jest.fn((callback) => callback(0, inputY, 100, 40));
+    mockFocusedInput = { nativeTag: 1, measureInWindow: inputMeasure };
+    const input = mockFocusedInput;
+    const scrollTo = jest.fn();
+    view.scrollViewRef.current = {
+        getScrollResponder: () => ({}), scrollTo,
+        measureInWindow: (callback: any) => { if (defer) pendingMeasure = callback; else callback(0, 20, 400, 800); },
+    };
+    view.scrollPosition = { x: 0, y: 25 };
+    view.componentDidMount();
+    mockWindowHeight = height;
+    view.keyboardHeight = 703;
+    view.keyboardVisible = true;
+    return { view, scrollTo, input, inputMeasure, finishMeasure: () => pendingMeasure(0, 20, 400, 800) };
+};
+
+const flushMicrotasks = async () => {
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+};
+
+beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockAnimations.length = 0;
+    Object.keys(mockNativeHandlers).forEach((name) => delete mockNativeHandlers[name]);
+    mockGeometry = jest.fn().mockResolvedValue({ keyboardTop: 211, visible: true });
+    NativeModules.KeyboardModule.getWindowGeometry = () => mockGeometry();
+});
+afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+
+describe('adaptive Android keyboard coordinates', () => {
+    it('ignores a stale inflated height and uses current native top after fullscreen to split', async () => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 411 });
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(view.keyboardHeight).toBe(703);
+        expect(mockAnimations).toEqual([{ toValue: 246, useNativeDriver: false, duration: 200 }]);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 163, animated: true });
+    });
+
+    it('keeps caller offsets and the callback input height in logical units', async () => {
+        const calculate = jest.fn((input, inputHeight) => inputHeight + 10);
+        const { view, scrollTo, input } = fixture({ calculateExtraOffset: calculate });
+        await view.scrollToFocusedTextInput();
+        jest.advanceTimersByTime(9);
+        expect(scrollTo).not.toHaveBeenCalled();
+        jest.advanceTimersByTime(1);
+        expect(calculate).toHaveBeenCalledWith(input, 40);
+        expect(mockAnimations[0].toValue).toBe(296);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 213, animated: true });
+    });
+
+    it('does not scroll when the scaled bottom is already above the native top', async () => {
+        const { view, scrollTo } = fixture({ inputY: 190 });
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it.each(['android', 'ios'])('keeps the ordinary %s formula and timer unchanged', async (os) => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 411, inputY: 750, context: os === 'ios', os });
+        view.keyboardHeight = 300;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(mockGeometry).not.toHaveBeenCalled();
+        expect(mockAnimations).toEqual([{ toValue: 284, useNativeDriver: false, duration: 200 }]);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 221, animated: true });
+    });
+
+    it.each(['missing', 'null', 'rejected'])('uses the exact legacy formula if native query is %s', async (mode) => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 411 });
+        if (mode === 'missing') delete NativeModules.KeyboardModule.getWindowGeometry;
+        if (mode === 'null') mockGeometry.mockResolvedValue(null);
+        if (mode === 'rejected') mockGeometry.mockRejectedValue(new Error('window unavailable'));
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toEqual([{ toValue: 187, useNativeDriver: false, duration: 200 }]);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 124, animated: true });
+    });
+
+    it('recovers through the standard event when the custom popup event is missed', async () => {
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 411 });
+        view.keyboardHeight = 0;
+        view.keyboardVisible = false;
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 163, animated: true });
+    });
+
+    it('deduplicates concurrent standard and custom show events', async () => {
+        const { view, scrollTo } = fixture();
+        mockNativeHandlers.keyboardDidShow();
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockGeometry).toHaveBeenCalledTimes(2);
+        expect(mockAnimations).toHaveLength(1);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not cancel an already pending scroll when a duplicate event queries the same geometry', async () => {
+        const { view, scrollTo } = fixture();
+        await view.scrollToFocusedTextInput();
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toHaveLength(1);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not enter the legacy formula for an unready standard-event geometry query', async () => {
+        const { scrollTo } = fixture({ initialHeight: 914, height: 411 });
+        mockGeometry.mockResolvedValue(null);
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('does not subscribe to standard supplements when the native method is absent', async () => {
+        delete NativeModules.KeyboardModule.getWindowGeometry;
+        const { view, scrollTo } = fixture({ initialHeight: 914, height: 411 });
+        expect(mockNativeHandlers.keyboardDidShow).toBeUndefined();
+        view.onNativeKeyboardShow();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockGeometry).not.toHaveBeenCalled();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('does not query or scroll ordinary Android for the new standard callbacks', async () => {
+        const { scrollTo } = fixture({ context: false });
+        mockNativeHandlers.keyboardDidShow();
+        mockNativeHandlers.keyboardDidHide();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockGeometry).not.toHaveBeenCalled();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('treats explicit native hidden visibility as a hide and does not repeat its animation', async () => {
+        const onHide = jest.fn();
+        const { view, scrollTo } = fixture({ onKeyboardHide: onHide, inputY: 190 });
+        await view.scrollToFocusedTextInput();
+        mockGeometry.mockResolvedValue({ keyboardTop: 800, visible: false });
+        await view.scrollToFocusedTextInput();
+        mockNativeHandlers.keyboardDidHide();
+        view.onKeyboardHide();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations.map((animation) => animation.duration)).toEqual([300]);
+        expect(onHide).toHaveBeenCalledTimes(1);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('notifies the parent once for standard-only verified show and hide', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        fixture({ onKeyboardShow: onShow, onKeyboardHide: onHide });
+        mockNativeHandlers.keyboardDidShow();
+        expect(onShow).not.toHaveBeenCalled();
+        await flushMicrotasks();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        mockNativeHandlers.keyboardDidHide();
+        mockNativeHandlers.keyboardDidHide();
+        expect(onHide).toHaveBeenCalledTimes(1);
+    });
+
+    it('deduplicates parent callbacks across standard and custom events', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { view } = fixture({ onKeyboardShow: onShow, onKeyboardHide: onHide });
+        mockNativeHandlers.keyboardDidShow();
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        await flushMicrotasks();
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        await flushMicrotasks();
+        view.onKeyboardHide();
+        mockNativeHandlers.keyboardDidHide();
+        view.onKeyboardHide();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        expect(onHide).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not notify either parent callback for an initially hidden native query', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { view } = fixture({ onKeyboardShow: onShow, onKeyboardHide: onHide });
+        mockGeometry.mockResolvedValue({ keyboardTop: 800, visible: false });
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        await flushMicrotasks();
+        mockNativeHandlers.keyboardDidHide();
+        view.onKeyboardHide();
+        expect(onShow).not.toHaveBeenCalled();
+        expect(onHide).not.toHaveBeenCalled();
+    });
+
+    it.each(['null', 'rejected'])('retains the legacy custom callback and timing for %s geometry', async (mode) => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { view, scrollTo } = fixture({ initialHeight: 914, onKeyboardShow: onShow, onKeyboardHide: onHide });
+        if (mode === 'null') mockGeometry.mockResolvedValue(null);
+        else mockGeometry.mockRejectedValue(new Error('window unavailable'));
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        await flushMicrotasks();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        expect(mockAnimations).toEqual([{ toValue: 187, useNativeDriver: false, duration: 200 }]);
+        jest.advanceTimersByTime(9);
+        expect(scrollTo).not.toHaveBeenCalled();
+        jest.advanceTimersByTime(1);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 124, animated: true });
+        mockNativeHandlers.keyboardDidHide();
+        expect(onHide).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['null', 'rejected'])('does not repeat a parent Show when a duplicate query is %s', async (mode) => {
+        const onShow = jest.fn();
+        const { view } = fixture({ onKeyboardShow: onShow });
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        if (mode === 'null') mockGeometry.mockResolvedValue(null);
+        else mockGeometry.mockRejectedValue(new Error('window unavailable'));
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        await flushMicrotasks();
+        expect(onShow).toHaveBeenCalledTimes(1);
+    });
+
+    it('balances an adaptive parent Show through RN-only Hide after context loss', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { view } = fixture({ onKeyboardShow: onShow, onKeyboardHide: onHide });
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        view.context = undefined;
+        view.componentDidUpdate();
+        mockNativeHandlers.keyboardDidHide();
+        view.onKeyboardHide();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        expect(onHide).toHaveBeenCalledTimes(1);
+        expect(view.keyboardVisible).toBe(false);
+    });
+
+    it('does not repeat a completed adaptive Hide when the custom Hide follows context loss', async () => {
+        const onHide = jest.fn();
+        const { view } = fixture({ onKeyboardHide: onHide });
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        mockNativeHandlers.keyboardDidHide();
+        view.context = undefined;
+        view.componentDidUpdate();
+        view.onKeyboardHide();
+        expect(onHide).toHaveBeenCalledTimes(1);
+        view.onKeyboardShow({ endCoordinates: { height: 703 } });
+        view.onKeyboardHide();
+        expect(onHide).toHaveBeenCalledTimes(2);
+    });
+
+    it('notifies verified visibility with scrolling disabled', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { scrollTo } = fixture({ enabled: false, onKeyboardShow: onShow, onKeyboardHide: onHide });
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        mockNativeHandlers.keyboardDidHide();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        expect(onHide).toHaveBeenCalledTimes(1);
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('invalidates adaptive work on context loss without inventing a keyboard hide or duplicate show', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { view, scrollTo } = fixture({ onKeyboardShow: onShow, onKeyboardHide: onHide });
+        await view.scrollToFocusedTextInput();
+        const { context } = view;
+        view.context = undefined;
+        view.componentDidUpdate();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).not.toHaveBeenCalled();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        expect(onHide).not.toHaveBeenCalled();
+        view.context = context;
+        view.componentDidUpdate();
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        expect(onShow).toHaveBeenCalledTimes(1);
+        mockNativeHandlers.keyboardDidHide();
+        expect(onHide).toHaveBeenCalledTimes(1);
+    });
+
+    it('clears parent visibility through the legacy hide after the context becomes ordinary', async () => {
+        const onShow = jest.fn();
+        const onHide = jest.fn();
+        const { view } = fixture({ onKeyboardShow: onShow, onKeyboardHide: onHide });
+        await view.scrollToFocusedTextInput();
+        const { context } = view;
+        view.context = undefined;
+        view.componentDidUpdate();
+        view.onKeyboardHide();
+        view.context = context;
+        view.componentDidUpdate();
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        expect(onShow).toHaveBeenCalledTimes(2);
+        expect(onHide).toHaveBeenCalledTimes(1);
+    });
+
+    it('accepts a valid popup top without inventing visibility', async () => {
+        const { view, scrollTo } = fixture();
+        mockGeometry.mockResolvedValue({ keyboardTop: 211 });
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 163, animated: true });
+    });
+
+    it('discards a pending native query on unmount and removes both standard listeners', async () => {
+        let finish: any;
+        mockGeometry.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+        const { view, scrollTo, inputMeasure } = fixture();
+        const pending = view.scrollToFocusedTextInput();
+        view.componentWillUnmount();
+        finish({ keyboardTop: 211, visible: true });
+        await pending;
+        jest.runOnlyPendingTimers();
+        expect(mockRemoved).toHaveBeenCalledTimes(2);
+        expect(inputMeasure).not.toHaveBeenCalled();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('cancels a delayed native measurement when the keyboard hides', async () => {
+        const { view, scrollTo, inputMeasure, finishMeasure } = fixture({ defer: true });
+        const pending = view.scrollToFocusedTextInput();
+        await flushMicrotasks();
+        mockNativeHandlers.keyboardDidHide();
+        finishMeasure();
+        await pending;
+        jest.runOnlyPendingTimers();
+        expect(inputMeasure).not.toHaveBeenCalled();
+        expect(mockAnimations.map((animation) => animation.duration)).toEqual([300]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('does not scroll stale focus after a delayed native measurement', async () => {
+        const { view, scrollTo, finishMeasure } = fixture({ defer: true });
+        const pending = view.scrollToFocusedTextInput();
+        await flushMicrotasks();
+        mockFocusedInput = {};
+        finishMeasure();
+        await pending;
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toEqual([]);
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('discards an older native geometry response after a newer query completed', async () => {
+        let first: any;
+        mockGeometry.mockImplementationOnce(() => new Promise((resolve) => { first = resolve; }));
+        const { view, scrollTo } = fixture();
+        const old = view.scrollToFocusedTextInput();
+        await view.scrollToFocusedTextInput();
+        first({ keyboardTop: 100, visible: true });
+        await old;
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toHaveLength(1);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not enter legacy fallback when an obsolete native query rejects', async () => {
+        let rejectFirst: any;
+        mockGeometry.mockImplementationOnce(() => new Promise((resolve, reject) => { rejectFirst = reject; }));
+        const { view, scrollTo } = fixture();
+        const old = view.scrollToFocusedTextInput();
+        await view.scrollToFocusedTextInput();
+        rejectFirst(new Error('old window disappeared'));
+        await old;
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toHaveLength(1);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('releases a reserved geometry key when a native input measurement fails', async () => {
+        const { view, scrollTo, inputMeasure } = fixture();
+        inputMeasure.mockImplementationOnce(() => { throw new Error('input removed'); });
+        await view.scrollToFocusedTextInput();
+        expect(mockAnimations).toEqual([]);
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(mockAnimations).toHaveLength(1);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('remeasures a newly focused descendant while the same keyboard is already open', async () => {
+        const { view, scrollTo } = fixture({ inputY: 190 });
+        await view.scrollToFocusedTextInput();
+        expect(mockAnimations).toEqual([]);
+        mockFocusedInput = { nativeTag: 2, measureInWindow: (callback: any) => callback(0, 250, 100, 40) };
+        view.render().props.onFocus({ nativeEvent: { target: 2 } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 163, animated: true });
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores a bubbling target that is not the currently focused input', async () => {
+        const { view, scrollTo } = fixture();
+        view.render().props.onFocus({ nativeEvent: { target: 99 } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockGeometry).not.toHaveBeenCalled();
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('can query a hidden keyboard on first focus then respond to its later standard show', async () => {
+        const { view, scrollTo } = fixture();
+        mockGeometry.mockResolvedValueOnce({ keyboardTop: 800, visible: false });
+        view.render().props.onFocus({ nativeEvent: { target: 1 } });
+        await flushMicrotasks();
+        expect(scrollTo).not.toHaveBeenCalled();
+        mockNativeHandlers.keyboardDidShow();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['android', 'ios'])('adds no focus handler to the ordinary %s scroll view', (os) => {
+        const { view } = fixture({ context: os === 'ios', os });
+        expect(view.render().props.onFocus).toBeUndefined();
+    });
+
+    it('rechecks a changed adaptive scale without a local layout-height change', async () => {
+        const { view, scrollTo } = fixture();
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        view.viewHeight = 800;
+        view.context = { ...view.context, scale: 0.4 };
+        view.componentDidUpdate();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(view.viewHeight).toBe(800);
+        expect(mockGeometry).toHaveBeenCalledTimes(2);
+        expect(scrollTo).toHaveBeenLastCalledWith({ x: 0, y: 182.5, animated: true });
+        expect(scrollTo).toHaveBeenCalledTimes(2);
+    });
+
+    it('rechecks the still-visible keyboard when an ordinary view becomes adaptive', async () => {
+        const { view, scrollTo } = fixture({ context: false });
+        view.context = { left: 0, width: 400, height: 800, columnWidth: 337, scale: 0.5 };
+        view.componentDidUpdate();
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(mockGeometry).toHaveBeenCalledTimes(1);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 163, animated: true });
+    });
+
+    it('rechecks changed local height despite a previously reserved geometry key', async () => {
+        const { view, scrollTo } = fixture();
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        view.viewHeight = 800;
+        view.handleLayout({ nativeEvent: { layout: { height: 760 } } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledTimes(2);
+        view.handleLayout({ nativeEvent: { layout: { height: 760 } } });
+        await flushMicrotasks();
+        expect(mockGeometry).toHaveBeenCalledTimes(2);
+    });
+});
