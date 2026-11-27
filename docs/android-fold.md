@@ -8,7 +8,7 @@ horizontal native tab bar; it does not use the Duo's side-bar dimensions.
 
 The new native build permits window resizing. A positive public hinge-sensor feature or sensor, on Android 11
 or later, enables the fold layout and rotation. A model name or a screen aspect ratio does not identify a fold.
-Devices without that capability keep their portrait policy and existing size formulas.
+Devices without that capability keep their portrait policy and ordinary full-screen size formulas.
 
 This is not universal Galaxy Fold identification. Early Samsung Galaxy Fold, Z Fold2 and Z Flip devices can use
 proprietary hinge interfaces instead of the standard sensor, as documented in
@@ -22,6 +22,13 @@ therefore supplies a stable phone model for the app process: its natural width i
 600 dp wide, and its longer physical dimension in dp. This is a layout policy, not a claim to measure an unseen
 cover display. It can differ from the physical cover width on other fold models. The native process retains the
 model across Activity recreation and JavaScript reload.
+
+The Activity overrides only font scale and locale. Copying the complete startup configuration also pins
+screen size, orientation and window bounds. In the native control, the real decor and Application reached
+portrait and then the inner display while the Activity still reported the original landscape window. A fresh
+[Configuration delta](https://developer.android.com/reference/android/content/res/Configuration#Configuration())
+leaves those fields undefined so Android can update them. The existing font-scale and English-locale policies
+remain intact; no extra window polling or React Native cache patch is added.
 
 Every registered screen stays mounted in one phone column. The column is on the right of the current app window;
 it fits down when the window is smaller. The native bottom-tab container follows that same visible width and
@@ -55,6 +62,32 @@ layout and scale changes, and rejects late work after hide or unmount. Standard 
 cases where the old popup emitter misses a change. The ordinary full-screen and iOS scroll formula stays intact;
 an unavailable native method keeps the existing custom-event fallback.
 
+Android's standard keyboard Show event can arrive before its final IME inset. In the native test it reported
+Show with a negative height, then the current keyboard top changed from 383 dp to 122 dp on the next frame without
+another Show event. The old popup can also disappear during split mode while JavaScript listeners remain.
+Adaptive work therefore leases an independent observer on the current Activity decor. Its own global-layout,
+pre-draw and attachment listeners emit only changed geometry; they do not replace RNN's inset callbacks, request
+frames or use a timer. Consumers requery the current window. Hide, context loss, close and unmount release the
+lease; pause/destroy detach the native listeners. The popup measurement/event protocol and its event timing remain unchanged.
+
+The existing zero-width keyboard-height popup is marked [non-touchable](https://developer.android.com/reference/android/widget/PopupWindow#setTouchable(boolean)).
+It measures the window and never receives app input. The native split test found that its old window disappeared
+after the first Cancel tap while no React Native touch event arrived; the unchanged baseline showed the same
+capture pattern. Its focus, modal and input-method settings, height maximum, 100 ms event timer and cleanup stay
+unchanged. Native first-tap and keyboard checks validate this input policy separately from the geometry helpers.
+
+A scaled short form can also have too little scroll range even with the correct keyboard top. Its adaptive
+padding reserves the measured part of the scroll viewport behind the keyboard, caller clearance and one physical
+pixel for rounding. It reserves that range even when Name already fits, so the user can scroll to a lower
+field with the same keyboard open. A visible input does not trigger an automatic scroll or shrink a range already
+used by the user. Hide clears the owned padding target. This needs no content-height cache and preserves the
+existing scroll animation. The ordinary full-screen and iOS formulas remain on their legacy path.
+
+A form first opened in split mode can later return to full size without a remount. New Android native builds
+therefore select the current window height after the legacy field measurements complete. A stale split height
+must not scroll a field that already fits above the keyboard. The arithmetic and timers stay unchanged; iOS and
+old native builds retain their captured-height path. Invalid live dimensions also retain that fallback.
+
 The native tab background also follows live theme changes after resize. It updates an opaque child background
 only when its opaque parent differs, and refreshes native items only when their default color differs. Repeated
 layout calls, transparent backgrounds and startup defaults do not trigger another item refresh.
@@ -72,7 +105,9 @@ full-height column can still be `open`; the Duo's `turned` state describes its v
 | `DeviceUtilsModule.java` | Capability/model constants and validated UI-thread width update |
 | `androidWindow.ts` | Pixel-aligned fit and native capability checks |
 | `androidWindowLayout.tsx` | Live window updates, stable screen instance and free panel |
+| `KeyboardProvider.java` | Non-interactive legacy height observer; its measurement/event protocol stays intact |
 | `KeyboardWindowGeometry.java`, `KeyboardModule.java` | Current keyboard coordinates without changing the old event protocol |
+| `KeyboardWindowGeometryObserver.java`, `androidKeyboardGeometry.ts` | Owned frame listener and shared leases while adaptive keyboard work is active |
 | `KeyboardAwareScrollView.tsx` | Focused-field visibility in a scaled Android column |
 | `adaptiveOverlayKeyboard.ts` | Current keyboard coordinates, total overlay displacement and stale-request guards |
 | `ActionPanel.tsx` | Read-only current displacement for a resize during its existing spring |

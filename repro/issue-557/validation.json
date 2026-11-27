@@ -1,0 +1,354 @@
+{
+  "issue": "https://github.com/WietseWind/Xaman-App/issues/557",
+  "pullRequests": {
+    "fold": 561,
+    "sdkRecovery": 560,
+    "target": "release/5.5.0",
+    "mergedByThisTask": false
+  },
+  "source": {
+    "baseline": "68a7e821cf2e77a65115e4e3c36f5507034d4d4a",
+    "nativeBuild": "8eb32fceb2446dc4a459eaf5d7f8ac70e8656591",
+    "javaScript": "859a42bde67fc130ae95de45ede5ad815932acff",
+    "nativeAndJavaScriptCommitsGitHubVerified": true,
+    "nativeBuildToCurrentSourceOnlyTwoJavaScriptFilesDiffer": true,
+    "original16kbCleanAndUnchanged": true,
+    "sdk560ReadOnlyMergeTreeClean": true
+  },
+  "build": {
+    "version": "5.5.0",
+    "canonicalBuild": 561,
+    "arm64VersionCode": 3176289,
+    "configuration": "Debug",
+    "abi": "arm64-v8a"
+  },
+  "artifacts": {
+    "fold": {
+      "sha256": "79e11a8fff431d7a2b30bed87e1cf95f057cb754d5febf46369afff65d2e971b",
+      "metroPort": 8089,
+      "sourceHead": "8eb32fceb2446dc4a459eaf5d7f8ac70e8656591"
+    },
+    "ordinary": {
+      "sha256": "4069f11c7153383423c6d8cd69717e9ffc450add870b852287a19cf72312e7b1",
+      "metroPort": 8091,
+      "sourceHead": "8eb32fceb2446dc4a459eaf5d7f8ac70e8656591"
+    }
+  },
+  "artifactParity": {
+    "identicalTwinDexFiles": 32,
+    "identicalTwinNativeLibraries": 55,
+    "nativeLibrariesAlsoIdenticalToV5": true,
+    "onlyTwinProductEntryDifference": "resources.arsc (Metro port)",
+    "sealedNativeConfigInputs": 1976,
+    "restoredDiagnosticDependencySources": 4,
+    "diagnosticMarkersAbsent": true,
+    "diagnosticApkNeverInstalled": true,
+    "debugCertificateSha256": "fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c",
+    "baselineApkAndJavaScriptUnchanged": true
+  },
+  "guestJavaScript": {
+    "fold8089": "3c37bb1e1fd967e62ed8a5d8f440168846372ae9437fc4af504004ae33d38d3a",
+    "ordinary8091": "0f40a8193d0de6445f39afe4aefceb106b99c109efc5640b072883d33d8a6da2"
+  },
+  "tests": {
+    "jest": {
+      "source": "859a42bde67fc130ae95de45ede5ad815932acff",
+      "passed": 4041,
+      "failed": 0,
+      "preExistingSkippedTests": 7,
+      "passedSuites": 328,
+      "skippedSuites": 2,
+      "snapshotsPassed": 60,
+      "exitCode": 0,
+      "seconds": 195.463
+    },
+    "focusedAdaptiveScroll": 66,
+    "actualSourceJavaHostAssertions": {
+      "windowTabsBlur": 118,
+      "keyboardCoordinates": 42,
+      "observerLifecycle": 55,
+      "activityConfigurationDelta": 44,
+      "legacyPopupTouch": 25,
+      "total": 284,
+      "scope": "Production code compiled against public-API/view doubles, not the Android layout engine"
+    },
+    "typeScript": "PASS",
+    "normalCommitChecks": "PASS",
+    "lint": "Zero errors; one context-value allocation warning in androidWindowLayout",
+    "authenticationSigningMethodsByteIdentical": 17,
+    "allAgreedNativeCasesPassed": true
+  },
+  "nativeChecks": {
+    "v5CoreFoldStage": {
+      "native": "0ea9e1da4835b3d9b092e9b6c969663d49a67d5e",
+      "javaScript": "2bc5853b84e5b6d500dd5b67d03e2e919224cb14",
+      "passed": [
+        "Same-process short landscape to portrait cover to inner: actual window dimensions and column correct",
+        "Live inner Light/Dark/Light native bar white/black/white",
+        "Genuine OS left and right split",
+        "All five short native controls and actual Scanner preview/Close",
+        "Real keyboard Name/Tag scroll and input retention across rotation",
+        "Guarded typed fullscreen-IME Back then first Header Back",
+        "Cold inner process restart: model884px, PIN/Home/account retained"
+      ]
+    },
+    "v6ChangedInputStage": {
+      "native": "8eb32fceb2446dc4a459eaf5d7f8ac70e8656591",
+      "javaScriptBeforeLiveHeightFix": "8eb32fceb2446dc4a459eaf5d7f8ac70e8656591",
+      "passed": [
+        "Strict FIRST Cancel in production destination-tag sheet before input touch",
+        "Strict FIRST Cancel in original immediate empty Vault PIN component host",
+        "First numeric Tag input touch opens real IME; field visible",
+        "NOT_TOUCHABLE popup remains during mounted first-focus/IME/hide; normal unmount disposes it",
+        "Fold non-extract Name/Tag IME and Lock free-left/behind-tabs input protection"
+      ]
+    },
+    "finalJavaScript859Stage": {
+      "passed": [
+        "Fresh split Name to normal swipe to Tag with same keyboard; no focus jump",
+        "Same split-created form to fullscreen: hide/refocus adds zero movement, all fields and draft retained, Cancel saves nothing",
+        "Reverse full-created form to actual split: field visible, full height and draft retained, Cancel saves nothing",
+        "Ordinary Lock/Home/Settings: zero changed app pixels versus prior normal reference",
+        "Fold fresh Home, after IME and after untouched Tag first Cancel: physical/input/WM origin0, no reveal leash, zero app-region pixels changed"
+      ],
+      "extraPasswordAndAssetPersistentPopupChecks": "PASS; empty password/Asset inputs visible; NOT_TOUCHABLE popup stays during focus/IME/hide; Back/Cancel returns Home; no actions/sign/auth; geometry listeners0"
+    }
+  },
+  "programmaticEntryScope": {
+    "tagPasswordFilter": "Production components with public synthetic props; not normal Send/signing E2E",
+    "vaultMethods": "Actual exported methods with synthetic MethodsContext and inert callbacks; no password/PIN digit/auth/sign action",
+    "vaultPinKeyboard": "Actual custom numeric pad; not native IME",
+    "cancelWhenKeyboardOpen": "Android Back hides IME before Cancel where needed; no all-buttons-visible claim"
+  },
+  "earlierBroadMatrix": {
+    "stage": "native04f5 / JS865",
+    "retainedCases": [
+      "Critical passcode change/restore",
+      "Authenticate and full-window input cover",
+      "Partial PIN across split-side swap",
+      "Scanner background/Lock/PIN/resume",
+      "Stock fresh cold-inner Start/PIN/Terms/emptyHome",
+      "Cold OS-font1.3/three-button navigation"
+    ],
+    "notRepeatedInFullForEveryTargetedFix": true
+  },
+  "pixelComparisons": {
+    "v5CoverVsMatchingBaselineThemeCycle": {
+      "pixels": 1768884,
+      "changed": 0
+    },
+    "v5CoverVsFirstColdBaseline": {
+      "changed": 266,
+      "qualification": "Glyph rendering; same-theme-cycle unchanged-baseline control matches exactly; QR shadow unchanged"
+    },
+    "v6Js859InnerFullPhoneRegionIncludingNativeTabs": {
+      "bounds": [
+        884,
+        144,
+        1768,
+        2124
+      ],
+      "pixels": 1750320,
+      "changed": 0,
+      "frames": [
+        "fresh Home",
+        "after actual IME/Cancel",
+        "after first untouched Tag Cancel"
+      ],
+      "surfaceOriginY": 0,
+      "inputTransform": "IDENTITY"
+    }
+  },
+  "limits": [
+    "Target Samsung/One UI hardware and legacy public-hinge-feature compatibility still need QA",
+    "Early Galaxy Fold/Fold2/Flip can lack the public feature/sensor; compatibility path retained",
+    "Narrow profile has real cover/inner displays but its vendor hinge overlay retains stock Pixel Fold position",
+    "Initial prelaunch landscape can become portrait Lock on cold launch; actual outcome recorded",
+    "Developer Reload registration warning also reproduced on unchanged baseline",
+    "Process kill dissolved OS split; cold-process split start is unproven",
+    "Rapid live font/navigation changes need controlled hardware QA; cold OS-font1.3/three-button navigation tested at earlier stage",
+    "Native font-scale override remains1.0; OS setting test is not larger-app-text proof",
+    "Short-landscape Gboard fullscreen Extract editor is not in-app scroll evidence",
+    "Earlier53px compositor translation with OS starting-reveal leash did not recur on awake/network-ready finalv6/JS859, before/afterIME/Cancel; shifted photos excluded, no source-cause/forced-offset/A-B claim",
+    "No physical camera/NFC, funded transaction, iOS app build or Release-performance result claimed"
+  ],
+  "screenshots": [
+    {
+      "file": "after-cover-home.png",
+      "sha256": "22f7c5ebe7e57e6929b8802077c467d6e37fedacd59f25c520f4c2de3b630a05",
+      "width": 884,
+      "height": 2208,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-inner-home.png",
+      "sha256": "2d127edbf0149e58c113cb72ff1771ca663470471c1153844085dd895fb0ea3e",
+      "width": 1768,
+      "height": 2208,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-live-dark-inner-home.png",
+      "sha256": "d9979ab94abfd96b006c03be3d9796e322e585239a0c47f35099f096a1262561",
+      "width": 1768,
+      "height": 2208,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-split-left-home.png",
+      "sha256": "227d673362b1aa9bbffbe63baff7cfd67b2704e6ff8888b9ab60dfb9649f78d9",
+      "width": 2208,
+      "height": 1768,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-split-right-home.png",
+      "sha256": "50a8b53de266b2515cdfba3f499eedf38ce61ce4c0a703f0766dcb889bfd1d09",
+      "width": 2208,
+      "height": 1768,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-cold-inner-home.png",
+      "sha256": "4d4d5445e4960b6e51cabe731258ed650d1e6fff2c8064cdb4cffc7442d1ed07",
+      "width": 1768,
+      "height": 2208,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-retained-tag-keyboard.png",
+      "sha256": "11fd0e17bd2d903429733505490aad69c6fc05d678e0063bc4384a3569beb04e",
+      "width": 2208,
+      "height": 1768,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-password-keyboard.png",
+      "sha256": "51c56a73b8297f28f96ab4df337d0f855fd58132459c13816dcfb7e286f0cd0b",
+      "width": 2400,
+      "height": 1080,
+      "stage": "v5-native-0ea9-js-2bc",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-fresh-split-keyboard.png",
+      "sha256": "9057d0c2f8128a2fb9ca10213e7fdedcefcb5ecfc0c81c8fd8fbdfc33f08b4a1",
+      "width": 2400,
+      "height": 1080,
+      "stage": "v6-native-8eb-js-859",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "after-full-return-keyboard.png",
+      "sha256": "d06e2f29a59a6956f7f41d08fe1459abeedcf637cea9a64d058b6ada6bd7f868",
+      "width": 1080,
+      "height": 2400,
+      "stage": "v6-native-8eb-js-859",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "final-inner-home.png",
+      "sha256": "f398a6e2fe7f849ffc83f5d4f0ace43b77adc0337b1ec4229fb32f3d623340f2",
+      "width": 1768,
+      "height": 2208,
+      "stage": "v6-native-8eb-js-859",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "final-tag-before-first-cancel.png",
+      "sha256": "e6340d30e44fe16ce576267b0c281c4689fe95337e88d6cb0ec1d6f7bfe92377",
+      "width": 1768,
+      "height": 2208,
+      "stage": "v6-native-8eb-js-859",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "stock-cold-inner-start.png",
+      "sha256": "09de35b07f939c5429030fdc9e2d52057189ec54b04c8c24d49dd8967e3f6ed3",
+      "stage": "prior-native-04f5-js-865",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "stock-cold-inner-pin-empty.png",
+      "sha256": "c4da7dbe66b1231961ce992946a56726b98144cd54e9dfc58fab23acec5908bc",
+      "stage": "prior-native-04f5-js-865",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "stock-cold-inner-home.png",
+      "sha256": "cc1cac15e41a2ebb30073ccc68eaa4f23af3c5970c58b2db3ab34ac47393bfe0",
+      "stage": "prior-native-04f5-js-865",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "prior-critical-processing.png",
+      "sha256": "38220ec8f25ca1fd5b60af8e8a6de73f74a81a7be2ef7fbb2cfc7845f65c053a",
+      "stage": "prior-native-04f5-js-865",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "prior-large-text-three-button-lock.png",
+      "sha256": "b94c80614166eb80bbaebffe5ae5f53b5220926568202fc57c7d3ad63a78437f",
+      "stage": "prior-native-04f5-js-865",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "prior-rotated-network-sheet.png",
+      "sha256": "f39da22c841d25c76c0fca3f0286c2d8198828b5d64c3e90ce2ac028ceccd8ef",
+      "stage": "prior-native-04f5-js-865",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "before-cover-home.png",
+      "sha256": "a63d11b74cf21e6f30e65338fdf79322f8b91120088724f01eb3b83196d4ebc8",
+      "width": 884,
+      "height": 2208,
+      "stage": "baseline-554-68a",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "before-cold-inner-home.png",
+      "sha256": "81c06cfc1523dfe292c3bebf40f8d5bb125ef900d2bff14b23ce4e7e97c23569",
+      "width": 1768,
+      "height": 2208,
+      "stage": "baseline-554-68a",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    },
+    {
+      "file": "before-split-right-home.png",
+      "sha256": "58d79a7396fd8f7eafde069d614dc68b3fa40c60aff54eca2c8b600e218c2fba",
+      "width": 2208,
+      "height": 1768,
+      "stage": "baseline-554-68a",
+      "rootVisuallyReviewed": true,
+      "unedited": true
+    }
+  ]
+}
