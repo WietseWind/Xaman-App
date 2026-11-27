@@ -1,9 +1,27 @@
 name: Tangem SDK recovery
 
+# Only for changes that can touch the snapshot or the way the builds use it: a registry fault during npm ci must
+# not fail this check on an unrelated pull request.
 on:
   pull_request:
+    paths:
+      - 'vendor/tangem/**'
+      - 'scripts/check-tangem-sdk.js'
+      - 'scripts/tests/tangem-recovery.test.cjs'
+      - 'scripts/check-native-deps.sh'
+      - 'android/build.gradle'
+      - 'android/tangem-recovery.gradle'
+      - 'ios/Podfile'
+      - 'ios/Podfile.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.gitattributes'
+      - '.github/workflows/tangem-sdk-recovery.yml'
   push:
     branches: [main, 'release/**']
+
+permissions:
+  contents: read
 
 jobs:
   verify:

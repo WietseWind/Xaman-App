@@ -30,8 +30,8 @@
     },
     {
       "path": "vendor/tangem/README.md",
-      "bytes": 3882,
-      "sha256": "43dd8dc870c83ec27fb65f2a437159174dc5d10ccbabd1b3ad9d80375942d99a"
+      "bytes": 5434,
+      "sha256": "6eb31e892f57ba33e97e5a3d7db75a8dcde9fd81b7d371887a04d6c84e208fd3"
     },
     {
       "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/android/3.7.2/android-3.7.2.aar",

@@ -64,3 +64,21 @@ For an intentional SDK upgrade, review its licence and native behavior, replace 
 artifacts/source and their full metadata together, update the manifest and version pins,
 and rerun the recovery tests plus both native builds. Do not regenerate hashes merely
 to accept an unexplained mismatch.
+
+## Notes from the review of this snapshot
+
+- **Licence evidence for Android 3.7.2.** The archives hold no licence file, and the `<licenses>` entries in the
+  two POM files here were written for this snapshot: they are not the upstream POM. Checked on 2026-11-27: the
+  `LICENSE` file of the upstream commit named above (committer date 2023-03-29) is the MIT licence and is the same
+  file, byte for byte, as `licenses/android-3.7.2-MIT.txt` here (SHA-256 `4cccf2693ce63f00…`). Upstream has no
+  3.7.x tag any more, so this commit, one day after the dates in the JAR, is the nearest evidence there is. The iOS
+  3.4.0 tree has its upstream `LICENSE` (MIT) in it.
+- **The iOS compatibility fix is in this tree.** `TangemSdk/TangemSdk/UI/Views/Common/ActivityIndicatorView.swift`
+  has no default value on the `Color` initializer (ambiguous with deployment target 14 and later). Before, the
+  Podfile patched the downloaded copy under `Pods/` after each install; a local pod has no such copy. Keep the fix
+  when the tree is replaced: without it the pod does not compile.
+- **Every file under `vendor/tangem` has to be in `manifest.json`.** `scripts/check-tangem-sdk.js` fails on a file
+  that is not listed, on a symlink, and on a manifest without the two archives and the pod spec. The pod compiles
+  every `.swift` file of its tree, so an unlisted file would get into the app.
+- **Other dependencies of the SDK are not here.** The 28 libraries the SDK needs (for example spongycastle and
+  eddsa) still come from the public repositories, as before.

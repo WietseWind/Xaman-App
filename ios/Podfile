@@ -97,20 +97,10 @@ target 'Xaman' do
       Pod::UI.puts 'Copied Hermes iphoneos dSYM into hermes.xcframework'.green
     end
 
-    # TangemSdk 3.4.0: UIColor and Color inits both default `color: .white`. With
-    # IPHONEOS_DEPLOYMENT_TARGET >= 14 both are visible, so ActivityIndicatorView()
-    # is ambiguous. Drop the Color default; empty init still uses UIColor.white.
-    activity_indicator = File.join(sandbox.root, 'TangemSdk', 'TangemSdk', 'TangemSdk', 'UI', 'Views', 'Common', 'ActivityIndicatorView.swift')
-    if File.exist?(activity_indicator)
-      contents = File.read(activity_indicator)
-      old = 'init(isAnimating: Bool = true, style: UIActivityIndicatorView.Style = .medium, color: Color = .white)'
-      new = 'init(isAnimating: Bool = true, style: UIActivityIndicatorView.Style = .medium, color: Color)'
-      if contents.include?(old)
-        FileUtils.chmod('u+w', activity_indicator)
-        File.write(activity_indicator, contents.sub(old, new))
-        Pod::UI.puts 'Patched TangemSdk ActivityIndicatorView Color init (iOS 15 overload)'.green
-      end
-    end
+    # TangemSdk 3.4.0: UIColor and Color inits both default `color: .white`, which is ambiguous with
+    # IPHONEOS_DEPLOYMENT_TARGET >= 14. The fix (no default on the Color init) is in the committed source:
+    # vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Common/ActivityIndicatorView.swift.
+    # The pod is a local one now, so there is no copy under Pods/ to patch here. See vendor/tangem/README.md.
 
     %w[Public Private].each do |kind|
       Dir.children(File.join(sandbox.root, 'Headers', kind)).each do |pod_name|

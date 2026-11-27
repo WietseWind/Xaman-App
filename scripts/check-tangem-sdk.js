@@ -6,14 +6,50 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 
 const DEFAULT_ROOT = path.resolve(__dirname, '..');
+const MANIFEST = 'vendor/tangem/manifest.json';
+const ANDROID_REPO = 'vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android';
+const REQUIRED_FILES = [
+    `${ANDROID_REPO}/android/3.7.2/android-3.7.2.aar`,
+    `${ANDROID_REPO}/core/3.7.2/core-3.7.2.jar`,
+    'vendor/tangem/ios/TangemSdk/TangemSdk.podspec.json',
+];
 
 function verifyTangemSdk(root = DEFAULT_ROOT, { requireInstalled = false } = {}) {
     const problems = [];
     const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
-    const manifest = JSON.parse(read('vendor/tangem/manifest.json'));
+    const manifest = JSON.parse(read(MANIFEST));
     if (manifest.schema !== 1 || !Array.isArray(manifest.files) || manifest.files.length < 2) {
         throw new Error('Invalid Tangem recovery manifest');
     }
+
+    // The archives and the pod spec have to be in the list: a shortened manifest must not pass.
+    const listed = new Set(manifest.files.map((entry) => entry && entry.path));
+    for (const required of REQUIRED_FILES) {
+        if (!listed.has(required)) {
+            throw new Error(`Invalid Tangem recovery manifest: ${required} is not listed`);
+        }
+    }
+
+    // Everything under vendor/tangem has to be a listed regular file. An extra Swift file would be compiled into
+    // the app (the pod takes every .swift file of its tree), and a symlinked folder would read files from elsewhere.
+    for (const component of ['vendor', 'vendor/tangem']) {
+        if (!fs.lstatSync(path.join(root, component)).isDirectory()) {
+            throw new Error(`Tangem SDK recovery check failed: ${component} is not a real directory`);
+        }
+    }
+    const walk = (relative) => {
+        for (const entry of fs.readdirSync(path.join(root, relative), { withFileTypes: true })) {
+            const child = `${relative}/${entry.name}`;
+            if (entry.isDirectory()) {
+                walk(child);
+            } else if (!entry.isFile()) {
+                problems.push(`${child}: not a regular file or directory`);
+            } else if (child !== MANIFEST && !listed.has(child)) {
+                problems.push(`${child}: not in the manifest`);
+            }
+        }
+    };
+    walk('vendor/tangem');
 
     const seen = new Set();
     for (const entry of manifest.files) {

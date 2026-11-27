@@ -99,6 +99,48 @@ test('a future cleanup cannot replace native SDK files with symlinks', (t) => {
     assert.throws(() => verifyTangemSdk(root), /LICENSE: missing or unreadable/);
 });
 
+test('a file that is not in the manifest fails: the pod would compile an extra Swift file', (t) => {
+    const root = fixture(t);
+    const relative = 'vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Injected.swift';
+    fs.writeFileSync(path.join(root, relative), '// not from the snapshot\n');
+    assert.throws(() => verifyTangemSdk(root), /Injected\.swift: not in the manifest/);
+});
+
+test('another SDK version beside the pinned one fails', (t) => {
+    const root = fixture(t);
+    const dir = 'vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/core/3.7.3';
+    fs.mkdirSync(path.join(root, dir));
+    fs.writeFileSync(path.join(root, dir, 'core-3.7.3.jar'), 'x');
+    assert.throws(() => verifyTangemSdk(root), /core-3\.7\.3\.jar: not in the manifest/);
+});
+
+test('a folder of the snapshot cannot be replaced with a symlink to a copy', (t) => {
+    const root = fixture(t);
+    const real = path.join(root, 'vendor/tangem/ios');
+    const moved = path.join(root, 'moved-ios');
+    fs.renameSync(real, moved);
+    fs.symlinkSync(moved, real);
+    assert.throws(() => verifyTangemSdk(root), /vendor\/tangem\/ios: not a regular file or directory/);
+});
+
+test('the snapshot folder itself cannot be a symlink', (t) => {
+    const root = fixture(t);
+    const real = path.join(root, 'vendor/tangem');
+    const moved = path.join(root, 'moved-tangem');
+    fs.renameSync(real, moved);
+    fs.symlinkSync(moved, real);
+    assert.throws(() => verifyTangemSdk(root), /vendor\/tangem is not a real directory/);
+});
+
+test('a manifest without the Android archive does not pass', (t) => {
+    const root = fixture(t);
+    const file = path.join(root, 'vendor/tangem/manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(file, 'utf8'));
+    manifest.files = manifest.files.filter((entry) => !entry.path.endsWith('android-3.7.2.aar'));
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(() => verifyTangemSdk(root), /android-3\.7\.2\.aar is not listed/);
+});
+
 test('post-install and both native build paths enforce recovery integrity', () => {
     const text = (file) => fs.readFileSync(path.join(source, file), 'utf8');
     assert.match(text('scripts/post-install.sh'), /scripts\/check-native-deps\.sh --patches-only/);
