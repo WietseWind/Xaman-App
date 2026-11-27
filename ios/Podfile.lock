@@ -1554,6 +1554,7 @@ DEPENDENCIES:
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNTangemSdk (from `../node_modules/tangem-sdk-react-native`)
+  - TangemSdk (from `../vendor/tangem/ios/TangemSdk`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -1579,7 +1580,6 @@ SPEC REPOS:
     - ReachabilitySwift
     - SocketRocket
     - sqlite3
-    - TangemSdk
 
 EXTERNAL SOURCES:
   boost:
@@ -1733,6 +1733,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNTangemSdk:
     :path: "../node_modules/tangem-sdk-react-native"
+  TangemSdk:
+    :path: "../vendor/tangem/ios/TangemSdk"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -1838,6 +1840,6 @@ SPEC CHECKSUMS:
   VisionCamera: 168f46071274ce58c50adef4c82ae3367b2ba2a6
   Yoga: ae3c32c514802d30f687a04a6a35b348506d411f
 
-PODFILE CHECKSUM: 70462a1201290c5cb9ac1d8f88fc3eb56c1a70b3
+PODFILE CHECKSUM: 3b4986abb2221e8fb5b7759a3f52a8edb329b093
 
 COCOAPODS: 1.15.2

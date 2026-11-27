@@ -1,0 +1,11 @@
+Tangem SDK recovery snapshot
+
+Android SDK 3.7.2: Copyright (c) 2019 Tangem. MIT licence in licenses/android-3.7.2-MIT.txt.
+The committed AAR and JAR are exact existing Jetifier cache artifacts, not a fresh upstream build.
+React Native wrapper 2.3.1: Copyright (c) 2021 XRPL Labs. MIT licence in licenses/react-native-2.3.1-MIT.txt.
+iOS SDK 3.4.0: MIT licence in ios/TangemSdk/LICENSE.
+Additional third-party copyright and licence notices are retained in the iOS source headers,
+including secp256k1 (full licence in licenses/secp256k1-COPYING.txt). Android transitive libraries are declared in Maven metadata and are
+resolved separately; their binaries are not bundled into this recovery repository.
+
+See manifest.json and README.md for origin, versions, hashes and existing local changes.

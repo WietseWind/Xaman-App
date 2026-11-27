@@ -1,0 +1,311 @@
+{
+  "ownerProject": ":tangem-sdk-react-native",
+  "debugCompileClasspath": [
+    {
+      "module": "com.github.tangem.tangem-sdk-android:android:3.7.2",
+      "variants": [
+        {
+          "name": "releaseApiPublication",
+          "attributes": {
+            "org.gradle.category": "library",
+            "org.gradle.dependency.bundling": "external",
+            "org.gradle.libraryelements": "aar",
+            "org.gradle.usage": "java-api",
+            "org.gradle.status": "release"
+          },
+          "capabilities": [
+            {
+              "group": "com.github.tangem.tangem-sdk-android",
+              "name": "android",
+              "version": "3.7.2"
+            }
+          ]
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "module": "com.github.tangem.tangem-sdk-android:core:3.7.2",
+      "variants": [
+        {
+          "name": "apiElements",
+          "attributes": {
+            "org.gradle.category": "library",
+            "org.gradle.dependency.bundling": "external",
+            "org.gradle.jvm.version": "8",
+            "org.gradle.libraryelements": "jar",
+            "org.gradle.usage": "java-api",
+            "org.jetbrains.kotlin.localToProject": "public",
+            "org.jetbrains.kotlin.platform.type": "jvm",
+            "org.gradle.status": "release"
+          },
+          "capabilities": [
+            {
+              "group": "com.github.tangem.tangem-sdk-android",
+              "name": "core",
+              "version": "3.7.2"
+            }
+          ]
+        }
+      ],
+      "dependencies": [
+        {
+          "requested": "com.squareup.sqldelight:runtime-jvm:1.4.0",
+          "group": "com.squareup.sqldelight",
+          "name": "runtime-jvm",
+          "version": "1.4.0",
+          "constraint": false
+        }
+      ]
+    }
+  ],
+  "debugRuntimeClasspath": [
+    {
+      "module": "com.github.tangem.tangem-sdk-android:android:3.7.2",
+      "variants": [
+        {
+          "name": "releaseRuntimePublication",
+          "attributes": {
+            "org.gradle.category": "library",
+            "org.gradle.dependency.bundling": "external",
+            "org.gradle.libraryelements": "aar",
+            "org.gradle.usage": "java-runtime",
+            "org.gradle.status": "release"
+          },
+          "capabilities": [
+            {
+              "group": "com.github.tangem.tangem-sdk-android",
+              "name": "android",
+              "version": "3.7.2"
+            }
+          ]
+        }
+      ],
+      "dependencies": [
+        {
+          "requested": "org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.5.30",
+          "group": "org.jetbrains.kotlin",
+          "name": "kotlin-android-extensions-runtime",
+          "version": "1.5.30",
+          "constraint": false
+        },
+        {
+          "requested": "com.github.tangem.tangem-sdk-android:core:3.7.2",
+          "group": "com.github.tangem.tangem-sdk-android",
+          "name": "core",
+          "version": "3.7.2",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.30",
+          "group": "org.jetbrains.kotlin",
+          "name": "kotlin-stdlib-jdk8",
+          "version": "1.5.30",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlin:kotlin-reflect:1.5.30",
+          "group": "org.jetbrains.kotlin",
+          "name": "kotlin-reflect",
+          "version": "1.5.30",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9",
+          "group": "org.jetbrains.kotlinx",
+          "name": "kotlinx-coroutines-core",
+          "version": "1.3.9",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.9",
+          "group": "org.jetbrains.kotlinx",
+          "name": "kotlinx-coroutines-jdk8",
+          "version": "1.3.9",
+          "constraint": false
+        },
+        {
+          "requested": "androidx.appcompat:appcompat:1.2.0",
+          "group": "androidx.appcompat",
+          "name": "appcompat",
+          "version": "1.2.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.google.android.material:material:1.4.0",
+          "group": "com.google.android.material",
+          "name": "material",
+          "version": "1.4.0",
+          "constraint": false
+        },
+        {
+          "requested": "androidx.constraintlayout:constraintlayout:2.0.4",
+          "group": "androidx.constraintlayout",
+          "name": "constraintlayout",
+          "version": "2.0.4",
+          "constraint": false
+        },
+        {
+          "requested": "androidx.core:core-ktx:1.3.2",
+          "group": "androidx.core",
+          "name": "core-ktx",
+          "version": "1.3.2",
+          "constraint": false
+        },
+        {
+          "requested": "androidx.lifecycle:lifecycle-extensions:2.2.0",
+          "group": "androidx.lifecycle",
+          "name": "lifecycle-extensions",
+          "version": "2.2.0",
+          "constraint": false
+        },
+        {
+          "requested": "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1",
+          "group": "androidx.lifecycle",
+          "name": "lifecycle-runtime-ktx",
+          "version": "2.4.1",
+          "constraint": false
+        },
+        {
+          "requested": "androidx.biometric:biometric:1.1.0",
+          "group": "androidx.biometric",
+          "name": "biometric",
+          "version": "1.1.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.skyfishjy.ripplebackground:library:1.0.1",
+          "group": "com.skyfishjy.ripplebackground",
+          "name": "library",
+          "version": "1.0.1",
+          "constraint": false
+        },
+        {
+          "requested": "at.favre.lib:armadillo:1.0.0",
+          "group": "at.favre.lib",
+          "name": "armadillo",
+          "version": "1.0.0",
+          "constraint": false
+        }
+      ]
+    },
+    {
+      "module": "com.github.tangem.tangem-sdk-android:core:3.7.2",
+      "variants": [
+        {
+          "name": "runtimeElements",
+          "attributes": {
+            "org.gradle.category": "library",
+            "org.gradle.dependency.bundling": "external",
+            "org.gradle.jvm.version": "8",
+            "org.gradle.libraryelements": "jar",
+            "org.gradle.usage": "java-runtime",
+            "org.jetbrains.kotlin.localToProject": "public",
+            "org.jetbrains.kotlin.platform.type": "jvm",
+            "org.gradle.status": "release"
+          },
+          "capabilities": [
+            {
+              "group": "com.github.tangem.tangem-sdk-android",
+              "name": "core",
+              "version": "3.7.2"
+            }
+          ]
+        }
+      ],
+      "dependencies": [
+        {
+          "requested": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.30",
+          "group": "org.jetbrains.kotlin",
+          "name": "kotlin-stdlib-jdk8",
+          "version": "1.5.30",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlin:kotlin-reflect:1.5.30",
+          "group": "org.jetbrains.kotlin",
+          "name": "kotlin-reflect",
+          "version": "1.5.30",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9",
+          "group": "org.jetbrains.kotlinx",
+          "name": "kotlinx-coroutines-core",
+          "version": "1.3.9",
+          "constraint": false
+        },
+        {
+          "requested": "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.9",
+          "group": "org.jetbrains.kotlinx",
+          "name": "kotlinx-coroutines-jdk8",
+          "version": "1.3.9",
+          "constraint": false
+        },
+        {
+          "requested": "com.madgag.spongycastle:core:1.58.0.0",
+          "group": "com.madgag.spongycastle",
+          "name": "core",
+          "version": "1.58.0.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.madgag.spongycastle:prov:1.58.0.0",
+          "group": "com.madgag.spongycastle",
+          "name": "prov",
+          "version": "1.58.0.0",
+          "constraint": false
+        },
+        {
+          "requested": "net.i2p.crypto:eddsa:0.3.0",
+          "group": "net.i2p.crypto",
+          "name": "eddsa",
+          "version": "0.3.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.squareup.retrofit2:retrofit:2.8.1",
+          "group": "com.squareup.retrofit2",
+          "name": "retrofit",
+          "version": "2.8.1",
+          "constraint": false
+        },
+        {
+          "requested": "com.squareup.retrofit2:converter-moshi:2.6.0",
+          "group": "com.squareup.retrofit2",
+          "name": "converter-moshi",
+          "version": "2.6.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.squareup.moshi:moshi:1.12.0",
+          "group": "com.squareup.moshi",
+          "name": "moshi",
+          "version": "1.12.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.squareup.moshi:moshi-kotlin:1.12.0",
+          "group": "com.squareup.moshi",
+          "name": "moshi-kotlin",
+          "version": "1.12.0",
+          "constraint": false
+        },
+        {
+          "requested": "com.squareup.okhttp3:logging-interceptor:4.2.2",
+          "group": "com.squareup.okhttp3",
+          "name": "logging-interceptor",
+          "version": "4.2.2",
+          "constraint": false
+        },
+        {
+          "requested": "com.squareup.sqldelight:runtime-jvm:1.4.0",
+          "group": "com.squareup.sqldelight",
+          "name": "runtime-jvm",
+          "version": "1.4.0",
+          "constraint": false
+        }
+      ]
+    }
+  ]
+}

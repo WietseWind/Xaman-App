@@ -1,0 +1,1437 @@
+{
+  "schema": 1,
+  "wrapper": {
+    "version": "2.3.1",
+    "tagCommit": "1b2bad24e5fb2b19c94f4ebea51c283602289e32",
+    "commitDate": "2023-03-30T08:40:14Z"
+  },
+  "android": {
+    "version": "3.7.2",
+    "artifactOrigin": "exact cached Jetifier transforms",
+    "metadataOrigin": "recovered Gradle API/runtime variants and requested dependency edges",
+    "originalReleaseCommit": null,
+    "licenseSnapshotCommit": "9073665c9aa9c37cf38b5c98056a2ed59afa9b80",
+    "licenseSnapshotDate": "2023-03-29T15:39:28Z"
+  },
+  "ios": {
+    "version": "3.4.0",
+    "origin": "exact cached CocoaPods source",
+    "podspecChecksum": "d782fc8c55cb56ffdfcaf7081422e02b19f18334",
+    "currentUpstreamTagCommit": "d2ab30b513d1058d98069ae9d661120c113b78ec",
+    "existingChanges": [
+      "ActivityIndicatorView Color initializer has no default Color argument (existing iOS15 overload compatibility fix)."
+    ]
+  },
+  "files": [
+    {
+      "path": "vendor/tangem/NOTICE",
+      "bytes": 789,
+      "sha256": "cd1a61ee6cb4d53714fd996fd40a996430b5ca69cb7c61b53fdd68c19853c102"
+    },
+    {
+      "path": "vendor/tangem/README.md",
+      "bytes": 5434,
+      "sha256": "6eb31e892f57ba33e97e5a3d7db75a8dcde9fd81b7d371887a04d6c84e208fd3"
+    },
+    {
+      "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/android/3.7.2/android-3.7.2.aar",
+      "bytes": 503566,
+      "sha256": "ae26e4e42888fab9965cf820d2402e4fd270015637383d60b51ca1c8e22d9546"
+    },
+    {
+      "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/android/3.7.2/android-3.7.2.module",
+      "bytes": 4479,
+      "sha256": "32911e05eac80f72db7ac672adb3226613bb81f7fc218df0cb5aaf87a6f583a3"
+    },
+    {
+      "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/android/3.7.2/android-3.7.2.pom",
+      "bytes": 3654,
+      "sha256": "1bf31c9a9ab5cf8278bb21fca261b152209a052233cf0ec4053db9682db5cc4d"
+    },
+    {
+      "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/core/3.7.2/core-3.7.2.jar",
+      "bytes": 2507955,
+      "sha256": "b007fe5f7fe42c2ce8d0ccc5a313c12d65dffaad9bf24731981eb55804cfac0f"
+    },
+    {
+      "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/core/3.7.2/core-3.7.2.module",
+      "bytes": 4539,
+      "sha256": "f6f34b8978e2d8d7c4a95d7cba59d7de3845d422400b5eae0e19b3f71b359fb2"
+    },
+    {
+      "path": "vendor/tangem/android/maven/com/github/tangem/tangem-sdk-android/core/3.7.2/core-3.7.2.pom",
+      "bytes": 3239,
+      "sha256": "9303639183d751c7c87b7074e63ba58cb2c6449f468e7d317333cc2b70dd1a92"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/LICENSE",
+      "bytes": 1063,
+      "sha256": "5272c6f05cb79c096d72dc5b0d3fbd8a30719fee23d768d9e2b874112e36f660"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/README.md",
+      "bytes": 1543,
+      "sha256": "56b83373cd0beadd70079dca562400349debfe693b96cdb119e65bcc94b3d641"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/APDU/CommandApdu.swift",
+      "bytes": 3519,
+      "sha256": "18963bc3779e1a5645f4e61c9cb20af74ce88c64303db9f0a5e39e059172e43b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/APDU/Instruction.swift",
+      "bytes": 1240,
+      "sha256": "1bb849510c582b56f8c8b45da7a47f9294499828f642186c1b095c7b6e436381"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/APDU/ResponseApdu.swift",
+      "bytes": 2283,
+      "sha256": "048286559402e75908565c98e7435ccf04c118d943b568eb929f6ab34e5f66d2"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/APDU/StatusWord.swift",
+      "bytes": 1947,
+      "sha256": "67addb5c67a807a8f9d7ea419b8426503c294b8d468ff93a053a2b7c9e4c718e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/Card.swift",
+      "bytes": 6838,
+      "sha256": "2d19f23246b11d7d0cecd0154885b442a52b490a0604ccbdd2dbf9a7f7e10870"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/CardSettings.swift",
+      "bytes": 9690,
+      "sha256": "3aea76edca57bf46ad5ed70b95db5aae9b873ec34886ad16d8fd7f08696dd69d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/EllipticCurve.swift",
+      "bytes": 428,
+      "sha256": "9694633067fcf0cfa729d1078d22c08e71002c0b0fb8deb498b3200d15209a75"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/EncryptionMode.swift",
+      "bytes": 529,
+      "sha256": "572bd4c151f2b0ad0160acad6f8acefd779f25dbc52bdee9353c7f4d3a03a08a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/FirmwareVersion.swift",
+      "bytes": 5023,
+      "sha256": "9019f3dd0a25e26d6865c72aac3bdb428f41ed854c4c57bc5591e5e11e8273cc"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/SigningMethod.swift",
+      "bytes": 2236,
+      "sha256": "2da29657500814d17e4b2f412b99cbf3156d69122427ea3464a365cb1fb9507f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/StatusType.swift",
+      "bytes": 211,
+      "sha256": "ea9616d43db063db403ac76c05a3c8f2b9ddcebc0ae43aefec0176526dc7c5c1"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/Wallet.swift",
+      "bytes": 3420,
+      "sha256": "ac7637ef5a8b0634322afbcf92fb560688513624db97f0c11bc5315a6ac59ce7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Card/WalletData.swift",
+      "bytes": 1174,
+      "sha256": "20e6b1cacfc9a437a8f8b5638fd15ddbda5f9b2f03cb680acd3937d0cf2e7200"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/CardFilter.swift",
+      "bytes": 4040,
+      "sha256": "94ceb94599be0451fd00deabdc8295d85ea9648c59d0270a1dc926900eb5b28e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/CardIdFormatter.swift",
+      "bytes": 1752,
+      "sha256": "6286fe4158f3049799a0dbf1acfc298905bac420d08ce0b641b683bb69f234eb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/CompletionResult.swift",
+      "bytes": 270,
+      "sha256": "e83690988a7983b608a38d13eb19c3e61ba32a4cce5f3ede08de1c8e17d28f5d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Core/CardSession.swift",
+      "bytes": 23980,
+      "sha256": "c8f4487005bf4b01ddf4fe5416860220ddc8df290c714323159cca2a3650de6d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Core/CardSessionRunnable.swift",
+      "bytes": 1932,
+      "sha256": "66d5ffaf7bb64e8f17580171d80689f7c2a1e31ed5926e4b7a852a79a4c330cb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Core/Config.swift",
+      "bytes": 4603,
+      "sha256": "d3f2e0e154d516f5153a113dad1e5cdd9b812284a23394dc4f82f3d33959e31d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Core/SessionEnvironment.swift",
+      "bytes": 1622,
+      "sha256": "59aae95e628864072ad41987bbf862a27722fbf123cfdcf18aeef847382b06ac"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Core/TangemSdkError.swift",
+      "bytes": 25632,
+      "sha256": "fe4b6ba3b3415b50337e048187860776e286d140c5032c4ddb9adc4c3d68de3f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Deserialization/CardDeserializer.swift",
+      "bytes": 6705,
+      "sha256": "629a7f0ba9d45f1a131e398777a753ad1be41398beb37965d6e87709b55c8582"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Deserialization/WalletDataDeserializer.swift",
+      "bytes": 1393,
+      "sha256": "baf797d633e9cb54093581452bfbf2067374a58ab372f4b1a09744ced444dbff"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Deserialization/WalletDeserializer.swift",
+      "bytes": 2846,
+      "sha256": "436a538025b383125c98c67a46d96b8cfe2fee5dd08355914a595f82a46834e8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Array+.swift",
+      "bytes": 559,
+      "sha256": "7e53b203bb648231219df0c07c9fa54938659446d2bfcbc198a1b7746cf7cfcb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Array+CardWallet.swift",
+      "bytes": 847,
+      "sha256": "8bf4e526c639ec20b0dac355559308473c0c79812d3be3bb147936dfaf4f677e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Array+Tlv.swift",
+      "bytes": 1074,
+      "sha256": "c8bd84f0b59b0d5d76809d668898d6c51cd4f5b16dbba63608940053455c8723"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Binding+.swift",
+      "bytes": 653,
+      "sha256": "b933c40e49cd28ea6c5de7eec5897bc5e3579b808e051910703e70035f14b0ae"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Bundle+.swift",
+      "bytes": 481,
+      "sha256": "878caae7148de80c66167da0433b8d6691603ecb8d01c8a217b63ea996c74026"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Byte+.swift",
+      "bytes": 549,
+      "sha256": "f7f73149ece6d8ea2987f419d32c52c15ee00d22484084bec5b9651790539a1c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/CCCCryptorStatus+Error.swift",
+      "bytes": 347,
+      "sha256": "0fc0b13b297b9f4b79cbf92d5557b01b1ed0f554187e809fc3a3dd130a1a2781"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/CaseIterable+.swift",
+      "bytes": 520,
+      "sha256": "1dc16dac59f21c4689663cbf2abce1e3928b751ff8d4d5e498c0f4ecada5683c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Color+.swift",
+      "bytes": 376,
+      "sha256": "42ba310928eb4dccbd67c76672d331e7e1ddb586d9d4a0e67c70558146cdde10"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Data+.swift",
+      "bytes": 6875,
+      "sha256": "bfa3dff13a6946b388e65173e4d1ad3bc124c7b1063ae907104756d41e2c5e3f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Date+.swift",
+      "bytes": 441,
+      "sha256": "6677cfce9bf998988abb672dbe2a5762e3471e79038ca2518b33545ba30e6e22"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Error+.swift",
+      "bytes": 308,
+      "sha256": "6613f1ccc721c4d4ab4b7dcacc4c6dd70d6238a39d08f67f12db8566b30aba58"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/InputStream+.swift",
+      "bytes": 507,
+      "sha256": "6818b706dab35fbbf6f3cad795fc05274259f567afacb7aa95a7f464c0591c6c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Int+.swift",
+      "bytes": 1479,
+      "sha256": "a043079104956492db90b2f4441495b196ba71567c548383c251355237e094f0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/LAContext+.swift",
+      "bytes": 397,
+      "sha256": "6d25269885a73e9cc1261c8d1ec69a5f6cb17f847580cad97cd133a6a61b5338"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/NFCTag+.swift",
+      "bytes": 426,
+      "sha256": "3d0129e33f251ce5e2f756be075819ff9237eabf723a5dd4d7e542135cab9e9c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Publisher+.swift",
+      "bytes": 457,
+      "sha256": "dee1b9e6984f1248e6a78121a54633621aa3371d311da443050be85845ec3a78"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/Result+RAPDU.swift",
+      "bytes": 468,
+      "sha256": "0802281d6ba2c00769f795942632c36e03d850eafb7d59fbb238c513c6ea0137"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/SLIX+.swift",
+      "bytes": 2210,
+      "sha256": "aca78425e0f124186989ae03bb152650fc6a11ae4a8c4b201f65b51ea83cce0d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/String+.swift",
+      "bytes": 2687,
+      "sha256": "f378fc12093c1e31e5b9a0a5be40ee20302a3e71121da2747ef0db82e17bf117"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/TangemSdk+Combine.swift",
+      "bytes": 4164,
+      "sha256": "9f69da9d96afb290753710ec682809cc1ed14343c7a646c9a86880632a343fa9"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/UIApplication+.swift",
+      "bytes": 334,
+      "sha256": "da6bb8dfa33fb49756be8019ed6429bbe35031e60663727c20a8a933da83d19e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/UIColor+.swift",
+      "bytes": 1299,
+      "sha256": "8bfbef608f1b0b52120786e41c4b2485e21e2a9953e3aace7dd829407ce7726d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/UIScreen+.swift",
+      "bytes": 280,
+      "sha256": "c9a8f0ec01a5fc0d7f200222163879426712dc4be6659464d4bf8bbee5709acb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Extensions/UIViewController.swift",
+      "bytes": 1255,
+      "sha256": "4ec658448a6cfe2aaa4790249688dc63aa35cb677a8d10e1a250d778ba3b66bc"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/HDWallet/BIP32/BIP32.swift",
+      "bytes": 477,
+      "sha256": "71b77dc41c188e78561d8e445f73617b98e64bab8084d08a8299c18d767fb0f3"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/HDWallet/BIP32/DerivationNode.swift",
+      "bytes": 1628,
+      "sha256": "4fd99d336baae0becce3689c13f84e0064f9612eae2a08ab7beee724c30f5f80"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/HDWallet/BIP32/DerivationPath.swift",
+      "bytes": 3398,
+      "sha256": "25900a278966a94a9ac8e84216a25769a9a677c922df163645f95b3053c09986"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/HDWallet/BIP32/ExtendedPublicKey.swift",
+      "bytes": 2387,
+      "sha256": "a51fcc44f17b53b8d5e24827a3c4ddea11c9331de6c014345ad8aa6ae7de4013"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/HDWallet/BIP44.swift",
+      "bytes": 1539,
+      "sha256": "e55f44b430e9d3d4932340543eff58b75d8dcb7cd5f40a6ac174326bbb1da2fc"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/HDWallet/HDWalletError.swift",
+      "bytes": 362,
+      "sha256": "730a3395a18ba4d0f82899588568e32f4e6e7a76d6e6b85d779caf8bf4a6a53e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/AnyJSONRPCRunnable.swift",
+      "bytes": 2058,
+      "sha256": "888b06e4986d213a7c4b1d5d8332a627602589ebc97c74da238fbf652a86ed5e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/Codable+.swift",
+      "bytes": 1850,
+      "sha256": "7abf63b22775bdfd8a2333999b06c28551535a4b9f15a5d8723f8e688a5044bb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/Handlers.swift",
+      "bytes": 8259,
+      "sha256": "1528c5370bcc3873844a30b60a4ffe4fe52d0d0028313bb212274df5f38c2e5b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/JSONRPC.swift",
+      "bytes": 10235,
+      "sha256": "71111cfe3590890d1cab738feb457aaf2dde9d2dc3a6bcafe9f766715d14d418"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/JSONStringConvertible.swift",
+      "bytes": 649,
+      "sha256": "48229e61f87eea63c6b3d0fc3f649e4e86f1a85ccf1acc49894016b0074de8e2"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/RunnablesTask.swift",
+      "bytes": 2023,
+      "sha256": "00f325e2e5194dd8ae220fbd390de1740ed924865606f1aa9a51b3ef670eff4b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/SkipEncoding.swift",
+      "bytes": 1832,
+      "sha256": "05d9d085b7354cabc20ef7db7ccd18b6a43c92a1cdf76d41935ef20210023829"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/JSON/StringCodable.swift",
+      "bytes": 734,
+      "sha256": "afc929919f0a3c1db74c762e4b735ee9e6fdd62cec1f01c2ddd856f2cace6427"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/KeyPair.swift",
+      "bytes": 306,
+      "sha256": "3155def37c5c0d04208574ef88cadc26e1b8a09e82aef31adbd69afc162fc348"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/Localization.swift",
+      "bytes": 888,
+      "sha256": "704b1ac7d5189a8de7a18b78a58de2620b147109a9cdb7b0dda8c6e266c0f11a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/de.lproj/Localizable.strings",
+      "bytes": 5055,
+      "sha256": "3c6a3ae0065b8bd2b5f1ab877f390fd7569a4dfbed9e7e7a8f9967222bb43817"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/en.lproj/Localizable.strings",
+      "bytes": 4839,
+      "sha256": "4383b1a0ab651b58a6c5e5055e0964f5a30afba13ef843f0a70d249e726ce45d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/fr.lproj/Localizable.strings",
+      "bytes": 5060,
+      "sha256": "c12de52f6e33bac4826d4164736ffff7b07cc50d04dad691f7dd59c589d93c0f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/it.lproj/Localizable.strings",
+      "bytes": 4983,
+      "sha256": "ae93b3dcebb118a63ffec1961fec5c89456ca26ef3c8398c0b50e2ba82261f1a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/ru.lproj/Localizable.strings",
+      "bytes": 7337,
+      "sha256": "9445e08cd3c588ecd49aee3802c1749cd7e6292515da4559a438a83d0992ca62"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Localization/zh-Hant.lproj/Localizable.strings",
+      "bytes": 4400,
+      "sha256": "78a44d802c114db60209b90c3182f912d0a2774b058bc2d554cc99bb1fe95e25"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Log/Log.swift",
+      "bytes": 4750,
+      "sha256": "c9841a5f6d995949cb95499d31f64df463ac132c3b27d463f0baf0cac4f4ab1f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Log/Logger/ConsoleLogger.swift",
+      "bytes": 798,
+      "sha256": "b89ddf0e5e608148a339b515e405e6518f80f13975b25c2f95e3dccb4fafadc6"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Log/Logger/TangemSdkLogger.swift",
+      "bytes": 256,
+      "sha256": "447c7bb9fcc05eaf06266a8f23171b213ab3d69d374cc4cfd2f82faa01b19041"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Log/TlvLogging.swift",
+      "bytes": 559,
+      "sha256": "49a7ae4b30111cff9303b27fe99b1874ce3eb61374ef1e0cb3b1a639176ea406"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Log/Track.swift",
+      "bytes": 767,
+      "sha256": "b9140be97b8e4925c1c4fa43efb6079a838a2896d2b1934acc6c8cc9afa28054"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/NFC/CardReader.swift",
+      "bytes": 1917,
+      "sha256": "9209ddffbb7c6cb532b07825043441621fd83a5f9104320bef45a0c3d43c5955"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/NFC/NFCReader.swift",
+      "bytes": 17750,
+      "sha256": "79d0b8288afec5d902b233e2c8d97d6d9e7ef7924ca4ed61942aac25a3c08b7a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/NFC/NFCUtils.swift",
+      "bytes": 1476,
+      "sha256": "51d68e7f6bbe4e6d14efde6fdca2a3e105b247ab72f5c5355a334b3517ff2e4d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Network/Entities/CardDataResponse.swift",
+      "bytes": 297,
+      "sha256": "879a6b34b00308961f7bf6d3f1ba3ec1023d4bc95c54e99819495e06e8d9a6cd"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Network/NetworkService.swift",
+      "bytes": 4271,
+      "sha256": "4864c3362cf505d1ddfac29f2b84f5eb57f7ebbf1f16e071bc29201b4a190086"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Network/TangemEndpoint.swift",
+      "bytes": 2385,
+      "sha256": "fe74e154eeec9fb53c4124e84033a2dfeb7e81f1749a5f7abd115daa609ce825"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/OptionSet/OptionSetCodable.swift",
+      "bytes": 1728,
+      "sha256": "1ae0cd2c8b6f0e4c0782d21f509db9ba0cc3529193a091fe9b193d833dbbde47"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/OptionSet/OptionSetCustomStringConvertible.swift",
+      "bytes": 697,
+      "sha256": "213555601f58a6fb1821e12a91136d1c4ab6cc1e6069e8e678a7ba2bf0f43afc"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/AccessCodeRepository.swift",
+      "bytes": 7023,
+      "sha256": "84c7dab774742d19e3edfdc9f687c28456fbae77a1e8dd01cc99485140f8dedd"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/BiometricsStorage.swift",
+      "bytes": 4592,
+      "sha256": "513df86f548993b93b76f821a429ea12a0c43262241306414d6a1a3cfd02d51b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/BiometricsUtil.swift",
+      "bytes": 2074,
+      "sha256": "893b2c6e14693ad11c698d60984f28a3eb055bc00fe45a53a4438ee4b82bf59f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/GenericPasswordConvertible.swift",
+      "bytes": 1666,
+      "sha256": "7876b7f3bdc2c3994c7e8e8424d7e75307102913e76e0a5a94924af4f334cdfe"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/KeyStoreError.swift",
+      "bytes": 739,
+      "sha256": "99ced29917282e545677012d99a9987ca9d88cb97aa1d872b82c6959ee69e40e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/SecureEnclaveService.swift",
+      "bytes": 1641,
+      "sha256": "781c0d91fbcebded1636b8ee088a230264cfc36bb426d19e40fef0555092120d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/SecureStorage.swift",
+      "bytes": 4069,
+      "sha256": "ee67a3f4e910cf1116e5029f535bc23a4de00c13a2c7b94de0032f7c2cbd4de3"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/SecureStorageKey.swift",
+      "bytes": 713,
+      "sha256": "d44e5142c4afd59f0297287ab2901c06d6e4b79d470f3227ee9acbfcebd465ea"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Secure/TerminalKeysService.swift",
+      "bytes": 1622,
+      "sha256": "f35a8ca7f516705d88bc35ad1a332de430786e6d39204a84596b7369ae6d0c81"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/Storage.swift",
+      "bytes": 1686,
+      "sha256": "6b07e684cff13aa702de448f6754134f372e8b6c64cbffa88453723182862a5e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/Services/TrustedCardsRepo.swift",
+      "bytes": 2527,
+      "sha256": "699a9b64deb62376d0e4798f29a27dea2e05b21df508b476e9ca95125ab40a2e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/SuccessResponse.swift",
+      "bytes": 331,
+      "sha256": "89b45bd5a7d95e8562b4652997a1cbb7085936482e4cce0967e0d76703b30162"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/TLV/InteractionMode.swift",
+      "bytes": 222,
+      "sha256": "d68dc5de17e72f013dca9650f5f4717bc3120e0f3b7278c87c4d2edc817873e4"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/TLV/Tlv.swift",
+      "bytes": 3247,
+      "sha256": "63a23690f1cec70fa8d5305c18c8c7354b2fab7181ed779ca597e3702ddd1d9d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/TLV/TlvBuilder.swift",
+      "bytes": 582,
+      "sha256": "4f35db34f8af5cdf2688189e7e86062fcade6fbd1d3b64d87a14ba2bd93213a2"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/TLV/TlvDecoder.swift",
+      "bytes": 8852,
+      "sha256": "deb2ac28d83e7035c7286605addc71b3155309a09a107a7702a700258a7e2c48"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/TLV/TlvEncoder.swift",
+      "bytes": 5250,
+      "sha256": "f04ded94345e6c89948faa129c31236f36390a1bac95c60520b861e13e19f53e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/TLV/TlvTag.swift",
+      "bytes": 5553,
+      "sha256": "aa7c0f459ad8da597218947a7f10409668a23c46b63fdeea36d9be6300b9c0b6"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Common/UserCode.swift",
+      "bytes": 2203,
+      "sha256": "a173968da99925885950d0fbeabc8dea930f395d8da9c7ea2f62ad9168254a92"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/CryptoUtils.swift",
+      "bytes": 5126,
+      "sha256": "c1b2f83ed7a9904e6d7c700cf31972b97766cdac2defbadad5563ff9532e2896"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/IssuerDataVerifier.swift",
+      "bytes": 2746,
+      "sha256": "a8bf8e1c3723a75b661b1db56c1f84b166e0b55932703186a2360a8b26bc753e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/Secp256k1Key.swift",
+      "bytes": 795,
+      "sha256": "cb31d1d80bb017ea6ec24e8f1e914cda2ed54adb5a2413f661b981a264cd2553"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/Secp256k1Signature.swift",
+      "bytes": 1346,
+      "sha256": "6244879cb589456da955de8a37cd49ca8e3603e2b7303781eaee62aeb6bcad46"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/Secp256k1Utils.swift",
+      "bytes": 13074,
+      "sha256": "81da1b5afdf49f9068969d5d2b7e8d8dd41026f4dee550c61e47da4f50c395b7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/basic-config.h",
+      "bytes": 1109,
+      "sha256": "772fee629cddf6e0b71d1c9c5d4e56d9943f85272f80e7d3f3c8591c2ea93f5c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecdsa.h",
+      "bytes": 1196,
+      "sha256": "151f9f1a38c5051f1d06007a772909d356e5ec2e8a3d4b999ec25db9c163f925"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecdsa_impl.h",
+      "bytes": 10681,
+      "sha256": "daac9105812f1d0a607d9ae2de2fb48873c258c81be8af0f1d20ca44af3dd6b7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/eckey.h",
+      "bytes": 1232,
+      "sha256": "705ca275a9e6534b356c6d9da82e6bf2a2d4f4c79f2841f85be1c0faceea730e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/eckey_impl.h",
+      "bytes": 3459,
+      "sha256": "c79b97dbd234ba05d196335519135b1d1757eee15dc183e4bf79e978d40cc535"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult.h",
+      "bytes": 2530,
+      "sha256": "876c20aa573d70d08944d8f87c199db752979e2f1514c82d4cda6f6d6ea9ce93"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult_const.h",
+      "bytes": 848,
+      "sha256": "6a5f44f38167139846c4cfd4a269315b9fc397f55f2559326d8ccded5a6cfd5a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult_const_impl.h",
+      "bytes": 9888,
+      "sha256": "37da9555350044ff741ca6872e76f11e636a8af625a89b5a9a59a361be3043d4"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult_gen.h",
+      "bytes": 2377,
+      "sha256": "036171fc0843aa5d022658873bb871ea948d009217c61696da355d3bfdac5c5c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult_gen_impl.h",
+      "bytes": 8759,
+      "sha256": "3bfb7a9584a096c6332c1b7929007bb0dbddfd722847149a774572538cdaddc1"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult_impl.h",
+      "bytes": 47346,
+      "sha256": "0827e19bf4830388bd8ba7ace6926ab89b274be36dc87f552a41715d0d3163c0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/ecmult_static_context.h",
+      "bytes": 217488,
+      "sha256": "8bbd46f4eb3b637b59ba4bdcd1dd122cb831cfe250b08c50c38a176ab49f7a07"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field.h",
+      "bytes": 6560,
+      "sha256": "a6fb696654c8c50b71cc31e7055c2a5dd3fed14312635ec0a7123bc27d13df76"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_10x26.h",
+      "bytes": 1982,
+      "sha256": "2d198a8504e1a83c2326733506c006da0aa23ed31cb37a9d4303841664e94ae1"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_10x26_impl.h",
+      "bytes": 47419,
+      "sha256": "aa145bd5cfee1b4de78aa2d70ab2c11f338fd6be87404c49cefa8940701b13a6"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_5x52.h",
+      "bytes": 1783,
+      "sha256": "b68d72471d172ceddd151e69edae23e22241ae5b2cf51db54ddedb37a95c7362"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_5x52_asm_impl.h",
+      "bytes": 13162,
+      "sha256": "9f09d09c14a0ac2570401ac7d2d9517b29a8880e64138b3cdb6d1a5aeaf0fbbf"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_5x52_impl.h",
+      "bytes": 16556,
+      "sha256": "131edb546ba84a1ed76a1fcf50ce7f8c104f1090cbae5067210accadcceb0f13"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_5x52_int128_impl.h",
+      "bytes": 9344,
+      "sha256": "f52cc9398e475a0283e4f879a79a5f97f5deec98994b8f3d3809ddc795dc5da9"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/field_impl.h",
+      "bytes": 8884,
+      "sha256": "4cdc969863629dbb0d69e7840b63d680c60dde884be3b2493e0eb0ea7d969f2f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/group.h",
+      "bytes": 7619,
+      "sha256": "a49efef3d511762454caf7036535b318dfd102793cc2740a45f8c6ab665d6b43"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/group_impl.h",
+      "bytes": 27543,
+      "sha256": "ddb43aad0009904217f9bdaf126ab8b64430b9111b92dd04a596f91f8c43c2e0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/hash.h",
+      "bytes": 1709,
+      "sha256": "4961777743ffc65f2f7dfc6095073a64c53e84f4769aebe7238231d65490d1af"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/hash_impl.h",
+      "bytes": 12815,
+      "sha256": "b4686973059ff7f6bb1586db30b7c58e2f1f31190964fe4f5a198982cade295d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/include/secp256k1_ecdh.h",
+      "bytes": 2515,
+      "sha256": "6240e1f4a0c977665e922f11467752902c0e2901c61fc2419d98ef9b9392d293"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/include/secp256k1_preallocated.h",
+      "bytes": 5696,
+      "sha256": "b80a0b226f97ccab8ac4fd5e929059a93b2bf9da49b6d5d83e144da06084fdd8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/include/secp256k1_recovery.h",
+      "bytes": 4727,
+      "sha256": "440143682e9bb85eebf5708a0b740370bdb5fbf47d8e48951ec78bf79bb7a1a5"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/include/tangem_secp256k1.h",
+      "bytes": 35083,
+      "sha256": "51e6805f4d6c770f8add2ea58477d5136ab8c02a0159b17d8ab8123be7d0d6c3"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/libsecp256k1-config.h",
+      "bytes": 4865,
+      "sha256": "0060818c719018baf7b15ee07d1972118a4c2fce1e818e3ba6b2b4a2e4de0ffc"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/modules/ecdh/ecdh_main_impl.h",
+      "bytes": 2524,
+      "sha256": "6b9eb9657eeb87ededb6ce17a9328f66606fff807f392cae102b439e182a7a37"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/modules/recovery/recovery_main_impl.h",
+      "bytes": 7239,
+      "sha256": "7073b0ca98fa6035ddeab23fdaf6a944a0937976043ce4b87cd581fbf984fbca"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/num.h",
+      "bytes": 2782,
+      "sha256": "3943bf972cdf698dec6454628519c657789b162a43df3d094029f41f090982a0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/num_gmp.h",
+      "bytes": 626,
+      "sha256": "af79122e2a2738fb2b044eaf4934e9443265c05672ffdf9d1aafda1b0fdacfb7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/num_gmp_impl.h",
+      "bytes": 8404,
+      "sha256": "41f2d8f30d0e44347be8ec39c80722d6b477c8f93c7cf38bf727570791d8c1c4"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/num_impl.h",
+      "bytes": 658,
+      "sha256": "ee7c2eb0a0e0fd36da1a43f1a26b8fac97df42a32ac9a17d6a028289bdf42a40"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar.h",
+      "bytes": 5397,
+      "sha256": "fa034b7297df3854204c031e326e0d7b68ae5cf86674693719b0bb0c8ce50119"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_4x64.h",
+      "bytes": 796,
+      "sha256": "0b54445ba25bc5e0893bc42f65784e5442a28d9a24aa8728134ff45c87629764"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_4x64_impl.h",
+      "bytes": 31129,
+      "sha256": "480c53f9ee234f32d354d72c366c8d89078432442653ec5d42a34586426e1e48"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_8x32.h",
+      "bytes": 720,
+      "sha256": "c89ea3b63eac13aa26bf2088914c0f2fd7df1c7eb775ba0ca2fcf854010985eb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_8x32_impl.h",
+      "bytes": 27510,
+      "sha256": "33d434b82746e330bfc0c9bb6f7040fa10e0f3931c8731034193f763e0b43ae6"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_impl.h",
+      "bytes": 12584,
+      "sha256": "43ebc30cb3a55d85fdeede0feff4d64187464e1e9e130652afc828571ba703e0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_low.h",
+      "bytes": 653,
+      "sha256": "609ca00ca3d8c9e686d6d980d506c8b91e7995b28f8991cbb2a2568b6eff0d55"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scalar_low_impl.h",
+      "bytes": 4225,
+      "sha256": "2a0237ac24ee812c848773343b3800ef0a3289667fb957e52e19efb847e60a16"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scratch.h",
+      "bytes": 2145,
+      "sha256": "ebd8cc46e744cefb0b1608c3583afebd8905a542fc6f50ec2b736f0c23f82573"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/scratch_impl.h",
+      "bytes": 3322,
+      "sha256": "5fdf438b4785abf5fe71161075221177bf6a76d4308ea149ecc81dad3890072e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/secp256k1.c",
+      "bytes": 25333,
+      "sha256": "127c42115c52fa49f99b0651d7b3312ce0cf7ef48b74797b8d33e6c441c22410"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Crypto/secp256k1/src/util.h",
+      "bytes": 5630,
+      "sha256": "36ab11c368c7a0ee493fed106ac6c33f8b1a8de13b83952d759d0d38c8029cd7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Haptics/Error.ahap",
+      "bytes": 1862,
+      "sha256": "d960008c011e4eecff229140893e1c64e052f63c30822827e3ed7f09e894ba51"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Haptics/Success.ahap",
+      "bytes": 1025,
+      "sha256": "5e5c742ecfdb089c8d05daee7d1e26a0f27058120d4865b9db0cc5622e7187a7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Attestation/AttestCardKeyCommand.swift",
+      "bytes": 3642,
+      "sha256": "219d148d234626ac7977445ec8925ab61449b6b43b04b97fa894a2bc731a5b15"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Attestation/AttestWalletKeyCommand.swift",
+      "bytes": 6209,
+      "sha256": "a073858fdb9bf61b88ef8f79236d2c165ef710eb66b01f675b5b06c165c179c2"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Attestation/Attestation.swift",
+      "bytes": 5121,
+      "sha256": "b3fad48763e45ac66267ed0d5630301a8a357df3f0d380d82a6a003df905af03"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Attestation/AttestationTask.swift",
+      "bytes": 11322,
+      "sha256": "bcf75d836a2919a503e9c2999c5cdcbc12e279fbff443ff0a1723b7f114d03e0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Attestation/OnlineCardVerifier.swift",
+      "bytes": 2644,
+      "sha256": "9097c6d12ba2ed865499b19e335cdc1a51ce6aabc4c7a2df1f48b6d253a0901a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Attestation/VerifyCardRequest.swift",
+      "bytes": 2488,
+      "sha256": "b06b6825ae0a09ad4f5912a3af936d42d7344ae85e95307bf66681fbfa031e28"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/BackupService.swift",
+      "bytes": 18133,
+      "sha256": "7104720dee1b59b7f273096907a3e7762991bbc4c3f0f1735185e96e22db469c"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/FinalizeBackupCardTask.swift",
+      "bytes": 3419,
+      "sha256": "d319206e1a48d12ab0733fe3d22e3645ca9149ea4c14489252dc76b8f3f4f5d6"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/FinalizePrimaryCardTask.swift",
+      "bytes": 4528,
+      "sha256": "9f7ea65bb6cac3f366290b886f5d6da3f88a1478cd79317c42a928c9c3a30b4b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/LinkBackupCardsCommand.swift",
+      "bytes": 4593,
+      "sha256": "429666869a121b2ca68a39d7a4db2d66b63b8c4187ceaba5e65c6a4a16c8e162"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/LinkPrimaryCardCommand.swift",
+      "bytes": 5273,
+      "sha256": "619bb38a05c8042f5032cdaa8bf676bce1b15899b905041c5905af3c536d7280"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/ReadBackupDataCommand.swift",
+      "bytes": 4841,
+      "sha256": "736ee074a3e211660e11b8f9dff57ddb7991cf3d51e13a47194a4c68a6e70858"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/ResetBackupCommand.swift",
+      "bytes": 3758,
+      "sha256": "50309138bb6d8f2d3868ed615a75c808884dd2fed08b5b4c3ebe0a29a2968e8e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/StartBackupCardLinkingCommand.swift",
+      "bytes": 2174,
+      "sha256": "9cf84e85f44d3f19d009baeebfd894d8d827a57ce602f3c8f1828a8cf8b833c7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/StartBackupCardLinkingTask.swift",
+      "bytes": 5486,
+      "sha256": "3441fbf3713a04875afa1af5a929eef13c9f1ceb5c83348e8f3d7fc77a7fbb4f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/StartPrimaryCardLinkingCommand.swift",
+      "bytes": 2363,
+      "sha256": "fd6cba6ced033119d0cbb7bfa3300fa3a56fec0f6870127397aba4203ed5758e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/StartPrimaryCardLinkingTask.swift",
+      "bytes": 2573,
+      "sha256": "4a27391a25e79f32891d3be1ecc70d06459fa3e7570efc0a637db0f7d9f52653"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Backup/WriteBackupDataCommand.swift",
+      "bytes": 3460,
+      "sha256": "ae8bc913adf68f8d0c842a001170ae9b3b46f0c44ea510ca76ee0a27ade602ec"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Command.swift",
+      "bytes": 10960,
+      "sha256": "c52dcfcb287cc96ef4b51af7deb6e4b5f8b720ee2c7039cdccf8ebd58d2567b1"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Derivation/DeriveMultipleWalletPublicKeysTask.swift",
+      "bytes": 1695,
+      "sha256": "381daebf14cc42913d22169e26bd3272313c1c69e3159cc80b71be6da3402fd4"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Derivation/DeriveWalletPublicKeyTask.swift",
+      "bytes": 2179,
+      "sha256": "d44a426e3627b6c09605292211f90fa6a0826c11d9656c67b791ea60d6622b96"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Derivation/DeriveWalletPublicKeysTask.swift",
+      "bytes": 2143,
+      "sha256": "f51e4ae69bde4071251c0fdba8f243b6d18c5f04d679e3205aa8683ba5773242"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/ChangeFileSettingsCommand.swift",
+      "bytes": 2034,
+      "sha256": "526d441a0f511eda74d7b819b341a22443ec67c0531ef3433bd322116d29cc18"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/ChangeFileSettingsTask.swift",
+      "bytes": 1370,
+      "sha256": "3dd6f91e7e6e0b1b5bec1827b3ebb0841d925076dbb7c21653ab5f4e370c78a8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/DeleteAllFilesTask.swift",
+      "bytes": 1149,
+      "sha256": "4f5f71a38a6d7a23aceea9fa141f22d8a8b6e5d562d8e7e08c3270b73098e39a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/DeleteFileCommand.swift",
+      "bytes": 1675,
+      "sha256": "f52267700172500a8fd64e40f5a6b84a9ee0b7abe6848ae32dc34813e3deac7f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/DeleteFilesTask.swift",
+      "bytes": 1913,
+      "sha256": "aa00ed38193ef4e35bf6157717f40d7b40302fb141b2bc60ddae3a0096e3f9b8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/File.swift",
+      "bytes": 6274,
+      "sha256": "286f4693a1355f301dd0c61495d89004e7272fe3bb659b5219b45a5bef9d969b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/FileDataMode.swift",
+      "bytes": 875,
+      "sha256": "498214005331b5be33c4283a1e80001c534e882b77c9583153ac1c8ee49c6776"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/FileHashData.swift",
+      "bytes": 799,
+      "sha256": "184c6801884416d39b6942524d3cff59adebfc449305b6bd9c982586f7627a0e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/FileHashHelper.swift",
+      "bytes": 1812,
+      "sha256": "3e71017ac2bfd519b65e45fc397cee9789e9907288fcb3dbb33dba0873431178"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/FileSettings.swift",
+      "bytes": 2070,
+      "sha256": "3b058b1451f58b899827ef51678224a633f59181838d02afb5b7c4395c4c559a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/ReadFileChecksumCommand.swift",
+      "bytes": 2603,
+      "sha256": "e7492f66a99e624b349753728040087fe879ea1daf15bb6fa6cc1efa158987c4"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/ReadFileCommand.swift",
+      "bytes": 6361,
+      "sha256": "29e7d0742c36e6cfd4a610b81625a6da05d1f57fb1f5e23b9a916c15346b3f05"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/ReadFilesTask.swift",
+      "bytes": 1923,
+      "sha256": "bacbae118c6e38f882bdd80201c7a13a583d21204001a5be939c24bbb8d8b2ce"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/WriteFileCommand.swift",
+      "bytes": 11230,
+      "sha256": "22986a0ce8a08e6f89b8e742af506b7f114ac99f25cdfe18479eca705ff4070f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Files/WriteFilesTask.swift",
+      "bytes": 2262,
+      "sha256": "3aebcd1cc6756f0a9295d09070e0a496fe6d8811956ffe12e960e75416539738"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/GenerateOTPCommand.swift",
+      "bytes": 2097,
+      "sha256": "6c23d79dfbdc239ec2a1e693a4a8f0b8076725f69f6e9f76adcaf5f85ecbee25"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/IssuerAndUserData/ReadIssuerDataCommand.swift",
+      "bytes": 4465,
+      "sha256": "6cfa9fcb6eeca2cee2b5323781a342481822f6540abfd64815f842b2a1171c6a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/IssuerAndUserData/ReadIssuerExtraDataCommand.swift",
+      "bytes": 7953,
+      "sha256": "cf2f93fed9bda5ff7dd8e0d787bfc8d9d7c55d8545954c581cdcf12bb12f8dbe"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/IssuerAndUserData/ReadUserDataCommand.swift",
+      "bytes": 2841,
+      "sha256": "d926f934d664ec3cda21521712a883b223088bf42fd3bd69a80a5c3a6ecc8911"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/IssuerAndUserData/WriteIssuerDataCommand.swift",
+      "bytes": 5067,
+      "sha256": "c4fe3cd485e608f609f61c913f97ab5c40d84be03760c006a36fc0f9e624e13d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/IssuerAndUserData/WriteIssuerExtraDataCommand.swift",
+      "bytes": 8049,
+      "sha256": "63826511840ab109e4c9469b942ea5f5cb0d948304f32930bf4efa36b5cbe8a7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/IssuerAndUserData/WriteUserDataCommand.swift",
+      "bytes": 5693,
+      "sha256": "4640ced54985353754e2371adbbac7cf272e0a6620d59387df4939223c71f724"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/OpenSessionCommand.swift",
+      "bytes": 2913,
+      "sha256": "a9a6f739c3f4f8c123885770652e59e57ff1f75de9b822f570e460ed48b11842"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/DepersonalizeCommand.swift",
+      "bytes": 1513,
+      "sha256": "3f5315e45e28592087910c0491746ee5883a2bc6577054597059d7038f1d7b9e"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/Acquirer.swift",
+      "bytes": 289,
+      "sha256": "e29c5ec2180299fab5349800068c849f45a625eb5474c1e867d972ac422537d1"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/CardConfig.swift",
+      "bytes": 9872,
+      "sha256": "27a5ba511a606637111ef240051b1e76db93916ee1cd8b7b362b3d8489cd86bd"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/CardData.swift",
+      "bytes": 732,
+      "sha256": "d19a36c2bd53a422cee43872beb124a31fdbf9695d70c46ff546397b975e205d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/Issuer.swift",
+      "bytes": 323,
+      "sha256": "1023f34274e5c859396173b1f056ad38406bb3d03d8efe6596295eb68cfa6a2b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/Manufacturer.swift",
+      "bytes": 277,
+      "sha256": "86cb65b065083e009ef1eae7eebcb1152bf94721a3a82ca735bade68bfd45ea0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/NdefRecord.swift",
+      "bytes": 978,
+      "sha256": "bc4f6fb109a27b0f7effe74f7a697f2de6fc140ba8e25801039107b701df2864"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/Entities/ProductMask.swift",
+      "bytes": 1362,
+      "sha256": "11ac2777d740848231e420061c2c06b4abc889d1883928c63dcda66648b0274d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/NdefEncoder.swift",
+      "bytes": 3651,
+      "sha256": "b859200cfbfeae6316d9434bb73c2c392a55f4c5da1e6365d8cddac77ded2e8a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Personalization/PersonalizeCommand.swift",
+      "bytes": 7239,
+      "sha256": "f6db14968c6c8090973544f76f16cde757f5ec240f237d53fb2db85472b96928"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Pins/CheckUserCodesCommand.swift",
+      "bytes": 1659,
+      "sha256": "a6c113d758879ceefbd2f40d9cb16eaea626302f0230c2cfc40b535c4585a767"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Pins/SetUserCodeCommand.swift",
+      "bytes": 10003,
+      "sha256": "8cc3598ce901427e8263a378ea9b24385b0ffcfb8aec8dcaeb8d9ddb4b009ba6"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/PreflightReadTask.swift",
+      "bytes": 4539,
+      "sha256": "3ca4c59708db45b4c87a779e35c96a962f4568061a2073f5d4468bff58503e1b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Read/ReadCommand.swift",
+      "bytes": 2791,
+      "sha256": "d0b27ccd4e015bae9cb424fc02794c6dfda38b6a76dc1b97830e13e4b8b8b1a8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Read/ReadMode.swift",
+      "bytes": 641,
+      "sha256": "597ef314febbf85e45d0473347fef78ba0c2068295f0410752d441ccaba77de8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Read/ReadWalletCommand.swift",
+      "bytes": 3014,
+      "sha256": "ff4189397a0ca3a32af8f64138e5dce54ca696056430f793f0de50a7a7a2149f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Read/ReadWalletsListCommand.swift",
+      "bytes": 3461,
+      "sha256": "a8153db632207c983dcb2016a7c9fac363b9df3dcb7e2ded0ee5c73467b4dfa8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/AuthorizeMode.swift",
+      "bytes": 375,
+      "sha256": "0e963e094be13bc1aef223589e0132c769e0df7c330aadd2145c52b6cee40e76"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/AuthorizeResetPinToken.swift",
+      "bytes": 1994,
+      "sha256": "1963ccc19bce678d5d342d8a98e1be1a7c32fec8353380c44e73298f5ea15fbb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/GetResetPinToken.swift",
+      "bytes": 2211,
+      "sha256": "eb834b61809be831a8c8b3f65c3eb9b8f294b9a513b54c02643965f04c05ad47"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/ResetCodesController.swift",
+      "bytes": 3397,
+      "sha256": "eec16414190b3b214b6b51d45dbfd32da80c2d794dc66866fae10c6e920f2f22"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/ResetPinCommand.swift",
+      "bytes": 1901,
+      "sha256": "b35ccf38d12a37d804e4c55f5497eb3368e73835e2118f8afd72c72432a87a6f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/ResetPinService.swift",
+      "bytes": 9229,
+      "sha256": "8d77c22a59911cc0f0ac96ee55b493751b9f776025595a5888207fc006b17b63"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/ResetPinTask.swift",
+      "bytes": 1390,
+      "sha256": "ee1cc783d9b776586b403ef7229f20ef45f91b2e0f07267c0f90ecf9ce9e6901"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ResetCode/SignResetPinToken.swift",
+      "bytes": 2639,
+      "sha256": "cd75961b90426e67aa514298f93e975945d0c23c3bbb5b91492b343c1f59d2ca"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/ScanTask.swift",
+      "bytes": 3998,
+      "sha256": "a360fe6dea275cec921269bffed804f903063c493eaa0fea5c48ef94cc63235d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Sign/SignCommand.swift",
+      "bytes": 10116,
+      "sha256": "3001356210a2e579c771ed5ae8c7b609a54d65275e4d370de04458d27db5b464"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Sign/SignHashCommand.swift",
+      "bytes": 2011,
+      "sha256": "0b81314f715c0e4ab3131f402457bf753aeed837bb5cdb496be6c658889c8f51"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Sign/SignHashesCommand.swift",
+      "bytes": 1330,
+      "sha256": "0115d9de6645c63019474e7f29af7852143b4b7d765d0bacda0fcf35338d0a57"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Wallet/CreateWalletCommand.swift",
+      "bytes": 8064,
+      "sha256": "990500d00da315290043a4257fc3b7f7e1ebf4f008274730c9edb1be04781aac"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Wallet/CreateWalletTask.swift",
+      "bytes": 5130,
+      "sha256": "55a922766eb60d008a833ca7ecc9af470973b1235c94bd6a2aa3edbcef3b62c2"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/Operations/Wallet/PurgeWalletCommand.swift",
+      "bytes": 2482,
+      "sha256": "7335d1b7dd35d9c67bb33352f54d3080ab518c69a43e0f5ae8805f52efe352b9"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/TangemSdk.h",
+      "bytes": 510,
+      "sha256": "b07922eacbca4b5929f5ac9bbe173f922a873eaad988105212fd2eeaf827243d"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/TangemSdk.swift",
+      "bytes": 40827,
+      "sha256": "72c54745505b35d7d7e101c72f334632c55a3ee9a078ac9b20f16eed3075cb73"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/BaseViewDelegate.swift",
+      "bytes": 2121,
+      "sha256": "18b129b99e0345db3f95f9024ec044d6a1c52bef30742a679ac65c7ec68632a5"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Main/DefaultSessionViewDelegate.swift",
+      "bytes": 5071,
+      "sha256": "c50bff3bdc93e33269a20389993c66e8e4100f1fcef3f883bed586ed6e83c05f"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Main/HapticsEngine.swift",
+      "bytes": 4893,
+      "sha256": "896e89721195286adc27d19a7a6f26ba159c6847d84f427ba1411fac78eb74ea"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Main/MainScreen.swift",
+      "bytes": 3562,
+      "sha256": "2d3fa444453c2e3e77118316567a13b3110a7a535d9b3651c2ac80b83fd95f90"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Main/MainViewModel.swift",
+      "bytes": 246,
+      "sha256": "31e8fe427b553e8c0cc1303d70dde6ba5b6c938b59695ba2a4e6550de804462a"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Main/Message.swift",
+      "bytes": 1160,
+      "sha256": "590c0cc60a50e37f4ba03cfaa3fd062ec5de73de803565834cb79e9d4cfda1a5"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Main/SessionViewDelegate.swift",
+      "bytes": 3415,
+      "sha256": "c79f31397866282e1f1986795788270ace4d5b6aa24b807ef42f44a1cb1e1098"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/ResetUserCodes/ResetCodesScreen.swift",
+      "bytes": 1871,
+      "sha256": "4270c1a7146a6c939a599ea09c889c38aaf306e62968a0d9b808f84f80c46844"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/ResetUserCodes/ResetCodesViewDelegate.swift",
+      "bytes": 2087,
+      "sha256": "cb7957ace5ec7fb5a475979b0cbb642a51f6a2c276d8b8b4a1d61284d6459557"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/ResetUserCodes/ResetCodesViewModel.swift",
+      "bytes": 261,
+      "sha256": "02bcd6c9e857b36b12850d67302e878cfcaf3db2e5d7e12e65cffff297eb824b"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/ResetUserCodes/ResetCodesViewState.swift",
+      "bytes": 465,
+      "sha256": "1e7e6328f873dd68d71ff57f180ca3e7570bf18a509aab11e9c1c7f0f0a91716"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/TangemSdkStyle.swift",
+      "bytes": 2600,
+      "sha256": "09ba5bf2d156c422b054e922a0070356fb3956b2ff43053adaa6044d90635fca"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/ViewModel.swift",
+      "bytes": 371,
+      "sha256": "e63a76ac5e3ea15514107d0c056a7719026d0f72d533b33e1777d656e0680f03"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Common/ActivityIndicatorView.swift",
+      "bytes": 1277,
+      "sha256": "07547f80a437efa7241366045550de67dc73cba3c33fb79a3017c2d4d27ab8e7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Common/FloatingTextField.swift",
+      "bytes": 2651,
+      "sha256": "8ec4edfca3ced260bf088b91126d5f348c8b3b04a4ac505bab1aa3246f17bca5"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Common/FocusableTextField.swift",
+      "bytes": 3415,
+      "sha256": "c06736306a9d28af9118cc184bd9e63ff0c36576e1d961e7f926a5b8b4be3453"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Common/RoundedButtonStyle.swift",
+      "bytes": 3256,
+      "sha256": "b0cf5f6ab8879bf62e4aa9e2dc9110abe8a4c87d93dca052c783f1297d30f352"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/IndicatorView.swift",
+      "bytes": 3626,
+      "sha256": "b33570e438bc25aabd9d9b504f92e5e3c57a5d135e4e008a3333abfdfd911fbd"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/KeyboardAvoidance/KeyboardAdaptive.swift",
+      "bytes": 1319,
+      "sha256": "d6c8cbf173500633553275ae6c392f0b8e9db22ac2bafaa9877adf9c79fde588"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/KeyboardAvoidance/KeyboardHeightPublisher.swift",
+      "bytes": 1105,
+      "sha256": "fdd9433dd4aa7affe49e4dca09e2a5b898b8f241caa004a3f311d96d367b3ae8"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Scan/CardView.swift",
+      "bytes": 1451,
+      "sha256": "994bf15cebc6dec3b5f3dce731f1f4852f9dbac29909abdacb016cb6443f7176"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Scan/NFCFieldView.swift",
+      "bytes": 1917,
+      "sha256": "e731d00fb0d3914e06d3f8f9c3d16ff132925681f2041b125dbb7e2c8b0d12cf"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Scan/PhoneView.swift",
+      "bytes": 1513,
+      "sha256": "54b60a488a330e22e195e9b9d7fa914df3dc249da570143ed3dd23529aefa7ab"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/Scan/ReadView.swift",
+      "bytes": 1536,
+      "sha256": "20351372b6e31b162616acb5bd3eae186198c4f6eb2de932e4b797b7ce0067ee"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/UserCodes/BadgedCardView.swift",
+      "bytes": 1461,
+      "sha256": "487939a2af2f9dc9843a514a1391ce80d3c5f9c54a1579223f87b60496b135e2"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/UserCodes/ChangeUserCodeView.swift",
+      "bytes": 4296,
+      "sha256": "c1a272da1186d62bf31736e9f6d624b44127265b386fcf17d9a9509d5b9e34c3"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/UserCodes/EnterUserCodeView.swift",
+      "bytes": 3269,
+      "sha256": "8687354164be671a8c10177035e502e397054cbe944172fdd5f427d40fc785cb"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/UserCodes/ResetUserCodesView.swift",
+      "bytes": 4397,
+      "sha256": "ff601ae93a84a6082e70ce99984be4f8a06c288a037cd8499bf37af4da9b40b0"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/UI/Views/UserCodes/UserCodeHeaderView.swift",
+      "bytes": 1308,
+      "sha256": "6b88b9ef7436f955af9220b18c86ab66801f112ae60bcc511d9fccb91942d542"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk/TangemSdk/module.modulemap",
+      "bytes": 293,
+      "sha256": "35a34051caf515e5e2c1be469ca52a8a83d6047d526ae3382b619f3285ae3bb7"
+    },
+    {
+      "path": "vendor/tangem/ios/TangemSdk/TangemSdk.podspec.json",
+      "bytes": 2151,
+      "sha256": "61691d7604e90de406150e063d7505995d9f93f91a4f45891446dcb248ccbc4f"
+    },
+    {
+      "path": "vendor/tangem/licenses/android-3.7.2-MIT.txt",
+      "bytes": 1062,
+      "sha256": "4cccf2693ce63f007f4a1e1657ff96a5bde396d50a538cf5d7cbfe633933613f"
+    },
+    {
+      "path": "vendor/tangem/licenses/react-native-2.3.1-MIT.txt",
+      "bytes": 1066,
+      "sha256": "66d71d2d836ba27135b688b5451325b962620d733437b4759601304c8a0a439e"
+    },
+    {
+      "path": "vendor/tangem/licenses/secp256k1-COPYING.txt",
+      "bytes": 1057,
+      "sha256": "a735999c7e5649df6fcda6fb06ab97435851c392b1b93494ae8725f37441632f"
+    },
+    {
+      "path": "vendor/tangem/provenance/android-cached-variants.json",
+      "bytes": 9807,
+      "sha256": "6d5356d286af08cb84ee258318eae4686e13ddc2b02fd2b04703597b71cdf85b"
+    },
+    {
+      "path": "vendor/tangem/provenance/wrapper-2.3.1-gradle.properties",
+      "bytes": 199,
+      "sha256": "1a193281e29ee6deee2043686f60462f44b12fa8e92d958e0406060ab98b4324"
+    }
+  ]
+}
