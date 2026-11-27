@@ -33,6 +33,8 @@ public class KeyboardProvider extends PopupWindow implements OnGlobalLayoutListe
 
         setWidth(0);
         setHeight(LayoutParams.MATCH_PARENT);
+        // This invisible observer must never consume app touches.
+        setTouchable(false);
 
         setSoftInputMode(LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
