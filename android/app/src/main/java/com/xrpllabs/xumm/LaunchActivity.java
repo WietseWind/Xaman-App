@@ -504,7 +504,8 @@ public class LaunchActivity extends NavigationActivity {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        final Configuration override = new Configuration(newBase.getResources().getConfiguration());
+        // Keep display/window fields undefined so Resources follows live configuration changes.
+        final Configuration override = new Configuration();
         // disable font scaling
         override.fontScale = 1.0f;
         // A workaround for AndroidKeyStore bug in RTL languages
