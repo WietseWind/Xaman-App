@@ -7,8 +7,42 @@ horizontal native tab bar; it does not use the Duo's side-bar dimensions.
 ## Layout contract
 
 The new native build permits window resizing. A positive public hinge-sensor feature or sensor, on Android 11
-or later, enables the fold layout and rotation. A model name or a screen aspect ratio does not identify a fold.
+or later, enables the fold layout. A model name or a screen aspect ratio does not identify a fold.
 Devices without that capability keep their portrait policy and ordinary full-screen size formulas.
+
+### Portrait policy
+
+Source `2b72e6055` requests portrait on Android folds, including the unfolded display. `LaunchActivity` no longer
+unlocks fold rotation; navigator defaults and early fold overlays use the same portrait request. Resizable iPad
+windows retain their existing rotation policy. The intended fullscreen result is a display whose longer side is
+the height. This requires actual native verification; setting the request alone is not evidence of that result.
+
+Two API 34 properties are declared at application level, the scope documented by
+[WindowManager](https://developer.android.com/reference/android/view/WindowManager#PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE):
+`PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE=false` and
+`PROPERTY_COMPAT_ALLOW_DISPLAY_ORIENTATION_OVERRIDE=false`. They opt out of OEM compatibility treatments that
+replace an Activity's requested orientation or keep a fullscreen display in its natural landscape orientation.
+Each Activity retains its own orientation request; these properties do not separately request portrait for SDK
+Activities.
+
+The existing application-level `PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY=true` remains the temporary API 36
+compatibility opt-out. It does not guarantee physical display rotation. Android can letterbox a portrait Activity
+within another display orientation, and a split-screen Activity cannot choose the overall display orientation.
+See the [Activity orientation contract](https://developer.android.com/guide/topics/manifest/activity-element#screen)
+and [Android 16 restrictions](https://developer.android.com/develop/adaptive-apps/guides/app-orientation-aspect-ratio-resizability).
+When targeting API 37, the API 36 opt-out no longer preserves these restrictions on displays of at least sw600dp.
+
+The stock API 36 Pixel Fold control demonstrates the limit: the portrait request leaves the display at
+2208 × 1840 with a 1380 × 1840 portrait Activity letterbox. A real sensor quarter-turn changes both display and
+fullscreen Activity to 1840 × 2208. This is a portrait request with a verified physical-turn result; it is not an
+automatic display-rotation guarantee. No device compatibility setting was changed to obtain the result.
+Android documents no app property equivalent for
+[`OVERRIDE_RESPECT_REQUESTED_ORIENTATION`](https://developer.android.com/guide/practices/device-compatibility-mode#override_respect_requested_orientation),
+which is separate from the two OEM opt-outs above.
+
+The layout still reads real window, display, inset and input bounds. It does not swap measured width and height,
+rotate the content tree, or invent portrait coordinates when Android supplies another window shape. Keyboard and
+touch geometry must continue to match the actual window, including split mode.
 
 This is not universal Galaxy Fold identification. Early Samsung Galaxy Fold, Z Fold2 and Z Flip devices can use
 proprietary hinge interfaces instead of the standard sensor, as documented in
@@ -23,9 +57,10 @@ therefore supplies a stable phone model for the app process: its natural width i
 cover display. It can differ from the physical cover width on other fold models. The native process retains the
 model across Activity recreation and JavaScript reload.
 
-The Activity overrides only font scale and locale. Copying the complete startup configuration also pins
-screen size, orientation and window bounds. In the native control, the real decor and Application reached
-portrait and then the inner display while the Activity still reported the original landscape window. A fresh
+The Activity's `attachBaseContext` configuration override changes only font scale and locale. Copying the complete
+startup configuration also pins screen size, orientation and window bounds. In the native control, the real decor
+and Application reached portrait and then the inner display while the Activity still reported the original
+landscape window. A fresh
 [Configuration delta](https://developer.android.com/reference/android/content/res/Configuration#Configuration())
 leaves those fields undefined so Android can update them. The existing font-scale and English-locale policies
 remain intact; no extra window polling or React Native cache patch is added.
@@ -34,6 +69,11 @@ Every registered screen stays mounted in one phone column. The column is on the 
 it fits down when the window is smaller. The native bottom-tab container follows that same visible width and
 keeps its existing height and navigation insets. The free area uses the existing empty `FoldPhoneExtraPanel`.
 Modal and overlay backdrops cover the whole app window; their content stays in the phone column.
+
+The requested full-width, full-height layout inside either true Android split pane is still pending separate
+geometry work. The current fixed-column split screenshots do not prove that request. Fullscreen use of a wide
+inner display keeps the phone column; split mode must eventually fill its available pane without stretching
+text or controls, with the bottom controls and sheets following the same pane.
 
 Android blur backdrops are bounded to that window. An adaptive native layout flag preserves Yoga's positions
 instead of letting Android's `FrameLayout` replace them. Controls remain descendants of the blur view, so the
@@ -101,7 +141,7 @@ full-height column can still be `open`; the Duo's `turned` state describes its v
 |---|---|
 | `AndroidWindowLayout.java` | Public hardware gate and process-stable model |
 | `AndroidWindowLayoutMath.java` | Model and native column geometry |
-| `LaunchActivity.java` | Fold rotation policy and native tab placement |
+| `LaunchActivity.java` | Fold portrait request and native tab placement |
 | `DeviceUtilsModule.java` | Capability/model constants and validated UI-thread width update |
 | `androidWindow.ts` | Pixel-aligned fit and native capability checks |
 | `androidWindowLayout.tsx` | Live window updates, stable screen instance and free panel |
@@ -123,6 +163,9 @@ layout engine. Real emulator screenshots, native bounds and actual taps are requ
 
 | State or flow | Check |
 |---|---|
+| Stock fold, actual fullscreen inner display | Cold start unfolded, then turn the device; record display rotation, display bounds and app window bounds. Verify the longer physical display side is the height, rather than accepting a portrait letterbox inside a landscape display |
+| Portrait cold/live transitions | Cold start on the cover and inner display; fold/unfold while Home, a stack screen and an overlay are open. Confirm the actual fullscreen portrait result and retained account, screen and draft |
+| Fullscreen password keyboard | Open the empty production password overlay with safe synthetic props where necessary; focus the field, verify real IME visibility, hide it with Back, then Cancel. Record entry scope and confirm no authentication/signing action |
 | Cold start on cover, inner, each split side | Phone content, last row, native tabs and navigation area fit |
 | Fold, unfold, turn and resize while running | Account, current screen, input and PIN state remain correct |
 | Onboarding and account creation | Buttons, PIN entry/repeat, keyboard and secret-confirmation flow work |
@@ -134,6 +177,10 @@ layout engine. Real emulator screenshots, native bounds and actual taps are requ
 | Add Contact: full size → split, and form first opened in split | Bottom tag remains above the real keyboard; Name → tag works with the same open keyboard; Cancel saves nothing |
 | Destination-tag sheet in split | Focused input is above the real keyboard; Cancel returns to the underlying screen |
 | Light → Dark → Light after unfold | Native tabs and labels remain readable without a restart |
+
+These portrait checks define acceptance for source `2b72e6055`; recorded build and native results are in
+`repro/issue-557/validation.json`. Distinguish a physical quarter-turn from an automatic app-forced display turn,
+and record split behavior separately. Full-pane split acceptance remains pending the geometry change above.
 
 The test emulator uses Android's stock Pixel Fold display/state mechanism, with separate cover and inner displays.
 One task-only profile has a narrow cover (884 × 2208 px) and an inner display (1768 × 2208 px). Its vendor hinge

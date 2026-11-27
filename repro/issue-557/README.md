@@ -1,5 +1,44 @@
 # Android fold evidence — #557
 
+## Latest portrait follow-up
+
+Source `2b72e6055c05e2ac2f2fd9e2b71a08f2759f0c64` requests portrait from the Android fold Activity,
+normal screens and early overlays. Both documented OEM orientation opt-outs are false at application level;
+resizing and real window/keyboard geometry are unchanged. iPad rotation is unchanged.
+
+The fresh v7 Android Debug APK is 5.5.0 (561), ARM64 code 3176289, SHA-256
+`cc7db59b0081600e80335c763e1c13dc3438c296867cac4b74c8c40c85cb03f2`.
+The compiled request/properties, certificate, 1,976 native/config inputs and absence of diagnostic markers were
+verified. Earlier v6 and baseline APKs remain unchanged.
+
+The final full suite at this source passes **4,041 tests and 60 snapshots** (328 active suites; seven existing
+skipped tests and two skipped suites). Seven focused orientation/configuration checks, TypeScript, touched lint
+and normal commit checks pass. No signing, wallet, schema, SDK or translation change is part of this follow-up.
+
+The stock API 36 Pixel Fold keeps its default 2208 × 1840 display and puts the portrait Activity in a
+1380 × 1840 letterbox. After a genuine sensor quarter-turn, the display and fullscreen Activity are both
+1840 × 2208. **The app requests portrait; it does not force this stock display to turn automatically.** No device
+compatibility override, forced task bounds, crop or fake geometry was used. See `portrait-v7-stock-os-letterbox.png`
+and `portrait-v7-stock-after-turn.png`; the original issue comment embeds these views directly side by side.
+
+Normal setup reached empty Home without creating an account. The actual empty password overlay was entered
+programmatically with synthetic props. First Cancel worked before any input touch; reopening and one native field
+tap opened the real keyboard with the input above it. Back/Cancel restored Home without password entry,
+authentication or signing in that component check.
+
+A fresh cover launch showed the early Lock at 1080 × 2092. The same locked process unfolded and, after the
+emulator's fold reset of normal auto-rotate was restored to its original setting and the genuine portrait sensor
+posture reapplied, used 1840 × 2208 fullscreen Lock. One correct private PIN restored empty Home; no retry/reset
+was used. This is explicitly a normal rotation-control restoration, not a compatibility override or app-forced
+turn. In the final keyboard-open portrait → landscape → portrait control, Android closed the IME and cleared focus.
+A public dummy value remained in both the same native input and the same overlay instance. One tap restored the
+real keyboard; Back/Cancel returned empty Home. No Authenticate/sign action or typed screenshot was used.
+This is a text-retention/refocus pass, not a claim that focus or the IME stays open through rotation.
+
+The requested full-pane split layout remains separate pending work.
+
+## Earlier fold and input validation
+
 The fix keeps one phone column, its native tabs and full-window backdrops when Android folds, turns or enters
 split mode. It follows [Duo #544](https://github.com/WietseWind/Xaman-App/issues/544). Work uses a separate full
 folder copy and branch. The original `16kb` folder is unchanged.
@@ -26,9 +65,10 @@ All photos are unedited native captures, reviewed before publication. Each photo
 Also see [left split](after-split-left-home.png), [live dark theme](after-live-dark-inner-home.png),
 [retained tag and real keyboard](after-retained-tag-keyboard.png) and
 [empty password field and real keyboard](after-password-keyboard.png).
-The password image proves field visibility; Back hides the keyboard before Cancel.
+The password image is the ordinary Pixel 7 in real landscape OS split mode, not a fold capture. It proves field
+visibility; Back hides the keyboard before Cancel.
 
-These current v6 / JS859 photos show the two final fixes:
+These earlier v6 / JS859 photos show the two input fixes at that stage:
 
 | Flow | Photo |
 |---|---|
