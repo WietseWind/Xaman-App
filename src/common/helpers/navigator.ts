@@ -6,6 +6,7 @@ import { Navigation, Options, LayoutTabsChildren, EventSubscription } from 'reac
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
 import { GetPadLayout } from '@common/helpers/padLayout';
+import { getAndroidFoldLayout } from '@common/helpers/androidWindow';
 import { iosGlassTabBar } from '@common/helpers/glassTabBar';
 import { runSetRootOnce, setRootLatch } from '@common/helpers/setRootLatch';
 
@@ -131,9 +132,9 @@ const getDefaultOptions = (): Options => {
         layout: {
             backgroundColor: StyleService.value('$background'),
             componentBackgroundColor: StyleService.value('$background'),
-            // iPad with a window of its own: that window stays upright while the iPad turns, so the app turns
-            // with it (issue 553). Portrait everywhere else.
-            orientation: GetPadLayout() ? ['all'] : ['portrait'],
+            // Resizable iPad windows and positively identified Android folds turn
+            // with the device. Ordinary phones retain their portrait policy.
+            orientation: GetPadLayout() || getAndroidFoldLayout() ? ['all'] : ['portrait'],
             adjustResize: false,
         },
         topBar: {
@@ -496,7 +497,8 @@ const Navigator = {
                                 // iPad with a window of its own: an overlay turns as the screens do. It has to say so
                                 // itself: an overlay that is shown before the default options are set (the
                                 // lock screen at the start) never gets them.
-                                ...(GetPadLayout() ? { orientation: ['all' as const] } : {}),
+                                ...(GetPadLayout() || getAndroidFoldLayout()
+                                    ? { orientation: ['all' as const] } : {}),
                             },
                             // Disable automatic splash screen dismissal
                             animations: {

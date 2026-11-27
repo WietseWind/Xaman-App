@@ -216,6 +216,12 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
     // iPad: the size the app is laid out for; width and height 0 when it has none (every phone)
     padLayout?: { width: number; height: number };
 
+    // New Android native builds resize the same mounted screen when its window changes.
+    supportsAndroidWindowLayout?: boolean;
+    // Only present after positive fold hardware detection. These are layout dp, not system insets.
+    androidFoldLayout?: { width: number; height: number };
+    setAndroidWindowColumnWidth?: (widthDp: number) => void;
+
     /**
      * Compact tab-bar item row and full bar height (item row + home indicator).
      */

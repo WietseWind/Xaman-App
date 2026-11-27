@@ -6,6 +6,7 @@ import { Dimensions, Platform, PixelRatio } from 'react-native';
 
 import { GetLayoutInsets } from '@common/helpers/device';
 import { GetPadLayout } from '@common/helpers/padLayout';
+import { getAndroidFoldLayout } from '@common/helpers/androidWindow';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('screen');
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
@@ -26,9 +27,12 @@ const sideInsets = leftInset + rightInset;
 // keeps one layout there, that of a phone of this size, in a box in that window (sideSafeArea.tsx).
 // Undefined on every phone: the sizes come from the window, as they always did.
 const padLayout = GetPadLayout();
+const androidFoldLayout = getAndroidFoldLayout();
 
 let layoutWindowWidth = windowWidth;
-if (padLayout) {
+if (androidFoldLayout) {
+    layoutWindowWidth = androidFoldLayout.width;
+} else if (padLayout) {
     layoutWindowWidth = padLayout.width;
 } else if (sideInsets > 0 && screenWidth > 0) {
     layoutWindowWidth = Math.min(windowWidth, screenWidth);
@@ -38,7 +42,9 @@ const width = layoutWindowWidth - sideInsets;
 // quarter the window is much higher than the cover screen; the app stays a box of the cover layout there.
 // The window height on every other phone, as it always was.
 let height = windowHeight;
-if (padLayout) {
+if (androidFoldLayout) {
+    height = androidFoldLayout.height;
+} else if (padLayout) {
     height = padLayout.height;
 } else if (sideInsets > 0 && screenHeight > 0) {
     height = Math.min(windowHeight, screenHeight);

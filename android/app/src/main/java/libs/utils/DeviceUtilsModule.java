@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.PixelUtil;
 
@@ -25,6 +26,8 @@ import java.util.TimeZone;
 
 import com.xrpllabs.xumm.LaunchActivity;
 import com.xrpllabs.xumm.SafeAreaInsets;
+import com.xrpllabs.xumm.AndroidWindowLayout;
+import com.xrpllabs.xumm.AndroidWindowLayoutMath;
 
 @ReactModule(name = DeviceUtilsModule.NAME)
 public class DeviceUtilsModule extends ReactContextBaseJavaModule {
@@ -68,6 +71,14 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void hideLaunchSplash() {
         LaunchActivity.hideLaunchSplashIfPresent();
+    }
+
+    @ReactMethod
+    public void setAndroidWindowColumnWidth(double widthDp) {
+        if (!AndroidWindowLayoutMath.validColumnWidth(widthDp)) {
+            return;
+        }
+        UiThreadUtil.runOnUiThread(() -> LaunchActivity.setAndroidWindowColumnWidth(widthDp));
     }
 
     @ReactMethod
@@ -133,6 +144,15 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         constants.put("model", Build.MODEL);
         constants.put("layoutInsets", layoutInsets);
         constants.put("tabBarMetrics", tabBarMetrics);
+        constants.put("supportsAndroidWindowLayout", true);
+
+        AndroidWindowLayoutMath.PhoneBox phoneBox = AndroidWindowLayout.phoneBox(reactContext);
+        if (phoneBox != null) {
+            final Map<String, Object> foldLayout = new HashMap<>();
+            foldLayout.put("width", phoneBox.widthDp);
+            foldLayout.put("height", phoneBox.heightDp);
+            constants.put("androidFoldLayout", foldLayout);
+        }
 
         return constants;
     }

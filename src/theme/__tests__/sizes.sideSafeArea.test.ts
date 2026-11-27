@@ -18,10 +18,11 @@ type Phone = {
     screen?: { width: number; height: number };
     // iPad: what the native side tells about it
     pad?: { isPadDevice?: unknown; padLayout?: unknown };
+    android?: { supportsAndroidWindowLayout?: unknown; androidFoldLayout?: unknown };
 };
 
 /** AppSizes as the app makes it at start, for one phone */
-const sizesFor = ({ os, width, height, insets, screen, pad }: Phone): any => {
+const sizesFor = ({ os, width, height, insets, screen, pad, android }: Phone): any => {
     let sizes: any;
     // a fresh copy of the module and of react-native: AppSizes is made once, when the module loads
     jest.isolateModules(() => {
@@ -30,6 +31,8 @@ const sizesFor = ({ os, width, height, insets, screen, pad }: Phone): any => {
         Object.defineProperty(RN.Platform, 'OS', { configurable: true, get: () => os });
         RN.Platform.select = (spec: any) => (os in spec ? spec[os] : spec.default);
         RN.NativeModules.DeviceUtilsModule.layoutInsets = insets;
+        RN.NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = android?.supportsAndroidWindowLayout;
+        RN.NativeModules.DeviceUtilsModule.androidFoldLayout = android?.androidFoldLayout;
         if (pad) {
             Object.assign(RN.NativeModules.DeviceUtilsModule, pad);
         }
@@ -369,5 +372,44 @@ describe('iPad (issue 553): one phone layout, whatever the window is', () => {
             expect(withoutNew(numbersOf(now))).toEqual(numbersOf(sizesBefore(phone)));
             expect(now.padLayout).toBeUndefined();
         });
+    });
+});
+
+describe('Android fold native layout', () => {
+    const cover = { width: 884 / 2.625, height: 2208 / 2.625 };
+    const insets = { top: 55, bottom: 24 };
+    const android = { supportsAndroidWindowLayout: true, androidFoldLayout: cover };
+    const states = [
+        ['cover', cover],
+        ['cold inner', { width: 1768 / 2.625, height: 2208 / 2.625 }],
+        ['rotated inner', { width: 2208 / 2.625, height: 1768 / 2.625 }],
+        ['split left', { width: 1091 / 2.625, height: 1768 / 2.625 }],
+        ['split right', { width: 1117 / 2.625, height: 1768 / 2.625 }],
+    ] as const;
+
+    states.forEach(([name, window]) => {
+        it(`keeps the phone metrics on ${name}, including a cold start`, () => {
+            const now = sizesFor({ name, os: 'android', ...window, insets, android });
+            const before = sizesBefore({ name: 'cover', os: 'android', ...cover, insets });
+            const actual = withoutNew(numbersOf(now));
+            const expected = numbersOf(before);
+            // This remains the physical display measurement, not a layout metric.
+            delete actual['screen.screenHeight'];
+            delete expected['screen.screenHeight'];
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    PHONES.filter((phone) => phone.os === 'android').forEach((phone) => {
+        it(`keeps every existing metric on ${phone.name} with the new native build`, () => {
+            const now = sizesFor({ ...phone, android: { supportsAndroidWindowLayout: true } });
+            expect(withoutNew(numbersOf(now))).toEqual(numbersOf(sizesBefore(phone)));
+        });
+    });
+
+    it('does not apply Android native metadata to iOS', () => {
+        const phone = PHONES[2];
+        const now = sizesFor({ ...phone, android });
+        expect(withoutNew(numbersOf(now))).toEqual(numbersOf(sizesBefore(phone)));
     });
 });

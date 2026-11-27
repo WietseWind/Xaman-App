@@ -51,6 +51,8 @@ afterEach(() => {
     Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOS });
     delete NativeModules.DeviceUtilsModule.isPadDevice;
     delete NativeModules.DeviceUtilsModule.padLayout;
+    delete NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout;
+    delete NativeModules.DeviceUtilsModule.androidFoldLayout;
     jest.restoreAllMocks();
 });
 
@@ -79,5 +81,25 @@ describe('an iPad that gives the app a window of its own (iPadOS 27)', () => {
         device(true, { width: 430, height: 932 });
         expect(defaultOrientation()).toEqual(['all']);
         expect(overlayLayout(AppScreens.Overlay.SwitchAccount)).toEqual({ ...PORTRAIT_ONLY, orientation: ['all'] });
+    });
+});
+
+describe('Android orientation compatibility', () => {
+    it('keeps ordinary phones and old native builds in portrait', () => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        expect(defaultOrientation()).toEqual(['portrait']);
+        expect(overlayLayout(AppScreens.Overlay.Lock)).toEqual(PORTRAIT_ONLY);
+        delete NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout;
+        NativeModules.DeviceUtilsModule.androidFoldLayout = { width: 337, height: 841 };
+        expect(defaultOrientation()).toEqual(['portrait']);
+    });
+
+    it('keeps both screens and early lock overlays rotatable on a native Android fold', () => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        NativeModules.DeviceUtilsModule.androidFoldLayout = { width: 337, height: 841 };
+        expect(defaultOrientation()).toEqual(['all']);
+        expect(overlayLayout(AppScreens.Overlay.Lock)).toEqual({ ...PORTRAIT_ONLY, orientation: ['all'] });
     });
 });

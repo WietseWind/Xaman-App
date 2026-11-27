@@ -25,10 +25,11 @@
  * layout (AppSizes.padLayout) in a box in the middle of that window, made smaller when the window is smaller than
  * the box (padBoxFor). The backdrops go on to the edges of the window in the same way.
  *
- * Every other phone has no safe area on a side and no layout box. There this does nothing at all: the screen is
- * registered as it is, `SideSafeAreaFill` renders nothing and the `sideBleed` styles are undefined.
+ * New Android builds use a separate live-window wrapper and retain Android's own system chrome. Ordinary Android
+ * phones keep their size formulas and fit only when the app window becomes smaller. Old Android builds and other
+ * iPhones have no side safe area or layout box: their screen is registered as it is, with no backdrop bleed.
  */
-import React, { Component, ComponentType, createContext } from 'react';
+import React, { Component, ComponentType, createContext, useContext } from 'react';
 import {
     Animated,
     Dimensions,
@@ -49,6 +50,9 @@ import FoldPhoneExtraPanel from '@components/General/FoldPhoneExtraPanel/FoldPho
 
 import { GetVerticalBarEdge } from './device';
 import { FoldPhone, FoldPhoneState, foldPhoneStateFor } from './foldPhone';
+import { getAndroidFoldLayout, supportsAndroidWindowLayout } from './androidWindow';
+import { withAndroidWindowLayout } from './androidWindowLayout';
+import { AndroidWindowFreeAreaContext } from './androidWindowContext';
 
 /* Types ==================================================================== */
 export type SideInsets = { left: number; right: number };
@@ -77,7 +81,6 @@ export const SideSafeAreaContext = createContext<SideSafeAreaSurround>(NO_SURROU
 type NativeProps = ViewProps & {
     onSideSafeAreaChange?: (event: { nativeEvent: SideSafeAreaState }) => void;
 };
-
 /* Constants ==================================================================== */
 // What JavaScript gives a class itself, and what React reads from a component class: not copied to the wrapper.
 // The React ones stay with the screen, where they still work (default props, an error boundary: a wrapper that
@@ -420,6 +423,9 @@ const wrapped = new WeakMap<object, ComponentType<any>>();
  * The screen as the app registers it: out of the side safe area of this phone.
  */
 export const withSideSafeArea = <P extends object>(Screen: ComponentType<P>): ComponentType<P> => {
+    if (supportsAndroidWindowLayout()) {
+        return withAndroidWindowLayout(Screen);
+    }
     if (AppSizes.sideInsets <= 0 && !AppSizes.padLayout) {
         return Screen;
     }
@@ -442,7 +448,7 @@ export const withSideSafeArea = <P extends object>(Screen: ComponentType<P>): Co
 // How far a backdrop goes on past the column on each side: farther than any window. The column can be on either side
 // (the bar changes its edge when the app is in one half of the screen), so both sides get the same.
 const reach = (): SideInsets | undefined => {
-    return AppSizes.sideInsets > 0 || AppSizes.padLayout
+    return AppSizes.sideInsets > 0 || AppSizes.padLayout || getAndroidFoldLayout()
         ? { left: FREE_SIDE_REACH, right: FREE_SIDE_REACH }
         : undefined;
 };
@@ -500,9 +506,31 @@ export const sideBleedMargin = bleed((left, right) => ({
  * element that draws the backdrop. It takes the touches there, as the backdrop does: the tab bar under it is
  * covered. Renders nothing without a side safe area.
  */
+// Keep normal Android blur bounds unchanged. Only dim views extend when a new
+// split/rotation leaves free space beside a regular phone's existing layout.
+const ANDROID_FREE_LEFT: ViewStyle = {
+    position: 'absolute', left: -FREE_SIDE_REACH, width: FREE_SIDE_REACH,
+    top: -FREE_SIDE_REACH, bottom: -FREE_SIDE_REACH,
+};
+const ANDROID_FREE_RIGHT: ViewStyle = {
+    position: 'absolute', right: -FREE_SIDE_REACH, width: FREE_SIDE_REACH,
+    top: -FREE_SIDE_REACH, bottom: -FREE_SIDE_REACH,
+};
+const AndroidWindowBackdrop = ({ style }: { style?: Animated.WithAnimatedValue<StyleProp<ViewStyle>> }) => {
+    const free = useContext(AndroidWindowFreeAreaContext);
+    if (!free) return null;
+    return (
+        <>
+            <Animated.View style={[ANDROID_FREE_LEFT, style]} />
+            <Animated.View style={[ANDROID_FREE_RIGHT, style]} />
+        </>
+    );
+};
+
 export const SideSafeAreaFill = ({ style }: { style?: Animated.WithAnimatedValue<StyleProp<ViewStyle>> }) => {
     const sides = reach();
     if (!sides) {
+        if (supportsAndroidWindowLayout()) return <AndroidWindowBackdrop style={style} />;
         return null;
     }
     const R = FREE_SIDE_REACH;

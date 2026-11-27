@@ -307,6 +307,7 @@ class AuthenticateOverlay extends Component<Props, State> {
         return (
             <BlurView
                 style={sideBleedAbsolute ? [styles.blurView, sideBleedAbsolute] : styles.blurView}
+                contentStyle={styles.blurView}
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >

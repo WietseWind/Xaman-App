@@ -1,0 +1,296 @@
+#!/usr/bin/env python3
+"""Run the native fold model and tab-column contract on the host JVM.
+
+Run from any directory: python3 scripts/test-android-window-layout.py
+Requirements: Python 3 and a JDK (JAVA_HOME is honored, otherwise java/javac on PATH).
+
+The two model helpers are compiled whole. LaunchActivity fields/methods and the
+DeviceUtils bridge methods are extracted verbatim from production source; only
+Android public APIs, React's UI queue, and the native view hierarchy are doubled.
+This is a deterministic logic/ownership check, not an Android rendering test.
+The sibling Jest test runs it in the normal full suite without Gradle or a device.
+"""
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[1]
+NATIVE = ROOT / 'android/app/src/main/java/com/xrpllabs/xumm'
+launch = (NATIVE / 'LaunchActivity.java').read_text()
+bridge = (ROOT / 'android/app/src/main/java/libs/utils/DeviceUtilsModule.java').read_text()
+
+
+def method(text, name):
+    match = re.search(r'    (?:public|private) (?:static )?[^\n]+ ' + name + r'\(', text)
+    if not match:
+        raise RuntimeError('Missing actual production method: ' + name)
+    start = text.index('{', match.start())
+    depth, end = 1, start + 1
+    while depth:
+        depth += (text[end] == '{') - (text[end] == '}')
+        end += 1
+    return text[match.start():end]
+
+
+def field(text, name):
+    match = re.search(r'    private (?:static )?[^\n;]+\b' + name + r'(?: = [^;]+)?;', text)
+    if not match:
+        raise RuntimeError('Missing actual production state field: ' + name)
+    return match.group()
+
+
+def run_checked(command):
+    try:
+        return subprocess.run(command, check=True, text=True, capture_output=True, timeout=30)
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError('Host Java contract failed:\n' + error.stdout + error.stderr) from error
+
+
+stubs = {
+    'android/os/Build.java': '''package android.os; public class Build {
+      public static String BRAND="fixture", MODEL="fixture";
+      public static class VERSION { public static int SDK_INT=36; public static String RELEASE="16"; }
+      public static class VERSION_CODES { public static final int R=30; }
+    }''',
+    'android/content/pm/PackageManager.java': '''package android.content.pm; public class PackageManager {
+      public static final String FEATURE_SENSOR_HINGE_ANGLE="android.hardware.sensor.hinge_angle";
+      public boolean feature; public boolean hasSystemFeature(String name) { return feature; }
+    }''',
+    'android/hardware/Sensor.java': '''package android.hardware; public class Sensor {
+      public static final int TYPE_HINGE_ANGLE=36;
+    }''',
+    'android/hardware/SensorManager.java': '''package android.hardware; public class SensorManager {
+      public boolean hinge; public Sensor getDefaultSensor(int type) {
+        return hinge && type==36 ? new Sensor() : null;
+      }
+    }''',
+    'android/view/Display.java': '''package android.view; public class Display {
+      public static final int DEFAULT_DISPLAY=0; private Mode mode;
+      public Display(int width,int height) { setMode(width,height); }
+      public void setMode(int width,int height) { mode=new Mode(width,height); }
+      public Mode getMode() { return mode; }
+      public static class Mode { private final int width,height;
+        public Mode(int width,int height) { this.width=width; this.height=height; }
+        public int getPhysicalWidth(){return width;} public int getPhysicalHeight(){return height;}
+      }
+    }''',
+    'android/hardware/display/DisplayManager.java': '''package android.hardware.display;
+      import android.view.Display; public class DisplayManager {
+      public Display display; public Display getDisplay(int id) { return display; }
+    }''',
+    'android/util/DisplayMetrics.java': '''package android.util; public class DisplayMetrics {
+      public float density=2.625f;
+    }''',
+    'android/content/res/Resources.java': '''package android.content.res;
+      import android.util.DisplayMetrics; public class Resources {
+      public final DisplayMetrics metrics=new DisplayMetrics();
+      public DisplayMetrics getDisplayMetrics(){return metrics;}
+      public int getIdentifier(String name,String type,String owner){return name.equals("bottomTabs")?42:0;}
+    }''',
+    'android/content/Context.java': '''package android.content;
+      import android.content.pm.PackageManager; import android.content.res.Resources;
+      import android.hardware.SensorManager; import android.hardware.display.DisplayManager;
+      public class Context { public static final String SENSOR_SERVICE="sensor", DISPLAY_SERVICE="display";
+      public final PackageManager packages=new PackageManager(); public final Resources resources=new Resources();
+      public final SensorManager sensors=new SensorManager(); public final DisplayManager displays=new DisplayManager();
+      public PackageManager getPackageManager(){return packages;} public Resources getResources(){return resources;}
+      public Object getSystemService(String name){return name.equals(SENSOR_SERVICE)?sensors:displays;}
+    }''',
+}
+
+
+host_launch = r'''
+package com.xrpllabs.xumm;
+import java.lang.ref.WeakReference;
+import android.content.res.Resources;
+interface ViewParent {}
+class View implements ViewParent {
+  ViewParent parent; int width; ViewGroup.LayoutParams params; int mutations;
+  ViewParent getParent(){return parent;} int getWidth(){return width;}
+  ViewGroup.LayoutParams getLayoutParams(){return params;}
+  void setLayoutParams(ViewGroup.LayoutParams value){params=value;mutations++;}
+}
+class ViewGroup extends View {
+  static class LayoutParams { static final int MATCH_PARENT=-1; int width,height;
+    LayoutParams(int width,int height){this.width=width;this.height=height;}
+  }
+}
+class CoordinatorLayout extends ViewGroup {
+  static class LayoutParams extends ViewGroup.LayoutParams {
+    int leftMargin,rightMargin,topMargin,bottomMargin,gravity;
+    LayoutParams(int width,int height){super(width,height);}
+  }
+}
+class BottomTabsContainer extends ViewGroup {}
+class Gravity { static final int RIGHT=5,BOTTOM=80,HORIZONTAL_GRAVITY_MASK=7,RELATIVE_LAYOUT_DIRECTION=0x800000; }
+public class LaunchActivity {
+  /* ACTUAL LAUNCH STATE */
+  View innerTabs; boolean finishing; final Resources resources=new Resources();
+  Resources getResources(){return resources;} String getPackageName(){return "fixture";}
+  View findViewById(int id){return id==42?innerTabs:null;} boolean isFinishing(){return finishing;}
+  static void current(LaunchActivity activity){currentLaunch=activity==null?null:new WeakReference<>(activity);}
+  void layout(){applyAndroidWindowColumn();}
+  /* ACTUAL LAUNCH METHODS */
+}
+'''
+host_launch = host_launch.replace('/* ACTUAL LAUNCH STATE */', '\n'.join(
+    field(launch, name) for name in ['currentLaunch', 'desiredWindowColumnWidthDp', 'columnTabs',
+                                  'tabsColumnConstrained', 'originalTabsLeftMargin', 'originalTabsGravity']))
+host_launch = host_launch.replace('/* ACTUAL LAUNCH METHODS */', '\n'.join(
+    method(launch, name) for name in [
+        'setAndroidWindowColumnWidth', 'applyAndroidWindowColumn', 'findNativeBottomTabsContainer']))
+
+host_bridge = r'''
+package com.xrpllabs.xumm;
+import java.util.*; import android.content.Context; import android.os.Build;
+class SafeAreaInsets { static int getSafeAreaBottom(){return 0;} }
+class PixelUtil { static float toDIPFromPixel(float px){return px/2.625f;} }
+class UiThreadUtil { static final List<Runnable> queued=new ArrayList<>();
+  static void runOnUiThread(Runnable work){queued.add(work);}
+  static void drain(){for(Runnable work:new ArrayList<>(queued))work.run();queued.clear();}
+}
+class BridgeProbe {
+  final Context reactContext; BridgeProbe(Context context){reactContext=context;}
+  int statusBarTopDp(){return 24;}
+  /* ACTUAL DEVICEUTILS METHODS */
+}
+'''
+host_bridge = host_bridge.replace('/* ACTUAL DEVICEUTILS METHODS */', '\n'.join(
+    method(bridge, name) for name in ['getConstants', 'setAndroidWindowColumnWidth']))
+
+probe = r'''
+package com.xrpllabs.xumm;
+import android.content.Context; import android.os.Build; import android.view.Display;
+import java.util.*;
+public class WindowLayoutProbe {
+  static void check(String name, boolean value){if(!value)throw new AssertionError(name);System.out.println(name+":true");}
+  static boolean close(double a,double b){return Math.abs(a-b)<1e-10;}
+  static Context fixture(boolean feature,boolean sensor,int width,int height){
+    Context c=new Context();c.packages.feature=feature;c.sensors.hinge=sensor;c.displays.display=new Display(width,height);return c;
+  }
+  static Map<String,Object> exported(Context c){return new BridgeProbe(c).getConstants();}
+  static void phoneExport(Context c){
+    Map<String,Object> values=exported(c);Map<?,?> box=(Map<?,?>)values.get("androidFoldLayout");
+    check("new-android-capability",Boolean.TRUE.equals(values.get("supportsAndroidWindowLayout")));
+    check("exact-double-phone-model",box!=null && box.get("width") instanceof Double && box.get("height") instanceof Double
+      && close((Double)box.get("width"),336.76190476190476) && close((Double)box.get("height"),841.1428571428571));
+    check("native-bar-height-unchanged",((Map<?,?>)values.get("tabBarMetrics")).get("itemHeight").equals(56));
+  }
+  static class Tabs {
+    final LaunchActivity activity=new LaunchActivity(); final BottomTabsContainer container=new BottomTabsContainer();
+    final CoordinatorLayout parent=new CoordinatorLayout(); final View inner=new View();
+    final CoordinatorLayout.LayoutParams params=new CoordinatorLayout.LayoutParams(-1,147);
+    Tabs(int width,int left){parent.width=width;container.parent=parent;inner.parent=container;params.leftMargin=left;
+      params.gravity=Gravity.BOTTOM;params.rightMargin=0;params.bottomMargin=11;container.params=params;activity.innerTabs=inner;
+      LaunchActivity.current(activity);}
+    void width(double value){LaunchActivity.setAndroidWindowColumnWidth(value);}
+  }
+  static void geometry(){
+    AndroidWindowLayoutMath.PhoneBox cover=AndroidWindowLayoutMath.phoneBox(884,2208,2.625);
+    AndroidWindowLayoutMath.PhoneBox open=AndroidWindowLayoutMath.phoneBox(1768,2208,2.625);
+    check("cover-cold-inner-same-model",close(cover.widthDp,open.widthDp)&&close(cover.heightDp,open.heightDp));
+    check("physical-double-precision",close(open.widthDp,336.76190476190476)&&close(open.heightDp,841.1428571428571));
+    check("600dp-is-expanded",close(AndroidWindowLayoutMath.phoneBox(1200,2000,2).widthDp,300));
+    check("below600dp-is-phone",close(AndroidWindowLayoutMath.phoneBox(1198,2000,2).widthDp,599));
+    check("invalid-model-rejected",AndroidWindowLayoutMath.phoneBox(0,2208,2.625)==null
+      &&AndroidWindowLayoutMath.phoneBox(884,0,2.625)==null&&AndroidWindowLayoutMath.phoneBox(884,2208,0)==null
+      &&AndroidWindowLayoutMath.phoneBox(884,2208,Double.NaN)==null);
+    for(double value:new double[]{Double.NaN,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY,0,-1,10001})
+      check("reject-invalid-width-"+Double.toString(value),!AndroidWindowLayoutMath.validColumnWidth(value)
+        &&AndroidWindowLayoutMath.columnWidthPx(value,2.625,1768)==0);
+    check("scaled-physical-column",AndroidWindowLayoutMath.columnWidthPx(open.widthDp*.8,2.625,1768)==707);
+    check("missing-parent-defers",AndroidWindowLayoutMath.columnWidthPx(open.widthDp,2.625,0)==0);
+    check("full-width-rounding-no-gap",AndroidWindowLayoutMath.columnWidthPx((1768-.4)/2.625,2.625,1768)==-1);
+    check("oversized-request-restores",AndroidWindowLayoutMath.columnWidthPx(10000,2.625,1768)==-1);
+  }
+  static void tabs(){
+    double phone=336.76190476190476;Tabs f=new Tabs(1768,7);f.activity.layout();
+    check("no-request-no-mutation",f.container.mutations==0);
+    f.width(1768/2.625);check("normal-full-width-is-noop",f.container.mutations==0&&f.params.width==-1&&f.params.leftMargin==7);
+    f.width(phone);check("right-aligned-native-container",f.params.width==884&&f.params.leftMargin==884&&f.params.gravity==(80|5));
+    check("height-and-other-margins-preserved",f.params.height==147&&f.params.bottomMargin==11&&f.params.rightMargin==0);
+    check("only-native-tab-container-mutated",f.parent.mutations==0&&f.inner.mutations==0&&f.container.mutations==1);
+    f.activity.layout();f.width(phone);check("no-global-layout-loop",f.container.mutations==1);
+    f.width(10000);check("restore-native-layout",f.params.width==-1&&f.params.leftMargin==7&&f.params.gravity==80&&f.params.height==147);
+    f.activity.layout();check("restored-full-width-noop",f.container.mutations==2);
+    f.width(phone);Tabs replacement=new Tabs(884,3);replacement.activity.layout();
+    check("new-root-full-width-never-restores-old-params",replacement.container.mutations==0&&replacement.params.leftMargin==3);
+    replacement.parent.width=1768;replacement.activity.layout();replacement.width(10000);
+    check("new-root-restores-own-gravity-margin",replacement.params.width==-1&&replacement.params.leftMargin==3&&replacement.params.gravity==80);
+    Tabs waiting=new Tabs(0,0);waiting.width(phone);check("unmeasured-parent-defers",waiting.container.mutations==0);
+    waiting.parent.width=1768;waiting.activity.layout();check("first-measure-applies-pending-width",waiting.params.width==884);
+    Tabs wrongType=new Tabs(1768,0);wrongType.container.params=new ViewGroup.LayoutParams(-1,147);wrongType.width(phone);
+    check("foreign-layout-params-untouched",wrongType.container.mutations==0);
+    Tabs noContainer=new Tabs(1768,0);noContainer.inner.parent=noContainer.parent;noContainer.width(phone);
+    check("coordinator-is-never-resized",noContainer.parent.mutations==0&&noContainer.container.mutations==0);
+    LaunchActivity.current(null);BridgeProbe b=new BridgeProbe(fixture(false,false,1080,2400));b.setAndroidWindowColumnWidth(phone);
+    check("bridge-queues-on-ui-thread",UiThreadUtil.queued.size()==1);UiThreadUtil.drain();
+    Tabs late=new Tabs(1768,0);late.activity.layout();check("width-survives-before-activity",late.params.width==884);
+    for(double value:new double[]{Double.NaN,0,-2,10001})b.setAndroidWindowColumnWidth(value);
+    check("invalid-bridge-input-does-not-queue",UiThreadUtil.queued.isEmpty());
+    late.activity.finishing=true;b.setAndroidWindowColumnWidth(10000);UiThreadUtil.drain();
+    check("finishing-window-not-mutated",late.params.width==884);
+    Tabs recreated=new Tabs(1768,0);recreated.activity.layout();check("new-activity-uses-latest-width",recreated.container.mutations==0);
+  }
+  public static void main(String[] args){
+    String scenario=args[0];Context c;
+    switch(scenario){
+      case "math":geometry();return;
+      case "tabs":tabs();return;
+      case "normal-phone":case "tablet":
+        c=fixture(false,false,scenario.equals("tablet")?3200:1080,2400);
+        check("ordinary-new-android-capability",Boolean.TRUE.equals(exported(c).get("supportsAndroidWindowLayout")));
+        check("ordinary-device-no-fold-model",!exported(c).containsKey("androidFoldLayout"));return;
+      case "feature":phoneExport(fixture(true,false,884,2208));return;
+      case "sensor":phoneExport(fixture(false,true,884,2208));return;
+      case "cold-inner":phoneExport(fixture(true,true,1768,2208));return;
+      case "old-api":Build.VERSION.SDK_INT=29;c=fixture(true,true,1768,2208);
+        check("pre30-no-hinge-api",!AndroidWindowLayout.isFoldCapable(c)&&!exported(c).containsKey("androidFoldLayout"));return;
+      case "stable-runtime":c=fixture(true,false,884,2208);
+        AndroidWindowLayoutMath.PhoneBox first=AndroidWindowLayout.phoneBox(c);c.displays.display.setMode(2208,1768);
+        check("unfold-rotation-jsreload-keep-model",first==AndroidWindowLayout.phoneBox(c));phoneExport(c);return;
+      case "late-display":c=fixture(true,false,0,0);c.displays.display=null;
+        check("missing-display-safe",AndroidWindowLayout.phoneBox(c)==null);c.displays.display=new Display(1768,2208);phoneExport(c);return;
+      case "late-mode":c=fixture(false,true,0,2208);check("unready-mode-safe",AndroidWindowLayout.phoneBox(c)==null);
+        c.displays.display.setMode(1768,2208);phoneExport(c);return;
+      default:throw new AssertionError(scenario);
+    }
+  }
+}
+'''
+
+with tempfile.TemporaryDirectory(prefix='xaman-android-window-') as directory:
+    work = Path(directory)
+    files = []
+    for name, value in stubs.items():
+        target = work / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(value)
+        files.append(str(target))
+    for name, value in [('LaunchActivity.java', host_launch), ('BridgeProbe.java', host_bridge),
+                        ('WindowLayoutProbe.java', probe)]:
+        target = work / name
+        target.write_text(value)
+        files.append(str(target))
+    production = [NATIVE / 'AndroidWindowLayoutMath.java', NATIVE / 'AndroidWindowLayout.java']
+    java_home = Path(os.environ.get('JAVA_HOME', '')) / 'bin'
+    javac = str(java_home / 'javac') if (java_home / 'javac').is_file() else 'javac'
+    java = str(java_home / 'java') if (java_home / 'java').is_file() else 'java'
+    run_checked([javac, '-encoding', 'UTF-8', '-d', str(work), *map(str, production), *files])
+    results = []
+    for scenario in ['math', 'tabs', 'normal-phone', 'tablet', 'feature', 'sensor', 'cold-inner',
+                     'old-api', 'stable-runtime', 'late-display', 'late-mode']:
+        run = run_checked([java, '-cp', str(work), 'com.xrpllabs.xumm.WindowLayoutProbe', scenario])
+        results.extend(line for line in run.stdout.splitlines() if line)
+    failed = [line for line in results if not line.endswith(':true')]
+    print(json.dumps({'cases': len(results), 'passed': len(results) - len(failed), 'failures': failed,
+                      'actual_production_methods_compiled': True, 'actual_production_state_compiled': True,
+                      'assertions': [line[:-5] for line in results if line.endswith(':true')],
+                      'native_source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+                                               for p in [*production, NATIVE / 'LaunchActivity.java',
+                                                         ROOT / 'android/app/src/main/java/libs/utils/DeviceUtilsModule.java']},
+                      'scope': 'Host Java public-API/view doubles, not native device rendering'}))
