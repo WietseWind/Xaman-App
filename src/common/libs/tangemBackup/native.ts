@@ -10,7 +10,7 @@ import { AccountModel } from '@store/models';
 import { AccountRepository } from '@store/repositories';
 import { AccessLevels, AccountTypes, EncryptionLevels } from '@store/types';
 import { DefaultDerivationPaths, GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
-import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import { isTangemWrongCard, startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
 import { waitForTangemIdentifyCleanup } from '@common/utils/tangemIdentifyNavigation';
 import { Navigator } from '@common/helpers/navigator';
 import { NormalizeFeeDataSet, PrepareTxForHookFee } from '@common/utils/fee';
@@ -136,6 +136,9 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
                 cardId: backupCardSerial(scanned),
                 curve,
                 initialMessage: { body: Localize.t('tangemBackup.backupTitle') },
+            }).catch((error) => {
+                // not the card of the scan before: no wallet was made on it
+                throw isTangemWrongCard(error) ? new TangemBackupError('cardChanged') : error;
             });
             check();
             if (String(result.cardId).toUpperCase() !== backupCardSerial(scanned)) {
@@ -198,6 +201,9 @@ export const nativeBackupDependencies = (source: AccountModel, valid: () => bool
                 ...GetSignOptions(original, prepared.hashToSign),
                 hashes: [prepared.hashToSign],
                 initialMessage: { body: Localize.t('tangemBackup.sourceTitle') },
+            }).catch((error) => {
+                // another card than the original card: the session is over, the screen names the right card
+                throw isTangemWrongCard(error) ? new TangemBackupError('wrongSource') : error;
             });
             check();
             if (String(result.cardId).toUpperCase() !== backupCardSerial(original)) {

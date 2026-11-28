@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "დაასკანირეთ Xaman Tangem ბარათი, რომ შეამოწმოთ, არის თუ არა ის ამ ანგარიშისთვის შენახული.",
     "tangemRightCard": "ბარათი ემთხვევა",
     "tangemDifferentCard": "სხვა ბარათი",
+    "tangemDifferentCardExplain": "ეს არ არის ამ ანგარიშის ბარათი. გთხოვთ, დაასკანეროთ ბარათი სახელით „%{name}“.",
     "tangemCardKnownAs": "შენახულია სხვა ანგარიშად",
     "tangemCardNotImported": "ეს უცნობი ბარათია. ის ჯერ არ არის იმპორტირებული Xaman-ში.",
     "accountMaxLabelLengthError": "ანგარიშის ეტიკეტი უნდა იყოს 16 სიმბოლოზე ნაკლები!",

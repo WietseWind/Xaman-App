@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Escaneja una targeta Xaman Tangem per comprovar si és la desada per a aquest compte.",
     "tangemRightCard": "La targeta coincideix",
     "tangemDifferentCard": "Targeta diferent",
+    "tangemDifferentCardExplain": "Aquesta no és la targeta d’aquest compte. Escaneja la targeta anomenada «%{name}».",
     "tangemCardKnownAs": "Desada com a un altre compte",
     "tangemCardNotImported": "Aquesta és una targeta desconeguda. Encara no s’ha importat a Xaman.",
     "accountMaxLabelLengthError": "L'etiqueta del compte ha de tenir menys de 16 caràcters.",

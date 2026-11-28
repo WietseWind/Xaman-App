@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Nuskaitykite Xaman Tangem kortelę ir patikrinkite, ar ji išsaugota šiai sąskaitai.",
     "tangemRightCard": "Kortelė atitinka",
     "tangemDifferentCard": "Kita kortelė",
+    "tangemDifferentCardExplain": "Tai ne šios sąskaitos kortelė. Nuskaitykite kortelę pavadinimu „%{name}“.",
     "tangemCardKnownAs": "Išsaugota kaip kita sąskaita",
     "tangemCardNotImported": "Tai nežinoma kortelė. Ji dar neimportuota į Xaman.",
     "accountMaxLabelLengthError": "Sąskaitos etiketė turi būti trumpesnė nei 64 simboliai!",

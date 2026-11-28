@@ -1,14 +1,73 @@
 import RNTangemSdk, { OptionsStartSession } from 'tangem-sdk-react-native';
 
+let stopLater: ReturnType<typeof setTimeout> | undefined;
+
 /** Every Tangem card action starts here so attestation stays offline. */
 export const startTangemOfflineSession = (
     options: Omit<OptionsStartSession, 'attestationMode'> = {},
 ): Promise<void> => {
+    // a stop that was planned for the session before this one must not end this one
+    if (stopLater) {
+        clearTimeout(stopLater);
+        stopLater = undefined;
+    }
     return RNTangemSdk.startSession({
         ...options,
         attestationMode: 'offline',
     });
 };
+
+/**
+ * Stops the session after a delay (the prompt of the SDK needs a moment to close), unless a new session
+ * starts before that. On Android a stop turns the NFC reader off: a stop that arrives late would end the
+ * scan of the next try, and that scan would never see a card.
+ */
+export const stopTangemSessionLater = (delay: number) => {
+    if (stopLater) clearTimeout(stopLater);
+    stopLater = setTimeout(() => {
+        stopLater = undefined;
+        RNTangemSdk.stopSession().catch(() => {
+            // ignore
+        });
+    }, delay);
+};
+
+/*
+ * The right card.
+ *
+ * The app does not give the card id of the card it expects to the session of the Tangem SDK. With a card
+ * id the SDK handles another card itself: it shows "wrong card", keeps the session open and starts the
+ * NFC polling again. On some Android phones that polling never finds the next card (issue 564). Without
+ * a card id another card ends the session: the app shows its own message, and the next scan is a new
+ * session, started by the user with the same button.
+ *
+ * - sign: the card is known by its wallet key. A card without that wallet answers "wallet not found".
+ *   The card id in the answer is checked here.
+ * - createWallet and the code changes write to the card, so the check must come before the operation.
+ *   The native module does it (`ExpectedCard` in patches/tangem-sdk-react-native): it compares the card
+ *   id after the SDK read the card, and ends the session with "wrong card number" before anything is
+ *   sent to another card. (iOS resetUserCodes still uses the check of the SDK.)
+ */
+
+// TangemSdkError codes, the same on Android and iOS
+const WALLET_NOT_FOUND = '30008';
+const WRONG_CARD_NUMBER = '50005';
+
+/** The user scanned another card than the one the app asked for. The session is over. */
+export class TangemWrongCardError extends Error {
+    code = 'WRONG_CARD';
+
+    constructor() {
+        super('The scanned Tangem card is not the card the app asked for');
+        this.name = 'TangemWrongCardError';
+    }
+}
+
+export const isTangemWrongCard = (error: unknown): boolean =>
+    (error as any)?.name === 'TangemWrongCardError' && (error as any)?.code === 'WRONG_CARD';
+
+export const sameTangemCardId = (one?: string, other?: string): boolean =>
+    !!one && !!other && String(one).toUpperCase() === String(other).toUpperCase();
 
 /*
  * Card prompts.
@@ -48,21 +107,45 @@ const withPrompt = async <T>(operation: () => Promise<T>): Promise<T> => {
     }
 };
 
+const forExpectedCard = async <T>(operation: () => Promise<T>): Promise<T> => {
+    try {
+        return await withPrompt(operation);
+    } catch (error: any) {
+        if ([WALLET_NOT_FOUND, WRONG_CARD_NUMBER].includes(String(error?.code))) {
+            throw new TangemWrongCardError();
+        }
+        throw error;
+    }
+};
+
 type Sdk = typeof RNTangemSdk;
+type SignOptions = Parameters<Sdk['sign']>[0];
 
 /** The card operations of the Tangem SDK. Use these, not `RNTangemSdk`, for anything that shows the NFC prompt. */
 export const TangemCard = {
     scanCard: (...args: Parameters<Sdk['scanCard']>) => withPrompt(() => RNTangemSdk.scanCard(...args)),
-    sign: (...args: Parameters<Sdk['sign']>) => withPrompt(() => RNTangemSdk.sign(...args)),
-    createWallet: (...args: Parameters<Sdk['createWallet']>) => withPrompt(() => RNTangemSdk.createWallet(...args)),
-    setAccessCode: (...args: Parameters<Sdk['setAccessCode']>) => withPrompt(() => RNTangemSdk.setAccessCode(...args)),
-    setPasscode: (...args: Parameters<Sdk['setPasscode']>) => withPrompt(() => RNTangemSdk.setPasscode(...args)),
+    /** `cardId` is the card the app expects. The SDK does not get it; the answer is checked against it. */
+    sign: async (options: SignOptions) => {
+        const { cardId, ...withoutCardId } = options;
+        if (!cardId) throw new Error('cardId is required');
+        const result = await forExpectedCard(() => RNTangemSdk.sign(withoutCardId as SignOptions));
+        if (!sameTangemCardId(result?.cardId, cardId)) throw new TangemWrongCardError();
+        return result;
+    },
+    createWallet: (...args: Parameters<Sdk['createWallet']>) =>
+        forExpectedCard(() => RNTangemSdk.createWallet(...args)),
+    setAccessCode: (...args: Parameters<Sdk['setAccessCode']>) =>
+        forExpectedCard(() => RNTangemSdk.setAccessCode(...args)),
+    setPasscode: (...args: Parameters<Sdk['setPasscode']>) =>
+        forExpectedCard(() => RNTangemSdk.setPasscode(...args)),
     resetUserCodes: (...args: Parameters<Sdk['resetUserCodes']>) =>
-        withPrompt(() => RNTangemSdk.resetUserCodes(...args)),
+        forExpectedCard(() => RNTangemSdk.resetUserCodes(...args)),
 };
 
 /** For tests. */
 export const resetTangemCardPrompts = () => {
     open = [];
     lastClosed = 0;
+    if (stopLater) clearTimeout(stopLater);
+    stopLater = undefined;
 };

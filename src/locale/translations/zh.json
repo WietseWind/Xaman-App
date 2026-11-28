@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "扫描 Xaman Tangem 卡，确认是否为此账户保存的卡片。",
     "tangemRightCard": "卡片匹配",
     "tangemDifferentCard": "另一张卡片",
+    "tangemDifferentCardExplain": "这不是此账户的卡片。请扫描名为“%{name}”的卡片。",
     "tangemCardKnownAs": "已保存为另一个账户",
     "tangemCardNotImported": "这是未知卡片，尚未导入 Xaman。",
     "accountMaxLabelLengthError": "账户标签应少于16个字符！",

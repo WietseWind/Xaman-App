@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Xaman Tangem ڪارڊ اسڪين ڪري ڏسو ته ڇا اهو هن کاتي لاءِ محفوظ ڪيل ڪارڊ آهي.",
     "tangemRightCard": "ڪارڊ ملي ٿو",
     "tangemDifferentCard": "مختلف ڪارڊ",
+    "tangemDifferentCardExplain": "هي هن کاتي جو ڪارڊ ناهي. مهرباني ڪري “%{name}” نالي ڪارڊ اسڪين ڪريو.",
     "tangemCardKnownAs": "ٻئي کاتي طور محفوظ",
     "tangemCardNotImported": "هي هڪ اڻڄاتل ڪارڊ آهي. اهو اڃا تائين Xaman ۾ درآمد نه ڪيو ويو آهي.",
     "accountMaxLabelLengthError": "کاتي جو ليبل 16 اکرن کان گهٽ هجڻ گهرجي!",

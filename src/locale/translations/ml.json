@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "ഈ അക്കൗണ്ടിനായി സംരക്ഷിച്ച കാർഡാണോ എന്ന് അറിയാൻ Xaman Tangem കാർഡ് സ്കാൻ ചെയ്യുക.",
     "tangemRightCard": "കാർഡ് പൊരുത്തപ്പെട്ടു",
     "tangemDifferentCard": "മറ്റൊരു കാർഡ്",
+    "tangemDifferentCardExplain": "ഈ അക്കൗണ്ടിന്റെ കാർഡ് ഇതല്ല. “%{name}” എന്ന പേരിലുള്ള കാർഡ് സ്കാൻ ചെയ്യുക.",
     "tangemCardKnownAs": "മറ്റൊരു അക്കൗണ്ടായി സംരക്ഷിച്ചു",
     "tangemCardNotImported": "ഇത് ഒരു അജ്ഞാത കാർഡാണ്. ഇത് ഇതുവരെ Xaman-ലേക്ക് ഇറക്കുമതി ചെയ്തിട്ടില്ല.",
     "accountMaxLabelLengthError": "അക്കൗണ്ട് ലേബൽ 16 പ്രതീകങ്ങളിൽ കുറവായിരിക്കണം!",

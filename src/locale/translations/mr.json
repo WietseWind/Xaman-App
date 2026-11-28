@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "या खात्यासाठी जतन केलेले कार्ड आहे का ते पाहण्यासाठी Xaman Tangem कार्ड स्कॅन करा.",
     "tangemRightCard": "कार्ड जुळले",
     "tangemDifferentCard": "वेगळे कार्ड",
+    "tangemDifferentCardExplain": "हे या खात्याचे कार्ड नाही. कृपया “%{name}” नावाचे कार्ड स्कॅन करा.",
     "tangemCardKnownAs": "दुसरे खाते म्हणून जतन केले",
     "tangemCardNotImported": "हे अज्ञात कार्ड आहे. ते अद्याप Xaman मध्ये आयात केलेले नाही.",
     "accountMaxLabelLengthError": "खाते लेबल 16 वर्णांपेक्षा कमी असावे!",

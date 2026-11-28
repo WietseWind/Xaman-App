@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scan et Xaman Tangem-kort for at se, om det er gemt til denne konto.",
     "tangemRightCard": "Kortet matcher",
     "tangemDifferentCard": "Andet kort",
+    "tangemDifferentCardExplain": "Dette er ikke kortet til denne konto. Scan kortet med navnet “%{name}”.",
     "tangemCardKnownAs": "Gemt som en anden konto",
     "tangemCardNotImported": "Dette er et ukendt kort. Det er endnu ikke importeret i Xaman.",
     "accountMaxLabelLengthError": "Kontonavnet skal være mindre end 16 tegn!",

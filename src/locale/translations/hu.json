@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Olvasson be egy Xaman Tangem-kártyát, hogy ellenőrizze, ez van-e a fiókhoz mentve.",
     "tangemRightCard": "A kártya egyezik",
     "tangemDifferentCard": "Másik kártya",
+    "tangemDifferentCardExplain": "Ez nem ennek a fióknak a kártyája. Olvasd be a(z) „%{name}” nevű kártyát.",
     "tangemCardKnownAs": "Másik fiókként mentve",
     "tangemCardNotImported": "Ez egy ismeretlen kártya. Még nincs importálva a Xamanba.",
     "accountMaxLabelLengthError": "Account label should be less than 64 characters!",

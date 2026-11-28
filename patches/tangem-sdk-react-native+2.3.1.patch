@@ -1,0 +1,306 @@
+diff --git a/node_modules/tangem-sdk-react-native/android/src/main/java/com/tangem/RNTangemSdk/RNTangemSdkModule.kt b/node_modules/tangem-sdk-react-native/android/src/main/java/com/tangem/RNTangemSdk/RNTangemSdkModule.kt
+index c3c1a8d..5d71503 100644
+--- a/node_modules/tangem-sdk-react-native/android/src/main/java/com/tangem/RNTangemSdk/RNTangemSdkModule.kt
++++ b/node_modules/tangem-sdk-react-native/android/src/main/java/com/tangem/RNTangemSdk/RNTangemSdkModule.kt
+@@ -17,11 +17,16 @@ import com.tangem.common.hdWallet.DerivationPath
+ import com.tangem.common.card.EllipticCurve
+ import com.tangem.common.core.TangemSdkError
+ import com.tangem.common.core.Config
++import com.tangem.common.core.CardSession
++import com.tangem.common.core.CardSessionRunnable
+ import com.tangem.common.json.MoshiJsonConverter
+ import com.tangem.common.services.secure.SecureStorage
+ import com.tangem.common.CompletionResult
+ import com.tangem.common.extensions.hexToBytes
++import com.tangem.operations.PreflightReadMode
+ import com.tangem.operations.attestation.AttestationTask
++import com.tangem.operations.pins.SetUserCodeCommand
++import com.tangem.operations.wallet.CreateWalletTask
+ import com.tangem.tangem_sdk_new.DefaultSessionViewDelegate
+ import com.tangem.tangem_sdk_new.extensions.localizedDescription
+ import com.tangem.tangem_sdk_new.nfc.NfcManager
+@@ -37,6 +42,7 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+     ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
+     private lateinit var nfcManager: NfcManager
+     private lateinit var sdk: TangemSdk
++    private var viewDelegate: DefaultSessionViewDelegate? = null
+     private val handler = Handler(Looper.getMainLooper())
+     private val converter = MoshiJsonConverter.INSTANCE
+ 
+@@ -69,6 +75,7 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+ 
+         val viewDelegate = DefaultSessionViewDelegate(nfcManager, nfcManager.reader, activity)
+         viewDelegate.sdkConfig = config
++        this.viewDelegate = viewDelegate
+ 
+         sdk = TangemSdk(
+             reader = nfcManager.reader,
+@@ -209,10 +216,11 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+         UiThreadUtil.runOnUiThread {
+             try {
+                 val optionsParser = OptionsParser(options)
+-                sdk.createWallet(
+-                    curve = optionsParser.getCurve(),
+-                    cardId = optionsParser.getCardId(),
+-                    initialMessage = optionsParser.getInitialMessage()
++                sdk.startSessionWithRunnable(
++                    ExpectedCard(optionsParser.getCardId(), CreateWalletTask(optionsParser.getCurve())),
++                    null,
++                    optionsParser.getInitialMessage(),
++                    null
+                 ) { handleResult(it, promise) }
+             } catch (ex: Exception) {
+                 handleException(ex, promise)
+@@ -244,7 +252,8 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+                 sdk.sign(
+                     hashes = optionsParser.getHashes(),
+                     walletPublicKey = optionsParser.getWalletPublicKey(),
+-                    cardId = optionsParser.getCardId(),
++                    // no card id: a card without this wallet ends the session (WalletNotFound)
++                    cardId = optionsParser.getOptionalCardId(),
+                     derivationPath = optionsParser.getDerivationPath(),
+                     initialMessage = optionsParser.getInitialMessage()
+                 ) { handleResult(it, promise) }
+@@ -260,10 +269,14 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+         UiThreadUtil.runOnUiThread {
+             try {
+                 val optionsParser = OptionsParser(options)
+-                sdk.setAccessCode(
+-                    accessCode = optionsParser.getAccessCode(),
+-                    cardId = optionsParser.getCardId(),
+-                    initialMessage = optionsParser.getInitialMessage()
++                sdk.startSessionWithRunnable(
++                    ExpectedCard(
++                        optionsParser.getCardId(),
++                        SetUserCodeCommand.changeAccessCode(optionsParser.getAccessCode())
++                    ),
++                    null,
++                    optionsParser.getInitialMessage(),
++                    null
+                 ) { handleResult(it, promise) }
+             } catch (ex: Exception) {
+                 handleException(ex, promise)
+@@ -276,10 +289,14 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+         UiThreadUtil.runOnUiThread {
+             try {
+                 val optionsParser = OptionsParser(options)
+-                sdk.setPasscode(
+-                    passcode = optionsParser.getPasscode(),
+-                    cardId = optionsParser.getCardId(),
+-                    initialMessage = optionsParser.getInitialMessage()
++                sdk.startSessionWithRunnable(
++                    ExpectedCard(
++                        optionsParser.getCardId(),
++                        SetUserCodeCommand.changePasscode(optionsParser.getPasscode())
++                    ),
++                    null,
++                    optionsParser.getInitialMessage(),
++                    null
+                 ) { handleResult(it, promise) }
+             } catch (ex: Exception) {
+                 handleException(ex, promise)
+@@ -292,9 +309,11 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+         UiThreadUtil.runOnUiThread {
+             try {
+                 val optionsParser = OptionsParser(options)
+-                sdk.resetUserCodes(
+-                    cardId = optionsParser.getCardId(),
+-                    initialMessage = optionsParser.getInitialMessage()
++                sdk.startSessionWithRunnable(
++                    ExpectedCard(optionsParser.getCardId(), SetUserCodeCommand.resetUserCodes()),
++                    null,
++                    optionsParser.getInitialMessage(),
++                    null
+                 ) { handleResult(it, promise) }
+             } catch (ex: Exception) {
+                 handleException(ex, promise)
+@@ -428,7 +447,18 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+                 } else {
+                     error.customMessage
+                 }
++                // Another card than the app asked for: the session is over. Close the sheet of the SDK,
++                // the app shows its own message and the user starts a new scan.
++                val otherCard =
++                    error is TangemSdkError.WrongCardNumber || error is TangemSdkError.WalletNotFound
+                 handler.post {
++                    if (otherCard) {
++                        try {
++                            viewDelegate?.dismiss()
++                        } catch (ex: Exception) {
++                            // ignore
++                        }
++                    }
+                     promise.reject("${error.code}", errorMessage, null)
+                 }
+             }
+@@ -459,6 +489,38 @@ class RNTangemSdkModule(private val reactContext: ReactApplicationContext) :
+ class RequiredArgumentException(arg: String) : Exception(arg)
+ 
+ 
++/**
++ * Runs a card operation only on the card with the expected card id.
++ *
++ * The session starts without a card id, so the SDK does not use its own "wrong card" handling (it keeps
++ * the session open and starts the NFC polling again, and on some phones that never finds the next card).
++ * The card id is checked here, after the SDK read the card and before the operation runs. Another card
++ * ends the session with WrongCardNumber and nothing is sent to it.
++ */
++class ExpectedCard<T>(
++    private val expectedCardId: String,
++    private val operation: CardSessionRunnable<T>
++) : CardSessionRunnable<T> {
++    override val allowsRequestAccessCodeFromRepository: Boolean
++        get() = operation.allowsRequestAccessCodeFromRepository
++
++    override fun preflightReadMode(): PreflightReadMode = operation.preflightReadMode()
++
++    override fun prepare(session: CardSession, callback: (result: CompletionResult<Unit>) -> Unit) {
++        operation.prepare(session, callback)
++    }
++
++    override fun run(session: CardSession, callback: (result: CompletionResult<T>) -> Unit) {
++        val cardId = session.environment.card?.cardId
++        if (cardId == null || !cardId.equals(expectedCardId, ignoreCase = true)) {
++            callback(CompletionResult.Failure(TangemSdkError.WrongCardNumber()))
++            return
++        }
++        operation.run(session, callback)
++    }
++}
++
++
+ class OptionsParser(options: ReadableMap) {
+     val options: ReadableMap = options
+ 
+@@ -494,6 +556,11 @@ class OptionsParser(options: ReadableMap) {
+         return cardId
+     }
+ 
++    fun getOptionalCardId(): String? {
++        val cardId = if (options.hasKey("cardId")) options.getString("cardId") else null
++        return if (cardId.isNullOrEmpty()) null else cardId
++    }
++
+     fun getAccessCode(): String? {
+         val accessCode = options.getString("accessCode")
+         if (accessCode.isNullOrEmpty()) {
+diff --git a/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift b/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift
+index b9c7e6c..03cee38 100644
+--- a/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift
++++ b/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift
+@@ -8,6 +8,8 @@
+ import Foundation
+ import CoreNFC
+ import TangemSdk
++// CoreNFC has a CardSession too (iOS 17.4): the one of the Tangem SDK is meant
++import class TangemSdk.CardSession
+ 
+ 
+ @available(iOS 13.0, *)
+@@ -72,9 +74,11 @@ class RNTangemSdk: NSObject {
+         DispatchQueue.main.async {
+             do{
+                 let optionsParser = OptionsParser(options: options)
+-                self.sdk.createWallet(
+-                    curve: optionsParser.getCurve(),
+-                    cardId: try optionsParser.getCardId(),
++                self.sdk.startSession(
++                    with: ExpectedCard(
++                        expectedCardId: try optionsParser.getCardId(),
++                        operation: CreateWalletTask(curve: optionsParser.getCurve())
++                    ),
+                     initialMessage: optionsParser.getInitialMessage()
+                 ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
+             } catch OptionsParserError.RquiredArgument(let arg){
+@@ -109,7 +113,8 @@ class RNTangemSdk: NSObject {
+                 self.sdk.sign(
+                     hashes: try optionsParser.getHashes(),
+                     walletPublicKey: try optionsParser.getWalletPublicKey(),
+-                    cardId: try optionsParser.getCardId(),
++                    // no card id: a card without this wallet ends the session (walletNotFound)
++                    cardId: optionsParser.getOptionalCardId(),
+                     derivationPath: optionsParser.getDerivationPath(),
+                     initialMessage: optionsParser.getInitialMessage()
+                 ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
+@@ -125,9 +130,11 @@ class RNTangemSdk: NSObject {
+         DispatchQueue.main.async {
+             do{
+                 let optionsParser = OptionsParser(options: options)
+-                self.sdk.setAccessCode(
+-                    optionsParser.getAccessCode(),
+-                    cardId: try optionsParser.getCardId(),
++                self.sdk.startSession(
++                    with: ExpectedCard(
++                        expectedCardId: try optionsParser.getCardId(),
++                        operation: SetUserCodeCommand(accessCode: optionsParser.getAccessCode())
++                    ),
+                     initialMessage: optionsParser.getInitialMessage()
+                 ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
+             } catch OptionsParserError.RquiredArgument(let arg){
+@@ -142,9 +149,11 @@ class RNTangemSdk: NSObject {
+         DispatchQueue.main.async {
+             do{
+                 let optionsParser = OptionsParser(options: options)
+-                self.sdk.setPasscode(
+-                    optionsParser.getPasscode(),
+-                    cardId: try optionsParser.getCardId(),
++                self.sdk.startSession(
++                    with: ExpectedCard(
++                        expectedCardId: try optionsParser.getCardId(),
++                        operation: SetUserCodeCommand(passcode: optionsParser.getPasscode())
++                    ),
+                     initialMessage: optionsParser.getInitialMessage()
+                 ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
+             } catch OptionsParserError.RquiredArgument(let arg){
+@@ -239,6 +248,37 @@ fileprivate extension TangemSdkError {
+     }
+ }
+ 
++/// Runs a card operation only on the card with the expected card id.
++///
++/// The session starts without a card id, so the SDK does not use its own "wrong card" handling (it keeps
++/// the session open and starts the NFC polling again). The card id is checked here, after the SDK read
++/// the card and before the operation runs. Another card ends the session with `wrongCardNumber` and
++/// nothing is sent to it.
++@available(iOS 13.0, *)
++struct ExpectedCard<Operation: CardSessionRunnable>: CardSessionRunnable {
++    typealias Response = Operation.Response
++
++    let expectedCardId: String
++    let operation: Operation
++
++    var preflightReadMode: PreflightReadMode { operation.preflightReadMode }
++
++    var shouldAskForAccessCode: Bool { operation.shouldAskForAccessCode }
++
++    func prepare(_ session: CardSession, completion: @escaping CompletionResult<Void>) {
++        operation.prepare(session, completion: completion)
++    }
++
++    func run(in session: CardSession, completion: @escaping CompletionResult<Operation.Response>) {
++        guard let cardId = session.environment.card?.cardId,
++              cardId.caseInsensitiveCompare(expectedCardId) == .orderedSame else {
++            completion(.failure(.wrongCardNumber(expectedCardId: expectedCardId)))
++            return
++        }
++        operation.run(in: session, completion: completion)
++    }
++}
++
+ enum OptionsParserError: Error {
+     case RquiredArgument(String)
+ }
+@@ -276,6 +316,13 @@ class OptionsParser {
+         }
+     }
+     
++    func getOptionalCardId() -> String? {
++        if let cardId = self.options.object(forKey: "cardId") as? String, !cardId.isEmpty {
++            return cardId
++        }
++        return nil
++    }
++
+     func getPasscode() -> String? {
+         if let passcode = self.options.object(forKey: "passcode") as? String {
+             return passcode;

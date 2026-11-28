@@ -28,7 +28,8 @@ import { Navigator } from '@common/helpers/navigator';
 // import { Prompt } from '@common/helpers/interface';
 
 import { GetPreferCurve, GetWalletDerivedPublicKey, DefaultDerivationPaths } from '@common/utils/tangem';
-import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import { isTangemWrongCard, startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import { showTangemWrongCard } from '@common/helpers/tangemWrongCard';
 
 import { AppScreens } from '@common/constants';
 
@@ -188,6 +189,11 @@ class AccountAddView extends Component<Props, State> {
         } catch (error: any) {
             // ignore use cancel operation
             if (error?.message && error?.message === 'The user cancelled the operation') {
+                return;
+            }
+            // not the card of the scan before: no wallet was made. The user starts again with a new scan
+            if (isTangemWrongCard(error)) {
+                showTangemWrongCard();
                 return;
             }
             LoggerService.recordError('Unexpected error in creating tangem wallet', error);

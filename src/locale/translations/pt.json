@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Leia um cartão Xaman Tangem para verificar se é o guardado para esta conta.",
     "tangemRightCard": "O cartão corresponde",
     "tangemDifferentCard": "Outro cartão",
+    "tangemDifferentCardExplain": "Este não é o cartão desta conta. Lê o cartão com o nome «%{name}».",
     "tangemCardKnownAs": "Guardado como outra conta",
     "tangemCardNotImported": "Este é um cartão desconhecido. Ainda não foi importado para o Xaman.",
     "accountMaxLabelLengthError": "A etiqueta da conta deverá ter menos de 16 caracteres !",

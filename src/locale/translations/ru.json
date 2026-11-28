@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Сканируйте карту Xaman Tangem, чтобы проверить, сохранена ли она для этого аккаунта.",
     "tangemRightCard": "Карта совпадает",
     "tangemDifferentCard": "Другая карта",
+    "tangemDifferentCardExplain": "Это не карта этого аккаунта. Отсканируйте карту с названием «%{name}».",
     "tangemCardKnownAs": "Сохранена как другой аккаунт",
     "tangemCardNotImported": "Это неизвестная карта. Она ещё не импортирована в Xaman.",
     "accountMaxLabelLengthError": "Метка аккаунта должна быть менее 16 символов!",

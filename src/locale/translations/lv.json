@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skenējiet Xaman Tangem karti, lai pārbaudītu, vai tā ir šim kontam saglabātā karte.",
     "tangemRightCard": "Karte atbilst",
     "tangemDifferentCard": "Cita karte",
+    "tangemDifferentCardExplain": "Šī nav šī konta karte. Lūdzu, noskenējiet karti ar nosaukumu “%{name}”.",
     "tangemCardKnownAs": "Saglabāta kā cits konts",
     "tangemCardNotImported": "Šī ir nezināma karte. Tā vēl nav importēta Xaman.",
     "accountMaxLabelLengthError": "Konta etiķetei jābūt mazākai par 16 simboliem!",

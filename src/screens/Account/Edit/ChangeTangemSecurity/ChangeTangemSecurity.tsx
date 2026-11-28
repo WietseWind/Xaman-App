@@ -13,7 +13,8 @@ import { Navigator } from '@common/helpers/navigator';
 import { Prompt } from '@common/helpers/interface';
 
 import { GetCardEnforcedSecurity, GetCardSecurityOptions, TangemSecurity } from '@common/utils/tangem';
-import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import { isTangemWrongCard, startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import { showTangemWrongCard } from '@common/helpers/tangemWrongCard';
 
 import { AccountRepository } from '@store/repositories';
 import { AccountModel } from '@store/models';
@@ -105,15 +106,22 @@ class ChangeTangemSecurityView extends Component<Props, State> {
         );
     };
 
+    /** Another card than the card of this account: nothing was changed. Save starts a new scan. */
+    onChangeError = (error: unknown) => {
+        const { account } = this.props;
+        if (isTangemWrongCard(error)) {
+            showTangemWrongCard(account.label);
+        }
+        // every other error: the prompt of the SDK showed it, or the user cancelled
+    };
+
     resetUserCodes = () => {
         const { account } = this.props;
         const { cardId } = account.additionalInfo as Card;
 
         TangemCard.resetUserCodes({ cardId })
             .then(this.onSuccessChange.bind(null, { isPasscodeSet: false, isAccessCodeSet: false }))
-            .catch(() => {
-                // ignore
-            });
+            .catch(this.onChangeError);
     };
 
     changeAccessCode = () => {
@@ -122,9 +130,7 @@ class ChangeTangemSecurityView extends Component<Props, State> {
 
         TangemCard.setAccessCode({ cardId })
             .then(this.onSuccessChange.bind(null, { isAccessCodeSet: true }))
-            .catch(() => {
-                // ignore
-            });
+            .catch(this.onChangeError);
     };
 
     changePasscode = () => {
@@ -133,9 +139,7 @@ class ChangeTangemSecurityView extends Component<Props, State> {
 
         TangemCard.setPasscode({ cardId })
             .then(this.onSuccessChange.bind(null, { isPasscodeSet: true }))
-            .catch(() => {
-                // ignore
-            });
+            .catch(this.onChangeError);
     };
 
     onSavePress = () => {

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "ఈ ఖాతా కోసం సేవ్ చేసిన కార్డేనా అని చూడటానికి Xaman Tangem కార్డును స్కాన్ చేయండి.",
     "tangemRightCard": "కార్డు సరిపోలింది",
     "tangemDifferentCard": "వేరే కార్డు",
+    "tangemDifferentCardExplain": "ఇది ఈ ఖాతాకు చెందిన కార్డు కాదు. దయచేసి “%{name}” అనే పేరున్న కార్డును స్కాన్ చేయండి.",
     "tangemCardKnownAs": "మరో ఖాతాగా సేవ్ చేయబడింది",
     "tangemCardNotImported": "ఇది తెలియని కార్డు. ఇది ఇంకా Xamanలోకి దిగుమతి చేయబడలేదు.",
     "accountMaxLabelLengthError": "ఖాతా లేబుల్ 16 అక్షరాల కంటే తక్కువగా ఉండాలి!\r\n",

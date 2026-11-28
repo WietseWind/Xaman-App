@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skandeer ’n Xaman Tangem-kaart om te kyk of dit die kaart is wat vir hierdie rekening gestoor is.",
     "tangemRightCard": "Kaart stem ooreen",
     "tangemDifferentCard": "Ander kaart",
+    "tangemDifferentCardExplain": "Dit is nie die kaart van hierdie rekening nie. Skandeer asseblief die kaart met die naam “%{name}”.",
     "tangemCardKnownAs": "As ’n ander rekening gestoor",
     "tangemCardNotImported": "Dit is ’n onbekende kaart. Dit is nog nie in Xaman ingevoer nie.",
     "accountMaxLabelLengthError": "Rekeningetiket moet minder as 16 karakters bevat!",

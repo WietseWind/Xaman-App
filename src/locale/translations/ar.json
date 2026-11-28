@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "اقرأ بطاقة Xaman Tangem للتحقق مما إذا كانت البطاقة المحفوظة لهذا الحساب.",
     "tangemRightCard": "البطاقة مطابقة",
     "tangemDifferentCard": "بطاقة مختلفة",
+    "tangemDifferentCardExplain": "هذه ليست بطاقة هذا الحساب. يُرجى مسح البطاقة المسماة «%{name}».",
     "tangemCardKnownAs": "محفوظة كحساب آخر",
     "tangemCardNotImported": "هذه بطاقة غير معروفة. لم يتم استيرادها إلى Xaman بعد.",
     "accountMaxLabelLengthError": "يجب أن يكون تسمية الحساب أقل من 16 حرفًا!",

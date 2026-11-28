@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scannen Sie eine Xaman-Tangem-Karte, um zu prüfen, ob sie für dieses Konto gespeichert ist.",
     "tangemRightCard": "Karte stimmt überein",
     "tangemDifferentCard": "Andere Karte",
+    "tangemDifferentCardExplain": "Das ist nicht die Karte dieses Kontos. Scanne bitte die Karte mit dem Namen „%{name}“.",
     "tangemCardKnownAs": "Als anderes Konto gespeichert",
     "tangemCardNotImported": "Dies ist eine unbekannte Karte. Sie wurde noch nicht in Xaman importiert.",
     "accountMaxLabelLengthError": "Die Kontobezeichnung sollte weniger als 16 Zeichen lang sein! ",

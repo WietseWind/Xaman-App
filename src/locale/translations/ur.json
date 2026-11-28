@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "یہ جانچنے کے لیے Xaman Tangem کارڈ اسکین کریں کہ آیا یہ اس اکاؤنٹ کے لیے محفوظ کیا گیا کارڈ ہے۔",
     "tangemRightCard": "کارڈ مماثل ہے",
     "tangemDifferentCard": "مختلف کارڈ",
+    "tangemDifferentCardExplain": "یہ اس اکاؤنٹ کا کارڈ نہیں ہے۔ براہ کرم “%{name}” نام والا کارڈ اسکین کریں۔",
     "tangemCardKnownAs": "دوسرے اکاؤنٹ کے طور پر محفوظ",
     "tangemCardNotImported": "یہ ایک نامعلوم کارڈ ہے۔ اسے ابھی تک Xaman میں درآمد نہیں کیا گیا۔",
     "accountMaxLabelLengthError": "اکاؤنٹ کا لیبل 16 حروف سے کم ہونا چاہئے!",

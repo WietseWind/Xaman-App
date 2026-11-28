@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scansiona una carta Xaman Tangem per verificare se è quella salvata per questo account.",
     "tangemRightCard": "La carta corrisponde",
     "tangemDifferentCard": "Altra carta",
+    "tangemDifferentCardExplain": "Questa non è la carta di questo account. Scansiona la carta chiamata «%{name}».",
     "tangemCardKnownAs": "Salvata come un altro account",
     "tangemCardNotImported": "Questa è una carta sconosciuta. Non è ancora stata importata in Xaman.",
     "accountMaxLabelLengthError": "L'etichetta dell'account deve contenere meno di 16 caratteri!",
