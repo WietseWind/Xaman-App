@@ -12,6 +12,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.PixelUtil;
 
 import java.io.BufferedReader;
@@ -33,6 +34,8 @@ import com.xrpllabs.xumm.AndroidWindowLayoutMath;
 public class DeviceUtilsModule extends ReactContextBaseJavaModule {
 
     protected final ReactApplicationContext reactContext;
+    private volatile boolean windowStateInvalidated;
+    private final AndroidWindowLayout.WindowStateListener windowStateListener = this::emitAndroidWindowState;
 
     public DeviceUtilsModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -45,6 +48,50 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        UiThreadUtil.runOnUiThread(() -> {
+            if (!windowStateInvalidated) {
+                AndroidWindowLayout.addWindowStateListener(windowStateListener);
+            }
+        });
+    }
+
+    @Override
+    public void invalidate() {
+        windowStateInvalidated = true;
+        UiThreadUtil.runOnUiThread(() -> AndroidWindowLayout.removeWindowStateListener(windowStateListener));
+        super.invalidate();
+    }
+
+    @ReactMethod
+    public void addListener(String eventName) {
+        // NativeEventEmitter subscription bookkeeping is owned by JS.
+    }
+
+    @ReactMethod
+    public void removeListeners(double count) {
+        // NativeEventEmitter subscription bookkeeping is owned by JS.
+    }
+
+    @ReactMethod
+    public void getAndroidWindowState(Promise promise) {
+        UiThreadUtil.runOnUiThread(() -> {
+            AndroidWindowLayout.WindowState state = windowStateInvalidated
+                    ? null : AndroidWindowLayout.refreshWindowState(getCurrentActivity());
+            promise.resolve(state == null ? null : Arguments.makeNativeMap(state.toMap()));
+        });
+    }
+
+    private void emitAndroidWindowState(AndroidWindowLayout.WindowState state) {
+        if (!windowStateInvalidated && reactContext.hasActiveReactInstance()
+                && AndroidWindowLayout.currentWindowState() == state) {
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("androidWindowStateChanged", Arguments.makeNativeMap(state.toMap()));
+        }
     }
 
     /**
@@ -145,6 +192,11 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         constants.put("layoutInsets", layoutInsets);
         constants.put("tabBarMetrics", tabBarMetrics);
         constants.put("supportsAndroidWindowLayout", true);
+        constants.put("supportsAndroidMultiWindowLayout", true);
+        AndroidWindowLayout.WindowState windowState = AndroidWindowLayout.currentWindowState();
+        if (windowState != null) {
+            constants.put("androidWindowState", windowState.toMap());
+        }
 
         AndroidWindowLayoutMath.PhoneBox phoneBox = AndroidWindowLayout.phoneBox(reactContext);
         if (phoneBox != null) {

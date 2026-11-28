@@ -52,6 +52,10 @@ public class LaunchActivity extends NavigationActivity {
     private int originalTabsLeftMargin;
     private int originalTabsGravity;
     private final AndroidBottomTabLayout bottomTabLayout = new AndroidBottomTabLayout();
+    private View windowStateDecor;
+    private final View.OnLayoutChangeListener windowStateLayoutListener =
+            (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+                    AndroidWindowLayout.refreshWindowState(this);
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,6 +85,9 @@ public class LaunchActivity extends NavigationActivity {
 
         // set splash screen
         setSplashLayout();
+        windowStateDecor = getWindow().getDecorView();
+        windowStateDecor.addOnLayoutChangeListener(windowStateLayoutListener);
+        AndroidWindowLayout.refreshWindowState(this);
     }
 
     @Override
@@ -91,10 +98,39 @@ public class LaunchActivity extends NavigationActivity {
 
     @Override
     protected void onDestroy() {
+        if (windowStateDecor != null) {
+            windowStateDecor.removeOnLayoutChangeListener(windowStateLayoutListener);
+            windowStateDecor = null;
+        }
+        AndroidWindowLayout.clearActivity(this);
         if (currentLaunch != null && currentLaunch.get() == this) {
             currentLaunch.clear();
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AndroidWindowLayout.refreshWindowState(this);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        AndroidWindowLayout.refreshWindowState(this);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        AndroidWindowLayout.refreshWindowState(this);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration configuration) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, configuration);
+        AndroidWindowLayout.refreshWindowState(this);
     }
 
     public static void hideLaunchSplashIfPresent() {

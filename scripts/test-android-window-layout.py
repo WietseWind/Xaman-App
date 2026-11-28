@@ -62,6 +62,8 @@ stubs = {
       public boolean multiWindow,finishing,destroyed;
       public boolean isInMultiWindowMode(){return multiWindow;}
       public boolean isFinishing(){return finishing;} public boolean isDestroyed(){return destroyed;}
+      public android.view.Window getWindow(){return new android.view.Window();}
+      public android.view.WindowManager getWindowManager(){return new android.view.WindowManager();}
     }''',
     'android/content/pm/PackageManager.java': '''package android.content.pm; public class PackageManager {
       public static final String FEATURE_SENSOR_HINGE_ANGLE="android.hardware.sensor.hinge_angle";
@@ -113,6 +115,18 @@ stubs = {
 
 
 stubs.update({
+    'android/graphics/Rect.java': '''package android.graphics; public class Rect {
+      public int width(){return 0;} public int height(){return 0;}
+    }''',
+    'android/view/Window.java': '''package android.view; public class Window {
+      public View getDecorView(){return new View();}
+    }''',
+    'android/view/WindowMetrics.java': '''package android.view; public class WindowMetrics {
+      public android.graphics.Rect getBounds(){return new android.graphics.Rect();}
+    }''',
+    'android/view/WindowManager.java': '''package android.view; public class WindowManager {
+      public WindowMetrics getCurrentWindowMetrics(){return new WindowMetrics();}
+    }''',
     'android/graphics/Color.java': '''package android.graphics; public class Color {
       public static final int TRANSPARENT=0,WHITE=0xffffffff,BLACK=0xff000000;
       public static int alpha(int color){return color>>>24;}
@@ -123,6 +137,7 @@ stubs.update({
         public ColorDrawable(int value){color=value;} public int getColor(){return color;}}
     ''',
     'android/view/View.java': '''package android.view; public class View {
+      public boolean isAttachedToWindow(){return true;}
       public int left,top,right,bottom,layoutCalls,layoutRequests,paramUpdates,pivotResets,backgroundChanges;
       public android.graphics.drawable.Drawable background;
       public android.graphics.drawable.Drawable getBackground(){return background;}
