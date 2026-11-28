@@ -185,10 +185,19 @@ index c3c1a8d..5d71503 100644
          val accessCode = options.getString("accessCode")
          if (accessCode.isNullOrEmpty()) {
 diff --git a/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift b/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift
-index b9c7e6c..21ee3a5 100644
+index b9c7e6c..03cee38 100644
 --- a/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift
 +++ b/node_modules/tangem-sdk-react-native/ios/SwiftTangemSdkPluging.swift
-@@ -72,9 +72,11 @@ class RNTangemSdk: NSObject {
+@@ -8,6 +8,8 @@
+ import Foundation
+ import CoreNFC
+ import TangemSdk
++// CoreNFC has a CardSession too (iOS 17.4): the one of the Tangem SDK is meant
++import class TangemSdk.CardSession
+ 
+ 
+ @available(iOS 13.0, *)
+@@ -72,9 +74,11 @@ class RNTangemSdk: NSObject {
          DispatchQueue.main.async {
              do{
                  let optionsParser = OptionsParser(options: options)
@@ -203,7 +212,7 @@ index b9c7e6c..21ee3a5 100644
                      initialMessage: optionsParser.getInitialMessage()
                  ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
              } catch OptionsParserError.RquiredArgument(let arg){
-@@ -109,7 +111,8 @@ class RNTangemSdk: NSObject {
+@@ -109,7 +113,8 @@ class RNTangemSdk: NSObject {
                  self.sdk.sign(
                      hashes: try optionsParser.getHashes(),
                      walletPublicKey: try optionsParser.getWalletPublicKey(),
@@ -213,7 +222,7 @@ index b9c7e6c..21ee3a5 100644
                      derivationPath: optionsParser.getDerivationPath(),
                      initialMessage: optionsParser.getInitialMessage()
                  ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
-@@ -125,9 +128,11 @@ class RNTangemSdk: NSObject {
+@@ -125,9 +130,11 @@ class RNTangemSdk: NSObject {
          DispatchQueue.main.async {
              do{
                  let optionsParser = OptionsParser(options: options)
@@ -228,7 +237,7 @@ index b9c7e6c..21ee3a5 100644
                      initialMessage: optionsParser.getInitialMessage()
                  ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
              } catch OptionsParserError.RquiredArgument(let arg){
-@@ -142,9 +147,11 @@ class RNTangemSdk: NSObject {
+@@ -142,9 +149,11 @@ class RNTangemSdk: NSObject {
          DispatchQueue.main.async {
              do{
                  let optionsParser = OptionsParser(options: options)
@@ -243,7 +252,7 @@ index b9c7e6c..21ee3a5 100644
                      initialMessage: optionsParser.getInitialMessage()
                  ) { [weak self] result in self?.handleCompletion(result, resolve, reject) }
              } catch OptionsParserError.RquiredArgument(let arg){
-@@ -239,6 +246,37 @@ fileprivate extension TangemSdkError {
+@@ -239,6 +248,37 @@ fileprivate extension TangemSdkError {
      }
  }
  
@@ -281,7 +290,7 @@ index b9c7e6c..21ee3a5 100644
  enum OptionsParserError: Error {
      case RquiredArgument(String)
  }
-@@ -276,6 +314,13 @@ class OptionsParser {
+@@ -276,6 +316,13 @@ class OptionsParser {
          }
      }
      
