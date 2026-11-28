@@ -402,7 +402,7 @@ describe('when the card does not give a usable signature', () => {
     });
 
     // issue 564: another card ends the card session. The app says which card it must be, with its own alert
-    it('another card is held to the phone: no signature, the overlay closes, the app names the right card', async () => {
+    it('another card is held to the phone: no signature, the overlay closes, the right card is named', async () => {
         const card = mockTangemCard('expected-card');
         const other = mockTangemCard('another-card');
         const account = cardAccount(card);
