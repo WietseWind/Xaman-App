@@ -18,19 +18,22 @@ const SLOT_STYLE = {
 };
 
 /** Stable on capable Android builds so resizing never reparents the PIN keys. */
-export const AndroidPinEntryScroll = ({ children, normalContentStyle, paneContentStyle, normalHeight }: {
+export const AndroidPinEntryScroll = ({ children, normalContentStyle, paneContentStyle, normalHeight, normalWidth }: {
     children: ReactNode;
     normalContentStyle?: ViewStyle;
     paneContentStyle?: ViewStyle;
     normalHeight?: number;
+    normalWidth?: number;
 }) => {
     const pane = useContext(AndroidWindowSurroundContext);
     // eslint-disable-next-line react/jsx-no-useless-fragment
     if (!supportsAndroidMultiWindowLayout()) return <>{children}</>;
     const fullPane = pane?.fullPane === true;
+    const scrollStyle = !fullPane && normalHeight !== undefined
+        ? [INTRINSIC_SCROLL_STYLE, { height: normalHeight }] : SCROLL_STYLE;
     return (
-        <ScrollView style={!fullPane && normalHeight !== undefined
-            ? [INTRINSIC_SCROLL_STYLE, { height: normalHeight }] : SCROLL_STYLE}
+        <ScrollView style={!fullPane && normalWidth !== undefined
+            ? [scrollStyle, { width: normalWidth, alignSelf: 'center' }] : scrollStyle}
             contentContainerStyle={fullPane
                 ? [CONTENT_STYLE, paneContentStyle] : [NORMAL_CONTENT_STYLE, normalContentStyle]}
             scrollEnabled={fullPane} bounces={false} keyboardShouldPersistTaps="handled"

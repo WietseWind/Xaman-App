@@ -333,6 +333,7 @@ class AuthenticateOverlay extends Component<Props, State> {
                 >
                     <AnimatedAndroidPaneCard
                         normalWidth={AppSizes.screen.width}
+                        normalFill
                         style={[{ transform, opacity: this.animatedOpacity }]}
                     >
                         <View style={[

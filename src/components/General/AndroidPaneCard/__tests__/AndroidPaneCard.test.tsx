@@ -30,9 +30,41 @@ class Draft extends Component<{}, { text: string }> {
 afterEach(() => { mockSupports = false; });
 
 it('retains the original native tree on older Android and iOS', () => {
-    const tree = renderer.create(<AndroidPaneCard style={CARD_STYLE}><Text>Content</Text></AndroidPaneCard>);
+    const tree = renderer.create(<AndroidPaneCard style={CARD_STYLE} normalFill normalWidth={400}>
+        <Text>Content</Text>
+    </AndroidPaneCard>);
     expect(tree.root.findAllByType(ScrollView)).toHaveLength(0);
     expect(tree.toJSON()).toEqual(renderer.create(<View style={CARD_STYLE}><Text>Content</Text></View>).toJSON());
+    act(() => tree.unmount());
+});
+
+it('retains a full-height form and its draft while switching between normal allocation and a bounded pane', () => {
+    mockSupports = true;
+    const render = (value?: ReturnType<typeof pane>) => (
+        <AndroidWindowSurroundContext.Provider value={value}>
+            <AndroidPaneCard testID="full-form" normalFill normalWidth={400}><Draft /></AndroidPaneCard>
+        </AndroidWindowSurroundContext.Provider>
+    );
+    const tree = renderer.create(render());
+    const draft = tree.root.findByType(Draft).instance;
+    act(() => draft.setState({ text: 'public draft' }));
+    const allocation = () => {
+        const form = tree.root.findAllByType(View).find((node) => node.props.testID === 'full-form')!;
+        const scroll = tree.root.findByType(KeyboardAwareScrollView);
+        return [form.parent!.props.style, form.props.style, scroll.props.style,
+            scroll.props.contentContainerStyle].map((style) => StyleSheet.flatten(style));
+    };
+    // The old full-height Authenticate uses header/footer flex children. Its
+    // parent allocation must reach them through every new scroll boundary.
+    expect(allocation().every((style) => style?.flexGrow === 1)).toBe(true);
+    act(() => tree.update(render(pane())));
+    const form = tree.root.findAllByType(View).find((node) => node.props.testID === 'full-form')!;
+    expect(StyleSheet.flatten(form.props.style)).toMatchObject({ width: 540, maxHeight: 320 });
+    expect(tree.root.findByType(KeyboardAwareScrollView).props.contentContainerStyle.flexGrow).toBeUndefined();
+    act(() => tree.update(render()));
+    expect(allocation().every((style) => style?.flexGrow === 1)).toBe(true);
+    expect(tree.root.findByType(Draft).instance).toBe(draft);
+    expect(draft.state.text).toBe('public draft');
     act(() => tree.unmount());
 });
 

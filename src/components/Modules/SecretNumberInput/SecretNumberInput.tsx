@@ -11,7 +11,7 @@
     import { SecurePinInput } from '@components/General';
     import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
     import { AndroidPinEntryScroll, AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
-    import { normalPinEntryHeight } from '@components/General/SecurePinInput/styles';
+    import { normalPinEntryHeight, normalPinEntryWidth } from '@components/General/SecurePinInput/styles';
     import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
     import { CoreRepository } from '@store/repositories';
     
@@ -157,7 +157,7 @@
             return (
                 <SensitiveAccessibilityView style={fullPane
                     ? [AppStyles.stretchSelf, { flex: 1 }] : AppStyles.stretchSelf}>
-                    <AndroidPinEntryScroll normalHeight={normalPinEntryHeight()}>
+                    <AndroidPinEntryScroll normalHeight={normalPinEntryHeight()} normalWidth={normalPinEntryWidth()}>
                         <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                         ref={this.securePinInputRef}
                         virtualKeyboard

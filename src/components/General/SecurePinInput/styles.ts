@@ -99,4 +99,7 @@ export const normalPinEntryHeight = () => {
         4 * (Number(line.height) + 2 * Number(line.margin));
 };
 
+/** Match the original fixed-width keypad, including overflow beyond a padded caller. */
+export const normalPinEntryWidth = () => Number(StyleSheet.flatten(styles.keyboardWrap).width);
+
 export default styles;
