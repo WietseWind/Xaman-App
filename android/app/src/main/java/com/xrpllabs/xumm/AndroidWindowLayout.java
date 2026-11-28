@@ -181,8 +181,11 @@ public final class AndroidWindowLayout {
                     width = decor.getWidth();
                     height = decor.getHeight();
                     WindowInsets insets = decor.getRootWindowInsets();
-                    topInset = insets == null ? 0 : insets.getSystemWindowInsetTop();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && insets != null
+                    // Unknown insets are not a measured zero. Keep the last
+                    // valid snapshot until Android applies this window's bars.
+                    if (insets == null) return null;
+                    topInset = insets.getSystemWindowInsetTop();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
                             && insets.getDisplayCutout() != null) {
                         topInset = Math.max(topInset, insets.getDisplayCutout().getSafeInsetTop());
                     }

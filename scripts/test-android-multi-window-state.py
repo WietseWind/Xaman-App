@@ -272,8 +272,20 @@ public class MultiWindowProbe {
     LaunchActivity insetOld=activity(true,800,1200);insetOld.window.decor.insets.top=63;
     insetOld.window.decor.insets.cutout=new android.view.DisplayCutout();insetOld.window.decor.insets.cutout.top=140;insetOld.create();
     check("pre30-current-display-cutout-respected",near(AndroidWindowLayout.currentWindowState().topInset,140/2.625));
+    AndroidWindowLayout.WindowState knownInsets=AndroidWindowLayout.currentWindowState();
+    int insetEvents[]={0};AndroidWindowLayout.WindowStateListener insetListener=state->insetEvents[0]++;
+    AndroidWindowLayout.addWindowStateListener(insetListener);
     insetOld.window.decor.insets=null;
-    check("pre30-missing-insets-safe-until-apply",near(AndroidWindowLayout.refreshWindowState(insetOld).topInset,0));
+    check("pre30-unknown-insets-keep-last-valid-snapshot",AndroidWindowLayout.refreshWindowState(insetOld)==null
+      &&AndroidWindowLayout.currentWindowState()==knownInsets&&AndroidWindowLayout.currentWindowState().revision==knownInsets.revision);
+    check("pre30-unknown-insets-do-not-emit",insetEvents[0]==0);
+    insetOld.window.decor.insets=new android.view.WindowInsets();insetOld.window.decor.insets.top=0;
+    AndroidWindowLayout.WindowState realZero=AndroidWindowLayout.refreshWindowState(insetOld);
+    check("pre30-measured-zero-inset-is-valid",realZero!=null&&near(realZero.topInset,0)
+      &&realZero.revision>knownInsets.revision&&insetEvents[0]==1);
+    AndroidWindowLayout.removeWindowStateListener(insetListener);insetOld.destroy();
+    LaunchActivity coldUnknown=activity(true,800,1200);coldUnknown.window.decor.insets=null;coldUnknown.create();
+    check("pre30-cold-unknown-insets-publish-no-snapshot",AndroidWindowLayout.currentWindowState()==null);
     System.out.println("assertions="+assertions);
   }
 }
