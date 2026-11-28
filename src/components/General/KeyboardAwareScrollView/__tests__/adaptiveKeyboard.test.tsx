@@ -104,6 +104,43 @@ beforeEach(() => {
 afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
 describe('adaptive Android keyboard coordinates', () => {
+    it.each([
+        { width: 300, height: 210, x: 0, y: 0 },
+        { width: 407, height: 210, x: 0, y: 30 },
+    ])('remeasures focus after a same-height pane layout change %j', async (layout) => {
+        const { view, inputMeasure, scrollTo } = fixture({ scale: 1, scrollY: 20, scrollHeight: 210,
+            inputY: 160, inputHeight: 40, scrollPosition: 0, extraOffset: 0 });
+        view.context.fullPane = true;
+        view.keyboardVisible = false;
+        view.handleLayout({ nativeEvent: { layout: { width: 407, height: 210, x: 0, y: 0 } } });
+        view.keyboardVisible = true;
+        await view.scrollToFocusedTextInput();
+        expect(inputMeasure).toHaveBeenCalledTimes(1);
+        inputMeasure.mockImplementation((callback: any) => callback(0, 240, 100, 40));
+        view.handleLayout({ nativeEvent: { layout } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(inputMeasure).toHaveBeenCalledTimes(2);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 89, animated: true });
+        view.componentWillUnmount();
+    });
+
+    it('keeps the normal-layout trigger unchanged for a same-height width change', async () => {
+        const { view, inputMeasure, scrollTo } = fixture({ scale: 1, scrollY: 20, scrollHeight: 210,
+            inputY: 160, inputHeight: 40, scrollPosition: 0, extraOffset: 0 });
+        view.keyboardVisible = false;
+        view.handleLayout({ nativeEvent: { layout: { width: 407, height: 210, x: 0, y: 0 } } });
+        view.keyboardVisible = true;
+        await view.scrollToFocusedTextInput();
+        inputMeasure.mockImplementation((callback: any) => callback(0, 240, 100, 40));
+        view.handleLayout({ nativeEvent: { layout: { width: 300, height: 210, x: 0, y: 0 } } });
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(inputMeasure).toHaveBeenCalledTimes(1);
+        expect(scrollTo).not.toHaveBeenCalled();
+        view.componentWillUnmount();
+    });
+
     it('reduces pane clearance when a field only just fits above the actual IME', async () => {
         // Same native coordinate origin: compact Header leaves70dp visible,
         // and a60dp field must keep its top inside that measured scroll view.

@@ -65,6 +65,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private windowHeight: number;
     private scrollPosition: any;
     private viewHeight: number;
+    private paneLayout?: { x: number; y: number; width: number };
     private contentHeight: number;
     private scrollViewRef: React.RefObject<ScrollView>;
     private scrollToTimeout: NodeJS.Timeout | undefined;
@@ -517,9 +518,17 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
 
     handleLayout = (event: LayoutChangeEvent) => {
         const { onLayout, enabled } = this.props;
-
-        const changed = this.viewHeight !== event.nativeEvent.layout.height;
-        this.viewHeight = event.nativeEvent.layout.height;
+        const { context } = this;
+        const { x, y, width, height } = event.nativeEvent.layout;
+        const pane = context?.fullPane && [x, y, width].every(Number.isFinite) && width > 0
+            ? { x, y, width } : undefined;
+        // Pane resizing can wrap text and move an input without changing the
+        // scroll viewport's height. Its old focus measurement is then stale.
+        const moved = pane && (!this.paneLayout || pane.x !== this.paneLayout.x ||
+            pane.y !== this.paneLayout.y || pane.width !== this.paneLayout.width);
+        const changed = this.viewHeight !== height || !!moved;
+        this.viewHeight = height;
+        this.paneLayout = pane;
         if (changed && this.keyboardVisible && enabled && this.adaptiveScale() !== undefined) {
             this.adaptiveLayout += 1;
             this.adaptiveScroll += 1;

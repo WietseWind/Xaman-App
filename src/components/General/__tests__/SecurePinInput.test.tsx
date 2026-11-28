@@ -3,12 +3,14 @@
  */
 
 import React from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 // Note: test renderer must be required after react-native.
 import renderer, { act } from 'react-test-renderer';
 
 import { SecurePinInput } from '..';
 import { SensitiveAccessibilityView } from '../SensitiveAccessibilityView';
+import { Icon } from '../Icon';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 describe('[SecurePinInput]', () => {
     it('renders correctly', () => {
@@ -42,6 +44,70 @@ describe('[SecurePinInput]', () => {
         // @ts-ignore
         expect(instanceOf.state.digits).toBe('000000');
         expect(onInputFinish).toBeCalledTimes(1);
+    });
+});
+
+describe('Android full-pane PIN layout', () => {
+    const originalOS = Platform.OS;
+    afterEach(() => { Platform.OS = originalOS; });
+
+    const pane = { left: 0, width: 407, height: 387, columnWidth: 407, scale: 1, fullPane: true,
+        topInset: 28 };
+    const renderedStyle = (tree: renderer.ReactTestRenderer, testID: string) => {
+        const node = tree.root.findAllByProps({ testID }).find((item) => Array.isArray(item.props.style));
+        return StyleSheet.flatten(node?.props.style);
+    };
+
+    it.each([[232, 44], [248, 48]])('fits the measured %idp slot with %idp keys', (height, keyHeight) => {
+        Platform.OS = 'android';
+        const props = { virtualKeyboard: true, supportBiometric: true, length: 6,
+            onInputFinish: jest.fn(), paneLayout: { width: 367, height } };
+        const tree = renderer.create(
+            <AndroidWindowSurroundContext.Provider value={pane}>
+                {React.createElement(SecurePinInput, props as any)}
+            </AndroidWindowSurroundContext.Provider>,
+        );
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'y', '0', 'x'].forEach((key) => {
+            expect(renderedStyle(tree, `${key}-key`)).toMatchObject({ height: keyHeight, minWidth: 44 });
+        });
+        expect(renderedStyle(tree, 'virtual-keyboard')).toMatchObject({ width: '100%', marginTop: 8 });
+        expect(32 + 8 + 4 * (keyHeight + 4)).toBeLessThanOrEqual(height);
+        const deleteIcon = tree.root.findAllByProps({ testID: 'x-key' })[0].findByType(Icon);
+        const iconStyle = StyleSheet.flatten(deleteIcon.props.style);
+        const iconTop = (keyHeight - deleteIcon.props.size + Number(iconStyle.marginTop)) / 2;
+        expect(iconTop).toBeGreaterThanOrEqual(0);
+        expect(iconTop + deleteIcon.props.size).toBeLessThanOrEqual(keyHeight);
+        expect(iconStyle.marginTop).toBe(0);
+        tree.unmount();
+    });
+
+    it('keeps the same PIN input, key instances and entered digits across pane resizing', () => {
+        Platform.OS = 'android';
+        const onInputFinish = jest.fn();
+        const render = (fullPane: boolean, height: number) => (
+            <AndroidWindowSurroundContext.Provider value={fullPane ? pane : undefined}>
+                {React.createElement(SecurePinInput, { virtualKeyboard: true, length: 6, onInputFinish,
+                    paneLayout: { width: 367, height } } as any)}
+            </AndroidWindowSurroundContext.Provider>
+        );
+        const tree = renderer.create(render(false, 248));
+        const input = tree.root.findByType(SecurePinInput).instance;
+        const key = tree.root.findAllByProps({ testID: '1-key' })[0];
+        act(() => { input.onInput('1'); });
+        act(() => { input.onInput('2'); });
+        tree.update(render(true, 232));
+        expect(tree.root.findByType(SecurePinInput).instance).toBe(input);
+        expect(tree.root.findAllByProps({ testID: '1-key' })[0]).toBe(key);
+        expect(input.state.digits).toBe('12');
+        expect(renderedStyle(tree, '1-key').height).toBe(44);
+        tree.update(render(true, 248));
+        expect(input.state.digits).toBe('12');
+        expect(renderedStyle(tree, '1-key').height).toBe(48);
+        tree.update(render(false, 248));
+        expect(tree.root.findByType(SecurePinInput).instance).toBe(input);
+        expect(input.state.digits).toBe('12');
+        expect(onInputFinish).not.toHaveBeenCalled();
+        tree.unmount();
     });
 });
 

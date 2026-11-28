@@ -18,6 +18,7 @@ import Keyboard from '@common/helpers/keyboard';
 import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
 import { AndroidWindowSurroundContext, AndroidWindowSurround } from '@common/helpers/androidWindowContext';
 import AndroidPaneCard from '@components/General/AndroidPaneCard/AndroidPaneCard';
+import { AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
 
 import { BiometricErrors } from '@common/libs/biometric';
 
@@ -277,6 +278,8 @@ class PasscodeMethod extends Component<InternalProps, State> {
     render() {
         const { isSigning } = this.context;
         const { offsetBottom, hapticFeedback, isBiometricAvailable, fullBiometricsView } = this.state;
+        const { androidWindowSurround } = this.props;
+        const fullPane = androidWindowSurround?.fullPane === true;
         // biometricMethod,
 
         const interpolateColor = this.animatedColor.interpolate({
@@ -290,10 +293,12 @@ class PasscodeMethod extends Component<InternalProps, State> {
             <Animated.View
                 ref={this.containerViewRef}
                 onStartShouldSetResponder={() => true}
-                style={[styles.container, { backgroundColor: interpolateColor }]}
+                style={[styles.container, { backgroundColor: interpolateColor },
+                    ...(fullPane ? [{ marginTop: androidWindowSurround?.topInset ?? 0 }] : [])]}
             >
                 <AndroidPaneCard ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
-                    style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
+                    style={[styles.visibleContent, { marginBottom: offsetBottom },
+                        ...(fullPane ? [{ padding: 8 }] : [])]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
                             <Text numberOfLines={1} style={[AppStyles.p, AppStyles.bold]}>
@@ -323,7 +328,7 @@ class PasscodeMethod extends Component<InternalProps, State> {
                                 {Localize.t('global.pleaseEnterYourPasscode')}
                             </Text>
 
-                            <SecurePinInput
+                            <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                                 ref={this.securePinInputRef}
                                 isLoading={isSigning}
                                 length={6}
@@ -333,7 +338,8 @@ class PasscodeMethod extends Component<InternalProps, State> {
                                 supportBiometric={isBiometricAvailable}
                                 onBiometryPress={this.requestBiometricAuthenticate}
                                 pinPadStyle={styles.pinInputPadding}
-                            />
+                                paneLayout={paneLayout}
+                            />}</AndroidPinEntrySlot>
 
                             {/* {isBiometricAvailable && (
                                 <View style={AppStyles.paddingTopSml}>

@@ -23,6 +23,7 @@ import {
 import StyleService from '@services/StyleService';
 
 import { VibrateHapticFeedback } from '@common/helpers/interface';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import Localize from '@locale';
 
@@ -32,6 +33,7 @@ import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessi
 
 import styles from './styles';
 import { AppStyles } from '@theme/index';
+import { AndroidPinPaneLayout, ANDROID_PIN_MIN_HEIGHT } from './AndroidPinEntry';
 
 /* Types ==================================================================== */
 interface Props {
@@ -43,6 +45,8 @@ interface Props {
     enableHapticFeedback?: boolean;
     isLoading?: boolean;
     pinPadStyle?: ViewStyle | ViewStyle[];
+    /** Actual caller allocation, used only by an Android multi-window pane. */
+    paneLayout?: AndroidPinPaneLayout;
     // what screen readers call the digits field; the passcode unless set
     accessibilityLabel?: string;
     accessibilityHint?: string;
@@ -58,8 +62,18 @@ interface State {
 }
 
 const BUTTONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Y', '0', 'X'];
+const PANE_CONTAINER = { width: '100%' as const };
+const PANE_DIGITS = { height: 32 };
+const PANE_KEYBOARD = { width: '100%' as const, marginTop: 8, paddingHorizontal: 0 };
+const PANE_NUMBER = { fontSize: 24, lineHeight: 28 };
+const PANE_ALPHA = { fontSize: 9, lineHeight: 10 };
+const PANE_DELETE_ICON = { marginTop: 0 };
 /* Component ==================================================================== */
 class SecurePinInput extends Component<Props, State> {
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
+
     private inputRef: React.RefObject<TextInput>;
     private clearInputTimeout: NodeJS.Timeout | undefined;
     private lastKeyEventTimestamp: number;
@@ -207,8 +221,19 @@ class SecurePinInput extends Component<Props, State> {
         this.announceProgress(0);
     };
 
+    private paneKeyStyle = (): ViewStyle | undefined => {
+        const { virtualKeyboard, paneLayout } = this.props;
+        const { context } = this;
+        if (Platform.OS !== 'android' || !context?.fullPane || !virtualKeyboard) return undefined;
+        const height = typeof paneLayout?.height === 'number' && Number.isFinite(paneLayout.height)
+            ? paneLayout.height : ANDROID_PIN_MIN_HEIGHT;
+        return { width: undefined, minWidth: 44, maxWidth: 90, flex: 1,
+            height: Math.max(44, Math.min(48, (height - 56) / 4)), margin: 2 };
+    };
+
     renderNumText = (flag: number) => {
         const { supportBiometric, onBiometryPress } = this.props;
+        const paneKey = this.paneKeyStyle();
 
         return BUTTONS.slice(flag, flag + 3).map((item, index) => {
             if (item === 'X') {
@@ -219,6 +244,7 @@ class SecurePinInput extends Component<Props, State> {
                         activeOpacity={0.7}
                         style={[
                             styles.line,
+                            ...(paneKey ? [paneKey] : []),
                         ]}
                         key="x-key"
                         accessible
@@ -232,6 +258,7 @@ class SecurePinInput extends Component<Props, State> {
                         <Icon name="IconChevronLeft" style={[
                             styles.iconStyle,
                             AppStyles.marginTopNegativeSml,
+                            ...(paneKey ? [PANE_DELETE_ICON] : []),
                         ]} size={35} />
                     </TouchableHighlight>
                 );
@@ -244,6 +271,7 @@ class SecurePinInput extends Component<Props, State> {
                             underlayColor={StyleService.value('$transparentContrast')}
                             style={[
                                 styles.line,
+                                ...(paneKey ? [paneKey] : []),
                             ]}
                             accessible
                             accessibilityRole="button"
@@ -261,7 +289,7 @@ class SecurePinInput extends Component<Props, State> {
                     );
                 }
 
-                return <View key={`${index}-line`} style={styles.line} />;
+                return <View key={`${index}-line`} style={paneKey ? [styles.line, paneKey] : styles.line} />;
             }
 
             const alpha = (n: string): string => {
@@ -287,6 +315,7 @@ class SecurePinInput extends Component<Props, State> {
                     underlayColor={StyleService.value('$transparentContrast')}
                     style={[
                         styles.line,
+                        ...(paneKey ? [paneKey] : []),
                     ]}
                     activeOpacity={0.7}
                     key={`${item}-key`}
@@ -298,8 +327,10 @@ class SecurePinInput extends Component<Props, State> {
                     accessibilityLabel={item}
                 >
                     <>
-                        <Text style={styles.numTextInt}>{item}</Text>
-                        <Text style={styles.numTextAlpha}>{alpha(item)}</Text>
+                        <Text style={paneKey ? [styles.numTextInt, PANE_NUMBER] : styles.numTextInt}>{item}</Text>
+                        <Text style={paneKey ? [styles.numTextAlpha, PANE_ALPHA] : styles.numTextAlpha}>
+                            {alpha(item)}
+                        </Text>
                     </>
                 </TouchableHighlight>
             );
@@ -344,6 +375,7 @@ class SecurePinInput extends Component<Props, State> {
         const { condensed, virtualKeyboard, length, isLoading, pinPadStyle, accessibilityLabel, accessibilityHint } =
             this.props;
         const { digits } = this.state;
+        const paneKey = this.paneKeyStyle();
 
         let props: {};
 
@@ -365,6 +397,7 @@ class SecurePinInput extends Component<Props, State> {
                     captureShield={false}
                     style={[
                         styles.container,
+                        ...(paneKey ? [PANE_CONTAINER] : []),
                     ]}
                 >
                     {!virtualKeyboard && (
@@ -392,6 +425,7 @@ class SecurePinInput extends Component<Props, State> {
                         style={[
                             styles.digits,
                             condensed && styles.digitsCondensed,
+                            ...(paneKey ? [PANE_DIGITS] : []),
                         ]}
                         accessible
                         accessibilityLabel={accessibilityLabel ?? Localize.t('global.passcode')}
@@ -408,6 +442,7 @@ class SecurePinInput extends Component<Props, State> {
                                 styles.keyboardWrap,
                                 pinPadStyle,
                                 condensed && styles.keyboardWrapCondensed,
+                                ...(paneKey ? [PANE_KEYBOARD] : []),
                             ]}
                         >
                             {this.renderNum()}

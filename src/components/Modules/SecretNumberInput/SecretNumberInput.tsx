@@ -9,6 +9,9 @@
     import { CoreModel } from '@store/models';
     
     import { SecurePinInput } from '@components/General';
+    import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+    import { AndroidPinEntryScroll, AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
+    import { normalPinEntryHeight } from '@components/General/SecurePinInput/styles';
     import { SensitiveAccessibilityView } from '@components/General/SensitiveAccessibilityView';
     import { CoreRepository } from '@store/repositories';
     
@@ -46,6 +49,9 @@
     
     /* Component ==================================================================== */
     class SecretNumberInput extends Component<Props, State> {
+        static contextType = AndroidWindowSurroundContext;
+
+        declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
         declare readonly props: Props & Required<Pick<Props, keyof typeof SecretNumberInput.defaultProps>>;
     
         private securePinInputRef: React.RefObject<SecurePinInput>;
@@ -141,14 +147,18 @@
         render() {
             const { readonly } = this.props;
             const { isBiometricAvailable, coreSettings, currentRow } = this.state;
+            const { context } = this;
+            const fullPane = context?.fullPane === true;
 
             if (readonly) {
                 return <SensitiveAccessibilityView>{this.renderRows()}</SensitiveAccessibilityView>;
             }
 
             return (
-                <SensitiveAccessibilityView style={AppStyles.stretchSelf}>
-                    <SecurePinInput
+                <SensitiveAccessibilityView style={fullPane
+                    ? [AppStyles.stretchSelf, { flex: 1 }] : AppStyles.stretchSelf}>
+                    <AndroidPinEntryScroll normalHeight={normalPinEntryHeight()}>
+                        <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                         ref={this.securePinInputRef}
                         virtualKeyboard
                         onInputFinish={this.onPasscodeEntered}
@@ -159,7 +169,9 @@
                             row: ROW_LETTERS[currentRow],
                         })}
                         accessibilityHint=""
-                    />
+                        paneLayout={paneLayout}
+                    />}</AndroidPinEntrySlot>
+                    </AndroidPinEntryScroll>
                 </SensitiveAccessibilityView>
             );
         }
@@ -167,4 +179,4 @@
     
     /* Export Component ==================================================================== */
     export default SecretNumberInput;
-    
+

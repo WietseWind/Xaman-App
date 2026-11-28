@@ -12,6 +12,8 @@ import { CoreModel } from '@store/models';
 import { changePasscode } from '@common/libs/passcodeChange';
 import { Navigator } from '@common/helpers/navigator';
 import { Prompt, Toast } from '@common/helpers/interface';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+import { AndroidPinEntryScroll, AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
 
 import { AuthenticationService } from '@services';
 
@@ -45,6 +47,10 @@ export interface State {
 /* Component ==================================================================== */
 class ChangePasscodeView extends Component<Props, State> {
     static screenName = AppScreens.Settings.ChangePasscode;
+
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
     private readonly pinInput: React.RefObject<SecurePinInput>;
 
     static options() {
@@ -226,6 +232,8 @@ class ChangePasscodeView extends Component<Props, State> {
 
     render() {
         const { stepDescription, coreSettings } = this.state;
+        const { context } = this;
+        const fullPane = context?.fullPane === true;
 
         return (
             <View testID="change-passcode-screen" style={styles.container}>
@@ -237,26 +245,31 @@ class ChangePasscodeView extends Component<Props, State> {
                     centerComponent={{ text: Localize.t('settings.changePasscode') }}
                 />
 
-                <View style={[AppStyles.flex1, AppStyles.flexStart, AppStyles.paddingTop]}>
-                    <Text style={[AppStyles.p, AppStyles.textCenterAligned]}>{stepDescription}</Text>
-                </View>
-                <View style={[AppStyles.flex8, AppStyles.paddingSml, AppStyles.centerAligned]}>
-                    <SecurePinInput
+                <AndroidPinEntryScroll>
+                    <View style={[AppStyles.flex1, AppStyles.flexStart, AppStyles.paddingTop,
+                    ...(fullPane ? [{ flex: 0, paddingTop: 4, paddingBottom: 4, paddingHorizontal: 8 }] : [])]}>
+                        <Text style={[AppStyles.p, AppStyles.textCenterAligned]}>{stepDescription}</Text>
+                    </View>
+                    <View style={[AppStyles.flex8, AppStyles.paddingSml, AppStyles.centerAligned,
+                    ...(fullPane ? [{ padding: 8, flexGrow: 1, flexShrink: 0 }] : [])]}>
+                        <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                         ref={this.pinInput}
                         virtualKeyboard
                         onInputFinish={this.onPasscodeEntered}
                         supportBiometric={false}
                         enableHapticFeedback={coreSettings.hapticFeedback}
                         length={6}
-                    />
-                    {/* <PinInput
+                        paneLayout={paneLayout}
+                    />}</AndroidPinEntrySlot>
+                        {/* <PinInput
                         ref={this.pinInput}
                         autoFocus={false}
                         codeLength={6}
                         checkStrength={currentStep === Steps.ENTER_NEW_PASSCODE}
                         onFinish={this.onPasscodeEntered}
                     /> */}
-                </View>
+                    </View>
+                </AndroidPinEntryScroll>
             </View>
         );
     }
