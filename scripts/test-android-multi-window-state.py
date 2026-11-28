@@ -52,7 +52,9 @@ stubs.update({
     }''',
     'android/view/WindowMetrics.java': '''package android.view; public class WindowMetrics {
       public final android.graphics.Rect bounds=new android.graphics.Rect(1080,2400);
+      public final WindowInsets insets=new WindowInsets();
       public android.graphics.Rect getBounds(){return bounds;}
+      public WindowInsets getWindowInsets(){return insets;}
     }''',
     'android/view/WindowManager.java': '''package android.view; public class WindowManager {
       public final WindowMetrics metrics=new WindowMetrics(); public boolean fail;
@@ -63,6 +65,7 @@ stubs.update({
     }''',
     'android/view/View.java': '''package android.view; import java.util.*; public class View {
       public int width=1080,height=2400; public boolean attached=true;
+      public WindowInsets insets=new WindowInsets(); public WindowInsets getRootWindowInsets(){return insets;}
       public interface OnLayoutChangeListener {void onLayoutChange(View v,int l,int t,int r,int b,int ol,int ot,int or,int ob);}
       public final List<OnLayoutChangeListener> listeners=new ArrayList<>();
       public void addOnLayoutChangeListener(OnLayoutChangeListener l){listeners.add(l);}
@@ -253,6 +256,24 @@ public class MultiWindowProbe {
     check("fold-portrait-request-retained",fold.requestedOrientation==1);
     check("wide-fold-is-not-multiwindow-guess",!AndroidWindowLayout.currentWindowState().isInMultiWindowMode);
     check("resume-and-super-config-preserved",next.superResumes==3&&a.superConfigs==2);
+    // Real top inset is a live part of the same atomic snapshot, including
+    // same-size pane moves and pre-30 display cutouts. No cached portrait gap.
+    check("window-local-top-inset-in-map",near(number(AndroidWindowLayout.currentWindowState().toMap(),"topInset"),24));
+    before=AndroidWindowLayout.currentWindowState().revision;
+    fold.manager.metrics.insets.top=0;
+    AndroidWindowLayout.WindowState noTop=AndroidWindowLayout.refreshWindowState(fold);
+    check("same-size-inset-change-revises-state",noTop.revision>before&&near(noTop.topInset,0));
+    check("unchanged-inset-does-not-revise-state",AndroidWindowLayout.refreshWindowState(fold).revision==noTop.revision);
+    fold.manager.metrics.insets.top=999999;
+    check("inset-bounded-to-window-height",near(AndroidWindowLayout.refreshWindowState(fold).topInset,fold.manager.metrics.bounds.h/2.625));
+    fold.manager.metrics.insets.top=-10;
+    check("negative-inset-clamped",near(AndroidWindowLayout.refreshWindowState(fold).topInset,0));
+    fold.destroy();Build.VERSION.SDK_INT=29;
+    LaunchActivity insetOld=activity(true,800,1200);insetOld.window.decor.insets.top=63;
+    insetOld.window.decor.insets.cutout=new android.view.DisplayCutout();insetOld.window.decor.insets.cutout.top=140;insetOld.create();
+    check("pre30-current-display-cutout-respected",near(AndroidWindowLayout.currentWindowState().topInset,140/2.625));
+    insetOld.window.decor.insets=null;
+    check("pre30-missing-insets-safe-until-apply",near(AndroidWindowLayout.refreshWindowState(insetOld).topInset,0));
     System.out.println("assertions="+assertions);
   }
 }

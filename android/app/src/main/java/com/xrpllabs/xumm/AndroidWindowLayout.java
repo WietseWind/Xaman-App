@@ -10,6 +10,8 @@ import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.view.Display;
 import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowMetrics;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -34,12 +36,14 @@ public final class AndroidWindowLayout {
         public final boolean isInMultiWindowMode;
         public final double width;
         public final double height;
+        public final double topInset;
         public final long revision;
 
-        private WindowState(boolean multiWindow, double width, double height, long revision) {
+        private WindowState(boolean multiWindow, double width, double height, double topInset, long revision) {
             this.isInMultiWindowMode = multiWindow;
             this.width = width;
             this.height = height;
+            this.topInset = topInset;
             this.revision = revision;
         }
 
@@ -48,6 +52,7 @@ public final class AndroidWindowLayout {
             result.put("isInMultiWindowMode", isInMultiWindowMode);
             result.put("width", width);
             result.put("height", height);
+            result.put("topInset", topInset);
             result.put("revision", (double) revision);
             return result;
         }
@@ -162,15 +167,25 @@ public final class AndroidWindowLayout {
             try {
                 int width;
                 int height;
+                int topInset;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    Rect bounds = activity.getWindowManager().getCurrentWindowMetrics().getBounds();
+                    WindowMetrics metrics = activity.getWindowManager().getCurrentWindowMetrics();
+                    Rect bounds = metrics.getBounds();
                     width = bounds.width();
                     height = bounds.height();
+                    topInset = metrics.getWindowInsets().getInsets(
+                            WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout()).top;
                 } else {
                     View decor = activity.getWindow() == null ? null : activity.getWindow().getDecorView();
                     if (decor == null || !decor.isAttachedToWindow()) return null;
                     width = decor.getWidth();
                     height = decor.getHeight();
+                    WindowInsets insets = decor.getRootWindowInsets();
+                    topInset = insets == null ? 0 : insets.getSystemWindowInsetTop();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && insets != null
+                            && insets.getDisplayCutout() != null) {
+                        topInset = Math.max(topInset, insets.getDisplayCutout().getSafeInsetTop());
+                    }
                 }
                 double density = activity.getResources().getDisplayMetrics().density;
                 if (width <= 0 || height <= 0 || !Double.isFinite(density) || density <= 0) return null;
@@ -178,10 +193,12 @@ public final class AndroidWindowLayout {
                         && activity.isInMultiWindowMode();
                 double widthDp = width / density;
                 double heightDp = height / density;
+                double topInsetDp = Math.max(0, Math.min(height, topInset)) / density;
                 WindowState previous = currentWindowState;
                 if (previous == null || previous.isInMultiWindowMode != multiWindow
-                        || previous.width != widthDp || previous.height != heightDp) {
-                    changed = new WindowState(multiWindow, widthDp, heightDp, ++windowStateRevision);
+                        || previous.width != widthDp || previous.height != heightDp
+                        || previous.topInset != topInsetDp) {
+                    changed = new WindowState(multiWindow, widthDp, heightDp, topInsetDp, ++windowStateRevision);
                     currentWindowState = changed;
                 }
                 result = currentWindowState;

@@ -53,6 +53,19 @@ def run_checked(command):
 
 
 stubs = {
+    'android/graphics/Insets.java': '''package android.graphics; public class Insets {
+      public int top; public Insets(int top){this.top=top;}
+    }''',
+    'android/view/DisplayCutout.java': '''package android.view; public class DisplayCutout {
+      public int top; public int getSafeInsetTop(){return top;}
+    }''',
+    'android/view/WindowInsets.java': '''package android.view; public class WindowInsets {
+      public int top=63; public DisplayCutout cutout;
+      public android.graphics.Insets getInsets(int types){return new android.graphics.Insets(top);}
+      public int getSystemWindowInsetTop(){return top;}
+      public DisplayCutout getDisplayCutout(){return cutout;}
+      public static class Type {public static int systemBars(){return 1;} public static int displayCutout(){return 2;}}
+    }''',
     'android/os/Build.java': '''package android.os; public class Build {
       public static String BRAND="fixture", MODEL="fixture";
       public static class VERSION { public static int SDK_INT=36; public static String RELEASE="16"; }
@@ -123,6 +136,7 @@ stubs.update({
     }''',
     'android/view/WindowMetrics.java': '''package android.view; public class WindowMetrics {
       public android.graphics.Rect getBounds(){return new android.graphics.Rect();}
+      public WindowInsets getWindowInsets(){return new WindowInsets();}
     }''',
     'android/view/WindowManager.java': '''package android.view; public class WindowManager {
       public WindowMetrics getCurrentWindowMetrics(){return new WindowMetrics();}
@@ -138,6 +152,7 @@ stubs.update({
     ''',
     'android/view/View.java': '''package android.view; public class View {
       public boolean isAttachedToWindow(){return true;}
+      public WindowInsets getRootWindowInsets(){return new WindowInsets();}
       public int left,top,right,bottom,layoutCalls,layoutRequests,paramUpdates,pivotResets,backgroundChanges;
       public android.graphics.drawable.Drawable background;
       public android.graphics.drawable.Drawable getBackground(){return background;}

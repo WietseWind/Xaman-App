@@ -249,6 +249,7 @@ public class LaunchActivity extends NavigationActivity {
                     navigationBars.right,
                     displayCutout.top
             );
+            AndroidWindowLayout.refreshWindowState(this);
             keepSplashInFront();
             applyNavigatorNavInset();
             return insets;
