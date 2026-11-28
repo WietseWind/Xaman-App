@@ -3,6 +3,7 @@
  */
 
 import React, { Component } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { Animated, Text } from 'react-native';
 
 import StyleService from '@services/StyleService';
@@ -78,7 +79,7 @@ class ConnectionIssueOverlay extends Component<Props, State> {
         return (
             <Animated.View style={[styles.container, { backgroundColor: interpolateColor }]}>
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
+                <AnimatedAndroidPaneCard style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
                     <Icon name={StyleService.isDarkMode() ? 'ImageCloudAlertLight' : 'ImageCloudAlert'} size={100} />
                     <Spacer size={30} />
 
@@ -93,7 +94,7 @@ class ConnectionIssueOverlay extends Component<Props, State> {
                     <Spacer size={30} />
 
                     <Button onPress={this.dismiss} label={Localize.t('global.close')} light />
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

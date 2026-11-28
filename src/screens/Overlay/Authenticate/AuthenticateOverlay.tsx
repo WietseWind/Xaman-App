@@ -40,6 +40,9 @@ import Localize from '@locale';
 // style
 import { AppStyles, AppSizes } from '@theme';
 import { sideBleedAbsolute } from '@common/helpers/sideSafeArea';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+import { AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
 
 import styles from './styles';
 
@@ -58,6 +61,10 @@ export interface State {
 /* Component ==================================================================== */
 class AuthenticateOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.Auth;
+
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
     private contentViewRef: React.RefObject<View>;
     private securePinInputRef: React.RefObject<SecurePinInput>;
 
@@ -261,12 +268,14 @@ class AuthenticateOverlay extends Component<Props, State> {
     renderPasscode = () => {
         const { coreSettings, isBiometricAvailable } = this.state;
         const { canAuthorizeBiometrics } = this.props;
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane === true;
 
         // const { biometricMethod } = coreSettings;
 
         return (
-            <View style={[AppStyles.centerContent]}>
-                <SecurePinInput
+            <View style={[AppStyles.centerContent, ...(fullPane ? [{ flex: 1 }] : [])]}>
+                <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                     ref={this.securePinInputRef}
                     onInputFinish={this.onPasscodeEntered}
                     length={6}
@@ -275,7 +284,8 @@ class AuthenticateOverlay extends Component<Props, State> {
                     onBiometryPress={this.requestBiometricAuthenticate}
                     pinPadStyle={styles.pinInputPadding}
                     virtualKeyboard
-                />
+                    paneLayout={paneLayout}
+                />}</AndroidPinEntrySlot>
 
                 {/* {isBiometricAvailable && canAuthorizeBiometrics && (
                     <View style={AppStyles.paddingTopSml}>
@@ -294,6 +304,8 @@ class AuthenticateOverlay extends Component<Props, State> {
     };
 
     render() {
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane === true;
         // const { offsetBottom } = this.state;
         const transform = [
             {
@@ -307,36 +319,46 @@ class AuthenticateOverlay extends Component<Props, State> {
         return (
             <BlurView
                 style={sideBleedAbsolute ? [styles.blurView, sideBleedAbsolute] : styles.blurView}
+                contentStyle={styles.blurView}
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >
                 <SafeAreaView
                     testID="lock-overlay"
-                    style={styles.safeAreaContainer}
+                    style={fullPane ? [styles.safeAreaContainer, { marginTop: context?.topInset ?? 0,
+                        marginBottom: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 8,
+                        paddingRight: 8 }] : styles.safeAreaContainer}
                     // VoiceOver stays on the passcode
                     accessibilityViewIsModal
                 >
-                    <Animated.View style={[{ transform, opacity: this.animatedOpacity }]}>
+                    <AnimatedAndroidPaneCard
+                        normalWidth={AppSizes.screen.width}
+                        normalFill
+                        style={[{ transform, opacity: this.animatedOpacity }]}
+                    >
                         <View style={[
                             AppStyles.flex1,
                             AppStyles.paddingHorizontal,
                             AppStyles.marginTop,
+                            ...(fullPane ? [{ flex: 0, marginTop: 0, paddingHorizontal: 8 }] : []),
                         ]}>
                             <Text style={[
                                 AppStyles.h4,
                                 AppStyles.marginTop,
                                 AppStyles.bold,
                                 AppStyles.textCenterAligned,
+                                ...(fullPane ? [{ marginTop: 0 }] : []),
                             ]}>{Localize.t('global.authenticate')}</Text>
                             <Text style={[AppStyles.subtext, AppStyles.textCenterAligned]}>
                                 {Localize.t('global.pleaseEnterYourPasscode')}
                             </Text>
                         </View>
-                        <View style={[AppStyles.row, AppStyles.paddingTopSml]}>{this.renderPasscode()}</View>
+                        <View style={[AppStyles.row, AppStyles.paddingTopSml,
+                            ...(fullPane ? [{ paddingTop: 4 }] : [])]}>{this.renderPasscode()}</View>
                         <View style={[AppStyles.row, AppStyles.flex1, AppStyles.centerContent]}>
                             <Button label={Localize.t('global.cancel')} roundedSmall contrast onPress={this.dismiss} />
                         </View>
-                    </Animated.View>
+                    </AnimatedAndroidPaneCard>
                 </SafeAreaView>
             </BlurView>
         );

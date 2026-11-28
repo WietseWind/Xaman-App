@@ -6,6 +6,7 @@ import { Navigation, Options, LayoutTabsChildren, EventSubscription } from 'reac
 
 import { GetBottomTabIconDp, GetBottomTabScale, HasBottomNotch } from '@common/helpers/device';
 import { GetPadLayout } from '@common/helpers/padLayout';
+import { getAndroidFoldLayout } from '@common/helpers/androidWindow';
 import { iosGlassTabBar } from '@common/helpers/glassTabBar';
 import { runSetRootOnce, setRootLatch } from '@common/helpers/setRootLatch';
 
@@ -131,8 +132,8 @@ const getDefaultOptions = (): Options => {
         layout: {
             backgroundColor: StyleService.value('$background'),
             componentBackgroundColor: StyleService.value('$background'),
-            // iPad with a window of its own: that window stays upright while the iPad turns, so the app turns
-            // with it (issue 553). Portrait everywhere else.
+            // Only resizable iPad windows turn with the device. Android folds
+            // request portrait too; the OS still controls a shared split window.
             orientation: GetPadLayout() ? ['all'] : ['portrait'],
             adjustResize: false,
         },
@@ -496,7 +497,12 @@ const Navigator = {
                                 // iPad with a window of its own: an overlay turns as the screens do. It has to say so
                                 // itself: an overlay that is shown before the default options are set (the
                                 // lock screen at the start) never gets them.
-                                ...(GetPadLayout() ? { orientation: ['all' as const] } : {}),
+                                ...(GetPadLayout()
+                                    ? { orientation: ['all' as const] } : {}),
+                                // An early Android fold Lock can precede default
+                                // options too. It must keep the same portrait request.
+                                ...(getAndroidFoldLayout()
+                                    ? { orientation: ['portrait' as const] } : {}),
                             },
                             // Disable automatic splash screen dismissal
                             animations: {

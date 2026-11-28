@@ -216,6 +216,21 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
     // iPad: the size the app is laid out for; width and height 0 when it has none (every phone)
     padLayout?: { width: number; height: number };
 
+    // New Android native builds resize the same mounted screen when its window changes.
+    supportsAndroidWindowLayout?: boolean;
+    supportsAndroidMultiWindowLayout?: boolean;
+    androidWindowState?: {
+        isInMultiWindowMode: boolean; width: number; height: number; topInset?: number; revision: number;
+    };
+    getAndroidWindowState?: () => Promise<{
+        isInMultiWindowMode: boolean; width: number; height: number; topInset?: number; revision: number;
+    } | null>;
+    // Only present after positive fold hardware detection. These are layout dp, not system insets.
+    androidFoldLayout?: { width: number; height: number };
+    // Ordinary Android cold/reloaded in multi-window: full portrait size, without fold identity.
+    androidWindowLayout?: { width: number; height: number };
+    setAndroidWindowColumnWidth?: (widthDp: number) => void;
+
     /**
      * Compact tab-bar item row and full bar height (item row + home indicator).
      */
@@ -460,6 +475,10 @@ interface VaultManagerModuleInterface extends NativeModule {
  * @interface
  */
 interface KeyboardModuleInterface extends NativeModule {
+    /** Current keyboard top in measureInWindow dp; absent/unready native builds return null. */
+    getWindowGeometry?: () => Promise<{ keyboardTop: number; visible?: boolean } | null>;
+    startWindowGeometryObservation?: () => void;
+    stopWindowGeometryObservation?: () => void;
     /**
      * Starts the keyboard visibility listener.
      *

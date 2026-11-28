@@ -1,9 +1,10 @@
 import StyleService from '@services/StyleService';
 
 import { AppFonts, AppSizes } from '@theme';
+import { StyleSheet } from 'react-native';
 
 /* Styles ==================================================================== */
-export default StyleService.create({
+const styles = StyleService.create({
     container: {
         justifyContent: 'center',
         alignItems: 'center',
@@ -88,3 +89,17 @@ export default StyleService.create({
         tintColor: '$contrast',
     },
 });
+
+/** Preserve the existing intrinsic widget height in an inert normal-mode scroll wrapper. */
+export const normalPinEntryHeight = () => {
+    const digits = StyleSheet.flatten(styles.digits);
+    const keyboard = StyleSheet.flatten(styles.keyboardWrap);
+    const line = StyleSheet.flatten(styles.line);
+    return Number(digits.height) + Number(keyboard.marginTop) +
+        4 * (Number(line.height) + 2 * Number(line.margin));
+};
+
+/** Match the original fixed-width keypad, including overflow beyond a padded caller. */
+export const normalPinEntryWidth = () => Number(StyleSheet.flatten(styles.keyboardWrap).width);
+
+export default styles;

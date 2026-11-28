@@ -77,7 +77,7 @@
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:resizeableActivity="false"
+        android:resizeableActivity="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
         
@@ -221,10 +221,17 @@
             </intent-filter>
         </receiver>
 
-        <!-- Android 16 (target 36): keep portrait lock and resizeableActivity=false honored on large screens; honored until API 37 -->
+        <!-- Retain the portrait compatibility request on Android 16. Split mode can still override it. -->
         <property
             android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
             android:value="true" />
+        <!-- Keep each Activity's own orientation request where the OS permits it. -->
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE"
+            android:value="false" />
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_DISPLAY_ORIENTATION_OVERRIDE"
+            android:value="false" />
 
     </application>
 </manifest>

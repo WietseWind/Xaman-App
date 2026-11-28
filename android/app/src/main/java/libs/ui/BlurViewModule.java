@@ -14,11 +14,10 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 
 import javax.annotation.Nonnull;
 
-import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 @SuppressWarnings("unused")
-class BlurViewModule extends ViewGroupManager<BlurView> {
+class BlurViewModule extends ViewGroupManager<AdaptiveBlurView> {
     private static final int defaultBlurAmount = 10;
 
     static final String REACT_CLASS = "BlurView";
@@ -31,8 +30,8 @@ class BlurViewModule extends ViewGroupManager<BlurView> {
 
 
     @Override
-    public @Nonnull BlurView createViewInstance(@Nonnull ThemedReactContext ctx) {
-        BlurView blurView = new BlurView(ctx);
+    public @Nonnull AdaptiveBlurView createViewInstance(@Nonnull ThemedReactContext ctx) {
+        AdaptiveBlurView blurView = new AdaptiveBlurView(ctx);
         Activity activity = ctx.getCurrentActivity();
 
         // no current activity (app in background or activity destroyed), return the view without blur
@@ -51,8 +50,13 @@ class BlurViewModule extends ViewGroupManager<BlurView> {
         return blurView;
     }
 
+    @ReactProp(name = "preserveReactChildLayout", defaultBoolean = false)
+    public void setPreserveReactChildLayout(AdaptiveBlurView view, boolean preserve) {
+        view.setPreserveReactChildLayout(preserve);
+    }
+
     @ReactProp(name = "blurAmount", defaultInt = defaultBlurAmount)
-    public void setBlurAmount(BlurView view, int amount) {
+    public void setBlurAmount(AdaptiveBlurView view, int amount) {
         long blurRadius = Math.round(amount * 0.8);
         if(blurRadius > 25){
             blurRadius = 25;
@@ -62,7 +66,7 @@ class BlurViewModule extends ViewGroupManager<BlurView> {
     }
 
     @ReactProp(name = "blurType")
-    public void setBlurType(BlurView view, String type) {
+    public void setBlurType(AdaptiveBlurView view, String type) {
         int color = 0;
         switch (type) {
             case "light":

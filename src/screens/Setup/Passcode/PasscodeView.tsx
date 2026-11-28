@@ -4,7 +4,7 @@
 
 import React, { Component } from 'react';
 
-import { SafeAreaView, View, Text, Image, LayoutAnimation, ImageBackground, Alert } from 'react-native';
+import { SafeAreaView, View, Text, Image, LayoutAnimation, ImageBackground, Alert, Platform } from 'react-native';
 
 import { CoreRepository } from '@store/repositories';
 import { CoreModel } from '@store/models';
@@ -16,6 +16,8 @@ import { Images } from '@common/helpers/images';
 import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 import { VibrateHapticFeedback, Toast } from '@common/helpers/interface';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+import { AndroidPinEntryScroll, AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
 
 import { PushNotificationsService, StyleService } from '@services';
 
@@ -51,6 +53,10 @@ export interface State {
 /* Component ==================================================================== */
 class PasscodeSetupView extends Component<Props, State> {
     static screenName = AppScreens.Setup.Passcode;
+
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
 
     private pinInputRef: React.RefObject<SecurePinInput>;
 
@@ -259,6 +265,8 @@ class PasscodeSetupView extends Component<Props, State> {
 
     renderFooter = () => {
         const { currentStep, passcode, passcodeConfirm, isLoading } = this.state;
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane === true;
 
         if (currentStep === Steps.EXPLANATION) {
             return (
@@ -267,7 +275,8 @@ class PasscodeSetupView extends Component<Props, State> {
         }
 
         return (
-            <Footer style={[AppStyles.row, AppStyles.paddingBottom]}>
+            <Footer style={[AppStyles.row, AppStyles.paddingBottom,
+                ...(fullPane ? [{ paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0 }] : [])]}>
                 <View style={[AppStyles.flex1, AppStyles.paddingRightSml]}>
                     <Button
                         light
@@ -297,10 +306,13 @@ class PasscodeSetupView extends Component<Props, State> {
 
     renderContent() {
         const { currentStep, coreSettings } = this.state;
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane === true;
 
         if (currentStep === Steps.EXPLANATION) {
             return (
-                <View testID="pin-code-explanation-view" style={[AppStyles.flex8, AppStyles.paddingSml]}>
+                <View testID="pin-code-explanation-view" style={[AppStyles.flex8, AppStyles.paddingSml,
+                    ...(fullPane ? [{ flex: 0, flexGrow: 1, flexShrink: 0, flexBasis: 'auto' as const }] : [])]}>
                     <View style={[AppStyles.centerAligned]}>
                         <Text style={[AppStyles.h5, AppStyles.strong]}>
                             {Localize.t('setupPasscode.setupAPasscode')}
@@ -322,11 +334,14 @@ class PasscodeSetupView extends Component<Props, State> {
                 AppStyles.paddingTop,
                 AppStyles.marginTop,
                 AppStyles.paddingHorizontal,
+                ...(fullPane ? [{ paddingTop: 4, marginTop: 0, paddingHorizontal: 8,
+                    flexGrow: 1, flexShrink: 0 }] : []),
             ]}>
                 <Text style={[
                     AppStyles.p,
                     AppStyles.textCenterAligned,
                     AppStyles.marginBottomSml,
+                    ...(fullPane ? [{ marginBottom: 4 }] : []),
                 ]}>
                     {currentStep === Steps.ENTER_PASSCODE
                         ? Localize.t('setupPasscode.setPasscode')
@@ -339,12 +354,13 @@ class PasscodeSetupView extends Component<Props, State> {
                         AppStyles.textCenterAligned,
                         AppStyles.marginTopNegativeSml,
                         AppStyles.colorPrimary,
+                        ...(fullPane ? [{ marginTop: 0 }] : []),
                     ]}>
                         {Localize.t('setupPasscode.warnNeedPasscode')}
                     </Text>
                 }
                 {/* <Spacer size={11} /> */}
-                <SecurePinInput
+                <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                     // autoFocus
                     ref={this.pinInputRef}
                     virtualKeyboard
@@ -356,12 +372,15 @@ class PasscodeSetupView extends Component<Props, State> {
                     supportBiometric={false}
                     enableHapticFeedback={coreSettings.hapticFeedback}
                     onInputFinish={this.onPasscodeEnter}
-                />
+                    paneLayout={paneLayout}
+                />}</AndroidPinEntrySlot>
             </View>
         );
     }
 
     render() {
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane === true;
         return (
             <ImageBackground
                 testID="setup-passcode-screen"
@@ -370,29 +389,39 @@ class PasscodeSetupView extends Component<Props, State> {
                 style={onboardingStyles.backgroundImageStyle}
                 imageStyle={onboardingStyles.backgroundImageStyle}
             >
-                <SafeAreaView style={[AppStyles.flex2, AppStyles.centerAligned, AppStyles.padding, AppStyles.androidSystemBarTop]}>
-                    <Image
-                        style={onboardingStyles.logo}
+                <AndroidPinEntryScroll>
+                    <SafeAreaView style={[AppStyles.flex2, AppStyles.centerAligned, AppStyles.padding,
+                    AppStyles.androidSystemBarTop, ...(fullPane ? [{ flex: 0,
+                        paddingTop: (context?.topInset ?? 0) + 8, paddingBottom: 8,
+                        paddingLeft: 8, paddingRight: 8 }] : [])]}>
+                        <Image
+                        style={fullPane ? [onboardingStyles.logo, { width: 96, height: 28 }] : onboardingStyles.logo}
                         source={StyleService.getImageIfLightModeIfDarkMode('XamanLogo', 'XamanLogoLight')}
                     />
-                </SafeAreaView>
-                {this.renderContent()}
-                <SafeAreaView style={[
+                    </SafeAreaView>
+                    {this.renderContent()}
+                    <SafeAreaView style={[
                     AppStyles.flex2,
                     AppStyles.marginTop,
+                    ...(fullPane ? [{ flex: 0, marginTop: 0, paddingTop: 8, paddingBottom: 8,
+                        paddingLeft: 8, paddingRight: 8 }] : []),
                 ]}>
-                    <SafeAreaView style={[
+                        <SafeAreaView style={[
                         onboardingStyles.container,
+                        ...(fullPane ? [{ flex: 0 }] : []),
                     ]}>
-                        <Footer style={[
+                            <Footer style={[
                             AppStyles.paddingBottom,
                             AppStyles.paddingTopNone,
                             AppStyles.androidSystemBarBottom,
+                            ...(fullPane ? [{ paddingTop: 0, paddingBottom: 0, paddingLeft: 0,
+                                paddingRight: 0 }] : []),
                         ]}>
-                            {this.renderFooter()}
-                        </Footer>
+                                {this.renderFooter()}
+                            </Footer>
+                        </SafeAreaView>
                     </SafeAreaView>
-                </SafeAreaView>
+                </AndroidPinEntryScroll>
             </ImageBackground>
         );
     }

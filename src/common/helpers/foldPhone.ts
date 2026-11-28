@@ -1,6 +1,6 @@
 /**
- * The state of a fold phone, for JavaScript code that wants to know it or follow it. Today the iPhone Duo is the
- * only phone that tells one; nothing here is special to it.
+ * The state of a fold phone, for JavaScript code that wants to know it or follow it. The iPhone Duo and the Android
+ * fold adapter supply their window and app rectangles; nothing here depends on a device name.
  *
  *     import { FoldPhone } from '@common/helpers/foldPhone';
  *
@@ -8,7 +8,7 @@
  *     const listener = FoldPhone.addListener((state) => { … }); // each change: opened, closed, split view, turned
  *     listener.remove();
  *
- * The values come from the native view of the screen wrapper (common/helpers/sideSafeArea.tsx), so they are known
+ * The values come from the screen wrappers (sideSafeArea.tsx and androidWindowLayout.tsx), so they are known
  * from the first screen on and change while the app runs. On every other phone the mode is 'none' and no listener
  * is ever called.
  *

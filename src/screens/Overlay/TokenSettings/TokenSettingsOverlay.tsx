@@ -5,6 +5,7 @@ import { get, has } from 'lodash';
 import BigNumber from 'bignumber.js';
 
 import React, { Component } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { Platform, Alert, Animated, InteractionManager, Text, View, GestureResponderEvent } from 'react-native';
 import { OptionsModalPresentationStyle, OptionsModalTransitionStyle } from 'react-native-navigation';
 
@@ -875,7 +876,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                     ]}
                 >
                     <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                    <Animated.View style={[
+                    <AnimatedAndroidPaneCard scrollable={false} style={[
                         styles.visibleContent,
                     ]}>
                         <View style={styles.headerContainer}>
@@ -1123,7 +1124,7 @@ class TokenSettingsOverlay extends Component<Props, State> {
                                 />
                             </View>
                         </View>
-                    </Animated.View>
+                    </AnimatedAndroidPaneCard>
                 </Animated.View>
             </View>
         );

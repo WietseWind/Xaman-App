@@ -51,6 +51,8 @@ afterEach(() => {
     Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOS });
     delete NativeModules.DeviceUtilsModule.isPadDevice;
     delete NativeModules.DeviceUtilsModule.padLayout;
+    delete NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout;
+    delete NativeModules.DeviceUtilsModule.androidFoldLayout;
     jest.restoreAllMocks();
 });
 
@@ -79,5 +81,30 @@ describe('an iPad that gives the app a window of its own (iPadOS 27)', () => {
         device(true, { width: 430, height: 932 });
         expect(defaultOrientation()).toEqual(['all']);
         expect(overlayLayout(AppScreens.Overlay.SwitchAccount)).toEqual({ ...PORTRAIT_ONLY, orientation: ['all'] });
+    });
+});
+
+describe('Android orientation compatibility', () => {
+    it('keeps ordinary phones and old native builds in portrait', () => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        expect(defaultOrientation()).toEqual(['portrait']);
+        expect(overlayLayout(AppScreens.Overlay.Lock)).toEqual(PORTRAIT_ONLY);
+        delete NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout;
+        NativeModules.DeviceUtilsModule.androidFoldLayout = { width: 337, height: 841 };
+        expect(defaultOrientation()).toEqual(['portrait']);
+    });
+
+    it('keeps fold screens and early overlays in portrait', () => {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+        NativeModules.DeviceUtilsModule.supportsAndroidWindowLayout = true;
+        NativeModules.DeviceUtilsModule.androidFoldLayout = { width: 337, height: 841 };
+        // The startup Lock has no defaults yet. Password and Vault overlays
+        // must preserve that policy after the default screen options are set.
+        expect(overlayLayout(AppScreens.Overlay.Lock)).toEqual({ ...PORTRAIT_ONLY, orientation: ['portrait'] });
+        expect(defaultOrientation()).toEqual(['portrait']);
+        [AppScreens.Overlay.PassphraseAuthentication, AppScreens.Overlay.Vault].forEach((overlay) => {
+            expect(overlayLayout(overlay)).toEqual({ ...PORTRAIT_ONLY, orientation: ['portrait'] });
+        });
     });
 });

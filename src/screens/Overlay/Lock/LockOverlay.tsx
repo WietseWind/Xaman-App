@@ -31,15 +31,24 @@ import Localize from '@locale';
 
 import { AppStyles } from '@theme';
 import { sideBleedAbsolute } from '@common/helpers/sideSafeArea';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+import { AndroidPinEntryScroll, AndroidPinEntrySlot } from '@components/General/SecurePinInput/AndroidPinEntry';
 
 import styles from './styles';
 
 /* types ==================================================================== */
 import { Props, State } from './types';
 
+const NORMAL_BODY_STYLE = { alignItems: 'center' as const, justifyContent: 'center' as const };
+const PANE_BODY_STYLE = { alignItems: 'center' as const };
+
 /* Component ==================================================================== */
 class LockOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.Lock;
+
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
 
     private pendingBiometricAuthentication?: boolean;
     private securePinInputRef: React.RefObject<SecurePinInput>;
@@ -184,45 +193,59 @@ class LockOverlay extends Component<Props, State> {
 
     render() {
         const { error, coreSettings, isBiometricAvailable } = this.state;
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane === true;
+        const topInset = context?.topInset ?? 0;
         return (
             <BlurView
                 style={sideBleedAbsolute ? [styles.blurView, sideBleedAbsolute] : styles.blurView}
+                contentStyle={styles.blurView}
                 blurAmount={Platform.OS === 'ios' ? 15 : 20}
                 blurType={StyleService.isDarkMode() ? 'dark' : 'light'}
             >
                 <SafeAreaView
                     testID="lock-overlay"
-                    style={styles.container}
+                    style={fullPane ? [styles.container, { paddingTop: topInset + 8, paddingBottom: 8,
+                        paddingHorizontal: 8, marginBottom: 0 }] : styles.container}
                     // VoiceOver can't move to the app behind the lock screen
                     accessibilityViewIsModal
                 >
-                    <View style={[AppStyles.centerAligned, AppStyles.paddingSml]}>
-                        <Image style={styles.logo} source={StyleService.getImage('XamanLogo')} />
-                    </View>
-                    <View style={[AppStyles.centerAligned, AppStyles.paddingSml]}>
-                        <Text style={[AppStyles.p, AppStyles.bold]}>
-                            {Localize.t('global.pleaseEnterYourPasscode')}
-                        </Text>
-                    </View>
+                    <AndroidPinEntryScroll normalContentStyle={NORMAL_BODY_STYLE} paneContentStyle={PANE_BODY_STYLE}>
+                        <View style={[AppStyles.centerAligned, AppStyles.paddingSml,
+                        ...(fullPane ? [{ paddingTop: 4, paddingBottom: 4, paddingLeft: 4, paddingRight: 4 }] : [])]}>
+                            <Image style={fullPane ? [styles.logo, { width: 96, height: 28 }] : styles.logo}
+                            source={StyleService.getImage('XamanLogo')} />
+                        </View>
+                        <View style={[AppStyles.centerAligned, AppStyles.paddingSml,
+                        ...(fullPane ? [{ paddingTop: 4, paddingBottom: 4, paddingLeft: 4, paddingRight: 4,
+                            alignSelf: 'stretch' as const }] : [])]}>
+                            <Text style={[AppStyles.p, AppStyles.bold,
+                            ...(fullPane ? [AppStyles.textCenterAligned] : [])]}>
+                                {Localize.t('global.pleaseEnterYourPasscode')}
+                            </Text>
+                        </View>
 
-                    <View
+                        <View
                         style={[
                             AppStyles.flex5,
                             AppStyles.flexEnd,
+                            ...(fullPane ? [{ alignSelf: 'stretch' as const, flexGrow: 1, flexShrink: 0 }] : []),
                         ]}
                     >
-                        <Text
+                            <Text
                             style={[
                                 AppStyles.p,
                                 AppStyles.bold,
                                 AppStyles.textCenterAligned,
                                 AppStyles.colorRed,
                                 AppStyles.paddingSml,
+                                ...(fullPane ? [{ paddingTop: 4, paddingBottom: 4, paddingLeft: 4,
+                                    paddingRight: 4 }] : []),
                             ]}
                         >
-                            {error}
-                        </Text>
-                        <SecurePinInput
+                                {error}
+                            </Text>
+                            <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                             ref={this.securePinInputRef}
                             virtualKeyboard
                             supportBiometric={isBiometricAvailable}
@@ -230,8 +253,10 @@ class LockOverlay extends Component<Props, State> {
                             onInputFinish={this.onPasscodeEntered}
                             enableHapticFeedback={coreSettings.hapticFeedback}
                             length={6}
-                        />
-                    </View>
+                            paneLayout={paneLayout}
+                        />}</AndroidPinEntrySlot>
+                        </View>
+                    </AndroidPinEntryScroll>
                 </SafeAreaView>
             </BlurView>
         );

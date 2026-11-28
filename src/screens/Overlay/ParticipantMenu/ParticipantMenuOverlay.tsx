@@ -145,6 +145,7 @@ class ParticipantMenuOverlay extends Component<Props, State> {
 
         return (
             <ActionPanel
+                scrollableContent
                 ref={this.actionPanelRef}
                 height={AppSizes.moderateScale(275) + (!contactExist ? AppSizes.scale(60) : 0)}
                 onSlideDown={this.onClose}

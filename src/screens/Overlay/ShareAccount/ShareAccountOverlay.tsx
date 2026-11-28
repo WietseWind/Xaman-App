@@ -95,6 +95,7 @@ class ShareAccountOverlay extends Component<Props> {
 
         return (
             <ActionPanel
+                scrollableContent
                 ref={this.actionPanelRef}
                 testID="share-account-overlay"
                 height={AppSizes.moderateScale(570)}

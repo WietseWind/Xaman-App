@@ -10,7 +10,9 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.PixelUtil;
 
 import java.io.BufferedReader;
@@ -25,11 +27,15 @@ import java.util.TimeZone;
 
 import com.xrpllabs.xumm.LaunchActivity;
 import com.xrpllabs.xumm.SafeAreaInsets;
+import com.xrpllabs.xumm.AndroidWindowLayout;
+import com.xrpllabs.xumm.AndroidWindowLayoutMath;
 
 @ReactModule(name = DeviceUtilsModule.NAME)
 public class DeviceUtilsModule extends ReactContextBaseJavaModule {
 
     protected final ReactApplicationContext reactContext;
+    private volatile boolean windowStateInvalidated;
+    private final AndroidWindowLayout.WindowStateListener windowStateListener = this::emitAndroidWindowState;
 
     public DeviceUtilsModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -42,6 +48,50 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        UiThreadUtil.runOnUiThread(() -> {
+            if (!windowStateInvalidated) {
+                AndroidWindowLayout.addWindowStateListener(windowStateListener);
+            }
+        });
+    }
+
+    @Override
+    public void invalidate() {
+        windowStateInvalidated = true;
+        UiThreadUtil.runOnUiThread(() -> AndroidWindowLayout.removeWindowStateListener(windowStateListener));
+        super.invalidate();
+    }
+
+    @ReactMethod
+    public void addListener(String eventName) {
+        // NativeEventEmitter subscription bookkeeping is owned by JS.
+    }
+
+    @ReactMethod
+    public void removeListeners(double count) {
+        // NativeEventEmitter subscription bookkeeping is owned by JS.
+    }
+
+    @ReactMethod
+    public void getAndroidWindowState(Promise promise) {
+        UiThreadUtil.runOnUiThread(() -> {
+            AndroidWindowLayout.WindowState state = windowStateInvalidated
+                    ? null : AndroidWindowLayout.refreshWindowState(getCurrentActivity());
+            promise.resolve(state == null ? null : Arguments.makeNativeMap(state.toMap()));
+        });
+    }
+
+    private void emitAndroidWindowState(AndroidWindowLayout.WindowState state) {
+        if (!windowStateInvalidated && reactContext.hasActiveReactInstance()
+                && AndroidWindowLayout.currentWindowState() == state) {
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("androidWindowStateChanged", Arguments.makeNativeMap(state.toMap()));
+        }
     }
 
     /**
@@ -68,6 +118,14 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void hideLaunchSplash() {
         LaunchActivity.hideLaunchSplashIfPresent();
+    }
+
+    @ReactMethod
+    public void setAndroidWindowColumnWidth(double widthDp) {
+        if (!AndroidWindowLayoutMath.validColumnWidth(widthDp)) {
+            return;
+        }
+        UiThreadUtil.runOnUiThread(() -> LaunchActivity.setAndroidWindowColumnWidth(widthDp));
     }
 
     @ReactMethod
@@ -133,6 +191,27 @@ public class DeviceUtilsModule extends ReactContextBaseJavaModule {
         constants.put("model", Build.MODEL);
         constants.put("layoutInsets", layoutInsets);
         constants.put("tabBarMetrics", tabBarMetrics);
+        constants.put("supportsAndroidWindowLayout", true);
+        constants.put("supportsAndroidMultiWindowLayout", true);
+        AndroidWindowLayout.WindowState windowState = AndroidWindowLayout.currentWindowState();
+        if (windowState != null) {
+            constants.put("androidWindowState", windowState.toMap());
+        }
+
+        AndroidWindowLayoutMath.PhoneBox phoneBox = AndroidWindowLayout.phoneBox(reactContext);
+        if (phoneBox != null) {
+            final Map<String, Object> foldLayout = new HashMap<>();
+            foldLayout.put("width", phoneBox.widthDp);
+            foldLayout.put("height", phoneBox.heightDp);
+            constants.put("androidFoldLayout", foldLayout);
+        }
+        AndroidWindowLayoutMath.PhoneBox windowBox = AndroidWindowLayout.windowBox(reactContext);
+        if (windowBox != null) {
+            Map<String, Object> windowLayout = new HashMap<>();
+            windowLayout.put("width", windowBox.widthDp);
+            windowLayout.put("height", windowBox.heightDp);
+            constants.put("androidWindowLayout", windowLayout);
+        }
 
         return constants;
     }

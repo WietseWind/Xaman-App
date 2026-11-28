@@ -3,6 +3,7 @@
  */
 
 import React, { Component } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { View, Animated, Text, StyleSheet, BackHandler, NativeEventSubscription } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
@@ -226,7 +227,7 @@ class AlertOverlay extends Component<Props, State> {
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View style={[styles.visibleContent, { transform, opacity: this.animatedOpacity }]}>
+                <AnimatedAndroidPaneCard style={[styles.visibleContent, { transform, opacity: this.animatedOpacity }]}>
                     {this.renderIcon()}
                     {this.renderTitle()}
                     <Spacer size={20} />
@@ -240,7 +241,7 @@ class AlertOverlay extends Component<Props, State> {
                     ]}>
                         {this.renderButtons()}
                     </View>
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

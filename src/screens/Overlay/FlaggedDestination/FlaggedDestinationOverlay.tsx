@@ -4,6 +4,7 @@
 
 import toUpper from 'lodash/toUpper';
 import React, { Component, createRef } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { View, Animated, Text, KeyboardEvent, Platform, BackHandler, NativeEventSubscription } from 'react-native';
 
 import { AppScreens } from '@common/constants';
@@ -11,6 +12,8 @@ import { AppScreens } from '@common/constants';
 import { Navigator } from '@common/helpers/navigator';
 import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import Keyboard from '@common/helpers/keyboard';
+import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import BackendService from '@services/BackendService';
 
@@ -36,6 +39,8 @@ export interface State {
 /* Component ==================================================================== */
 class FlaggedDestinationOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.FlaggedDestination;
+    static contextType = AndroidWindowSurroundContext;
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
 
     private animatedColor: Animated.Value;
     private animatedOpacity: Animated.Value;
@@ -47,6 +52,21 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
     private setListenerTimeout: NodeJS.Timeout | undefined;
 
     private mounted = false;
+    private adaptiveOffset = 0;
+    private appliedBottomOffset = 0;
+    private offsetListener?: string;
+    private adaptiveKeyboard = new AdaptiveOverlayKeyboard({
+        getContext: () => this.context,
+        getInput: () => this.textInputView.current,
+        getOffset: () => this.adaptiveOffset,
+        getAppliedOffset: () => this.appliedBottomOffset / 2,
+        onHide: () => { this.keyboardShow = false; },
+        setOffset: (offset) => {
+            this.adaptiveOffset = offset;
+            // A centered bottom margin moves the card by half its value.
+            Animated.spring(this.bottomOffset, { toValue: offset * 2, useNativeDriver: false }).start();
+        },
+    });
 
     static options() {
         return {
@@ -74,6 +94,10 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
 
     componentDidMount() {
         this.mounted = true;
+        if (Platform.OS === 'android') {
+            this.offsetListener = this.bottomOffset.addListener(({ value }) => { this.appliedBottomOffset = value; });
+        }
+        this.adaptiveKeyboard.mount();
 
         // prevent from hardware back in android devices
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
@@ -91,8 +115,14 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
         }, 500);
     }
 
+    componentDidUpdate() {
+        this.adaptiveKeyboard.contextChanged();
+    }
+
     componentWillUnmount() {
         this.mounted = false;
+        this.adaptiveKeyboard.unmount();
+        if (this.offsetListener) this.bottomOffset.removeListener(this.offsetListener);
 
         if (this.backHandler) {
             this.backHandler.remove();
@@ -105,12 +135,18 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
     }
 
     onKeyboardShow = (e: KeyboardEvent) => {
+        if (this.adaptiveKeyboard.show((isCurrent) => this.onLegacyKeyboardShow(e, isCurrent))) return;
+        this.onLegacyKeyboardShow(e);
+    };
+
+    private onLegacyKeyboardShow = (e: KeyboardEvent, isCurrent?: () => boolean) => {
         if (this.keyboardShow) return;
 
         this.keyboardShow = true;
 
         if (this.textInputView && this.textInputView.current) {
             this.textInputView.current.measure((x, y, width, height, pageX, pageY) => {
+                if (isCurrent && !isCurrent()) return;
                 if (!pageY) return;
 
                 const bottomView = AppSizes.screen.height - height - pageY;
@@ -123,6 +159,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                 }
 
                 if (offset >= 0) {
+                    this.adaptiveOffset = offset / 2;
                     Animated.spring(this.bottomOffset, {
                         toValue: offset,
                         useNativeDriver: false,
@@ -133,9 +170,14 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
     };
 
     onKeyboardHide = () => {
+        if (this.adaptiveKeyboard.hide()) {
+            this.keyboardShow = false;
+            return;
+        }
         if (!this.keyboardShow) return;
 
         this.keyboardShow = false;
+        this.adaptiveOffset = 0;
 
         Animated.spring(this.bottomOffset, {
             toValue: 0,
@@ -144,6 +186,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
     };
 
     dismiss = (callback?: () => void) => {
+        this.adaptiveKeyboard.cancel();
         Animated.parallel([
             Animated.timing(this.animatedOpacity, {
                 toValue: 0,
@@ -217,7 +260,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View
+                <AnimatedAndroidPaneCard
                     style={[styles.visibleContent, { opacity: this.animatedOpacity, marginBottom: this.bottomOffset }]}
                 >
                     <View style={[AppStyles.centerAligned]}>
@@ -243,7 +286,8 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                         <Text style={styles.subTitle}>{Localize.t('send.toContinueProvideReasonInYourOwnWords')}</Text>
                     </View>
 
-                    <View collapsable={false} ref={this.textInputView} style={[AppStyles.paddingVertical]}>
+                    <View collapsable={false} ref={this.textInputView} style={[AppStyles.paddingVertical]}
+                        {...{ onFocus: this.adaptiveKeyboard.focus }}>
                         <TextInput
                             multiline
                             blurOnSubmit
@@ -272,7 +316,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                             />
                         </View>
                     </View>
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

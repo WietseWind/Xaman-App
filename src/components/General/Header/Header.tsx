@@ -3,6 +3,7 @@ import { Platform, Text, TextStyle, View, ViewStyle, ImageStyle } from 'react-na
 
 import { Images } from '@common/helpers/images';
 import { IconAccessibilityLabel } from '@common/helpers/accessibility';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import { TouchableDebounce } from '@components/General/TouchableDebounce';
 import { Icon } from '@components/General/Icon';
@@ -159,6 +160,10 @@ const Children = ({
 class Header extends PureComponent<Props> {
     static Height = AppSizes.heightPercentageToDP(9);
 
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
+
     declare readonly props: Props & Required<Pick<Props, keyof typeof Header.defaultProps>>;
 
     static defaultProps: Partial<Props> = {
@@ -183,13 +188,19 @@ class Header extends PureComponent<Props> {
     render() {
         const { leftComponent, centerComponent, rightComponent, backgroundColor, placement, containerStyle } =
             this.props;
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane;
+        const liveTop = context?.topInset;
+        const topInset = typeof liveTop === 'number' && Number.isFinite(liveTop) && liveTop >= 0 &&
+            liveTop <= (context?.height ?? 0) ? liveTop : AppSizes.statusBarHeight;
+        const sizeStyle = fullPane ? { height: 56, marginTop: topInset } : { height: Header.Height };
 
         return (
             <View
                 style={[
                     styles.container,
                     backgroundColor ? { backgroundColor } : {},
-                    { height: Header.Height },
+                    sizeStyle,
                     containerStyle,
                 ]}
             >

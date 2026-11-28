@@ -4,14 +4,17 @@ import com.reactnativenavigation.NavigationActivity;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.Gravity;
 
 import androidx.annotation.Nullable;
 import com.reactnativenavigation.react.CommandListenerAdapter;
+import com.reactnativenavigation.views.bottomtabs.BottomTabsContainer;
 
 import libs.security.authentication.Biometric.BiometricModule;
 
@@ -39,16 +42,27 @@ import java.lang.ref.WeakReference;
 public class LaunchActivity extends NavigationActivity {
 
     private static WeakReference<LaunchActivity> currentLaunch;
+    private static double desiredWindowColumnWidthDp = Double.NaN;
 
     private View splashView;
     private boolean splashHidden = false;
     private int lastWindowBackground = Color.TRANSPARENT;
+    private WeakReference<View> columnTabs;
+    private boolean tabsColumnConstrained;
+    private int originalTabsLeftMargin;
+    private int originalTabsGravity;
+    private final AndroidBottomTabLayout bottomTabLayout = new AndroidBottomTabLayout();
+    private View windowStateDecor;
+    private final View.OnLayoutChangeListener windowStateLayoutListener =
+            (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+                    AndroidWindowLayout.refreshWindowState(this);
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         // DeviceUtilsModule.getConstants() snapshots layout insets once, and
         // NavigationActivity starts React Native inside super.onCreate. Seed
         // before that or some phones keep a 0 top inset for the whole session.
+        AndroidWindowLayout.initialize(this);
         seedInsetsFromResources();
         super.onCreate(savedInstanceState);
 
@@ -62,12 +76,18 @@ public class LaunchActivity extends NavigationActivity {
         }
 
         currentLaunch = new WeakReference<>(this);
+        if (AndroidWindowLayout.isFoldCapable(this)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
         // initialise required modules
         BiometricModule.initialise();
 
         // set splash screen
         setSplashLayout();
+        windowStateDecor = getWindow().getDecorView();
+        windowStateDecor.addOnLayoutChangeListener(windowStateLayoutListener);
+        AndroidWindowLayout.refreshWindowState(this);
     }
 
     @Override
@@ -78,10 +98,39 @@ public class LaunchActivity extends NavigationActivity {
 
     @Override
     protected void onDestroy() {
+        if (windowStateDecor != null) {
+            windowStateDecor.removeOnLayoutChangeListener(windowStateLayoutListener);
+            windowStateDecor = null;
+        }
+        AndroidWindowLayout.clearActivity(this);
         if (currentLaunch != null && currentLaunch.get() == this) {
             currentLaunch.clear();
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AndroidWindowLayout.refreshWindowState(this);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        AndroidWindowLayout.refreshWindowState(this);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        AndroidWindowLayout.refreshWindowState(this);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration configuration) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, configuration);
+        AndroidWindowLayout.refreshWindowState(this);
     }
 
     public static void hideLaunchSplashIfPresent() {
@@ -90,6 +139,19 @@ public class LaunchActivity extends NavigationActivity {
             return;
         }
         activity.runOnUiThread(activity::hideLaunchSplash);
+    }
+
+    /** Called on the UI thread by DeviceUtils; retain the width across Activity recreation. */
+    public static void setAndroidWindowColumnWidth(double widthDp) {
+        if (!AndroidWindowLayoutMath.validColumnWidth(widthDp)) {
+            return;
+        }
+        desiredWindowColumnWidthDp = widthDp;
+        LaunchActivity activity = currentLaunch != null ? currentLaunch.get() : null;
+        if (activity != null && !activity.isFinishing()) {
+            activity.applyAndroidWindowColumn();
+            activity.applyAndroidBottomTabRow();
+        }
     }
 
     /**
@@ -187,6 +249,7 @@ public class LaunchActivity extends NavigationActivity {
                     navigationBars.right,
                     displayCutout.top
             );
+            AndroidWindowLayout.refreshWindowState(this);
             keepSplashInFront();
             applyNavigatorNavInset();
             return insets;
@@ -258,6 +321,85 @@ public class LaunchActivity extends NavigationActivity {
             lastWindowBackground = background;
             getWindow().setBackgroundDrawable(new ColorDrawable(background));
         }
+        applyAndroidWindowColumn();
+        applyAndroidBottomTabRow();
+    }
+
+    private void applyAndroidWindowColumn() {
+        View tabs = findNativeBottomTabsContainer();
+        if (tabs == null || !(tabs.getParent() instanceof View)
+                || !(tabs.getLayoutParams() instanceof CoordinatorLayout.LayoutParams)) {
+            return;
+        }
+        int parentWidth = ((View) tabs.getParent()).getWidth();
+        int columnWidth = AndroidWindowLayoutMath.columnWidthPx(
+                desiredWindowColumnWidthDp, getResources().getDisplayMetrics().density, parentWidth);
+        if (columnWidth == AndroidWindowLayoutMath.NOT_READY) {
+            return;
+        }
+        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) tabs.getLayoutParams();
+        if (columnTabs == null || columnTabs.get() != tabs) {
+            columnTabs = null;
+            tabsColumnConstrained = false;
+        }
+
+        int width;
+        int leftMargin;
+        int gravity;
+        if (columnWidth == AndroidWindowLayoutMath.FULL_WIDTH) {
+            // Leave ordinary full-width tab bars entirely under RNN's existing layout policy.
+            if (!tabsColumnConstrained) {
+                return;
+            }
+            width = ViewGroup.LayoutParams.MATCH_PARENT;
+            leftMargin = originalTabsLeftMargin;
+            gravity = originalTabsGravity;
+            tabsColumnConstrained = false;
+        } else {
+            if (!tabsColumnConstrained) {
+                originalTabsLeftMargin = params.leftMargin;
+                originalTabsGravity = params.gravity;
+                columnTabs = new WeakReference<>(tabs);
+            }
+            tabsColumnConstrained = true;
+            width = columnWidth;
+            leftMargin = parentWidth - columnWidth;
+            gravity = (originalTabsGravity & ~Gravity.HORIZONTAL_GRAVITY_MASK
+                    & ~Gravity.RELATIVE_LAYOUT_DIRECTION) | Gravity.RIGHT;
+        }
+        if (params.width != width || params.leftMargin != leftMargin || params.gravity != gravity) {
+            params.width = width;
+            params.leftMargin = leftMargin;
+            params.gravity = gravity;
+            tabs.setLayoutParams(params);
+        }
+    }
+
+    private void applyAndroidBottomTabRow() {
+        View tabs = findNativeBottomTabsContainer();
+        if (!(tabs instanceof BottomTabsContainer) || !(tabs.getParent() instanceof View)) {
+            return;
+        }
+        int parentWidth = ((View) tabs.getParent()).getWidth();
+        int width = AndroidWindowLayoutMath.columnWidthPx(
+                desiredWindowColumnWidthDp, getResources().getDisplayMetrics().density, parentWidth);
+        if (width != AndroidWindowLayoutMath.NOT_READY) {
+            bottomTabLayout.apply((BottomTabsContainer) tabs,
+                    width == AndroidWindowLayoutMath.FULL_WIDTH ? parentWidth : width);
+        }
+    }
+
+    private View findNativeBottomTabsContainer() {
+        int id = getResources().getIdentifier("bottomTabs", "id", getPackageName());
+        View tabs = id == 0 ? null : findViewById(id);
+        ViewParent parent = tabs == null ? null : tabs.getParent();
+        while (parent instanceof View && !(parent instanceof CoordinatorLayout)) {
+            if (parent instanceof BottomTabsContainer) {
+                return (View) parent;
+            }
+            parent = ((View) parent).getParent();
+        }
+        return null;
     }
 
     private int overlayNavInsetPx(View content) {
@@ -399,7 +541,8 @@ public class LaunchActivity extends NavigationActivity {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        final Configuration override = new Configuration(newBase.getResources().getConfiguration());
+        // Keep display/window fields undefined so Resources follows live configuration changes.
+        final Configuration override = new Configuration();
         // disable font scaling
         override.fontScale = 1.0f;
         // A workaround for AndroidKeyStore bug in RTL languages

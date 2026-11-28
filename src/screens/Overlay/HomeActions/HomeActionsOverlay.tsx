@@ -155,6 +155,7 @@ class HomeActionsOverlay extends Component<Props, State> {
 
         return (
             <ActionPanel
+                scrollableContent
                 ref={this.actionPanel}
                 testID="home-actions-overlay"
                 height={AppSizes.moderateScale(430)}

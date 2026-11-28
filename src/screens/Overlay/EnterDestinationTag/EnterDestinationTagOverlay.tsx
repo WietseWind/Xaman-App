@@ -9,6 +9,8 @@ import { StringTypeDetector, StringDecoder, StringType } from 'xumm-string-decod
 import { Navigator } from '@common/helpers/navigator';
 import { Images } from '@common/helpers/images';
 import Keyboard from '@common/helpers/keyboard';
+import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import { StringTypeCheck } from '@common/utils/string';
 
@@ -41,12 +43,30 @@ export interface State {
 /* Component ==================================================================== */
 class EnterDestinationTagOverlay extends Component<Props, State> {
     static screenName = AppScreens.Overlay.EnterDestinationTag;
+    static contextType = AndroidWindowSurroundContext;
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
 
     private textInputViewRef: React.RefObject<View>;
     private actionPanelRef: React.RefObject<ActionPanel>;
 
     private setListenerTimeout?: ReturnType<typeof setTimeout>;
     private keyboardShow: boolean;
+    private adaptiveOffset = 0;
+    private adaptiveKeyboard = new AdaptiveOverlayKeyboard({
+        getContext: () => this.context,
+        getInput: () => this.textInputViewRef.current,
+        getOffset: () => this.adaptiveOffset,
+        getAppliedOffset: () => this.actionPanelRef.current?.offsetFromRest ?? 0,
+        onHide: () => { this.keyboardShow = false; },
+        setOffset: (offset, isCurrent) => {
+            this.adaptiveOffset = offset;
+            this.setState({ offsetBottom: offset }, () => {
+                setTimeout(() => {
+                    if (isCurrent()) this.actionPanelRef.current?.snapTo(offset > 0 ? 2 : 1);
+                }, 10);
+            });
+        },
+    });
 
     static options() {
         return {
@@ -75,6 +95,7 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.adaptiveKeyboard.mount();
         // add listeners with delay as a bug in ios 14
         this.setListenerTimeout = setTimeout(() => {
             Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
@@ -82,7 +103,12 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
         }, 500);
     }
 
+    componentDidUpdate() {
+        this.adaptiveKeyboard.contextChanged();
+    }
+
     componentWillUnmount() {
+        this.adaptiveKeyboard.unmount();
         if (this.setListenerTimeout) clearTimeout(this.setListenerTimeout);
 
         Keyboard.removeListener('keyboardWillShow', this.onKeyboardShow);
@@ -90,11 +116,17 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
     }
 
     onKeyboardShow = (e: KeyboardEvent) => {
+        if (this.adaptiveKeyboard.show((isCurrent) => this.onLegacyKeyboardShow(e, isCurrent))) return;
+        this.onLegacyKeyboardShow(e);
+    };
+
+    private onLegacyKeyboardShow = (e: KeyboardEvent, isCurrent?: () => boolean) => {
         if (this.keyboardShow) return;
 
         this.keyboardShow = true;
 
         this.textInputViewRef?.current?.measure((x, y, width, height, pageX, pageY) => {
+            if (isCurrent && !isCurrent()) return;
             if (!pageY) return;
 
             const bottomView = AppSizes.screen.height - height - pageY;
@@ -107,8 +139,10 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
             }
 
             if (offset >= 0) {
+                this.adaptiveOffset = offset;
                 this.setState({ offsetBottom: offset }, () => {
                     setTimeout(() => {
+                        if (isCurrent && !isCurrent()) return;
                         if (this.actionPanelRef?.current) {
                             this.actionPanelRef?.current.snapTo(2);
                         }
@@ -119,9 +153,14 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
     };
 
     onKeyboardHide = () => {
+        if (this.adaptiveKeyboard.hide()) {
+            this.keyboardShow = false;
+            return;
+        }
         if (!this.keyboardShow) return;
 
         this.keyboardShow = false;
+        this.adaptiveOffset = 0;
 
         this.setState({ offsetBottom: 0 }, () => {
             setTimeout(() => {
@@ -133,6 +172,7 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
     };
 
     onClose = () => {
+        this.adaptiveKeyboard.cancel();
         const { onClose } = this.props;
 
         if (typeof onClose === 'function') {
@@ -143,6 +183,7 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
     };
 
     onFinish = async () => {
+        this.adaptiveKeyboard.cancel();
         const { destinationTag } = this.state;
         const { onFinish } = this.props;
 
@@ -174,6 +215,7 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
     };
 
     slideDownPanel = () => {
+        this.adaptiveKeyboard.cancel();
         if (this.actionPanelRef?.current) {
             this.actionPanelRef.current.slideDown();
         }
@@ -185,10 +227,12 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
 
         return (
             <ActionPanel
+                scrollableContent
                 ref={this.actionPanelRef}
                 height={AppSizes.moderateScale(460)}
                 offset={offsetBottom}
                 onSlideDown={this.onClose}
+                onCloseRequest={this.adaptiveKeyboard.cancel}
                 extraBottomInset
             >
                 <View style={[AppStyles.row, AppStyles.centerAligned, AppStyles.paddingBottomSml]}>
@@ -232,6 +276,7 @@ class EnterDestinationTagOverlay extends Component<Props, State> {
 
                 <View
                     ref={this.textInputViewRef}
+                    {...{ onFocus: this.adaptiveKeyboard.focus }}
                     style={[
                         AppStyles.paddingHorizontalSml,
                         AppStyles.paddingVertical,
