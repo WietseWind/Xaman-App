@@ -251,7 +251,8 @@ class ChangePasscodeView extends Component<Props, State> {
                         <Text style={[AppStyles.p, AppStyles.textCenterAligned]}>{stepDescription}</Text>
                     </View>
                     <View style={[AppStyles.flex8, AppStyles.paddingSml, AppStyles.centerAligned,
-                    ...(fullPane ? [{ padding: 8, flexGrow: 1, flexShrink: 0 }] : [])]}>
+                    ...(fullPane ? [{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8, paddingRight: 8,
+                        flexGrow: 1, flexShrink: 0 }] : [])]}>
                         <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
                         ref={this.pinInput}
                         virtualKeyboard

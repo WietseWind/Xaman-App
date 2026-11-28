@@ -298,7 +298,7 @@ class PasscodeMethod extends Component<InternalProps, State> {
             >
                 <AndroidPaneCard ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
                     style={[styles.visibleContent, { marginBottom: offsetBottom },
-                        ...(fullPane ? [{ padding: 8 }] : [])]}>
+                        ...(fullPane ? [{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8, paddingRight: 8 }] : [])]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
                             <Text numberOfLines={1} style={[AppStyles.p, AppStyles.bold]}>

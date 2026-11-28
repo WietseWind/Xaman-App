@@ -326,7 +326,8 @@ class AuthenticateOverlay extends Component<Props, State> {
                 <SafeAreaView
                     testID="lock-overlay"
                     style={fullPane ? [styles.safeAreaContainer, { marginTop: context?.topInset ?? 0,
-                        marginBottom: 0, padding: 8 }] : styles.safeAreaContainer}
+                        marginBottom: 0, paddingTop: 8, paddingBottom: 8, paddingLeft: 8,
+                        paddingRight: 8 }] : styles.safeAreaContainer}
                     // VoiceOver stays on the passcode
                     accessibilityViewIsModal
                 >

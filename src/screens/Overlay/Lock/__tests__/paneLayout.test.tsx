@@ -16,18 +16,22 @@ jest.mock('@services', () => ({
 jest.mock('@common/helpers/navigator', () => ({ Navigator: {} }));
 jest.mock('@common/helpers/interface', () => ({ Prompt: jest.fn(), VibrateHapticFeedback: jest.fn() }));
 jest.mock('@common/libs/biometric', () => ({ BiometricErrors: {} }));
-jest.mock('@common/constants', () => ({ AppScreens: { Overlay: { Lock: 'Lock' } } }));
 jest.mock('@components/General', () => ({ BlurView: 'BlurView', SecurePinInput: 'SecurePinInput' }));
 jest.mock('@locale', () => ({ __esModule: true, default: { t: (key: string) => key } }));
 jest.mock('@common/helpers/sideSafeArea', () => ({ sideBleedAbsolute: undefined }));
-jest.mock('@theme', () => ({ AppStyles: {
-    centerAligned: { alignItems: 'center' }, paddingSml: { padding: 20 }, flex5: { flex: 5 },
-    flexEnd: { justifyContent: 'flex-end' }, textCenterAligned: { textAlign: 'center' },
-}, AppSizes: { scale: (size: number) => size, paddingSml: 20, safeAreaBottomInset: 24 } }));
 
 const originalOS = Platform.OS;
 const pane = { left: 0, width: 407, height: 387, columnWidth: 407, scale: 1, fullPane: true,
     topInset: 28 };
+const paddingEdges = (style: any) => {
+    const flat = StyleSheet.flatten(style);
+    return {
+        top: flat.paddingTop ?? flat.paddingVertical ?? flat.padding ?? 0,
+        bottom: flat.paddingBottom ?? flat.paddingVertical ?? flat.padding ?? 0,
+        left: flat.paddingLeft ?? flat.paddingHorizontal ?? flat.padding ?? 0,
+        right: flat.paddingRight ?? flat.paddingHorizontal ?? flat.padding ?? 0,
+    };
+};
 
 afterEach(() => { Platform.OS = originalOS; mockCapable = true; });
 
@@ -44,11 +48,17 @@ it('uses the real pane inset and compact header while preserving PIN callbacks a
     expect(root.props.accessibilityViewIsModal).toBe(true);
     expect(StyleSheet.flatten(root.props.style)).toMatchObject({ paddingTop: 36, paddingBottom: 8,
         paddingHorizontal: 8, marginBottom: 0 });
-    expect(StyleSheet.flatten(tree.root.findByType(Image).props.style)).toMatchObject({ width: 96, height: 28 });
+    const logo = tree.root.findByType(Image);
+    expect(StyleSheet.flatten(logo.props.style)).toMatchObject({ width: 96, height: 28 });
+    expect(paddingEdges(logo.parent?.props.style)).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
+    const prompt = tree.root.findAllByType(Text).find((node) =>
+        node.props.children === 'global.pleaseEnterYourPasscode');
+    expect(paddingEdges(prompt?.parent?.props.style)).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
     expect(tree.root.findByType(ScrollView).props.scrollEnabled).toBe(true);
     const errorText = tree.root.findAllByType(Text).find((node) => node.props.children === error);
     expect(errorText).toBeDefined();
     expect(errorText?.props.numberOfLines).toBeUndefined();
+    expect(paddingEdges(errorText?.props.style)).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
     const pin = tree.root.findByType('SecurePinInput');
     expect(pin.props.onInputFinish).toBe(overlay.onPasscodeEntered);
     expect(pin.props.onBiometryPress).toBe(overlay.requestBiometricAuthenticate);

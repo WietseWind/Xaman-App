@@ -212,12 +212,13 @@ class LockOverlay extends Component<Props, State> {
                 >
                     <AndroidPinEntryScroll normalContentStyle={NORMAL_BODY_STYLE} paneContentStyle={PANE_BODY_STYLE}>
                         <View style={[AppStyles.centerAligned, AppStyles.paddingSml,
-                        ...(fullPane ? [{ padding: 4 }] : [])]}>
+                        ...(fullPane ? [{ paddingTop: 4, paddingBottom: 4, paddingLeft: 4, paddingRight: 4 }] : [])]}>
                             <Image style={fullPane ? [styles.logo, { width: 96, height: 28 }] : styles.logo}
                             source={StyleService.getImage('XamanLogo')} />
                         </View>
                         <View style={[AppStyles.centerAligned, AppStyles.paddingSml,
-                        ...(fullPane ? [{ padding: 4, alignSelf: 'stretch' as const }] : [])]}>
+                        ...(fullPane ? [{ paddingTop: 4, paddingBottom: 4, paddingLeft: 4, paddingRight: 4,
+                            alignSelf: 'stretch' as const }] : [])]}>
                             <Text style={[AppStyles.p, AppStyles.bold,
                             ...(fullPane ? [AppStyles.textCenterAligned] : [])]}>
                                 {Localize.t('global.pleaseEnterYourPasscode')}
@@ -238,7 +239,8 @@ class LockOverlay extends Component<Props, State> {
                                 AppStyles.textCenterAligned,
                                 AppStyles.colorRed,
                                 AppStyles.paddingSml,
-                                ...(fullPane ? [{ padding: 4 }] : []),
+                                ...(fullPane ? [{ paddingTop: 4, paddingBottom: 4, paddingLeft: 4,
+                                    paddingRight: 4 }] : []),
                             ]}
                         >
                                 {error}

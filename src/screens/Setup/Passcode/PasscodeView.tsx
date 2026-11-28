@@ -276,7 +276,7 @@ class PasscodeSetupView extends Component<Props, State> {
 
         return (
             <Footer style={[AppStyles.row, AppStyles.paddingBottom,
-                ...(fullPane ? [{ padding: 0 }] : [])]}>
+                ...(fullPane ? [{ paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0 }] : [])]}>
                 <View style={[AppStyles.flex1, AppStyles.paddingRightSml]}>
                     <Button
                         light
@@ -391,8 +391,9 @@ class PasscodeSetupView extends Component<Props, State> {
             >
                 <AndroidPinEntryScroll>
                     <SafeAreaView style={[AppStyles.flex2, AppStyles.centerAligned, AppStyles.padding,
-                    AppStyles.androidSystemBarTop, ...(fullPane ? [{ flex: 0, padding: 8,
-                        paddingTop: (context?.topInset ?? 0) + 8 }] : [])]}>
+                    AppStyles.androidSystemBarTop, ...(fullPane ? [{ flex: 0,
+                        paddingTop: (context?.topInset ?? 0) + 8, paddingBottom: 8,
+                        paddingLeft: 8, paddingRight: 8 }] : [])]}>
                         <Image
                         style={fullPane ? [onboardingStyles.logo, { width: 96, height: 28 }] : onboardingStyles.logo}
                         source={StyleService.getImageIfLightModeIfDarkMode('XamanLogo', 'XamanLogoLight')}
@@ -402,7 +403,8 @@ class PasscodeSetupView extends Component<Props, State> {
                     <SafeAreaView style={[
                     AppStyles.flex2,
                     AppStyles.marginTop,
-                    ...(fullPane ? [{ flex: 0, marginTop: 0, padding: 8 }] : []),
+                    ...(fullPane ? [{ flex: 0, marginTop: 0, paddingTop: 8, paddingBottom: 8,
+                        paddingLeft: 8, paddingRight: 8 }] : []),
                 ]}>
                         <SafeAreaView style={[
                         onboardingStyles.container,
@@ -412,7 +414,8 @@ class PasscodeSetupView extends Component<Props, State> {
                             AppStyles.paddingBottom,
                             AppStyles.paddingTopNone,
                             AppStyles.androidSystemBarBottom,
-                            ...(fullPane ? [{ padding: 0 }] : []),
+                            ...(fullPane ? [{ paddingTop: 0, paddingBottom: 0, paddingLeft: 0,
+                                paddingRight: 0 }] : []),
                         ]}>
                                 {this.renderFooter()}
                             </Footer>
