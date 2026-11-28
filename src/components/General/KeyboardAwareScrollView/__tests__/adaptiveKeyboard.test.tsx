@@ -6,6 +6,8 @@ const mockDensity = 2.625;
 let mockFocusedInput: any;
 let mockGeometry: jest.Mock;
 const mockAnimations: any[] = [];
+let mockDeferAnimation = false;
+const mockAnimationCompletions: Array<() => void> = [];
 const mockNativeHandlers: Record<string, () => void> = {};
 const mockRemoved = jest.fn();
 const mockWatchGeometry = jest.fn();
@@ -34,7 +36,8 @@ jest.mock('react-native', () => ({
             start: (callback?: () => void) => {
                 value.value = options.toValue;
                 mockAnimations.push(options);
-                callback?.();
+                if (callback && mockDeferAnimation) mockAnimationCompletions.push(callback);
+                else callback?.();
             },
         }),
     },
@@ -54,7 +57,8 @@ jest.mock('../styles', () => ({ __esModule: true, default: { contentContainer: {
 // and measurements below are isolated native API fixtures, not device proof.
 const fixture = ({ initialHeight = 411, height = initialHeight, scale = 0.5, inputY = 250, inputHeight = 40,
     scrollY = 20, scrollHeight = 800, scrollPosition = 25, extraOffset = 8,
-    context = true, os = 'android', calculateExtraOffset, defer = false, onKeyboardShow, onKeyboardHide,
+    context = true, fullPane = false, os = 'android', calculateExtraOffset, defer = false,
+    onKeyboardShow, onKeyboardHide,
     enabled = true }: any = {}) => {
     // eslint-disable-next-line global-require
     const { Platform } = require('react-native');
@@ -63,7 +67,8 @@ const fixture = ({ initialHeight = 411, height = initialHeight, scale = 0.5, inp
     const view: any = new KeyboardAwareScrollView({
         children: null, enabled, extraOffset, calculateExtraOffset, onKeyboardShow, onKeyboardHide,
     });
-    view.context = context ? { left: 0, width: 400, height: 800, columnWidth: 337, scale } : undefined;
+    view.context = context ? { left: 0, width: 400, height: 800, columnWidth: 337, scale,
+        ...(fullPane ? { fullPane: true } : {}) } : undefined;
     let pendingMeasure: any;
     const inputMeasure = jest.fn((callback) => callback(0, inputY, 100, inputHeight));
     mockFocusedInput = { nativeTag: 1, measureInWindow: inputMeasure };
@@ -92,6 +97,8 @@ beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
     mockAnimations.length = 0;
+    mockDeferAnimation = false;
+    mockAnimationCompletions.length = 0;
     Object.keys(mockNativeHandlers).forEach((name) => delete mockNativeHandlers[name]);
     mockWatchGeometry.mockImplementation((callback) => {
         mockGeometryChanged = callback;
@@ -104,6 +111,81 @@ beforeEach(() => {
 afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
 describe('adaptive Android keyboard coordinates', () => {
+    it.each([0, 25])('uses content coordinates despite an intervening native scroll from %s', async (initialY) => {
+        mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
+        const { view, input, scrollTo } = fixture({ scale: 1, scrollY: 52, scrollHeight: 210,
+            inputY: 102, inputHeight: 60, scrollPosition: initialY, extraOffset: 0 });
+        view.context.fullPane = true;
+        const inner = { nativeTag: 9 };
+        view.scrollViewRef.current.getInnerViewRef = () => inner;
+        input.measureLayout = jest.fn((relative, success) => {
+            expect(relative).toBe(inner);
+            success(0, initialY + 50, 100, 60);
+        });
+        mockDeferAnimation = true;
+        await view.scrollToFocusedTextInput();
+        // RN Android can scroll a focused descendant during the padding animation.
+        view.handleOnScroll({ nativeEvent: { contentOffset: { x: 0, y: initialY + 9 / mockDensity } } });
+        mockAnimationCompletions.splice(0).forEach((complete) => complete());
+        jest.runOnlyPendingTimers();
+        expect(input.measureLayout).toHaveBeenCalledTimes(1);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: initialY + 45, animated: true });
+        const finalTop = 52 + initialY + 50 - scrollTo.mock.calls[0][0].y;
+        expect(finalTop - 2).toBeGreaterThanOrEqual(52);
+        expect(finalTop + 60 + 2).toBeLessThanOrEqual(122);
+        view.componentWillUnmount();
+    });
+
+    it('ignores a late content-coordinate reply after the keyboard hides', async () => {
+        const { view, input, scrollTo } = fixture({ scale: 1 });
+        view.context.fullPane = true;
+        view.scrollViewRef.current.getInnerViewRef = () => ({ nativeTag: 9 });
+        let complete: (...values: number[]) => void = () => undefined;
+        input.measureLayout = (_relative: any, success: typeof complete) => { complete = success; };
+        const pending = view.scrollToFocusedTextInput();
+        await flushMicrotasks();
+        view.onNativeKeyboardHide();
+        complete(0, 250, 100, 40);
+        await pending;
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).not.toHaveBeenCalled();
+        view.componentWillUnmount();
+    });
+
+    it('replaces a canceled pane reply when the same-scale screen returns to normal mode', async () => {
+        const { view, input, scrollTo } = fixture({ scale: 1, fullPane: true, extraOffset: 0 });
+        view.scrollViewRef.current.getInnerViewRef = () => ({ nativeTag: 9 });
+        let complete: (...values: number[]) => void = () => undefined;
+        input.measureLayout = jest.fn((_relative: any, success: typeof complete) => { complete = success; });
+        const pending = view.scrollToFocusedTextInput();
+        await flushMicrotasks();
+        view.context.fullPane = false;
+        view.componentDidUpdate();
+        complete(0, 250, 100, 40);
+        await pending;
+        await flushMicrotasks();
+        jest.runOnlyPendingTimers();
+        expect(input.measureLayout).toHaveBeenCalledTimes(1);
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 124, animated: true });
+        view.componentWillUnmount();
+    });
+
+    it('retains normal adaptive scrolling without querying pane content coordinates', async () => {
+        mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
+        const { view, input, scrollTo } = fixture({ scale: 1, scrollY: 52, scrollHeight: 210,
+            inputY: 102, inputHeight: 60, scrollPosition: 0, extraOffset: 0 });
+        view.scrollViewRef.current.getInnerViewRef = () => ({ nativeTag: 9 });
+        input.measureLayout = jest.fn();
+        mockDeferAnimation = true;
+        await view.scrollToFocusedTextInput();
+        view.handleOnScroll({ nativeEvent: { contentOffset: { x: 0, y: 9 / mockDensity } } });
+        mockAnimationCompletions.splice(0).forEach((complete) => complete());
+        jest.runOnlyPendingTimers();
+        expect(input.measureLayout).not.toHaveBeenCalled();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 60 + 9 / mockDensity, animated: true });
+        view.componentWillUnmount();
+    });
+
     it.each([
         { width: 300, height: 210, x: 0, y: 0 },
         { width: 407, height: 210, x: 0, y: 30 },

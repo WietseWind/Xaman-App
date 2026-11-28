@@ -40,6 +40,9 @@ interface State {
 
 const DEFAULT_EXTRA_OFFSET = 20;
 const FULL_PANE_CONTENT_STYLE = { flexGrow: 1, flexShrink: 0, flexBasis: 'auto' as const };
+type ContentScrollView = ScrollView & {
+    getInnerViewRef?: () => Parameters<TextInput['measureLayout']>[0] | null;
+};
 /* Component ==================================================================== */
 class KeyboardAwareScrollView extends PureComponent<Props, State> {
     static contextType = AndroidWindowSurroundContext;
@@ -51,13 +54,14 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private keyboardShowNotified = false;
     private adaptiveKeyboardSession = false;
     private previousAdaptiveScale?: number;
+    private previousFullPane = false;
     private previousObserveKeyboard: boolean;
     private adaptiveLife = 0;
     private adaptiveQuery = 0;
     private adaptiveScroll = 0;
     private adaptiveLayout = 0;
     private adaptivePaddingTarget = 0;
-    private adaptiveKey?: { input: any; top: number; scale: number; layout: number };
+    private adaptiveKey?: { input: any; top: number; scale: number; layout: number; fullPane: boolean };
     private nativeKeyboardSubscriptions: Array<{ remove: () => void }> = [];
     private keyboardListenersBound = false;
     private releaseGeometryWatch?: () => void;
@@ -97,8 +101,10 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     }
 
     componentDidMount() {
+        const { context } = this;
         this.mounted = true;
         this.previousAdaptiveScale = this.adaptiveScale();
+        this.previousFullPane = context?.fullPane === true;
         this.bindKeyboardListeners();
     }
 
@@ -125,6 +131,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     componentDidUpdate() {
+        const { context } = this;
         const { observeKeyboard } = this.props;
         const wasObserving = this.previousObserveKeyboard;
         this.previousObserveKeyboard = observeKeyboard !== false;
@@ -142,7 +149,8 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             this.onNativeKeyboardShow();
         }
         const scale = this.adaptiveScale();
-        const changed = this.previousAdaptiveScale !== scale;
+        const fullPane = context?.fullPane === true;
+        const changed = this.previousAdaptiveScale !== scale || this.previousFullPane !== fullPane;
         if (changed) {
             if (scale === undefined) this.stopGeometryWatch();
             this.adaptiveLife += 1;
@@ -154,6 +162,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             // the adaptive context alone does not mean the keyboard closed.
         }
         this.previousAdaptiveScale = scale;
+        this.previousFullPane = fullPane;
         const { enabled } = this.props;
         if (changed && scale !== undefined && this.keyboardVisible && enabled) {
             this.scrollToAdaptiveFocusedInput(scale);
@@ -185,6 +194,19 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             });
         });
     };
+
+    private measureInputContent = (input: Pick<TextInput, 'measureLayout'>, scrollView: ScrollView):
+        Promise<{ y: number; height: number } | undefined> => new Promise((resolve) => {
+        try {
+            const inner = (scrollView as ContentScrollView).getInnerViewRef?.() ?? scrollView.getInnerViewNode?.();
+            if (inner == null || typeof input.measureLayout !== 'function') { resolve(undefined); return; }
+            input.measureLayout(inner, (_x, y, _width, height) => {
+                resolve(Number.isFinite(y) && Number.isFinite(height) && height > 0 ? { y, height } : undefined);
+            }, () => resolve(undefined));
+        } catch {
+            resolve(undefined);
+        }
+    });
 
     private adaptiveScale = (): number | undefined => {
         const { context } = this;
@@ -276,6 +298,9 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const input = TextInput.State.currentlyFocusedInput();
         const scrollView = this.scrollViewRef.current;
         if (!input || !scrollView?.getScrollResponder()) return true;
+        const { context } = this;
+        const fullPane = context?.fullPane === true;
+        const paneMeasuredOffset = fullPane ? this.scrollPosition.y : 0;
         if (this.keyboardVisible && !this.releaseGeometryWatch) {
             this.releaseGeometryWatch = () => undefined;
             const release = watchAndroidKeyboardGeometry(this.onWindowGeometryChange);
@@ -287,8 +312,12 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         this.adaptiveKeyboardSession = true;
         const life = this.adaptiveLife;
         const queryId = ++this.adaptiveQuery;
-        const isActive = () => this.mounted && this.keyboardVisible && life === this.adaptiveLife &&
-            input === TextInput.State.currentlyFocusedInput() && scale === this.adaptiveScale();
+        const isActive = () => {
+            const { context: activeContext } = this;
+            return this.mounted && this.keyboardVisible && life === this.adaptiveLife &&
+                input === TextInput.State.currentlyFocusedInput() && scale === this.adaptiveScale() &&
+                fullPane === (activeContext?.fullPane === true);
+        };
         let geometry;
         try {
             geometry = await query();
@@ -310,11 +339,11 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         if (!enabled) return true;
         const previous = this.adaptiveKey;
         if (previous?.input === input && previous.top === top && previous.scale === scale &&
-            previous.layout === this.adaptiveLayout) return true;
+            previous.layout === this.adaptiveLayout && previous.fullPane === fullPane) return true;
 
         // Reserve the verified geometry before measuring. A duplicate standard
         // or custom event must not cancel the first request's pending animation.
-        const key = { input, top, scale, layout: this.adaptiveLayout };
+        const key = { input, top, scale, layout: this.adaptiveLayout, fullPane };
         this.adaptiveKey = key;
         const scrollId = ++this.adaptiveScroll;
         const isCurrent = () => isActive() && scrollId === this.adaptiveScroll && this.adaptiveKey === key;
@@ -340,18 +369,25 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             this.adaptiveKey = undefined;
             return true;
         }
+        const content = fullPane ? await this.measureInputContent(input, scrollView) : undefined;
+        if (!isCurrent() || scrollView !== this.scrollViewRef.current) return true;
+        if (content) inputHeight = content.height;
         const { extraOffset, calculateExtraOffset } = this.props;
         const { offset } = this.state;
         const inputExtra = typeof calculateExtraOffset === 'function' ? calculateExtraOffset(input, inputHeight) : 0;
         const bottom = inputY + (inputHeight + inputExtra) * scale;
         // A bounded pane card may end above the keyboard. Its own scroll
         // viewport, rather than the farther IME top, is the visible boundary.
-        const { context } = this;
-        const visibleBottom = context?.fullPane ? Math.min(top, scrollY + scrollHeight * scale) : top;
+        const visibleBottom = fullPane ? Math.min(top, scrollY + scrollHeight * scale) : top;
+        const visibleHeight = (visibleBottom - scrollY) / scale;
+        // Leave room for a field's surrounding border when the pane can fit it.
+        const clearance = content ? Math.min(DEFAULT_EXTRA_OFFSET,
+            Math.max(0, (visibleHeight - inputHeight - inputExtra) / 2)) : 0;
         const gap = bottom - visibleBottom;
         const hasOverlap = gap > 0;
-        const inputAboveViewport = !!context?.fullPane && inputY < scrollY;
-        const needsScroll = hasOverlap || inputAboveViewport;
+        const inputAboveViewport = fullPane && inputY < scrollY + clearance * scale;
+        const needsScroll = hasOverlap || inputAboveViewport ||
+            (!!content && bottom > visibleBottom - clearance * scale);
         // Native origins are physical, while input height and scroll offsets
         // are logical. Convert the overlap once; keep caller offsets logical.
         const focusedPadding = (gap + 2 * inputHeight * scale + scrollY) / scale + extraOffset;
@@ -373,9 +409,16 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             if (!needsScroll || !isCurrent()) return;
             this.scrollToTimeout = setTimeout(() => {
                 if (!isCurrent()) return;
-                const currentY = this.scrollPosition.y;
+                const currentY = fullPane ? paneMeasuredOffset : this.scrollPosition.y;
                 let targetY = currentY + gap / scale + DEFAULT_EXTRA_OFFSET;
-                if (context?.fullPane) {
+                if (content) {
+                    // Content coordinates do not change when Android or the
+                    // user scrolls during the padding animation. Never add a
+                    // stale window-relative delta to a newer scroll offset.
+                    const alignedTop = content.y - clearance;
+                    const aboveKeyboard = content.y + inputHeight + inputExtra - visibleHeight + DEFAULT_EXTRA_OFFSET;
+                    targetY = Math.max(0, inputAboveViewport ? alignedTop : Math.min(aboveKeyboard, alignedTop));
+                } else if (fullPane) {
                     // Clearance is optional when the visible pane only just
                     // fits the input. Never move its start above this viewport;
                     // also recover focus that was already clipped at the top.
