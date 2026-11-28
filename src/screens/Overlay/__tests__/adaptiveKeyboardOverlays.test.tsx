@@ -2,6 +2,10 @@ import { NativeModules, Platform } from 'react-native';
 import EnterDestinationTagOverlay from '../EnterDestinationTag/EnterDestinationTagOverlay';
 import FlaggedDestinationOverlay from '../FlaggedDestination/FlaggedDestinationOverlay';
 
+jest.mock('@components/General/AndroidPaneCard/AndroidPaneCard', () => ({
+    __esModule: true, default: 'View', AnimatedAndroidPaneCard: 'AnimatedView',
+}));
+
 const mockSprings: any[] = [];
 const mockNativeHandlers: Record<string, () => void> = {};
 const mockDismiss = jest.fn().mockResolvedValue(undefined);

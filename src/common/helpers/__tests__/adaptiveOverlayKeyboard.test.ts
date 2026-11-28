@@ -28,6 +28,7 @@ const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve()
 const fixture = ({ scale = 0.5, baseBottom = 320, offset = 0, context = true,
     deferMeasure = false, deferMovement = false,
     getRestingBottom = undefined as undefined | ((height: number, scale: number) => Promise<number | undefined>),
+    onHide = undefined as undefined | (() => void),
 } = {}) => {
     let currentContext: any = context ? { left: 200, width: 200, height: 400, columnWidth: 400, scale } : undefined;
     let currentOffset = offset;
@@ -50,7 +51,7 @@ const fixture = ({ scale = 0.5, baseBottom = 320, offset = 0, context = true,
     });
     const controller = new AdaptiveOverlayKeyboard({
         getContext: () => currentContext, getInput: () => currentInput,
-        getOffset: () => currentOffset, getAppliedOffset: () => appliedOffset, getRestingBottom, setOffset,
+        getOffset: () => currentOffset, getAppliedOffset: () => appliedOffset, getRestingBottom, setOffset, onHide,
     });
     controller.mount();
     return { controller, input, setOffset, guards, offset: () => currentOffset,
@@ -71,6 +72,41 @@ beforeEach(() => {
 });
 
 describe('adaptive overlay keyboard', () => {
+    it('hands the active IME lease to a pane and resumes translation after leaving', async () => {
+        const onHide = jest.fn();
+        const f = fixture({ onHide });
+        f.controller.show();
+        await flush();
+        expect(f.offset()).toBe(140);
+        f.context({ left: 0, width: 600, height: 411, columnWidth: 600, scale: 1, fullPane: true });
+        f.controller.contextChanged();
+        expect(mockGeometryRelease).toHaveBeenCalledTimes(1);
+        expect(onHide).toHaveBeenCalledTimes(1);
+        expect(f.offset()).toBe(0);
+        f.controller.show();
+        await flush();
+        expect(mockQuery).toHaveBeenCalledTimes(1);
+        f.context({ left: 200, width: 200, height: 400, columnWidth: 400, scale: 0.5 });
+        f.controller.contextChanged();
+        await flush();
+        expect(mockQuery).toHaveBeenCalledTimes(2);
+        expect(f.offset()).toBe(140);
+        f.controller.unmount();
+        expect(mockGeometryRelease).toHaveBeenCalledTimes(2);
+    });
+    it('hands full-pane placement to the bounded card and drops any old whole-card offset', async () => {
+        const f = fixture({ offset: 230 });
+        f.context({ left: 0, width: 600, height: 411, columnWidth: 600, scale: 1, fullPane: true });
+        const fallback = jest.fn();
+        expect(f.controller.show(fallback)).toBe(true);
+        await flush();
+        expect(f.offset()).toBe(0);
+        expect(mockQuery).not.toHaveBeenCalled();
+        expect(mockWatchGeometry).not.toHaveBeenCalled();
+        expect(fallback).not.toHaveBeenCalled();
+        expect(f.controller.hide()).toBe(true);
+        f.controller.unmount();
+    });
     it('converts physical overlap to logical offset using the untransformed native height', async () => {
         const f = fixture();
         f.controller.show();

@@ -30,6 +30,7 @@ export class AdaptiveOverlayKeyboard {
     private geometryLease?: () => void;
     private observingGeometry = false;
     private geometryGeneration = 0;
+    private paneInputIntent = false;
 
     private options: Options;
 
@@ -44,7 +45,28 @@ export class AdaptiveOverlayKeyboard {
     };
 
     private key = (context?: AndroidWindowSurround) => (context
-        ? [context.left, context.width, context.height, context.columnWidth, context.scale].join(':') : '');
+        ? [context.left, context.width, context.height, context.columnWidth, context.scale,
+            !!context.fullPane].join(':') : '');
+
+    private paneOwnsKeyboard = (intent?: boolean): boolean => {
+        if (!this.getContext()?.fullPane) return false;
+        if (intent !== undefined) this.paneInputIntent = intent;
+        else if (this.showIntent) this.paneInputIntent = true;
+        this.stopGeometry();
+        this.revision += 1;
+        this.epoch += 1;
+        this.showIntent = false;
+        this.session = false;
+        this.anchorBottom = undefined;
+        if (this.ownsHide) this.options.onHide?.();
+        this.ownsHide = false;
+        // Full-pane cards/panels bound themselves above the IME and scroll
+        // internally. They must never also translate the entire old phone card.
+        if (this.mounted && !this.closed && this.options.getOffset() !== 0) {
+            this.options.setOffset(0, () => this.mounted && !this.closed && this.getContext()?.fullPane === true);
+        }
+        return true;
+    };
 
     private watchGeometry = () => {
         if (this.observingGeometry || !this.mounted || this.closed || !this.showIntent || !this.getContext()) return;
@@ -95,10 +117,20 @@ export class AdaptiveOverlayKeyboard {
         this.revision += 1;
         this.epoch += 1;
         this.anchorBottom = undefined;
+        this.paneInputIntent = false;
     };
 
     contextChanged = () => {
         const context = this.getContext();
+        if (this.paneOwnsKeyboard()) {
+            this.contextKey = this.key(context);
+            return;
+        }
+        if (this.paneInputIntent) {
+            this.paneInputIntent = false;
+            this.show(undefined, true);
+            return;
+        }
         if (!context) this.stopGeometry();
         const key = this.key(context);
         if (key === this.contextKey) return;
@@ -120,6 +152,7 @@ export class AdaptiveOverlayKeyboard {
     focus = () => { this.show(undefined, true); };
 
     show = (legacyFallback?: (isCurrent: () => boolean) => void, requireVisible = false): boolean => {
+        if (this.paneOwnsKeyboard(true)) return true;
         const context = this.getContext();
         if (!context) {
             this.stopGeometry();
@@ -212,6 +245,7 @@ export class AdaptiveOverlayKeyboard {
     };
 
     hide = (): boolean => {
+        if (this.paneOwnsKeyboard(false)) return true;
         this.stopGeometry();
         const hadIntent = this.showIntent;
         this.showIntent = false;

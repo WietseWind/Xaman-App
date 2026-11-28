@@ -104,6 +104,16 @@ beforeEach(() => {
 afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
 describe('adaptive Android keyboard coordinates', () => {
+    it('scrolls a focused field clipped by a pane card even when it is already above the IME', async () => {
+        mockGeometry.mockResolvedValue({ keyboardTop: 200, visible: true });
+        const { view, scrollTo } = fixture({ scale: 1, scrollY: 40, scrollHeight: 100,
+            inputY: 150, inputHeight: 40, scrollPosition: 0, extraOffset: 0 });
+        view.context.fullPane = true;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 70, animated: true });
+        view.componentWillUnmount();
+    });
     it('ignores a stale inflated height and uses current native top after fullscreen to split', async () => {
         const { view, scrollTo } = fixture({ initialHeight: 914, height: 411 });
         await view.scrollToFocusedTextInput();

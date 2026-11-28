@@ -1,13 +1,21 @@
 import React from 'react';
-import { Animated, InteractionManager, PanResponder, TouchableWithoutFeedback } from 'react-native';
+import { Animated, FlatList, InteractionManager, PanResponder, Text, TouchableWithoutFeedback } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
-import ActionPanel from '../ActionPanel';
+import WrappedActionPanel, { ActionPanel } from '../ActionPanel';
+import KeyboardAwareScrollView from '../../KeyboardAwareScrollView/KeyboardAwareScrollView';
+
+let mockSupports = false;
+jest.mock('@common/helpers/androidMultiWindow', () => ({
+    supportsAndroidMultiWindowLayout: () => mockSupports,
+}));
 
 describe('ActionPanel', () => {
     const springCallbacks: Array<(result: { finished: boolean }) => void> = [];
 
     beforeEach(() => {
+        mockSupports = false;
         springCallbacks.length = 0;
         jest.useFakeTimers();
 
@@ -45,6 +53,83 @@ describe('ActionPanel', () => {
             jest.advanceTimersByTime(50);
         });
     };
+
+    it('keeps a shifted short pane panel within its actual above-IME bounds', () => {
+        const geometry = ActionPanel.getDerivedStateFromProps({
+            height: 350, viewportHeight: 411, availableHeight: 150, offset: 230,
+        });
+        expect(geometry.snapPoints).toEqual([{ y: 411 }, { y: 20 }, { y: 0 }]);
+        expect(geometry.panelHeight).toBe(130);
+        expect(geometry.boundaries.top).toBe(0);
+        geometry.snapPoints.slice(1).forEach(({ y }) => {
+            expect(y).toBeGreaterThanOrEqual(0);
+            expect(y + geometry.panelHeight).toBeLessThanOrEqual(150);
+        });
+    });
+
+    it('never adds an outer scroll view around caller-owned lists on a new Android build', () => {
+        mockSupports = true;
+        let tree: renderer.ReactTestRenderer;
+        act(() => {
+            tree = renderer.create(
+                <AndroidWindowSurroundContext.Provider value={{
+                    left: 0, width: 600, height: 400, columnWidth: 600, scale: 1, fullPane: true,
+                }}>
+                    <WrappedActionPanel height={300}>
+                        <FlatList data={['public item']} renderItem={({ item }) => <Text>{item}</Text>} />
+                    </WrappedActionPanel>
+                </AndroidWindowSurroundContext.Provider>,
+            );
+        });
+        expect(tree!.root.findAllByType(FlatList)).toHaveLength(1);
+        expect(tree!.root.findAllByType(KeyboardAwareScrollView)).toHaveLength(0);
+        act(() => tree!.unmount());
+    });
+
+    it('keeps pane snap targets, the imperative ref and the same draft through resizing', () => {
+        mockSupports = true;
+        const ref = React.createRef<ActionPanel>();
+        const onSlideDown = jest.fn();
+        class Draft extends React.Component<{}, { text: string }> {
+            constructor(props: {}) {
+                super(props);
+                this.state = { text: '' };
+            }
+            render() {
+                const { text } = this.state;
+                return <Text>{text}</Text>;
+            }
+        }
+        const render = (height?: number) => (
+            <AndroidWindowSurroundContext.Provider value={height === undefined ? undefined : {
+                left: 0, width: 600, height, columnWidth: 600, scale: 1, fullPane: true,
+            }}>
+                <WrappedActionPanel ref={ref} height={600} onSlideDown={onSlideDown}>
+                    <Draft />
+                </WrappedActionPanel>
+            </AndroidWindowSurroundContext.Provider>
+        );
+        let tree: renderer.ReactTestRenderer;
+        act(() => { tree = renderer.create(render(360)); });
+        flushOpenDelay();
+        const panel = ref.current!;
+        const draft = tree!.root.findByType(Draft).instance;
+        act(() => draft.setState({ text: 'public draft' }));
+        expect((panel as any).state.snapPoints).toEqual([{ y: 360 }, { y: 20 }]);
+        expect((panel as any).state.panelHeight).toBe(340);
+        expect(tree!.root.findByType(ActionPanel).instance).toBe(panel);
+        act(() => tree!.update(render(500)));
+        expect((panel as any).state.snapPoints).toEqual([{ y: 500 }, { y: 20 }]);
+        expect((panel as any).currentY).toBe(20);
+        expect(tree!.root.findByType(Draft).instance).toBe(draft);
+        expect(draft.state.text).toBe('public draft');
+        act(() => panel.slideDown());
+        flushOpenDelay();
+        expect(jest.mocked(Animated.spring).mock.calls.at(-1)![1].toValue).toBe(500);
+        act(() => springCallbacks.at(-1)!({ finished: true }));
+        expect(onSlideDown).toHaveBeenCalledTimes(1);
+        act(() => tree!.unmount());
+    });
 
     it('reports actual animated displacement while a different snap target is pending', () => {
         let tree: renderer.ReactTestRenderer;

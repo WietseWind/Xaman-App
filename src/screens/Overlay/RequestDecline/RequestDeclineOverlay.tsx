@@ -73,6 +73,7 @@ class RequestDeclineOverlay extends Component<Props, State> {
     render() {
         return (
             <ActionPanel
+                scrollableContent
                 ref={this.actionPanel}
                 height={AppSizes.moderateScale(370)}
                 onSlideDown={Navigator.dismissOverlay}

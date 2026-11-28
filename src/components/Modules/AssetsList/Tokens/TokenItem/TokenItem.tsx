@@ -6,6 +6,7 @@ import { View, Text, InteractionManager } from 'react-native';
 import { LedgerService } from '@services';
 
 import { NormalizeCurrencyCode } from '@common/utils/monetary';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import { Button, AmountText, Icon, Badge, BadgeType } from '@components/General';
 
@@ -18,6 +19,8 @@ import { TrustLineModel } from '@store/models';
 
 import { AppStyles, AppSizes } from '@theme';
 import styles from './styles';
+
+const FULL_PANE_ROW = { width: '100%' as const };
 
 /* Types ==================================================================== */
 interface Props {
@@ -44,6 +47,8 @@ interface State {
 /* Component ==================================================================== */
 class TokenItem extends PureComponent<Props, State> {
     static Height = AppSizes.scale(55);
+    static contextType = AndroidWindowSurroundContext;
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
 
     private mounted = false;
 
@@ -222,11 +227,16 @@ class TokenItem extends PureComponent<Props, State> {
     render() {
         const { token, saturate, reorderEnabled, subPrice, subPrefix } = this.props;
         const { vaultInfo } = this.state;
+        const { context } = this;
 
         const isVaultShare = token.isMPToken() && vaultInfo;
 
         return (
-            <View testID={`${token.currency.id}`} style={[styles.currencyItem, { height: TokenItem.Height }]}>
+            <View testID={`${token.currency.id}`} style={[
+                styles.currencyItem,
+                ...(context?.fullPane ? [FULL_PANE_ROW] : []),
+                { height: TokenItem.Height },
+            ]}>
                 <View style={[AppStyles.flex1, AppStyles.row, AppStyles.centerAligned]}>
                     <View style={styles.tokenAvatarContainer}>
                         <TokenAvatar

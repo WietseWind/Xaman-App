@@ -3,6 +3,7 @@
  */
 
 import React, { Component } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { Animated, Text, View } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
@@ -88,7 +89,7 @@ class SwitchAssetCategoryOverlay extends Component<Props, State> {
         return (
             <Animated.View style={[styles.container, { backgroundColor: interpolateColor }]}>
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
+                <AnimatedAndroidPaneCard style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.centerAligned]}>
                             <Text style={[AppStyles.p, AppStyles.bold]}>{Localize.t('global.select')}</Text>
@@ -120,7 +121,7 @@ class SwitchAssetCategoryOverlay extends Component<Props, State> {
                             onPress={this.onAssetPress.bind(null, ASSETS_CATEGORY.NFTs)}
                         />
                     </View>
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

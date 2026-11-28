@@ -32,6 +32,7 @@ import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowConte
 import { Navigator } from '@common/helpers/navigator';
 import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import { Prompt, VibrateHapticFeedback } from '@common/helpers/interface';
+import AndroidPaneCard from '@components/General/AndroidPaneCard/AndroidPaneCard';
 
 import Vault from '@common/libs/vault';
 
@@ -313,7 +314,7 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <View ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
+                <AndroidPaneCard ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
                     style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
@@ -365,7 +366,7 @@ class PassphraseAuthenticationOverlay extends Component<Props, State> {
                             />
                         </View>
                     </View>
-                </View>
+                </AndroidPaneCard>
             </Animated.View>
         );
     }

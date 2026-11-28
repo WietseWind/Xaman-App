@@ -11,6 +11,7 @@ export type AndroidWindowFrame = {
     logicalLeft: number;
     logicalTop: number;
     logicalHeight: number;
+    logicalWidth?: number;
 };
 
 const positive = (value: unknown): value is number => {
@@ -51,6 +52,7 @@ export const androidWindowFrame = (
     window: AndroidLayoutSize,
     layout: AndroidLayoutSize,
     density = 1,
+    fullPane = false,
 ): AndroidWindowFrame | undefined => {
     if (![view.width, view.height, window.height, layout.width, layout.height, density].every(positive)) {
         return undefined;
@@ -62,6 +64,12 @@ export const androidWindowFrame = (
     const viewHeight = Math.round(view.height * density) / density;
     const windowHeight = Math.round(window.height * density) / density;
     if (![viewWidth, viewHeight, windowHeight].every(positive)) return undefined;
+    if (fullPane) {
+        return {
+            left: 0, width: viewWidth, height: viewHeight, scale: 1,
+            logicalLeft: 0, logicalTop: 0, logicalWidth: viewWidth, logicalHeight: viewHeight,
+        };
+    }
     const fit = Math.min(1, viewWidth / layout.width, windowHeight / layout.height);
     const width = Math.min(viewWidth, layout.width, Math.floor(layout.width * fit * density + 1e-6) / density);
     if (!positive(width)) return undefined;

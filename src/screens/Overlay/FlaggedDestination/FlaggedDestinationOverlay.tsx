@@ -4,6 +4,7 @@
 
 import toUpper from 'lodash/toUpper';
 import React, { Component, createRef } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { View, Animated, Text, KeyboardEvent, Platform, BackHandler, NativeEventSubscription } from 'react-native';
 
 import { AppScreens } from '@common/constants';
@@ -259,7 +260,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View
+                <AnimatedAndroidPaneCard
                     style={[styles.visibleContent, { opacity: this.animatedOpacity, marginBottom: this.bottomOffset }]}
                 >
                     <View style={[AppStyles.centerAligned]}>
@@ -315,7 +316,7 @@ class FlaggedDestinationOverlay extends Component<Props, State> {
                             />
                         </View>
                     </View>
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

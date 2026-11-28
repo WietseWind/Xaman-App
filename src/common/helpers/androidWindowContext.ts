@@ -10,6 +10,8 @@ export type AndroidWindowSurround = {
     height: number;
     columnWidth: number;
     scale: number;
+    /** Actual Android multi-window pane; dimensions are unscaled live DP. */
+    fullPane?: boolean;
 };
 
 export const AndroidWindowSurroundContext = createContext<AndroidWindowSurround | undefined>(undefined);

@@ -51,6 +51,7 @@ jest.mock('@common/libs/biometric', () => ({ BiometricErrors: {} }));
 jest.mock('@components/General', () => ({
     Button: 'Button', PasswordInput: 'PasswordInput', SecurePinInput: 'SecurePinInput', Spacer: 'Spacer',
 }));
+jest.mock('@components/General/AndroidPaneCard/AndroidPaneCard', () => ({ __esModule: true, default: 'View' }));
 jest.mock('@services/StyleService', () => ({
     __esModule: true,
     default: { create: (styles: any) => styles, getBackdropInterpolateColor: () => ['white', 'black'] },

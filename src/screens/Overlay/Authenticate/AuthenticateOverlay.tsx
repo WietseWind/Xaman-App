@@ -40,6 +40,7 @@ import Localize from '@locale';
 // style
 import { AppStyles, AppSizes } from '@theme';
 import { sideBleedAbsolute } from '@common/helpers/sideSafeArea';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 
 import styles from './styles';
 
@@ -317,7 +318,10 @@ class AuthenticateOverlay extends Component<Props, State> {
                     // VoiceOver stays on the passcode
                     accessibilityViewIsModal
                 >
-                    <Animated.View style={[{ transform, opacity: this.animatedOpacity }]}>
+                    <AnimatedAndroidPaneCard
+                        normalWidth={AppSizes.screen.width}
+                        style={[{ transform, opacity: this.animatedOpacity }]}
+                    >
                         <View style={[
                             AppStyles.flex1,
                             AppStyles.paddingHorizontal,
@@ -337,7 +341,7 @@ class AuthenticateOverlay extends Component<Props, State> {
                         <View style={[AppStyles.row, AppStyles.flex1, AppStyles.centerContent]}>
                             <Button label={Localize.t('global.cancel')} roundedSmall contrast onPress={this.dismiss} />
                         </View>
-                    </Animated.View>
+                    </AnimatedAndroidPaneCard>
                 </SafeAreaView>
             </BlurView>
         );

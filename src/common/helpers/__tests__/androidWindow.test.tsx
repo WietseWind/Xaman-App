@@ -91,6 +91,24 @@ describe('ordinary Android multi-window size hint', () => {
 });
 
 describe('Android visible window rectangle', () => {
+    it.each([
+        ['left split', { width: 1091 / 2.625, height: 1768 / 2.625 }],
+        ['right split', { width: 1117 / 2.625, height: 1768 / 2.625 }],
+        ['wide short pane', { width: 700, height: 300 }],
+        ['narrow pane', { width: 200, height: 500 }],
+    ])('uses full unscaled width and available content height in a real %s', (name, window) => {
+        const view = { width: window.width, height: window.height - 80 };
+        const frame = androidWindowFrame(view, window, COVER, 2.625, true)!;
+        expect(frame.width * 2.625).toBe(Math.round(view.width * 2.625));
+        expect(frame.height * 2.625).toBeCloseTo(Math.round(view.height * 2.625));
+        expect(frame.scale).toBe(1);
+        expect(frame.left).toBe(0);
+        expect(frame.logicalLeft).toBe(0);
+        expect(frame.logicalTop).toBe(0);
+        expect(frame.logicalWidth).toBe(frame.width);
+        expect(frame.logicalHeight).toBe(frame.height);
+    });
+
     it('keeps the existing cover height and scale beside the native tab bar', () => {
         const view = { width: COVER.width, height: COVER.height - 80 };
         expect(androidWindowFrame(view, COVER, COVER, 2.625)).toEqual({

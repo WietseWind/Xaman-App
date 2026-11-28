@@ -14,6 +14,7 @@ import {
     PanResponderInstance,
     AccessibilityInfo,
     findNodeHandle,
+    LayoutChangeEvent,
 } from 'react-native';
 
 import Localize from '@locale';
@@ -21,6 +22,10 @@ import Localize from '@locale';
 // style
 import { AppStyles, AppSizes } from '@theme';
 import { sideBleedEdges, SideSafeAreaContext } from '@common/helpers/sideSafeArea';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
+import { supportsAndroidMultiWindowLayout } from '@common/helpers/androidMultiWindow';
+import { useAndroidPaneKeyboard } from '@common/helpers/androidPaneKeyboard';
+import KeyboardAwareScrollView from '@components/General/KeyboardAwareScrollView/KeyboardAwareScrollView';
 
 import styles from './styles';
 
@@ -35,6 +40,13 @@ interface Props extends React.PropsWithChildren {
     onDragEnd?: () => void;
     lockAfterCloseRequest?: boolean;
     onSlideDown?: () => void;
+    /** Supplied only for a real split pane by the new Android native bridge. */
+    viewportHeight?: number;
+    availableHeight?: number;
+    viewportRef?: React.RefObject<View>;
+    onViewportLayout?: (event: LayoutChangeEvent) => void;
+    /** Only simple, non-list content opts in to an outer scroll container. */
+    scrollableContent?: boolean;
 }
 
 interface SnapPoint {
@@ -52,9 +64,32 @@ const BOUNDARY_HEIGHT = 20;
 const HEADER_CAPTURE_HEIGHT = 56;
 const MOVE_CAPTURE_THRESHOLD = 10;
 const FLICK_VELOCITY = 0.8;
+const PANE_CONTENT_STYLE = { flexGrow: 1 };
+
+const PanePanelContents = ({ children, enabled }: React.PropsWithChildren<{ enabled?: boolean }>) => {
+    const pane = React.useContext(AndroidWindowSurroundContext);
+    // Preserve multiple caller-owned sibling controls without adding a native View.
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    if (!enabled || !supportsAndroidMultiWindowLayout()) return <>{children}</>;
+    const fullPane = pane?.fullPane === true;
+    return (
+        <KeyboardAwareScrollView
+            style={AppStyles.flex1}
+            contentContainerStyle={fullPane ? PANE_CONTENT_STYLE : AppStyles.flex1}
+            scrollEnabled={fullPane}
+            enabled={fullPane}
+            observeKeyboard={fullPane}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="none"
+        >
+            {children}
+        </KeyboardAwareScrollView>
+    );
+};
 
 /* Component ==================================================================== */
-class ActionPanel extends Component<Props, State> {
+export class ActionPanel extends Component<Props, State> {
     // the window around the box of the screen: only more than the default on the open iPhone Duo turned a quarter
     static contextType = SideSafeAreaContext;
 
@@ -76,7 +111,7 @@ class ActionPanel extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        const screenHeight = AppSizes.screen.height;
+        const screenHeight = props.viewportHeight ?? AppSizes.screen.height;
 
         this.state = {
             snapPoints: [],
@@ -142,30 +177,55 @@ class ActionPanel extends Component<Props, State> {
         this.translateY.stopAnimation();
     }
 
-    static getDerivedStateFromProps(props: Props) {
-        const { height, offset, extraBottomInset } = props;
+    componentDidUpdate(previousProps: Props) {
+        const { viewportHeight, availableHeight } = this.props;
+        if ((previousProps.viewportHeight === viewportHeight && previousProps.availableHeight === availableHeight) ||
+            this.isDragging) return;
+        // A divider move changes the coordinate space, not the chosen snap target.
+        // Finish an interrupted close with its normal completion callback.
+        if (this.closeRequested) {
+            this.animateToIndex(0);
+            return;
+        }
+        this.translateY.stopAnimation();
+        const { snapPoints } = this.state;
+        const point = snapPoints[this.currentIndex];
+        if (point) this.translateY.setValue(point.y);
+    }
 
-        const { height: screenHeight } = AppSizes.screen;
+    static getDerivedStateFromProps(props: Props) {
+        const { height, offset, extraBottomInset, viewportHeight, availableHeight } = props;
+
+        const screenHeight = viewportHeight ?? AppSizes.screen.height;
+        const visibleHeight = viewportHeight === undefined ? screenHeight
+            : Math.max(0, Math.min(screenHeight, availableHeight ?? screenHeight));
 
         let panelHeight = height;
 
         if (extraBottomInset) {
             panelHeight += AppSizes.safeAreaBottomInset;
         }
-
-        const snapPoints = [{ y: screenHeight }, { y: screenHeight - panelHeight }];
-
-        let topBoundary = AppSizes.screen.height - (panelHeight + BOUNDARY_HEIGHT);
-
-        if (typeof offset === 'number') {
-            topBoundary -= offset;
-            snapPoints.push({
-                y: AppSizes.screen.height - panelHeight - offset,
-            });
+        if (viewportHeight !== undefined) {
+            panelHeight = Math.min(panelHeight, Math.max(1, visibleHeight - BOUNDARY_HEIGHT));
         }
 
+        const restingY = viewportHeight === undefined ? screenHeight - panelHeight
+            : Math.max(0, visibleHeight - panelHeight);
+        const snapPoints = [{ y: screenHeight }, { y: restingY }];
+
+        let topBoundary = restingY - BOUNDARY_HEIGHT;
+
+        if (typeof offset === 'number') {
+            const boundedOffset = viewportHeight === undefined ? offset : Math.max(0, Math.min(offset, restingY));
+            topBoundary -= boundedOffset;
+            snapPoints.push({
+                y: restingY - boundedOffset,
+            });
+        }
+        if (viewportHeight !== undefined) topBoundary = Math.max(0, topBoundary);
+
         return {
-            panelHeight: panelHeight + BOUNDARY_HEIGHT,
+            panelHeight: panelHeight + (viewportHeight === undefined ? BOUNDARY_HEIGHT : 0),
             snapPoints,
             boundaries: {
                 top: topBoundary,
@@ -249,7 +309,8 @@ class ActionPanel extends Component<Props, State> {
     private onPanResponderMove = (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
         if (this.isCloseLocked()) return;
         const { boundaries } = this.state;
-        const maxY = AppSizes.screen.height;
+        const { viewportHeight } = this.props;
+        const maxY = viewportHeight ?? AppSizes.screen.height;
 
         let nextY = this.dragStartY + gestureState.dy;
 
@@ -359,13 +420,17 @@ class ActionPanel extends Component<Props, State> {
 
     render() {
         const { below } = this.context || { below: 0 };
-        const { children, testID, contentStyle } = this.props;
+        const {
+            children, testID, contentStyle, viewportHeight, viewportRef, onViewportLayout, scrollableContent,
+        } = this.props;
         const { panelHeight } = this.state;
 
         if (!panelHeight) return null;
 
         return (
             <View
+                ref={viewportRef}
+                onLayout={onViewportLayout}
                 testID={testID}
                 style={AppStyles.flex1}
                 // VoiceOver stays in the panel; its escape gesture closes it
@@ -383,7 +448,7 @@ class ActionPanel extends Component<Props, State> {
                             sideBleedEdges,
                             {
                                 opacity: this.translateY.interpolate({
-                                    inputRange: [0, AppSizes.screen.height],
+                                    inputRange: [0, viewportHeight ?? AppSizes.screen.height],
                                     outputRange: [0.8, 0],
                                     extrapolateRight: 'clamp',
                                 }),
@@ -404,13 +469,17 @@ class ActionPanel extends Component<Props, State> {
                 >
                     <View
                         ref={this.panelRef}
-                        style={[styles.container, { height: panelHeight + BOUNDARY_HEIGHT }, contentStyle]}
+                        style={[
+                            styles.container,
+                            { height: panelHeight + (viewportHeight === undefined ? BOUNDARY_HEIGHT : 0) },
+                            contentStyle,
+                        ]}
                     >
                         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                         <View style={styles.panelHeader} {...this.panResponder.panHandlers}>
                             <View style={styles.panelHandle} />
                         </View>
-                        {children}
+                        <PanePanelContents enabled={scrollableContent}>{children}</PanePanelContents>
                     </View>
                 </Animated.View>
             </View>
@@ -419,4 +488,24 @@ class ActionPanel extends Component<Props, State> {
 }
 
 /* Export Component ==================================================================== */
-export default ActionPanel;
+// Preserve the existing imperative ref API and each child's mounted instance.
+type ActionPanelWithAndroidWindow = ActionPanel;
+// TypeScript shares this public ref type with the forwarded component value.
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+const ActionPanelWithAndroidWindow = React.forwardRef<ActionPanel, Props>((props, ref) => {
+    const pane = React.useContext(AndroidWindowSurroundContext);
+    const viewport = React.useRef<View>(null);
+    const fullPane = supportsAndroidMultiWindowLayout() && pane?.fullPane === true;
+    const bounds = useAndroidPaneKeyboard(fullPane, viewport, pane?.columnWidth ?? 0, pane?.height ?? 0);
+    return (
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        <ActionPanel {...props} ref={ref}
+            viewportRef={fullPane ? viewport : undefined}
+            onViewportLayout={fullPane ? bounds.onLayout : undefined}
+            viewportHeight={fullPane ? bounds.height : undefined}
+            availableHeight={fullPane ? bounds.availableHeight : undefined} />
+    );
+});
+ActionPanelWithAndroidWindow.displayName = 'ActionPanel';
+
+export default ActionPanelWithAndroidWindow;

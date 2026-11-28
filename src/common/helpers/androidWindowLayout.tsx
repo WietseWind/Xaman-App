@@ -5,6 +5,9 @@ import { AppSizes } from '@theme';
 import FoldPhoneExtraPanel from '@components/General/FoldPhoneExtraPanel/FoldPhoneExtraPanel';
 
 import { AndroidLayoutSize, androidWindowFrame, getAndroidFoldLayout } from './androidWindow';
+import {
+    AndroidMultiWindowState, getAndroidMultiWindowState, subscribeAndroidMultiWindowState,
+} from './androidMultiWindow';
 import { AndroidWindowFreeAreaContext, AndroidWindowSurroundContext } from './androidWindowContext';
 import { FoldPhone, FoldPhoneState, foldPhoneStateFor } from './foldPhone';
 
@@ -21,6 +24,7 @@ const FREE_SIDE: ViewStyle = { position: 'absolute', left: 0, top: 0 };
 type State = {
     view?: AndroidLayoutSize;
     window: AndroidLayoutSize;
+    multiWindow?: AndroidMultiWindowState;
 };
 
 const wrappers = new WeakMap<object, ComponentType<any>>();
@@ -45,6 +49,7 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
         private mounted = false;
 
         private subscription?: ReturnType<typeof Dimensions.addEventListener>;
+        private multiWindowSubscription?: { remove: () => void };
 
         private columnWidth?: number;
 
@@ -55,16 +60,29 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
         constructor(props: P) {
             super(props);
             const { width, height } = Dimensions.get('window');
-            this.state = { window: { width, height } };
+            this.state = { window: { width, height }, multiWindow: getAndroidMultiWindowState() };
         }
 
         componentDidMount() {
             this.mounted = true;
             this.subscription = Dimensions.addEventListener('change', ({ window }) => {
                 if (!this.mounted || !(window.width > 0) || !(window.height > 0)) return;
-                this.setState((state) => state.window.width === window.width && state.window.height === window.height
+                this.setState((state) => state.multiWindow ||
+                    (state.window.width === window.width && state.window.height === window.height)
                     ? null : { window: { width: window.width, height: window.height } });
             });
+            this.multiWindowSubscription = subscribeAndroidMultiWindowState((multiWindow) => {
+                if (this.mounted) this.setState({ multiWindow });
+            });
+            // Another mounted screen may have accepted a newer snapshot while
+            // React constructed this screen. A same-revision getter will not
+            // emit again, so reconcile before publishing a stale tab width.
+            const latest = getAndroidMultiWindowState();
+            const { multiWindow: rendered } = this.state;
+            if (latest && latest !== rendered) {
+                this.setState({ multiWindow: latest });
+                return;
+            }
             this.publishLayout();
         }
 
@@ -75,6 +93,7 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
         componentWillUnmount() {
             this.mounted = false;
             this.subscription?.remove();
+            this.multiWindowSubscription?.remove();
         }
 
         onLayout = ({ nativeEvent }: LayoutChangeEvent) => {
@@ -93,27 +112,37 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
         };
 
         render() {
-            const { view, window } = this.state;
-            const windowFrame = androidWindowFrame(window, window, layout, PixelRatio.get());
-            const frame = view ? androidWindowFrame(view, window, layout, PixelRatio.get()) : undefined;
+            const { view, window, multiWindow } = this.state;
+            const fullPane = multiWindow?.isInMultiWindowMode === true;
+            // The flag and bounds share one native revision. A late Dimensions
+            // event must not restore an old split size after leaving split mode.
+            const liveWindow = multiWindow ? { width: multiWindow.width, height: multiWindow.height } : window;
+            const paneView = view && fullPane ? {
+                width: Math.min(view.width, liveWindow.width), height: Math.min(view.height, liveWindow.height),
+            } : view;
+            const windowFrame = androidWindowFrame(liveWindow, liveWindow, layout, PixelRatio.get(), fullPane);
+            const frame = paneView
+                ? androidWindowFrame(paneView, liveWindow, layout, PixelRatio.get(), fullPane) : undefined;
+            const initialStyle: ViewStyle = fullPane ? FLEX : { flex: 1, width: layout.width, alignSelf: 'flex-end' };
             const style: ViewStyle = frame ? {
                 position: 'absolute',
                 left: frame.logicalLeft,
                 top: frame.logicalTop,
-                width: layout.width,
+                width: frame.logicalWidth ?? layout.width,
                 height: frame.logicalHeight,
-            } : { flex: 1, width: layout.width, alignSelf: 'flex-end' };
+            } : initialStyle;
             if (frame && frame.scale !== 1) style.transform = [{ scale: frame.scale }];
             const hasFreeArea = !!frame && frame.left > 1;
             // Overlays can mount before their first onLayout. Give their blur a
             // bounded initial window too, rather than a 2000dp bleed bitmap.
             const backdropFrame = frame || windowFrame;
-            const surround = backdropFrame && (fold || hasFreeArea || backdropFrame.scale !== 1) ? {
+            const surround = backdropFrame && (fullPane || fold || hasFreeArea || backdropFrame.scale !== 1) ? {
                 left: backdropFrame.left / backdropFrame.scale,
                 width: (backdropFrame.left + backdropFrame.width) / backdropFrame.scale,
                 height: backdropFrame.logicalHeight,
-                columnWidth: layout.width,
+                columnWidth: backdropFrame.logicalWidth ?? layout.width,
                 scale: backdropFrame.scale,
+                ...(fullPane ? { fullPane: true } : {}),
             } : undefined;
             // Detached stack screens retain their last native view size. A
             // global tab bar must follow the current window, never that stale
@@ -124,6 +153,13 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
                 { left: windowFrame.left, top: 0, width: windowFrame.width, height: windowFrame.height },
                 fold.width,
             ) : undefined;
+            if (fold && fullPane && windowFrame) {
+                this.foldState = {
+                    mode: 'split',
+                    window: { width: liveWindow.width, height: liveWindow.height },
+                    app: { left: 0, top: 0, width: windowFrame.width, height: windowFrame.height },
+                };
+            }
             const isOverlay = (this.props as { componentType?: string }).componentType === 'OVERLAY';
             return (
                 <View testID="android-window-layout" style={FLEX} pointerEvents="box-none" onLayout={this.onLayout}>

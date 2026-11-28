@@ -10,6 +10,7 @@ import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard
 import { AndroidWindowSurroundContext, AndroidWindowSurround } from '@common/helpers/androidWindowContext';
 
 import { PasswordInput, Button, Spacer } from '@components/General';
+import AndroidPaneCard from '@components/General/AndroidPaneCard/AndroidPaneCard';
 
 import StyleService from '@services/StyleService';
 
@@ -208,7 +209,7 @@ class PassphraseMethod extends Component<InternalProps, State> {
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
-                <View ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
+                <AndroidPaneCard ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
                     style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
@@ -262,7 +263,7 @@ class PassphraseMethod extends Component<InternalProps, State> {
                             />
                         </View>
                     </View>
-                </View>
+                </AndroidPaneCard>
             </Animated.View>
         );
     }

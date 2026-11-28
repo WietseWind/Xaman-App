@@ -3,6 +3,7 @@
  */
 
 import React, { Component } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { View, Animated, Text } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
@@ -128,7 +129,7 @@ class ConfirmDestinationTagOverlay extends Component<Props, State> {
         return (
             <Animated.View style={[styles.container, { backgroundColor: interpolateColor }]}>
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View
+                <AnimatedAndroidPaneCard
                     onResponderRelease={() => Keyboard.dismiss()}
                     onStartShouldSetResponder={() => true}
                     style={[styles.visibleContent, { transform, opacity: this.animatedOpacity }]}
@@ -161,7 +162,7 @@ class ConfirmDestinationTagOverlay extends Component<Props, State> {
                     <Button onPress={this.onConfirmPress} label={Localize.t('global.looksGood')} />
                     <Spacer size={10} />
                     <Button secondary onPress={this.onChangePress} label={Localize.t('global.change')} />
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

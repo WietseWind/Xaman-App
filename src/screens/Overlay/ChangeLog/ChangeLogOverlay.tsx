@@ -2,6 +2,7 @@
  * App Change log modal
  */
 import React, { Component } from 'react';
+import { AnimatedAndroidPaneCard } from '@components/General/AndroidPaneCard/AndroidPaneCard';
 import { View, Text, Animated } from 'react-native';
 
 // import { CoreRepository } from '@store/repositories';
@@ -94,7 +95,9 @@ class ChangeLogOverlay extends Component<Props, State> {
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
                 <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
-                <Animated.View style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
+                <AnimatedAndroidPaneCard
+                    scrollable={false} style={[styles.visibleContent, { opacity: this.animatedOpacity }]}
+                >
                     <View style={styles.headerContainer}>
                         <View style={AppStyles.flex1}>
                             <Text numberOfLines={1} style={[AppStyles.p, AppStyles.bold]}>
@@ -119,7 +122,7 @@ class ChangeLogOverlay extends Component<Props, State> {
                             errorMessage={Localize.t('errors.unableToLoadChangeLogs')}
                         />
                     </View>
-                </Animated.View>
+                </AnimatedAndroidPaneCard>
             </Animated.View>
         );
     }

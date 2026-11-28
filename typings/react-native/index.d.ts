@@ -218,6 +218,13 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
 
     // New Android native builds resize the same mounted screen when its window changes.
     supportsAndroidWindowLayout?: boolean;
+    supportsAndroidMultiWindowLayout?: boolean;
+    androidWindowState?: {
+        isInMultiWindowMode: boolean; width: number; height: number; revision: number;
+    };
+    getAndroidWindowState?: () => Promise<{
+        isInMultiWindowMode: boolean; width: number; height: number; revision: number;
+    } | null>;
     // Only present after positive fold hardware detection. These are layout dp, not system insets.
     androidFoldLayout?: { width: number; height: number };
     // Ordinary Android cold/reloaded in multi-window: full portrait size, without fold identity.

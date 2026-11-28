@@ -17,6 +17,7 @@ import { Prompt } from '@common/helpers/interface';
 import Keyboard from '@common/helpers/keyboard';
 import { AdaptiveOverlayKeyboard } from '@common/helpers/adaptiveOverlayKeyboard';
 import { AndroidWindowSurroundContext, AndroidWindowSurround } from '@common/helpers/androidWindowContext';
+import AndroidPaneCard from '@components/General/AndroidPaneCard/AndroidPaneCard';
 
 import { BiometricErrors } from '@common/libs/biometric';
 
@@ -291,7 +292,7 @@ class PasscodeMethod extends Component<InternalProps, State> {
                 onStartShouldSetResponder={() => true}
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
-                <View ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
+                <AndroidPaneCard ref={this.contentViewRef} {...{ onFocus: this.adaptiveKeyboard.focus }}
                     style={[styles.visibleContent, { marginBottom: offsetBottom }]}>
                     <View style={[AppStyles.row, AppStyles.centerAligned]}>
                         <View style={[AppStyles.flex1, AppStyles.paddingLeftSml, AppStyles.paddingRightSml]}>
@@ -348,7 +349,7 @@ class PasscodeMethod extends Component<InternalProps, State> {
                             )} */}
                         </View>
                     </View>
-                </View>
+                </AndroidPaneCard>
             </Animated.View>
         );
     }

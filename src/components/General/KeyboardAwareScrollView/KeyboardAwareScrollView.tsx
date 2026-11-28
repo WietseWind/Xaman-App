@@ -30,6 +30,8 @@ interface Props extends ScrollViewProps {
     calculateExtraOffset?: (input: any, inputHeight: number) => number;
     onKeyboardShow?: () => void;
     onKeyboardHide?: () => void;
+    /** A stable pane-only wrapper can opt out while its screen is fullscreen. */
+    observeKeyboard?: boolean;
 }
 
 interface State {
@@ -37,6 +39,7 @@ interface State {
 }
 
 const DEFAULT_EXTRA_OFFSET = 20;
+const FULL_PANE_CONTENT_STYLE = { flexGrow: 1, flexShrink: 0, flexBasis: 'auto' as const };
 /* Component ==================================================================== */
 class KeyboardAwareScrollView extends PureComponent<Props, State> {
     static contextType = AndroidWindowSurroundContext;
@@ -48,6 +51,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private keyboardShowNotified = false;
     private adaptiveKeyboardSession = false;
     private previousAdaptiveScale?: number;
+    private previousObserveKeyboard: boolean;
     private adaptiveLife = 0;
     private adaptiveQuery = 0;
     private adaptiveScroll = 0;
@@ -55,6 +59,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private adaptivePaddingTarget = 0;
     private adaptiveKey?: { input: any; top: number; scale: number; layout: number };
     private nativeKeyboardSubscriptions: Array<{ remove: () => void }> = [];
+    private keyboardListenersBound = false;
     private releaseGeometryWatch?: () => void;
     private keyboardHeight: number;
     private windowHeight: number;
@@ -73,6 +78,8 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
+        const { observeKeyboard } = props;
+        this.previousObserveKeyboard = observeKeyboard !== false;
 
         this.state = {
             offset: new Animated.Value(0),
@@ -91,6 +98,12 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     componentDidMount() {
         this.mounted = true;
         this.previousAdaptiveScale = this.adaptiveScale();
+        this.bindKeyboardListeners();
+    }
+
+    private bindKeyboardListeners = () => {
+        if (this.keyboardListenersBound || !this.observesKeyboard()) return;
+        this.keyboardListenersBound = true;
         if (Platform.OS === 'android' && typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function') {
             this.nativeKeyboardSubscriptions = [
                 RNKeyboard.addListener('keyboardDidShow', this.onNativeKeyboardShow),
@@ -99,9 +112,34 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         }
         Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
         Keyboard.addListener('keyboardWillHide', this.onKeyboardHide);
-    }
+    };
+
+    private unbindKeyboardListeners = () => {
+        if (!this.keyboardListenersBound) return;
+        this.keyboardListenersBound = false;
+        this.nativeKeyboardSubscriptions.forEach((subscription) => subscription.remove());
+        this.nativeKeyboardSubscriptions = [];
+        Keyboard.removeListener('keyboardWillShow', this.onKeyboardShow);
+        Keyboard.removeListener('keyboardWillHide', this.onKeyboardHide);
+    };
 
     componentDidUpdate() {
+        const { observeKeyboard } = this.props;
+        const wasObserving = this.previousObserveKeyboard;
+        this.previousObserveKeyboard = observeKeyboard !== false;
+        if (observeKeyboard === false) {
+            if (wasObserving) {
+                this.hideAdaptiveKeyboard();
+                const { offset } = this.state;
+                Animated.timing(offset, { toValue: 0, duration: 0, useNativeDriver: false }).start();
+            }
+            this.unbindKeyboardListeners();
+            return;
+        }
+        if (!wasObserving) {
+            this.bindKeyboardListeners();
+            this.onNativeKeyboardShow();
+        }
         const scale = this.adaptiveScale();
         const changed = this.previousAdaptiveScale !== scale;
         if (changed) {
@@ -129,12 +167,10 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         this.adaptiveQuery += 1;
         this.adaptiveScroll += 1;
         this.adaptiveKey = undefined;
-        this.nativeKeyboardSubscriptions.forEach((subscription) => subscription.remove());
+        this.unbindKeyboardListeners();
         // clear timeout
         if (this.scrollToTimeout) clearTimeout(this.scrollToTimeout);
 
-        Keyboard.removeListener('keyboardWillShow', this.onKeyboardShow);
-        Keyboard.removeListener('keyboardWillHide', this.onKeyboardHide);
     }
 
     public scrollTo = (y: number) => {
@@ -167,6 +203,11 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         }
     };
 
+    private observesKeyboard = () => {
+        const { observeKeyboard } = this.props;
+        return observeKeyboard !== false;
+    };
+
     private hideAdaptiveKeyboard = () => {
         this.adaptivePaddingTarget = 0;
         this.stopGeometryWatch();
@@ -191,6 +232,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     private onNativeKeyboardShow = () => {
+        if (!this.observesKeyboard()) return;
         // Remember visibility while fullscreen too, so a later split can
         // remeasure without depending on a second native Show event.
         this.keyboardVisible = true;
@@ -202,6 +244,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     private onNativeKeyboardHide = () => {
+        if (!this.observesKeyboard()) return;
         if (this.adaptiveKeyboardSession || (this.adaptiveScale() !== undefined &&
             typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function')) this.hideAdaptiveKeyboard();
         else {
@@ -226,6 +269,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
 
     /** True when the adaptive path handled or canceled this request; false keeps legacy behavior. */
     private scrollToAdaptiveFocusedInput = async (scale: number): Promise<boolean> => {
+        if (!this.observesKeyboard()) return true;
         const query = NativeModules.KeyboardModule?.getWindowGeometry;
         if (typeof query !== 'function') return false;
         const input = TextInput.State.currentlyFocusedInput();
@@ -299,7 +343,11 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const { offset } = this.state;
         const inputExtra = typeof calculateExtraOffset === 'function' ? calculateExtraOffset(input, inputHeight) : 0;
         const bottom = inputY + (inputHeight + inputExtra) * scale;
-        const gap = bottom - top;
+        // A bounded pane card may end above the keyboard. Its own scroll
+        // viewport, rather than the farther IME top, is the visible boundary.
+        const { context } = this;
+        const visibleBottom = context?.fullPane ? Math.min(top, scrollY + scrollHeight * scale) : top;
+        const gap = bottom - visibleBottom;
         const hasOverlap = gap > 0;
         // Native origins are physical, while input height and scroll offsets
         // are logical. Convert the overlap once; keep caller offsets logical.
@@ -390,6 +438,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     onKeyboardShow = (event: any) => {
+        if (!this.observesKeyboard()) return;
         const { onKeyboardShow, enabled } = this.props;
 
         const { height } = event.endCoordinates;
@@ -430,6 +479,7 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     onKeyboardHide = () => {
+        if (!this.observesKeyboard()) return;
         if (this.adaptiveKeyboardSession || (this.adaptiveScale() !== undefined &&
             typeof NativeModules.KeyboardModule?.getWindowGeometry === 'function')) {
             this.hideAdaptiveKeyboard();
@@ -486,8 +536,12 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     };
 
     render() {
-        const { children, style, contentContainerStyle, scrollEnabled, testID } = this.props;
+        const {
+            children, style, contentContainerStyle, scrollEnabled, testID, keyboardShouldPersistTaps,
+            keyboardDismissMode, showsVerticalScrollIndicator, nestedScrollEnabled,
+        } = this.props;
         const { offset } = this.state;
+        const { context } = this;
 
         const extraProps = {};
         if (this.adaptiveScale() !== undefined &&
@@ -513,13 +567,21 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
                 scrollEventThrottle={16}
                 automaticallyAdjustContentInsets={false}
                 contentInsetAdjustmentBehavior="never"
+                keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+                keyboardDismissMode={keyboardDismissMode}
+                showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+                nestedScrollEnabled={nestedScrollEnabled}
                 onLayout={this.handleLayout}
                 onContentSizeChange={this.handleContentSizeChange}
                 style={style}
                 contentContainerStyle={[contentContainerStyle]}
                 {...extraProps}
             >
-                <Animated.View style={[styles.contentContainer, { paddingBottom: offset }]}>{children}</Animated.View>
+                <Animated.View style={[
+                    styles.contentContainer,
+                    context?.fullPane ? FULL_PANE_CONTENT_STYLE : undefined,
+                    { paddingBottom: offset },
+                ]}>{children}</Animated.View>
             </ScrollView>
         );
     }

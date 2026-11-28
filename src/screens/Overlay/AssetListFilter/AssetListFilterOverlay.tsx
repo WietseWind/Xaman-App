@@ -241,6 +241,7 @@ class AssetListFilterOverlay extends Component<Props, State> {
 
         return (
             <ActionPanel
+                scrollableContent
                 height={400 + AppSizes.safeAreaBottomInset + actionPanelExtraHeight}
                 offset={adaptive ? keyboardOffset : undefined}
                 ref={this.actionPanelRef}
