@@ -41,7 +41,7 @@ interface State {
 const DEFAULT_EXTRA_OFFSET = 20;
 const FULL_PANE_CONTENT_STYLE = { flexGrow: 1, flexShrink: 0, flexBasis: 'auto' as const };
 type ContentScrollView = ScrollView & {
-    getInnerViewRef?: () => Parameters<TextInput['measureLayout']>[0] | null;
+    getNativeScrollRef?: () => Parameters<TextInput['measureLayout']>[0] | null;
 };
 /* Component ==================================================================== */
 class KeyboardAwareScrollView extends PureComponent<Props, State> {
@@ -198,9 +198,12 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
     private measureInputContent = (input: Pick<TextInput, 'measureLayout'>, scrollView: ScrollView):
         Promise<{ y: number; height: number } | undefined> => new Promise((resolve) => {
         try {
-            const inner = (scrollView as ContentScrollView).getInnerViewRef?.() ?? scrollView.getInnerViewNode?.();
-            if (inner == null || typeof input.measureLayout !== 'function') { resolve(undefined); return; }
-            input.measureLayout(inner, (_x, y, _width, height) => {
+            const outer = (scrollView as ContentScrollView).getNativeScrollRef?.() ?? scrollView.getScrollableNode?.();
+            if (outer == null || typeof input.measureLayout !== 'function') { resolve(undefined); return; }
+            // Shadow layout coordinates include the outer scroll view's padding
+            // and ignore its live native scroll offset. The inner content ref
+            // omits that padding and can leave part of a field behind the IME.
+            input.measureLayout(outer, (_x, y, _width, height) => {
                 resolve(Number.isFinite(y) && Number.isFinite(height) && height > 0 ? { y, height } : undefined);
             }, () => resolve(undefined));
         } catch {

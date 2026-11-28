@@ -111,13 +111,41 @@ beforeEach(() => {
 afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
 describe('adaptive Android keyboard coordinates', () => {
+    it('includes the native outer scroll padding when keeping the complete pane field above the IME', async () => {
+        // Actual short-pane Add Contact measurements. Inner-relative coordinates
+        // omit the native ScrollView's 20.19dp padding and hid 45 physical pixels.
+        const scrollY = 56;
+        const inputHeight = 59.80952453613281;
+        const keyboardTop = 121.9047619047619;
+        const innerY = 30.4761905670166;
+        const outerY = 50.66666793823242;
+        mockGeometry.mockResolvedValue({ keyboardTop, visible: true });
+        const { view, input, scrollTo } = fixture({ scale: 1, fullPane: true, scrollY,
+            scrollHeight: 210.2857208251953, inputY: 79.23809814453125, inputHeight,
+            scrollPosition: 27.428571701049805, extraOffset: 0 });
+        const inner = { nativeTag: 9 };
+        const outer = { nativeTag: 10 };
+        view.scrollViewRef.current.getInnerViewRef = () => inner;
+        view.scrollViewRef.current.getNativeScrollRef = () => outer;
+        input.measureLayout = jest.fn((relative, success) => {
+            success(0, relative === outer ? outerY : innerY, 100, inputHeight);
+        });
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        const finalTop = scrollY + outerY - scrollTo.mock.calls[0][0].y;
+        expect(finalTop - 2).toBeGreaterThanOrEqual(scrollY);
+        expect(finalTop + inputHeight + 2).toBeLessThanOrEqual(keyboardTop);
+        expect(input.measureLayout).toHaveBeenCalledWith(outer, expect.any(Function), expect.any(Function));
+        view.componentWillUnmount();
+    });
+
     it.each([0, 25])('uses content coordinates despite an intervening native scroll from %s', async (initialY) => {
         mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
         const { view, input, scrollTo } = fixture({ scale: 1, scrollY: 52, scrollHeight: 210,
             inputY: 102, inputHeight: 60, scrollPosition: initialY, extraOffset: 0 });
         view.context.fullPane = true;
         const inner = { nativeTag: 9 };
-        view.scrollViewRef.current.getInnerViewRef = () => inner;
+        view.scrollViewRef.current.getNativeScrollRef = () => inner;
         input.measureLayout = jest.fn((relative, success) => {
             expect(relative).toBe(inner);
             success(0, initialY + 50, 100, 60);
@@ -139,7 +167,7 @@ describe('adaptive Android keyboard coordinates', () => {
     it('ignores a late content-coordinate reply after the keyboard hides', async () => {
         const { view, input, scrollTo } = fixture({ scale: 1 });
         view.context.fullPane = true;
-        view.scrollViewRef.current.getInnerViewRef = () => ({ nativeTag: 9 });
+        view.scrollViewRef.current.getNativeScrollRef = () => ({ nativeTag: 9 });
         let complete: (...values: number[]) => void = () => undefined;
         input.measureLayout = (_relative: any, success: typeof complete) => { complete = success; };
         const pending = view.scrollToFocusedTextInput();
@@ -154,7 +182,7 @@ describe('adaptive Android keyboard coordinates', () => {
 
     it('replaces a canceled pane reply when the same-scale screen returns to normal mode', async () => {
         const { view, input, scrollTo } = fixture({ scale: 1, fullPane: true, extraOffset: 0 });
-        view.scrollViewRef.current.getInnerViewRef = () => ({ nativeTag: 9 });
+        view.scrollViewRef.current.getNativeScrollRef = () => ({ nativeTag: 9 });
         let complete: (...values: number[]) => void = () => undefined;
         input.measureLayout = jest.fn((_relative: any, success: typeof complete) => { complete = success; });
         const pending = view.scrollToFocusedTextInput();
@@ -174,7 +202,7 @@ describe('adaptive Android keyboard coordinates', () => {
         mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
         const { view, input, scrollTo } = fixture({ scale: 1, scrollY: 52, scrollHeight: 210,
             inputY: 102, inputHeight: 60, scrollPosition: 0, extraOffset: 0 });
-        view.scrollViewRef.current.getInnerViewRef = () => ({ nativeTag: 9 });
+        view.scrollViewRef.current.getNativeScrollRef = () => ({ nativeTag: 9 });
         input.measureLayout = jest.fn();
         mockDeferAnimation = true;
         await view.scrollToFocusedTextInput();
