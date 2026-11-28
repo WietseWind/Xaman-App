@@ -4,6 +4,8 @@ export type AndroidMultiWindowState = {
     isInMultiWindowMode: boolean;
     width: number;
     height: number;
+    /** Current window-local system bar/cutout inset, in DP. Older native builds omit it. */
+    topInset?: number;
     revision: number;
 };
 
@@ -19,11 +21,14 @@ export const parseAndroidMultiWindowState = (value: unknown): AndroidMultiWindow
     const state = value as AndroidMultiWindowState;
     if (typeof state.isInMultiWindowMode !== 'boolean' ||
         ![state.width, state.height].every((n) => typeof n === 'number' && Number.isFinite(n) && n > 0) ||
+        (state.topInset !== undefined && (typeof state.topInset !== 'number' ||
+            !Number.isFinite(state.topInset) || state.topInset < 0 || state.topInset > state.height)) ||
         !Number.isSafeInteger(state.revision) || state.revision < 0) return undefined;
     return {
         isInMultiWindowMode: state.isInMultiWindowMode,
         width: state.width,
         height: state.height,
+        ...(state.topInset !== undefined ? { topInset: state.topInset } : {}),
         revision: state.revision,
     };
 };
@@ -47,7 +52,7 @@ const accept = (value: unknown, owner: number) => {
     const state = parseAndroidMultiWindowState(value);
     if (!state || (current && state.revision <= current.revision)) return;
     const changed = !current || state.isInMultiWindowMode !== current.isInMultiWindowMode ||
-        state.width !== current.width || state.height !== current.height;
+        state.width !== current.width || state.height !== current.height || state.topInset !== current.topInset;
     current = state;
     if (changed) {
         // A listener may release a lease or mount another screen. Do not

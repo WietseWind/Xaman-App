@@ -104,6 +104,45 @@ beforeEach(() => {
 afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
 
 describe('adaptive Android keyboard coordinates', () => {
+    it('reduces pane clearance when a field only just fits above the actual IME', async () => {
+        // Same native coordinate origin: compact Header leaves70dp visible,
+        // and a60dp field must keep its top inside that measured scroll view.
+        mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
+        const { view, scrollTo } = fixture({ scale: 1, scrollY: 52, scrollHeight: 210,
+            inputY: 102, inputHeight: 60, scrollPosition: 0, extraOffset: 0 });
+        view.context.fullPane = true;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 50, animated: true });
+        const finalTop = 102 - scrollTo.mock.calls[0][0].y;
+        expect(finalTop).toBeGreaterThanOrEqual(52);
+        expect(finalTop + 60).toBeLessThanOrEqual(122);
+        view.componentWillUnmount();
+    });
+
+    it('recovers a focused pane input already scrolled above its own viewport', async () => {
+        mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
+        const { view, scrollTo } = fixture({ scale: 1, scrollY: 52, scrollHeight: 210,
+            inputY: 32, inputHeight: 60, scrollPosition: 80, extraOffset: 0 });
+        view.context.fullPane = true;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 60, animated: true });
+        view.componentWillUnmount();
+    });
+
+    it('aligns an oversized pane field at the viewport top instead of hiding its start', async () => {
+        mockGeometry.mockResolvedValue({ keyboardTop: 122, visible: true });
+        const { view, scrollTo } = fixture({ scale: 1, scrollY: 107, scrollHeight: 160,
+            inputY: 158, inputHeight: 60, scrollPosition: 0, extraOffset: 0 });
+        view.context.fullPane = true;
+        await view.scrollToFocusedTextInput();
+        jest.runOnlyPendingTimers();
+        expect(scrollTo).toHaveBeenCalledWith({ x: 0, y: 51, animated: true });
+        expect(158 - scrollTo.mock.calls[0][0].y).toBe(107);
+        view.componentWillUnmount();
+    });
+
     it('scrolls a focused field clipped by a pane card even when it is already above the IME', async () => {
         mockGeometry.mockResolvedValue({ keyboardTop: 200, visible: true });
         const { view, scrollTo } = fixture({ scale: 1, scrollY: 40, scrollHeight: 100,

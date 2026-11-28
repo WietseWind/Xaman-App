@@ -142,7 +142,8 @@ export const withAndroidWindowLayout = <P extends object>(Screen: ComponentType<
                 height: backdropFrame.logicalHeight,
                 columnWidth: backdropFrame.logicalWidth ?? layout.width,
                 scale: backdropFrame.scale,
-                ...(fullPane ? { fullPane: true } : {}),
+                ...(fullPane ? { fullPane: true,
+                    ...(multiWindow?.topInset !== undefined ? { topInset: multiWindow.topInset } : {}) } : {}),
             } : undefined;
             // Detached stack screens retain their last native view size. A
             // global tab bar must follow the current window, never that stale

@@ -349,6 +349,8 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
         const visibleBottom = context?.fullPane ? Math.min(top, scrollY + scrollHeight * scale) : top;
         const gap = bottom - visibleBottom;
         const hasOverlap = gap > 0;
+        const inputAboveViewport = !!context?.fullPane && inputY < scrollY;
+        const needsScroll = hasOverlap || inputAboveViewport;
         // Native origins are physical, while input height and scroll offsets
         // are logical. Convert the overlap once; keep caller offsets logical.
         const focusedPadding = (gap + 2 * inputHeight * scale + scrollY) / scale + extraOffset;
@@ -362,16 +364,25 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             : Math.max(this.adaptivePaddingTarget, rangePadding);
         // Visible focus still needs manual range, but must not shrink a range
         // the user already used or restart a pending padding animation.
-        if (!hasOverlap && padding === this.adaptivePaddingTarget) return true;
+        if (!needsScroll && padding === this.adaptivePaddingTarget) return true;
         this.adaptivePaddingTarget = padding;
         Animated.timing(offset, {
             toValue: padding, useNativeDriver: false, duration: 200,
         }).start(() => {
-            if (!hasOverlap || !isCurrent()) return;
+            if (!needsScroll || !isCurrent()) return;
             this.scrollToTimeout = setTimeout(() => {
                 if (!isCurrent()) return;
+                const currentY = this.scrollPosition.y;
+                let targetY = currentY + gap / scale + DEFAULT_EXTRA_OFFSET;
+                if (context?.fullPane) {
+                    // Clearance is optional when the visible pane only just
+                    // fits the input. Never move its start above this viewport;
+                    // also recover focus that was already clipped at the top.
+                    const alignedTop = currentY + (inputY - scrollY) / scale;
+                    targetY = Math.max(0, inputAboveViewport ? alignedTop : Math.min(targetY, alignedTop));
+                }
                 this.scrollViewRef.current?.scrollTo({
-                    x: 0, y: this.scrollPosition.y + gap / scale + DEFAULT_EXTRA_OFFSET, animated: true,
+                    x: 0, y: targetY, animated: true,
                 });
             }, 10);
         });

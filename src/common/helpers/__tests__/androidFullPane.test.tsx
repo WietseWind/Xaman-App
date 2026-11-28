@@ -130,6 +130,35 @@ it('bounds an early ordinary-phone overlay to its actual pane before the first l
     act(() => tree!.unmount());
 });
 
+it('passes a live local top inset only in actual split mode, without replacing the screen', () => {
+    const Content = () => (
+        <AndroidWindowSurroundContext.Consumer>
+            {(surround) => React.createElement('InsetProbe', { surround })}
+        </AndroidWindowSurroundContext.Consumer>
+    );
+    const Wrapped = withAndroidWindowLayout(Content);
+    let tree: renderer.ReactTestRenderer;
+    act(() => { tree = renderer.create(<Wrapped />); });
+    const content = tree!.root.findByType(Content);
+    act(() => {
+        mockState = { width: 407, height: 411, isInMultiWindowMode: true, topInset: 52, revision: 1 };
+        mockNativeListeners.forEach((listener) => listener(mockState));
+    });
+    expect(tree!.root.findByType('InsetProbe' as any).props.surround.topInset).toBe(52);
+    act(() => {
+        mockState = { ...mockState, topInset: 24, revision: 2 };
+        mockNativeListeners.forEach((listener) => listener(mockState));
+    });
+    expect(tree!.root.findByType('InsetProbe' as any).props.surround.topInset).toBe(24);
+    expect(tree!.root.findByType(Content)).toBe(content);
+    act(() => {
+        mockState = { ...INNER, isInMultiWindowMode: false, topInset: 52, revision: 3 };
+        mockNativeListeners.forEach((listener) => listener(mockState));
+    });
+    expect(tree!.root.findByType('InsetProbe' as any).props.surround.topInset).toBeUndefined();
+    act(() => tree!.unmount());
+});
+
 it('reconciles a cached native transition between construction and mount without publishing the old width', () => {
     const width = 1091 / 2.625;
     class Screen extends Component {

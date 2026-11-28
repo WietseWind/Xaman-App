@@ -9,6 +9,7 @@ import React, { PureComponent, ReactNode } from 'react';
 import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { HasBottomNotch } from '@common/helpers/device';
+import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 
 import { AppSizes } from '@theme';
 import styles from './styles';
@@ -27,6 +28,10 @@ interface State {
 
 /* Component ==================================================================== */
 class Footer extends PureComponent<Props, State> {
+    static contextType = AndroidWindowSurroundContext;
+
+    declare context: React.ContextType<typeof AndroidWindowSurroundContext>;
+
     constructor(props: Props) {
         super(props);
 
@@ -50,6 +55,8 @@ class Footer extends PureComponent<Props, State> {
     render() {
         const { children, style, safeArea } = this.props;
         const { hidden } = this.state;
+        const { context } = this;
+        const fullPane = Platform.OS === 'android' && context?.fullPane;
 
         if (hidden) {
             return null;
@@ -59,6 +66,7 @@ class Footer extends PureComponent<Props, State> {
             styles.container,
             { paddingBottom: safeArea ? (HasBottomNotch() ? 34 : 10) + AppSizes.paddingExtraSml : undefined },
             style,
+            ...(fullPane ? [{ width: '100%' as const }] : []),
         ]) as ViewStyle;
 
         // Home-button / iPhone SE: SafeAreaView bottom inset is 0, so keep a 20pt gap.

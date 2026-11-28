@@ -133,6 +133,23 @@ it('keeps the last good snapshot when a native query fails', async () => {
     sub.remove();
 });
 
+it('publishes same-size live top insets and rejects malformed inset snapshots', async () => {
+    const listener = jest.fn();
+    const sub = api.subscribeAndroidMultiWindowState(listener);
+    await flush();
+    nativeEvent({ ...snapshot(2, true, 407, 411), topInset: 52 });
+    nativeEvent({ ...snapshot(3, true, 407, 411), topInset: 24 });
+    expect(listener.mock.calls.map(([value]) => value.topInset)).toEqual([52, 24]);
+    [-1, Number.NaN, Number.POSITIVE_INFINITY, 412, '24', null].forEach((topInset) => {
+        nativeEvent({ ...snapshot(4, true, 407, 411), topInset });
+    });
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(api.getAndroidMultiWindowState()?.revision).toBe(3);
+    nativeEvent({ ...snapshot(5, true, 407, 411), topInset: 0 });
+    expect(listener).toHaveBeenLastCalledWith({ ...snapshot(5, true, 407, 411), topInset: 0 });
+    sub.remove();
+});
+
 it('owns duplicate callback subscriptions separately and does not notify a newly added lease mid-event', async () => {
     const listener = jest.fn();
     const first = api.subscribeAndroidMultiWindowState(listener);

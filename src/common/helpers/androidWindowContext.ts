@@ -12,6 +12,8 @@ export type AndroidWindowSurround = {
     scale: number;
     /** Actual Android multi-window pane; dimensions are unscaled live DP. */
     fullPane?: boolean;
+    /** Live top system inset, only used in an actual full pane. */
+    topInset?: number;
 };
 
 export const AndroidWindowSurroundContext = createContext<AndroidWindowSurround | undefined>(undefined);
