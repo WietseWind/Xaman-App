@@ -49,7 +49,7 @@ const AndroidPaneCard = React.forwardRef<View, Props>(({
                 {scrollable ? <KeyboardAwareScrollView
                     style={!fullPane && normalFill ? FILL_STYLE : SCROLL_STYLE}
                     contentContainerStyle={{ alignItems: cardStyle?.alignItems,
-                        ...(!fullPane && normalFill ? { flexGrow: 1 } : {}) }}
+                        ...(!fullPane && normalFill ? { flex: 1 } : {}) }}
                     enabled={fullPane}
                     observeKeyboard={fullPane}
                     scrollEnabled={fullPane}

@@ -56,13 +56,15 @@ it('retains a full-height form and its draft while switching between normal allo
     };
     // The old full-height Authenticate uses header/footer flex children. Its
     // parent allocation must reach them through every new scroll boundary.
-    expect(allocation().every((style) => style?.flexGrow === 1)).toBe(true);
+    const fillsParent = (style: any) => style?.flex === 1 ||
+        (style?.flexGrow === 1 && style?.flexShrink === 1 && style?.flexBasis === 0);
+    expect(allocation().every(fillsParent)).toBe(true);
     act(() => tree.update(render(pane())));
     const form = tree.root.findAllByType(View).find((node) => node.props.testID === 'full-form')!;
     expect(StyleSheet.flatten(form.props.style)).toMatchObject({ width: 540, maxHeight: 320 });
     expect(tree.root.findByType(KeyboardAwareScrollView).props.contentContainerStyle.flexGrow).toBeUndefined();
     act(() => tree.update(render()));
-    expect(allocation().every((style) => style?.flexGrow === 1)).toBe(true);
+    expect(allocation().every(fillsParent)).toBe(true);
     expect(tree.root.findByType(Draft).instance).toBe(draft);
     expect(draft.state.text).toBe('public draft');
     act(() => tree.unmount());
