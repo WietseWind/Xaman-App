@@ -1,0 +1,38 @@
+// Tangem 3.7.2 is no longer available reliably from JitPack. These exact cached
+// Jetifier artifacts and their original dependency edges are committed to this repo.
+// Exclusive resolution makes a missing local SDK fail instead of using a remote replacement.
+def recoveryRoot = rootProject.projectDir.parentFile
+exec {
+    workingDir recoveryRoot
+    commandLine 'node', new File(recoveryRoot, 'scripts/check-tangem-sdk.js').absolutePath, '--require-installed'
+}
+
+allprojects {
+    repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'XamanTangemRecovery'
+                    url = new File(recoveryRoot, 'vendor/tangem/android/maven').toURI()
+                    metadataSources {
+                        gradleMetadata()
+                        mavenPom()
+                    }
+                }
+            }
+            filter {
+                includeModule('com.github.tangem.tangem-sdk-android', 'android')
+                includeModule('com.github.tangem.tangem-sdk-android', 'core')
+            }
+        }
+    }
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'com.github.tangem.tangem-sdk-android' &&
+                details.requested.name in ['android', 'core'] &&
+                details.requested.version != '3.7.2') {
+                throw new GradleException('Tangem SDK version changed. Review and replace vendor/tangem before building.')
+            }
+        }
+    }
+}

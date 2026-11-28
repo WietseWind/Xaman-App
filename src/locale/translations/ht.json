@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Eskane yon kat Xaman Tangem pou verifye si se li ki anrejistre pou kont sa a.",
     "tangemRightCard": "Kat la koresponn",
     "tangemDifferentCard": "Lòt kat",
+    "tangemDifferentCardExplain": "Sa a se pa kat kont sa a. Tanpri eskane kat ki rele “%{name}” lan.",
     "tangemCardKnownAs": "Anrejistre kòm yon lòt kont",
     "tangemCardNotImported": "Sa a se yon kat enkoni. Li poko enpòte nan Xaman.",
     "accountMaxLabelLengthError": "Etikèt kont yo ta dwe mwens pase 16 karaktè!",
@@ -2138,7 +2139,9 @@
     "removeDoneBody": "Kat orijinal ou a toujou mache. Kont ou a pa gen kat sekou ankò.",
     "identifyBody": "Eskane kat sekou ki lye ak kont sa a pou verifye si se bon kat la.",
     "notYourBackup": "Sa a se pa kat sekou ou a.",
-    "yourBackup": "Sa a se kat sekou ou a."
+    "yourBackup": "Sa a se kat sekou ou a.",
+    "backupFor": "Se kat sekou pou",
+    "hasBackup": "Li gen kat sekou"
   },
   "accessibility": {
     "moreOptions": "Plis opsyon",

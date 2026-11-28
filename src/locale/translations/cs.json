@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Načtěte kartu Xaman Tangem a ověřte, zda je uložená pro tento účet.",
     "tangemRightCard": "Karta odpovídá",
     "tangemDifferentCard": "Jiná karta",
+    "tangemDifferentCardExplain": "Toto není karta tohoto účtu. Naskenujte kartu s názvem „%{name}“.",
     "tangemCardKnownAs": "Uložena jako jiný účet",
     "tangemCardNotImported": "Toto je neznámá karta. Do Xaman zatím nebyla importována.",
     "accountMaxLabelLengthError": "Štítek (popisek) účtu by měl být kratší než 16 znaků!",
@@ -2108,7 +2109,9 @@
     "removeDoneBody": "Původní karta stále funguje. Váš účet již nemá záložní kartu.",
     "identifyBody": "Naskenujte záložní kartu propojenou s tímto účtem a ověřte, zda je správná.",
     "notYourBackup": "Toto není vaše záložní karta.",
-    "yourBackup": "Toto je vaše záložní karta."
+    "yourBackup": "Toto je vaše záložní karta.",
+    "backupFor": "Je záložní kartou pro",
+    "hasBackup": "Má záložní kartu"
   },
   "accessibility": {
     "moreOptions": "Další možnosti",

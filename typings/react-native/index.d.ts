@@ -204,7 +204,17 @@ export interface DeviceUtilsModuleInterface extends NativeModule {
     layoutInsets: {
         top: number;
         bottom: number;
+        // a safe area on a side of the screen in portrait (iOS; 0 on every phone but one with a system part on a side)
+        left?: number;
+        right?: number;
     };
+        // the edge of the vertical tab bar: 1 leading, 2 trailing; 0 or nothing on a phone without one
+        verticalBarEdge?: number;
+
+    // iOS: the device is an iPad (the app is an iPhone app there, in a window of the system)
+    isPadDevice?: boolean;
+    // iPad: the size the app is laid out for; width and height 0 when it has none (every phone)
+    padLayout?: { width: number; height: number };
 
     /**
      * Compact tab-bar item row and full bar height (item row + home indicator).

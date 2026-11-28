@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Eskaneatu Xaman Tangem txartel bat kontu honetarako gordetakoa den egiaztatzeko.",
     "tangemRightCard": "Txartela bat dator",
     "tangemDifferentCard": "Beste txartel bat",
+    "tangemDifferentCardExplain": "Hau ez da kontu honen txartela. Eskaneatu «%{name}» izeneko txartela.",
     "tangemCardKnownAs": "Beste kontu gisa gordeta",
     "tangemCardNotImported": "Hau txartel ezezaguna da. Oraindik ez da Xamanera inportatu.",
     "accountMaxLabelLengthError": "Kontuaren etiketak 16 karaktere baino gutxiago izan behar ditu!",
@@ -2127,7 +2128,9 @@
     "removeDoneBody": "Jatorrizko txartelak lanean jarraitzen du. Zure kontuak ez du babeskopia-txartelik.",
     "identifyBody": "Eskaneatu kontu honi lotutako babeskopia-txartela zuzena dela egiaztatzeko.",
     "notYourBackup": "Hau ez da zure babeskopia-txartela.",
-    "yourBackup": "Hau zure babeskopia-txartela da."
+    "yourBackup": "Hau zure babeskopia-txartela da.",
+    "backupFor": "Honen babes-txartela da",
+    "hasBackup": "Babes-txartela du"
   },
   "accessibility": {
     "moreOptions": "Aukera gehiago",

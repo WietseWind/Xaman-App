@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skanni Xaman Tangem-kaarti, et kontrollida, kas see on selle konto jaoks salvestatud kaart.",
     "tangemRightCard": "Kaart vastab",
     "tangemDifferentCard": "Teine kaart",
+    "tangemDifferentCardExplain": "See ei ole selle konto kaart. Skanni kaarti nimega „%{name}“.",
     "tangemCardKnownAs": "Salvestatud teise kontona",
     "tangemCardNotImported": "See on tundmatu kaart. Seda pole veel Xamanisse imporditud.",
     "accountMaxLabelLengthError": "Konto silt peaks olema vähem kui 16 tähemärki!",
@@ -2110,7 +2111,9 @@
     "removeDoneBody": "Algne kaart töötab endiselt. Sinu kontol ei ole enam varukaarti.",
     "identifyBody": "Skanni selle kontoga seotud varukaarti, et kontrollida, kas see on õige kaart.",
     "notYourBackup": "See ei ole sinu varukaart.",
-    "yourBackup": "See on sinu varukaart."
+    "yourBackup": "See on sinu varukaart.",
+    "backupFor": "On varukaart kaardile",
+    "hasBackup": "Tal on varukaart"
   },
   "accessibility": {
     "moreOptions": "Rohkem valikuid",

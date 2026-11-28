@@ -20,9 +20,13 @@ import { AccountSet } from '@common/libs/ledger/transactions/genuine/AccountSet'
 import { Batch } from '@common/libs/ledger/transactions/genuine/Batch';
 import mockTangemCard, {
     mockTangemSdkSign,
+    mockTangemSdkError,
     MockTangemCard,
+    TANGEM_WRONG_CARD_NUMBER,
     TANGEM_DERIVATION_PATH,
 } from '@common/utils/__tests__/helpers/mockTangemCard';
+
+import { showTangemWrongCard } from '@common/helpers/tangemWrongCard';
 
 import VaultOverlay from '../VaultOverlay';
 import { AuthMethods } from '../types';
@@ -56,6 +60,7 @@ jest.mock('@common/libs/crash', () => ({ __esModule: true, default: { breadcrumb
 jest.mock('@common/helpers/interface', () => ({ Prompt: jest.fn(), VibrateHapticFeedback: jest.fn() }));
 jest.mock('@common/helpers/keyboard', () => ({ __esModule: true, default: { dismiss: jest.fn() } }));
 jest.mock('@common/helpers/navigator', () => ({ Navigator: { dismissOverlay: jest.fn() } }));
+jest.mock('@common/helpers/tangemWrongCard', () => ({ showTangemWrongCard: jest.fn() }));
 jest.mock('../Methods', () => ({
     PasscodeMethod: 'PasscodeMethod', PassphraseMethod: 'PassphraseMethod', TangemMethod: 'TangemMethod',
 }));
@@ -208,7 +213,8 @@ describe('a normal transaction signed with a card', () => {
 
         expect(RNTangemSdk.startSession).toHaveBeenCalledWith({ attestationMode: 'offline' });
         expect(card.signCalls).toStrictEqual([
-            { cardId: card.cardId, walletPublicKey: card.card.wallets[0].publicKey, hashes: [expect.any(String)] },
+            // no card id: the SDK does not look for one card, the app checks the card that answered
+            { walletPublicKey: card.card.wallets[0].publicKey, hashes: [expect.any(String)] },
         ]);
 
         const { json, signed } = result;
@@ -382,14 +388,69 @@ describe('when the card does not give a usable signature', () => {
         const card = mockTangemCard('expected');
         const other = mockTangemCard('held-to-the-phone');
         const account = cardAccount(card);
-        jest.mocked(RNTangemSdk.sign).mockImplementation((async (options: any) =>
-            other.sign({ ...options, cardId: other.cardId, walletPublicKey: other.card.wallets[0].publicKey })) as any);
+        // the answer has the right card id, but the signature is of another key
+        jest.mocked(RNTangemSdk.sign).mockImplementation((async (options: any) => ({
+            ...(await other.sign({ ...options, walletPublicKey: other.card.wallets[0].publicKey })),
+            cardId: card.cardId,
+        })) as any);
         const { signed, json } = await signWithCard({
             account, accounts: [account], cards: [card], transaction: accountSet(card.address),
         });
 
         expect(json).toBeUndefined();
         expect(signed).toMatchObject({ signedTransaction: '', id: '', signatureVerifies: false });
+    });
+
+    // issue 564: another card ends the card session. The app says which card it must be, with its own alert
+    it('another card is held to the phone: no signature, the overlay closes, the right card is named', async () => {
+        const card = mockTangemCard('expected-card');
+        const other = mockTangemCard('another-card');
+        const account = cardAccount(card);
+        jest.mocked(RNTangemSdk.sign).mockImplementation(mockTangemSdkSign([card, other], other) as any);
+        const { onSign, onDismissed } = await signWithCard({
+            account, accounts: [account], cards: [card, other], transaction: accountSet(card.address),
+        });
+
+        // the SDK got no card id, so it did not start its own "wrong card" wait
+        expect(other.signCalls).toHaveLength(1);
+        expect(other.signCalls[0]).not.toHaveProperty('cardId');
+        expect(other.signedHashes).toHaveLength(0);
+        expect(onSign).not.toHaveBeenCalled();
+        expect(onDismissed).toHaveBeenCalledTimes(1);
+        expect(showTangemWrongCard).toHaveBeenCalledTimes(1);
+        expect(showTangemWrongCard).toHaveBeenCalledWith(card.name);
+        expect(LoggerService.recordError).not.toHaveBeenCalled();
+    });
+
+    it('a card with the same wallet key but another card id: its signature is not used', async () => {
+        const card = mockTangemCard('expected-twin');
+        const account = cardAccount(card);
+        jest.mocked(RNTangemSdk.sign).mockImplementation((async (options: any) => ({
+            ...(await card.sign(options)),
+            cardId: 'CB0000000000000000',
+        })) as any);
+        const { onSign, onDismissed } = await signWithCard({
+            account, accounts: [account], cards: [card], transaction: accountSet(card.address),
+        });
+
+        expect(onSign).not.toHaveBeenCalled();
+        expect(onDismissed).toHaveBeenCalledTimes(1);
+        expect(showTangemWrongCard).toHaveBeenCalledWith(card.name);
+    });
+
+    it('the native check of the card id answers "wrong card number": the same alert', async () => {
+        const card = mockTangemCard('expected-native');
+        const account = cardAccount(card);
+        jest.mocked(RNTangemSdk.sign).mockRejectedValue(
+            mockTangemSdkError(TANGEM_WRONG_CARD_NUMBER, 'wrong card'),
+        );
+        const { onSign } = await signWithCard({
+            account, accounts: [account], cards: [card], transaction: accountSet(card.address),
+        });
+
+        expect(onSign).not.toHaveBeenCalled();
+        expect(showTangemWrongCard).toHaveBeenCalledWith(card.name);
+        expect(LoggerService.recordError).not.toHaveBeenCalled();
     });
 
     it('the user cancels at the card: the overlay closes without a result and without an error report', async () => {

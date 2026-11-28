@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "ਇਸ ਖਾਤੇ ਲਈ ਸੰਭਾਲਿਆ ਕਾਰਡ ਹੈ ਜਾਂ ਨਹੀਂ, ਇਹ ਵੇਖਣ ਲਈ Xaman Tangem ਕਾਰਡ ਸਕੈਨ ਕਰੋ।",
     "tangemRightCard": "ਕਾਰਡ ਮੇਲ ਖਾਂਦਾ ਹੈ",
     "tangemDifferentCard": "ਵੱਖਰਾ ਕਾਰਡ",
+    "tangemDifferentCardExplain": "ਇਹ ਇਸ ਖਾਤੇ ਦਾ ਕਾਰਡ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ “%{name}” ਨਾਮ ਵਾਲਾ ਕਾਰਡ ਸਕੈਨ ਕਰੋ।",
     "tangemCardKnownAs": "ਕਿਸੇ ਹੋਰ ਖਾਤੇ ਵਜੋਂ ਸੰਭਾਲਿਆ",
     "tangemCardNotImported": "ਇਹ ਇੱਕ ਅਣਜਾਣ ਕਾਰਡ ਹੈ। ਇਸਨੂੰ ਅਜੇ Xaman ਵਿੱਚ ਆਯਾਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।",
     "accountMaxLabelLengthError": "ਖਾਤਾ ਲੇਬਲ 16 ਅੱਖਰਾਂ ਤੋਂ ਘੱਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ!",
@@ -2138,7 +2139,9 @@
     "removeDoneBody": "ਤੁਹਾਡਾ ਅਸਲ ਕਾਰਡ ਅਜੇ ਵੀ ਕੰਮ ਕਰਦਾ ਹੈ। ਤੁਹਾਡੇ ਖਾਤੇ ਲਈ ਹੁਣ ਬੈਕਅੱਪ ਕਾਰਡ ਨਹੀਂ ਹੈ।",
     "identifyBody": "ਸਹੀ ਕਾਰਡ ਦੀ ਜਾਂਚ ਲਈ ਇਸ ਖਾਤੇ ਨਾਲ ਜੁੜਿਆ ਬੈਕਅੱਪ ਕਾਰਡ ਸਕੈਨ ਕਰੋ।",
     "notYourBackup": "ਇਹ ਤੁਹਾਡਾ ਬੈਕਅੱਪ ਕਾਰਡ ਨਹੀਂ ਹੈ।",
-    "yourBackup": "ਇਹ ਤੁਹਾਡਾ ਬੈਕਅੱਪ ਕਾਰਡ ਹੈ।"
+    "yourBackup": "ਇਹ ਤੁਹਾਡਾ ਬੈਕਅੱਪ ਕਾਰਡ ਹੈ।",
+    "backupFor": "ਇਹ ਇਸ ਕਾਰਡ ਦਾ ਬੈਕਅੱਪ ਕਾਰਡ ਹੈ",
+    "hasBackup": "ਬੈਕਅੱਪ ਕਾਰਡ ਹੈ"
   },
   "accessibility": {
     "moreOptions": "ਹੋਰ ਵਿਕਲਪ",

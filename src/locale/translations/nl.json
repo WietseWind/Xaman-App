@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scan een Xaman Tangem-kaart om te controleren of deze voor dit account is opgeslagen.",
     "tangemRightCard": "Kaart komt overeen",
     "tangemDifferentCard": "Andere kaart",
+    "tangemDifferentCardExplain": "Dit is niet de kaart van dit account. Scan de kaart met de naam “%{name}”.",
     "tangemCardKnownAs": "Opgeslagen als ander account",
     "tangemCardNotImported": "Dit is een onbekende kaart. Deze is nog niet in Xaman geïmporteerd.",
     "accountMaxLabelLengthError": "Account label moet korter zijn dan 64 tekens!",
@@ -2107,7 +2108,9 @@
     "removeDoneBody": "Je oorspronkelijke kaart blijft werken. Je account heeft geen back-upkaart meer.",
     "identifyBody": "Scan de back-upkaart die aan dit account is gekoppeld om te controleren of het de juiste kaart is.",
     "notYourBackup": "Dit is niet je back-upkaart.",
-    "yourBackup": "Dit is je back-upkaart."
+    "yourBackup": "Dit is je back-upkaart.",
+    "backupFor": "Is back-upkaart voor",
+    "hasBackup": "Heeft back-upkaart"
   },
   "accessibility": {
     "moreOptions": "Meer opties",

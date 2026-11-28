@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scan a Xaman Tangem card to check whether it is the one saved for this account.",
     "tangemRightCard": "Card matched",
     "tangemDifferentCard": "Different card",
+    "tangemDifferentCardExplain": "This is not the card of this account. Please scan the card named “%{name}”.",
     "tangemCardKnownAs": "Saved as another account",
     "tangemCardNotImported": "This is an unknown card. It has not been imported into Xaman yet.",
     "accountMaxLabelLengthError": "Account label should be less than 64 characters!",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "Your original card still works. Your account no longer has a back-up card.",
     "identifyBody": "Scan the back-up card linked to this account to check that it is the right card.",
     "notYourBackup": "This is not your back-up card.",
-    "yourBackup": "This is your back-up card."
+    "yourBackup": "This is your back-up card.",
+    "backupFor": "Is back-up card for",
+    "hasBackup": "Has back-up card"
   },
   "accessibility": {
     "moreOptions": "More options",

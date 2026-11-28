@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Mag-scan ng Xaman Tangem card para tingnan kung ito ang naka-save para sa account na ito.",
     "tangemRightCard": "Tugma ang card",
     "tangemDifferentCard": "Ibang card",
+    "tangemDifferentCardExplain": "Hindi ito ang card ng account na ito. I-scan ang card na may pangalang “%{name}”.",
     "tangemCardKnownAs": "Naka-save bilang ibang account",
     "tangemCardNotImported": "Ito ay isang hindi kilalang card. Hindi pa ito na-import sa Xaman.",
     "accountMaxLabelLengthError": "Ang label ng account ay dapat mas mababa sa 16 characters!",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "Gumagana pa rin ang orihinal mong card. Wala nang backup card ang iyong account.",
     "identifyBody": "I-scan ang backup card na naka-link sa account na ito para masuri kung ito ang tamang card.",
     "notYourBackup": "Hindi ito ang iyong backup card.",
-    "yourBackup": "Ito ang iyong backup card."
+    "yourBackup": "Ito ang iyong backup card.",
+    "backupFor": "Back-up na card para sa",
+    "hasBackup": "May back-up na card"
   },
   "accessibility": {
     "moreOptions": "Higit pang opsyon",

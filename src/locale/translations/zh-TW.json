@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "掃描 Xaman Tangem 卡，確認是否為此帳戶儲存的卡片。",
     "tangemRightCard": "卡片相符",
     "tangemDifferentCard": "另一張卡片",
+    "tangemDifferentCardExplain": "這不是此帳戶的卡片。請掃描名為「%{name}」的卡片。",
     "tangemCardKnownAs": "已儲存為另一個帳戶",
     "tangemCardNotImported": "這是未知卡片，尚未匯入 Xaman。",
     "accountMaxLabelLengthError": "Account label should be less than 16 characters!",
@@ -2124,7 +2125,9 @@
     "removeDoneBody": "原卡仍可正常使用。您的帳戶不再有備份卡。",
     "identifyBody": "請掃描與此帳戶連結的備份卡，確認是否為正確的卡片。",
     "notYourBackup": "這不是您的備份卡。",
-    "yourBackup": "這是您的備份卡。"
+    "yourBackup": "這是您的備份卡。",
+    "backupFor": "是以下卡片的備用卡",
+    "hasBackup": "擁有備用卡"
   },
   "accessibility": {
     "moreOptions": "更多選項",

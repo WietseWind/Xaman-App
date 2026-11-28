@@ -4,12 +4,21 @@
  */
 import RNTangemSdk from 'tangem-sdk-react-native';
 
-import { TangemCard, tangemCardPromptOpen, resetTangemCardPrompts } from '../tangemSession';
+import {
+    TangemCard,
+    tangemCardPromptOpen,
+    resetTangemCardPrompts,
+    startTangemOfflineSession,
+    stopTangemSessionLater,
+    isTangemWrongCard,
+    sameTangemCardId,
+} from '../tangemSession';
 
 jest.mock('tangem-sdk-react-native', () => ({
     __esModule: true,
     default: {
         startSession: jest.fn(async () => undefined),
+        stopSession: jest.fn(async () => undefined),
         scanCard: jest.fn(),
         sign: jest.fn(),
         createWallet: jest.fn(),
@@ -86,7 +95,6 @@ describe('a card prompt', () => {
     it('passes the options of every card operation to the SDK', async () => {
         const operations = [
             'scanCard',
-            'sign',
             'createWallet',
             'setAccessCode',
             'setPasscode',
@@ -98,6 +106,105 @@ describe('a card prompt', () => {
             await expect((TangemCard[name] as any)(options)).resolves.toEqual({ done: name });
             expect(sdk).toHaveBeenCalledWith(options);
         }
+    });
+});
+
+/*
+ * Issue 564. With a card id the SDK handles another card itself: it keeps the session open and starts
+ * the NFC polling again, and on some Android phones that never finds the next card. So another card must
+ * end the session, and the app must know that it was another card.
+ */
+describe('a card operation that gets another card than the app asked for', () => {
+    const sdkError = (code: string) => Object.assign(new Error(`sdk error ${code}`), { code });
+    const signOptions = { cardId: 'CB01', walletPublicKey: 'KEY', hashes: ['AB'] } as any;
+
+    it('sign: the SDK does not get the card id, so it does not wait for one card', async () => {
+        const sdk = jest.mocked(RNTangemSdk.sign).mockResolvedValue({ cardId: 'CB01', signatures: ['S'] } as any);
+        await expect(TangemCard.sign(signOptions)).resolves.toEqual({ cardId: 'CB01', signatures: ['S'] });
+        expect(sdk).toHaveBeenCalledWith({ walletPublicKey: 'KEY', hashes: ['AB'] });
+    });
+
+    it('sign: the card id in the answer is compared without regard to case', async () => {
+        jest.mocked(RNTangemSdk.sign).mockResolvedValue({ cardId: 'cb01', signatures: ['S'] } as any);
+        await expect(TangemCard.sign(signOptions)).resolves.toMatchObject({ signatures: ['S'] });
+    });
+
+    it('sign: a card without the wallet ("wallet not found") is the wrong card', async () => {
+        jest.mocked(RNTangemSdk.sign).mockRejectedValue(sdkError('30008'));
+        const error = await TangemCard.sign(signOptions).catch((e) => e);
+        expect(isTangemWrongCard(error)).toBe(true);
+    });
+
+    it('sign: an answer of a card with another card id, or without one, is not used', async () => {
+        for (const cardId of ['CB02', '', undefined]) {
+            jest.mocked(RNTangemSdk.sign).mockResolvedValue({ cardId, signatures: ['S'] } as any);
+            const error = await TangemCard.sign(signOptions).catch((e) => e);
+            expect(isTangemWrongCard(error)).toBe(true);
+        }
+    });
+
+    it('sign: without the card id of the expected card nothing is asked of a card', async () => {
+        await expect(TangemCard.sign({ ...signOptions, cardId: '' })).rejects.toThrow('cardId is required');
+        expect(RNTangemSdk.sign).not.toHaveBeenCalled();
+    });
+
+    it.each(['createWallet', 'setAccessCode', 'setPasscode', 'resetUserCodes'] as const)(
+        '%s: the card id goes to the native check, and its "wrong card number" is the wrong card',
+        async (name) => {
+            const sdk = jest.mocked(RNTangemSdk[name] as any).mockRejectedValue(sdkError('50005'));
+            const error = await (TangemCard[name] as any)({ cardId: 'CB01' }).catch((e: any) => e);
+            expect(sdk).toHaveBeenCalledWith({ cardId: 'CB01' });
+            expect(isTangemWrongCard(error)).toBe(true);
+        },
+    );
+
+    it('every other error of the SDK is passed on as it is, and the prompt is closed', async () => {
+        const cancelled = Object.assign(new Error('The user cancelled the operation'), { code: '50002' });
+        jest.mocked(RNTangemSdk.sign).mockRejectedValue(cancelled);
+        const error = await TangemCard.sign(signOptions).catch((e) => e);
+        expect(error).toBe(cancelled);
+        expect(isTangemWrongCard(error)).toBe(false);
+        await jest.advanceTimersByTimeAsync(2100);
+        expect(tangemCardPromptOpen()).toBe(false);
+    });
+
+    it('card ids are the same only when both are there', () => {
+        expect(sameTangemCardId('CB01', 'cb01')).toBe(true);
+        expect(sameTangemCardId('CB01', 'CB02')).toBe(false);
+        expect(sameTangemCardId('', '')).toBe(false);
+        expect(sameTangemCardId(undefined, 'CB01')).toBe(false);
+    });
+});
+
+/*
+ * On Android a stop of the session turns the NFC reader off. The vault stops the session 10 s after a
+ * sign. A new try inside those 10 s (the normal thing after "different card") must not be ended by it.
+ */
+describe('a planned stop of the session', () => {
+    it('stops the session after the delay', async () => {
+        stopTangemSessionLater(10000);
+        await jest.advanceTimersByTimeAsync(9900);
+        expect(RNTangemSdk.stopSession).not.toHaveBeenCalled();
+        await jest.advanceTimersByTimeAsync(200);
+        expect(RNTangemSdk.stopSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not stop a session that started after it was planned', async () => {
+        stopTangemSessionLater(10000);
+        await jest.advanceTimersByTimeAsync(3000);
+        await startTangemOfflineSession();
+        await jest.advanceTimersByTimeAsync(20000);
+        expect(RNTangemSdk.stopSession).not.toHaveBeenCalled();
+    });
+
+    it('planned twice: one stop, at the later time', async () => {
+        stopTangemSessionLater(10000);
+        await jest.advanceTimersByTimeAsync(8000);
+        stopTangemSessionLater(10000);
+        await jest.advanceTimersByTimeAsync(9000);
+        expect(RNTangemSdk.stopSession).not.toHaveBeenCalled();
+        await jest.advanceTimersByTimeAsync(1100);
+        expect(RNTangemSdk.stopSession).toHaveBeenCalledTimes(1);
     });
 });
 

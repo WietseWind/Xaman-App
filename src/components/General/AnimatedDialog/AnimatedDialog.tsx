@@ -5,6 +5,8 @@ import React, { PureComponent } from 'react';
 import { Animated, InteractionManager, ViewStyle } from 'react-native';
 import { GestureResponderEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
+
 // style
 import styles from './styles';
 
@@ -100,6 +102,7 @@ class AnimatedDialog extends PureComponent<Props, State> {
                 // VoiceOver stays in the dialog
                 accessibilityViewIsModal
             >
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <Animated.View
                     style={[
                         styles.visibleContent,

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Nuskaitykite Xaman Tangem kortelę ir patikrinkite, ar ji išsaugota šiai sąskaitai.",
     "tangemRightCard": "Kortelė atitinka",
     "tangemDifferentCard": "Kita kortelė",
+    "tangemDifferentCardExplain": "Tai ne šios sąskaitos kortelė. Nuskaitykite kortelę pavadinimu „%{name}“.",
     "tangemCardKnownAs": "Išsaugota kaip kita sąskaita",
     "tangemCardNotImported": "Tai nežinoma kortelė. Ji dar neimportuota į Xaman.",
     "accountMaxLabelLengthError": "Sąskaitos etiketė turi būti trumpesnė nei 64 simboliai!",
@@ -2142,7 +2143,9 @@
     "removeDoneBody": "Pradinė kortelė vis dar veikia. Jūsų paskyra nebeturi atsarginės kortelės.",
     "identifyBody": "Nuskaitykite su šia paskyra susietą atsarginę kortelę, kad patikrintumėte, ar ji tinkama.",
     "notYourBackup": "Tai ne jūsų atsarginė kortelė.",
-    "yourBackup": "Tai jūsų atsarginė kortelė."
+    "yourBackup": "Tai jūsų atsarginė kortelė.",
+    "backupFor": "Yra atsarginė kortelė šiai kortelei",
+    "hasBackup": "Turi atsarginę kortelę"
   },
   "accessibility": {
     "moreOptions": "Daugiau parinkčių",

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Xaman Tangem ڪارڊ اسڪين ڪري ڏسو ته ڇا اهو هن کاتي لاءِ محفوظ ڪيل ڪارڊ آهي.",
     "tangemRightCard": "ڪارڊ ملي ٿو",
     "tangemDifferentCard": "مختلف ڪارڊ",
+    "tangemDifferentCardExplain": "هي هن کاتي جو ڪارڊ ناهي. مهرباني ڪري “%{name}” نالي ڪارڊ اسڪين ڪريو.",
     "tangemCardKnownAs": "ٻئي کاتي طور محفوظ",
     "tangemCardNotImported": "هي هڪ اڻڄاتل ڪارڊ آهي. اهو اڃا تائين Xaman ۾ درآمد نه ڪيو ويو آهي.",
     "accountMaxLabelLengthError": "کاتي جو ليبل 16 اکرن کان گهٽ هجڻ گهرجي!",
@@ -2121,7 +2122,9 @@
     "removeDoneBody": "توهان جو اصل ڪارڊ اڃا ڪم ڪري ٿو. توهان جي اڪائونٽ وٽ هاڻي بيڪ اپ ڪارڊ ناهي.",
     "identifyBody": "صحيح ڪارڊ جي جاچ لاءِ هن اڪائونٽ سان ڳنڍيل بيڪ اپ ڪارڊ اسڪين ڪريو.",
     "notYourBackup": "هي توهان جو بيڪ اپ ڪارڊ ناهي.",
-    "yourBackup": "هي توهان جو بيڪ اپ ڪارڊ آهي."
+    "yourBackup": "هي توهان جو بيڪ اپ ڪارڊ آهي.",
+    "backupFor": "هي هن ڪارڊ جو بيڪ اپ ڪارڊ آهي",
+    "hasBackup": "بيڪ اپ ڪارڊ موجود آهي"
   },
   "accessibility": {
     "moreOptions": "وڌيڪ اختيار",

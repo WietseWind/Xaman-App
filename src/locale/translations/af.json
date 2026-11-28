@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skandeer ’n Xaman Tangem-kaart om te kyk of dit die kaart is wat vir hierdie rekening gestoor is.",
     "tangemRightCard": "Kaart stem ooreen",
     "tangemDifferentCard": "Ander kaart",
+    "tangemDifferentCardExplain": "Dit is nie die kaart van hierdie rekening nie. Skandeer asseblief die kaart met die naam “%{name}”.",
     "tangemCardKnownAs": "As ’n ander rekening gestoor",
     "tangemCardNotImported": "Dit is ’n onbekende kaart. Dit is nog nie in Xaman ingevoer nie.",
     "accountMaxLabelLengthError": "Rekeningetiket moet minder as 16 karakters bevat!",
@@ -2120,7 +2121,9 @@
     "removeDoneBody": "Jou oorspronklike kaart werk steeds. Jou rekening het nie meer ’n rugsteunkaart nie.",
     "identifyBody": "Skandeer die rugsteunkaart wat aan hierdie rekening gekoppel is om te kyk of dit die regte kaart is.",
     "notYourBackup": "Dit is nie jou rugsteunkaart nie.",
-    "yourBackup": "Dit is jou rugsteunkaart."
+    "yourBackup": "Dit is jou rugsteunkaart.",
+    "backupFor": "Is rugsteunkaart vir",
+    "hasBackup": "Het rugsteunkaart"
   },
   "accessibility": {
     "moreOptions": "Meer opsies",

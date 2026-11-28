@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scan et Xaman Tangem-kort for at se, om det er gemt til denne konto.",
     "tangemRightCard": "Kortet matcher",
     "tangemDifferentCard": "Andet kort",
+    "tangemDifferentCardExplain": "Dette er ikke kortet til denne konto. Scan kortet med navnet “%{name}”.",
     "tangemCardKnownAs": "Gemt som en anden konto",
     "tangemCardNotImported": "Dette er et ukendt kort. Det er endnu ikke importeret i Xaman.",
     "accountMaxLabelLengthError": "Kontonavnet skal være mindre end 16 tegn!",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "Dit oprindelige kort virker stadig. Din konto har ikke længere et backupkort.",
     "identifyBody": "Scan det backupkort, der er knyttet til denne konto, for at kontrollere, at det er det rigtige kort.",
     "notYourBackup": "Dette er ikke dit backupkort.",
-    "yourBackup": "Dette er dit backupkort."
+    "yourBackup": "Dette er dit backupkort.",
+    "backupFor": "Er reservekort for",
+    "hasBackup": "Har reservekort"
   },
   "accessibility": {
     "moreOptions": "Flere valgmuligheder",

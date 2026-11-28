@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Pindai kartu Xaman Tangem untuk memeriksa apakah itu kartu yang disimpan untuk akun ini.",
     "tangemRightCard": "Kartu cocok",
     "tangemDifferentCard": "Kartu berbeda",
+    "tangemDifferentCardExplain": "Ini bukan kartu akun ini. Pindai kartu bernama “%{name}”.",
     "tangemCardKnownAs": "Disimpan sebagai akun lain",
     "tangemCardNotImported": "Ini kartu yang tidak dikenal. Kartu ini belum diimpor ke Xaman.",
     "accountMaxLabelLengthError": "Label akun harus kurang dari 16 karakter!",
@@ -2121,7 +2122,9 @@
     "removeDoneBody": "Kartu asli masih berfungsi. Akun Anda tidak lagi memiliki kartu cadangan.",
     "identifyBody": "Pindai kartu cadangan yang terhubung ke akun ini untuk memeriksa apakah kartunya benar.",
     "notYourBackup": "Ini bukan kartu cadangan Anda.",
-    "yourBackup": "Ini kartu cadangan Anda."
+    "yourBackup": "Ini kartu cadangan Anda.",
+    "backupFor": "Kartu cadangan untuk",
+    "hasBackup": "Memiliki kartu cadangan"
   },
   "accessibility": {
     "moreOptions": "Opsi lainnya",

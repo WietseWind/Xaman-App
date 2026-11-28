@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Escaneja una targeta Xaman Tangem per comprovar si és la desada per a aquest compte.",
     "tangemRightCard": "La targeta coincideix",
     "tangemDifferentCard": "Targeta diferent",
+    "tangemDifferentCardExplain": "Aquesta no és la targeta d’aquest compte. Escaneja la targeta anomenada «%{name}».",
     "tangemCardKnownAs": "Desada com a un altre compte",
     "tangemCardNotImported": "Aquesta és una targeta desconeguda. Encara no s’ha importat a Xaman.",
     "accountMaxLabelLengthError": "L'etiqueta del compte ha de tenir menys de 16 caràcters.",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "La targeta original continua funcionant. El teu compte ja no té cap targeta de reserva.",
     "identifyBody": "Escaneja la targeta de reserva vinculada a aquest compte per comprovar que és la correcta.",
     "notYourBackup": "Aquesta no és la teva targeta de reserva.",
-    "yourBackup": "Aquesta és la teva targeta de reserva."
+    "yourBackup": "Aquesta és la teva targeta de reserva.",
+    "backupFor": "És targeta de reserva de",
+    "hasBackup": "Té targeta de reserva"
   },
   "accessibility": {
     "moreOptions": "Més opcions",

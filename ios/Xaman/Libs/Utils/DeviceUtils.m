@@ -8,6 +8,30 @@
 
 @import UIKit;
 
+#import <React/RCTView.h>
+#import <React/RCTViewManager.h>
+#import <React/RCTComponent.h>
+
+// The edge on which iOS puts a vertical bar (the tab bar) for these traits: 0 none, 1 leading, 2 trailing.
+// Only a phone that has such a bar gives another value than 0 (iPhone Duo, iOS 27.1 and later). Read by name, so
+// this builds with every SDK.
+static NSInteger XamanVerticalBarEdge(UITraitCollection *traits)
+{
+  SEL selector = NSSelectorFromString(@"verticalBarEdge");
+  if (traits == nil || ![traits respondsToSelector:selector]) {
+    return 0;
+  }
+  @try {
+    NSInteger edge = [[traits valueForKey:@"verticalBarEdge"] integerValue];
+    return (edge == 1 || edge == 2) ? edge : 0;
+  } @catch (NSException *exception) {
+    return 0;
+  }
+}
+
+// The last edge that was seen for this process: it outlives a reload of the JavaScript side.
+static NSInteger verticalBarEdgeSeen = 0;
+
 @implementation DeviceUtilsModule
 
 RCT_EXPORT_MODULE();
@@ -28,8 +52,57 @@ RCT_EXPORT_MODULE();
     @"brand": @"Apple",
     @"model": [self getModel],
     @"layoutInsets": [self getLayoutInsets],
+    @"verticalBarEdge": @([self getVerticalBarEdge]),
+    @"isPadDevice": @([DeviceUtilsModule isPadDevice]),
+    @"padLayout": [self getPadLayout],
     @"tabBarMetrics": [self getTabBarMetrics],
   };
+}
+
+// The app on an iPad (issue 553). The app is an iPhone app; an iPad runs it in a window of the system.
+// - iPadOS 27: the window is a real window. The user can make it larger and smaller, and the app gets the real
+//   screen of the iPad. The app then keeps one phone layout, in a box (src/common/helpers/sideSafeArea.tsx), and
+//   asks the system to keep the window at that size (SceneDelegate.m).
+// - older iPadOS: the app gets the screen of a phone, and the system scales that. Nothing is different from a
+//   phone there, so no layout size is told.
++ (BOOL)isPadDevice
+{
+  static BOOL isPad = NO;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    // The model, not the interface idiom: the idiom of an iPhone app is "phone" on an iPad too.
+    // Not a Mac that runs the iOS app: it also tells "iPad" as its model, and it was not looked at for this.
+    isPad = [[UIDevice currentDevice].model hasPrefix:@"iPad"] && !NSProcessInfo.processInfo.isiOSAppOnMac;
+  });
+  return isPad;
+}
+
+// A screen with a short side of less than this is the screen of a phone (the largest iPhone is 440 pt wide, the
+// smallest iPad 744 pt).
+static const CGFloat XamanPadShortSideMin = 600.0;
+
++ (CGSize)padLayoutSize
+{
+  if (![DeviceUtilsModule isPadDevice]) {
+    return CGSizeZero;
+  }
+  CGSize screen = UIScreen.mainScreen.bounds.size;
+  CGFloat shortSide = MIN(screen.width, screen.height);
+  if (shortSide < XamanPadShortSideMin) {
+    return CGSizeZero;
+  }
+  // The height has to fit on the screen in landscape too, so it is not more than the short side of the screen.
+  // The sizes are those of iPhones: 430 x 932 (Pro Max), 390 x 844, and 375 wide for a lower screen.
+  CGFloat height = MIN(932.0, floor(shortSide));
+  CGFloat width = height >= 932.0 ? 430.0 : (height >= 844.0 ? 390.0 : 375.0);
+  return CGSizeMake(width, height);
+}
+
+// {width: 0, height: 0} when the app has no layout size of its own (every iPhone).
+- (NSDictionary *) getPadLayout
+{
+  CGSize size = [DeviceUtilsModule padLayoutSize];
+  return @{ @"width": @(size.width), @"height": @(size.height) };
 }
 
 - (NSString *) getOSVersion {
@@ -49,20 +122,53 @@ RCT_EXPORT_MODULE();
   return deviceId;
 }
 
+// The safe area of the window as it was the last time it had one on a side (iPhone Duo). Process wide: it outlives
+// a reload of the JavaScript side, where this module is made again.
+static BOOL sideSafeAreaKnown = NO;
+static UIEdgeInsets sideSafeArea;
+
+// 0 on every phone that has no vertical bar: all phones but the iPhone Duo.
+- (NSInteger) getVerticalBarEdge
+{
+  NSInteger edge = XamanVerticalBarEdge([self keyWindow].traitCollection);
+  if (edge != 0) {
+    verticalBarEdgeSeen = edge;
+  }
+  return verticalBarEdgeSeen;
+}
+
 - (NSDictionary *) getLayoutInsets
 {
   UIWindow *window = [self keyWindow];
 
   UIEdgeInsets insets = window.safeAreaInsets;
+
+  // iPhone Duo: the camera corner is a safe area on the right of a window that has a root view controller, but a
+  // safe area at the top of a window that has none. A reload of the JavaScript side reads the insets in that second
+  // state (react-native-navigation took the root away), and the app would lay out for the full width. So the insets
+  // with a side safe area are kept, and they are the answer while the window has no root view controller.
+  // On every other phone no side safe area is ever seen, and nothing here changes what is reported.
+  if (insets.left > 0.0 || insets.right > 0.0) {
+    sideSafeArea = insets;
+    sideSafeAreaKnown = YES;
+  } else if (sideSafeAreaKnown && (window == nil || window.rootViewController == nil)) {
+    insets = sideSafeArea;
+  }
+
   // Non-notch phones still have a 20pt status bar. keyWindow is often nil
   // at constantsToExport time on iOS 13+, which would report top=0.
   if (insets.top < 1.0 && !UIApplication.sharedApplication.isStatusBarHidden) {
     insets.top = 20.0;
   }
 
+  // A safe area on a side of the screen while the app is in portrait: 0 on every phone, except one that has a part
+  // of the system on a side (iPhone Duo: the status area and the tab bar are on the right). The app then keeps its
+  // content out of that side (src/theme/sizes.ts, src/common/helpers/sideSafeArea.tsx).
   return @{
     @"top": @(insets.top),
-    @"bottom": @(insets.bottom)
+    @"bottom": @(insets.bottom),
+    @"left": @(MAX(0.0, insets.left)),
+    @"right": @(MAX(0.0, insets.right))
   };
 }
 
@@ -296,6 +402,111 @@ RCT_EXPORT_METHOD(getLocalSetting:(RCTPromiseResolveBlock)resolve
     NSError *error = [[NSError alloc] initWithDomain:@"getLocalSetting Module" code:0 userInfo:info];
     reject(@"failed to execute",@"",error);
   }
+}
+
+@end
+
+#pragma mark - SideSafeAreaView
+
+// A view that tells the JavaScript side its own safe area on the left and right, its width and height, and the edge
+// of the vertical bar, each time one of them changes. Only made on a phone with a vertical bar (iPhone Duo): there these
+// change while the app runs (the phone is opened or closed, the app goes to one half of the screen), and they are
+// not the same for every view (in one half the tab bar is in the safe area of a tab, not in that of the window).
+// See src/common/helpers/sideSafeArea.tsx.
+@interface SideSafeAreaView : RCTView
+@property (nonatomic, copy) RCTDirectEventBlock onSideSafeAreaChange;
+@end
+
+@implementation SideSafeAreaView {
+  BOOL _reported;
+  CGFloat _left;
+  CGFloat _right;
+  CGFloat _width;
+  CGFloat _height;
+  NSInteger _edge;
+}
+
+- (void)setOnSideSafeAreaChange:(RCTDirectEventBlock)onSideSafeAreaChange
+{
+  _onSideSafeAreaChange = [onSideSafeAreaChange copy];
+  _reported = NO;
+  [self report];
+}
+
+- (void)safeAreaInsetsDidChange
+{
+  [super safeAreaInsetsDidChange];
+  [self report];
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  [self report];
+}
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  [self report];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self report];
+}
+
+- (void)report
+{
+  if (_onSideSafeAreaChange == nil || self.window == nil) {
+    return;
+  }
+  UIEdgeInsets insets = self.safeAreaInsets;
+  CGFloat left = MAX(0.0, insets.left);
+  CGFloat right = MAX(0.0, insets.right);
+  CGFloat width = self.bounds.size.width;
+  CGFloat height = self.bounds.size.height;
+  NSInteger edge = XamanVerticalBarEdge(self.traitCollection);
+  if (edge == 0) {
+    edge = XamanVerticalBarEdge(self.window.traitCollection);
+  }
+  if (width <= 0.0) {
+    return;
+  }
+  if (_reported && ABS(left - _left) < 0.5 && ABS(right - _right) < 0.5 && ABS(width - _width) < 0.5 &&
+      ABS(height - _height) < 0.5 && edge == _edge) {
+    return;
+  }
+  _reported = YES;
+  _left = left;
+  _right = right;
+  _width = width;
+  _height = height;
+  _edge = edge;
+  _onSideSafeAreaChange(
+      @{ @"left" : @(left), @"right" : @(right), @"width" : @(width), @"height" : @(height), @"edge" : @(edge) });
+}
+
+@end
+
+@interface SideSafeAreaViewManager : RCTViewManager
+@end
+
+@implementation SideSafeAreaViewManager
+
+RCT_EXPORT_MODULE(SideSafeAreaView)
+
+RCT_EXPORT_VIEW_PROPERTY(onSideSafeAreaChange, RCTDirectEventBlock)
+
+- (UIView *)view
+{
+  return [SideSafeAreaView new];
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
 }
 
 @end

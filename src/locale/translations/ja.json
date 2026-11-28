@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Xaman Tangemカードをスキャンし、このアカウントに登録されたカードかを確認します。",
     "tangemRightCard": "カードが一致",
     "tangemDifferentCard": "別のカード",
+    "tangemDifferentCardExplain": "これはこのアカウントのカードではありません。「%{name}」という名前のカードをスキャンしてください。",
     "tangemCardKnownAs": "別のアカウントとして保存済み",
     "tangemCardNotImported": "これは不明なカードです。まだXamanに取り込まれていません。",
     "accountMaxLabelLengthError": "アカウント名は64文字未満にしてください！",
@@ -2179,7 +2180,9 @@
     "removeDoneBody": "元のカードは引き続き使用できます。このアカウントにはバックアップカードがありません。",
     "identifyBody": "このアカウントにリンクされたバックアップカードをスキャンして、正しいカードか確認してください。",
     "notYourBackup": "これはあなたのバックアップカードではありません。",
-    "yourBackup": "これはあなたのバックアップカードです。"
+    "yourBackup": "これはあなたのバックアップカードです。",
+    "backupFor": "次のカードのバックアップカード",
+    "hasBackup": "このカードのバックアップカード"
   },
   "accessibility": {
     "moreOptions": "その他のオプション",

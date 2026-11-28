@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scansiona una carta Xaman Tangem per verificare se è quella salvata per questo account.",
     "tangemRightCard": "La carta corrisponde",
     "tangemDifferentCard": "Altra carta",
+    "tangemDifferentCardExplain": "Questa non è la carta di questo account. Scansiona la carta chiamata «%{name}».",
     "tangemCardKnownAs": "Salvata come un altro account",
     "tangemCardNotImported": "Questa è una carta sconosciuta. Non è ancora stata importata in Xaman.",
     "accountMaxLabelLengthError": "L'etichetta dell'account deve contenere meno di 16 caratteri!",
@@ -2116,7 +2117,9 @@
     "removeDoneBody": "La carta originale funziona ancora. Il tuo account non ha più una carta di backup.",
     "identifyBody": "Scansiona la carta di backup collegata a questo account per verificare che sia quella giusta.",
     "notYourBackup": "Questa non è la tua carta di backup.",
-    "yourBackup": "Questa è la tua carta di backup."
+    "yourBackup": "Questa è la tua carta di backup.",
+    "backupFor": "È carta di riserva di",
+    "hasBackup": "Ha una carta di riserva"
   },
   "accessibility": {
     "moreOptions": "Altre opzioni",

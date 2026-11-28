@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skanna ett Xaman Tangem-kort för att se om det är sparat för det här kontot.",
     "tangemRightCard": "Kortet matchar",
     "tangemDifferentCard": "Annat kort",
+    "tangemDifferentCardExplain": "Det här är inte kortet för det här kontot. Skanna kortet med namnet ”%{name}”.",
     "tangemCardKnownAs": "Sparat som ett annat konto",
     "tangemCardNotImported": "Det här är ett okänt kort. Det har inte importerats till Xaman än.",
     "accountMaxLabelLengthError": "Kontoetiketten ska vara mindre än 16 tecken.",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "Ditt ursprungliga kort fungerar fortfarande. Ditt konto har inte längre ett reservkort.",
     "identifyBody": "Skanna reservkortet som är kopplat till det här kontot för att kontrollera att det är rätt kort.",
     "notYourBackup": "Det här är inte ditt reservkort.",
-    "yourBackup": "Det här är ditt reservkort."
+    "yourBackup": "Det här är ditt reservkort.",
+    "backupFor": "Är reservkort för",
+    "hasBackup": "Har reservkort"
   },
   "accessibility": {
     "moreOptions": "Fler alternativ",

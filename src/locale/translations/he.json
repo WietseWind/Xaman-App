@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "סרקו כרטיס Xaman Tangem כדי לבדוק אם הוא הכרטיס השמור עבור החשבון הזה.",
     "tangemRightCard": "הכרטיס תואם",
     "tangemDifferentCard": "כרטיס אחר",
+    "tangemDifferentCardExplain": "זה אינו הכרטיס של החשבון הזה. יש לסרוק את הכרטיס בשם ״%{name}״.",
     "tangemCardKnownAs": "שמור כחשבון אחר",
     "tangemCardNotImported": "זהו כרטיס לא מוכר. הוא עדיין לא יובא ל-Xaman.",
     "accountMaxLabelLengthError": "תווית החשבון צריכה להכיל פחות מ -16 תווים!",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "הכרטיס המקורי עדיין פועל. לחשבון שלך אין עוד כרטיס גיבוי.",
     "identifyBody": "יש לסרוק את כרטיס הגיבוי המקושר לחשבון כדי לוודא שזהו הכרטיס הנכון.",
     "notYourBackup": "זה אינו כרטיס הגיבוי שלך.",
-    "yourBackup": "זהו כרטיס הגיבוי שלך."
+    "yourBackup": "זהו כרטיס הגיבוי שלך.",
+    "backupFor": "כרטיס גיבוי עבור",
+    "hasBackup": "יש כרטיס גיבוי"
   },
   "accessibility": {
     "moreOptions": "אפשרויות נוספות",

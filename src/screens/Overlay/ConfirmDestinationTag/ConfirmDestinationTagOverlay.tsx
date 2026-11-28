@@ -6,6 +6,7 @@ import React, { Component } from 'react';
 import { View, Animated, Text } from 'react-native';
 
 import { Navigator } from '@common/helpers/navigator';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 import { AppScreens } from '@common/constants';
 
 // components
@@ -126,6 +127,7 @@ class ConfirmDestinationTagOverlay extends Component<Props, State> {
 
         return (
             <Animated.View style={[styles.container, { backgroundColor: interpolateColor }]}>
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <Animated.View
                     onResponderRelease={() => Keyboard.dismiss()}
                     onStartShouldSetResponder={() => true}

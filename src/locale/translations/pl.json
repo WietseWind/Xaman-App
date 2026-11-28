@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Zeskanuj kartę Xaman Tangem, aby sprawdzić, czy jest zapisana dla tego konta.",
     "tangemRightCard": "Karta pasuje",
     "tangemDifferentCard": "Inna karta",
+    "tangemDifferentCardExplain": "To nie jest karta tego konta. Zeskanuj kartę o nazwie „%{name}”.",
     "tangemCardKnownAs": "Zapisana jako inne konto",
     "tangemCardNotImported": "To nieznana karta. Nie została jeszcze zaimportowana do Xaman.",
     "accountMaxLabelLengthError": "Etykieta konta powinna mieć mniej niż 16 znaków!",
@@ -2097,7 +2098,9 @@
     "removeDoneBody": "Oryginalna karta nadal działa. Twoje konto nie ma już karty zapasowej.",
     "identifyBody": "Zeskanuj kartę zapasową powiązaną z tym kontem, aby sprawdzić, czy jest właściwa.",
     "notYourBackup": "To nie jest Twoja karta zapasowa.",
-    "yourBackup": "To jest Twoja karta zapasowa."
+    "yourBackup": "To jest Twoja karta zapasowa.",
+    "backupFor": "Jest kartą zapasową dla",
+    "hasBackup": "Ma kartę zapasową"
   },
   "accessibility": {
     "moreOptions": "Więcej opcji",

@@ -7,12 +7,18 @@ import { SafeAreaView, View, Text, Alert, Image } from 'react-native';
 
 import * as AccountLib from 'xrpl-accountlib';
 
-import RNTangemSdk, { Card, OptionsSign } from 'tangem-sdk-react-native';
+import { Card, OptionsSign } from 'tangem-sdk-react-native';
 
 import { SHA256 } from '@common/libs/crypto';
 import { Images } from '@common/helpers/images';
 import { GetWalletDerivedPublicKey, GetSignOptions } from '@common/utils/tangem';
-import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import {
+    isTangemWrongCard,
+    startTangemOfflineSession,
+    stopTangemSessionLater,
+    TangemCard,
+} from '@common/utils/tangemSession';
+import { showTangemWrongCard } from '@common/helpers/tangemWrongCard';
 
 import { ProfileRepository } from '@store/repositories';
 
@@ -55,11 +61,7 @@ class VerifySignatureStep extends Component<Props, State> {
     }
 
     componentWillUnmount(): void {
-        setTimeout(() => {
-            RNTangemSdk.stopSession().catch(() => {
-                // ignore
-            });
-        }, 5000);
+        stopTangemSessionLater(5000);
     }
 
     goBack = () => {
@@ -135,6 +137,12 @@ class VerifySignatureStep extends Component<Props, State> {
         } catch (error: any) {
             // ignore use cancel operation
             if (error?.message && error?.message === 'The user cancelled the operation') {
+                return;
+            }
+            // another card than the one scanned in the step before: the Next button starts a new scan
+            if (isTangemWrongCard(error)) {
+                const { account } = this.context;
+                showTangemWrongCard(account?.label);
                 return;
             }
             Alert.alert(Localize.t('global.error'), Localize.t('account.unableToVerifyTheSignature'));

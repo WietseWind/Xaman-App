@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skenirajte kartico Xaman Tangem in preverite, ali je shranjena za ta račun.",
     "tangemRightCard": "Kartica se ujema",
     "tangemDifferentCard": "Druga kartica",
+    "tangemDifferentCardExplain": "To ni kartica tega računa. Skenirajte kartico z imenom »%{name}«.",
     "tangemCardKnownAs": "Shranjena kot drug račun",
     "tangemCardNotImported": "To je neznana kartica. V Xaman še ni bila uvožena.",
     "accountMaxLabelLengthError": "Oznaka računa mora biti krajša od 16 znakov!",
@@ -2023,7 +2024,9 @@
     "removeDoneBody": "Prvotna kartica še vedno deluje. Vaš račun nima več rezervne kartice.",
     "identifyBody": "Skenirajte rezervno kartico, povezano s tem računom, da preverite, ali je prava.",
     "notYourBackup": "To ni vaša rezervna kartica.",
-    "yourBackup": "To je vaša rezervna kartica."
+    "yourBackup": "To je vaša rezervna kartica.",
+    "backupFor": "Je rezervna kartica za",
+    "hasBackup": "Ima rezervno kartico"
   },
   "accessibility": {
     "moreOptions": "Več možnosti",

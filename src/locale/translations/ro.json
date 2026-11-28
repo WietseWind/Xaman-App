@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scanează un card Xaman Tangem pentru a verifica dacă este cel salvat pentru acest cont.",
     "tangemRightCard": "Cardul corespunde",
     "tangemDifferentCard": "Alt card",
+    "tangemDifferentCardExplain": "Acesta nu este cardul acestui cont. Scanează cardul numit „%{name}”.",
     "tangemCardKnownAs": "Salvat ca alt cont",
     "tangemCardNotImported": "Acesta este un card necunoscut. Nu a fost încă importat în Xaman.",
     "accountMaxLabelLengthError": "Eticheta contului ar trebui să aibă maxim 16 caractere !",
@@ -2115,7 +2116,9 @@
     "removeDoneBody": "Cardul original funcționează în continuare. Contul tău nu mai are un card de rezervă.",
     "identifyBody": "Scanează cardul de rezervă asociat acestui cont pentru a verifica dacă este cel corect.",
     "notYourBackup": "Acesta nu este cardul tău de rezervă.",
-    "yourBackup": "Acesta este cardul tău de rezervă."
+    "yourBackup": "Acesta este cardul tău de rezervă.",
+    "backupFor": "Este card de rezervă pentru",
+    "hasBackup": "Are card de rezervă"
   },
   "accessibility": {
     "moreOptions": "Mai multe opțiuni",

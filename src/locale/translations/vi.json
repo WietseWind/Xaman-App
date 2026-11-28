@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Quét thẻ Xaman Tangem để kiểm tra xem đó có phải thẻ được lưu cho tài khoản này không.",
     "tangemRightCard": "Thẻ khớp",
     "tangemDifferentCard": "Thẻ khác",
+    "tangemDifferentCardExplain": "Đây không phải thẻ của tài khoản này. Vui lòng quét thẻ có tên “%{name}”.",
     "tangemCardKnownAs": "Đã lưu dưới dạng tài khoản khác",
     "tangemCardNotImported": "Đây là thẻ không xác định. Thẻ này chưa được nhập vào Xaman.",
     "accountMaxLabelLengthError": "Nhãn tài khoản phải ít hơn 16 ký tự!",
@@ -2126,7 +2127,9 @@
     "removeDoneBody": "Thẻ gốc vẫn hoạt động. Tài khoản của bạn không còn thẻ dự phòng.",
     "identifyBody": "Quét thẻ dự phòng được liên kết với tài khoản này để kiểm tra xem đó có phải thẻ đúng không.",
     "notYourBackup": "Đây không phải thẻ dự phòng của bạn.",
-    "yourBackup": "Đây là thẻ dự phòng của bạn."
+    "yourBackup": "Đây là thẻ dự phòng của bạn.",
+    "backupFor": "Là thẻ dự phòng của",
+    "hasBackup": "Có thẻ dự phòng"
   },
   "accessibility": {
     "moreOptions": "Tùy chọn khác",

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "اقرأ بطاقة Xaman Tangem للتحقق مما إذا كانت البطاقة المحفوظة لهذا الحساب.",
     "tangemRightCard": "البطاقة مطابقة",
     "tangemDifferentCard": "بطاقة مختلفة",
+    "tangemDifferentCardExplain": "هذه ليست بطاقة هذا الحساب. يُرجى مسح البطاقة المسماة «%{name}».",
     "tangemCardKnownAs": "محفوظة كحساب آخر",
     "tangemCardNotImported": "هذه بطاقة غير معروفة. لم يتم استيرادها إلى Xaman بعد.",
     "accountMaxLabelLengthError": "يجب أن يكون تسمية الحساب أقل من 16 حرفًا!",
@@ -2110,7 +2111,9 @@
     "removeDoneBody": "ما زالت بطاقتك الأصلية تعمل. لم يعد لحسابك بطاقة احتياطية.",
     "identifyBody": "امسح البطاقة الاحتياطية المرتبطة بهذا الحساب للتحقق من أنها البطاقة الصحيحة.",
     "notYourBackup": "هذه ليست بطاقتك الاحتياطية.",
-    "yourBackup": "هذه هي بطاقتك الاحتياطية."
+    "yourBackup": "هذه هي بطاقتك الاحتياطية.",
+    "backupFor": "بطاقة احتياطية لـ",
+    "hasBackup": "لديها بطاقة احتياطية"
   },
   "accessibility": {
     "moreOptions": "مزيد من الخيارات",

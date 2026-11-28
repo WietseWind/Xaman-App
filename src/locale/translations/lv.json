@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skenējiet Xaman Tangem karti, lai pārbaudītu, vai tā ir šim kontam saglabātā karte.",
     "tangemRightCard": "Karte atbilst",
     "tangemDifferentCard": "Cita karte",
+    "tangemDifferentCardExplain": "Šī nav šī konta karte. Lūdzu, noskenējiet karti ar nosaukumu “%{name}”.",
     "tangemCardKnownAs": "Saglabāta kā cits konts",
     "tangemCardNotImported": "Šī ir nezināma karte. Tā vēl nav importēta Xaman.",
     "accountMaxLabelLengthError": "Konta etiķetei jābūt mazākai par 16 simboliem!",
@@ -2110,7 +2111,9 @@
     "removeDoneBody": "Sākotnējā karte joprojām darbojas. Jūsu kontam vairs nav rezerves kartes.",
     "identifyBody": "Noskenējiet šim kontam piesaistīto rezerves karti, lai pārbaudītu, vai tā ir pareizā karte.",
     "notYourBackup": "Šī nav jūsu rezerves karte.",
-    "yourBackup": "Šī ir jūsu rezerves karte."
+    "yourBackup": "Šī ir jūsu rezerves karte.",
+    "backupFor": "Ir rezerves karte šai kartei",
+    "hasBackup": "Tai ir rezerves karte"
   },
   "accessibility": {
     "moreOptions": "Vairāk opciju",

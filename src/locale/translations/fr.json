@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scannez une carte Xaman Tangem pour vérifier si elle est enregistrée pour ce compte.",
     "tangemRightCard": "La carte correspond",
     "tangemDifferentCard": "Autre carte",
+    "tangemDifferentCardExplain": "Ce n’est pas la carte de ce compte. Scannez la carte nommée « %{name} ».",
     "tangemCardKnownAs": "Enregistrée comme un autre compte",
     "tangemCardNotImported": "Cette carte est inconnue. Elle n’a pas encore été importée dans Xaman.",
     "accountMaxLabelLengthError": "Le libellé du compte doit contenir moins de 16 caractères !",
@@ -2121,7 +2122,9 @@
     "removeDoneBody": "Votre carte d’origine fonctionne toujours. Votre compte n’a plus de carte de secours.",
     "identifyBody": "Scannez la carte de secours liée à ce compte pour vérifier qu’il s’agit de la bonne carte.",
     "notYourBackup": "Ce n’est pas votre carte de secours.",
-    "yourBackup": "C’est votre carte de secours."
+    "yourBackup": "C’est votre carte de secours.",
+    "backupFor": "Est la carte de secours de",
+    "hasBackup": "A une carte de secours"
   },
   "accessibility": {
     "moreOptions": "Plus d'options",

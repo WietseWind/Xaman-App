@@ -7,6 +7,7 @@ import { View, Text, Animated } from 'react-native';
 // import { CoreRepository } from '@store/repositories';
 
 import { Navigator } from '@common/helpers/navigator';
+import { SideSafeAreaFill } from '@common/helpers/sideSafeArea';
 
 import { AppScreens } from '@common/constants';
 import { WebLinks } from '@common/constants/endpoints';
@@ -92,6 +93,7 @@ class ChangeLogOverlay extends Component<Props, State> {
                 testID="change-log-overlay"
                 style={[styles.container, { backgroundColor: interpolateColor }]}
             >
+                <SideSafeAreaFill style={{ backgroundColor: interpolateColor }} />
                 <Animated.View style={[styles.visibleContent, { opacity: this.animatedOpacity }]}>
                     <View style={styles.headerContainer}>
                         <View style={AppStyles.flex1}>

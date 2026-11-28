@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "આ એકાઉન્ટ માટે સાચવેલું કાર્ડ છે કે નહીં તે જોવા Xaman Tangem કાર્ડ સ્કેન કરો.",
     "tangemRightCard": "કાર્ડ મેળ ખાય છે",
     "tangemDifferentCard": "અલગ કાર્ડ",
+    "tangemDifferentCardExplain": "આ કાર્ડ આ એકાઉન્ટનું નથી. કૃપા કરીને “%{name}” નામનું કાર્ડ સ્કૅન કરો.",
     "tangemCardKnownAs": "બીજા એકાઉન્ટ તરીકે સાચવેલું",
     "tangemCardNotImported": "આ અજાણ્યું કાર્ડ છે. તેને હજી Xamanમાં આયાત કરવામાં આવ્યું નથી.",
     "accountMaxLabelLengthError": "એકાઉન્ટ લેબલ 16 અક્ષરોથી ઓછું હોવું જોઈએ!",
@@ -2122,7 +2123,9 @@
     "removeDoneBody": "તમારું મૂળ કાર્ડ હજી કામ કરે છે. તમારા ખાતા માટે હવે બેકઅપ કાર્ડ નથી.",
     "identifyBody": "યોગ્ય કાર્ડ છે કે નહીં તે તપાસવા આ ખાતા સાથે જોડાયેલ બેકઅપ કાર્ડ સ્કૅન કરો.",
     "notYourBackup": "આ તમારું બેકઅપ કાર્ડ નથી.",
-    "yourBackup": "આ તમારું બેકઅપ કાર્ડ છે."
+    "yourBackup": "આ તમારું બેકઅપ કાર્ડ છે.",
+    "backupFor": "આ આ કાર્ડનું બેકઅપ કાર્ડ છે",
+    "hasBackup": "બેકઅપ કાર્ડ છે"
   },
   "accessibility": {
     "moreOptions": "વધુ વિકલ્પો",

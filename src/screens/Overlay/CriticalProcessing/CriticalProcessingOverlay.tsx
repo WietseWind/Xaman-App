@@ -17,6 +17,8 @@ import { StyleService } from '@services';
 
 // style
 import { AppStyles } from '@theme';
+import { sideBleedMargin } from '@common/helpers/sideSafeArea';
+
 import styles from './styles';
 
 /* types ==================================================================== */
@@ -164,7 +166,7 @@ class CriticalProcessingOverlay extends Component<Props, State> {
         ];
 
         return (
-            <BlurView blurAmount={Platform.OS === 'ios' ? 5 : 10} blurType="dark">
+            <BlurView style={sideBleedMargin} blurAmount={Platform.OS === 'ios' ? 5 : 10} blurType="dark">
                 <View style={[
                     styles.blurView,
                 ]}>

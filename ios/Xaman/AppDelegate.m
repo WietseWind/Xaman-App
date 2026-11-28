@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "Libs/Utils/DeviceUtils.h"
 #import "SceneDelegate.h"
 #import "SecurityProvider.h"
 
@@ -64,6 +65,18 @@
   [self keepClassicBarChrome];
 
   return YES;
+}
+
+// The app is in portrait only (Info.plist), and that is what every iPhone gets here too. An iPad that gives the app
+// a window of its own (iPadOS 27) is the exception (issue 553): that window stays upright while the iPad turns, and
+// an app that only knows portrait is then drawn on its side in it. With all orientations the content stays upright;
+// the window keeps the shape of a phone in each of them.
+// An iPad that gives the app the screen of a phone (older iPadOS) keeps portrait: the system turns and scales that
+// screen itself, and with more orientations it would also offer a low, wide phone screen.
+- (UIInterfaceOrientationMask)application:(UIApplication *)application
+    supportedInterfaceOrientationsForWindow:(UIWindow *)window
+{
+  return [DeviceUtilsModule padLayoutSize].width > 0.0 ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskPortrait;
 }
 
 - (void)keepClassicBarChrome

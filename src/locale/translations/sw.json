@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Soma kadi ya Xaman Tangem ili kuangalia kama ndiyo iliyohifadhiwa kwa akaunti hii.",
     "tangemRightCard": "Kadi inalingana",
     "tangemDifferentCard": "Kadi nyingine",
+    "tangemDifferentCardExplain": "Hii si kadi ya akaunti hii. Tafadhali changanua kadi inayoitwa “%{name}”.",
     "tangemCardKnownAs": "Imehifadhiwa kama akaunti nyingine",
     "tangemCardNotImported": "Hii ni kadi isiyojulikana. Bado haijaingizwa kwenye Xaman.",
     "accountMaxLabelLengthError": "Account label should be less than 16 characters!",
@@ -2122,7 +2123,9 @@
     "removeDoneBody": "Kadi yako ya awali bado inafanya kazi. Akaunti yako haina kadi ya akiba tena.",
     "identifyBody": "Changanua kadi ya akiba iliyounganishwa na akaunti hii ili uhakikishe kuwa ndiyo kadi sahihi.",
     "notYourBackup": "Hii si kadi yako ya akiba.",
-    "yourBackup": "Hii ndiyo kadi yako ya akiba."
+    "yourBackup": "Hii ndiyo kadi yako ya akiba.",
+    "backupFor": "Ni kadi ya akiba ya",
+    "hasBackup": "Ina kadi ya akiba"
   },
   "accessibility": {
     "moreOptions": "Chaguo zaidi",
