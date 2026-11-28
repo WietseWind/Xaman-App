@@ -16,7 +16,62 @@ const content = () => <AndroidPinEntrySlot>{(paneLayout) => <SecurePinInput
     virtualKeyboard supportBiometric length={6} paneLayout={paneLayout} onInputFinish={jest.fn()} />}
 </AndroidPinEntrySlot>;
 
+const nativePayload = require(
+    'react-native/Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload',
+);
+
+const flexAttributes = { style: { flex: true, flexGrow: true, flexShrink: true, flexBasis: true } };
+
+const effectiveNativeFlex = (frames: any[]) => {
+    const native: any = {};
+    frames.forEach((style, index) => {
+        const props = { style };
+        const payload = index === 0 ? nativePayload.create(props, flexAttributes)
+            : nativePayload.diff({ style: frames[index - 1] }, props, flexAttributes);
+        Object.entries(payload ?? {}).forEach(([key, value]) => {
+            // RN0.74 ReactAndroid/src/main/java/com/facebook/react/uimanager/
+            // LayoutShadowNode.java and ViewManagersPropertyCache.java reset removed floats to 0.
+            native[key] = value === null ? key === 'flexBasis' ? undefined : 0 : value;
+        });
+    });
+    // ReactCommon/yoga/yoga/node/Node.cpp prioritizes explicit grow over positive flex;
+    // positive flex still resolves an automatic/undefined basis to zero.
+    return {
+        grow: native.flexGrow ?? Math.max(0, native.flex ?? 0),
+        basis: native.flexBasis != null && native.flexBasis !== 'auto'
+            ? native.flexBasis : native.flex > 0 ? 0 : 'auto',
+    };
+};
+
 afterEach(() => { Platform.OS = originalOS; mockCapable = false; });
+
+it('keeps native content growth after two pane returns without replacing the empty PIN or keys', () => {
+    Platform.OS = 'android';
+    mockCapable = true;
+    const render = (context?: typeof pane) => (
+        <AndroidWindowSurroundContext.Provider value={context}>
+            <AndroidPinEntryScroll normalHeight={normalPinEntryHeight()} normalWidth={normalPinEntryWidth()}>
+                {content()}
+            </AndroidPinEntryScroll>
+        </AndroidWindowSurroundContext.Provider>
+    );
+    const tree = renderer.create(render());
+    const input = tree.root.findByType(SecurePinInput).instance;
+    const key = tree.root.findAllByProps({ testID: '0-key' })[0];
+    const frames = [tree.root.findByType(ScrollView).props.contentContainerStyle];
+    expect(effectiveNativeFlex(frames)).toEqual({ grow: 1, basis: 0 });
+    for (let cycle = 0; cycle < 2; cycle++) {
+        act(() => tree.update(render(pane)));
+        frames.push(tree.root.findByType(ScrollView).props.contentContainerStyle);
+        act(() => tree.update(render()));
+        frames.push(tree.root.findByType(ScrollView).props.contentContainerStyle);
+        expect(tree.root.findByType(SecurePinInput).instance).toBe(input);
+        expect(tree.root.findAllByProps({ testID: '0-key' })[0]).toBe(key);
+        expect(tree.root.findByType(SecurePinInput).instance.state.digits).toBe('');
+        expect(effectiveNativeFlex(frames)).toEqual({ grow: 1, basis: 0 });
+    }
+    act(() => tree.unmount());
+});
 
 it('adds no native wrappers to older Android or iOS binaries', () => {
     const tree = renderer.create(<AndroidPinEntryScroll normalHeight={600} normalWidth={400}>

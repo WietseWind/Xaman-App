@@ -11,7 +11,8 @@ export const ANDROID_PIN_MIN_HEIGHT = 232;
 const SCROLL_STYLE = { flex: 1, alignSelf: 'stretch' as const };
 const INTRINSIC_SCROLL_STYLE = { alignSelf: 'stretch' as const, flexGrow: 0, flexShrink: 0 };
 const CONTENT_STYLE = { flexGrow: 1 };
-const NORMAL_CONTENT_STYLE = { flex: 1 };
+// Removing flexGrow resets it to native zero, which overrides flex on return.
+const NORMAL_CONTENT_STYLE = { flex: 1, flexGrow: 1 };
 const SLOT_STYLE = {
     alignSelf: 'stretch' as const, minHeight: ANDROID_PIN_MIN_HEIGHT,
     flexGrow: 1, flexShrink: 0, justifyContent: 'center' as const,

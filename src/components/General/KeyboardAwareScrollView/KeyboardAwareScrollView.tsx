@@ -18,6 +18,7 @@ import Keyboard from '@common/helpers/keyboard';
 import { AndroidWindowSurroundContext } from '@common/helpers/androidWindowContext';
 import { watchAndroidKeyboardGeometry } from '@common/helpers/androidKeyboardGeometry';
 import { supportsAndroidWindowLayout } from '@common/helpers/androidWindow';
+import { supportsAndroidMultiWindowLayout } from '@common/helpers/androidMultiWindow';
 
 import styles from './styles';
 /* Types ==================================================================== */
@@ -40,6 +41,9 @@ interface State {
 
 const DEFAULT_EXTRA_OFFSET = 20;
 const FULL_PANE_CONTENT_STYLE = { flexGrow: 1, flexShrink: 0, flexBasis: 'auto' as const };
+// Restore every pane flex field explicitly. A removed grow becomes native zero
+// and overrides the original flex:1, collapsing the retained content on return.
+const NORMAL_ANDROID_CONTENT_STYLE = { flexGrow: 1, flexShrink: 0, flexBasis: 0 };
 type ContentScrollView = ScrollView & {
     getNativeScrollRef?: () => Parameters<TextInput['measureLayout']>[0] | null;
 };
@@ -645,7 +649,8 @@ class KeyboardAwareScrollView extends PureComponent<Props, State> {
             >
                 <Animated.View style={[
                     styles.contentContainer,
-                    context?.fullPane ? FULL_PANE_CONTENT_STYLE : undefined,
+                    context?.fullPane ? FULL_PANE_CONTENT_STYLE
+                        : supportsAndroidMultiWindowLayout() ? NORMAL_ANDROID_CONTENT_STYLE : undefined,
                     { paddingBottom: offset },
                 ]}>{children}</Animated.View>
             </ScrollView>
