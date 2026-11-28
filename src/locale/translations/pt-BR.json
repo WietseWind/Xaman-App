@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Escaneie um cartão Xaman Tangem para verificar se é o salvo para esta conta.",
     "tangemRightCard": "O cartão corresponde",
     "tangemDifferentCard": "Outro cartão",
+    "tangemDifferentCardExplain": "Este não é o cartão desta conta. Escaneie o cartão chamado “%{name}”.",
     "tangemCardKnownAs": "Salvo como outra conta",
     "tangemCardNotImported": "Este é um cartão desconhecido. Ele ainda não foi importado para o Xaman.",
     "accountMaxLabelLengthError": "O rótulo da conta deve ser inferior a 16 caracteres!",

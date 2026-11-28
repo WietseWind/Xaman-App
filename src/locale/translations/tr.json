@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Bu hesap için kayıtlı kart olup olmadığını görmek için bir Xaman Tangem kartı tarayın.",
     "tangemRightCard": "Kart eşleşti",
     "tangemDifferentCard": "Farklı kart",
+    "tangemDifferentCardExplain": "Bu, bu hesabın kartı değil. Lütfen “%{name}” adlı kartı tarayın.",
     "tangemCardKnownAs": "Başka hesap olarak kayıtlı",
     "tangemCardNotImported": "Bu bilinmeyen bir kart. Henüz Xaman’a içe aktarılmadı.",
     "accountMaxLabelLengthError": "Hesap etiketi 16 karakterden kısa olmalıdır!",

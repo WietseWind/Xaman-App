@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "ಇದು ಈ ಖಾತೆಗೆ ಉಳಿಸಲಾದ ಕಾರ್ಡೇ ಎಂದು ತಿಳಿಯಲು Xaman Tangem ಕಾರ್ಡನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.",
     "tangemRightCard": "ಕಾರ್ಡ್ ಹೊಂದಿಕೆಯಾಗುತ್ತದೆ",
     "tangemDifferentCard": "ಬೇರೆ ಕಾರ್ಡ್",
+    "tangemDifferentCardExplain": "ಇದು ಈ ಖಾತೆಯ ಕಾರ್ಡ್ ಅಲ್ಲ. ದಯವಿಟ್ಟು “%{name}” ಹೆಸರಿನ ಕಾರ್ಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.",
     "tangemCardKnownAs": "ಬೇರೆ ಖಾತೆಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ",
     "tangemCardNotImported": "ಇದು ಅಪರಿಚಿತ ಕಾರ್ಡ್. ಇದನ್ನು ಇನ್ನೂ Xaman ಗೆ ಆಮದು ಮಾಡಿಲ್ಲ.",
     "accountMaxLabelLengthError": "ಖಾತೆ ಲೇಬಲ್ 16 ಅಕ್ಷರಗಳಿಗಿಂತ ಕಡಿಮೆಯಿರಬೇಕು!",

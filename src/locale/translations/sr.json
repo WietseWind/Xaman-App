@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Скенирајте Xaman Tangem картицу да проверите да ли је сачувана за овај рачун.",
     "tangemRightCard": "Картица се подудара",
     "tangemDifferentCard": "Друга картица",
+    "tangemDifferentCardExplain": "Ово није картица овог рачуна. Скенирајте картицу под називом „%{name}“.",
     "tangemCardKnownAs": "Сачувана као други рачун",
     "tangemCardNotImported": "Ово је непозната картица. Још није увезена у Xaman.",
     "accountMaxLabelLengthError": "Ознака рачуна треба да има мање од 16 знакова!",

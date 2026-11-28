@@ -34,11 +34,18 @@ export type MockTangemCardOptions = {
 };
 
 export type MockTangemSignOptions = {
-    cardId: string;
+    // the app does not give a card id to the SDK (see TangemCard.sign); with one, the SDK waits for that card
+    cardId?: string;
     walletPublicKey: string;
     hashes: string[];
     derivationPath?: string;
 };
+
+/** An error of the Tangem SDK as the native module gives it: `code` is the TangemSdkError code */
+export const mockTangemSdkError = (code: string, message: string) => Object.assign(new Error(message), { code });
+
+export const TANGEM_WALLET_NOT_FOUND = '30008';
+export const TANGEM_WRONG_CARD_NUMBER = '50005';
 
 // SHA-512Half of a text, as hex: only to get fixed test values from a name
 const digest = (text: string) => AccountLib.utils.bytesToHex(AccountLib.utils.hash(Buffer.from(text).toString('hex')));
@@ -109,11 +116,12 @@ const mockTangemCard = (name: string, options: MockTangemCardOptions = {}) => {
     const sign = async (signOptions: MockTangemSignOptions) => {
         signCalls.push(signOptions);
 
-        if (signOptions.cardId !== cardId) {
+        if (signOptions.cardId !== undefined && signOptions.cardId !== cardId) {
             throw new Error('This is not the card the app asked for');
         }
+        // SignCommand.performPreCheck of the SDK: the session ends with WalletNotFound
         if (signOptions.walletPublicKey !== card.wallets[0].publicKey) {
-            throw new Error('The card has no wallet with this public key');
+            throw mockTangemSdkError(TANGEM_WALLET_NOT_FOUND, 'The card has no wallet with this public key');
         }
         if (!!options.hdWallet !== (signOptions.derivationPath === TANGEM_DERIVATION_PATH)) {
             throw new Error('The derivation path does not fit this card');
@@ -134,15 +142,24 @@ const mockTangemCard = (name: string, options: MockTangemCardOptions = {}) => {
 export type MockTangemCard = ReturnType<typeof mockTangemCard>;
 
 /**
- * RNTangemSdk.sign for a set of mock cards: the card with the asked card id signs.
+ * RNTangemSdk.sign for a set of mock cards. The card that is held to the phone answers:
+ * - `held`: that card, whatever the app asked for (the user holds another card to the phone);
+ * - without `held`: the card that has the asked wallet (the user holds the right card).
  * Use: jest.mocked(RNTangemSdk.sign).mockImplementation(mockTangemSdkSign([card]) as any)
  */
-export const mockTangemSdkSign = (cards: MockTangemCard[]) => async (signOptions: MockTangemSignOptions) => {
-    const found = cards.find((card) => card.cardId === signOptions.cardId);
-    if (!found) {
-        throw new Error('No card with this card id was held to the phone');
-    }
-    return found.sign(signOptions);
-};
+export const mockTangemSdkSign =
+    (cards: MockTangemCard[], held?: MockTangemCard) => async (signOptions: MockTangemSignOptions) => {
+        const found =
+            held ??
+            cards.find((card) =>
+                signOptions.cardId !== undefined
+                    ? card.cardId === signOptions.cardId
+                    : card.card.wallets[0].publicKey === signOptions.walletPublicKey,
+            );
+        if (!found) {
+            throw new Error('No card for this request was held to the phone');
+        }
+        return found.sign(signOptions);
+    };
 
 export default mockTangemCard;

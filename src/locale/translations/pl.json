@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Zeskanuj kartę Xaman Tangem, aby sprawdzić, czy jest zapisana dla tego konta.",
     "tangemRightCard": "Karta pasuje",
     "tangemDifferentCard": "Inna karta",
+    "tangemDifferentCardExplain": "To nie jest karta tego konta. Zeskanuj kartę o nazwie „%{name}”.",
     "tangemCardKnownAs": "Zapisana jako inne konto",
     "tangemCardNotImported": "To nieznana karta. Nie została jeszcze zaimportowana do Xaman.",
     "accountMaxLabelLengthError": "Etykieta konta powinna mieć mniej niż 16 znaków!",

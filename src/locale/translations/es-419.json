@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Escanea una tarjeta Xaman Tangem para comprobar si es la guardada para esta cuenta.",
     "tangemRightCard": "La tarjeta coincide",
     "tangemDifferentCard": "Otra tarjeta",
+    "tangemDifferentCardExplain": "Esta no es la tarjeta de esta cuenta. Escanea la tarjeta llamada «%{name}».",
     "tangemCardKnownAs": "Guardada como otra cuenta",
     "tangemCardNotImported": "Esta es una tarjeta desconocida. Aún no se ha importado a Xaman.",
     "accountMaxLabelLengthError": "¡La etiqueta de la cuenta debe tener menos de 16 caracteres!",

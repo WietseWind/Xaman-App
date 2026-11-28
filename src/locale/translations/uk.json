@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Скануйте картку Xaman Tangem, щоб перевірити, чи вона збережена для цього акаунта.",
     "tangemRightCard": "Картка збігається",
     "tangemDifferentCard": "Інша картка",
+    "tangemDifferentCardExplain": "Це не картка цього акаунта. Відскануйте картку з назвою «%{name}».",
     "tangemCardKnownAs": "Збережена як інший акаунт",
     "tangemCardNotImported": "Це невідома картка. Її ще не імпортовано до Xaman.",
     "accountMaxLabelLengthError": "Ярлик акаунта має бути менший за 16 символів!",

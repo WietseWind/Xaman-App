@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Soma kadi ya Xaman Tangem ili kuangalia kama ndiyo iliyohifadhiwa kwa akaunti hii.",
     "tangemRightCard": "Kadi inalingana",
     "tangemDifferentCard": "Kadi nyingine",
+    "tangemDifferentCardExplain": "Hii si kadi ya akaunti hii. Tafadhali changanua kadi inayoitwa “%{name}”.",
     "tangemCardKnownAs": "Imehifadhiwa kama akaunti nyingine",
     "tangemCardNotImported": "Hii ni kadi isiyojulikana. Bado haijaingizwa kwenye Xaman.",
     "accountMaxLabelLengthError": "Account label should be less than 16 characters!",

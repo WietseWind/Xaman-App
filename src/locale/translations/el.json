@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Σαρώστε μια κάρτα Xaman Tangem για να δείτε αν είναι η αποθηκευμένη για αυτόν τον λογαριασμό.",
     "tangemRightCard": "Η κάρτα ταιριάζει",
     "tangemDifferentCard": "Διαφορετική κάρτα",
+    "tangemDifferentCardExplain": "Αυτή δεν είναι η κάρτα αυτού του λογαριασμού. Σαρώστε την κάρτα με το όνομα «%{name}».",
     "tangemCardKnownAs": "Αποθηκεύτηκε ως άλλος λογαριασμός",
     "tangemCardNotImported": "Αυτή είναι μια άγνωστη κάρτα. Δεν έχει εισαχθεί ακόμη στο Xaman.",
     "accountMaxLabelLengthError": "Η ετικέτα λογαριασμού θα πρέπει να είναι μικρότερη από 16 χαρακτήρες!",

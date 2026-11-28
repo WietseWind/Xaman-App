@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "ਇਸ ਖਾਤੇ ਲਈ ਸੰਭਾਲਿਆ ਕਾਰਡ ਹੈ ਜਾਂ ਨਹੀਂ, ਇਹ ਵੇਖਣ ਲਈ Xaman Tangem ਕਾਰਡ ਸਕੈਨ ਕਰੋ।",
     "tangemRightCard": "ਕਾਰਡ ਮੇਲ ਖਾਂਦਾ ਹੈ",
     "tangemDifferentCard": "ਵੱਖਰਾ ਕਾਰਡ",
+    "tangemDifferentCardExplain": "ਇਹ ਇਸ ਖਾਤੇ ਦਾ ਕਾਰਡ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ “%{name}” ਨਾਮ ਵਾਲਾ ਕਾਰਡ ਸਕੈਨ ਕਰੋ।",
     "tangemCardKnownAs": "ਕਿਸੇ ਹੋਰ ਖਾਤੇ ਵਜੋਂ ਸੰਭਾਲਿਆ",
     "tangemCardNotImported": "ਇਹ ਇੱਕ ਅਣਜਾਣ ਕਾਰਡ ਹੈ। ਇਸਨੂੰ ਅਜੇ Xaman ਵਿੱਚ ਆਯਾਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।",
     "accountMaxLabelLengthError": "ਖਾਤਾ ਲੇਬਲ 16 ਅੱਖਰਾਂ ਤੋਂ ਘੱਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ!",

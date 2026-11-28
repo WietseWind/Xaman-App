@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Skenirajte kartico Xaman Tangem in preverite, ali je shranjena za ta račun.",
     "tangemRightCard": "Kartica se ujema",
     "tangemDifferentCard": "Druga kartica",
+    "tangemDifferentCardExplain": "To ni kartica tega računa. Skenirajte kartico z imenom »%{name}«.",
     "tangemCardKnownAs": "Shranjena kot drug račun",
     "tangemCardNotImported": "To je neznana kartica. V Xaman še ni bila uvožena.",
     "accountMaxLabelLengthError": "Oznaka računa mora biti krajša od 16 znakov!",

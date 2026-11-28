@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "סרקו כרטיס Xaman Tangem כדי לבדוק אם הוא הכרטיס השמור עבור החשבון הזה.",
     "tangemRightCard": "הכרטיס תואם",
     "tangemDifferentCard": "כרטיס אחר",
+    "tangemDifferentCardExplain": "זה אינו הכרטיס של החשבון הזה. יש לסרוק את הכרטיס בשם ״%{name}״.",
     "tangemCardKnownAs": "שמור כחשבון אחר",
     "tangemCardNotImported": "זהו כרטיס לא מוכר. הוא עדיין לא יובא ל-Xaman.",
     "accountMaxLabelLengthError": "תווית החשבון צריכה להכיל פחות מ -16 תווים!",

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Scan a Xaman Tangem card to check whether it is the one saved for this account.",
     "tangemRightCard": "Card matched",
     "tangemDifferentCard": "Different card",
+    "tangemDifferentCardExplain": "This is not the card of this account. Please scan the card named “%{name}”.",
     "tangemCardKnownAs": "Saved as another account",
     "tangemCardNotImported": "This is an unknown card. It has not been imported into Xaman yet.",
     "accountMaxLabelLengthError": "Account label should be less than 64 characters!",

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "இந்தக் கணக்கிற்காகச் சேமித்த அட்டையா என அறிய Xaman Tangem அட்டையை ஸ்கேன் செய்யவும்.",
     "tangemRightCard": "அட்டை பொருந்துகிறது",
     "tangemDifferentCard": "வேறு அட்டை",
+    "tangemDifferentCardExplain": "இந்தக் கணக்கின் அட்டை இதுவல்ல. “%{name}” என்ற பெயருள்ள அட்டையை ஸ்கேன் செய்யுங்கள்.",
     "tangemCardKnownAs": "வேறொரு கணக்காகச் சேமிக்கப்பட்டது",
     "tangemCardNotImported": "இது தெரியாத அட்டை. இது இன்னும் Xaman-இல் இறக்குமதி செய்யப்படவில்லை.",
     "accountMaxLabelLengthError": "கணக்கு விளைவு 16 எழுத்துகளுக்கு குறைவாக இருக்க வேண்டும்!",

@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import { Alert, BackHandler, InteractionManager, Linking, NativeEventSubscription } from 'react-native';
 
 import * as AccountLib from 'xrpl-accountlib';
-import RNTangemSdk, { OptionsSign } from 'tangem-sdk-react-native';
+import { OptionsSign } from 'tangem-sdk-react-native';
 
 import NetworkService from '@services/NetworkService';
 import LoggerService, { LogEvents } from '@services/LoggerService';
@@ -23,7 +23,13 @@ import Vault from '@common/libs/vault';
 import CrashReporter from '@common/libs/crash';
 
 import { GetSignOptions, GetWalletDerivedPublicKey } from '@common/utils/tangem';
-import { startTangemOfflineSession, TangemCard } from '@common/utils/tangemSession';
+import {
+    isTangemWrongCard,
+    startTangemOfflineSession,
+    stopTangemSessionLater,
+    TangemCard,
+} from '@common/utils/tangemSession';
+import { showTangemWrongCard } from '@common/helpers/tangemWrongCard';
 
 import Keyboard from '@common/helpers/keyboard';
 import { Navigator } from '@common/helpers/navigator';
@@ -253,6 +259,16 @@ class VaultOverlay extends Component<Props, State> {
         // ignore showing error when auth tangem and user just cancels dialog
         if (method === AuthMethods.TANGEM && error?.message === 'The user cancelled the operation') {
             this.dismiss();
+            return;
+        }
+
+        // another card than the card of the signer: the card session is over. Say which card it must be;
+        // the user signs again from the review screen, and that is a new card session
+        if (method === AuthMethods.TANGEM && isTangemWrongCard(error)) {
+            const { preferredSigner } = this.state;
+            const name = preferredSigner?.label;
+            this.dismiss();
+            showTangemWrongCard(name);
             return;
         }
 
@@ -621,11 +637,8 @@ class VaultOverlay extends Component<Props, State> {
                     this.onSignError(AuthMethods.TANGEM, error);
                 })
                 .finally(() => {
-                    setTimeout(() => {
-                        RNTangemSdk.stopSession().catch(() => {
-                            // ignore
-                        });
-                    }, 10000);
+                    // not a plain timer: a stop that arrives during the next try would end that scan
+                    stopTangemSessionLater(10000);
                 });
         } catch (error: any) {
             this.onSignError(AuthMethods.TANGEM, error);

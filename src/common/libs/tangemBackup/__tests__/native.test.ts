@@ -148,9 +148,9 @@ describe('native Tangem back-up adapter', () => {
             TxnSignature: expect.any(String),
         });
         expect(signed.id).toMatch(/^[A-F0-9]{64}$/);
-        expect(RNTangemSdk.sign).toHaveBeenCalledWith(
-            expect.objectContaining({ cardId: 'ORIGINAL', hashes: [expect.any(String)] }),
-        );
+        // the SDK gets no card id: another card must end the session, not start the wait of the SDK
+        expect(RNTangemSdk.sign).toHaveBeenCalledWith(expect.objectContaining({ hashes: [expect.any(String)] }));
+        expect(jest.mocked(RNTangemSdk.sign).mock.calls[0][0]).not.toHaveProperty('cardId');
     });
     it('signs an Ed25519 original card using the complete signing message', async () => {
         const ed = derive.privatekey(`ED${'01'.repeat(32)}`);
@@ -174,9 +174,7 @@ describe('native Tangem back-up adapter', () => {
             RegularKey: tx.RegularKey,
             SigningPubKey: ed.keypair.publicKey,
         });
-        expect(RNTangemSdk.sign).toHaveBeenCalledWith(
-            expect.objectContaining({ hashes: [message], cardId: edCard.cardId }),
-        );
+        expect(RNTangemSdk.sign).toHaveBeenCalledWith(expect.objectContaining({ hashes: [message] }));
     });
 
     it.each(['wrong serial', 'invalid signature', 'zero scalar'])(
@@ -196,6 +194,39 @@ describe('native Tangem back-up adapter', () => {
             await expect(deps.sign(card as any, tx)).rejects.toThrow();
         },
     );
+    // issue 564: another card ends the card session, and the screen names the right card ("wrongSource")
+    it.each([
+        ['a card without the wallet of the original card', { reject: '30008' }],
+        ['a card with another serial that did sign', { cardId: 'BACKUP' }],
+    ])('says "wrong source" for %s', async (_name, answer: any) => {
+        const deps = nativeBackupDependencies(source, () => true);
+        if (answer.reject) {
+            jest.mocked(RNTangemSdk.sign).mockRejectedValue(
+                Object.assign(new Error('wallet not found'), { code: answer.reject }),
+            );
+        } else {
+            jest.mocked(RNTangemSdk.sign).mockResolvedValue({
+                cardId: answer.cardId,
+                signatures: [signatureFor(tx)],
+            });
+        }
+        await expect(deps.sign(card as any, tx)).rejects.toMatchObject({ code: 'wrongSource' });
+    });
+    it('says "card changed" when the wallet would be made on another card than the scanned one', async () => {
+        const deps = nativeBackupDependencies(source, () => true);
+        jest.mocked(RNTangemSdk.createWallet).mockRejectedValue(
+            Object.assign(new Error('wrong card number'), { code: '50005' }),
+        );
+        const scanned = { cardId: 'NEW', supportedCurves: [EllipticCurve.Secp256k1], wallets: [] };
+        await expect(deps.create(scanned as any)).rejects.toMatchObject({ code: 'cardChanged' });
+        expect(RNTangemSdk.createWallet).toHaveBeenCalledWith(expect.objectContaining({ cardId: 'NEW' }));
+    });
+    it('passes every other card error of a sign on as it is', async () => {
+        const deps = nativeBackupDependencies(source, () => true);
+        const cancelled = Object.assign(new Error('The user cancelled the operation'), { code: '50002' });
+        jest.mocked(RNTangemSdk.sign).mockRejectedValue(cancelled);
+        await expect(deps.sign(card as any, tx)).rejects.toBe(cancelled);
+    });
     it('rejects an unvalidated account response', async () => {
         jest.mocked(LedgerService.getAccountInfo).mockResolvedValue({
             validated: false,

@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Načítajte kartu Xaman Tangem a overte, či je uložená pre tento účet.",
     "tangemRightCard": "Karta sa zhoduje",
     "tangemDifferentCard": "Iná karta",
+    "tangemDifferentCardExplain": "Toto nie je karta tohto účtu. Naskenujte kartu s názvom „%{name}“.",
     "tangemCardKnownAs": "Uložená ako iný účet",
     "tangemCardNotImported": "Toto je neznáma karta. Zatiaľ nebola importovaná do Xaman.",
     "accountMaxLabelLengthError": "Názov účtu by mal mať menej než 16 znakov!",

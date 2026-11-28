@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Pindai kartu Xaman Tangem untuk memeriksa apakah itu kartu yang disimpan untuk akun ini.",
     "tangemRightCard": "Kartu cocok",
     "tangemDifferentCard": "Kartu berbeda",
+    "tangemDifferentCardExplain": "Ini bukan kartu akun ini. Pindai kartu bernama “%{name}”.",
     "tangemCardKnownAs": "Disimpan sebagai akun lain",
     "tangemCardNotImported": "Ini kartu yang tidak dikenal. Kartu ini belum diimpor ke Xaman.",
     "accountMaxLabelLengthError": "Label akun harus kurang dari 16 karakter!",

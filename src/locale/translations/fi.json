@@ -1148,6 +1148,7 @@
     "identifyTangemExplain": "Lue Xaman Tangem -kortti ja tarkista, onko se tälle tilille tallennettu kortti.",
     "tangemRightCard": "Kortti täsmää",
     "tangemDifferentCard": "Eri kortti",
+    "tangemDifferentCardExplain": "Tämä ei ole tämän tilin kortti. Skannaa kortti nimeltä ”%{name}”.",
     "tangemCardKnownAs": "Tallennettu toisena tilinä",
     "tangemCardNotImported": "Tämä on tuntematon kortti. Sitä ei ole vielä tuotu Xamaniin.",
     "accountMaxLabelLengthError": "Tilin tunnuksen on oltava vähemmän kuin 16 merkkiä!",
